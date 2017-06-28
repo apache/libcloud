@@ -928,7 +928,7 @@ class BaseDriver(object):
 
         try:
             if secret is not None or \
-            issubclass(self.connectionCls, ConnectionUserAndKey):
+               issubclass(self.connectionCls, ConnectionUserAndKey):
                 args.append(self.secret)
         except TypeError:
             if secret is not None:
