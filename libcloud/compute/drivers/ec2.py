@@ -3965,6 +3965,36 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return volume
 
+    def deploy_node(self, name, size, image, script, location=None,
+                    **kwargs):
+        """
+        Create a new node and run a script on start-up.
+
+        :param  name: The name of the node to create.
+        :type   name: ``str``
+
+        :param  size: The machine type to use.
+        :type   size: ``str`` or :class:`GCENodeSize`
+
+        :param  image: The image to use to create the node.
+        :type   image: ``str`` or :class:`GCENodeImage`
+
+        :param  script: File path to start-up script
+        :type   script: ``str``
+
+        :return:  A Node object for the new node.
+        :rtype:   :class:`Node`
+        """
+        kwargs['name'] = name
+        kwargs['size'] = size
+        kwargs['image'] = image
+
+        with open(script, 'r') as f:
+            script_data = f.read()
+            kwargs['ex_userdata'] = script_data
+
+        return self.create_node(**kwargs)
+
     def attach_volume(self, node, volume, device):
         params = {
             'Action': 'AttachVolume',
