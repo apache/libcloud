@@ -16,11 +16,7 @@
 Dimension Data Driver
 """
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.common.dimensiondata import LooseVersion
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword

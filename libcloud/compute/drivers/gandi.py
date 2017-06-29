@@ -436,7 +436,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def _to_loc(self, loc):
         return NodeLocation(
             id=loc['id'],
-            name=loc['name'],
+            name=loc['dc_code'],
             country=loc['country'],
             driver=self
         )

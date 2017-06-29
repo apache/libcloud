@@ -22,11 +22,7 @@ from io import BytesIO
 
 from hashlib import sha1
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
@@ -79,7 +75,8 @@ class S3MockHttp(MockHttp):
                 httplib.responses[httplib.OK])
 
     def _list_containers_TOKEN(self, method, url, body, headers):
-        assert headers['x-amz-security-token'] == 'asdf'
+        if 'x-amz-security-token' in headers:
+            assert headers['x-amz-security-token'] == 'asdf'
         body = self.fixtures.load('list_containers_empty.xml')
         return (httplib.OK,
                 body,

@@ -42,6 +42,16 @@ password ("secret"), you can create an AzureNodeDriver:
 .. literalinclude:: /examples/compute/azure_arm/instantiate.py
    :language: python
 
+Alternate Cloud Environments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can select an alternate cloud environment using the "cloud_environment"
+parameter to AzureNodeDriver constructor.  Available alternate cloud
+environments are 'AzureChinaCloud', 'AzureUSGovernment' and 'AzureGermanCloud'.
+You can also supply explicit endpoints by providing a dict with the keys
+'resourceManagerEndpointUrl', 'activeDirectoryEndpointUrl',
+'activeDirectoryResourceId' and 'storageEndpointSuffix'.
+
 API Docs
 --------
 

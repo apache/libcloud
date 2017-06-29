@@ -1,46 +1,106 @@
-[
-  {
-    "id": "3",
-    "name": "SJC - San Jose, CA"
+{
+  "SJC - San Jose, CA": {
+    "name": "SJC - San Jose, CA",
+    "id": "3"
   },
-  {
-    "id": "13",
-    "name": "IAD2- Reston, VA"
+  "IAD - Reston, VA": {
+    "name": "IAD - Reston, VA",
+    "id": "13"
   },
-  {
-    "id": "21",
-    "name": "LAX3 - Los Angeles, CA"
+  "LAX - Los Angeles, CA": {
+    "name": "LAX - Los Angeles, CA",
+    "id": "21"
   },
-  {
-    "id": "31",
-    "name": "CHI - Chicago, IL"
+  "CHI - Chicago, IL": {
+    "name": "CHI - Chicago, IL",
+    "id": "31"
   },
-  {
-    "id": "41",
-    "name": "NYC - New York, NY"
+  "LGA - New York, NY": {
+    "name": "LGA - New York, NY",
+    "id": "41"
   },
-  {
-    "id": "61",
-    "name": "MAA - Chennai (Madras), India"
+  "MAA - Chennai (Madras), India": {
+    "name": "MAA - Chennai (Madras), India",
+    "id": "61"
   },
-  {
-    "id": "71",
-    "name": "LON - London, United Kingdom"
+  "LHR - London, United Kingdom": {
+    "name": "LHR - London, United Kingdom",
+    "id": "71"
   },
-  {
-    "id": "72",
-    "name": "AMS2 - Amsterdam, NL"
+  "AMS - Amsterdam, NL": {
+    "name": "AMS - Amsterdam, NL",
+    "id": "72"
   },
-  {
-    "id": "82",
-    "name": "FRA - Paris, France"
+  "CDG - Paris, France": {
+    "name": "CDG - Paris, France",
+    "id": "82"
   },
-  {
-    "id": "83",
-    "name": "HK - Hong Kong, HK"
+  "HKG - Hong Kong, HK": {
+    "name": "HKG - Hong Kong, HK",
+    "id": "83"
   },
-  {
-    "id": "101",
-    "name": "DFW - Dallas, TX"
+  "DFW - Dallas, TX": {
+    "name": "DFW - Dallas, TX",
+    "id": "101"
+  },
+  "SVM - StrongVM, DDoS Protected": {
+    "name": "SVM - StrongVM, DDoS Protected",
+    "id": "121"
+  },
+  "DEN - Denver, CO": {
+    "name": "DEN - Denver, CO",
+    "id": "122"
+  },
+  "MIA - Miami, FL": {
+    "name": "MIA - Miami, FL",
+    "id": "123"
+  },
+  "SEA - Seattle, WA": {
+    "name": "SEA - Seattle, WA",
+    "id": "124"
+  },
+  "TOR - Toronto, CA": {
+    "name": "TOR - Toronto, CA",
+    "id": "127"
+  },
+  "SYD - Sydney, AU": {
+    "name": "SYD - Sydney, AU",
+    "id": "137"
+  },
+  "OTP - Bucharest, RO": {
+    "name": "OTP - Bucharest, RO",
+    "id": "146"
+  },
+  "FRA - Frankfurt, DE": {
+    "name": "FRA - Frankfurt, DE",
+    "id": "164"
+  },
+  "SIN - Singapore, SG": {
+    "name": "SIN - Singapore, SG",
+    "id": "173"
+  },
+  "GRU - Sao Paulo, Brazil": {
+    "name": "GRU - Sao Paulo, Brazil",
+    "id": "182"
+  },
+  "SJC2 - San Jose, CA": {
+    "name": "SJC2 - San Jose, CA",
+    "id": "227"
+  },
+  "RDU - Raleigh, NC": {
+    "name": "RDU - Raleigh, NC",
+    "id": "236"
+  },
+  "IAD3 - Ashburn, VA": {
+    "name": "IAD3 - Ashburn, VA",
+    "id": "245"
+  },
+  "DFW2 - Dallas, TX": {
+    "name": "DFW2 - Dallas, TX",
+    "id": "281"
+  },
+  "PHX - Phoenix, AZ": {
+    "name": "PHX - Phoenix, AZ",
+    "id": "290"
   }
-]
+}

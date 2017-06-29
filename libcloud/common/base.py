@@ -21,11 +21,7 @@ import copy
 import binascii
 import time
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 
 try:
     import simplejson as json
@@ -282,7 +278,7 @@ class RawResponse(Response):
         if not self._response:
             response = self.connection.connection.getresponse()
             self._response = HttpLibResponseProxy(response)
-            self.body = response.text
+            self.body = response.content
             if not self.success():
                 self.parse_error()
         return self._response

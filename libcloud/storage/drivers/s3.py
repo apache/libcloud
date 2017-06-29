@@ -19,8 +19,12 @@ import time
 
 from hashlib import sha1
 
+import libcloud.utils.py3
 try:
-    from lxml.etree import Element, SubElement
+    if libcloud.utils.py3.DEFAULT_LXML:
+        from lxml.etree import Element, SubElement
+    else:
+        from xml.etree.ElementTree import Element, SubElement
 except ImportError:
     from xml.etree.ElementTree import Element, SubElement
 
@@ -801,10 +805,6 @@ class BaseS3StorageDriver(StorageDriver):
         if query_args:
             request_path = '?'.join((request_path, query_args))
 
-        # TODO: Let the underlying exceptions bubble up and capture the SIGPIPE
-        # here.
-        # SIGPIPE is thrown if the provided container does not exist or the
-        # user does not have correct permission
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
             request_path=request_path, request_method=method,

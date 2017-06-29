@@ -259,7 +259,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             region = kwargs['ex_force_service_region']
 
         self.use_internal_url = use_internal_url
-        OpenStackDriverMixin.__init__(self, (), **kwargs)
+        OpenStackDriverMixin.__init__(self, **kwargs)
         super(CloudFilesStorageDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
                                                       port=port, region=region,

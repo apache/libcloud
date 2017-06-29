@@ -127,21 +127,23 @@ class KubernetesContainerDriver(ContainerDriver):
                                                         secure=secure,
                                                         host=host,
                                                         port=port)
-        if host.startswith('https://'):
-            secure = True
 
-        # strip the prefix
-        prefixes = ['http://', 'https://']
-        for prefix in prefixes:
-            if host.startswith(prefix):
-                host = host.strip(prefix)
+        if host is not None:
+            if host.startswith('https://'):
+                secure = True
+
+            # strip the prefix
+            prefixes = ['http://', 'https://']
+            for prefix in prefixes:
+                if host.startswith(prefix):
+                    host = host.strip(prefix)
+
+            self.connection.host = host
+            self.connection.port = port
 
         self.connection.secure = secure
         self.connection.key = key
         self.connection.secret = secret
-
-        self.connection.host = host
-        self.connection.port = port
 
     def list_containers(self, image=None, all=True):
         """
@@ -182,12 +184,9 @@ class KubernetesContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        # result = self.connection.request(ROOT_URL + "v1/nodes/%s" %
-        #                                  id).object
-
-        # TODO: Fixme
-        # return self._to_container(result)
-        return None
+        containers = self.list_containers()
+        match = [container for container in containers if container.id == id]
+        return match[0]
 
     def list_clusters(self):
         """
@@ -389,16 +388,6 @@ class KubernetesContainerDriver(ContainerDriver):
             name=metadata['name'],
             driver=self.connection.driver,
             extra={'phase': status['phase']})
-
-    def _get_api_version(self):
-        """
-        Get the docker API version information
-        """
-        result = self.connection.request('/version').object
-        result = result or {}
-        api_version = result.get('ApiVersion')
-
-        return api_version
 
 
 def ts_to_str(timestamp):

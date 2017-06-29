@@ -67,9 +67,10 @@ class AzureVhdImage(NodeImage):
     """Represents a VHD node image that an Azure VM can boot from."""
 
     def __init__(self, storage_account, blob_container, name, driver):
-        urn = "https://%s.blob.core.windows.net/%s/%s" % (storage_account,
-                                                          blob_container,
-                                                          name)
+        urn = "https://%s.blob%s/%s/%s" % (storage_account,
+                                           driver.connection.storage_suffix,
+                                           blob_container,
+                                           name)
         super(AzureVhdImage, self).__init__(urn, name, driver)
 
     def __repr__(self):
@@ -203,6 +204,7 @@ class AzureNodeDriver(NodeDriver):
                  api_version=None, region=None, **kwargs):
         self.tenant_id = tenant_id
         self.subscription_id = subscription_id
+        self.cloud_environment = kwargs.get("cloud_environment")
         super(AzureNodeDriver, self).__init__(key=key, secret=secret,
                                               secure=secure,
                                               host=host, port=port,
@@ -537,9 +539,10 @@ class AzureNodeDriver(NodeDriver):
             n = 0
             while True:
                 try:
-                    instance_vhd = "https://%s.blob.core.windows.net" \
+                    instance_vhd = "https://%s.blob%s" \
                                    "/%s/%s-os_%i.vhd" \
                                    % (ex_storage_account,
+                                      self.connection.storage_suffix,
                                       ex_blob_container,
                                       name,
                                       n)
@@ -1891,8 +1894,11 @@ class AzureNodeDriver(NodeDriver):
             (storageAccount, blobContainer, blob) = _split_blob_uri(uri)
             keys = self.ex_get_storage_account_keys(resource_group,
                                                     storageAccount)
-            blobdriver = AzureBlobsStorageDriver(storageAccount,
-                                                 keys["key1"])
+            blobdriver = AzureBlobsStorageDriver(
+                storageAccount,
+                keys["key1"],
+                host="%s.blob%s" % (storageAccount,
+                                    self.connection.storage_suffix))
             blobdriver.delete_object(blobdriver.get_object(blobContainer,
                                                            blob))
             return True
@@ -1903,6 +1909,7 @@ class AzureNodeDriver(NodeDriver):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
         kwargs['tenant_id'] = self.tenant_id
         kwargs['subscription_id'] = self.subscription_id
+        kwargs["cloud_environment"] = self.cloud_environment
         return kwargs
 
     def _to_node(self, data, fetch_nic=True):
