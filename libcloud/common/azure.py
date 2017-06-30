@@ -110,6 +110,7 @@ class AzureConnection(ConnectionUserAndKey):
     rawResponseCls = AzureRawResponse
     skip_host = False
     skip_accept_encoding = False
+    version = API_VERSION
 
     def add_default_params(self, params):
         return params
@@ -119,7 +120,7 @@ class AzureConnection(ConnectionUserAndKey):
 
         # We have to add a date header in GMT
         headers['x-ms-date'] = time.strftime(AZURE_TIME_FORMAT, time.gmtime())
-        headers['x-ms-version'] = API_VERSION
+        headers['x-ms-version'] = self.version
 
         # Add the authorization header
         headers['Authorization'] = self._get_azure_auth_signature(

@@ -41,6 +41,7 @@ from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = '2016-04-30-preview'
+NIC_API_VERSION = '2016-09-01'
 
 
 class AzureImage(NodeImage):
@@ -741,7 +742,7 @@ class AzureNodeDriver(NodeDriver):
                     try:
                         self.connection.request(
                             nic["id"],
-                            params={"api-version": RESOURCE_API_VERSION},
+                            params={"api-version": NIC_API_VERSION},
                             method='DELETE')
                         break
                     except BaseHTTPError as h:
@@ -1515,8 +1516,7 @@ class AzureNodeDriver(NodeDriver):
             action = "/subscriptions/%s/resourceGroups/%s/providers" \
                      "/Microsoft.Network/networkInterfaces" % \
                      (self.subscription_id, resource_group)
-        r = self.connection.request(action,
-                                    params={"api-version": RESOURCE_API_VERSION})
+        r = self.connection.request(action, params={"api-version": NIC_API_VERSION})
         return [self._to_nic(net) for net in r.object["value"]]
 
     def ex_get_nic(self, id):
@@ -1530,7 +1530,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.AzureNic`
         """
 
-        r = self.connection.request(id, params={"api-version": "2015-06-15"})
+        r = self.connection.request(id, params={"api-version": NIC_API_VERSION})
         return self._to_nic(r.object)
 
     def ex_get_node(self, id):
@@ -1592,7 +1592,7 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(id, params={"api-version": "2015-06-15"})
         return self._to_ip_address(r.object)
 
-    def ex_list_public_ips(self, resource_group):
+    def ex_list_public_ips(self, resource_group=None):
         """
         List public IP resources.
 
@@ -1603,9 +1603,13 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`.AzureIPAddress`
         """
 
-        action = "/subscriptions/%s/resourceGroups/%s/" \
-                 "providers/Microsoft.Network/publicIPAddresses" \
-                 % (self.subscription_id, resource_group)
+        if resource_group:
+            action = "/subscriptions/%s/resourceGroups/%s/" \
+                     "providers/Microsoft.Network/publicIPAddresses" \
+                     % (self.subscription_id, resource_group)
+        else:
+            action = "/subscriptions/%s/providers/Microsoft.Network/publicIPAddresses" \
+                     % self.subscription_id
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [self._to_ip_address(net) for net in r.object["value"]]
@@ -1708,7 +1712,7 @@ class AzureNodeDriver(NodeDriver):
             }
 
         r = self.connection.request(target,
-                                    params={"api-version": "2015-06-15"},
+                                    params={"api-version": NIC_API_VERSION},
                                     data=data,
                                     method='PUT')
         return AzureNic(r.object["id"], r.object["name"], r.object["location"],
