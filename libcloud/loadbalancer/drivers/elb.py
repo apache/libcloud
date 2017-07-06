@@ -308,7 +308,8 @@ class ElasticLBDriver(Driver):
             if protocol == 'HTTPS' or protocol == 'SSL':
                 params['Listeners.member.%d.   \
                         SSLCertificateId' % i] = listener[3]
-        return False
+        else:
+            return False
 
         response = self.connection.request(ROOT, params=params)
         return response.status == httplib.OK
