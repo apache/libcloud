@@ -4536,7 +4536,7 @@ class GCENodeDriver(NodeDriver):
             maint_opts = ['MIGRATE', 'TERMINATE']
             if isinstance(on_host_maintenance,
                           str) and on_host_maintenance in maint_opts:
-                if preemptible is True and on_host_maintenance is 'MIGRATE':
+                if preemptible is True and on_host_maintenance == 'MIGRATE':
                     raise ValueError(("host maintenance cannot be 'MIGRATE' "
                                       "if instance is preemptible."))
                 scheduling['onHostMaintenance'] = on_host_maintenance
@@ -7415,7 +7415,7 @@ class GCENodeDriver(NodeDriver):
         # Disk names are not unique across zones, so if zone is None or
         # 'all', we return the first one we find for that disk name.  For
         # consistency, we sort by keys and set the zone to the first key.
-        if zone is None or zone is 'all':
+        if zone is None or zone == 'all':
             zone = sorted(self._ex_volume_dict[volume_name])[0]
 
         volume = self._ex_volume_dict[volume_name].get(zone, None)
