@@ -30,6 +30,10 @@ Common
 Compute
 ~~~~~~~
 
+- [OPENSTACK] Add support for Nova 2.x and Keystone 3
+  [GITHUB-1052]
+  (Anthony Shaw)
+
 - [GCE] Add loadBalancingScheme parameter for
  ex_create_forwarding_rule method in GCE driver.
   [GITHUB-1079]
