@@ -37,13 +37,13 @@ class ElasticLBTests(unittest.TestCase):
 
     def test_instantiate_driver_with_token(self):
         token = 'temporary_credentials_token'
-        driver = ElasticLBDriver(*LB_ELB_PARAMS, **{'token': token})
+        driver = ElasticLBDriver(*LB_ELB_PARAMS, token=token)
         self.assertTrue(hasattr(driver, 'token'), 'Driver has no attribute token')
         self.assertEquals(token, driver.token, "Driver token does not match with provided token")
 
     def test_driver_with_token_signature_version(self):
         token = 'temporary_credentials_token'
-        driver = ElasticLBDriver(*LB_ELB_PARAMS, **{'token': token})
+        driver = ElasticLBDriver(*LB_ELB_PARAMS, token=token)
         kwargs = driver._ex_connection_class_kwargs()
         self.assertTrue(('signature_version' in kwargs), 'Driver has no attribute signature_version')
         self.assertEquals('4', kwargs['signature_version'], 'Signature version is not 4 with temporary credentials')

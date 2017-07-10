@@ -60,8 +60,7 @@ class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
         args = ({'headers': headers}, ) + args
         endpoint = '%s/%s' % (self.endpoint, service)
         return super(SoftLayerConnection, self).request(method, *args,
-                                                        **{'endpoint':
-                                                            endpoint})
+                                                        endpoint=endpoint)
 
     def _get_auth_headers(self):
         return {
