@@ -210,6 +210,7 @@ class Provider(Type):
     # Removed
     # SLICEHOST = 'slicehost'
 
+    SOLUSVM = 'solusvm'
 
 DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
                                   Provider.RACKSPACE_NOVA_BETA,
