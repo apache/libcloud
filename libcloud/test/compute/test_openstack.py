@@ -19,6 +19,7 @@ import os
 import sys
 import unittest
 import datetime
+import pytest
 from libcloud.utils.iso8601 import UTC
 
 try:
@@ -44,7 +45,8 @@ from libcloud.compute.drivers.openstack import (
     OpenStack_1_1_NodeDriver, OpenStackSecurityGroup,
     OpenStackSecurityGroupRule, OpenStack_1_1_FloatingIpPool,
     OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair,
-    OpenStack_1_0_Connection
+    OpenStack_1_0_Connection,
+    OpenStackNodeDriver
 )
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
@@ -56,6 +58,16 @@ from libcloud.test.compute import TestCaseMixin
 from libcloud.test.secrets import OPENSTACK_PARAMS
 
 BASE_DIR = os.path.abspath(os.path.split(__file__)[0])
+
+
+def test_driver_instantiation_invalid_auth():
+    with pytest.raises(LibcloudError):
+        d = OpenStackNodeDriver(
+            'user', 'correct_password',
+            ex_force_auth_version='5.0',
+            ex_force_auth_url='http://x.y.z.y:5000',
+            ex_tenant_name='admin')
+        d.list_nodes()
 
 
 class OpenStackAuthTests(unittest.TestCase):
@@ -81,7 +93,7 @@ class OpenStackAuthTests(unittest.TestCase):
             self.assertEqual(d.connection.host, 'test_endpoint.com')
 
 
-class OpenStack_1_0_Tests(TestCaseMixin):
+class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
     should_list_locations = False
     should_list_volumes = False
 
@@ -510,7 +522,7 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
             raise NotImplementedError()
         # this is currently used for deletion of an image
         # as such it should not accept GET/POST
-        return(httplib.NO_CONTENT, "", "", httplib.responses[httplib.NO_CONTENT])
+        return(httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
 
     def _v1_0_slug_images(self, method, url, body, headers):
         if method != "POST":

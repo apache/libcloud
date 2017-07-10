@@ -1060,6 +1060,12 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
             body = 'code: %s body:%s' % (response.status, response.body)
+        elif response.status == 300:
+            # ambiguous version request
+            raise LibcloudError(
+                'Auth request returned ambiguous version error, try'
+                'using the version specific URL to connect,'
+                ' e.g. identity/v3/auth/tokens')
         else:
             body = 'code: %s body:%s' % (response.status, response.body)
             raise MalformedResponseError('Malformed response', body=body,
