@@ -177,12 +177,9 @@ class SolusVMNodeDriver(NodeDriver):
         extra['hostname'] = data.get('hostname')
         extra['os'] = data.get('templatename')
         extra['type'] = data.get('type')
-        disk = int(data.get('disk')) / 1024 / 1024
-        extra['disk'] = str(disk) + 'MB'
-        ram = int(data.get('ram')) / 1024 / 1024
-        extra['memory'] = str(ram) + 'MB'
-        bandwidth = int(data.get('freebandwidth')) / 1024 / 1024
-        extra['bandwidth'] = str(bandwidth) + 'MB'
+        extra['disk'] = data.get('disk')
+        extra['memory'] = data.get('ram')
+        extra['bandwidth'] = data.get('freebandwidth')
 
         status = data.get('status')
         if status == 'online':
