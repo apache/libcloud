@@ -24,7 +24,7 @@ class SolusVMNodeDriver(NodeDriver):
     website = 'http://solusvm.com/'
 
     def __init__(self, key=None, secret=None,
-                 host='solusvm.com', port=443,
+                 host='solusvm.com', port=None,
                  verify=True
                  ):
         """
@@ -36,8 +36,10 @@ class SolusVMNodeDriver(NodeDriver):
         if not key or not secret:
             raise Exception("Key and secret not specified")
 
-        secure = False if host.startswith('http://') else True
-        port = 80 if host.startswith('http://') else 443
+        secure = True if host.startswith('https://') else False
+
+        if not port:
+            port = 443 if host.startswith('https://') else 80
 
         # strip the prefix
         prefixes = ['http://', 'https://']
@@ -147,23 +149,24 @@ class SolusVMNodeDriver(NodeDriver):
 
     def _to_node(self, data):
         identifier = data['id']
-        name = data['friendlyname']
+        name = data['hostname']
         private_ips = []
         public_ips = []
         mainipaddress = data.get('mainipaddress')
         ipaddresses = data.get('ipaddresses')
         all_ips = [mainipaddress]
-        if ipaddresses and isinstance(basestring, ipaddresses):
-            all_ips.append(all_ips)
-        if ipaddresses and isinstance(list, ipaddresses):
-            all_ips.extend(all_ips)
-
+        if ipaddresses and isinstance(ipaddresses, basestring):
+            all_ips.append(ipaddresses)
+        if ipaddresses and isinstance(ipaddresses, list):
+            all_ips.extend(ipaddresses)
         for ip in all_ips:
             try:
-                if is_public_subnet(address):
-                    public_ips.append(address)
+                if is_public_subnet(ip):
+                    if ip not in public_ips:
+                        public_ips.append(ip)
                 else:
-                    private_ips.append(address)
+                    if ip not in private_ips:
+                        private_ips.append(ip)
             except:
                 # IPV6 not supported
                 pass
@@ -172,8 +175,14 @@ class SolusVMNodeDriver(NodeDriver):
         extra['clientid'] = data.get('clientid')
         extra['consoleusername'] = data.get('consoleusername')
         extra['hostname'] = data.get('hostname')
-        extra['template'] = data.get('template')
+        extra['os'] = data.get('templatename')
         extra['type'] = data.get('type')
+        disk = int(data.get('disk')) / 1024 / 1024
+        extra['disk'] = str(disk) + 'MB'
+        ram = int(data.get('ram')) / 1024 / 1024
+        extra['memory'] = str(ram) + 'MB'
+        bandwidth = int(data.get('freebandwidth')) / 1024 / 1024
+        extra['bandwidth'] = str(bandwidth) + 'MB'
 
         status = data.get('status')
         if status == 'online':
