@@ -53,7 +53,9 @@ def main(argv):
         'eu': 'europe',  # alias for 'europe'
         'europe': 'europe',
         'apac': 'asia',  # alias for 'asia'
-        'asia': 'asia'
+        'asia': 'asia',
+        'au': 'australia',  # alias for 'australia'
+        'australia': 'australia'
     }
 
     # Initialize Google Cloud Platform regions.
