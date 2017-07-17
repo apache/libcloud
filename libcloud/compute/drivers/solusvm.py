@@ -129,23 +129,16 @@ class SolusVMNodeDriver(NodeDriver):
                  for vm in response.object]
         return nodes
 
-    def list_locations(self):
+    def ex_list_vs_parameters(self, vttype):
         """
-        List locations
-        """
-        pass
+        Get List of VS Parameters
 
-    def list_sizes(self):
-        """
-        List sizes
-        """
-        pass
+        vttype can be one of openvz, xen, xenhvm, kvm
 
-    def list_images(self):
         """
-        List images
-        """
-        pass
+        response = self.connection.request("/api/virtual_machines/"
+                                           "createvm_params/%s" % vttype)
+        return response.object
 
     def _to_node(self, data):
         identifier = data['id']
