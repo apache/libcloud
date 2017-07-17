@@ -110,7 +110,7 @@ class CloudSigmaAPI10BaseTestCase(object):
 
     def test_ex_set_node_configuration(self):
         node = self.driver.list_nodes()[0]
-        result = self.driver.ex_set_node_configuration(node, **{'smp': 2})
+        result = self.driver.ex_set_node_configuration(node, smp=2)
         self.assertTrue(result)
 
     def test_str2dicts(self):

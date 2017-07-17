@@ -276,11 +276,11 @@ class GoogleOAuth2CredentialTest(GoogleTestCase):
     def test_auth_connection(self):
         # Test a bogus auth type
         self.assertRaises(GoogleAuthError, GoogleOAuth2Credential, *GCE_PARAMS,
-                          **{'auth_type': 'XX'})
+                          auth_type='XX')
         # Try to create an OAuth2 credential when dealing with a GCS S3
         # interoperability auth type.
         self.assertRaises(GoogleAuthError, GoogleOAuth2Credential, *GCE_PARAMS,
-                          **{'auth_type': GoogleAuthType.GCS_S3})
+                          auth_type=GoogleAuthType.GCS_S3)
 
         kwargs = {}
 

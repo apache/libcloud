@@ -347,7 +347,7 @@ class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
         VCloudNodeDriver.connectionCls.conn_class = VCloud_1_5_MockHttp
         VCloud_1_5_MockHttp.type = None
         self.driver = VCloudNodeDriver(
-            *VCLOUD_PARAMS, **{'api_version': '5.1'})
+            *VCLOUD_PARAMS, api_version='5.1')
 
         self.assertTrue(isinstance(self.driver, VCloud_5_1_NodeDriver))
 
@@ -404,7 +404,7 @@ class VCloud_5_5_Tests(unittest.TestCase, TestCaseMixin):
         VCloudNodeDriver.connectionCls.conn_class = VCloud_5_5_MockHttp
         VCloud_5_5_MockHttp.type = None
         self.driver = VCloudNodeDriver(
-            *VCLOUD_PARAMS, **{'api_version': '5.5'})
+            *VCLOUD_PARAMS, api_version='5.5')
 
         self.assertTrue(isinstance(self.driver, VCloud_5_5_NodeDriver))
 

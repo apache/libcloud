@@ -54,7 +54,7 @@ class BaseEC2Tests(LibcloudTestCase):
         regions = [d for d in regions if d != 'nimbus' and d != 'cn-north-1']
 
         region_endpoints = [
-            EC2NodeDriver(*EC2_PARAMS, **{'region': region}).connection.host for region in regions
+            EC2NodeDriver(*EC2_PARAMS, region=region).connection.host for region in regions
         ]
 
         # Verify that each driver doesn't get the same API host endpoint
@@ -65,7 +65,7 @@ class BaseEC2Tests(LibcloudTestCase):
     def test_instantiate_driver_invalid_regions(self):
         for region in ['invalid', 'nimbus']:
             try:
-                EC2NodeDriver(*EC2_PARAMS, **{'region': region})
+                EC2NodeDriver(*EC2_PARAMS, region=region)
             except ValueError:
                 pass
             else:
@@ -75,7 +75,7 @@ class BaseEC2Tests(LibcloudTestCase):
         unsupported_regions = list()
 
         for region in VALID_EC2_REGIONS:
-            driver = EC2NodeDriver(*EC2_PARAMS, **{'region': region})
+            driver = EC2NodeDriver(*EC2_PARAMS, region=region)
             try:
                 driver.list_sizes()
             except:
@@ -95,18 +95,17 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         EC2MockHttp.use_param = 'Action'
         EC2MockHttp.type = None
 
-        self.driver = EC2NodeDriver(*EC2_PARAMS,
-                                    **{'region': self.region})
+        self.driver = EC2NodeDriver(*EC2_PARAMS, region=self.region)
 
     def test_instantiate_driver_with_token(self):
         token = 'temporary_credentials_token'
-        driver = EC2NodeDriver(*EC2_PARAMS, **{'region': self.region, 'token': token})
+        driver = EC2NodeDriver(*EC2_PARAMS, region=self.region, token=token)
         self.assertTrue(hasattr(driver, 'token'), 'Driver has no attribute token')
         self.assertEquals(token, driver.token, "Driver token does not match with provided token")
 
     def test_driver_with_token_signature_version(self):
         token = 'temporary_credentials_token'
-        driver = EC2NodeDriver(*EC2_PARAMS, **{'region': self.region, 'token': token})
+        driver = EC2NodeDriver(*EC2_PARAMS, region=self.region, token=token)
         kwargs = driver._ex_connection_class_kwargs()
         self.assertIn('signature_version', kwargs)
         self.assertEquals('4', kwargs['signature_version'], 'Signature version is not 4 with temporary credentials')
