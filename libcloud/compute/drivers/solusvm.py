@@ -71,12 +71,43 @@ class SolusVMNodeDriver(NodeDriver):
         if not verify:
             self.connection.connection.ca_cert = False
 
-    def create_node(self):
+    def create_node(self, vttype='openvz', user_id=31, nodegroup_id=1,
+                    hostname='', vmos='', vmostpl='', diskspace=1,
+                    ram=128, burst=128, ipv4=1, ipv6=0, bandwidth=1, isos=""):
         """
         Add a VS
-
         """
-        pass
+
+        server_params = dict(
+            vttype=vttype,
+            user_id=user_id,
+            nodegroup_id=nodegroup_id,
+            hostname=hostname,
+            vmos=vmos,
+            vmostpl=vmostpl,
+            diskspace=diskspace,
+            ram=ram,
+            burst=burst,
+            ipv4=ipv4,
+            ipv6=ipv6,
+            bandwidth=bandwidth,
+            isos=isos,
+        )
+
+        data = json.dumps({"virtual_machine": server_params})
+
+        try:
+            response = self.connection.request(
+                "/api/virtual_machines",
+                data=data,
+                headers={
+                    "Content-type": "application/json"},
+                method="POST")
+            # response is 201 with empty body
+            return True
+
+        except Exception as exc:
+            raise Exception("Failed to create node: %s" % exc)
 
     def ex_start_node(self, node):
         """
