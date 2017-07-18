@@ -382,6 +382,29 @@ class OnAppNodeDriver(NodeDriver):
         """
         return self.ex_suspend_node(node)
 
+    def ex_resize_node(self, node, **kwargs):
+        """
+        Resize a node
+
+        Backend might reboot VM when executing the call
+        Valid kwargs: memory, cpus, cpu_shares, cpu_units
+        Eg: conn.ex_resize_node(node, memory=1024, cpus=2)
+
+        """
+        data = json.dumps({"virtual_machine": kwargs})
+
+        response = self.connection.request(
+            "/virtual_machines/{identifier}.json".format(
+            identifier=node.id),
+            data=data,
+            headers={
+                "Content-type": "application/json"},
+            method="PUT")
+        if response.status == 204:
+            return True
+        else:
+            return False
+
     def reboot_node(self, node):
         """
         Reboot a node
