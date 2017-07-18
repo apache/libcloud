@@ -105,6 +105,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             "key_name": "hypervisor_id",
             "transform_func": int
         },
+        "hypervisor_type": {
+            "key_name": "hypervisor_type",
+            "transform_func": str
+        },
         "id": {
             "key_name": "id",
             "transform_func": int
