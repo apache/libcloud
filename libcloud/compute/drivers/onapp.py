@@ -395,7 +395,7 @@ class OnAppNodeDriver(NodeDriver):
 
         response = self.connection.request(
             "/virtual_machines/{identifier}.json".format(
-            identifier=node.id),
+                identifier=node.id),
             data=data,
             headers={
                 "Content-type": "application/json"},
