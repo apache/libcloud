@@ -182,17 +182,19 @@ class SignedAliyunConnection(AliyunConnection):
 
     api_version = None
 
-    def __init__(self, user_id, key, secure=True, host=None,
-                 port=None, url=None, timeout=None, proxy_url=None,
-                 retry_delay=None, backoff=None, api_version=None,
+    def __init__(self, user_id, key, secure=True, host=None, port=None,
+                 url=None, timeout=None, proxy_url=None, retry_delay=None,
+                 backoff=None, retry_delay_limit=None, api_version=None,
                  signature_version=DEFAULT_SIGNATURE_VERSION):
-        super(SignedAliyunConnection, self).__init__(user_id=user_id, key=key,
-                                                     secure=secure,
-                                                     host=host, port=port,
-                                                     url=url, timeout=timeout,
-                                                     proxy_url=proxy_url,
-                                                     retry_delay=retry_delay,
-                                                     backoff=backoff)
+        super(SignedAliyunConnection, self).__init__(
+            user_id=user_id, key=key,
+            secure=secure,
+            host=host, port=port,
+            url=url, timeout=timeout,
+            proxy_url=proxy_url,
+            retry_delay=retry_delay,
+            backoff=backoff,
+            retry_delay_limit=retry_delay_limit)
 
         self.signature_version = str(signature_version)
 

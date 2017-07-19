@@ -38,16 +38,29 @@ class BaseHTTPError(Exception):
     def __str__(self):
         return self.message
 
+    def __repr__(self):
+        return '<{name} ({code}, "{message}", headers={headers})>'.format(
+            name=self.__class__.__name__,
+            code=self.code,
+            message=self.message,
+            headers=self.headers)
+
 
 class RateLimitReachedError(BaseHTTPError):
     """
     HTTP 429 - Rate limit: you've sent too many requests for this time period.
     """
     code = 429
-    message = '%s Rate limit exceeded' % (code)
+    message = 'Rate limit exceeded'
+    retry_after = None
 
-    def __init__(self, *args, **kwargs):
-        self.retry_after = int(kwargs.pop('retry_after', 0))
+    def __init__(self, code, message, headers=None):
+        if headers is not None:
+            self.retry_after = int(headers.get('retry_after', None))
+        super(RateLimitReachedError, self).__init__(
+            code if code is not None else self.code,
+            message if message is not None else self.message,
+            headers=headers)
 
 
 _error_classes = [RateLimitReachedError]
@@ -56,19 +69,14 @@ _code_map = dict((c.code, c) for c in _error_classes)
 
 def exception_from_message(code, message, headers=None):
     """
-    Return an instance of BaseHTTPException or subclass based on response code.
+    Return an instance of :class:`BaseHTTPError` or
+    subclass based on response code or error message.
 
-    Usage::
-        raise exception_from_message(code=self.status,
-                                     message=self.parse_error())
+    Usage:
+
+    >>>    raise exception_from_message(
+    >>>        code=response.status,
+    >>>        message=response.parse_error())
     """
-    kwargs = {
-        'code': code,
-        'message': message,
-        'headers': headers
-    }
-
-    if headers and 'retry_after' in headers:
-        kwargs['retry_after'] = headers['retry_after']
     cls = _code_map.get(code, BaseHTTPError)
-    return cls(**kwargs)
+    return cls(code, message, headers=headers)

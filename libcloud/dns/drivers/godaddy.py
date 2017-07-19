@@ -72,8 +72,8 @@ class GoDaddyDNSConnection(ConnectionKey):
     allow_insecure = False
 
     def __init__(self, key, secret, secure=True, shopper_id=None, host=None,
-                 port=None, url=None, timeout=None,
-                 proxy_url=None, backoff=None, retry_delay=None):
+                 port=None, url=None, timeout=None, proxy_url=None,
+                 backoff=None, retry_delay=None, retry_delay_limit=None):
         super(GoDaddyDNSConnection, self).__init__(
             key,
             secure=secure, host=host,
@@ -81,7 +81,8 @@ class GoDaddyDNSConnection(ConnectionKey):
             timeout=timeout,
             proxy_url=proxy_url,
             backoff=backoff,
-            retry_delay=retry_delay)
+            retry_delay=retry_delay,
+            retry_delay_limit=retry_delay_limit)
         self.key = key
         self.secret = secret
         self.shopper_id = shopper_id

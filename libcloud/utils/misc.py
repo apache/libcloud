@@ -12,10 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import absolute_import
 
 import os
 import sys
 import binascii
+import logging
+import itertools
 import socket
 import time
 import ssl
@@ -47,6 +50,8 @@ __all__ = [
 # can be retried
 TRANSIENT_SSL_ERROR = 'The read operation timed out'
 
+LOG = logging.getLogger(__name__)
+
 
 class TransientSSLError(ssl.SSLError):
     """Represent transient SSL errors, e.g. timeouts"""
@@ -57,6 +62,7 @@ class TransientSSLError(ssl.SSLError):
 DEFAULT_TIMEOUT = 30  # default retry timeout
 DEFAULT_DELAY = 1  # default sleep delay used in each iterator
 DEFAULT_BACKOFF = 1  # retry backup multiplier
+DEFAULT_DELAY_LIMIT = 320
 RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
                     httplib.NotConnected, httplib.ImproperConnectionState,
                     TransientSSLError)
@@ -274,7 +280,8 @@ class ReprMixin(object):
 
 
 def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
-          timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
+          timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF,
+          retry_delay_limit=DEFAULT_DELAY_LIMIT):
     """
     Retry decorator that helps to handle common transient exceptions.
 
@@ -282,16 +289,22 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
     :param retry_delay: retry delay between the attempts.
     :param timeout: maximum time to wait.
     :param backoff: multiplier added to delay between attempts.
+    :param retry_delay_limit: limit for delay.
 
     :Example:
 
-    retry_request = retry(timeout=1, retry_delay=1, backoff=1)
-    retry_request(self.connection.request)()
+    >>> retry_request = retry(
+    >>>     timeout=1,
+    >>>     retry_delay=1,
+    >>>     backoff=1)
+    >>> retry_request(connection.request)()
     """
     if retry_exceptions is None:
         retry_exceptions = RETRY_EXCEPTIONS
     if retry_delay is None:
         retry_delay = DEFAULT_DELAY
+    if retry_delay_limit is None:
+        retry_delay_limit = DEFAULT_DELAY_LIMIT
     if timeout is None:
         timeout = DEFAULT_TIMEOUT
     if backoff is None:
@@ -313,28 +326,27 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
     def decorator(func):
         @wraps(func)
         def retry_loop(*args, **kwargs):
-            current_delay = retry_delay
-            end = datetime.now() + timedelta(seconds=timeout)
+            retry_msg = "Server returned %r, retry request in %s seconds ..."
+            end_time = datetime.now() + timedelta(seconds=timeout)
 
-            while True:
+            retry_time_progression = (
+                retry_delay * backoff**i
+                for i in itertools.count())
+
+            for retry_time in retry_time_progression:
+                if retry_delay_limit is not None:
+                    retry_time = min(retry_delay_limit, retry_time)
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
-                except retry_exceptions:
-                    exc = sys.exc_info()[1]
-
-                    if isinstance(exc, RateLimitReachedError):
-                        time.sleep(exc.retry_after)
-
-                        # Reset retries if we're told to wait due to rate
-                        # limiting
-                        current_delay = retry_delay
-                        end = datetime.now() + timedelta(
-                            seconds=exc.retry_after + timeout)
-                    elif datetime.now() >= end:
+                except retry_exceptions as exc:
+                    if datetime.now() >= end_time:
                         raise
+                    if isinstance(exc, RateLimitReachedError) and exc.retry_after:
+                        LOG.debug(retry_msg, exc, exc.retry_after)
+                        time.sleep(exc.retry_after)
+                        return retry_loop(*args, **kwargs)
                     else:
-                        time.sleep(current_delay)
-                        current_delay *= backoff
-
+                        LOG.debug(retry_msg, exc, retry_time)
+                        time.sleep(retry_time)
         return retry_loop
     return decorator

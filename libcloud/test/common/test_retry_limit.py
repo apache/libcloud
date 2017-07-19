@@ -33,16 +33,25 @@ SIMPLE_RESPONSE_STATUS = ('HTTP/1.1', 429, 'CONFLICT')
 class FailedRequestRetryTestCase(unittest.TestCase):
 
     def test_retry_connection(self):
-        con = Connection(timeout=1, retry_delay=0.1)
-        con.connection = Mock()
-        connect_method = 'libcloud.common.base.Connection.request'
+        connection = Connection(
+            timeout=0.1,
+            retry_delay=0.01)
+        connection.connection = Mock(request=Mock(
+            side_effect=socket.gaierror('')))
 
-        with patch(connect_method) as mock_connect:
-            try:
-                mock_connect.side_effect = socket.gaierror('')
-                con.request('/')
-            except socket.gaierror:
-                pass
+        self.assertRaises(socket.gaierror, connection.request, '/')
+        self.assertEquals(connection.connection.request.call_count, 10)
+
+    def test_retry_connection_with_backoff(self):
+        connection = Connection(
+            timeout=0.1,
+            retry_delay=0.01,
+            backoff=2)
+        connection.connection = Mock(request=Mock(
+            side_effect=socket.gaierror('')))
+
+        self.assertRaises(socket.gaierror, connection.request, '/')
+        self.assertEquals(connection.connection.request.call_count, 5)
 
     def test_retry_connection_ssl_error(self):
         conn = Connection(timeout=1, retry_delay=0.1)

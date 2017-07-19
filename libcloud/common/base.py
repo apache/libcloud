@@ -301,18 +301,20 @@ class Connection(object):
     connection = None
     host = '127.0.0.1'
     port = 443
-    timeout = None
     secure = 1
     driver = None
     action = None
     cache_busting = False
-    backoff = None
-    retry_delay = None
-
     allow_insecure = True
 
+    timeout = None
+    backoff = None
+    retry_delay = None
+    retry_delay_limit = None
+
     def __init__(self, secure=True, host=None, port=None, url=None,
-                 timeout=None, proxy_url=None, retry_delay=None, backoff=None):
+                 timeout=None, proxy_url=None, retry_delay=None, backoff=None,
+                 retry_delay_limit=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
@@ -343,6 +345,7 @@ class Connection(object):
         self.timeout = timeout or self.timeout
         self.retry_delay = retry_delay
         self.backoff = backoff
+        self.retry_delay_limit = retry_delay_limit
         self.proxy_url = proxy_url
 
     def set_http_proxy(self, proxy_url):
@@ -447,7 +450,7 @@ class Connection(object):
             kwargs.update({'proxy_url': self.proxy_url})
 
         connection = self.conn_class(**kwargs)
-        # You can uncoment this line, if you setup a reverse proxy server
+        # You can uncomment this line, if you setup a reverse proxy server
         # which proxies to your endpoint, and lets you easily capture
         # connections in cleartext when you setup the proxy to do SSL
         # for you
@@ -588,19 +591,24 @@ class Connection(object):
                     body=data,
                     headers=headers,
                     stream=stream)
+                response = self.rawResponseCls(
+                    connection=self,
+                    response=self.connection.getresponse())
             else:
-                if retry_enabled:
-                    retry_request = retry(timeout=self.timeout,
-                                          retry_delay=self.retry_delay,
-                                          backoff=self.backoff)
-                    retry_request(self.connection.request)(method=method,
-                                                           url=url,
-                                                           body=data,
-                                                           headers=headers,
-                                                           stream=stream)
-                else:
+                def make_request():
+                    # makes request and initializes response object
                     self.connection.request(method=method, url=url, body=data,
                                             headers=headers, stream=stream)
+                    return self.responseCls(
+                        connection=self,
+                        response=self.connection.getresponse())
+                response = retry(
+                    timeout=self.timeout,
+                    retry_delay=self.retry_delay,
+                    backoff=self.backoff,
+                    retry_delay_limit=self.retry_delay_limit,
+                )(make_request)() if retry_enabled else make_request()
+
         except socket.gaierror:
             e = sys.exc_info()[1]
             message = str(e)
@@ -617,26 +625,11 @@ class Connection(object):
                        'value (%s)?' %
                        (message, class_name, self.host))
                 raise socket.gaierror(msg)
-            self.reset_context()
             raise e
         except ssl.SSLError:
             e = sys.exc_info()[1]
-            self.reset_context()
             raise ssl.SSLError(str(e))
-
-        if raw:
-            responseCls = self.rawResponseCls
-            kwargs = {'connection': self,
-                      'response': self.connection.getresponse()}
-        else:
-            responseCls = self.responseCls
-            kwargs = {'connection': self,
-                      'response': self.connection.getresponse()}
-
-        try:
-            response = responseCls(**kwargs)
         finally:
-            # Always reset the context after the request has completed
             self.reset_context()
 
         return response
@@ -831,17 +824,20 @@ class ConnectionKey(Connection):
     Base connection class which accepts a single ``key`` argument.
     """
     def __init__(self, key, secure=True, host=None, port=None, url=None,
-                 timeout=None, proxy_url=None, backoff=None, retry_delay=None):
+                 timeout=None, proxy_url=None, backoff=None, retry_delay=None,
+                 retry_delay_limit=None):
         """
         Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(ConnectionKey, self).__init__(secure=secure, host=host,
-                                            port=port, url=url,
-                                            timeout=timeout,
-                                            proxy_url=proxy_url,
-                                            backoff=backoff,
-                                            retry_delay=retry_delay)
+        super(ConnectionKey, self).__init__(
+            secure=secure, host=host,
+            port=port, url=url,
+            timeout=timeout,
+            proxy_url=proxy_url,
+            backoff=backoff,
+            retry_delay=retry_delay,
+            retry_delay_limit=retry_delay_limit)
         self.key = key
 
 
@@ -850,17 +846,20 @@ class CertificateConnection(Connection):
     Base connection class which accepts a single ``cert_file`` argument.
     """
     def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
-                 proxy_url=None, timeout=None, backoff=None, retry_delay=None):
+                 proxy_url=None, timeout=None, backoff=None, retry_delay=None,
+                 retry_delay_limit=None):
         """
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
         """
-        super(CertificateConnection, self).__init__(secure=secure, host=host,
-                                                    port=port, url=url,
-                                                    timeout=timeout,
-                                                    backoff=backoff,
-                                                    retry_delay=retry_delay,
-                                                    proxy_url=proxy_url)
+        super(CertificateConnection, self).__init__(
+            secure=secure, host=host,
+            port=port, url=url,
+            timeout=timeout,
+            backoff=backoff,
+            retry_delay=retry_delay,
+            retry_delay_limit=retry_delay_limit,
+            proxy_url=proxy_url)
 
         self.cert_file = cert_file
 
@@ -874,13 +873,15 @@ class ConnectionUserAndKey(ConnectionKey):
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None,
-                 backoff=None, retry_delay=None):
-        super(ConnectionUserAndKey, self).__init__(key, secure=secure,
-                                                   host=host, port=port,
-                                                   url=url, timeout=timeout,
-                                                   backoff=backoff,
-                                                   retry_delay=retry_delay,
-                                                   proxy_url=proxy_url)
+                 backoff=None, retry_delay=None, retry_delay_limit=None):
+        super(ConnectionUserAndKey, self).__init__(
+            key, secure=secure,
+            host=host, port=port,
+            url=url, timeout=timeout,
+            backoff=backoff,
+            retry_delay=retry_delay,
+            retry_delay_limit=retry_delay_limit,
+            proxy_url=proxy_url)
         self.user_id = user_id
 
 
@@ -941,10 +942,12 @@ class BaseDriver(object):
         self.region = region
 
         conn_kwargs = self._ex_connection_class_kwargs()
-        conn_kwargs.update({'timeout': kwargs.pop('timeout', None),
-                            'retry_delay': kwargs.pop('retry_delay', None),
-                            'backoff': kwargs.pop('backoff', None),
-                            'proxy_url': kwargs.pop('proxy_url', None)})
+        conn_kwargs.update({
+            'timeout': kwargs.pop('timeout', None),
+            'retry_delay': kwargs.pop('retry_delay', None),
+            'retry_delay_limit': kwargs.pop('retry_delay_limit', None),
+            'backoff': kwargs.pop('backoff', None),
+            'proxy_url': kwargs.pop('proxy_url', None)})
         self.connection = self.connectionCls(*args, **conn_kwargs)
 
         self.connection.driver = self
