@@ -88,8 +88,10 @@ class LinodeResponse(JsonResponse):
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.objects, self.errors = self.parse_body()
+        if not self.success() and self.errors[0].code !=0:
+            # sent in some cases eg resize node, where response is 200,
+            # error code is 'ok'
 
-        if not self.success():
             # Raise the first error, as there will usually only be one
             raise self.errors[0]
 
