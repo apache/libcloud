@@ -1,6 +1,16 @@
 ﻿Changelog
 =========
 
+Changes in current version of Apache Libcloud
+---------------------------------------------
+
+Common
+~~~~~~
+
+- [GCE] Scrape prices for GCE Australia Region
+  [GITHUB-1085]
+  (Francisco Ros)
+
 Changes in Apache Libcloud 2.1.0
 --------------------------------
 
