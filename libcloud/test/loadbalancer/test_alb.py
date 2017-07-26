@@ -77,6 +77,17 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertEqual(members[0].balancer, balancer)
         self.assertEqual('i-01111111111111111', members[0].id)
 
+    def test_ex_create_balancer(self):
+        balancer = self.driver.ex_create_balancer(name='Test-ALB', addr_type='ipv4', scheme='internet-facing',
+                                                  security_groups=['sg-11111111'],
+                                                  subnets=['subnet-11111111', 'subnet-22222222'])
+        self.assertEqual(
+            balancer.id,
+            'arn:aws:elasticloadbalancing:us-east-1:111111111111:loadbalancer/app/Test-ALB/1111111111111111'
+        )
+        self.assertEqual(balancer.name, 'Test-ALB')
+        self.assertEqual(balancer.state, State.UNKNOWN)
+
     def test_ex_balancer_list_listeners(self):
         balancer = self.driver.get_balancer(balancer_id='Test-ALB')
         self.assertTrue(('listeners' in balancer.extra), 'No listeners dict found in balancer.extra')
@@ -154,6 +165,9 @@ class ApplicationLBMockHttp(MockHttp):
         body = self.fixtures.load('describe_tags.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _2015_12_01_CreateLoadBalancer(self, method, url, body, headers):
+        body = self.fixtures.load('create_balancer.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
