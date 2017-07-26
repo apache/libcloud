@@ -341,18 +341,18 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
             retry_msg = "Server returned %r, retry request in %s seconds ..."
             end_time = datetime.now() + timedelta(seconds=timeout)
 
-            if isinstance(backoff, collections.Iterable):
-                retry_time_progression = cycle_last((retry_delay * i for i in backoff))
-            else:
-                retry_time_progression = (
-                    retry_delay * backoff ** i
-                    for i in itertools.count())
+            retry_time_progression = cycle_last((
+                retry_delay * i for i in backoff
+            )) if isinstance(backoff, collections.Iterable) else (
+                retry_delay * backoff ** i for i in itertools.count()
+            )
 
             for retry_time in retry_time_progression:
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
                 except retry_exceptions as exc:
-                    if isinstance(exc, RateLimitReachedError) and exc.retry_after:
+                    if isinstance(exc, RateLimitReachedError) \
+                            and exc.retry_after:
                         LOG.debug(retry_msg, exc, exc.retry_after)
                         time.sleep(exc.retry_after)
                         return retry_loop(*args, **kwargs)

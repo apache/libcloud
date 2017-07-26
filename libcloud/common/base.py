@@ -530,9 +530,10 @@ class Connection(object):
         else:
             headers = copy.copy(headers)
 
-        retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS', False) \
-            or RETRY_FAILED_HTTP_REQUESTS \
-            or self.retry_delay is not None
+        retry_enabled = (
+            os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS', False)
+            or RETRY_FAILED_HTTP_REQUESTS
+            or self.retry_delay is not None)
 
         action = self.morph_action_hook(action)
         self.action = action
