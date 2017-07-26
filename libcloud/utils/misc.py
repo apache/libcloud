@@ -14,21 +14,23 @@
 # limitations under the License.
 from __future__ import absolute_import
 
-import os
-import sys
 import binascii
-import logging
+import collections
 import itertools
+import logging
+import os
 import socket
-import time
 import ssl
-from datetime import datetime, timedelta
+import sys
+import time
+from datetime import datetime
+from datetime import timedelta
 from functools import wraps
 
-from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.common.providers import get_driver as _get_driver
 from libcloud.common.providers import set_driver as _set_driver
+from libcloud.utils.py3 import httplib
 
 __all__ = [
     'find',
@@ -62,7 +64,6 @@ class TransientSSLError(ssl.SSLError):
 DEFAULT_TIMEOUT = 30  # default retry timeout
 DEFAULT_DELAY = 1  # default sleep delay used in each iterator
 DEFAULT_BACKOFF = 1  # retry backup multiplier
-DEFAULT_DELAY_LIMIT = 320
 RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
                     httplib.NotConnected, httplib.ImproperConnectionState,
                     TransientSSLError)
@@ -240,6 +241,14 @@ def lowercase_keys(dictionary):
     return dict(((k.lower(), v) for k, v in dictionary.items()))
 
 
+def cycle_last(iterable):
+    item = None
+    for item in iterable:
+        yield item
+    for _ in itertools.repeat(0):
+        yield item
+
+
 def get_secure_random_string(size):
     """
     Return a string of ``size`` random bytes. Returned string is suitable for
@@ -280,16 +289,21 @@ class ReprMixin(object):
 
 
 def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
-          timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF,
-          retry_delay_limit=DEFAULT_DELAY_LIMIT):
+          timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
     """
     Retry decorator that helps to handle common transient exceptions.
 
     :param retry_exceptions: types of exceptions to retry on.
+    :type retry_exceptions: tuple of :class:`Exception`
+
     :param retry_delay: retry delay between the attempts.
+    :type retry_delay: int
+
     :param timeout: maximum time to wait.
+    :type timeout: int
+
     :param backoff: multiplier added to delay between attempts.
-    :param retry_delay_limit: limit for delay.
+    :type backoff: int or :class:`collections.Iterable[int]`
 
     :Example:
 
@@ -303,8 +317,6 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
         retry_exceptions = RETRY_EXCEPTIONS
     if retry_delay is None:
         retry_delay = DEFAULT_DELAY
-    if retry_delay_limit is None:
-        retry_delay_limit = DEFAULT_DELAY_LIMIT
     if timeout is None:
         timeout = DEFAULT_TIMEOUT
     if backoff is None:
@@ -329,18 +341,17 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
             retry_msg = "Server returned %r, retry request in %s seconds ..."
             end_time = datetime.now() + timedelta(seconds=timeout)
 
-            retry_time_progression = (
-                retry_delay * backoff**i
-                for i in itertools.count())
+            if isinstance(backoff, collections.Iterable):
+                retry_time_progression = cycle_last((retry_delay * i for i in backoff))
+            else:
+                retry_time_progression = (
+                    retry_delay * backoff ** i
+                    for i in itertools.count())
 
             for retry_time in retry_time_progression:
-                if retry_delay_limit is not None:
-                    retry_time = min(retry_delay_limit, retry_time)
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
                 except retry_exceptions as exc:
-                    if datetime.now() >= end_time:
-                        raise
                     if isinstance(exc, RateLimitReachedError) and exc.retry_after:
                         LOG.debug(retry_msg, exc, exc.retry_after)
                         time.sleep(exc.retry_after)
@@ -348,5 +359,7 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
                     else:
                         LOG.debug(retry_msg, exc, retry_time)
                         time.sleep(retry_time)
+                    if datetime.now() >= end_time:
+                        raise
         return retry_loop
     return decorator

@@ -310,11 +310,9 @@ class Connection(object):
     timeout = None
     backoff = None
     retry_delay = None
-    retry_delay_limit = None
 
     def __init__(self, secure=True, host=None, port=None, url=None,
-                 timeout=None, proxy_url=None, retry_delay=None, backoff=None,
-                 retry_delay_limit=None):
+                 timeout=None, proxy_url=None, retry_delay=None, backoff=None):
         self.secure = secure and 1 or 0
         self.ua = []
         self.context = {}
@@ -345,7 +343,6 @@ class Connection(object):
         self.timeout = timeout or self.timeout
         self.retry_delay = retry_delay
         self.backoff = backoff
-        self.retry_delay_limit = retry_delay_limit
         self.proxy_url = proxy_url
 
     def set_http_proxy(self, proxy_url):
@@ -533,8 +530,9 @@ class Connection(object):
         else:
             headers = copy.copy(headers)
 
-        retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS',
-                                       False) or RETRY_FAILED_HTTP_REQUESTS
+        retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS', False) \
+            or RETRY_FAILED_HTTP_REQUESTS \
+            or self.retry_delay is not None
 
         action = self.morph_action_hook(action)
         self.action = action
@@ -606,7 +604,6 @@ class Connection(object):
                     timeout=self.timeout,
                     retry_delay=self.retry_delay,
                     backoff=self.backoff,
-                    retry_delay_limit=self.retry_delay_limit,
                 )(make_request)() if retry_enabled else make_request()
 
         except socket.gaierror:
@@ -824,8 +821,7 @@ class ConnectionKey(Connection):
     Base connection class which accepts a single ``key`` argument.
     """
     def __init__(self, key, secure=True, host=None, port=None, url=None,
-                 timeout=None, proxy_url=None, backoff=None, retry_delay=None,
-                 retry_delay_limit=None):
+                 timeout=None, proxy_url=None, backoff=None, retry_delay=None):
         """
         Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
@@ -836,8 +832,7 @@ class ConnectionKey(Connection):
             timeout=timeout,
             proxy_url=proxy_url,
             backoff=backoff,
-            retry_delay=retry_delay,
-            retry_delay_limit=retry_delay_limit)
+            retry_delay=retry_delay)
         self.key = key
 
 
@@ -846,8 +841,7 @@ class CertificateConnection(Connection):
     Base connection class which accepts a single ``cert_file`` argument.
     """
     def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
-                 proxy_url=None, timeout=None, backoff=None, retry_delay=None,
-                 retry_delay_limit=None):
+                 proxy_url=None, timeout=None, backoff=None, retry_delay=None):
         """
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
@@ -858,7 +852,6 @@ class CertificateConnection(Connection):
             timeout=timeout,
             backoff=backoff,
             retry_delay=retry_delay,
-            retry_delay_limit=retry_delay_limit,
             proxy_url=proxy_url)
 
         self.cert_file = cert_file
@@ -873,14 +866,13 @@ class ConnectionUserAndKey(ConnectionKey):
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None,
-                 backoff=None, retry_delay=None, retry_delay_limit=None):
+                 backoff=None, retry_delay=None):
         super(ConnectionUserAndKey, self).__init__(
             key, secure=secure,
             host=host, port=port,
             url=url, timeout=timeout,
             backoff=backoff,
             retry_delay=retry_delay,
-            retry_delay_limit=retry_delay_limit,
             proxy_url=proxy_url)
         self.user_id = user_id
 
@@ -945,7 +937,6 @@ class BaseDriver(object):
         conn_kwargs.update({
             'timeout': kwargs.pop('timeout', None),
             'retry_delay': kwargs.pop('retry_delay', None),
-            'retry_delay_limit': kwargs.pop('retry_delay_limit', None),
             'backoff': kwargs.pop('backoff', None),
             'proxy_url': kwargs.pop('proxy_url', None)})
         self.connection = self.connectionCls(*args, **conn_kwargs)

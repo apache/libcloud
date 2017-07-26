@@ -191,18 +191,12 @@ class S3SignatureV4Connection(SignedAWSConnection, BaseS3Connection):
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None, token=None,
-                 retry_delay=None, retry_delay_limit=None, backoff=None):
+                 retry_delay=None, backoff=None):
         super(S3SignatureV4Connection, self).__init__(
-            user_id=user_id, key=key,
-            secure=secure, host=host,
-            port=port, url=url,
-            timeout=timeout,
-            proxy_url=proxy_url,
-            token=token,
-            retry_delay=retry_delay,
-            retry_delay_limit=retry_delay_limit,
-            backoff=backoff,
-            signature_version=4)  # force version 4
+            user_id, key, secure, host,
+            port, url, timeout, proxy_url,
+            token, retry_delay, backoff,
+            4)  # force version 4
 
 
 class S3MultipartUpload(object):

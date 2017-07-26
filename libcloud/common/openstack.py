@@ -148,12 +148,10 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_service_type=None,
                  ex_force_service_name=None,
                  ex_force_service_region=None,
-                 retry_delay=None, backoff=None,
-                 retry_delay_limit=None):
+                 retry_delay=None, backoff=None):
         super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure, timeout=timeout,
-            retry_delay=retry_delay, backoff=backoff, proxy_url=proxy_url,
-            retry_delay_limit=retry_delay_limit)
+            retry_delay=retry_delay, backoff=backoff, proxy_url=proxy_url)
 
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version
