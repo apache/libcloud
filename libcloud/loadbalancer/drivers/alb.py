@@ -79,6 +79,79 @@ class ApplicationLBDriver(Driver):
         data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)[0]
 
+    def create_balancer(self, name, port, protocol, algorithm, members,
+                        ex_addr_type="", ex_scheme="", ex_security_groups=[], ex_subnets=[], ex_tags={}):
+
+        # ALB balancer creation consists of 5 steps:
+        # http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html
+        #
+        # create_balancer() is a standard API method so, it's made as a wrapper here to preserve compatibility with
+        # other drivers where LB creation is one-step process. It calls respective ALB methods
+        # to assemble ready-to-use load balancer.
+
+        balancer = self.ex_create_balancer(name, addr_type=ex_addr_type, scheme=ex_scheme,
+                                           security_groups=ex_security_groups, subnets=ex_subnets, tags=ex_tags)
+
+        # target_group = self.ex_create_target_group()
+        # self.ex_register_targets(target_group, members)
+        #
+        # listener = self.ex_create_listener(balancer, port, protocol, target_group)
+        # self.ex_create_listener_rule(listener, rule)
+
+        return balancer
+
+    def ex_create_balancer(self, name, addr_type="", scheme="", security_groups=[], subnets=[], tags={}):
+
+        # mandatory params
+        params = {
+            'Action': 'CreateLoadBalancer',
+            'Name': name
+        }
+
+        idx = 0
+        for subnet in subnets:
+            idx += 1
+            params['Subnets.member.'+str(idx)] = subnet
+
+        # optional params
+        if addr_type:
+            params['IpAddressType'] = addr_type  # Valid Values: ipv4 | dualstack
+
+        if scheme:
+            params['Scheme'] = scheme  # Valid Values: internet-facing | internal
+
+        idx = 0
+        for sg in security_groups:
+            idx += 1
+            params['SecurityGroups.member.' + str(idx)] = sg
+
+        idx = 0
+        for k, v in tags.iteritems():
+            idx += 1
+            params['Tags.member.' + str(idx) + '.Key'] = k
+            params['Tags.member.' + str(idx) + '.Value'] = v
+
+        data = self.connection.request(ROOT, params=params).object
+
+        xpath = 'CreateLoadBalancerResult/LoadBalancers/member'
+        for el in findall(element=data, xpath=xpath, namespace=NS):
+            balancer = self._to_balancer(el)
+
+        return balancer
+
+    def ex_create_target_group(self):
+        raise NotImplementedError('ex_create_target_group is not implemented for this driver')
+
+    def ex_register_targets(self):
+        raise NotImplementedError('ex_register_targets is not implemented for this driver')
+
+    def ex_create_listener(self):
+        raise NotImplementedError('ex_create_listener is not implemented for this driver')
+
+    def ex_create_listener_rule(self):
+        raise NotImplementedError('ex_create_listener_rule is not implemented for this driver')
+
+
     def ex_balancer_list_listeners(self, balancer):
         return balancer.extra.get('listeners', [])
 
