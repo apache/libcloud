@@ -16,6 +16,7 @@
 import socket
 import ssl
 
+import mock
 from mock import Mock, patch, MagicMock
 
 from libcloud.utils.misc import TRANSIENT_SSL_ERROR
@@ -42,6 +43,24 @@ class FailedRequestRetryTestCase(unittest.TestCase):
         self.assertRaises(socket.gaierror, connection.request, '/')
         self.assertEquals(connection.connection.request.call_count, 5)
 
+    def test_retry_connection_with_iterable_retry_delay(self):
+        connection = Connection(
+            timeout=1,
+            retry_delay=(1, 1, 3, 5),
+            backoff=1)
+        connection.connection = Mock(request=Mock(
+            side_effect=socket.gaierror('')))
+
+        with patch('time.sleep') as sleep_fn:
+            sleep_fn.side_effect = [None, None, None, None, None, StopIteration]
+
+            self.assertRaises(StopIteration, connection.request, '/')
+            self.assertEquals(connection.connection.request.call_count, 6)
+            self.assertEquals(sleep_fn.call_count, 6)
+            self.assertEquals(sleep_fn.call_args_list, [
+                mock.call(i) for i in (1, 1, 3, 5, 5, 5)
+            ])
+
     def test_retry_connection_with_backoff(self):
         connection = Connection(
             timeout=1,
@@ -50,8 +69,15 @@ class FailedRequestRetryTestCase(unittest.TestCase):
         connection.connection = Mock(request=Mock(
             side_effect=socket.gaierror('')))
 
-        self.assertRaises(socket.gaierror, connection.request, '/')
-        self.assertEquals(connection.connection.request.call_count, 4)
+        with patch('time.sleep') as sleep_fn:
+            sleep_fn.side_effect = [None, None, None, None, None, StopIteration]
+
+            self.assertRaises(StopIteration, connection.request, '/')
+            self.assertEquals(connection.connection.request.call_count, 6)
+            self.assertEquals(sleep_fn.call_count, 6)
+            self.assertEquals(sleep_fn.call_args_list, [
+                mock.call(i) for i in (0.1, 0.2, 0.4, 0.8, 1.6, 3.2)
+            ])
 
     def test_retry_connection_ssl_error(self):
         conn = Connection(timeout=1, retry_delay=0.1)

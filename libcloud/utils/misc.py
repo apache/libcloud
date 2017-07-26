@@ -241,11 +241,19 @@ def lowercase_keys(dictionary):
     return dict(((k.lower(), v) for k, v in dictionary.items()))
 
 
-def cycle_last(iterable):
+def repeat_last(iterable):
+    """
+    Iterates over the sequence and repeats the last element in forever loop.
+
+    :param iterable: The sequence to iterate on.
+    :type iterable: :class:`collections.Iterable`
+
+    :rtype: :class:`types.GeneratorType`
+    """
     item = None
     for item in iterable:
         yield item
-    for _ in itertools.repeat(0):
+    while True:
         yield item
 
 
@@ -288,22 +296,22 @@ class ReprMixin(object):
         return str(self.__repr__())
 
 
-def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
-          timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
+def retry(retry_delay=None, backoff=None, timeout=None,
+          retry_exceptions=None):
     """
     Retry decorator that helps to handle common transient exceptions.
 
-    :param retry_exceptions: types of exceptions to retry on.
-    :type retry_exceptions: tuple of :class:`Exception`
-
     :param retry_delay: retry delay between the attempts.
-    :type retry_delay: int
+    :type retry_delay: int or :class:`collections.Iterable[int]`
+
+    :param backoff: multiplier added to delay between attempts.
+    :type backoff: int
 
     :param timeout: maximum time to wait.
     :type timeout: int
 
-    :param backoff: multiplier added to delay between attempts.
-    :type backoff: int or :class:`collections.Iterable[int]`
+    :param retry_exceptions: types of exceptions to retry on.
+    :type retry_exceptions: tuple of :class:`Exception`
 
     :Example:
 
@@ -341,10 +349,12 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
             retry_msg = "Server returned %r, retry request in %s seconds ..."
             end_time = datetime.now() + timedelta(seconds=timeout)
 
-            retry_time_progression = cycle_last((
-                retry_delay * i for i in backoff
-            )) if isinstance(backoff, collections.Iterable) else (
-                retry_delay * backoff ** i for i in itertools.count()
+            if isinstance(retry_delay, collections.Iterable):
+                retry_delays = repeat_last(retry_delay)
+            else:
+                retry_delays = itertools.repeat(retry_delay)
+            retry_time_progression = (
+                delay * (backoff ** i) for i, delay in enumerate(retry_delays)
             )
 
             for retry_time in retry_time_progression:
