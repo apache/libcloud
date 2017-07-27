@@ -176,8 +176,21 @@ class ApplicationLBDriver(Driver):
 
         return target_group
 
-    def ex_register_targets(self):
-        raise NotImplementedError('ex_register_targets is not implemented for this driver')
+    def ex_register_targets(self, target_group_id, members=[]):
+        # mandatory params
+        params = {
+            'Action': 'RegisterTargets',
+            'TargetGroupArn': target_group_id
+        }
+
+        idx = 0
+        for member in members:
+            idx += 1
+            params['Targets.member.'+str(idx)+'.Id'] = member
+
+        data = self.connection.request(ROOT, params=params).object
+        # TODO: analyze response and return some useful data if any
+        return True
 
     def ex_create_listener(self):
         raise NotImplementedError('ex_create_listener is not implemented for this driver')
