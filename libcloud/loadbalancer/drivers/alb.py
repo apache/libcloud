@@ -192,8 +192,31 @@ class ApplicationLBDriver(Driver):
         # TODO: analyze response and return some useful data if any
         return True
 
-    def ex_create_listener(self):
-        raise NotImplementedError('ex_create_listener is not implemented for this driver')
+    def ex_create_listener(self, load_balancer, port, proto, target_group, action="forward", ssl_certificate="",
+                           ssl_policy=""):
+        # mandatory params
+        params = {
+            'Action': 'CreateListener',
+            'LoadBalancerArn': load_balancer,
+            'Protocol': proto,  # Valid Values: HTTP | HTTPS
+            'Port': port,  # Valid Range: Minimum value of 1. Maximum value of 65535.
+            'DefaultActions.member.1.Type': action,
+            'DefaultActions.member.1.TargetGroupArn': target_group
+        }
+
+        # optional params
+        if proto == "HTTPS":
+            params['Certificates.member.1.CertificateArn'] = ssl_certificate
+            if ssl_policy:
+                params['SslPolicy'] = ssl_policy
+
+        data = self.connection.request(ROOT, params=params).object
+
+        xpath = 'CreateListenerResult/Listeners/member'
+        for el in findall(element=data, xpath=xpath, namespace=NS):
+            listener = self._to_listener(el)
+
+        return listener
 
     def ex_create_listener_rule(self):
         raise NotImplementedError('ex_create_listener_rule is not implemented for this driver')
@@ -209,13 +232,22 @@ class ApplicationLBDriver(Driver):
         )]
 
     def _to_listener(self, el):
-        listener_arn = findtext(element=el, xpath='ListenerArn', namespace=NS)
         listener = {
-            'id': listener_arn,
+            'id': findtext(element=el, xpath='ListenerArn', namespace=NS),
             'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
             'port': findtext(element=el, xpath='Port', namespace=NS),
-            'rules': self._ex_get_rules_for_listener(listener_arn)
+            'load_balancer': findtext(element=el, xpath='LoadBalancerArn', namespace=NS),
+            'ssl_policy': findtext(element=el, xpath='SslPolicy', namespace=NS),
+            'ssl_certificate': findtext(element=el, xpath='Certificates/member/CertificateArn', namespace=NS),
+            'action': findtext(element=el, xpath='DefaultActions/member/Type', namespace=NS),
+            'target_group': findtext(element=el, xpath='DefaultActions/member/TargetGroupArn', namespace=NS)
         }
+
+        listener.update(
+            {
+                'rules': self._ex_get_rules_for_listener(listener['id'])
+            }
+        )
         return listener
 
     def _to_targets(self, data):
@@ -329,7 +361,7 @@ class ApplicationLBDriver(Driver):
         target_group = {
             'id': findtext(element=el, xpath='TargetGroupArn', namespace=NS),
             'name': findtext(element=el, xpath='TargetGroupName', namespace=NS),
-            'proto': findtext(element=el, xpath='Protocol', namespace=NS),
+            'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
             'port': findtext(element=el, xpath='Port', namespace=NS),
             'vpc': findtext(element=el, xpath='VpcId', namespace=NS),
             'health_check_timeout': findtext(element=el, xpath='HealthCheckTimeoutSeconds', namespace=NS),
