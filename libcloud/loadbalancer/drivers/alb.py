@@ -99,7 +99,8 @@ class ApplicationLBDriver(Driver):
 
         return balancer
 
-    def ex_create_balancer(self, name, addr_type="", scheme="", security_groups=[], subnets=[], tags={}):
+    def ex_create_balancer(self, name, addr_type="ipv4", scheme="internet-facing", security_groups=[], subnets=[],
+                           tags={}):
 
         # mandatory params
         params = {
@@ -113,11 +114,12 @@ class ApplicationLBDriver(Driver):
             params['Subnets.member.'+str(idx)] = subnet
 
         # optional params
-        if addr_type:
-            params['IpAddressType'] = addr_type  # Valid Values: ipv4 | dualstack
-
-        if scheme:
-            params['Scheme'] = scheme  # Valid Values: internet-facing | internal
+        params.update(
+            {
+                'IpAddressType': addr_type,  # Valid Values: ipv4 | dualstack
+                'Scheme': scheme  # Valid Values: internet-facing | internal
+            }
+        )
 
         idx = 0
         for sg in security_groups:
@@ -138,8 +140,40 @@ class ApplicationLBDriver(Driver):
 
         return balancer
 
-    def ex_create_target_group(self):
-        raise NotImplementedError('ex_create_target_group is not implemented for this driver')
+    def ex_create_target_group(self, name, port, proto, vpc, health_check_interval=30, health_check_path="/",
+                               health_check_port="traffic-port", health_check_proto="HTTP", health_check_timeout=5,
+                               health_check_matcher="200", healthy_threshold=5, unhealthy_threshold=2):
+
+        # mandatory params
+        params = {
+            'Action': 'CreateTargetGroup',
+            'Name': name,
+            'Protocol': proto,
+            'Port': port,
+            'VpcId': vpc
+        }
+
+        # optional params
+        params.update(
+            {
+                'HealthCheckIntervalSeconds': health_check_interval,  # Valid Values: Min value of 5. Max value of 300.
+                'HealthCheckPath': health_check_path,
+                'HealthCheckPort': health_check_port,
+                'HealthCheckProtocol': health_check_proto,  # Valid Values: HTTP | HTTPS
+                'HealthCheckTimeoutSeconds': health_check_timeout,  # Valid Range: Min value of 2. Max value of 60.
+                'HealthyThresholdCount': healthy_threshold,  # Valid Range: Minimum value of 2. Maximum value of 10.
+                'UnhealthyThresholdCount': unhealthy_threshold,  # Valid Range: Minimum value of 2. Maximum value of 10.
+                'Matcher.HttpCode': health_check_matcher  # Valid values: "200", "200,202", "200-299"
+            }
+        )
+
+        data = self.connection.request(ROOT, params=params).object
+
+        xpath = 'CreateTargetGroupResult/TargetGroups/member'
+        for el in findall(element=data, xpath=xpath, namespace=NS):
+            target_group = self._to_target_group(el)
+
+        return target_group
 
     def ex_register_targets(self):
         raise NotImplementedError('ex_register_targets is not implemented for this driver')
@@ -200,7 +234,8 @@ class ApplicationLBDriver(Driver):
         extra = {
             'listeners': self._ex_get_balancer_listeners(balancer),
             'target_groups': self._ex_get_balancer_target_groups(balancer),
-            'tags': self._ex_get_balancer_tags(balancer)
+            'tags': self._ex_get_balancer_tags(balancer),
+            'vpc': findtext(el, xpath='VpcId', namespace=NS)
         }
         balancer.extra = extra
         if len(extra['listeners']) > 0:
@@ -277,13 +312,29 @@ class ApplicationLBDriver(Driver):
                 for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_target_group(self, el):
-        target_group_arn = findtext(
-            element=el, xpath='TargetGroupArn', namespace=NS
-        )
-        name = findtext(element=el, xpath='TargetGroupName', namespace=NS)
-        members = self._ex_get_target_group_members(target_group_arn)
+        target_group = {
+            'id': findtext(element=el, xpath='TargetGroupArn', namespace=NS),
+            'name': findtext(element=el, xpath='TargetGroupName', namespace=NS),
+            'proto': findtext(element=el, xpath='Protocol', namespace=NS),
+            'port': findtext(element=el, xpath='Port', namespace=NS),
+            'vpc': findtext(element=el, xpath='VpcId', namespace=NS),
+            'health_check_timeout': findtext(element=el, xpath='HealthCheckTimeoutSeconds', namespace=NS),
+            'health_check_port': findtext(element=el, xpath='HealthCheckPort', namespace=NS),
+            'health_check_path': findtext(element=el, xpath='HealthCheckPath', namespace=NS),
+            'health_check_proto': findtext(element=el, xpath='HealthCheckProtocol', namespace=NS),
+            'health_check_interval': findtext(element=el, xpath='HealthCheckIntervalSeconds', namespace=NS),
+            'healthy_threshold': findtext(element=el, xpath='HealthyThresholdCount', namespace=NS),
+            'unhealthy_threshold': findtext(element=el, xpath='UnhealthyThresholdCount', namespace=NS),
+            'matcher': findtext(element=el, xpath='Matcher/HttpCode', namespace=NS)
+        }
 
-        return {'id': target_group_arn, 'name': name, 'members': members}
+        target_group.update(
+            {
+                'members': self._ex_get_target_group_members(target_group['id'])
+            }
+        )
+
+        return target_group
 
     def _to_target_group_members(self, data):
         xpath = 'DescribeTargetHealthResult/TargetHealthDescriptions/member'
