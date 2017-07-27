@@ -218,9 +218,26 @@ class ApplicationLBDriver(Driver):
 
         return listener
 
-    def ex_create_listener_rule(self):
-        raise NotImplementedError('ex_create_listener_rule is not implemented for this driver')
+    def ex_create_listener_rule(self, listener, priority, target_group, action="forward", condition_field="",
+                                condition_value=""):
+        # mandatory params
+        params = {
+            'Action': 'CreateRule',
+            'ListenerArn': listener,
+            'Priority': priority,  # Valid Range: Minimum value of 1. Maximum value of 99999.
+            'Actions.member.1.Type': action,
+            'Actions.member.1.TargetGroupArn': target_group,
+            'Conditions.member.1.Field': condition_field,  # Valid values are host-header and path-pattern.
+            'Conditions.member.1.Values.member.1': condition_value
+        }
 
+        data = self.connection.request(ROOT, params=params).object
+
+        xpath = 'CreateRuleResult/Rules/member'
+        for el in findall(element=data, xpath=xpath, namespace=NS):
+            rule = self._to_rule(el)
+
+        return rule
 
     def ex_balancer_list_listeners(self, balancer):
         return balancer.extra.get('listeners', [])
