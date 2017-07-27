@@ -18,6 +18,7 @@ import ssl
 
 import mock
 from mock import Mock, patch, MagicMock
+from datetime import datetime
 
 from libcloud.utils.misc import TRANSIENT_SSL_ERROR
 from libcloud.common.base import Connection
@@ -41,29 +42,11 @@ class FailedRequestRetryTestCase(unittest.TestCase):
             side_effect=socket.gaierror('')))
 
         self.assertRaises(socket.gaierror, connection.request, '/')
-        self.assertEquals(connection.connection.request.call_count, 5)
+        self.assertEqual(connection.connection.request.call_count, 6)
 
-    def test_retry_connection_with_iterable_retry_delay(self):
+    def test_retry_connection_backoff(self):
         connection = Connection(
-            timeout=1,
-            retry_delay=(1, 1, 3, 5),
-            backoff=1)
-        connection.connection = Mock(request=Mock(
-            side_effect=socket.gaierror('')))
-
-        with patch('time.sleep') as sleep_fn:
-            sleep_fn.side_effect = [None, None, None, None, None, StopIteration]
-
-            self.assertRaises(StopIteration, connection.request, '/')
-            self.assertEquals(connection.connection.request.call_count, 6)
-            self.assertEquals(sleep_fn.call_count, 6)
-            self.assertEquals(sleep_fn.call_args_list, [
-                mock.call(i) for i in (1, 1, 3, 5, 5, 5)
-            ])
-
-    def test_retry_connection_with_backoff(self):
-        connection = Connection(
-            timeout=1,
+            timeout=10,
             retry_delay=0.1,
             backoff=2)
         connection.connection = Mock(request=Mock(
@@ -73,10 +56,50 @@ class FailedRequestRetryTestCase(unittest.TestCase):
             sleep_fn.side_effect = [None, None, None, None, None, StopIteration]
 
             self.assertRaises(StopIteration, connection.request, '/')
-            self.assertEquals(connection.connection.request.call_count, 6)
-            self.assertEquals(sleep_fn.call_count, 6)
-            self.assertEquals(sleep_fn.call_args_list, [
+            self.assertEqual(connection.connection.request.call_count, 6)
+            self.assertEqual(sleep_fn.call_count, 6)
+            self.assertEqual(sleep_fn.call_args_list, [
                 mock.call(i) for i in (0.1, 0.2, 0.4, 0.8, 1.6, 3.2)
+            ])
+
+    @patch('libcloud.utils.misc.datetime')
+    def test_retry_connection_timeout(self, datetime_obj):
+        connection = Connection(
+            timeout=65,
+            retry_delay=20)
+        connection.connection = Mock(request=Mock(
+            side_effect=socket.gaierror('')))
+        datetime_obj.now.side_effect = [
+            datetime(2017, 7, 28, 0, 26, 10, 0),
+            datetime(2017, 7, 28, 0, 26, 10, 0),
+            datetime(2017, 7, 28, 0, 26, 30, 0),
+            datetime(2017, 7, 28, 0, 26, 50, 0),
+            datetime(2017, 7, 28, 0, 27, 10, 0),
+            datetime(2017, 7, 28, 0, 27, 30, 0),
+        ]
+
+        with patch('time.sleep') as sleep_fn:
+            self.assertRaises(socket.gaierror, connection.request, '/')
+            self.assertEqual(sleep_fn.call_args_list, [
+                mock.call(i) for i in (20, 20, 20, 5)
+            ])
+
+    def test_retry_connection_with_iterable_retry_delay(self):
+        connection = Connection(
+            timeout=20,
+            retry_delay=(1, 1, 3, 5),
+            backoff=1)
+        connection.connection = Mock(request=Mock(
+            side_effect=socket.gaierror('')))
+
+        with patch('time.sleep') as sleep_fn:
+            sleep_fn.side_effect = [None, None, None, None, None, StopIteration]
+
+            self.assertRaises(StopIteration, connection.request, '/')
+            self.assertEqual(connection.connection.request.call_count, 6)
+            self.assertEqual(sleep_fn.call_count, 6)
+            self.assertEqual(sleep_fn.call_args_list, [
+                mock.call(i) for i in (1, 1, 3, 5, 5, 5)
             ])
 
     def test_retry_connection_ssl_error(self):

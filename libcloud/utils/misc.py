@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -12,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import binascii
 import collections
@@ -257,6 +258,21 @@ def repeat_last(iterable):
         yield item
 
 
+def total_seconds(td):
+    """
+    Total seconds in the duration.
+
+    :type td: :class:`timedelta`
+    """
+    # Keep backward compatibility with Python 2.6 which
+    # doesn't have this method
+    if hasattr(td, 'total_seconds'):
+        return td.total_seconds()
+    else:
+        return ((td.days * 86400 + td.seconds) * 10**6 +
+                td.microseconds) / 10**6
+
+
 def get_secure_random_string(size):
     """
     Return a string of ``size`` random bytes. Returned string is suitable for
@@ -296,15 +312,16 @@ class ReprMixin(object):
         return str(self.__repr__())
 
 
-def retry(retry_delay=None, backoff=None, timeout=None,
-          retry_exceptions=None):
+def retry(retry_exceptions=None, retry_delay=None, timeout=None,
+          backoff=None):
     """
     Retry decorator that helps to handle common transient exceptions.
 
     :param retry_delay: retry delay between the attempts.
     :type retry_delay: int or :class:`collections.Iterable[int]`
 
-    :param backoff: multiplier added to delay between attempts.
+    :param backoff: the denominator of a geometric progression
+        (:math:`retry\_delay_n = retry\_delay × backoff^{n-1}`).
     :type backoff: int
 
     :param timeout: maximum time to wait.
@@ -346,30 +363,31 @@ def retry(retry_delay=None, backoff=None, timeout=None,
     def decorator(func):
         @wraps(func)
         def retry_loop(*args, **kwargs):
-            retry_msg = "Server returned %r, retry request in %s seconds ..."
+            retry_msg = "Server returned %r, retrying for request " \
+                        "in %s seconds ..."
             end_time = datetime.now() + timedelta(seconds=timeout)
 
             if isinstance(retry_delay, collections.Iterable):
-                retry_delays = repeat_last(retry_delay)
+                retry_time_progression = repeat_last(retry_delay)
             else:
-                retry_delays = itertools.repeat(retry_delay)
-            retry_time_progression = (
-                delay * (backoff ** i) for i, delay in enumerate(retry_delays)
-            )
+                retry_time_progression = (
+                    retry_delay * (backoff ** i) for i in itertools.count()
+                )
 
-            for retry_time in retry_time_progression:
+            for delay in retry_time_progression:
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
                 except retry_exceptions as exc:
+                    to_timeout = total_seconds(end_time - datetime.now())
+                    if to_timeout <= 0:
+                        raise
                     if isinstance(exc, RateLimitReachedError) \
                             and exc.retry_after:
                         LOG.debug(retry_msg, exc, exc.retry_after)
                         time.sleep(exc.retry_after)
                         return retry_loop(*args, **kwargs)
-                    else:
-                        LOG.debug(retry_msg, exc, retry_time)
-                        time.sleep(retry_time)
-                    if datetime.now() >= end_time:
-                        raise
+                    delay = min(delay, to_timeout)
+                    LOG.debug(retry_msg, exc, delay)
+                    time.sleep(delay)
         return retry_loop
     return decorator
