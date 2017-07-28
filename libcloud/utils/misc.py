@@ -363,7 +363,7 @@ def retry(retry_exceptions=None, retry_delay=None, timeout=None,
     def decorator(func):
         @wraps(func)
         def retry_loop(*args, **kwargs):
-            retry_msg = "Server returned %r, retrying for request " \
+            retry_msg = "Server returned %r, retrying request " \
                         "in %s seconds ..."
             end_time = datetime.now() + timedelta(seconds=timeout)
 
