@@ -247,11 +247,15 @@ def repeat_last(iterable):
     Iterates over the sequence and repeats the last element in forever loop.
 
     :param iterable: The sequence to iterate on.
-    :type iterable: :class:`collections.Sequence`
+    :type iterable: :class:`collections.Iterable`
 
     :rtype: :class:`types.GeneratorType`
     """
-    item = DEFAULT_DELAY
+    iterable = iter(iterable)
+    # Will throw StopItreation in case iterable is
+    # empty (similar to itertools.cycle)
+    item = next(iterable)
+    yield item
     for item in iterable:
         yield item
     while True:
