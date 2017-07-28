@@ -28,6 +28,7 @@ try:
 except:
     import json
 
+import collections
 import requests
 
 import libcloud
@@ -532,8 +533,11 @@ class Connection(object):
 
         retry_enabled = (
             os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS', False) or
-            RETRY_FAILED_HTTP_REQUESTS or
-            self.retry_delay is not None)
+            RETRY_FAILED_HTTP_REQUESTS)
+        if not (self.retry_delay is None or (
+                isinstance(self.retry_delay, collections.Sequence) and
+                len(self.retry_delay) == 0)):
+            retry_enabled = True
 
         action = self.morph_action_hook(action)
         self.action = action

@@ -247,11 +247,11 @@ def repeat_last(iterable):
     Iterates over the sequence and repeats the last element in forever loop.
 
     :param iterable: The sequence to iterate on.
-    :type iterable: :class:`collections.Iterable`
+    :type iterable: :class:`collections.Sequence`
 
     :rtype: :class:`types.GeneratorType`
     """
-    item = None
+    item = DEFAULT_DELAY
     for item in iterable:
         yield item
     while True:
@@ -318,7 +318,7 @@ def retry(retry_exceptions=None, retry_delay=None, timeout=None,
     Retry decorator that helps to handle common transient exceptions.
 
     :param retry_delay: retry delay between the attempts.
-    :type retry_delay: int or :class:`collections.Iterable[int]`
+    :type retry_delay: int or :class:`collections.Sequence[int]`
 
     :param backoff: the denominator of a geometric progression
         (:math:`retry\_delay_n = retry\_delay × backoff^{n-1}`).
@@ -340,7 +340,9 @@ def retry(retry_exceptions=None, retry_delay=None, timeout=None,
     """
     if retry_exceptions is None:
         retry_exceptions = RETRY_EXCEPTIONS
-    if retry_delay is None:
+    if retry_delay is None or (
+            isinstance(retry_delay, collections.Sequence) and
+            len(retry_delay) == 0):
         retry_delay = DEFAULT_DELAY
     if timeout is None:
         timeout = DEFAULT_TIMEOUT
@@ -367,7 +369,7 @@ def retry(retry_exceptions=None, retry_delay=None, timeout=None,
                         "in %s seconds ..."
             end_time = datetime.now() + timedelta(seconds=timeout)
 
-            if isinstance(retry_delay, collections.Iterable):
+            if isinstance(retry_delay, collections.Sequence):
                 retry_time_progression = repeat_last(retry_delay)
             else:
                 retry_time_progression = (
