@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -12,20 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import absolute_import, division
 
-import os
-import sys
 import binascii
+import collections
+import itertools
+import logging
+import os
 import socket
-import time
 import ssl
-from datetime import datetime, timedelta
+import sys
+import time
+from datetime import datetime
+from datetime import timedelta
 from functools import wraps
 
-from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.common.providers import get_driver as _get_driver
 from libcloud.common.providers import set_driver as _set_driver
+from libcloud.utils.py3 import httplib
 
 __all__ = [
     'find',
@@ -46,6 +52,8 @@ __all__ = [
 # Error message which indicates a transient SSL error upon which request
 # can be retried
 TRANSIENT_SSL_ERROR = 'The read operation timed out'
+
+LOG = logging.getLogger(__name__)
 
 
 class TransientSSLError(ssl.SSLError):
@@ -234,6 +242,41 @@ def lowercase_keys(dictionary):
     return dict(((k.lower(), v) for k, v in dictionary.items()))
 
 
+def repeat_last(iterable):
+    """
+    Iterates over the sequence and repeats the last element in forever loop.
+
+    :param iterable: The sequence to iterate on.
+    :type iterable: :class:`collections.Iterable`
+
+    :rtype: :class:`types.GeneratorType`
+    """
+    iterable = iter(iterable)
+    # Will throw StopItreation in case iterable is
+    # empty (similar to itertools.cycle)
+    item = next(iterable)
+    yield item
+    for item in iterable:
+        yield item
+    while True:
+        yield item
+
+
+def total_seconds(td):
+    """
+    Total seconds in the duration.
+
+    :type td: :class:`timedelta`
+    """
+    # Keep backward compatibility with Python 2.6 which
+    # doesn't have this method
+    if hasattr(td, 'total_seconds'):
+        return td.total_seconds()
+    else:
+        return ((td.days * 86400 + td.seconds) * 10**6 +
+                td.microseconds) / 10**6
+
+
 def get_secure_random_string(size):
     """
     Return a string of ``size`` random bytes. Returned string is suitable for
@@ -273,24 +316,37 @@ class ReprMixin(object):
         return str(self.__repr__())
 
 
-def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
-          timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
+def retry(retry_exceptions=None, retry_delay=None, timeout=None,
+          backoff=None):
     """
     Retry decorator that helps to handle common transient exceptions.
 
-    :param retry_exceptions: types of exceptions to retry on.
     :param retry_delay: retry delay between the attempts.
+    :type retry_delay: int or :class:`collections.Sequence[int]`
+
+    :param backoff: the denominator of a geometric progression
+        (:math:`retry\_delay_n = retry\_delay × backoff^{n-1}`).
+    :type backoff: int
+
     :param timeout: maximum time to wait.
-    :param backoff: multiplier added to delay between attempts.
+    :type timeout: int
+
+    :param retry_exceptions: types of exceptions to retry on.
+    :type retry_exceptions: tuple of :class:`Exception`
 
     :Example:
 
-    retry_request = retry(timeout=1, retry_delay=1, backoff=1)
-    retry_request(self.connection.request)()
+    >>> retry_request = retry(
+    >>>     timeout=1,
+    >>>     retry_delay=1,
+    >>>     backoff=1)
+    >>> retry_request(connection.request)()
     """
     if retry_exceptions is None:
         retry_exceptions = RETRY_EXCEPTIONS
-    if retry_delay is None:
+    if retry_delay is None or (
+            isinstance(retry_delay, collections.Sequence) and
+            len(retry_delay) == 0):
         retry_delay = DEFAULT_DELAY
     if timeout is None:
         timeout = DEFAULT_TIMEOUT
@@ -313,28 +369,31 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
     def decorator(func):
         @wraps(func)
         def retry_loop(*args, **kwargs):
-            current_delay = retry_delay
-            end = datetime.now() + timedelta(seconds=timeout)
+            retry_msg = "Server returned %r, retrying request " \
+                        "in %s seconds ..."
+            end_time = datetime.now() + timedelta(seconds=timeout)
 
-            while True:
+            if isinstance(retry_delay, collections.Sequence):
+                retry_time_progression = repeat_last(retry_delay)
+            else:
+                retry_time_progression = (
+                    retry_delay * (backoff ** i) for i in itertools.count()
+                )
+
+            for delay in retry_time_progression:
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
-                except retry_exceptions:
-                    exc = sys.exc_info()[1]
-
-                    if isinstance(exc, RateLimitReachedError):
-                        time.sleep(exc.retry_after)
-
-                        # Reset retries if we're told to wait due to rate
-                        # limiting
-                        current_delay = retry_delay
-                        end = datetime.now() + timedelta(
-                            seconds=exc.retry_after + timeout)
-                    elif datetime.now() >= end:
+                except retry_exceptions as exc:
+                    to_timeout = total_seconds(end_time - datetime.now())
+                    if to_timeout <= 0:
                         raise
-                    else:
-                        time.sleep(current_delay)
-                        current_delay *= backoff
-
+                    if isinstance(exc, RateLimitReachedError) \
+                            and exc.retry_after:
+                        LOG.debug(retry_msg, exc, exc.retry_after)
+                        time.sleep(exc.retry_after)
+                        return retry_loop(*args, **kwargs)
+                    delay = min(delay, to_timeout)
+                    LOG.debug(retry_msg, exc, delay)
+                    time.sleep(delay)
         return retry_loop
     return decorator
