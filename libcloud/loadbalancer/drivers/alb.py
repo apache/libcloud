@@ -79,7 +79,7 @@ class ApplicationLBDriver(Driver):
         return self._to_balancers(data)[0]
 
     def create_balancer(self, name, port, protocol, algorithm, members,
-                        ex_addr_type="", ex_scheme="", ex_security_groups=[], ex_subnets=[], ex_tags={}):
+                        ex_scheme="", ex_security_groups=[], ex_subnets=[], ex_tags={}, ex_ssl_cert_arn=""):
 
         # ALB balancer creation consists of 5 steps:
         # http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html
@@ -88,16 +88,15 @@ class ApplicationLBDriver(Driver):
         # other drivers where LB creation is one-step process. It calls respective ALB methods
         # to assemble ready-to-use load balancer.
 
-        balancer = self.ex_create_balancer(name, addr_type=ex_addr_type, scheme=ex_scheme,
-                                           security_groups=ex_security_groups, subnets=ex_subnets, tags=ex_tags)
+        balancer = self.ex_create_balancer(name, scheme=ex_scheme, security_groups=ex_security_groups,
+                                           subnets=ex_subnets, tags=ex_tags)
 
-        # target_group = self.ex_create_target_group()
-        # self.ex_register_targets(target_group, members)
-        #
-        # listener = self.ex_create_listener(balancer, port, protocol, target_group)
-        # self.ex_create_listener_rule(listener, rule)
+        target_group = self.ex_create_target_group(name + "_tg", port, protocol, balancer.extra.get('vpc'),
+                                                   health_check_proto=protocol)
+        self.ex_register_targets(target_group, members)
+        self.ex_create_listener(balancer, port, protocol, target_group, ssl_cert_arn=ex_ssl_cert_arn)
 
-        return balancer
+        return self.get_balancer(balancer.id)
 
     def ex_create_balancer(self, name, addr_type="ipv4", scheme="internet-facing", security_groups=[], subnets=[],
                            tags={}):
@@ -182,30 +181,36 @@ class ApplicationLBDriver(Driver):
             'TargetGroupArn': target_group_id
         }
 
+        if not members:
+            return False
+
         idx = 0
         for member in members:
             idx += 1
-            params['Targets.member.'+str(idx)+'.Id'] = member
+            params['Targets.member.' + str(idx) + '.Id'] = member.id
+            if member.port:
+                params['Targets.member.' + str(idx) + '.Port'] = member.port
 
         data = self.connection.request(ROOT, params=params).object
         # TODO: analyze response and return some useful data if any
+        # TODO: cover with tests
         return True
 
-    def ex_create_listener(self, load_balancer, port, proto, target_group, action="forward", ssl_certificate="",
+    def ex_create_listener(self, balancer, port, proto, target_group, action="forward", ssl_cert_arn="",
                            ssl_policy=""):
         # mandatory params
         params = {
             'Action': 'CreateListener',
-            'LoadBalancerArn': load_balancer,
+            'LoadBalancerArn': balancer.id,
             'Protocol': proto,  # Valid Values: HTTP | HTTPS
             'Port': port,  # Valid Range: Minimum value of 1. Maximum value of 65535.
             'DefaultActions.member.1.Type': action,
-            'DefaultActions.member.1.TargetGroupArn': target_group
+            'DefaultActions.member.1.TargetGroupArn': target_group.get('id')
         }
 
         # optional params
         if proto == "HTTPS":
-            params['Certificates.member.1.CertificateArn'] = ssl_certificate
+            params['Certificates.member.1.CertificateArn'] = ssl_cert_arn
             if ssl_policy:
                 params['SslPolicy'] = ssl_policy
 
@@ -222,10 +227,10 @@ class ApplicationLBDriver(Driver):
         # mandatory params
         params = {
             'Action': 'CreateRule',
-            'ListenerArn': listener,
+            'ListenerArn': listener.get('id'),
             'Priority': priority,  # Valid Range: Minimum value of 1. Maximum value of 99999.
             'Actions.member.1.Type': action,
-            'Actions.member.1.TargetGroupArn': target_group,
+            'Actions.member.1.TargetGroupArn': target_group.get('id'),
             'Conditions.member.1.Field': condition_field,  # Valid values are host-header and path-pattern.
             'Conditions.member.1.Values.member.1': condition_value
         }
@@ -251,8 +256,8 @@ class ApplicationLBDriver(Driver):
         listener = {
             'id': findtext(element=el, xpath='ListenerArn', namespace=NS),
             'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
-            'port': findtext(element=el, xpath='Port', namespace=NS),
-            'load_balancer': findtext(element=el, xpath='LoadBalancerArn', namespace=NS),
+            'port': int(findtext(element=el, xpath='Port', namespace=NS)),
+            'balancer': findtext(element=el, xpath='LoadBalancerArn', namespace=NS),
             'ssl_policy': findtext(element=el, xpath='SslPolicy', namespace=NS),
             'ssl_certificate': findtext(element=el, xpath='Certificates/member/CertificateArn', namespace=NS),
             'action': findtext(element=el, xpath='DefaultActions/member/Type', namespace=NS),
@@ -280,15 +285,11 @@ class ApplicationLBDriver(Driver):
         )
 
     def _to_balancer(self, el):
-        name = findtext(element=el, xpath='LoadBalancerName', namespace=NS)
-        id = findtext(element=el, xpath='LoadBalancerArn', namespace=NS)
-        dns_name = findtext(el, xpath='DNSName', namespace=NS)
-
         balancer = LoadBalancer(
-            id=id,
-            name=name,
+            id=findtext(element=el, xpath='LoadBalancerArn', namespace=NS),
+            name=findtext(element=el, xpath='LoadBalancerName', namespace=NS),
             state=State.UNKNOWN,
-            ip=dns_name,
+            ip=findtext(el, xpath='DNSName', namespace=NS),
             port=None,
             driver=self.connection.driver
         )
@@ -356,6 +357,8 @@ class ApplicationLBDriver(Driver):
         rule = {
             'id': id,
             'is_default': __to_bool__(is_default),
+            # CreateRule API method accepts only int for priority, however DescribeRules method returns 'default' string
+            # for default listener rule. So leaving it as string.
             'priority': priority,
             'target_group': target_group,
             'conditions': conditions
@@ -378,15 +381,15 @@ class ApplicationLBDriver(Driver):
             'id': findtext(element=el, xpath='TargetGroupArn', namespace=NS),
             'name': findtext(element=el, xpath='TargetGroupName', namespace=NS),
             'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
-            'port': findtext(element=el, xpath='Port', namespace=NS),
+            'port': int(findtext(element=el, xpath='Port', namespace=NS)),
             'vpc': findtext(element=el, xpath='VpcId', namespace=NS),
-            'health_check_timeout': findtext(element=el, xpath='HealthCheckTimeoutSeconds', namespace=NS),
+            'health_check_timeout': int(findtext(element=el, xpath='HealthCheckTimeoutSeconds', namespace=NS)),
             'health_check_port': findtext(element=el, xpath='HealthCheckPort', namespace=NS),
             'health_check_path': findtext(element=el, xpath='HealthCheckPath', namespace=NS),
             'health_check_proto': findtext(element=el, xpath='HealthCheckProtocol', namespace=NS),
-            'health_check_interval': findtext(element=el, xpath='HealthCheckIntervalSeconds', namespace=NS),
-            'healthy_threshold': findtext(element=el, xpath='HealthyThresholdCount', namespace=NS),
-            'unhealthy_threshold': findtext(element=el, xpath='UnhealthyThresholdCount', namespace=NS),
+            'health_check_interval': int(findtext(element=el, xpath='HealthCheckIntervalSeconds', namespace=NS)),
+            'healthy_threshold': int(findtext(element=el, xpath='HealthyThresholdCount', namespace=NS)),
+            'unhealthy_threshold': int(findtext(element=el, xpath='UnhealthyThresholdCount', namespace=NS)),
             'matcher': findtext(element=el, xpath='Matcher/HttpCode', namespace=NS)
         }
 
