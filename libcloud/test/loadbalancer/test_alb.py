@@ -19,6 +19,7 @@ import unittest
 from libcloud.utils.py3 import httplib
 from libcloud.loadbalancer.drivers.alb import ApplicationLBDriver
 from libcloud.loadbalancer.types import State
+from libcloud.loadbalancer.base import Member
 
 from libcloud.test import MockHttp
 from libcloud.test.secrets import LB_ALB_PARAMS
@@ -77,6 +78,14 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertEqual(len(members), 1)
         self.assertEqual(members[0].balancer, balancer)
         self.assertEqual('i-01111111111111111', members[0].id)
+
+    # TODO: requires test for ex_register_targets to mock RegisterTargets request
+    # def test_create_balancer(self):
+    #     balancer = self.driver.create_balancer(name='Test-ALB', port=443, protocol='HTTPS', algorithm=None,
+    #                                            members=[Member(id='i-01111111111111111', ip=None, port=3443)],
+    #                                            ex_scheme="internet-facing", ex_security_groups=['sg-11111111'],
+    #                                            ex_subnets=['subnet-11111111', 'subnet-22222222'], ex_tags={},
+    #                                            ex_ssl_cert_arn=self.ssl_cert_id)
 
     def test_ex_create_balancer(self):
         balancer = self.driver.ex_create_balancer(name='Test-ALB', addr_type='ipv4', scheme='internet-facing',
