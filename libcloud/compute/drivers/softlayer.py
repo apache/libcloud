@@ -24,7 +24,6 @@ except ImportError:
     crypto = False
 
 from libcloud.common.softlayer import SoftLayerConnection, SoftLayerException
-from libcloud.common.types import LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, Node, NodeLocation, NodeSize, \
     NodeImage, KeyPair
@@ -447,8 +446,8 @@ class SoftLayerNodeDriver(NodeDriver):
         images = self.list_images()
         images = [image for image in images if image.id == image_id]
         if len(images) < 1:
-            raise SoftLayerException('could not find the image with id %s'\
-                                % image_id)
+            raise SoftLayerException('could not find the image with id %s'
+                                     % image_id)
         image = images[0]
         return image
 
