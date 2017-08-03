@@ -447,7 +447,8 @@ class SoftLayerNodeDriver(NodeDriver):
         images = self.list_images()
         images = [image for image in images if image.id == image_id]
         if len(images) < 1:
-            raise LibcloudError('could not find the image with id %s' % image_id)
+            raise SoftLayerException('could not find the image with id %s'\
+                                % image_id)
         image = images[0]
         return image
 
