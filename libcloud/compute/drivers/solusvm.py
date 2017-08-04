@@ -120,7 +120,6 @@ class SolusVMNodeDriver(NodeDriver):
                         return new_node
             time.sleep(10)
 
-
     def ex_start_node(self, node):
         """
         Start a node
