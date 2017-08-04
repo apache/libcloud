@@ -24,10 +24,9 @@ class SolusVMResponse(JsonResponse):
         return self.status in [httplib.OK, httplib.CREATED, httplib.NO_CONTENT]
 
     def parse_error(self):
-
         if self.status == httplib.UNAUTHORIZED:
             body = self.parse_body()
-            error = body.get('errors', {}).get('base')
+            error = body.get('errors', {})
             if error and isinstance(error, list):
                 error = error[0]
             raise InvalidCredsError(error)
