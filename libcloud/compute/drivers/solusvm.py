@@ -96,6 +96,10 @@ class SolusVMNodeDriver(NodeDriver):
 
         data = json.dumps({"virtual_machine": server_params})
 
+        # upon successfull machine creation,
+        # response is 201 with empty body
+        # attempting to return the real node
+        existing_nodes = self.list_nodes()
         try:
             response = self.connection.request(
                 "/api/virtual_machines",
@@ -103,11 +107,19 @@ class SolusVMNodeDriver(NodeDriver):
                 headers={
                     "Content-type": "application/json"},
                 method="POST")
-            # response is 201 with empty body
-            return True
-
         except Exception as exc:
             raise Exception("Failed to create node: %s" % exc)
+
+        new_node = None
+        for i in range(0, 10):
+            nodes = self.list_nodes()
+            for node in nodes:
+                if node.id not in [n.id for n in existing_nodes] and \
+                   node.name == hostname:
+                        new_node = node
+                        return new_node
+            time.sleep(10)
+
 
     def ex_start_node(self, node):
         """
