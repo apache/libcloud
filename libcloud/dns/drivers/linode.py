@@ -265,7 +265,8 @@ class LinodeDNSDriver(DNSDriver):
         Build a Record object from the item dictionary.
         """
         extra = {'protocol': item['PROTOCOL'], 'ttl_sec': item['TTL_SEC'],
-                 'port': item['PORT'], 'weight': item['WEIGHT']}
+                 'port': item['PORT'], 'weight': item['WEIGHT'],
+                 'priority': item['PRIORITY']}
         type = self._string_to_record_type(item['TYPE'])
         record = Record(id=item['RESOURCEID'], name=item['NAME'], type=type,
                         data=item['TARGET'], zone=zone, driver=self,
