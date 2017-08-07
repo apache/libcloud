@@ -556,7 +556,7 @@ class AzureNodeDriver(NodeDriver):
                                   ex_blob_container,
                                   name,
                                   n)
-                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
+                #self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
                 break
             except LibcloudError:
                 n += 1
