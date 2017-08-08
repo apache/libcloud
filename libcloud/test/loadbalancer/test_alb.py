@@ -127,7 +127,6 @@ class ApplicationLBTests(unittest.TestCase):
                                                                  members=members)
         self.assertTrue(targets_not_registered, 'ex_register_targets is expected to return True on success')
 
-
     def test_ex_create_listener(self):
         balancer = self.driver.get_balancer(self.balancer_id)
         listener = self.driver.ex_create_listener(balancer=balancer, port=443, proto='HTTPS',
@@ -251,6 +250,7 @@ class ApplicationLBMockHttp(MockHttp):
     def _2015_12_01_RegisterTargets(self, method, url, body, headers):
         body = self.fixtures.load('register_targets.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
