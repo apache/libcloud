@@ -86,17 +86,19 @@ class ApplicationLBDriver(Driver):
         # ALB balancer creation consists of 5 steps:
         # http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html
         #
-        # create_balancer() is a standard API method so, it's made as a wrapper here to preserve compatibility with
-        # other drivers where LB creation is one-step process. It calls respective ALB methods
-        # to assemble ready-to-use load balancer.
+        # create_balancer() is a standard API method so, it's made as a wrapper
+        # here to preserve compatibility with other drivers where LB creation
+        # is one-step process. It calls respective ALB methods to assemble
+        # ready-to-use load balancer.
 
         balancer = self.ex_create_balancer(name, scheme=ex_scheme,
                                            security_groups=ex_security_groups,
                                            subnets=ex_subnets, tags=ex_tags)
 
-        target_group = self.ex_create_target_group(name + "-tg", port, protocol,
-                                                   balancer.extra.get('vpc'),
-                                                   health_check_proto=protocol)
+        target_group = self.ex_create_target_group(
+            name + "-tg", port, protocol, balancer.extra.get('vpc'),
+            health_check_proto=protocol
+        )
         self.ex_register_targets(target_group, members)
         self.ex_create_listener(balancer, port, protocol, target_group,
                                 ssl_cert_arn=ex_ssl_cert_arn)
@@ -165,14 +167,20 @@ class ApplicationLBDriver(Driver):
         # optional params
         params.update(
             {
-                'HealthCheckIntervalSeconds': health_check_interval,  # Valid Values: Min value of 5. Max value of 300.
+                # Valid Values: Min value of 5. Max value of 300.
+                'HealthCheckIntervalSeconds': health_check_interval,
                 'HealthCheckPath': health_check_path,
                 'HealthCheckPort': health_check_port,
-                'HealthCheckProtocol': health_check_proto,  # Valid Values: HTTP | HTTPS
-                'HealthCheckTimeoutSeconds': health_check_timeout,  # Valid Range: Min value of 2. Max value of 60.
-                'HealthyThresholdCount': healthy_threshold,  # Valid Range: Minimum value of 2. Maximum value of 10.
-                'UnhealthyThresholdCount': unhealthy_threshold,  # Valid Range: Minimum value of 2. Maximum value of 10.
-                'Matcher.HttpCode': health_check_matcher  # Valid values: "200", "200,202", "200-299"
+                # Valid Values: HTTP | HTTPS
+                'HealthCheckProtocol': health_check_proto,
+                # Valid Range: Min value of 2. Max value of 60.
+                'HealthCheckTimeoutSeconds': health_check_timeout,
+                # Valid Range: Minimum value of 2. Maximum value of 10.
+                'HealthyThresholdCount': healthy_threshold,
+                # Valid Range: Minimum value of 2. Maximum value of 10.
+                'UnhealthyThresholdCount': unhealthy_threshold,
+                # Valid values: "200", "200,202", "200-299"
+                'Matcher.HttpCode': health_check_matcher
             }
         )
 
@@ -213,7 +221,7 @@ class ApplicationLBDriver(Driver):
             'Action': 'CreateListener',
             'LoadBalancerArn': balancer.id,
             'Protocol': proto,  # Valid Values: HTTP | HTTPS
-            'Port': port,  # Valid Range: Minimum value of 1. Maximum value of 65535.
+            'Port': port,  # Valid Range: Min value of 1. Max value of 65535.
             'DefaultActions.member.1.Type': action,
             'DefaultActions.member.1.TargetGroupArn': target_group.get('id')
         }
@@ -239,10 +247,11 @@ class ApplicationLBDriver(Driver):
         params = {
             'Action': 'CreateRule',
             'ListenerArn': listener.get('id'),
-            'Priority': priority,  # Valid Range: Minimum value of 1. Maximum value of 99999.
+            'Priority': priority,  # Valid Range: Min value of 1. Max: 99999.
             'Actions.member.1.Type': action,
             'Actions.member.1.TargetGroupArn': target_group.get('id'),
-            'Conditions.member.1.Field': condition_field,  # Valid values are host-header and path-pattern.
+            # Valid values are host-header and path-pattern.
+            'Conditions.member.1.Field': condition_field,
             'Conditions.member.1.Values.member.1': condition_value
         }
 
@@ -270,7 +279,8 @@ class ApplicationLBDriver(Driver):
             'port': int(findtext(element=el, xpath='Port', namespace=NS)),
             'balancer': findtext(element=el, xpath='LoadBalancerArn',
                                  namespace=NS),
-            'ssl_policy': findtext(element=el, xpath='SslPolicy', namespace=NS),
+            'ssl_policy': findtext(element=el, xpath='SslPolicy',
+                                   namespace=NS),
             'ssl_certificate': findtext(
                 element=el, xpath='Certificates/member/CertificateArn',
                 namespace=NS
@@ -376,8 +386,9 @@ class ApplicationLBDriver(Driver):
         rule = {
             'id': id,
             'is_default': __to_bool__(is_default),
-            # CreateRule API method accepts only int for priority, however DescribeRules method returns 'default' string
-            # for default listener rule. So leaving it as string.
+            # CreateRule API method accepts only int for priority, however
+            # DescribeRules method returns 'default' string for default
+            # listener rule. So leaving it as string.
             'priority': priority,
             'target_group': target_group,
             'conditions': conditions
@@ -398,7 +409,8 @@ class ApplicationLBDriver(Driver):
     def _to_target_group(self, el):
         target_group = {
             'id': findtext(element=el, xpath='TargetGroupArn', namespace=NS),
-            'name': findtext(element=el, xpath='TargetGroupName', namespace=NS),
+            'name': findtext(element=el, xpath='TargetGroupName',
+                             namespace=NS),
             'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
             'port': int(findtext(element=el, xpath='Port', namespace=NS)),
             'vpc': findtext(element=el, xpath='VpcId', namespace=NS),
@@ -427,7 +439,9 @@ class ApplicationLBDriver(Driver):
 
         target_group.update(
             {
-                'members': self._ex_get_target_group_members(target_group['id'])
+                'members': self._ex_get_target_group_members(
+                    target_group['id']
+                )
             }
         )
 
