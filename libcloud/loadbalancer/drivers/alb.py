@@ -74,7 +74,7 @@ class ApplicationLBDriver(Driver):
     def get_balancer(self, balancer_id):
         params = {
             'Action': 'DescribeLoadBalancers',
-            'LoadBalancerNames.member.1': balancer_id
+            'LoadBalancerArns.member.1': balancer_id
         }
         data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)[0]
