@@ -29,7 +29,7 @@ from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 class ApplicationLBTests(unittest.TestCase):
     # defaults from fixtures
     balancer_id = 'arn:aws:elasticloadbalancing:us-east-1:111111111111:loadbalancer/app/Test-ALB/1111111111111111'
-    target_group_id = 'arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB_tg/1111111111111111'
+    target_group_id = 'arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB-tg/1111111111111111'
     listener_id = \
         'arn:aws:elasticloadbalancing:us-east-1:111111111111:listener/app/Test-ALB/1111111111111111/1111111111111111'
     ssl_cert_id = 'arn:aws:iam::111111111111:server-certificate/test.certificate'
@@ -99,7 +99,7 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertEqual(balancer.state, State.UNKNOWN)
 
     def test_ex_create_target_group(self):
-        target_group = self.driver.ex_create_target_group(name='Test-ALB_tg', port=443, proto="HTTPS", vpc='vpc-11111111',
+        target_group = self.driver.ex_create_target_group(name='Test-ALB-tg', port=443, proto="HTTPS", vpc='vpc-11111111',
                                                           health_check_interval=30, health_check_path="/",
                                                           health_check_port="traffic-port", health_check_proto="HTTP",
                                                           health_check_timeout=5, health_check_matcher="200",
@@ -107,7 +107,7 @@ class ApplicationLBTests(unittest.TestCase):
                                                           )
         self.assertTrue(('id' in target_group), 'Target group is missing "id" field')
         self.assertTrue(('members' in target_group), 'Target group is missing "members" field')
-        self.assertEqual(target_group.get('name'), 'Test-ALB_tg')
+        self.assertEqual(target_group.get('name'), 'Test-ALB-tg')
         self.assertEqual(target_group.get('port'), 443)
         self.assertEqual(target_group.get('protocol'), 'HTTPS')
         self.assertEqual(target_group.get('vpc'), 'vpc-11111111')
