@@ -191,9 +191,9 @@ class ApplicationLBDriver(Driver):
             if member.port:
                 params['Targets.member.' + str(idx) + '.Port'] = member.port
 
+        # RegisterTargets doesn't return any useful data
         data = self.connection.request(ROOT, params=params).object
-        # TODO: analyze response and return some useful data if any
-        # TODO: cover with tests
+
         return True
 
     def ex_create_listener(self, balancer, port, proto, target_group, action="forward", ssl_cert_arn="",

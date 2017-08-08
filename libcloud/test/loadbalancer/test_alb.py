@@ -79,13 +79,16 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertEqual(members[0].balancer, balancer)
         self.assertEqual('i-01111111111111111', members[0].id)
 
-    # TODO: requires test for ex_register_targets to mock RegisterTargets request
-    # def test_create_balancer(self):
-    #     balancer = self.driver.create_balancer(name='Test-ALB', port=443, protocol='HTTPS', algorithm=None,
-    #                                            members=[Member(id='i-01111111111111111', ip=None, port=3443)],
-    #                                            ex_scheme="internet-facing", ex_security_groups=['sg-11111111'],
-    #                                            ex_subnets=['subnet-11111111', 'subnet-22222222'], ex_tags={},
-    #                                            ex_ssl_cert_arn=self.ssl_cert_id)
+    def test_create_balancer(self):
+        balancer = self.driver.create_balancer(name='Test-ALB', port=443, protocol='HTTPS', algorithm=None,
+                                               members=[Member(id='i-01111111111111111', ip=None, port=443)],
+                                               ex_scheme="internet-facing", ex_security_groups=['sg-11111111'],
+                                               ex_subnets=['subnet-11111111', 'subnet-22222222'], ex_tags={},
+                                               ex_ssl_cert_arn=self.ssl_cert_id)
+        self.assertEqual(balancer.id, self.balancer_id)
+        self.assertEqual(balancer.name, 'Test-ALB')
+        self.assertEqual(balancer.state, State.UNKNOWN)
+        self.assertEqual(balancer.port, 443)
 
     def test_ex_create_balancer(self):
         balancer = self.driver.ex_create_balancer(name='Test-ALB', addr_type='ipv4', scheme='internet-facing',
@@ -116,6 +119,14 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertEqual(target_group.get('healthy_threshold'), 5)
         self.assertEqual(target_group.get('unhealthy_threshold'), 2)
         self.assertEqual(target_group.get('matcher'), "200")
+
+    def test_ex_register_targets(self):
+        balancer = self.driver.get_balancer(self.balancer_id)
+        members = [Member('i-01111111111111111', '10.0.0.0', 443)]
+        targets_not_registered = self.driver.ex_register_targets(target_group=balancer.extra.get('target_groups')[0],
+                                                                 members=members)
+        self.assertTrue(targets_not_registered, 'ex_register_targets is expected to return True on success')
+
 
     def test_ex_create_listener(self):
         balancer = self.driver.get_balancer(self.balancer_id)
@@ -235,6 +246,10 @@ class ApplicationLBMockHttp(MockHttp):
 
     def _2015_12_01_CreateRule(self, method, url, body, headers):
         body = self.fixtures.load('create_rule.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _2015_12_01_RegisterTargets(self, method, url, body, headers):
+        body = self.fixtures.load('register_targets.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == "__main__":
