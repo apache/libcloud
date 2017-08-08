@@ -15,7 +15,7 @@
         <DefaultActions>
           <member>
             <Type>forward</Type>
-            <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB_tg/1111111111111111</TargetGroupArn>
+            <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB-tg/1111111111111111</TargetGroupArn>
           </member>
         </DefaultActions>
       </member>
