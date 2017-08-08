@@ -92,7 +92,7 @@ class ApplicationLBDriver(Driver):
         balancer = self.ex_create_balancer(name, scheme=ex_scheme, security_groups=ex_security_groups,
                                            subnets=ex_subnets, tags=ex_tags)
 
-        target_group = self.ex_create_target_group(name + "_tg", port, protocol, balancer.extra.get('vpc'),
+        target_group = self.ex_create_target_group(name + "-tg", port, protocol, balancer.extra.get('vpc'),
                                                    health_check_proto=protocol)
         self.ex_register_targets(target_group, members)
         self.ex_create_listener(balancer, port, protocol, target_group, ssl_cert_arn=ex_ssl_cert_arn)
