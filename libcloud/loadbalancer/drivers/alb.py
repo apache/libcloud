@@ -80,7 +80,8 @@ class ApplicationLBDriver(Driver):
         return self._to_balancers(data)[0]
 
     def create_balancer(self, name, port, protocol, algorithm, members,
-                        ex_scheme="", ex_security_groups=[], ex_subnets=[], ex_tags={}, ex_ssl_cert_arn=""):
+                        ex_scheme="", ex_security_groups=[], ex_subnets=[],
+                        ex_tags={}, ex_ssl_cert_arn=""):
 
         # ALB balancer creation consists of 5 steps:
         # http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html
@@ -89,18 +90,22 @@ class ApplicationLBDriver(Driver):
         # other drivers where LB creation is one-step process. It calls respective ALB methods
         # to assemble ready-to-use load balancer.
 
-        balancer = self.ex_create_balancer(name, scheme=ex_scheme, security_groups=ex_security_groups,
+        balancer = self.ex_create_balancer(name, scheme=ex_scheme,
+                                           security_groups=ex_security_groups,
                                            subnets=ex_subnets, tags=ex_tags)
 
-        target_group = self.ex_create_target_group(name + "-tg", port, protocol, balancer.extra.get('vpc'),
+        target_group = self.ex_create_target_group(name + "-tg", port, protocol,
+                                                   balancer.extra.get('vpc'),
                                                    health_check_proto=protocol)
         self.ex_register_targets(target_group, members)
-        self.ex_create_listener(balancer, port, protocol, target_group, ssl_cert_arn=ex_ssl_cert_arn)
+        self.ex_create_listener(balancer, port, protocol, target_group,
+                                ssl_cert_arn=ex_ssl_cert_arn)
 
         return self.get_balancer(balancer.id)
 
-    def ex_create_balancer(self, name, addr_type="ipv4", scheme="internet-facing", security_groups=[], subnets=[],
-                           tags={}):
+    def ex_create_balancer(self, name, addr_type="ipv4",
+                           scheme="internet-facing", security_groups=[],
+                           subnets=[], tags={}):
 
         # mandatory params
         params = {
@@ -111,7 +116,7 @@ class ApplicationLBDriver(Driver):
         idx = 0
         for subnet in subnets:
             idx += 1
-            params['Subnets.member.'+str(idx)] = subnet
+            params['Subnets.member.' + str(idx)] = subnet
 
         # optional params
         params.update(
@@ -127,7 +132,7 @@ class ApplicationLBDriver(Driver):
             params['SecurityGroups.member.' + str(idx)] = sg
 
         idx = 0
-        for k, v in tags.iteritems():
+        for k, v in tags.items():
             idx += 1
             params['Tags.member.' + str(idx) + '.Key'] = k
             params['Tags.member.' + str(idx) + '.Value'] = v
@@ -140,9 +145,13 @@ class ApplicationLBDriver(Driver):
 
         return balancer
 
-    def ex_create_target_group(self, name, port, proto, vpc, health_check_interval=30, health_check_path="/",
-                               health_check_port="traffic-port", health_check_proto="HTTP", health_check_timeout=5,
-                               health_check_matcher="200", healthy_threshold=5, unhealthy_threshold=2):
+    def ex_create_target_group(self, name, port, proto, vpc,
+                               health_check_interval=30, health_check_path="/",
+                               health_check_port="traffic-port",
+                               health_check_proto="HTTP",
+                               health_check_timeout=5,
+                               health_check_matcher="200", healthy_threshold=5,
+                               unhealthy_threshold=2):
 
         # mandatory params
         params = {
@@ -193,12 +202,12 @@ class ApplicationLBDriver(Driver):
                 params['Targets.member.' + str(idx) + '.Port'] = member.port
 
         # RegisterTargets doesn't return any useful data
-        data = self.connection.request(ROOT, params=params).object
+        self.connection.request(ROOT, params=params)
 
         return True
 
-    def ex_create_listener(self, balancer, port, proto, target_group, action="forward", ssl_cert_arn="",
-                           ssl_policy=""):
+    def ex_create_listener(self, balancer, port, proto, target_group,
+                           action="forward", ssl_cert_arn="", ssl_policy=""):
         # mandatory params
         params = {
             'Action': 'CreateListener',
@@ -223,7 +232,8 @@ class ApplicationLBDriver(Driver):
 
         return listener
 
-    def ex_create_listener_rule(self, listener, priority, target_group, action="forward", condition_field="",
+    def ex_create_listener_rule(self, listener, priority, target_group,
+                                action="forward", condition_field="",
                                 condition_value=""):
         # mandatory params
         params = {
@@ -258,11 +268,19 @@ class ApplicationLBDriver(Driver):
             'id': findtext(element=el, xpath='ListenerArn', namespace=NS),
             'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
             'port': int(findtext(element=el, xpath='Port', namespace=NS)),
-            'balancer': findtext(element=el, xpath='LoadBalancerArn', namespace=NS),
+            'balancer': findtext(element=el, xpath='LoadBalancerArn',
+                                 namespace=NS),
             'ssl_policy': findtext(element=el, xpath='SslPolicy', namespace=NS),
-            'ssl_certificate': findtext(element=el, xpath='Certificates/member/CertificateArn', namespace=NS),
-            'action': findtext(element=el, xpath='DefaultActions/member/Type', namespace=NS),
-            'target_group': findtext(element=el, xpath='DefaultActions/member/TargetGroupArn', namespace=NS)
+            'ssl_certificate': findtext(
+                element=el, xpath='Certificates/member/CertificateArn',
+                namespace=NS
+            ),
+            'action': findtext(element=el, xpath='DefaultActions/member/Type',
+                               namespace=NS),
+            'target_group': findtext(
+                element=el, xpath='DefaultActions/member/TargetGroupArn',
+                namespace=NS
+            )
         }
 
         listener.update(
@@ -384,14 +402,27 @@ class ApplicationLBDriver(Driver):
             'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
             'port': int(findtext(element=el, xpath='Port', namespace=NS)),
             'vpc': findtext(element=el, xpath='VpcId', namespace=NS),
-            'health_check_timeout': int(findtext(element=el, xpath='HealthCheckTimeoutSeconds', namespace=NS)),
-            'health_check_port': findtext(element=el, xpath='HealthCheckPort', namespace=NS),
-            'health_check_path': findtext(element=el, xpath='HealthCheckPath', namespace=NS),
-            'health_check_proto': findtext(element=el, xpath='HealthCheckProtocol', namespace=NS),
-            'health_check_interval': int(findtext(element=el, xpath='HealthCheckIntervalSeconds', namespace=NS)),
-            'healthy_threshold': int(findtext(element=el, xpath='HealthyThresholdCount', namespace=NS)),
-            'unhealthy_threshold': int(findtext(element=el, xpath='UnhealthyThresholdCount', namespace=NS)),
-            'matcher': findtext(element=el, xpath='Matcher/HttpCode', namespace=NS)
+            'health_check_timeout': int(findtext(
+                element=el, xpath='HealthCheckTimeoutSeconds', namespace=NS)
+            ),
+            'health_check_port': findtext(element=el, xpath='HealthCheckPort',
+                                          namespace=NS),
+            'health_check_path': findtext(element=el, xpath='HealthCheckPath',
+                                          namespace=NS),
+            'health_check_proto': findtext(
+                element=el, xpath='HealthCheckProtocol', namespace=NS
+            ),
+            'health_check_interval': int(findtext(
+                element=el, xpath='HealthCheckIntervalSeconds', namespace=NS)
+            ),
+            'healthy_threshold': int(findtext(
+                element=el, xpath='HealthyThresholdCount', namespace=NS)
+            ),
+            'unhealthy_threshold': int(findtext(
+                element=el, xpath='UnhealthyThresholdCount', namespace=NS)
+            ),
+            'matcher': findtext(element=el, xpath='Matcher/HttpCode',
+                                namespace=NS)
         }
 
         target_group.update(
