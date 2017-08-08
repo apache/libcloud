@@ -175,11 +175,11 @@ class ApplicationLBDriver(Driver):
 
         return target_group
 
-    def ex_register_targets(self, target_group_id, members=[]):
+    def ex_register_targets(self, target_group, members=[]):
         # mandatory params
         params = {
             'Action': 'RegisterTargets',
-            'TargetGroupArn': target_group_id
+            'TargetGroupArn': target_group.get('id')
         }
 
         if not members:
