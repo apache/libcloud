@@ -121,7 +121,7 @@ class DockertlsConnection(KeyCertificateConnection):
 
     def __init__(self, key, secret, secure=True,
                  host='localhost',
-                 port=4243, ca_cert='', key_file='', cert_file='', **kwargs):
+                 port=4243, key_file='', cert_file='', **kwargs):
 
         super(DockertlsConnection, self).__init__(key_file=key_file,
                                                   cert_file=cert_file,
@@ -181,7 +181,7 @@ class DockerContainerDriver(ContainerDriver):
     version = '1.24'
 
     def __init__(self, key='', secret='', secure=False, host='localhost',
-                 port=4243, key_file=None, cert_file=None, ca_cert=None):
+                 port=4243, key_file=None, cert_file=None):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -238,15 +238,6 @@ class DockerContainerDriver(ContainerDriver):
                 raise Exception(
                     'Needs both private key file and '
                     'certificate file for tls authentication')
-
-        if ca_cert:
-            self.connection.connection.ca_cert = ca_cert
-        elif hasattr(self.connection.connection, 'ca_cert'):
-            # already set by libcloud.security.CA_CERTS_PATH
-            pass
-        else:
-            # do not verify SSL certificate
-            self.connection.connection.ca_cert = False
 
         self.connection.secure = secure
         self.connection.host = host
