@@ -18,6 +18,13 @@ Compute
   [GITHUB-1066]
   (Francois Regnoult)
 
+Container
+~~~~~~~~~
+
+- [DOCKER] Fixes to support TLS connection
+  [GITHUB-1067]
+  (johnnyWalnut)
+
 Storage
 ~~~~~~~
 
