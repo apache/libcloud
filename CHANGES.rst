@@ -11,6 +11,13 @@ Common
   [GITHUB-1085]
   (Francisco Ros)
 
+Compute
+~~~~~~~
+
+- [SOFTLAYER] Add `get_image` method to class
+  [GITHUB-1066]
+  (Francois Regnoult)
+
 Storage
 ~~~~~~~
 
