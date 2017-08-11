@@ -29,6 +29,13 @@ Container
   [GITHUB-1067]
   (johnnyWalnut)
 
+DNS
+~~~
+
+- [LINODE] Add priority to the extra dictionary in record instances
+  [GITHUB-1088]
+  (@mete0r)
+
 Storage
 ~~~~~~~
 
