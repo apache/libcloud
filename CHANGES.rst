@@ -28,6 +28,10 @@ Container
 Storage
 ~~~~~~~
 
+- [CLOUDFILES] Update OpenStackSwiftConnection to work with auth version 3.0
+  [GITHUB-1068]
+  (Hakan Carlsson)
+
 - [CLOUDFILES] Add SSL URI support
   [GITHUB-1076, LIBCLOUD-458]
   (@ayleph)
