@@ -865,6 +865,33 @@ class CertificateConnection(Connection):
         self.cert_file = cert_file
 
 
+class KeyCertificateConnection(CertificateConnection):
+    """
+    Base connection class which accepts both ``key_file`` and ``cert_file``
+    argument.
+    """
+
+    key_file = None
+
+    def __init__(self, key_file, cert_file, secure=True, host=None, port=None,
+                 url=None, proxy_url=None, timeout=None, backoff=None,
+                 retry_delay=None):
+        """
+        Initialize `cert_file`; set `secure` to an ``int`` based on
+        passed value.
+        """
+        super(KeyCertificateConnection, self).__init__(cert_file,
+                                                       secure=secure,
+                                                       host=host,
+                                                       port=port, url=url,
+                                                       timeout=timeout,
+                                                       backoff=backoff,
+                                                       retry_delay=retry_delay,
+                                                       proxy_url=proxy_url)
+
+        self.key_file = key_file
+
+
 class ConnectionUserAndKey(ConnectionKey):
     """
     Base connection class which accepts a ``user_id`` and ``key`` argument.
