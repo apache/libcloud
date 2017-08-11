@@ -18,6 +18,10 @@ Compute
   [GITHUB-1066]
   (Francois Regnoult)
 
+- [ARM] Add Storage support, volumes, snapshots
+  [GITHUB-1087]
+  (Sergey Babak)
+
 Container
 ~~~~~~~~~
 
