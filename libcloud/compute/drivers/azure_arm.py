@@ -373,8 +373,18 @@ class AzureNodeDriver(NodeDriver):
                      % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
+
+        nodes_data = r.object["value"]
+        # get paginated results
+        # remove host from nextLink
+        while r.object.get("nextLink"):
+            next_url = r.object.get("nextLink").split(self.connection.host)[1]
+            r = self.connection.request(next_url,
+                                        params={"api-version": "2015-06-15"})
+            nodes_data.extend(r.object["value"])
+
         return [self._to_node(n, fetch_nic=ex_fetch_nic)
-                for n in r.object["value"]]
+                for n in nodes_data]
 
     def create_node(self,
                     name,
@@ -681,63 +691,48 @@ class AzureNodeDriver(NodeDriver):
             else:
                 return False
 
-        # Need to poll until the node actually goes away.
-        while True:
-            try:
-                time.sleep(10)
-                self.connection.request(
-                    node.id,
-                    params={"api-version": "2015-06-15"})
-            except BaseHTTPError as h:
-                if h.code == 404:
-                    break
-                else:
-                    return False
-
         # Optionally clean up the network
         # interfaces that were attached to this node.
         interfaces = \
             node.extra["properties"]["networkProfile"]["networkInterfaces"]
         if ex_destroy_nic:
             for nic in interfaces:
-                while True:
-                    try:
-                        self.connection.request(nic["id"],
-                                                params={
-                                                    "api-version":
-                                                    "2015-06-15"},
-                                                method='DELETE')
+                try:
+                    self.connection.request(nic["id"],
+                                            params={
+                                                "api-version":
+                                                "2015-06-15"},
+                                            method='DELETE')
+                    break
+                except BaseHTTPError as h:
+                    if h.code == 202:
                         break
-                    except BaseHTTPError as h:
-                        if h.code == 202:
-                            break
-                        inuse = h.message.startswith("[NicInUse]")
-                        if h.code == 400 and inuse:
-                            time.sleep(10)
-                        else:
-                            return False
+                    inuse = h.message.startswith("[NicInUse]")
+                    if h.code == 400 and inuse:
+                        time.sleep(10)
+                    else:
+                        return False
 
         # Optionally clean up OS disk VHD.
         vhd_uri = \
             node.extra["properties"]["storageProfile"]["osDisk"]["vhd"]["uri"]
         if ex_destroy_vhd:
-            while True:
-                try:
-                    resourceGroup = node.id.split("/")[4]
-                    self._ex_delete_old_vhd(
-                        resourceGroup,
-                        vhd_uri)
-                    break
-                except LibcloudError as e:
-                    if "LeaseIdMissing" in str(e):
-                        # Unfortunately lease errors
-                        # (which occur if the vhd blob
-                        # hasn't yet been released by the VM being destroyed)
-                        # get raised as plain
-                        # LibcloudError.  Wait a bit and try again.
-                        time.sleep(10)
-                    else:
-                        raise
+            try:
+                resourceGroup = node.id.split("/")[4]
+                self._ex_delete_old_vhd(
+                    resourceGroup,
+                    vhd_uri)
+                break
+            except LibcloudError as e:
+                if "LeaseIdMissing" in str(e):
+                    # Unfortunately lease errors
+                    # (which occur if the vhd blob
+                    # hasn't yet been released by the VM being destroyed)
+                    # get raised as plain
+                    # LibcloudError.  Wait a bit and try again.
+                    time.sleep(10)
+                else:
+                    raise
 
         return True
 
@@ -1222,7 +1217,7 @@ class AzureNodeDriver(NodeDriver):
         if deallocate:
             target = "%s/deallocate" % node.id
         else:
-            target = "%s/stop" % node.id
+            target = "%s/powerOff" % node.id
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     method='POST')
@@ -1359,6 +1354,7 @@ class AzureNodeDriver(NodeDriver):
         return kwargs
 
     def _to_node(self, data, fetch_nic=True):
+        created_at = None
         private_ips = []
         public_ips = []
         nics = data["properties"]["networkProfile"]["networkInterfaces"]
@@ -1386,7 +1382,8 @@ class AzureNodeDriver(NodeDriver):
             r = self.connection.request(action,
                                         params={"api-version": "2015-06-15"})
             for status in r.object["statuses"]:
-                if status["code"] == "ProvisioningState/creating":
+                if status["code"] in ["ProvisioningState/creating",
+                                      "ProvisioningState/updating"]:
                     state = NodeState.PENDING
                     break
                 elif status["code"] == "ProvisioningState/deleting":
@@ -1396,16 +1393,22 @@ class AzureNodeDriver(NodeDriver):
                     state = NodeState.ERROR
                     break
                 elif status["code"] == "ProvisioningState/succeeded":
-                    pass
+                    state = NodeState.RUNNING
 
                 if status["code"] == "PowerState/deallocated":
                     state = NodeState.STOPPED
+                    break
+                elif status["code"] == "PowerState/stopped":
+                    # this is stopped without resources deallocated
+                    state = NodeState.PAUSED
                     break
                 elif status["code"] == "PowerState/deallocating":
                     state = NodeState.PENDING
                     break
                 elif status["code"] == "PowerState/running":
                     state = NodeState.RUNNING
+                if status.get('time'):
+                    created_at = status.get('time')
         except BaseHTTPError:
             pass
 
@@ -1415,6 +1418,7 @@ class AzureNodeDriver(NodeDriver):
                     public_ips,
                     private_ips,
                     driver=self.connection.driver,
+                    created_at=created_at,
                     extra=data)
 
         return node
