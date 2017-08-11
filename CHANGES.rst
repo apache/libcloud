@@ -11,6 +11,13 @@ Common
   [GITHUB-1085]
   (Francisco Ros)
 
+Storage
+~~~~~~~
+
+- [CLOUDFILES] Add SSL URI support
+  [GITHUB-1076, LIBCLOUD-458]
+  (@ayleph)
+
 Changes in Apache Libcloud 2.1.0
 --------------------------------
 
