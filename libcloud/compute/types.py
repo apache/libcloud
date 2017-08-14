@@ -98,6 +98,7 @@ class Provider(Type):
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     :cvar RIMUHOSTING: RimuHosting.com
     :cvar TERREMARK: Terremark
+    :cvar UPCLOUD: Upcloud
     :cvar VCL: VCL driver
     :cvar VCLOUD: vmware vCloud
     :cvar VPSNET: VPS.net
@@ -161,6 +162,7 @@ class Provider(Type):
     SKALICLOUD = 'skalicloud'
     SOFTLAYER = 'softlayer'
     TERREMARK = 'terremark'
+    UPCLOUD = 'upcloud'
     VCL = 'vcl'
     VCLOUD = 'vcloud'
     VOXEL = 'voxel'
