@@ -1,0 +1,65 @@
+{
+   "server" : {
+      "boot_order" : "disk",
+      "core_number" : "1",
+      "firewall" : "off",
+      "hostname" : "localhost",
+      "ip_addresses" : {
+         "ip_address" : [
+            {
+               "access" : "private",
+               "address" : "10.1.2.26",
+               "family" : "IPv4"
+            },
+            {
+               "access" : "public",
+               "address" : "2a04:3540:1000:310:7cae:1dff:fead:5683",
+               "family" : "IPv6"
+            },
+            {
+               "access" : "public",
+               "address" : "94.237.37.215",
+               "family" : "IPv4",
+               "part_of_plan" : "yes"
+            }
+         ]
+      },
+      "license" : 0,
+      "memory_amount" : "1024",
+      "nic_model" : "virtio",
+      "plan" : "1xCPU-1GB",
+      "plan_ipv4_bytes" : "0",
+      "plan_ipv6_bytes" : "0",
+      "progress" : "0",
+      "state" : "maintenance",
+      "storage_devices" : {
+         "storage_device" : [
+            {
+               "address" : "virtio:0",
+               "part_of_plan" : "yes",
+               "storage" : "01898fe2-9909-471e-b33c-59d7896b48f5",
+               "storage_size" : 30,
+               "storage_title" : "Ubuntu Server 16.04 LTS (Xenial Xerus), 64-bit",
+               "type" : "disk"
+            },
+            {
+               "address" : "ide:0:0",
+               "storage" : "01000000-0000-4000-8000-000030040101",
+               "storage_size" : 1,
+               "storage_title" : "Ubuntu Server 14.04 LTS",
+               "type" : "cdrom"
+            }
+         ]
+      },
+      "tags" : {
+         "tag" : []
+      },
+      "timezone" : "UTC",
+      "title" : "test_server",
+      "uuid" : "00c68ee6-e6e1-4d5f-a213-4a1e063a3cbd",
+      "video_model" : "cirrus",
+      "vnc" : "off",
+      "vnc_password" : "5C4TVPf8",
+      "zone" : "fi-hel1"
+   }
+}

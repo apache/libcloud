@@ -1,0 +1,58 @@
+{
+   "server" : {
+      "boot_order" : "cdrom,disk",
+      "core_number" : "1",
+      "firewall" : "off",
+      "host" : 4297867907,
+      "hostname" : "localhost",
+      "ip_addresses" : {
+         "ip_address" : [
+            {
+               "access" : "private",
+               "address" : "10.2.1.244",
+               "family" : "IPv4"
+            },
+            {
+               "access" : "public",
+               "address" : "2a04:3541:1000:500:7cae:1dff:fead:5bde",
+               "family" : "IPv6"
+            },
+            {
+               "access" : "public",
+               "address" : "83.136.254.34",
+               "family" : "IPv4",
+               "part_of_plan" : "yes"
+            }
+         ]
+      },
+      "license" : 0,
+      "memory_amount" : "1024",
+      "nic_model" : "virtio",
+      "plan" : "1xCPU-1GB",
+      "plan_ipv4_bytes" : "0",
+      "plan_ipv6_bytes" : "0",
+      "state" : "stopped",
+      "storage_devices" : {
+         "storage_device" : [
+            {
+               "address" : "virtio:0",
+               "part_of_plan" : "yes",
+               "storage" : "01839922-a675-4214-b10e-a4cf7953992f",
+               "storage_size" : 30,
+               "storage_title" : "localhost-disk0",
+               "type" : "disk"
+            }
+         ]
+      },
+      "tags" : {
+         "tag" : []
+      },
+      "timezone" : "UTC",
+      "title" : "test",
+      "uuid" : "00893c98-5d5a-4363-b177-88df518a2b60",
+      "video_model" : "cirrus",
+      "vnc" : "off",
+      "vnc_password" : "Hf7qpJs8",
+      "zone" : "uk-lon1"
+   }
+}
