@@ -130,13 +130,7 @@ class UpcloudDriverTests(LibcloudTestCase):
         size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
                         extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver=self.driver)
 
-        auth = NodeAuthSSHKey('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDCUUFfYA+T+BzoM7IIR' +
-                              'VXNndDjYvIROMjfyRBhhHf6RZd1IkAwcWSGISePh2tIiqu8gJalYYHg2w' +
-                              'i3ofMJfi6VYeyBFWrIDhMK0v+ziBbBUtlJNnP6MBOR/13avkk+76TVrcG' +
-                              'xu49RaptYNzZ21XluvIlaqqdjAhoh0J+o7OZTKD7N1UTPL7CIX+ITaA+g' +
-                              '3FR5ITClk8KmIbp3vT6fUPD7pNUrGBZTpcPcHq8rodQ8igWIVdSkb9iky' +
-                              'ew4y6wvsubQ3Ykn26XeKxrk1vA6ZKMHt7ijCYmfL0LcDfctNymy/vc6hs' +
-                              'WxCRS5OqNQ6nxdXpv9A+TD0sJuf5jaoH7MSpU1 mika.lackman@gmail.com')
+        auth = NodeAuthSSHKey('publikey')
         node = self.driver.create_node(name='test_server', size=size, image=image, location=location, auth=auth)
         self.assertTrue(re.match('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$', node.id))
         self.assertEquals(node.name, 'test_server')
