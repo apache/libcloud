@@ -76,7 +76,6 @@ class LinodeTests(unittest.TestCase):
         self.assertHasKeys(srvrecord.extra, ['protocol', 'ttl_sec', 'port',
                                              'priority', 'weight'])
 
-
     def test_list_records_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]
 
