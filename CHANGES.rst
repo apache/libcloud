@@ -32,6 +32,11 @@ Container
 DNS
 ~~~
 
+- [ROUTE53] Fix for TXT and SPF records, when user didn't escapsulate data in quotes, 
+  the API would fire error. As reported by @glyph
+  [LIBCLOUD-875, GITHUB-1093]
+  (Anthony Shaw)
+
 - [LINODE] Add priority to the extra dictionary in record instances
   [GITHUB-1088]
   (@mete0r)
