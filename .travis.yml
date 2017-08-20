@@ -33,7 +33,7 @@ matrix:
       python: 2.7
       before_script: TOX_ENV=coverage
     - env: ENV=docs
-      python: 2.7
+      python: 3.5
       before_script: TOX_ENV=docs-travis
       # Note: graphviz is needed for grapgs embedded in the docs
       addons:
