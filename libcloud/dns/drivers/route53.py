@@ -561,4 +561,4 @@ class Route53DNSDriver(DNSDriver):
     def _quote_data(self, data):
         if data[0] == '"' and data[-1] == '"':
             return data
-        return '"{0}"'.format(data)
+        return '"{0}"'.format(data.replace('"', '\"'))

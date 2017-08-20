@@ -228,6 +228,21 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.SPF)
         self.assertEqual(record.data, '"test"')
 
+    def test_create_TXT_record_escaped(self):
+        """
+        Check that TXT record with quotes inside are escaped correctly
+        """
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.TXT, data='test "with"'
+        )
+        self.assertEqual(record.id, 'TXT:')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.TXT)
+        self.assertEqual(record.data, '"test \"with\""')
+
     def test_create_multi_value_record(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.ex_create_multi_value_record(
