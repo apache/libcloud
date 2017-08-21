@@ -1609,7 +1609,8 @@ class AzureNodeDriver(NodeDriver):
                                     params={"api-version": "2015-06-15"})
         return [self._to_ip_address(net) for net in r.object["value"]]
 
-    def ex_create_public_ip(self, name, resource_group, location=None):
+    def ex_create_public_ip(self, name, resource_group, location=None,
+                            public_ip_allocation_method=None):
         """
         Create a public IP resources.
 
@@ -1622,6 +1623,11 @@ class AzureNodeDriver(NodeDriver):
         :param location: The location at which to create the public IP
         (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
+
+        :param public_ip_allocation_method: Call ex_create_public_ip with
+        public_ip_allocation_method="Static" to create a static public
+        IP address
+        :type public_ip_allocation_method: ``str``
 
         :return: The newly created public ip object
         :rtype: :class:`.AzureIPAddress`
@@ -1642,6 +1648,10 @@ class AzureNodeDriver(NodeDriver):
                 "publicIPAllocationMethod": "Dynamic"
             }
         }
+
+        if public_ip_allocation_method == "Static":
+            data['properties']['publicIPAllocationMethod'] = "Static"
+
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     data=data,
