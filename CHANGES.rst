@@ -14,6 +14,10 @@ Common
 Compute
 ~~~~~~~
 
+- [ARM] Add option to create static public IP
+  [GITHUB-1091, LIBCLOUD-918]
+  (Aki Ketolainen)
+
 - [SOFTLAYER] Add `get_image` method to class
   [GITHUB-1066]
   (Francois Regnoult)
