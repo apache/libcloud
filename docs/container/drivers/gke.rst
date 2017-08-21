@@ -25,3 +25,4 @@ API Docs
     :members:
     :inherited-members:
 
+.. _`Google Container Platform`: https://cloud.google.com/container-engine/
