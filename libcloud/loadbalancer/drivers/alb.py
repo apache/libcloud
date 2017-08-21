@@ -53,12 +53,11 @@ class ApplicationLBDriver(Driver):
 
     def __init__(self, access_id, secret, region, token=None):
         self.token = token
-        super(ApplicationLBDriver, self).__init__(
-            access_id, secret, token=token
-        )
         self.region = region
         self.region_name = region
-        self.connection.host = HOST % (region)
+        super(ApplicationLBDriver, self).__init__(
+            access_id, secret, token=token, host=HOST % region, region=region
+        )
 
     def list_protocols(self):
         return ['http', 'https']
