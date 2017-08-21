@@ -60,17 +60,43 @@ class ApplicationLBDriver(Driver):
         )
 
     def list_protocols(self):
+        """
+        Return list of protocols supported by driver
+
+        :rtype: ``list`` of ``strings``
+        """
         return ['http', 'https']
 
     def list_balancers(self):
+        """
+        List all load balancers
+
+        :rtype: ``list`` of :class:`LoadBalancer`
+        """
         params = {'Action': 'DescribeLoadBalancers'}
         data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)
 
     def balancer_list_members(self, balancer):
+        """
+        List memebers of load balancer
+
+        :param balancer: LoadBalancer to list members for
+        :type  balancer: :class:`LoadBalancer`
+
+        :rtype: ``list`` of :class:`Member`
+        """
         return balancer._members
 
     def get_balancer(self, balancer_id):
+        """
+        Get a load balancer object by ARN
+
+        :param  balancer_id: ARN of load balancer you wish to fetch.
+        :type  balancer_id: ``str``
+
+        :rtype: :class:`LoadBalancer`
+        """
         params = {
             'Action': 'DescribeLoadBalancers',
             'LoadBalancerArns.member.1': balancer_id
@@ -81,14 +107,55 @@ class ApplicationLBDriver(Driver):
     def create_balancer(self, name, port, protocol, algorithm, members,
                         ex_scheme="", ex_security_groups=[], ex_subnets=[],
                         ex_tags={}, ex_ssl_cert_arn=""):
+        """
+        Create a new load balancer instance.
 
-        # ALB balancer creation consists of 5 steps:
-        # http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html
-        #
-        # create_balancer() is a standard API method so, it's made as a wrapper
-        # here to preserve compatibility with other drivers where LB creation
-        # is one-step process. It calls respective ALB methods to assemble
-        # ready-to-use load balancer.
+        AWS ALB balancer creation consists of 5 steps:
+        http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/Welcome.html
+
+        create_balancer() is a standard API method so, it's made as a wrapper
+        here to preserve compatibility with other drivers where LB creation
+        is one-step process. It calls respective ALB methods to assemble
+        ready-to-use load balancer.
+
+        :param name: Name of the new load balancer
+        :type name: ``str``
+
+        :param port: Port number to setup load balancer listener
+        :type port: ``int``
+
+        :param protocol: Load balancer protocol, should be 'HTTP' or 'HTTPS'.
+        :type protocol: ``str``
+
+        :param algorithm: Load balancing algorithm. Ignored for AWS ALB.
+        :type algorithm: :class:`Algorithm` or ``None``
+
+        :param members: List of Members to attach to the balancer. If 'port'
+                        attribute is set for the memeber - load balancer will
+                        send traffic there. Otherwise - load balancer port is
+                        used on the memeber's side. 'ip' attribute is ignored.
+        :type members: ``list`` of :class:`Member`
+
+        :param ex_scheme: Scheme of load balancer. Can be 'internet-facing' or
+                          'internal'.
+        :type ex_scheme: ``str``
+
+        :param ex_security_groups: List of load balancer security group ids.
+        :type ex_security_groups: ``list`` of ``str``
+
+        :param ex_subnets: List of load balancer subnet ids.
+        :type ex_subnets: ``list`` of ``str``
+
+        :param ex_tags: Tags to assign to the load balancer.
+        :type ex_tags: ``dict``
+
+        :param ex_ssl_cert_arn: SSL certificate ARN to use when load balancer
+                protocol is 'HTTPS'.
+        :type ex_ssl_cert_arn: ``str``
+
+        :return: LoadBalancer object
+        :rtype: :class:`LoadBalancer`
+        """
 
         balancer = self.ex_create_balancer(name, scheme=ex_scheme,
                                            security_groups=ex_security_groups,
@@ -107,6 +174,33 @@ class ApplicationLBDriver(Driver):
     def ex_create_balancer(self, name, addr_type="ipv4",
                            scheme="internet-facing", security_groups=[],
                            subnets=[], tags={}):
+        """
+        AWS-specific method to create a new load balancer. Since ALB is a
+        composite object (load balancer, target group, listener etc) - extra
+        methods must be called to assemble ready-to-use balancer.
+
+        :param name: Name of the new load balancer
+        :type name: ``str``
+
+        :param addr_type: Load balancer address type. Can be 'ipv4' or 'ipv6'.
+        :type addr_type: ``str``
+
+        :param scheme: Scheme of load balancer. Can be 'internet-facing' or
+                      'internal'.
+        :type scheme: ``str``
+
+        :param security_groups: List of load balancer security group ids.
+        :type security_groups: ``list`` of ``str``
+
+        :param subnets: List of load balancer subnet ids.
+        :type subnets: ``list`` of ``str``
+
+        :param tags: Tags to assign to the load balancer.
+        :type tags: ``dict``
+
+        :return: LoadBalancer object
+        :rtype: :class:`LoadBalancer`
+        """
 
         # mandatory params
         params = {
@@ -153,6 +247,69 @@ class ApplicationLBDriver(Driver):
                                health_check_timeout=5,
                                health_check_matcher="200", healthy_threshold=5,
                                unhealthy_threshold=2):
+        """
+        Create a target group for AWS ALB load balancer.
+
+        :param name: Name of target group
+        :type name: ``str``
+
+        :param port: The port on which the targets receive traffic.
+                    This port is used unless you specify a port override when
+                    registering the target.
+        :type port: ``int``
+
+        :param proto: The protocol to use for routing traffic to the targets.
+                    Can be 'HTTP' or 'HTTPS'.
+        :type proto: ``str``
+
+        :param vpc: The identifier of the virtual private cloud (VPC).
+        :type vpc: ``str``
+
+        :param health_check_interval: The approximate amount of time, in
+                                    seconds, between health checks of an
+                                    individual target. The default is
+                                    30 seconds.
+        :type health_check_interval: ``int``
+
+        :param health_check_path: The ping path that is the destination on
+                                the targets for health checks. The default is /.
+        :type health_check_path: ``str``
+
+        :param health_check_port: The port the load balancer uses when
+                                performing health checks on targets.
+                                The default is traffic-port, which indicates
+                                the port on which each target receives traffic
+                                from the load balancer.
+        :type health_check_port: ``str``
+
+        :param health_check_proto: The protocol the load balancer uses when
+                                performing health checks on targets.
+                                Can be 'HTTP' (default) or 'HTTPS'.
+        :type health_check_proto: ``str``
+
+        :param health_check_timeout: The amount of time, in seconds, during
+                                    which no response from a target means
+                                    a failed health check. The default is 5s.
+        :type health_check_timeout: ``int``
+
+        :param health_check_matcher: The HTTP codes to use when checking for
+                                    a successful response from a target.
+                                    Valid values: "200", "200,202", "200-299".
+        :type health_check_matcher: ``str``
+
+        :param healthy_threshold: The number of consecutive health checks
+                                  successes required before considering
+                                  an unhealthy target healthy. The default is 5.
+        :type healthy_threshold: ``int``
+
+        :param unhealthy_threshold: The number of consecutive health check
+                                    failures required before considering
+                                    a target unhealthy. The default is 2.
+        :type unhealthy_threshold: ``int``
+
+        :return: Dictionary describing target group.
+        :rtype: ``dict``
+        """
 
         # mandatory params
         params = {
@@ -192,6 +349,22 @@ class ApplicationLBDriver(Driver):
         return target_group
 
     def ex_register_targets(self, target_group, members=[]):
+        """
+        Register members as targets at target group
+
+        :param target_group: Target group dict where register members.
+        :type target_group: ``dict``
+
+        :param members: List of Members to attach to the balancer. If 'port'
+                        attribute is set for the memeber - load balancer will
+                        send traffic there. Otherwise - load balancer port is
+                        used on the memeber's side. 'ip' attribute is ignored.
+        :type members: ``list`` of :class:`Member`
+
+        :return: True on success.
+        :rtype: ``bool``
+        """
+
         # mandatory params
         params = {
             'Action': 'RegisterTargets',
@@ -215,6 +388,38 @@ class ApplicationLBDriver(Driver):
 
     def ex_create_listener(self, balancer, port, proto, target_group,
                            action="forward", ssl_cert_arn="", ssl_policy=""):
+        """
+        Create a listener for application load balancer
+
+        :param balancer: LoadBalancer to create listener for
+        :type  balancer: :class:`LoadBalancer`
+
+        :param port: Port number to setup load balancer listener
+        :type port: ``int``
+
+        :param proto: Load balancer protocol, should be 'HTTP' or 'HTTPS'.
+        :type proto: ``str``
+
+        :param target_group: Target group associated with the listener.
+        :type target_group: ``dict``
+
+        :param action: Default action for the listener, valid value is 'forward'
+        :type action: ``str``
+
+        :param ssl_cert_arn: SSL certificate ARN to use when listener protocol
+                            is 'HTTPS'.
+        :type ssl_cert_arn: ``str``
+
+        :param ssl_policy: The security policy that defines which ciphers and
+                        protocols are supported. The default is the current
+                        predefined security policy.
+                        Example: 'ELBSecurityPolicy-2016-08'
+        :type ssl_policy: ``str``
+
+        :return: Dictionary describing listener
+        :rtype: ``dict``
+        """
+
         # mandatory params
         params = {
             'Action': 'CreateListener',
@@ -242,6 +447,33 @@ class ApplicationLBDriver(Driver):
     def ex_create_listener_rule(self, listener, priority, target_group,
                                 action="forward", condition_field="",
                                 condition_value=""):
+        """
+        Create a rule for listener.
+
+        :param listener: Listener dict
+        :type listener: ``dict``
+
+        :param priority: The priority for the rule. A listener can't have
+                        multiple rules with the same priority.
+        :type priority: ``str``
+
+        :param target_group: Target group dict
+        :type target_group: ``dict``
+
+        :param action: Action for the rule, valid value is 'forward'
+        :type action: ``str``
+
+        :param condition_field: Rule condition field name. The possible values
+                                are 'host-header' and 'path-pattern'.
+        :type condition_field: ``str``
+
+        :param condition_value: Value to match. Wildcards are supported, for
+                                example: '/img/*'
+
+        :return: Dictonary describing rule
+        :rtype: ``dict``
+        """
+
         # mandatory params
         params = {
             'Action': 'CreateRule',
