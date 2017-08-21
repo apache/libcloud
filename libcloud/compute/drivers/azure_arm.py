@@ -1610,7 +1610,7 @@ class AzureNodeDriver(NodeDriver):
         return [self._to_ip_address(net) for net in r.object["value"]]
 
     def ex_create_public_ip(self, name, resource_group, location=None,
-                            publicIPAllocationMethod=None):
+                            public_ip_allocation_method=None):
         """
         Create a public IP resources.
 
@@ -1624,10 +1624,10 @@ class AzureNodeDriver(NodeDriver):
         (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
 
-        :param publicIPAllocationMethod: Call ex_create_public_ip with
-        publicIPAllocationMethod="Static" to create a static public
+        :param public_ip_allocation_method: Call ex_create_public_ip with
+        public_ip_allocation_method="Static" to create a static public
         IP address
-        :type publicIPAllocationMethod: ``str``
+        :type public_ip_allocation_method: ``str``
 
         :return: The newly created public ip object
         :rtype: :class:`.AzureIPAddress`
@@ -1649,7 +1649,7 @@ class AzureNodeDriver(NodeDriver):
             }
         }
 
-        if publicIPAllocationMethod == "Static":
+        if public_ip_allocation_method == "Static":
             data['properties']['publicIPAllocationMethod'] = "Static"
 
         r = self.connection.request(target,
