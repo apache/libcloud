@@ -55,14 +55,6 @@ from libcloud.backup.providers import get_driver as get_backup_driver
 from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
 from libcloud.backup.types import Provider as BackupProvider
 
-try:
-    import pysphere  # noqa
-except ImportError:
-
-    class PySphere(object):
-        pass
-
-    sys.modules['pysphere'] = PySphere
 
 HEADER = ('.. NOTE: This file has been generated automatically using '
           'generate_provider_feature_matrix_table.py script, don\'t manually '
