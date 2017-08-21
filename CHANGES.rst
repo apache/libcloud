@@ -86,7 +86,7 @@ Compute
   (Anthony Shaw)
 
 - [GCE] Add loadBalancingScheme parameter for
- ex_create_forwarding_rule method in GCE driver.
+  ex_create_forwarding_rule method in GCE driver.
   [GITHUB-1079]
   (@sT331h0rs3)
 
