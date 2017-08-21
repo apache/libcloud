@@ -41,6 +41,13 @@ DNS
   [GITHUB-1088]
   (@mete0r)
 
+Load Balancer
+~~~~~~~~~~~~~
+
+- Fixed AWS ALB/ELB driver init method to instantiate nested connection object properly
+  [LIBCLOUD-936, GITHUB-1089]
+  (Anton Kozyrev) 
+
 Storage
 ~~~~~~~
 
