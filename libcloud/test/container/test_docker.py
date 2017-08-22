@@ -78,6 +78,7 @@ class DockerContainerDriverTestCase(unittest.TestCase):
             container = driver.get_container('a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303')
             self.assertEqual(container.id, 'a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303')
             self.assertEqual(container.name, 'gigantic_goldberg')
+            self.assertEqual(container.state, 'running')
 
     def test_start_container(self):
         for driver in self.drivers:

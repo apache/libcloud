@@ -59,6 +59,7 @@ SUPPORTED_VERSIONS = ['2.6', '2.7', 'PyPy', '3.x']
 TEST_REQUIREMENTS = [
     'mock',
     'requests',
+    'requests_mock',
     'pytest',
     'pytest-runner'
 ]

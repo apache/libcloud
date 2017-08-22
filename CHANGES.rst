@@ -7,6 +7,72 @@ Changes in current version of Apache Libcloud
 Common
 ~~~~~~
 
+- [GCE] Scrape prices for GCE Australia Region
+  [GITHUB-1085]
+  (Francisco Ros)
+
+Compute
+~~~~~~~
+
+- [ARM] Add option to create static public IP
+  [GITHUB-1091, LIBCLOUD-918]
+  (Aki Ketolainen)
+
+- [SOFTLAYER] Add `get_image` method to class
+  [GITHUB-1066]
+  (Francois Regnoult)
+
+- [ARM] Add Storage support, volumes, snapshots
+  [GITHUB-1087]
+  (Sergey Babak)
+
+Container
+~~~~~~~~~
+
+- [DOCKER] Fixes to support TLS connection
+  [GITHUB-1067]
+  (johnnyWalnut)
+
+DNS
+~~~
+
+- [ROUTE53] Fix for TXT and SPF records, when user didn't escapsulate data in quotes, 
+  the API would fire error. As reported by @glyph
+  [LIBCLOUD-875, GITHUB-1093]
+  (Anthony Shaw)
+
+- [LINODE] Add priority to the extra dictionary in record instances
+  [GITHUB-1088]
+  (@mete0r)
+
+Load Balancer
+~~~~~~~~~~~~~
+
+- Fixed AWS ALB/ELB driver init method to instantiate nested connection object properly
+  [LIBCLOUD-936, GITHUB-1089]
+  (Anton Kozyrev) 
+
+Storage
+~~~~~~~
+
+- [CLOUDFILES] Update OpenStackSwiftConnection to work with auth version 3.0
+  [GITHUB-1068]
+  (Hakan Carlsson)
+
+- [CLOUDFILES] Add SSL URI support
+  [GITHUB-1076, LIBCLOUD-458]
+  (@ayleph)
+
+Changes in Apache Libcloud 2.1.0
+--------------------------------
+
+Common
+~~~~~~
+
+- [AWS] Update prices and fix some region names
+  [GITHUB-1056]
+  (Francisco Ros)
+
 - Fix bug in utils.decorators wrap exception method, used by vsphere driver
   [GITHUB-1054]
   (Anthony Shaw)
@@ -26,6 +92,40 @@ Common
 Compute
 ~~~~~~~
 
+- [OPENSTACK] Add support for Nova 2.x and Keystone 3
+  [GITHUB-1052]
+  (Anthony Shaw)
+
+- [GCE] Add loadBalancingScheme parameter for
+  ex_create_forwarding_rule method in GCE driver.
+  [GITHUB-1079]
+  (@sT331h0rs3)
+
+- [GCE] Fix error codes not being parsed in certain scenarios
+  [GITHUB-1074, LIBCLOUD-925]
+  (micafer)
+
+- [EC2] Fix node's Block Device Mapping was parsed from incorrect mapping.
+  EbsInstanceBlockDevice is different from EbsBlockDevice.
+  [GITHUB-1075]
+  (Gennadiy Stas)
+
+- [GANDI] Fixes the location name in image and instance type classes
+  [GITHUB-1065]
+  (Sayoun)
+
+- [GCE] Fix method for create instance properties, it previously ignored the disk type parameter and defaulted to pd-standard.
+  [GITHUB-1064]
+  (Evan Carter)
+
+- Fix missing return data from EC2 billing product methods
+  [GITHUB-1062]
+  (Alex Misstear)
+
+- Handle [VULTR] API rate limiting
+  [GITHUB-1058]
+  (Francisco Ros)
+
 - Fix Kili driver not correctly fixing the auth version for openstack to 2.0_password
   [GITHUB-1054]
   (Anthony Shaw)
@@ -41,9 +141,17 @@ Compute
 Container
 ~~~~~~~~~
 
+- New driver for Google Container Engine
+  [GITHUB-1059]
+  (Andy Maheshwari)
+
 - [KUBERNETES] Fix get_container method responding with None
   [GITHUB-1054]
   (Anthony Shaw)
+
+- [DOCKER] Fix for start_container method
+  [GITHUB-1049]
+  (@johnnyWalnut)
 
 - [DOCKER] fix add an extra check otherwise list_containers breaks with AttributeError when fromImages is specified
   [GITHUB-1043]

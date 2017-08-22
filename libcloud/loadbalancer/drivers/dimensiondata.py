@@ -629,7 +629,7 @@ class DimensionDataLBDriver(Driver):
         :return: Instance of the listener
         :rtype: ``DimensionDataVirtualListener``
         """
-        if port is 80 or 443:
+        if (port == 80) or (port == 443):
             listener_type = 'PERFORMANCE_LAYER_4'
         else:
             listener_type = 'STANDARD'

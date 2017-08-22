@@ -160,7 +160,6 @@ class MockHttp(LibcloudConnection):
                         url, nma.request.url
                     ))
         elif self.mode == 'static':
-            print(url)
             with requests_staticmock.mock_session_with_fixtures(self.session,
                                                                 self.root,
                                                                 self.base_url):

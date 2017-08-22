@@ -69,7 +69,7 @@ class GCEConnection(GoogleBaseConnection):
     """
     Connection class for the GCE driver.
 
-    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+    GCEConnection extends :class:`google.GoogleBaseConnection` for 3 reasons:
       1. modify request_path for GCE URI.
       2. Implement gce_params functionality described below.
       3. Add request_aggregated_items method for making aggregated API calls.
@@ -3126,7 +3126,8 @@ class GCENodeDriver(NodeDriver):
     def ex_create_forwarding_rule(self, name, target=None, region=None,
                                   protocol='tcp', port_range=None,
                                   address=None, description=None,
-                                  global_rule=False, targetpool=None):
+                                  global_rule=False, targetpool=None,
+                                  lb_scheme=None):
         """
         Create a forwarding rule.
 
@@ -3168,6 +3169,10 @@ class GCENodeDriver(NodeDriver):
                               Use target instead.
         :type     targetpool: ``str`` or :class:`GCETargetPool`
 
+        :keyword  lb_scheme: Load balancing scheme, can be 'EXTERNAL' or
+                             'INTERNAL'. Defaults to 'EXTERNAL'.
+        :type     lb_scheme: ``str`` or ``None``
+
         :return:  Forwarding Rule object
         :rtype:   :class:`GCEForwardingRule`
         """
@@ -3197,6 +3202,9 @@ class GCENodeDriver(NodeDriver):
             forwarding_rule_data['portRange'] = port_range
         if description:
             forwarding_rule_data['description'] = description
+
+        if lb_scheme:
+            forwarding_rule_data['loadBalancingScheme'] = lb_scheme
 
         if global_rule:
             request = '/global/forwardingRules'
@@ -3472,7 +3480,8 @@ class GCENodeDriver(NodeDriver):
         :type   priority: ``int``
 
         :param  network: The network the route belongs to. Can be either the
-                         full URL of the network or a libcloud object.
+                         full URL of the network, the name of the network  or
+                         a libcloud object.
         :type   network: ``str`` or ``GCENetwork``
 
         :param  tags: List of instance-tags for routing, empty for all nodes
@@ -3999,7 +4008,7 @@ class GCENodeDriver(NodeDriver):
 
         properties = self._create_instance_properties(
             name, node_size=size, source=source, image=image,
-            disk_type='pd-standard', disk_auto_delete=True,
+            disk_type=disk_type, disk_auto_delete=True,
             external_ip=external_ip, network=network, subnetwork=subnetwork,
             can_ip_forward=can_ip_forward, service_accounts=service_accounts,
             on_host_maintenance=on_host_maintenance,
@@ -4528,7 +4537,7 @@ class GCENodeDriver(NodeDriver):
             maint_opts = ['MIGRATE', 'TERMINATE']
             if isinstance(on_host_maintenance,
                           str) and on_host_maintenance in maint_opts:
-                if preemptible is True and on_host_maintenance is 'MIGRATE':
+                if preemptible is True and on_host_maintenance == 'MIGRATE':
                     raise ValueError(("host maintenance cannot be 'MIGRATE' "
                                       "if instance is preemptible."))
                 scheduling['onHostMaintenance'] = on_host_maintenance
@@ -6942,7 +6951,7 @@ class GCENodeDriver(NodeDriver):
         if not region_name:
             region = self._set_region(region)
             if not region:
-                raise ("Could not determine region for subnetwork.")
+                raise ValueError("Could not determine region for subnetwork.")
             else:
                 region_name = region.name
 
@@ -6980,7 +6989,7 @@ class GCENodeDriver(NodeDriver):
         if not region_name:
             region = self._set_region(region)
             if not region:
-                raise ("Could not determine region for subnetwork.")
+                raise ValueError("Could not determine region for subnetwork.")
             else:
                 region_name = region.name
 
@@ -7407,7 +7416,7 @@ class GCENodeDriver(NodeDriver):
         # Disk names are not unique across zones, so if zone is None or
         # 'all', we return the first one we find for that disk name.  For
         # consistency, we sort by keys and set the zone to the first key.
-        if zone is None or zone is 'all':
+        if zone is None or zone == 'all':
             zone = sorted(self._ex_volume_dict[volume_name])[0]
 
         volume = self._ex_volume_dict[volume_name].get(zone, None)
@@ -7915,8 +7924,6 @@ class GCENodeDriver(NodeDriver):
             error = e.value
             code = e.code
             response = {'status': 'DONE'}
-        except ResourceNotFoundError:
-            return
         if response['status'] == 'DONE':
             status['node_response'] = None
             if error:
