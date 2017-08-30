@@ -3773,9 +3773,9 @@ class BaseEC2NodeDriver(NodeDriver):
         params[tagspec_root + 'ResourceType'] = 'instance'
         tag_nr = 1
         for k, v in tags.items():
-            tag_root = tagspec_root + "Tag.{}.".format(tag_nr)
-            params[tag_root + "Key"] = k
-            params[tag_root + "Value"] = v
+            tag_root = tagspec_root + 'Tag.%d.' % tag_nr
+            params[tag_root + 'Key'] = k
+            params[tag_root + 'Value'] = v
             tag_nr += 1
 
         object = self.connection.request(self.path, params=params).object
