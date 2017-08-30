@@ -2765,6 +2765,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'start',
             'transform_func': str
         },
+        'end': {
+            'xpath': 'end',
+            'transform_func': str
+        },
         'duration': {
             'xpath': 'duration',
             'transform_func': int
