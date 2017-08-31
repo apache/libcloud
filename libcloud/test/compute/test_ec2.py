@@ -1526,10 +1526,6 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('modify_snapshot_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _idempotent_CreateTags(self, method, url, body, headers):
-        body = self.fixtures.load('create_tags.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
     def _CreateVolume(self, method, url, body, headers):
         body = self.fixtures.load('create_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1740,10 +1736,6 @@ class EucMockHttp(EC2MockHttp):
     def _services_Eucalyptus_RunInstances(self, method, url, body,
                                           headers):
         return self._RunInstances(method, url, body, headers)
-
-    def _services_Eucalyptus_CreateTags(self, method, url, body,
-                                        headers):
-        return self._CreateTags(method, url, body, headers)
 
     def _services_Eucalyptus_DescribeInstanceTypes(self, method, url, body,
                                                    headers):
