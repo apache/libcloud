@@ -1,7 +1,7 @@
 {
     "id": "sshot",
     "type": "snapshot",
-    "href": "/cloudapi/v3/snapshots/sshot",
+    "href": "/cloudapi/v4/snapshots/sshot",
     "metadata": {
         "createdDate": "2016-10-26T11:38:45Z",
         "createdBy": "test@test.te",
@@ -11,8 +11,8 @@
         "state": "AVAILABLE"
     },
     "properties": {
-        "name": "Updated snapshot",
-        "description": "Updated snapshot",
+        "name": "libcloud Test - RENAME",
+        "description": "libcloud test snapshot - RENAME",
         "location": "us/las",
         "size": 10,
         "cpuHotPlug": true,

@@ -1,7 +1,7 @@
 {
     "id": "nic-2",
     "type": "nic",
-    "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics/nic-2",
+    "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-2",
     "metadata": {
         "createdDate": "2016-10-17T15:46:38Z",
         "createdBy": "test@test.te",
@@ -11,12 +11,12 @@
         "state": "AVAILABLE"
     },
     "properties": {
-        "name": "Updated from LibCloud",
+        "name": "libcloud Test",
         "mac": "02:01:0b:9d:4d:ce",
         "ips": [
             "10.15.124.11"
         ],
-        "dhcp": false,
+        "dhcp": true,
         "lan": 2,
         "firewallActive": true,
         "nat": false
@@ -25,7 +25,7 @@
         "firewallrules": {
             "id": "nic-1/firewallrules",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules"
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules"
         }
     }
 }

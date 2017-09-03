@@ -1,12 +1,12 @@
 {
     "id": "dc-1/lans",
     "type": "collection",
-    "href": "/cloudapi/v3/datacenters/dc-1/lans",
+    "href": "/cloudapi/v4/datacenters/dc-1/lans",
     "items": [
         {
             "id": "1",
             "type": "lan",
-            "href": "/cloudapi/v3/datacenters/dc-1/lans/1",
+            "href": "/cloudapi/v4/datacenters/dc-1/lans/1",
             "metadata": {
                 "createdDate": "2016-10-24T08:03:22Z",
                 "createdBy": "test@test.te",
@@ -16,19 +16,19 @@
                 "state": "AVAILABLE"
             },
             "properties": {
-                "name": "Switch for LAN 1",
+                "name": "libcloud Test",
                 "public": false
             },
             "entities": {
                 "nics": {
                     "id": "1/nics",
                     "type": "collection",
-                    "href": "/cloudapi/v3/datacenters/dc-1/lans/1/nics",
+                    "href": "/cloudapi/v4/datacenters/dc-1/lans/1/nics",
                     "items": [
                         {
                             "id": "dc5e1c66-7280-4a5c-8e13-51ce030e0980",
                             "type": "nic",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/d37abf6b-0980-4bf8-813b-b69863cf7b9e/nics/dc5e1c66-7280-4a5c-8e13-51ce030e0980",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/d37abf6b-0980-4bf8-813b-b69863cf7b9e/nics/dc5e1c66-7280-4a5c-8e13-51ce030e0980",
                             "metadata": {
                                 "createdDate": "2016-10-21T13:00:02Z",
                                 "createdBy": "test@test.te",
@@ -52,14 +52,14 @@
                                 "firewallrules": {
                                     "id": "dc5e1c66-7280-4a5c-8e13-51ce030e0980/firewallrules",
                                     "type": "collection",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/servers/d37abf6b-0980-4bf8-813b-b69863cf7b9e/nics/dc5e1c66-7280-4a5c-8e13-51ce030e0980/firewallrules"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/servers/d37abf6b-0980-4bf8-813b-b69863cf7b9e/nics/dc5e1c66-7280-4a5c-8e13-51ce030e0980/firewallrules"
                                 }
                             }
                         },
                         {
                             "id": "912324a6-c057-445d-84dd-8fea82dfa719",
                             "type": "nic",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/811ab72b-f7f3-427b-8220-f031eae34f63/nics/912324a6-c057-445d-84dd-8fea82dfa719",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/811ab72b-f7f3-427b-8220-f031eae34f63/nics/912324a6-c057-445d-84dd-8fea82dfa719",
                             "metadata": {
                                 "createdDate": "2016-10-21T13:00:02Z",
                                 "createdBy": "test@test.te",
@@ -83,14 +83,14 @@
                                 "firewallrules": {
                                     "id": "912324a6-c057-445d-84dd-8fea82dfa719/firewallrules",
                                     "type": "collection",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/servers/811ab72b-f7f3-427b-8220-f031eae34f63/nics/912324a6-c057-445d-84dd-8fea82dfa719/firewallrules"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/servers/811ab72b-f7f3-427b-8220-f031eae34f63/nics/912324a6-c057-445d-84dd-8fea82dfa719/firewallrules"
                                 }
                             }
                         },
                         {
                             "id": "8d9fb87c-79f7-4c3c-8f7b-e2050a881b16",
                             "type": "nic",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/b1a64861-5819-498a-899a-a57126050952/nics/8d9fb87c-79f7-4c3c-8f7b-e2050a881b16",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/b1a64861-5819-498a-899a-a57126050952/nics/8d9fb87c-79f7-4c3c-8f7b-e2050a881b16",
                             "metadata": {
                                 "createdDate": "2016-10-21T13:00:02Z",
                                 "createdBy": "test@test.te",
@@ -114,14 +114,14 @@
                                 "firewallrules": {
                                     "id": "8d9fb87c-79f7-4c3c-8f7b-e2050a881b16/firewallrules",
                                     "type": "collection",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/servers/b1a64861-5819-498a-899a-a57126050952/nics/8d9fb87c-79f7-4c3c-8f7b-e2050a881b16/firewallrules"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/servers/b1a64861-5819-498a-899a-a57126050952/nics/8d9fb87c-79f7-4c3c-8f7b-e2050a881b16/firewallrules"
                                 }
                             }
                         },
                         {
                             "id": "76d7965d-19e5-491f-8b2f-1c4a3ef127b5",
                             "type": "nic",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/77ef2301-b4df-46aa-8544-2dae76c9d7b5/nics/76d7965d-19e5-491f-8b2f-1c4a3ef127b5",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/77ef2301-b4df-46aa-8544-2dae76c9d7b5/nics/76d7965d-19e5-491f-8b2f-1c4a3ef127b5",
                             "metadata": {
                                 "createdDate": "2016-10-21T13:00:02Z",
                                 "createdBy": "test@test.te",
@@ -145,7 +145,7 @@
                                 "firewallrules": {
                                     "id": "76d7965d-19e5-491f-8b2f-1c4a3ef127b5/firewallrules",
                                     "type": "collection",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/servers/77ef2301-b4df-46aa-8544-2dae76c9d7b5/nics/76d7965d-19e5-491f-8b2f-1c4a3ef127b5/firewallrules"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/servers/77ef2301-b4df-46aa-8544-2dae76c9d7b5/nics/76d7965d-19e5-491f-8b2f-1c4a3ef127b5/firewallrules"
                                 }
                             }
                         }

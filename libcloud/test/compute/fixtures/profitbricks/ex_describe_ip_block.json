@@ -1,7 +1,7 @@
 {
     "id": "ipb-2",
     "type": "ipblock",
-    "href": "/cloudapi/v3/ipblocks/ipb-2",
+    "href": "/cloudapi/v4/ipblocks/ipb-2",
     "metadata": {
         "createdDate": "2016-10-26T15:05:12Z",
         "createdBy": "test@test.te",
@@ -12,10 +12,11 @@
     },
     "properties": {
         "ips": [
-            "78.137.101.250"
+            "208.94.36.101",
+            "192.152.28.137"
         ],
-        "location": "de/fkb",
-        "size": 1,
-        "name": "Test IP Block One"
+        "location": "us/las",
+        "size": 2,
+        "name": "libcloud Test"
     }
 }
