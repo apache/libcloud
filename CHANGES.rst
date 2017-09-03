@@ -7,6 +7,10 @@ Changes in current version of Apache Libcloud
 Compute
 ~~~~~~~
 
+- [EC2] add g3 instance types
+  [GITHUB-1101]
+  (@zulupro)
+
 - [EC2] add 'end' to ec2 reserved_node
   [GITHUB-1099]
   (@xofer)
