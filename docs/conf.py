@@ -62,7 +62,9 @@ master_doc = 'index'
 # General information about the project.
 now = datetime.datetime.utcnow()
 project = u'Apache Libcloud'
-copyright = u'2013 - %s, The Apache Software Foundation' % (now.year)
+copyright = u'2013 - %s, The Apache Software Foundation. Apache Libcloud, Libcloud, Apache, the Apache feather, and the Apache Libcloud project logo are trademarks of the Apache Software Foundation. All other marks mentioned may be trademarks or registered trademarks of their respective owners.' % (now.year)
+
+html_show_sphinx = False
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
