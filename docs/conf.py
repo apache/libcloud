@@ -13,6 +13,7 @@
 
 import os
 import sys
+import datetime
 import subprocess
 
 from sphinx.environment import BuildEnvironment
@@ -59,8 +60,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
+now = datetime.datetime.utcnow()
 project = u'Apache Libcloud'
-copyright = u'2013, The Apache Software Foundation'
+copyright = u'2013 - %s, The Apache Software Foundation' % (now.year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
