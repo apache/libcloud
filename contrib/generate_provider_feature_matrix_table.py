@@ -404,6 +404,8 @@ def generate_supported_providers_table(api, provider_matrix):
             else None
 
         if supported_regions:
+            # Sort the regions to achieve stable output
+            supported_regions = sorted(supported_regions)
             supported_regions = ', '.join(supported_regions)
         else:
             supported_regions = 'single region driver'
