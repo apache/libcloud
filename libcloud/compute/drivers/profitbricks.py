@@ -26,7 +26,6 @@ from libcloud.compute.providers import Provider
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
-from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.compute.base import UuidMixin
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError, MalformedResponseError

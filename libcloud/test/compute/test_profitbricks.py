@@ -1194,7 +1194,6 @@ class ProfitBricksTests(unittest.TestCase):
             )
         self.assertIn('Resource does not exist', cm.exception.message.value)
 
-
     def _verify_node(self, node):
         extra = node.extra
 
@@ -3008,7 +3007,7 @@ class ProfitBricksTests(unittest.TestCase):
             22
         )
 
-    def test_ex_create_network_interface_failure(self):
+    def test_ex_create_firewall_rule_failure(self):
         with self.assertRaises(AttributeError):
             'Raises attribute error if no network interface'
             self.driver.ex_create_firewall_rule(
