@@ -1731,9 +1731,9 @@ class AzureNodeDriver(NodeDriver):
         if (private_ip_allocation_method == "Static" and
             private_ip_address is not None):
             data["properties"]["ipConfigurations"][0]\
-                ["properties"]["privateIPAllocationMethod"] = "Static"
+            ["properties"]["privateIPAllocationMethod"] = "Static"
             data["properties"]["ipConfigurations"][0]\
-                ["properties"]["privateIPAddress"] = private_ip_address
+            ["properties"]["privateIPAddress"] = private_ip_address
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
