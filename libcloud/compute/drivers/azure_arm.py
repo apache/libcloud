@@ -1659,7 +1659,9 @@ class AzureNodeDriver(NodeDriver):
         return self._to_ip_address(r.object)
 
     def ex_create_network_interface(self, name, subnet, resource_group,
-                                    location=None, public_ip=None):
+                                    location=None, public_ip=None,
+                                    private_ip_allocation_method=None,
+                                    private_ip_address=None):
         """
         Create a virtual network interface (NIC).
 
@@ -1679,6 +1681,16 @@ class AzureNodeDriver(NodeDriver):
         :param public_ip: Associate a public IP resource with this NIC
         (optional).
         :type public_ip: :class:`.AzureIPAddress`
+
+        :param private_ip_allocation_method: Call ex_create_network_interface
+        with private_ip_allocation_method="Static" to create a static private
+        IP address
+        :type private_ip_allocation_method: ``str``
+
+        :param private_ip_address: Call ex_create_network_interface with
+        private_ip_address="n.n.n.n" to create a static private IP address
+        "n.n.n.n"
+        :type private_ip_address: ``str``
 
         :return: The newly created NIC
         :rtype: :class:`.AzureNic`
@@ -1715,6 +1727,13 @@ class AzureNodeDriver(NodeDriver):
             ip_config["properties"]["publicIPAddress"] = {
                 "id": public_ip.id
             }
+
+        if (private_ip_allocation_method == "Static" and
+            private_ip_address is not None):
+            data["properties"]["ipConfigurations"][0]\
+                ["properties"]["privateIPAllocationMethod"] = "Static"
+            data["properties"]["ipConfigurations"][0]\
+                ["properties"]["privateIPAddress"] = private_ip_address
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
