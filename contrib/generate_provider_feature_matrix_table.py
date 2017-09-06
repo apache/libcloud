@@ -205,7 +205,6 @@ FRIENDLY_METHODS_NAMES = {
 
 IGNORED_PROVIDERS = [
     'dummy',
-    'local',
 
     # Deprecated constants
     'cloudsigma_us',
@@ -264,9 +263,9 @@ def generate_providers_table(api):
 
         try:
             cls = get_driver_method(enum)
-        except Exception:
+        except Exception as e:
             # Deprecated providers throw an exception
-            print('Ignoring deprecated constant "%s"' % (enum))
+            print('Ignoring deprecated constant "%s": %s' % (enum, str(e)))
             continue
 
         # Hack for providers which expose multiple classes and support multiple
