@@ -805,20 +805,14 @@ class OneAndOneNodeDriver(NodeDriver):
 
     def ex_create_firewall_policy(self, name, rules, description=None):
         """
-        Creates a firewall Policy
+        Creates a firewall Policy.
+
         :param name:
         :param description:
         :param rules:
-        :rtype 'dict':  [
-                            {
-                            'protocol': 'TCP',
-                            'port_from': 80,
-                            'port_to': 80,
-                            'source': '0.0.0.0'
-                            }
-                        ]
+        :rtype: `dict`
+        :return: `dict` firewall policy
 
-        :return: 'dict' firewall policy
         """
         body = {
             'name': name
@@ -1033,48 +1027,34 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         :param name: Name of the load balancer
-        :rtype:``str``
 
         :param method: Load balancer method
-        :rtype:``str``
 
         :param rules: Load balancer rules
-        :rtype: ``list`` of ``dict``
-            'rules': [
-                {
-                    'protocol': 'TCP',
-                    'port_balancer': 80,
-                    'port_server': 80,
-                    'source': '0.0.0.0'
-                },
-                {
-                    'protocol': 'TCP',
-                    'port_balancer': 9999,
-                    'port_server': 8888,
-                    'source': '0.0.0.0'
-                }
-            ]
+        :type rules: ``list`` of ``dict``
+
         :param persistence: Indictes if persistance is set
-        :rtype: ``boolean``
+        :type persistence: ``boolean``
 
         :param persistence_time: Persistance time
-        :rtype: ``int``
+        :type persistence_time: ``int``
 
         :param health_check_test: Type of test
-        :rtype:``str``
+        :type health_check_test:``str``
 
         :param health_check_interval: Interval of the check
 
         :param health_check_path: Path
-        :rtype:``str``
+        :type health_check_path: ``str``
+
         :param health_check_parser: Parser
-        :rtype:``str``
+        :type health_check_parser:``str``
 
         :param datacenter_id: Data center id
-        :rtype:``str``
+        :type datacenter_id:``str``
 
         :param description: Description of load balancer
-        :rtype:``str``
+        :type description:``str``
 
         :return: ``dict``
         """
@@ -1708,92 +1688,25 @@ class OneAndOneNodeDriver(NodeDriver):
         Creates a monitoring policy
 
         :param name: Name for the monitoring policy
-        :rtype: ``str``
+        :type name: ``str``
 
         :param thresholds: Thresholds for the monitoring policy
-        :rtype: ``dict``
-        {
-           'cpu':{
-              'warning':{
-                 'value':90,
-                 'alert':false
-              },
-              'critical':{
-                 'value':95,
-                 'alert':false
-              }
-           },
-           'ram':{
-              'warning':{
-                 'value':90,
-                 'alert':false
-              },
-              'critical':{
-                 'value':95,
-                 'alert':false
-              }
-           },
-           'disk':{
-              'warning':{
-                 'value':80,
-                 'alert':false
-              },
-              'critical':{
-                 'value':90,
-                 'alert':false
-              }
-           },
-           'transfer':{
-              'warning':{
-                 'value':1000,
-                 'alert':false
-              },
-              'critical':{
-                 'value':2000,
-                 'alert':false
-              }
-           },
-           'internal_ping':{
-              'warning':{
-                 'value':50,
-                 'alert':false
-              },
-              'critical':{
-                 'value':100,
-                 'alert':false
-              }
-           }
-        }
-        :param ports: Monitoring policies for ports
-        :rtype: ``dict``
-        [
-           {
-              'protocol':'TCP',
-              'port':'22',
-              'alert_if':'RESPONDING',
-              'email_notification':true
-           }
-        ]
+        :type thresholds: ``dict``
 
+        :param ports: Monitoring policies for ports
+        :type ports: ``list`` of ``dict``
 
         :param processes: Processes to be monitored
-        :rtype: ``dict``
-        [
-           {
-              'process':'test',
-              'alert_if':'NOT_RUNNING',
-              'email_notification':true
-           }
-        ]
+        :type processes: ``list`` of ``dict``
 
         :param description: Description for the monitoring policy
-        :rtype: ``str``
+        :type description: ``str``
 
         :param email: Email for notifications
-        :rtype: ``str``
+        :type email: ``str``
 
         :param agent: Indicates if agent application will be installed
-        :rtype: ``boolean``
+        :type agent: ``boolean``
 
         :return: Newly created instance of monitofing policy
         :rtype: ``dict``
