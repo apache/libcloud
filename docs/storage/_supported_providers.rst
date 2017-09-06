@@ -10,6 +10,7 @@ Provider                      Documentation                                   Pr
 `CloudFiles`_                                                                 CLOUDFILES        dfw, hkg, iad, lon, ord, syd :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesStorageDriver`    
 `Google Cloud Storage`_       :doc:`Click </storage/drivers/google_storage>`  GOOGLE_STORAGE    single region driver         :mod:`libcloud.storage.drivers.google_storage` :class:`GoogleStorageDriver`        
 `KTUCloud Storage`_                                                           KTUCLOUD          dfw, hkg, iad, lon, ord, syd :mod:`libcloud.storage.drivers.ktucloud`       :class:`KTUCloudStorageDriver`      
+`Local Storage`_                                                              LOCAL             single region driver         :mod:`libcloud.storage.drivers.local`          :class:`LocalStorageDriver`         
 `Nimbus.io`_                                                                  NIMBUS            single region driver         :mod:`libcloud.storage.drivers.nimbus`         :class:`NimbusStorageDriver`        
 `Ninefold`_                                                                   NINEFOLD          single region driver         :mod:`libcloud.storage.drivers.ninefold`       :class:`NinefoldStorageDriver`      
 `OpenStack Swift`_            :doc:`Click </storage/drivers/openstack_swift>` OPENSTACK_SWIFT   dfw, hkg, iad, lon, ord, syd :mod:`libcloud.storage.drivers.cloudfiles`     :class:`OpenStackSwiftStorageDriver`
@@ -41,6 +42,7 @@ Provider                      Documentation                                   Pr
 .. _`CloudFiles`: http://www.rackspace.com/
 .. _`Google Cloud Storage`: http://cloud.google.com/storage
 .. _`KTUCloud Storage`: http://www.rackspace.com/
+.. _`Local Storage`: http://example.com
 .. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`OpenStack Swift`: http://www.rackspace.com/
