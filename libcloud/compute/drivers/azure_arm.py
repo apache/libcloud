@@ -160,6 +160,20 @@ class AzureIPAddress(object):
                 % (self.id, self.name))
 
 
+class AzureStorage(object):
+    """Represent an Azure Storage Account."""
+
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureStorage: id=%s, name=%s, location=%s, properties=%s>')
+                % (self.id, self.name, self.location, self.extra))
+
+
 class AzureNodeDriver(NodeDriver):
     """Compute node driver for Azure Resource Manager."""
 
@@ -1518,6 +1532,59 @@ class AzureNodeDriver(NodeDriver):
             params={"api-version": RESOURCE_API_VERSION})
         return [self._to_nic(net) for net in r.object["value"]]
 
+    def ex_get_resource_group(self, name):
+        """
+        Fetch information about a resource group.
+
+        :param name: name of the resource group
+        :type name: ``str``
+
+        :return: The resource group object
+        :rtype: class:`.AzureResourceGroup`
+        """
+
+        action = "/subscriptions/%s/resourceGroups/%s" \
+                 % (self.subscription_id, name)
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-01-01"})
+        return self._to_resource_group(r.object)
+
+    def ex_get_network(self, name, resource_group):
+        """
+        Fetch information about a virtual network.
+
+        :param name: name of the virtual network
+        :type name: ``str``
+
+        :return: The virtual network object.
+        :rtype: class:`.AzureNetwork`
+        """
+
+        action = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Network/virtualnetworks/%s" \
+                 % (self.subscription_id, resource_group, name)
+        r = self.connection.request(action,
+                                    params={"api-version": "2015-06-15"})
+        return self._to_network(r.object)
+
+    def ex_get_storage_account(self, name, resource_group):
+        """
+        Fetch information about a storage account.
+
+        :param name: name of the storage account
+        :type name: ``str``
+
+        :return: The storage account object.
+        :rtype: class:`.AzureStorage`
+        """
+
+        action = "/subscriptions/%s/resourceGroups/%s/" \
+                 "providers/Microsoft.Storage/storageAccounts/%s" \
+                 % (self.subscription_id, resource_group, name)
+        r = self.connection.request(action,
+                                    params={"api-version": "2016-12-01"})
+        return self._to_storage(r.object)
+
     def ex_get_nic(self, id):
         """
         Fetch information about a NIC.
@@ -1997,6 +2064,18 @@ class AzureNodeDriver(NodeDriver):
                         extra={"numberOfCores": data["numberOfCores"],
                                "osDiskSizeInMB": data["osDiskSizeInMB"],
                                "maxDataDiskCount": data["maxDataDiskCount"]})
+
+    def _to_storage(self, data):
+        return AzureStorage(data["id"], data["name"], data["location"],
+                            data["properties"])
+
+    def _to_network(self, data):
+        return AzureNetwork(data["id"], data["name"], data["location"],
+                            data["properties"])
+
+    def _to_resource_group(self, data):
+        return AzureResourceGroup(data["id"], data["name"], data["location"],
+                                  data["properties"])
 
     def _to_nic(self, data):
         return AzureNic(data["id"], data["name"], data["location"],
