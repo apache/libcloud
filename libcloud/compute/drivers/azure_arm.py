@@ -1729,7 +1729,7 @@ class AzureNodeDriver(NodeDriver):
             }
 
         if (private_ip_allocation_method == "Static" and
-            private_ip_address is not None):
+                private_ip_address is not None):
             ip_config = data["properties"]["ipConfigurations"][0]
             ip_config["properties"]["privateIPAllocationMethod"] = "Static"
             ip_config["properties"]["privateIPAddress"] = private_ip_address
