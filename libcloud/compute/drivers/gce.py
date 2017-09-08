@@ -4474,6 +4474,8 @@ class GCENodeDriver(NodeDriver):
         sa = {}
         if 'email' not in service_account:
             sa['email'] = default_email
+        else:
+            sa['email'] = service_account['email']
 
         if 'scopes' not in service_account:
             sa['scopes'] = [self.AUTH_URL + default_scope]
