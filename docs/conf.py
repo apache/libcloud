@@ -21,6 +21,8 @@ from sphinx.environment import BuildEnvironment
 from sphinx.ext.autodoc import AutoDirective
 from sphinx.ext.autodoc import AutodocReporter
 
+from sphinx.domains.python import PythonDomain
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(BASE_DIR)
 
@@ -303,3 +305,15 @@ AutoDirective.warn = noop
 AutodocReporter.warning = mock_warning
 
 BuildEnvironment.warn_node = ignore_more_than_one_target_found_errors
+
+# Ignore "more than one target found for cross-reference" errors which are false
+# positives
+class PatchedPythonDomain(PythonDomain):
+    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+        if 'refspecific' in node:
+            del node['refspecific']
+        return super(PatchedPythonDomain, self).resolve_xref(
+            env, fromdocname, builder, typ, target, node, contnode)
+
+def setup(sphinx):
+    sphinx.override_domain(PatchedPythonDomain)
