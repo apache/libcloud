@@ -14,5 +14,10 @@ coverage:
     patch: yes
     changes: no
 
-# comments are useless, considering wrong coverage reports
-comment: no
+comment:
+  layout: "header, diff, tree"
+  behavior: default
+  require_changes: false  # if true: only post the comment if coverage changes
+  branches: null
+  flags: null
+  paths: null
