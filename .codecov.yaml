@@ -1,0 +1,18 @@
+codecov:
+  #notify:
+    #require_ci_to_pass: yes
+
+coverage:
+  precision: 2         # decimal places to display: 0 <= value <= 4
+  round: nearest
+  range: 50...90      # custom range of coverage colors from red -> yellow -> green
+
+  status:
+    project:
+      default:
+        threshold: 2%
+    patch: yes
+    changes: no
+
+# comments are useless, considering wrong coverage reports
+comment: no
