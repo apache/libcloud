@@ -19,13 +19,14 @@ import base64
 import json
 import copy
 import time
-import urllib
 
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import urlencode
 from libcloud.compute.providers import Provider
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
+from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.compute.base import UuidMixin
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError, MalformedResponseError
@@ -695,10 +696,11 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type   ex_disk: ``int``
 
         :param  ex_password: The password for the volume.
-        :type   ex_password: :class:`NodeAuthPassword`
+        :type   ex_password: :class:`NodeAuthPassword` or ``str``
 
         :param  ex_ssh_keys: Optional SSH keys for the volume.
-        :type   ex_ssh_keys: ``list`` of :class:`NodeAuthSSHKey`
+        :type   ex_ssh_keys: ``list`` of :class:`NodeAuthSSHKey` or
+                             ``list`` of ``str``
 
         :param  ex_bus_type: Volume bus type (VIRTIO, IDE).
         :type   ex_bus_type: ``str``
@@ -832,12 +834,18 @@ class ProfitBricksNodeDriver(NodeDriver):
             }
 
             if ex_password is not None:
-                new_volume['properties']['imagePassword'] = \
-                    ex_password.password
+                if isinstance(ex_password, NodeAuthPassword):
+                    new_volume['properties']['imagePassword'] = \
+                        ex_password.password
+                else:
+                    new_volume['properties']['imagePassword'] = ex_password
 
             if ex_ssh_keys is not None:
-                new_volume['properties']['sshKeys'] = \
-                    [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+                if isinstance(ex_ssh_keys[0], NodeAuthSSHKey):
+                    new_volume['properties']['sshKeys'] = \
+                        [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+                else:
+                    new_volume['properties']['sshKeys'] = ex_ssh_keys
 
             body['entities']['volumes']['items'].append(new_volume)
 
@@ -1072,10 +1080,11 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type   ex_bus_type: ``str``
 
         :param  ex_ssh_keys: Optional SSH keys.
-        :type   ex_ssh_keys: ``list`` of :class:`NodeAuthSSHKey`
+        :type   ex_ssh_keys: ``list`` of :class:`NodeAuthSSHKey` or
+                             ``list`` of ``str``
 
         :param  ex_password: Optional password for root.
-        :type   ex_password: :class:`NodeAuthPassword`
+        :type   ex_password: :class:`NodeAuthPassword` or ``str``
 
         :param  ex_availability_zone: Volume Availability Zone.
         :type   ex_availability_zone: ``str``
@@ -1132,10 +1141,16 @@ class ProfitBricksNodeDriver(NodeDriver):
         if ex_bus_type is not None:
             body['properties']['bus'] = ex_bus_type
         if ex_ssh_keys is not None:
-            body['properties']['sshKeys'] = \
-                [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+            if isinstance(ex_ssh_keys[0], NodeAuthSSHKey):
+                body['properties']['sshKeys'] = \
+                    [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+            else:
+                body['properties']['sshKeys'] = ex_ssh_keys
         if ex_password is not None:
-            body['properties']['imagePassword'] = ex_password.password
+            if isinstance(ex_password, NodeAuthPassword):
+                body['properties']['imagePassword'] = ex_password.password
+            else:
+                body['properties']['imagePassword'] = ex_password
         if ex_availability_zone is not None:
             body['properties']['availabilityZone'] = ex_availability_zone
 
@@ -2697,7 +2712,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         action = volume.extra['href'] + '/restore-snapshot'
         data = {'snapshotId': snapshot.id}
-        body = urllib.urlencode(data)
+        body = urlencode(data)
 
         self.connection.request(
             action=action,
