@@ -15,6 +15,13 @@ Compute
   [GITHUB-1099]
   (@xofer)
 
+- Decrease sleep delay (from 1.5 to 0.2 seconds) inside paramiko client which
+  is used to prevent busy waiting while waiting for data on the channel.
+
+  This should cause deploy scripts which produce a lot of output in incremental
+  manner to finish faster.
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud 2.2.0
 --------------------------------
 
