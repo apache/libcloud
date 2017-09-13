@@ -52,7 +52,7 @@ Provider                              list images get image create image delete 
 `RimuHosting`_                        yes         no        no           no           no        
 `ServerLove`_                         yes         no        no           no           no        
 `skalicloud`_                         yes         no        no           no           no        
-`SoftLayer`_                          yes         no        no           no           no        
+`SoftLayer`_                          yes         yes       no           no           no        
 `vCloud`_                             yes         no        no           no           no        
 `VCL`_                                yes         no        no           no           no        
 `vCloud`_                             yes         no        no           no           no        

@@ -282,6 +282,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['instance_type'], 't1.micro')
         self.assertEqual(node.extra['availability'], 'us-east-1b')
         self.assertEqual(node.extra['start'], '2013-06-18T12:07:53.161Z')
+        self.assertEqual(node.extra['end'], '2014-06-18T12:07:53.161Z')
         self.assertEqual(node.extra['duration'], 31536000)
         self.assertEqual(node.extra['usage_price'], 0.012)
         self.assertEqual(node.extra['fixed_price'], 23.0)
@@ -444,21 +445,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                 self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 67)
+                self.assertEqual(len(sizes), 70)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
                 self.assertTrue('x1.32xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 58)
+                self.assertEqual(len(sizes), 61)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 68)
+                self.assertEqual(len(sizes), 71)
             elif region_name == 'ap-southeast-1':
                 self.assertEqual(len(sizes), 57)
             elif region_name == 'ap-southeast-2':
                 self.assertEqual(len(sizes), 61)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 65)
+                self.assertEqual(len(sizes), 68)
             elif region_name == 'ap-south-1':
                 self.assertEqual(len(sizes), 41)
 

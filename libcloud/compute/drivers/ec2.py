@@ -322,6 +322,42 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'g3.4xlarge': {
+        'id': 'g3.4xlarge',
+        'name': 'Cluster GPU G3 Four Extra Large Instance',
+        'ram': GiB(122),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16,
+            'gpu': 1,
+            'gpu_ram': GiB(8)
+        }
+    },
+    'g3.8xlarge': {
+        'id': 'g3.8xlarge',
+        'name': 'Cluster GPU G3 Eight Extra Large Instance',
+        'ram': GiB(244),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32,
+            'gpu': 2,
+            'gpu_ram': GiB(16)
+        }
+    },
+    'g3.16xlarge': {
+        'id': 'g3.16xlarge',
+        'name': 'Cluster GPU G3 16 Extra Large Instance',
+        'ram': GiB(488),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64,
+            'gpu': 4,
+            'gpu_ram': GiB(32)
+        }
+    },
     'p2.xlarge': {
         'id': 'p2.xlarge',
         'name': 'Cluster GPU P2 Large Instance',
@@ -869,6 +905,9 @@ REGION_DETAILS = {
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -933,6 +972,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1012,6 +1054,9 @@ REGION_DETAILS = {
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -1076,6 +1121,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'p2.xlarge',
             'p2.8xlarge',
             'p2.16xlarge',
@@ -1153,6 +1201,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1747,6 +1798,7 @@ REGION_DETAILS = {
             'x1.32xlarge'
         ]
     },
+    # GovCloud Region
     'us-gov-west-1': {
         'endpoint': 'ec2.us-gov-west-1.amazonaws.com',
         'api_name': 'ec2_us_govwest',
@@ -1775,6 +1827,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -2763,6 +2818,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         'start': {
             'xpath': 'start',
+            'transform_func': str
+        },
+        'end': {
+            'xpath': 'end',
             'transform_func': str
         },
         'duration': {
