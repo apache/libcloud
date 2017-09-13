@@ -538,9 +538,10 @@ class AzureNodeDriver(NodeDriver):
             n = 0
             while True:
                 try:
-                    instance_vhd = "https://%s.blob.core.windows.net" \
+                    instance_vhd = "https://%s.blob%s" \
                                    "/%s/%s-os_%i.vhd" \
                                    % (ex_storage_account,
+                                      self.connection.storage_suffix,
                                       ex_blob_container,
                                       name,
                                       n)
