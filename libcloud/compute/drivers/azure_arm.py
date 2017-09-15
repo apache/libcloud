@@ -632,26 +632,29 @@ class AzureNodeDriver(NodeDriver):
         if isinstance(auth, NodeAuthSSHKey):
             data["properties"]["osProfile"]["adminPassword"] = \
                 binascii.hexlify(os.urandom(20))
-            data["properties"]["osProfile"]["linuxConfiguration"] = {
-                "disablePasswordAuthentication": "true",
-                "ssh": {
-                    "publicKeys": [
-                        {
-                            "path": '/home/%s/.ssh/authorized_keys' % (
-                                ex_user_name),
-                            "keyData": auth.pubkey
-                        }
-                    ]
+            if not "Windows" in image.id:
+                data["properties"]["osProfile"]["linuxConfiguration"] = {
+                    "disablePasswordAuthentication": "true",
+                    "ssh": {
+                        "publicKeys": [
+                            {
+                                "path": '/home/%s/.ssh/authorized_keys' % (
+                                    ex_user_name),
+                                "keyData": auth.pubkey
+                            }
+                        ]
+                    }
                 }
-            }
         elif isinstance(auth, NodeAuthPassword):
-            data["properties"]["osProfile"]["linuxConfiguration"] = {
-                "disablePasswordAuthentication": "false"
-            }
+            if not "Windows" in image.id:
+                data["properties"]["osProfile"]["linuxConfiguration"] = {
+                    "disablePasswordAuthentication": "false"
+                }
             data["properties"]["osProfile"]["adminPassword"] = auth.password
         else:
             raise ValueError(
                 "Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
+
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
