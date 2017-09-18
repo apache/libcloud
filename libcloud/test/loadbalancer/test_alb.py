@@ -32,6 +32,8 @@ class ApplicationLBTests(unittest.TestCase):
     target_group_id = 'arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB-tg/1111111111111111'
     listener_id = \
         'arn:aws:elasticloadbalancing:us-east-1:111111111111:listener/app/Test-ALB/1111111111111111/1111111111111111'
+    rule_id = 'arn:aws:elasticloadbalancing:us-east-1:111111111111:listener-rule/app/Test-Develop-App-LB/1111111111111111/' \
+              '1111111111111111/1111111111111111'
     ssl_cert_id = 'arn:aws:iam::111111111111:server-certificate/test.certificate'
 
     def setUp(self):
@@ -69,15 +71,9 @@ class ApplicationLBTests(unittest.TestCase):
     def test_get_balancer(self):
         balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
         self.assertEqual(balancer.id, self.balancer_id)
+        self.assertEqual(balancer.extra['listeners'][0].balancer.id, self.balancer_id)
         self.assertEqual(balancer.name, 'Test-ALB')
         self.assertEqual(balancer.state, State.UNKNOWN)
-
-    def test_balancer_list_members(self):
-        balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
-        members = balancer.list_members()
-        self.assertEqual(len(members), 1)
-        self.assertEqual(members[0].balancer, balancer)
-        self.assertEqual('i-01111111111111111', members[0].id)
 
     def test_create_balancer(self):
         balancer = self.driver.create_balancer(name='Test-ALB', port=443, protocol='HTTPS', algorithm=None,
@@ -105,64 +101,62 @@ class ApplicationLBTests(unittest.TestCase):
                                                           health_check_timeout=5, health_check_matcher="200",
                                                           healthy_threshold=5, unhealthy_threshold=2
                                                           )
-        self.assertTrue(('id' in target_group), 'Target group is missing "id" field')
-        self.assertTrue(('members' in target_group), 'Target group is missing "members" field')
-        self.assertEqual(target_group.get('name'), 'Test-ALB-tg')
-        self.assertEqual(target_group.get('port'), 443)
-        self.assertEqual(target_group.get('protocol'), 'HTTPS')
-        self.assertEqual(target_group.get('vpc'), 'vpc-11111111')
-        self.assertEqual(target_group.get('health_check_timeout'), 5)
-        self.assertEqual(target_group.get('health_check_port'), 'traffic-port')
-        self.assertEqual(target_group.get('health_check_path'), '/')
-        self.assertEqual(target_group.get('health_check_proto'), 'HTTPS')
-        self.assertEqual(target_group.get('health_check_interval'), 30)
-        self.assertEqual(target_group.get('healthy_threshold'), 5)
-        self.assertEqual(target_group.get('unhealthy_threshold'), 2)
-        self.assertEqual(target_group.get('matcher'), "200")
+        self.assertTrue(hasattr(target_group, 'id'), 'Target group is missing "id" field')
+        self.assertTrue(hasattr(target_group, 'members'), 'Target group is missing "members" field')
+        self.assertEqual(target_group.name, 'Test-ALB-tg')
+        self.assertEqual(target_group.port, 443)
+        self.assertEqual(target_group.protocol, 'HTTPS')
+        self.assertEqual(target_group.vpc, 'vpc-11111111')
+        self.assertEqual(target_group.health_check_timeout, 5)
+        self.assertEqual(target_group.health_check_port, 'traffic-port')
+        self.assertEqual(target_group.health_check_path, '/')
+        self.assertEqual(target_group.health_check_matcher, "200")
+        self.assertEqual(target_group.health_check_proto, 'HTTPS')
+        self.assertEqual(target_group.health_check_interval, 30)
+        self.assertEqual(target_group.healthy_threshold, 5)
+        self.assertEqual(target_group.unhealthy_threshold, 2)
 
     def test_ex_register_targets(self):
         balancer = self.driver.get_balancer(self.balancer_id)
+        target_group = self.driver.ex_get_target_group(self.target_group_id)
         members = [Member('i-01111111111111111', '10.0.0.0', 443)]
-        targets_not_registered = self.driver.ex_register_targets(target_group=balancer.extra.get('target_groups')[0],
+        targets_not_registered = self.driver.ex_register_targets(target_group=target_group,
                                                                  members=members)
         self.assertTrue(targets_not_registered, 'ex_register_targets is expected to return True on success')
 
     def test_ex_create_listener(self):
         balancer = self.driver.get_balancer(self.balancer_id)
+        target_group = self.driver.ex_get_target_group(self.target_group_id)
         listener = self.driver.ex_create_listener(balancer=balancer, port=443, proto='HTTPS',
-                                                  target_group=balancer.extra.get('target_groups')[0], action="forward",
-                                                  ssl_cert_arn=self.ssl_cert_id, ssl_policy="ELBSecurityPolicy-2016-08")
+                                                  target_group=target_group, action="forward",
+                                                  ssl_cert_arn=self.ssl_cert_id,
+                                                  ssl_policy="ELBSecurityPolicy-2016-08")
 
-        self.assertTrue(('id' in listener), 'Listener is missing "id" field')
-        self.assertTrue(('rules' in listener), 'Listener is missing "rules" field')
-        self.assertEqual(listener.get('balancer'), balancer.id)
-        self.assertEqual(listener.get('target_group'), balancer.extra.get('target_groups')[0]['id'])
-        self.assertEqual(listener.get('port'), 443)
-        self.assertEqual(listener.get('protocol'), 'HTTPS')
-        self.assertEqual(listener.get('action'), 'forward')
-        self.assertEqual(listener.get('ssl_certificate'), self.ssl_cert_id)
-        self.assertEqual(listener.get('ssl_policy'), 'ELBSecurityPolicy-2016-08')
+        self.assertTrue(hasattr(listener, 'id'), 'Listener is missing "id" field')
+        self.assertTrue(hasattr(listener, 'rules'), 'Listener is missing "rules" field')
+        self.assertTrue(hasattr(listener, 'balancer'), 'Listener is missing "balancer" field')
+        self.assertEqual(listener.balancer.id, balancer.id)
+        self.assertEqual(listener.rules[0].target_group.id, target_group.id)
+        self.assertEqual(listener.port, 443)
+        self.assertEqual(listener.protocol, 'HTTPS')
+        self.assertEqual(listener.action, 'forward')
+        self.assertEqual(listener.ssl_certificate, self.ssl_cert_id)
+        self.assertEqual(listener.ssl_policy, 'ELBSecurityPolicy-2016-08')
 
     def test_ex_create_rule(self):
         balancer = self.driver.get_balancer(self.balancer_id)
         listener = balancer.extra.get('listeners')[0]
-        target_group = balancer.extra.get('target_groups')[0]
+        target_group = self.driver.ex_get_target_group(self.target_group_id)
         rule = self.driver.ex_create_listener_rule(listener=listener, priority=10, target_group=target_group,
                                                    action="forward", condition_field="path-pattern",
                                                    condition_value="/img/*")
 
-        self.assertTrue(('id' in rule), 'Rule is missing "id" field')
-        self.assertTrue(('conditions' in rule), 'Rule is missing "conditions" field')
-        self.assertEqual(rule.get('is_default'), False)
-        self.assertEqual(rule.get('priority'), '10')
-        self.assertEqual(rule.get('target_group'), self.target_group_id)
-        self.assertTrue(('/img/*' in rule['conditions']['path-pattern']), 'Rule is missing test condition')
-
-    def test_ex_balancer_list_listeners(self):
-        balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
-        self.assertTrue(('listeners' in balancer.extra), 'No listeners dict found in balancer.extra')
-        listeners = self.driver.ex_balancer_list_listeners(balancer)
-        self.assertEqual(len(listeners), 1)
+        self.assertTrue(hasattr(rule, 'id'), 'Rule is missing "id" field')
+        self.assertTrue(hasattr(rule, 'conditions'), 'Rule is missing "conditions" field')
+        self.assertEqual(rule.is_default, False)
+        self.assertEqual(rule.priority, '10')
+        self.assertEqual(rule.target_group.id, self.target_group_id)
+        self.assertTrue(('/img/*' in rule.conditions['path-pattern']), 'Rule is missing test condition')
 
     def test_ex_get_balancer_tags(self):
         balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
@@ -170,38 +164,89 @@ class ApplicationLBTests(unittest.TestCase):
         tags = self.driver._ex_get_balancer_tags(balancer)
         self.assertEqual(tags['project'], 'lima')
 
-    def test_ex_get_target_group_members(self):
-        target_group_members = self.driver._ex_get_target_group_members(self.target_group_id)
-        self.assertEqual(len(target_group_members), 1)
-        self.assertTrue(('id' in target_group_members[0]), 'Target group member is missing "id" field')
-        self.assertTrue(('port' in target_group_members[0]), 'Target group member is missing "port" field')
-        self.assertTrue(('health' in target_group_members[0]), 'Target group member is missing "health" field')
+    def test_ex_get_target_group(self):
+        target_group = self.driver.ex_get_target_group(self.target_group_id)
+        target_group_fields = ('id', 'name', 'protocol', 'port', 'vpc', 'health_check_timeout',
+                               'health_check_port', 'health_check_path', 'health_check_proto',
+                               'health_check_matcher', 'health_check_interval', 'healthy_threshold',
+                               'unhealthy_threshold', '_balancers', '_balancers_arns', '_members',
+                               '_driver',)
 
-    def test_ex_get_balancer_target_groups(self):
-        balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
-        target_groups = self.driver._ex_get_balancer_target_groups(balancer)
-        self.assertEqual(len(target_groups), 1)
-        self.assertTrue(('id' in target_groups[0]), 'Target group is missing "id" field')
-        self.assertTrue(('name' in target_groups[0]), 'Target group is missing "port" field')
-        self.assertTrue(('members' in target_groups[0]), 'Target group is missing "members" field')
+        for field in target_group_fields:
+            self.assertTrue((field in target_group.__dict__),
+                            'Field [%s] is missing in ALBTargetGroup object' % field)
+
+        self.assertEqual(target_group.id, self.target_group_id)
+
+    def test_ex_get_listener(self):
+        listener = self.driver.ex_get_listener(self.listener_id)
+        listener_fields = ('id', 'protocol', 'port', 'action', 'ssl_policy', 'ssl_certificate',
+                           '_balancer', '_balancer_arn', '_rules', '_driver',)
+
+        for field in listener_fields:
+            self.assertTrue((field in listener.__dict__),
+                            'Field [%s] is missing in ALBListener object' % field)
+
+        self.assertEqual(listener.id, self.listener_id)
+
+    def test_ex_get_rule(self):
+        rule = self.driver.ex_get_rule(self.rule_id)
+        rule_fields = ('id', 'is_default', 'priority', 'conditions', '_listener', '_listener_arn',
+                       '_target_group', '_target_group_arn', '_driver',)
+
+        for field in rule_fields:
+            self.assertTrue((field in rule.__dict__),
+                            'Field [%s] is missing in ALBRule object' % field)
+
+        self.assertEqual(rule.id, self.rule_id)
+
+
+    def test_ex_get_target_group_members(self):
+        target_group = self.driver.ex_get_target_group(self.target_group_id)
+        target_group_members = self.driver._ex_get_target_group_members(target_group)
+        self.assertEqual(len(target_group_members), 1)
+        self.assertTrue(hasattr(target_group_members[0], 'id'), 'Target group member is missing "id" field')
+        self.assertTrue(hasattr(target_group_members[0], 'port'), 'Target group member is missing "port" field')
+        self.assertTrue(('health' in target_group_members[0].extra), 'Target group member is missing "health" field')
 
     def test_ex_get_balancer_listeners(self):
         balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
         listeners = self.driver._ex_get_balancer_listeners(balancer)
         self.assertEqual(len(listeners), 1)
-        self.assertTrue(('id' in listeners[0]), 'Listener is missing "id" field')
-        self.assertTrue(('port' in listeners[0]), 'Listener is missing "port" field')
-        self.assertTrue(('protocol' in listeners[0]), 'Listener is missing "protocol" field')
-        self.assertTrue(('rules' in listeners[0]), 'Listener is missing "rules" field')
+        self.assertTrue(hasattr(listeners[0], 'id'), 'Listener is missing "id" field')
+        self.assertTrue(hasattr(listeners[0], 'port'), 'Listener is missing "port" field')
+        self.assertTrue(hasattr(listeners[0], 'protocol'), 'Listener is missing "protocol" field')
+        self.assertTrue(hasattr(listeners[0], 'rules'), 'Listener is missing "rules" field')
 
     def test_ex_get_rules_for_listener(self):
-        listener_rules = self.driver._ex_get_rules_for_listener(self.listener_id)
+        listener = self.driver.ex_get_listener(self.listener_id)
+        listener_rules = self.driver._ex_get_rules_for_listener(listener)
         self.assertEqual(len(listener_rules), 1)
-        self.assertTrue(('id' in listener_rules[0]), 'Rule is missing "id" field')
-        self.assertTrue(('is_default' in listener_rules[0]), 'Rule is missing "port" field')
-        self.assertTrue(('priority' in listener_rules[0]), 'Rule is missing "priority" field')
-        self.assertTrue(('target_group' in listener_rules[0]), 'Rule is missing "target_group" field')
-        self.assertTrue(('conditions' in listener_rules[0]), 'Rule is missing "conditions" field')
+        self.assertTrue(hasattr(listener_rules[0], 'id'), 'Rule is missing "id" field')
+        self.assertTrue(hasattr(listener_rules[0], 'is_default'), 'Rule is missing "port" field')
+        self.assertTrue(hasattr(listener_rules[0], 'priority'), 'Rule is missing "priority" field')
+        self.assertTrue(hasattr(listener_rules[0], 'target_group'), 'Rule is missing "target_group" field')
+        self.assertTrue(hasattr(listener_rules[0], 'conditions'), 'Rule is missing "conditions" field')
+
+# Commented out to avoid confusion. In AWS ALB relation between load balancer
+# and target group/members is indirect. So it's better to go through full chain
+# to obtain required object(s).
+# Chain is: balancer->listener->rule->target group->member
+#
+#    def test_balancer_list_members(self):
+#         balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
+#         members = balancer.list_members()
+#         self.assertEqual(len(members), 1)
+#         self.assertEqual(members[0].balancer, balancer)
+#         self.assertEqual('i-01111111111111111', members[0].id)
+#
+#    def test_ex_get_balancer_target_groups(self):
+#         balancer = self.driver.get_balancer(balancer_id=self.balancer_id)
+#         target_groups = self.driver._ex_get_balancer_target_groups(balancer)
+#         self.assertEqual(len(target_groups), 1)
+#         self.assertTrue(hasattr(target_groups[0], 'id'), 'Target group is missing "id" field')
+#         self.assertTrue(hasattr(target_groups[0], 'name'), 'Target group is missing "port" field')
+#         self.assertTrue(hasattr(target_groups[0], 'members'), 'Target group is missing "members" field')
 
 
 class ApplicationLBMockHttp(MockHttp):

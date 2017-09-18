@@ -45,6 +45,157 @@ class ALBConnection(SignedAWSConnection):
     service_name = 'elasticloadbalancing'
 
 
+class ALBTargetGroup(object):
+    """
+    AWS ALB target group class
+    http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html
+    """
+
+    def __init__(self, target_group_id, name, protocol, port, vpc, driver,
+                 health_check_timeout=5, health_check_port="traffic-port",
+                 health_check_path="/", health_check_proto="HTTP",
+                 health_check_matcher="200", health_check_interval=30,
+                 healthy_threshold=5, unhealthy_threshold=2, balancers=[],
+                 members=[]):
+
+        self.id = target_group_id
+        self.name = name
+        self.protocol = protocol
+        self.port = port
+        self.vpc = vpc
+        self.health_check_timeout = health_check_timeout
+        self.health_check_port = health_check_port
+        self.health_check_path = health_check_path
+        self.health_check_proto = health_check_proto
+        self.health_check_matcher = health_check_matcher
+        self.health_check_interval = health_check_interval
+        self.healthy_threshold = healthy_threshold
+        self.unhealthy_threshold = unhealthy_threshold
+
+        self._balancers = balancers
+        self._balancers_arns = [lb.id for lb in balancers] if balancers else []
+        self._members = members
+        self._members_ids = [mb.id for mb in members] if members else []
+        self._driver = driver
+
+    @property
+    def balancers(self):
+        if not self._balancers and self._balancers_arns:
+            self._balancers = []
+            for balancer_arn in self._balancers_arns:
+                self._balancers.append(
+                    self._driver.get_balancer(balancer_arn)
+                )
+        return self._balancers
+
+    @balancers.setter
+    def balancers(self, val):
+        self._balancers = val
+        self._balancers_arns = [lb.id for lb in val] if val else []
+
+    @property
+    def members(self):
+        if not self._members:
+            mbrs = self._driver._ex_get_target_group_members(self)
+            self._members = mbrs
+            self._members_ids = [mb.id for mb in mbrs] if mbrs else []
+
+        return self._members
+
+    @members.setter
+    def members(self, val):
+        self._members = val
+        self._members_ids = [mb.id for mb in val] if val else []
+
+
+class ALBListener(object):
+    """
+    AWS ALB listener class
+    http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html
+    """
+
+    def __init__(self, listener_id, protocol, port, balancer, driver,
+                 action="", ssl_policy="", ssl_certificate="", rules=[]):
+
+        self.id = listener_id
+        self.protocol = protocol
+        self.port = port
+        self.action = action
+        self.ssl_policy = ssl_policy
+        self.ssl_certificate = ssl_certificate
+
+        self._balancer = balancer
+        self._balancer_arn = balancer.id if balancer else None
+        self._rules = rules
+        self._driver = driver
+
+    @property
+    def balancer(self):
+        if not self._balancer and self._balancer_arn:
+            self._balancer = self._driver.get_balancer(self._balancer_arn)
+        return self._balancer
+
+    @balancer.setter
+    def balancer(self, val):
+        self._balancer = val
+        self._balancer_arn = val.id
+
+    @property
+    def rules(self):
+        if not self._rules:
+            self._rules = self._driver._ex_get_rules_for_listener(self)
+        return self._rules
+
+    @rules.setter
+    def rules(self, val):
+        self._rules = val
+
+
+class ALBRule(object):
+    """
+    AWS ALB listener rule class
+    http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#listener-rules
+    """
+
+    def __init__(self, rule_id, is_default, priority, target_group, driver,
+                 conditions={}, listener=None):
+
+        self.id = rule_id
+        self.is_default = is_default
+        self.priority = priority
+        self.conditions = conditions
+
+        self._listener = listener
+        self._listener_arn = listener.id if listener else None
+        self._target_group = target_group
+        self._target_group_arn = target_group.id if target_group else None
+        self._driver = driver
+
+    @property
+    def target_group(self):
+        if not self._target_group and self._target_group_arn:
+            self._target_group = self._driver.ex_get_target_group(
+                self._target_group_arn
+            )
+        return self._target_group
+
+    @target_group.setter
+    def target_group(self, val):
+        self._target_group = val
+        self._target_group_arn = val.id
+
+    @property
+    def listener(self):
+        if not self._listener and self._listener_arn:
+            self._listener = self.driver.ex_get_listener(self._listener_arn)
+        return self._listener
+
+    @listener.setter
+    def listener(self, val):
+        self._listener = val
+        self._listener_arn = val.id
+
+
 class ApplicationLBDriver(Driver):
     name = 'Amazon Application Load Balancing'
     website = 'http://aws.amazon.com/elasticloadbalancing/'
@@ -76,17 +227,6 @@ class ApplicationLBDriver(Driver):
         params = {'Action': 'DescribeLoadBalancers'}
         data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)
-
-    def balancer_list_members(self, balancer):
-        """
-        List memebers of load balancer
-
-        :param balancer: LoadBalancer to list members for
-        :type  balancer: :class:`LoadBalancer`
-
-        :rtype: ``list`` of :class:`Member`
-        """
-        return balancer._members
 
     def get_balancer(self, balancer_id):
         """
@@ -166,10 +306,13 @@ class ApplicationLBDriver(Driver):
             health_check_proto=protocol
         )
         self.ex_register_targets(target_group, members)
-        self.ex_create_listener(balancer, port, protocol, target_group,
-                                ssl_cert_arn=ex_ssl_cert_arn)
+        listener = self.ex_create_listener(balancer, port, protocol,
+                                           target_group,
+                                           ssl_cert_arn=ex_ssl_cert_arn)
 
-        return self.get_balancer(balancer.id)
+        balancer.extra['listener'] = listener
+
+        return balancer
 
     def ex_create_balancer(self, name, addr_type="ipv4",
                            scheme="internet-facing", security_groups=[],
@@ -307,8 +450,8 @@ class ApplicationLBDriver(Driver):
                                     a target unhealthy. The default is 2.
         :type unhealthy_threshold: ``int``
 
-        :return: Dictionary describing target group.
-        :rtype: ``dict``
+        :return: Target group object.
+        :rtype: :class:`ALBTargetGroup`
         """
 
         # mandatory params
@@ -361,14 +504,14 @@ class ApplicationLBDriver(Driver):
                         used on the memeber's side. 'ip' attribute is ignored.
         :type members: ``list`` of :class:`Member`
 
-        :return: True on success.
+        :return: True on success, False if no members provided.
         :rtype: ``bool``
         """
 
         # mandatory params
         params = {
             'Action': 'RegisterTargets',
-            'TargetGroupArn': target_group.get('id')
+            'TargetGroupArn': target_group.id
         }
 
         if not members:
@@ -383,6 +526,8 @@ class ApplicationLBDriver(Driver):
 
         # RegisterTargets doesn't return any useful data
         self.connection.request(ROOT, params=params)
+
+        target_group.members = members
 
         return True
 
@@ -401,7 +546,7 @@ class ApplicationLBDriver(Driver):
         :type proto: ``str``
 
         :param target_group: Target group associated with the listener.
-        :type target_group: ``dict``
+        :type target_group: :class:`ALBTargetGroup`
 
         :param action: Default action for the listener, valid value is 'forward'
         :type action: ``str``
@@ -416,8 +561,8 @@ class ApplicationLBDriver(Driver):
                         Example: 'ELBSecurityPolicy-2016-08'
         :type ssl_policy: ``str``
 
-        :return: Dictionary describing listener
-        :rtype: ``dict``
+        :return: Listener object
+        :rtype: :class:`ALBListener`
         """
 
         # mandatory params
@@ -427,7 +572,7 @@ class ApplicationLBDriver(Driver):
             'Protocol': proto,  # Valid Values: HTTP | HTTPS
             'Port': port,  # Valid Range: Min value of 1. Max value of 65535.
             'DefaultActions.member.1.Type': action,
-            'DefaultActions.member.1.TargetGroupArn': target_group.get('id')
+            'DefaultActions.member.1.TargetGroupArn': target_group.id
         }
 
         # optional params
@@ -441,6 +586,7 @@ class ApplicationLBDriver(Driver):
         xpath = 'CreateListenerResult/Listeners/member'
         for el in findall(element=data, xpath=xpath, namespace=NS):
             listener = self._to_listener(el)
+            listener.balancer = balancer
 
         return listener
 
@@ -450,15 +596,15 @@ class ApplicationLBDriver(Driver):
         """
         Create a rule for listener.
 
-        :param listener: Listener dict
-        :type listener: ``dict``
+        :param listener: Listener object where to create rule
+        :type listener: :class:`ALBListener`
 
         :param priority: The priority for the rule. A listener can't have
                         multiple rules with the same priority.
         :type priority: ``str``
 
-        :param target_group: Target group dict
-        :type target_group: ``dict``
+        :param target_group: Target group object to associate with rule
+        :type target_group: :class:`ALBTargetGroup`
 
         :param action: Action for the rule, valid value is 'forward'
         :type action: ``str``
@@ -470,17 +616,17 @@ class ApplicationLBDriver(Driver):
         :param condition_value: Value to match. Wildcards are supported, for
                                 example: '/img/*'
 
-        :return: Dictonary describing rule
-        :rtype: ``dict``
+        :return: Rule object
+        :rtype: :class:`ALBRule`
         """
 
         # mandatory params
         params = {
             'Action': 'CreateRule',
-            'ListenerArn': listener.get('id'),
+            'ListenerArn': listener.id,
             'Priority': priority,  # Valid Range: Min value of 1. Max: 99999.
             'Actions.member.1.Type': action,
-            'Actions.member.1.TargetGroupArn': target_group.get('id'),
+            'Actions.member.1.TargetGroupArn': target_group.id,
             # Valid values are host-header and path-pattern.
             'Conditions.member.1.Field': condition_field,
             'Conditions.member.1.Values.member.1': condition_value
@@ -491,11 +637,69 @@ class ApplicationLBDriver(Driver):
         xpath = 'CreateRuleResult/Rules/member'
         for el in findall(element=data, xpath=xpath, namespace=NS):
             rule = self._to_rule(el)
+            rule.listener = listener
 
         return rule
 
-    def ex_balancer_list_listeners(self, balancer):
-        return balancer.extra.get('listeners', [])
+    def ex_get_target_group(self, target_group_id):
+        """
+        Get target group object by ARN
+
+        :param target_group_id: ARN of target group
+        :type target_group_id: ``str``
+
+        :return: Target group object
+        :rtype: :class:`ALBTargetGroup`
+        """
+
+        # mandatory params
+        params = {
+            'Action': 'DescribeTargetGroups',
+            'TargetGroupArns.member.1': target_group_id
+        }
+
+        data = self.connection.request(ROOT, params=params).object
+
+        return self._to_target_groups(data)[0]
+
+    def ex_get_listener(self, listener_id):
+        """
+        Get listener object by ARN
+
+        :param listener_id: ARN of listener object to get
+        :type listener_id: ``str``
+
+        :return: Listener object
+        :rtype: :class:`ALBListener`
+        """
+
+        # mandatory params
+        params = {
+            'Action': 'DescribeListeners',
+            'ListenerArns.member.1': listener_id
+        }
+
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_listeners(data)[0]
+
+    def ex_get_rule(self, rule_id):
+        """
+        Get rule by ARN.
+
+        :param rule_id: ARN of rule
+        :type rule_id: ``str``
+
+        :return: Rule object
+        :rtype: :class:`ALBRule`
+        """
+
+        params = {
+            'Action': 'DescribeRules',
+            'RuleArns.member.1': rule_id
+        }
+
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_rules(data)[0]
 
     def _to_listeners(self, data):
         xpath = 'DescribeListenersResult/Listeners/member'
@@ -504,45 +708,24 @@ class ApplicationLBDriver(Driver):
         )]
 
     def _to_listener(self, el):
-        listener = {
-            'id': findtext(element=el, xpath='ListenerArn', namespace=NS),
-            'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
-            'port': int(findtext(element=el, xpath='Port', namespace=NS)),
-            'balancer': findtext(element=el, xpath='LoadBalancerArn',
-                                 namespace=NS),
-            'ssl_policy': findtext(element=el, xpath='SslPolicy',
-                                   namespace=NS),
-            'ssl_certificate': findtext(
-                element=el, xpath='Certificates/member/CertificateArn',
-                namespace=NS
-            ),
-            'action': findtext(element=el, xpath='DefaultActions/member/Type',
-                               namespace=NS),
-            'target_group': findtext(
-                element=el, xpath='DefaultActions/member/TargetGroupArn',
-                namespace=NS
-            )
-        }
-
-        listener.update(
-            {
-                'rules': self._ex_get_rules_for_listener(listener['id'])
-            }
+        listener = ALBListener(
+            listener_id=findtext(element=el, xpath='ListenerArn', namespace=NS),
+            protocol=findtext(element=el, xpath='Protocol', namespace=NS),
+            port=int(findtext(element=el, xpath='Port', namespace=NS)),
+            balancer=None,
+            driver=self.connection.driver,
+            action=findtext(element=el, xpath='DefaultActions/member/Type',
+                            namespace=NS),
+            ssl_policy=findtext(element=el, xpath='SslPolicy', namespace=NS),
+            ssl_certificate=findtext(element=el,
+                                     xpath='Certificates/member/CertificateArn',
+                                     namespace=NS),
         )
+
+        listener._balancer_arn = findtext(element=el, xpath='LoadBalancerArn',
+                                          namespace=NS)
+
         return listener
-
-    def _to_targets(self, data):
-        xpath = 'DefaultActions/member'
-        return [self._to_target(el) for el in findall(
-            element=data, xpath=xpath, namespace=NS
-        )]
-
-    def _to_target(self, el):
-        return findtext(
-            element=el,
-            xpath='DefaultActions/member/TargetGroupArn',
-            namespace=NS
-        )
 
     def _to_balancer(self, el):
         balancer = LoadBalancer(
@@ -554,18 +737,16 @@ class ApplicationLBDriver(Driver):
             driver=self.connection.driver
         )
 
-        extra = {
+        balancer.extra = {
             'listeners': self._ex_get_balancer_listeners(balancer),
-            'target_groups': self._ex_get_balancer_target_groups(balancer),
             'tags': self._ex_get_balancer_tags(balancer),
             'vpc': findtext(el, xpath='VpcId', namespace=NS)
         }
-        balancer.extra = extra
-        if len(extra['listeners']) > 0:
-            balancer.port = extra['listeners'][0]['port']
+
+        if len(balancer.extra['listeners']) > 0:
+            balancer.port = balancer.extra['listeners'][0].port
         else:
             balancer.port = None
-        balancer._members = self._ex_get_balancer_memebers(balancer)
 
         return balancer
 
@@ -593,14 +774,6 @@ class ApplicationLBDriver(Driver):
         def __to_bool__(val):
             return val.lower() in ("yes", "true", "t", "1")
 
-        id = findtext(element=el, xpath='RuleArn', namespace=NS)
-        is_default = findtext(element=el, xpath='IsDefault', namespace=NS)
-        priority = findtext(element=el, xpath='Priority', namespace=NS)
-        target_group = findtext(
-            element=el,
-            xpath='Actions/member/TargetGroupArn',
-            namespace=NS
-        )
         conditions = {}
         cond_members = findall(
             element=el, xpath='Conditions/member', namespace=NS
@@ -614,16 +787,23 @@ class ApplicationLBDriver(Driver):
             for value_member in value_members:
                 conditions[field].append(value_member.text)
 
-        rule = {
-            'id': id,
-            'is_default': __to_bool__(is_default),
+        rule = ALBRule(
+            rule_id=findtext(element=el, xpath='RuleArn', namespace=NS),
+            is_default=__to_bool__(
+                findtext(element=el, xpath='IsDefault', namespace=NS)
+            ),
             # CreateRule API method accepts only int for priority, however
             # DescribeRules method returns 'default' string for default
             # listener rule. So leaving it as string.
-            'priority': priority,
-            'target_group': target_group,
-            'conditions': conditions
-        }
+            priority=findtext(element=el, xpath='Priority', namespace=NS),
+            target_group=None,
+            driver=self.connection.driver,
+            conditions=conditions
+        )
+
+        rule._target_group_arn = findtext(element=el,
+                                          xpath='Actions/member/TargetGroupArn',
+                                          namespace=NS)
 
         return rule
 
@@ -638,43 +818,42 @@ class ApplicationLBDriver(Driver):
                 for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_target_group(self, el):
-        target_group = {
-            'id': findtext(element=el, xpath='TargetGroupArn', namespace=NS),
-            'name': findtext(element=el, xpath='TargetGroupName',
-                             namespace=NS),
-            'protocol': findtext(element=el, xpath='Protocol', namespace=NS),
-            'port': int(findtext(element=el, xpath='Port', namespace=NS)),
-            'vpc': findtext(element=el, xpath='VpcId', namespace=NS),
-            'health_check_timeout': int(findtext(
-                element=el, xpath='HealthCheckTimeoutSeconds', namespace=NS)
+
+        target_group = ALBTargetGroup(
+            target_group_id=findtext(element=el, xpath='TargetGroupArn',
+                                     namespace=NS),
+            name=findtext(element=el, xpath='TargetGroupName', namespace=NS),
+            protocol=findtext(element=el, xpath='Protocol', namespace=NS),
+            port=int(findtext(element=el, xpath='Port', namespace=NS)),
+            vpc=findtext(element=el, xpath='VpcId', namespace=NS),
+            driver=self.connection.driver,
+            health_check_timeout=int(
+                findtext(element=el, xpath='HealthCheckTimeoutSeconds',
+                         namespace=NS)
             ),
-            'health_check_port': findtext(element=el, xpath='HealthCheckPort',
-                                          namespace=NS),
-            'health_check_path': findtext(element=el, xpath='HealthCheckPath',
-                                          namespace=NS),
-            'health_check_proto': findtext(
-                element=el, xpath='HealthCheckProtocol', namespace=NS
-            ),
-            'health_check_interval': int(findtext(
+            health_check_port=findtext(element=el, xpath='HealthCheckPort',
+                                       namespace=NS),
+            health_check_path=findtext(element=el, xpath='HealthCheckPath',
+                                       namespace=NS),
+            health_check_proto=findtext(element=el, xpath='HealthCheckProtocol',
+                                        namespace=NS),
+            health_check_interval=int(findtext(
                 element=el, xpath='HealthCheckIntervalSeconds', namespace=NS)
             ),
-            'healthy_threshold': int(findtext(
+            healthy_threshold=int(findtext(
                 element=el, xpath='HealthyThresholdCount', namespace=NS)
             ),
-            'unhealthy_threshold': int(findtext(
-                element=el, xpath='UnhealthyThresholdCount', namespace=NS)
-            ),
-            'matcher': findtext(element=el, xpath='Matcher/HttpCode',
-                                namespace=NS)
-        }
-
-        target_group.update(
-            {
-                'members': self._ex_get_target_group_members(
-                    target_group['id']
-                )
-            }
+            unhealthy_threshold=int(findtext(element=el,
+                                             xpath='UnhealthyThresholdCount',
+                                             namespace=NS)
+                                    ),
+            health_check_matcher=findtext(element=el,
+                                          xpath='Matcher/HttpCode',
+                                          namespace=NS)
         )
+
+        lbs = findall(element=el, xpath='LoadBalancerArns/member', namespace=NS)
+        target_group._balancers_arns = [lb_arn.text for lb_arn in lbs]
 
         return target_group
 
@@ -684,65 +863,51 @@ class ApplicationLBDriver(Driver):
                 for el in findall(element=data, xpath=xpath, namespace=NS)]
 
     def _to_target_group_member(self, el):
-        id = findtext(element=el, xpath='Target/Id', namespace=NS)
-        port = findtext(element=el, xpath='Target/Port', namespace=NS)
-        health = findtext(
-            element=el, xpath='TargetHealth/State', namespace=NS
+        member = Member(
+            id=findtext(element=el, xpath='Target/Id', namespace=NS),
+            ip=None,
+            port=findtext(element=el, xpath='Target/Port', namespace=NS),
+            balancer=None,
+            extra={
+                'health': findtext(element=el, xpath='TargetHealth/State',
+                                   namespace=NS)
+            }
         )
+        return member
 
-        return {'id': id, 'port': port, 'health': health}
-
-    def _ex_get_balancer_memebers(self, balancer):
-        balancer_members = []
-        for tg in balancer.extra['target_groups']:
-            for tg_member in tg['members']:
-                new_member = Member(
-                    tg_member['id'],
-                    None,
-                    tg_member['port'],
-                    balancer=balancer,
-                    extra={
-                        'health': tg_member['health'],
-                        'target_group': tg['name']
-                    }
-                )
-                balancer_members.append(new_member)
-
-        return balancer_members
-
-    def _ex_get_target_group_members(self, target_group_arn):
+    def _ex_get_target_group_members(self, target_group):
         """
         Return a list of target group member dicts.
 
-        :rtype: ``list`` of ``dict``
+        :param target_group: target group to fetch members for
+        :type target_group: :class:`ALBTargetGroup`
+
+        :return: list of target group members
+        :rtype: ``list`` of :class:`Member`
         """
+
         params = {
             'Action': 'DescribeTargetHealth',
-            'TargetGroupArn': target_group_arn
+            'TargetGroupArn': target_group.id
         }
 
         data = self.connection.request(ROOT, params=params).object
-        return self._to_target_group_members(data)
+        target_group_members = []
+        for tg_member in self._to_target_group_members(data):
+            tg_member.extra['target_group'] = target_group
+            target_group_members.append(tg_member)
 
-    def _ex_get_balancer_target_groups(self, balancer):
-        """
-        Return a list of load balancer target groups with members.
-
-        :rtype: ``list`` of ``dict``
-        """
-        params = {
-            'Action': 'DescribeTargetGroups',
-            'LoadBalancerArn': balancer.id
-        }
-
-        data = self.connection.request(ROOT, params=params).object
-        return self._to_target_groups(data)
+        return target_group_members
 
     def _ex_get_balancer_listeners(self, balancer):
         """
-        Return a list of load balancer listeners dicts.
+        Return a list of listeners associated with load balancer.
 
-        :rtype: ``list`` of ``dict``
+        :param balancer: Load balancer to fetch listeners for
+        :type balancer: :class:`LoadBalancer`
+
+        :return: list of listener objects
+        :rtype: ``list`` of :class:`ALBListener`
         """
         params = {
             'Action': 'DescribeListeners',
@@ -750,21 +915,48 @@ class ApplicationLBDriver(Driver):
         }
 
         data = self.connection.request(ROOT, params=params).object
+
         return self._to_listeners(data)
 
-    def _ex_get_rules_for_listener(self, listener_arn):
+    def _ex_get_rules_for_listener(self, listener):
         """
-        Return a list of listeners rule dicts.
+        Get list of rules associated with listener.
 
-        :rtype: ``list`` of ``dict``
+        :param listener: Listener object to fetch rules for
+        :type listener: :class:`ALBListener`
+
+        :return: List of rules
+        :rtype: ``list`` of :class:`ALBListener`
         """
+
         params = {
             'Action': 'DescribeRules',
-            'ListenerArn': listener_arn
+            'ListenerArn': listener.id
         }
 
         data = self.connection.request(ROOT, params=params).object
-        return self._to_rules(data)
+        rules = self._to_rules(data)
+        for rule in rules:
+            rule.listener = listener
+
+        return rules
+
+    def _ex_get_balancer_tags(self, balancer):
+        """
+        Get a dict of load balancer tags.
+
+        :param balancer: Load balancer to fetch tags for
+        :type balancer: :class:`LoadBalancer`
+
+        :return: Dictionary of tags (name/value) for load balancer
+        :rtype: ``dict``
+        """
+        params = {
+            'Action': 'DescribeTags',
+            'ResourceArns.member.1': balancer.id
+        }
+        data = self.connection.request(ROOT, params=params).object
+        return self._to_tags(data)
 
     def _ex_connection_class_kwargs(self):
         pdriver = super(ApplicationLBDriver, self)
@@ -777,10 +969,56 @@ class ApplicationLBDriver(Driver):
 
         return kwargs
 
-    def _ex_get_balancer_tags(self, balancer):
-        params = {
-            'Action': 'DescribeTags',
-            'ResourceArns.member.1': balancer.id
-        }
-        data = self.connection.request(ROOT, params=params).object
-        return self._to_tags(data)
+# Commented out to avoid confusion. In AWS ALB relation between load balancer
+# and target group/members is indirect. So it's better to go through full chain
+# to obtain required object(s).
+# Chain is: balancer->listener->rule->target group->member
+#
+#    def balancer_list_members(self, balancer):
+#         """
+#         List memebers of load balancer
+#
+#         :param balancer: LoadBalancer to list members for
+#         :type  balancer: :class:`LoadBalancer`
+#
+#         :rtype: ``list`` of :class:`Member`
+#         """
+#         return balancer.extra.get('members', [])
+#
+#    def _ex_get_balancer_members(self, balancer):
+#        """
+#        Fetch members across all listeners/rules/target groups
+#
+#         :param balancer: load balancer to fetch memebers for
+#         :type balancer: :class:`LoadBalancer`
+#
+#         :return: list of load balancer members across all target groups
+#         :rtype: ``list`` of :class:`Member`
+#         """
+#         balancer_members = []
+#         for listener in balancer.extra.get('listeners', []):
+#             for rule in listener.rules:
+#                 for tg_member in rule.target_group.memebers:
+#                     tg_member.balancer = balancer
+#                     tg_member.extra['target_group'] = rule.target_group
+#                     balancer_members.append(tg_member)
+#
+#         return balancer_members
+#
+#    def _ex_get_balancer_target_groups(self, balancer):
+#        """
+#        Return a list of load balancer target groups.
+#
+#        :param balancer: load balancer to fetch target groups for
+#        :type balancer: :class:`LoadBalancer`
+#
+#        :rtype: ``list`` of :class:`ALBTargetGroup`
+#        """
+#         params = {
+#             'Action': 'DescribeTargetGroups',
+#             'LoadBalancerArn': balancer.id
+#         }
+#
+#         data = self.connection.request(ROOT, params=params).object
+#
+#         return self._to_target_groups(data)
