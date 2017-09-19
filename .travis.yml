@@ -23,6 +23,9 @@ addons:
 matrix:
   fast_finish: true
   include:
+    - env: ENV=checks
+      python: 2.7
+      before_script: TOX_ENV=checks
     - env: ENV=lint
       python: 2.7
       before_script: TOX_ENV=lint
