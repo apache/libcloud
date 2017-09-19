@@ -43,6 +43,18 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.driver = Azure(self.TENANT_ID, self.SUBSCRIPTION_ID,
                             self.APPLICATION_ID, self.APPLICATION_PASS)
 
+    def test_get_image(self):
+        # Default storage suffix
+        image = self.driver.get_image(image_id='http://www.example.com/foo/image_name')
+        self.assertEqual(image.id, 'https://www.blob.core.windows.net/foo/image_name')
+        self.assertEqual(image.name, 'image_name')
+
+        # Custom storage suffix
+        self.driver.connection.storage_suffix = '.core.chinacloudapi.cn'
+        image = self.driver.get_image(image_id='http://www.example.com/foo/image_name')
+        self.assertEqual(image.id, 'https://www.blob.core.chinacloudapi.cn/foo/image_name')
+        self.assertEqual(image.name, 'image_name')
+
     def test_locations_returned_successfully(self):
         locations = self.driver.list_locations()
         self.assertEqual([l.name for l in locations],
