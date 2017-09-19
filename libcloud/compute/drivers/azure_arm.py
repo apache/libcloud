@@ -534,23 +534,12 @@ class AzureNodeDriver(NodeDriver):
                  "/Microsoft.Compute/virtualMachines/%s" % \
                  (self.subscription_id, ex_resource_group, name)
 
-        def _get_instance_vhd():
-            n = 0
-            while True:
-                try:
-                    instance_vhd = "https://%s.blob%s" \
-                                   "/%s/%s-os_%i.vhd" \
-                                   % (ex_storage_account,
-                                      self.connection.storage_suffix,
-                                      ex_blob_container,
-                                      name,
-                                      n)
-                    self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-                    return instance_vhd
-                except LibcloudError:
-                    n += 1
-
         if isinstance(image, AzureVhdImage):
+            instance_vhd = self._get_instance_vhd(
+                name=name,
+                ex_resource_group=ex_resource_group,
+                ex_storage_account=ex_storage_account,
+                ex_blob_container=ex_blob_container)
             storage_profile = {
                 "osDisk": {
                     "name": name,
@@ -561,7 +550,7 @@ class AzureNodeDriver(NodeDriver):
                         "uri": image.id
                     },
                     "vhd": {
-                        "uri": _get_instance_vhd(),
+                        "uri": instance_vhd,
                     }
                 }
             }
@@ -589,8 +578,13 @@ class AzureNodeDriver(NodeDriver):
                     "storageAccountType": ex_storage_account_type
                 }
             else:
+                instance_vhd = self._get_instance_vhd(
+                    name=name,
+                    ex_resource_group=ex_resource_group,
+                    ex_storage_account=ex_storage_account,
+                    ex_blob_container=ex_blob_container)
                 storage_profile["osDisk"]["vhd"] = {
-                    "uri": _get_instance_vhd()
+                    "uri": instance_vhd
                 }
         else:
             raise LibcloudError(
@@ -2013,6 +2007,23 @@ class AzureNodeDriver(NodeDriver):
         loc_id = loc.lower().replace(" ", "")
         return NodeLocation(loc_id, loc, self._location_to_country.get(loc_id),
                             self.connection.driver)
+
+    def _get_instance_vhd(self, name, ex_resource_group, ex_storage_account,
+                          ex_blob_container="vhds"):
+        n = 0
+        while True:
+            try:
+                instance_vhd = "https://%s.blob%s" \
+                               "/%s/%s-os_%i.vhd" \
+                               % (ex_storage_account,
+                                  self.connection.storage_suffix,
+                                  ex_blob_container,
+                                  name,
+                                  n)
+                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
+                return instance_vhd
+            except LibcloudError:
+                n += 1
 
 
 def _split_blob_uri(uri):
