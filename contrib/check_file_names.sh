@@ -23,7 +23,7 @@
 
 FILE_NAME_LENGTH_LIMIT=143
 
-FILES=$(find libcloud/ -regextype posix-basic -regex ".*/.\{${FILE_NAME_LENGTH_LIMIT},\}")
+FILES=$(find libcloud/ -regextype posix-egrep -regex ".*[^/]{${FILE_NAME_LENGTH_LIMIT},}")
 
 if [ "${FILES}" ]; then
     echo "Found files which name is longer than ${FILE_NAME_LENGTH_LIMIT} characters"
