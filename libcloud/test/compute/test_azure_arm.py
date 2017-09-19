@@ -12,10 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.import libcloud
+
 import json
 import sys
 import functools
 from datetime import datetime
+
+import mock
 
 from libcloud.compute.base import (NodeLocation, NodeSize, VolumeSnapshot,
                                    StorageVolume)
@@ -378,6 +381,21 @@ class AzureNodeDriverTests(LibcloudTestCase):
         snapshot = self.driver.list_snapshots()[0]
         res_value = snapshot.destroy()
         self.assertTrue(res_value)
+
+    def test_get_instance_vhd(self):
+        with mock.patch.object(self.driver, '_ex_delete_old_vhd'):
+            # Default storage suffix
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.windows.net/vhds/test1-os_0.vhd')
+
+            # Custom storage suffix
+            self.driver.connection.storage_suffix = '.core.chinacloudapi.cn'
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.chinacloudapi.cn/vhds/test1-os_0.vhd')
 
 
 class AzureMockHttp(MockHttp):
