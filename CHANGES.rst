@@ -25,7 +25,7 @@ Compute
 Tests
 ~~~~~
 
-- Make sure we normalize header values and cast all the numbers to string in
+- Make sure we normalize header values and cast all the numbers to strings in
   base connection classes used by tests. (LIBCLOUD-945, GITHUB-1111)
 
   Reported by Erich Eckner.
