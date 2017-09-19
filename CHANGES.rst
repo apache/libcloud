@@ -22,6 +22,15 @@ Compute
   manner to finish faster.
   [Tomaz Muraus]
 
+Tests
+~~~~~
+
+- Make sure we normalize header values and cast all the numbers to string in
+  base connection classes used by tests. (LIBCLOUD-945, GITHUB-1111)
+
+  Reported by Erich Eckner.
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud 2.2.0
 --------------------------------
 
