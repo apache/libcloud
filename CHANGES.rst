@@ -4,6 +4,16 @@
 Changes in current version of Apache Libcloud
 ---------------------------------------------
 
+Common
+~~~~~~
+
+- Fix an issue with installation failing on some operating system and file
+  systems combinations (e.g. ecryptfs layered on top of ext4) which don't
+  support file names longer than 143 characters. (LIBCLOUD-946, GITHUB-1112)
+
+  Reported by Cyrille Verrier.
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 

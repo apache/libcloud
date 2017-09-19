@@ -33,7 +33,7 @@ from libcloud.utils.py3 import httplib
 class AzureNodeDriverTests(LibcloudTestCase):
 
     TENANT_ID = '77777777-7777-7777-7777-777777777777'
-    SUBSCRIPTION_ID = '99999999-9999-9999-9999-999999999999'
+    SUBSCRIPTION_ID = '99999999'
     APPLICATION_ID = '55555555-5555-5555-5555-555555555555'
     APPLICATION_PASS = 'p4ssw0rd'
 
@@ -381,7 +381,11 @@ class AzureMockHttp(MockHttp):
 
     def __getattr__(self, n):
         def fn(method, url, body, headers):
-            fixture = self.fixtures.load(n + ".json")
+            # Note: We use shorter fixture name so we don't exceed 143
+            # character limit for file names
+            file_name = n.replace('99999999_9999_9999_9999_999999999999',
+                                  AzureNodeDriverTests.SUBSCRIPTION_ID)
+            fixture = self.fixtures.load(file_name + ".json")
 
             if method in ('POST', 'PUT'):
                 try:
