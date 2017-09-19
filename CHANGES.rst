@@ -32,6 +32,10 @@ Compute
   manner to finish faster.
   [Tomaz Muraus]
 
+- Fix a regression in the Azure ARM driver which didn't allow custom storage
+  URI suffix to be used with create_node. (GITHUB-1110)
+  [Lucas Di Pentima]
+
 Tests
 ~~~~~
 
