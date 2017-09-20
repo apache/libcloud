@@ -16,6 +16,8 @@ Compute
 - Update ProfitBricks driver and add support for the new API v4. (GITHUB-1103)
   [Nurfet Becirevic]
 
+- [GCE] Support GCE node labels. (GITHUB-1115) [@maxlip]
+
 Changes in Apache Libcloud 2.2.1
 --------------------------------
 
