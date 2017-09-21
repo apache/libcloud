@@ -1,6 +1,12 @@
 ﻿Changelog
 =========
 
+Changes in Apach Libcloud in development
+----------------------------------------
+
+- [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
+  [@zulupro]
+
 Changes in Apache Libcloud 2.2.1
 --------------------------------
 
