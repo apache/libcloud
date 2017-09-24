@@ -98,7 +98,7 @@ class Provider(Type):
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     :cvar RIMUHOSTING: RimuHosting.com
     :cvar TERREMARK: Terremark
-    :cvar UPCLOUD: Upcloud
+    :cvar UPCLOUD: UpCloud
     :cvar VCL: VCL driver
     :cvar VCLOUD: vmware vCloud
     :cvar VPSNET: VPS.net
