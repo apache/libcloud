@@ -58,8 +58,8 @@ matrix:
       # Trigger ReadTheDocs build
 
 install:
-  - pip install --upgrade "pip<8.0.0"
-  - pip install "virtualenv<14.0.0"
+  - pip install --upgrade "pip==9.0.1"
+  - pip install "virtualenv==15.1.0"
   - pip install "tox>=2.3.0,<2.4"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
