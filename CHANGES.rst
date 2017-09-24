@@ -4,11 +4,17 @@
 Changes in Apach Libcloud in development
 ----------------------------------------
 
+Compute
+~~~~~~~
+
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
   [@zulupro]
 
 - [EC2] Update pricing information for EC2 instances.
   [Tomaz Muraus]
+
+- Update ProfitBricks driver and add support for the new API v4. (GITHUB-1103)
+  [Nurfet Becirevic]
 
 Changes in Apache Libcloud 2.2.1
 --------------------------------
