@@ -16,9 +16,10 @@ import json
 import time
 
 from libcloud.common.exceptions import BaseHTTPError
+from libcloud.common.types import LibcloudError
 
 
-class UpcloudTimeoutException(Exception):
+class UpcloudTimeoutException(LibcloudError):
     pass
 
 
