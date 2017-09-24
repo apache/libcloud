@@ -23,10 +23,12 @@ class UpcloudTimeoutException(Exception):
 
 
 class UpcloudCreateNodeRequestBody(object):
-    """Body of the create_node request
+    """
+    Body of the create_node request
 
     Takes the create_node arguments (**kwargs) and constructs the request body
     """
+
     def __init__(self, user_id, name, size, image, location, auth=None):
         self.body = {
             'server': {
@@ -40,14 +42,18 @@ class UpcloudCreateNodeRequestBody(object):
         }
 
     def to_json(self):
-        """Serializes the body to json"""
+        """
+        Serializes the body to json
+        """
         return json.dumps(self.body)
 
 
 class UpcloudNodeDestroyer(object):
-    """Destroyes the node.
+    """
+    Destroyes the node.
     Node must be first stopped and then it can be
-    destroyed"""
+    destroyed
+    """
 
     WAIT_AMOUNT = 2
     SLEEP_COUNT_TO_TIMEOUT = 20
