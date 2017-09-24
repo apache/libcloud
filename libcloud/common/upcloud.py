@@ -27,6 +27,27 @@ class UpcloudCreateNodeRequestBody(object):
     Body of the create_node request
 
     Takes the create_node arguments (**kwargs) and constructs the request body
+
+    :param      user_id: required for authentication (required)
+    :type       user_id: ``str``
+
+    :param      name: Name of the created server (required)
+    :type       name: ``str``
+
+    :param      size: The size of resources allocated to this node.
+    :type       size: :class:`.NodeSize`
+
+    :param      image: OS Image to boot on node.
+    :type       image: :class:`.NodeImage`
+
+    :param      location: Which data center to create a node in. If empty,
+                        undefined behavior will be selected. (optional)
+    :type       location: :class:`.NodeLocation`
+
+    :param      auth: Initial authentication information for the node
+                            (optional)
+    :type       auth: :class:`.NodeAuthSSHKey`
+
     """
 
     def __init__(self, user_id, name, size, image, location, auth=None):
@@ -44,15 +65,26 @@ class UpcloudCreateNodeRequestBody(object):
     def to_json(self):
         """
         Serializes the body to json
+
+        :return: JSON string
+        :rtype: ``str``
         """
         return json.dumps(self.body)
 
 
 class UpcloudNodeDestroyer(object):
     """
-    Destroyes the node.
+    Helper class for destroying node.
     Node must be first stopped and then it can be
     destroyed
+
+    :param  upcloud_node_operations: UpcloudNodeOperations instance
+    :type   upcloud_node_operations: :class:`.UpcloudNodeOperations`
+
+    :param  sleep_func: Callable function, which sleeps.
+        Takes int argument to sleep in seconds (optional)
+    :type   sleep_func: ``function``
+
     """
 
     WAIT_AMOUNT = 2
@@ -64,6 +96,12 @@ class UpcloudNodeDestroyer(object):
         self._sleep_count = 0
 
     def destroy_node(self, node_id):
+        """
+        Destroys the given node.
+
+        :param  node_id: Id of the Node.
+        :type   node_id: ``int``
+        """
         self._stop_called = False
         self._sleep_count = 0
         return self._do_destroy_node(node_id)
@@ -99,11 +137,23 @@ class UpcloudNodeDestroyer(object):
 
 
 class UpcloudNodeOperations(object):
+    """
+    Helper class to start and stop node.
+
+    :param  conneciton: Connection instance
+    :type   connection: :class:`.UpcloudConnection`
+    """
 
     def __init__(self, connection):
         self.connection = connection
 
     def stop_node(self, node_id):
+        """
+        Stops the node
+
+        :param  node_id: Id of the Node
+        :type   node_id: ``int``
+        """
         body = {
             'stop_server': {
                 'stop_type': 'hard'
@@ -114,6 +164,15 @@ class UpcloudNodeOperations(object):
                                 data=json.dumps(body))
 
     def node_state(self, node_id):
+        """
+        Get the state of the node.
+
+        :param  node_id: Id of the Node
+        :type   node_id: ``int``
+
+        :rtype: ``str``
+        """
+
         action = '1.2/server/{0}'.format(node_id)
         try:
             response = self.connection.request(action)
@@ -124,6 +183,12 @@ class UpcloudNodeOperations(object):
             raise
 
     def destroy_node(self, node_id):
+        """
+        Destroys the node.
+
+        :param  node_id: Id of the Node
+        :type   node_id: ``int``
+        """
         self.connection.request('1.2/server/{0}'.format(node_id),
                                 method='DELETE')
 
