@@ -37,7 +37,9 @@ SERVER_STATE = {
 
 
 class UpcloudResponse(JsonResponse):
-    """Response class for UpcloudDriver"""
+    """
+    Response class for UpcloudDriver
+    """
 
     def success(self):
         if self.status == httplib.NO_CONTENT:
@@ -52,7 +54,10 @@ class UpcloudResponse(JsonResponse):
 
 
 class UpcloudConnection(ConnectionUserAndKey):
-    """Connection class for UpcloudDriver"""
+    """
+    Connection class for UpcloudDriver
+    """
+
     host = 'api.upcloud.com'
     responseCls = UpcloudResponse
 
@@ -71,7 +76,8 @@ class UpcloudConnection(ConnectionUserAndKey):
 
 
 class UpcloudDriver(NodeDriver):
-    """Upcloud node driver
+    """
+    Upcloud node driver
 
     :keyword    username: Username required for authentication
     :type       username: ``str``
@@ -79,6 +85,7 @@ class UpcloudDriver(NodeDriver):
     :keyword    password: Password required for authentication
     :type       password: ``str``
     """
+
     type = Provider.UPCLOUD
     name = 'Upcloud'
     website = 'https://www.upcloud.com'
@@ -207,7 +214,9 @@ class UpcloudDriver(NodeDriver):
         return destroyer.destroy_node(node.id)
 
     def _node_ids(self):
-        """Returns list of server uids currently on upcloud"""
+        """
+        Returns list of server uids currently on upcloud
+        """
         response = self.connection.request('1.2/server')
         servers = response.object['servers']['server']
         return [server['uuid'] for server in servers]
