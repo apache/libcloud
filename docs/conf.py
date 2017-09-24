@@ -13,12 +13,15 @@
 
 import os
 import sys
+import datetime
 import subprocess
 
 from sphinx.environment import BuildEnvironment
 
 from sphinx.ext.autodoc import AutoDirective
 from sphinx.ext.autodoc import AutodocReporter
+
+from sphinx.domains.python import PythonDomain
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(BASE_DIR)
@@ -59,8 +62,11 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
+now = datetime.datetime.utcnow()
 project = u'Apache Libcloud'
-copyright = u'2013, The Apache Software Foundation'
+copyright = u'Copyright (C) 2009 - %s The Apache Software Foundation. Apache Libcloud, Libcloud, Apache, the Apache feather, and the Apache Libcloud project logo are trademarks of the Apache Software Foundation. All other marks mentioned may be trademarks or registered trademarks of their respective owners' % (now.year)
+
+html_show_sphinx = False
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -299,3 +305,15 @@ AutoDirective.warn = noop
 AutodocReporter.warning = mock_warning
 
 BuildEnvironment.warn_node = ignore_more_than_one_target_found_errors
+
+# Ignore "more than one target found for cross-reference" errors which are false
+# positives
+class PatchedPythonDomain(PythonDomain):
+    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+        if 'refspecific' in node:
+            del node['refspecific']
+        return super(PatchedPythonDomain, self).resolve_xref(
+            env, fromdocname, builder, typ, target, node, contnode)
+
+def setup(sphinx):
+    sphinx.override_domain(PatchedPythonDomain)

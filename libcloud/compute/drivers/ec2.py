@@ -850,6 +850,26 @@ INSTANCE_TYPES = {
             'cpu': 8
         }
     },
+    'x1.16xlarge': {
+        'id': 'x1.16xlarge',
+        'name': 'Memory Optimized Sixteen Extra Large instance',
+        'ram': GiB(976),
+        'disk': 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
+    'x1e.32xlarge': {
+        'id': 'x1e.32xlarge',
+        'name': 'Memory Optimized ThirtyTwo E Extra Large instance',
+        'ram': GiB(3904),
+        'disk': 2 * 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 128
+        }
+    },
     'x1.32xlarge': {
         'id': 'x1.32xlarge',
         'name': 'Memory Optimized ThirtyTwo Extra Large instance',
@@ -940,7 +960,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Northern California) Region
@@ -1089,7 +1111,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Oregon) Region
@@ -1169,7 +1193,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Ireland) Region
@@ -1246,7 +1272,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (London) Region
@@ -1316,7 +1344,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Frankfurt) Region
@@ -1375,7 +1405,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Mumbai, India) Region
@@ -1491,7 +1523,9 @@ REGION_DETAILS = {
             'r4.4xlarge',
             'r4.8xlarge',
             'r4.16xlarge',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -1564,7 +1598,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Seoul) Region
@@ -1615,7 +1651,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # South America (Sao Paulo) Region
@@ -1725,7 +1763,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Canada (Central) Region
@@ -1795,7 +1835,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # GovCloud Region

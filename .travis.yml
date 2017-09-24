@@ -23,6 +23,9 @@ addons:
 matrix:
   fast_finish: true
   include:
+    - env: ENV=checks
+      python: 2.7
+      before_script: TOX_ENV=checks
     - env: ENV=lint
       python: 2.7
       before_script: TOX_ENV=lint
@@ -31,7 +34,7 @@ matrix:
       before_script: TOX_ENV=pylint
     - env: ENV=coverage
       python: 2.7
-      before_script: TOX_ENV=coverage
+      before_script: TOX_ENV=coverage-travis
     - env: ENV=docs
       python: 3.5
       before_script: TOX_ENV=docs-travis

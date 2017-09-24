@@ -1,8 +1,61 @@
 ﻿Changelog
 =========
 
-Changes in current version of Apache Libcloud
----------------------------------------------
+Changes in Apach Libcloud in development
+----------------------------------------
+
+- [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
+  [@zulupro]
+
+- [EC2] Update pricing information for EC2 instances.
+  [Tomaz Muraus]
+
+Changes in Apache Libcloud 2.2.1
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix an issue with installation failing on some operating system and file
+  systems combinations (e.g. ecryptfs layered on top of ext4) which don't
+  support file names longer than 143 characters. (LIBCLOUD-946, GITHUB-1112)
+
+  Reported by Cyrille Verrier.
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [EC2] add g3 instance types
+  [GITHUB-1101]
+  (@zulupro)
+
+- [EC2] add 'end' to ec2 reserved_node
+  [GITHUB-1099]
+  (@xofer)
+
+- Decrease sleep delay (from 1.5 to 0.2 seconds) inside paramiko client which
+  is used to prevent busy waiting while waiting for data on the channel.
+
+  This should cause deploy scripts which produce a lot of output in incremental
+  manner to finish faster.
+  [Tomaz Muraus]
+
+- Fix a regression in the Azure ARM driver which didn't allow custom storage
+  URI suffix to be used with create_node. (GITHUB-1110)
+  [Lucas Di Pentima]
+
+Tests
+~~~~~
+
+- Make sure we normalize header values and cast all the numbers to strings in
+  base connection classes used by tests. (LIBCLOUD-945, GITHUB-1111)
+
+  Reported by Erich Eckner.
+  [Tomaz Muraus]
+
+Changes in Apache Libcloud 2.2.0
+--------------------------------
 
 Compute
 ~~~~~~~

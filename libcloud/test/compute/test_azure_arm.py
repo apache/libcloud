@@ -12,10 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.import libcloud
+
 import json
 import sys
 import functools
 from datetime import datetime
+
+import mock
 
 from libcloud.compute.base import (NodeLocation, NodeSize, VolumeSnapshot,
                                    StorageVolume)
@@ -33,7 +36,7 @@ from libcloud.utils.py3 import httplib
 class AzureNodeDriverTests(LibcloudTestCase):
 
     TENANT_ID = '77777777-7777-7777-7777-777777777777'
-    SUBSCRIPTION_ID = '99999999-9999-9999-9999-999999999999'
+    SUBSCRIPTION_ID = '99999999'
     APPLICATION_ID = '55555555-5555-5555-5555-555555555555'
     APPLICATION_PASS = 'p4ssw0rd'
 
@@ -42,6 +45,18 @@ class AzureNodeDriverTests(LibcloudTestCase):
         Azure.connectionCls.conn_class = AzureMockHttp
         self.driver = Azure(self.TENANT_ID, self.SUBSCRIPTION_ID,
                             self.APPLICATION_ID, self.APPLICATION_PASS)
+
+    def test_get_image(self):
+        # Default storage suffix
+        image = self.driver.get_image(image_id='http://www.example.com/foo/image_name')
+        self.assertEqual(image.id, 'https://www.blob.core.windows.net/foo/image_name')
+        self.assertEqual(image.name, 'image_name')
+
+        # Custom storage suffix
+        self.driver.connection.storage_suffix = '.core.chinacloudapi.cn'
+        image = self.driver.get_image(image_id='http://www.example.com/foo/image_name')
+        self.assertEqual(image.id, 'https://www.blob.core.chinacloudapi.cn/foo/image_name')
+        self.assertEqual(image.name, 'image_name')
 
     def test_locations_returned_successfully(self):
         locations = self.driver.list_locations()
@@ -367,6 +382,21 @@ class AzureNodeDriverTests(LibcloudTestCase):
         res_value = snapshot.destroy()
         self.assertTrue(res_value)
 
+    def test_get_instance_vhd(self):
+        with mock.patch.object(self.driver, '_ex_delete_old_vhd'):
+            # Default storage suffix
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.windows.net/vhds/test1-os_0.vhd')
+
+            # Custom storage suffix
+            self.driver.connection.storage_suffix = '.core.chinacloudapi.cn'
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.chinacloudapi.cn/vhds/test1-os_0.vhd')
+
 
 class AzureMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('azure_arm')
@@ -381,7 +411,11 @@ class AzureMockHttp(MockHttp):
 
     def __getattr__(self, n):
         def fn(method, url, body, headers):
-            fixture = self.fixtures.load(n + ".json")
+            # Note: We use shorter fixture name so we don't exceed 143
+            # character limit for file names
+            file_name = n.replace('99999999_9999_9999_9999_999999999999',
+                                  AzureNodeDriverTests.SUBSCRIPTION_ID)
+            fixture = self.fixtures.load(file_name + ".json")
 
             if method in ('POST', 'PUT'):
                 try:

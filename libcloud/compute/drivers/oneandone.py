@@ -199,48 +199,41 @@ class OneAndOneNodeDriver(NodeDriver):
         Creates a node.
 
         :param name: The name of the new node
-        :type `str`
-
-        :param image: Image from list_images
-        :rtype: image:
+        :type name: `str`
 
         :param ex_fixed_instance_size_id:
         Fixed instance size ID from list_sizes
-        :rtype: ``str``
+        :type ex_fixed_instance_size_id: ``str``
 
         :param location: 1&1 Data center Location
-        :type `NodeLocation`
-
-        :param auth: SSH key or root password
-        :type: :class:`NodeAuthSSHKey` or :class:`NodeAuthPassword`
+        :type location: `NodeLocation`
 
         :param ex_ip: IP address
-        :type `str`
+        :type ex_ip: `str`
 
         :param ex_ssh_key: SSH Key
-        :type `str`
+        :type ex_ssh_key: `str`
 
         :param password: Password
-        :type `str`
+        :type password: `str`
 
         :param ex_monitoring_policy_id:
-        :type `str`
+        :type ex_firewall_policy_id: `str`
 
         :param ex_firewall_policy_id:
-        :type `str`
+        :type ex_firewall_policy_id: `str`
 
         :param ex_loadbalancer_id:
-        :type `str`
+        :type ex_loadbalancer_id: `str`
 
         :param ex_description:
-        :type `str`
+        :type ex_description: `str`
 
         :param ex_power_on:
-        :type `bool`
-
+        :type ex_power_on: `bool`
 
         :return:    Instance of class ``Node``
-        :rtype:     :class: `Node`
+        :rtype:     :class:`Node`
         """
 
         body = {
@@ -352,11 +345,12 @@ class OneAndOneNodeDriver(NodeDriver):
         """
         Renames the server
         :param  server_id: ID of the server you want to rename
+
         :param  name: New name of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param description: New description of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :return:    Instance of class ``Node``
         :rtype:     :class: `Node`
@@ -381,7 +375,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets all server hardware
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :return: Server's hardware
         :rtype: ``dict``
@@ -403,22 +397,22 @@ class OneAndOneNodeDriver(NodeDriver):
         Modifies server's hardware
 
         :param server_id:
-        :rtype: ``str``
+        :type: ``str``
 
         :param fixed_instance_size_id: Id of the fixed instance size
-        :rtype: ``str``
+        :type: ``str``
 
         :param vcore: Virtual cores count
-        :rtype: ``int``
+        :type: ``int``
 
         :param cores_per_processor: Count of cores per procesor
-        :rtype: ``int``
+        :type: ``int``
 
         :param ram: Amount of ram for the server
-        :rtype: ``int``
+        :type: ``int``
 
         :return:    Instance of class ``Node``
-        :rtype:     :class: `Node`
+        :type:     :class: `Node`
         """
 
         body = {}
@@ -449,14 +443,13 @@ class OneAndOneNodeDriver(NodeDriver):
         Modifies server hard disk drives
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param hdd_id: Id of the hard disk
-        :rtype: ``str``
+        :type: ``str``
 
         :param size: Size of the hard disk
-        :rtype: ``str``
-
+        :type: ``str``
 
         :return:    Instance of class ``Node``
         :rtype:     :class: `Node`
@@ -480,16 +473,16 @@ class OneAndOneNodeDriver(NodeDriver):
         Add a hard disk to the server
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param size: Size of the new disk
-        :rtype: ``str``
+        :type: ``str``
 
         :param is_main: Indicates if the disk is going to be the boot disk
-        :rtype: ``boolean``
+        :type: ``boolean``
 
         :return:    Instance of class ``Node``
-        :rtype:     :class: `Node`
+        :type:     :class: `Node`
         """
         body = {
             'size': size,
@@ -509,10 +502,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes existing hard disk
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param hdd_id: Id of the hard disk
-        :rtype: ``str``
+        :type: ``str``
 
         :return:    Instance of class ``Node``
         :rtype:     :class: `Node`
@@ -548,7 +541,8 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets a server
 
         :param server_id: Id of the server to be retrieved
-        :rtype: ``str``
+        :type: ``str``
+
         :return:    Instance of class ``Node``
         :rtype:     :class: `Node`
         """
@@ -565,7 +559,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Shuts down the server
 
         :param server_id: Id of the server to be shut down
-        :rtype: ``str``
+        :type: ``str``
 
         :param method: Method of shutting down "SOFTWARE" or "HARDWARE"
 
@@ -593,7 +587,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets server image
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :return: Server image
         :rtype: ``dict``
@@ -610,10 +604,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Installs a new image on the server
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param image_id: Id of the image (Server Appliance)
-        :rtype: ``str``
+        :type: ``str``
 
         :param password: New password for the server
 
@@ -644,7 +638,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets all server IP objects
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :return: List of server IP objects
         :rtype: ``list`` of ``dict``
@@ -661,10 +655,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Get a single server IP object
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param ip_id: ID of the IP address
-        :rtype: ``str``
+        :type: ``str``
 
         :return: IP address object
         :rtype: ``dict``
@@ -681,10 +675,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Assigns a new IP address to the server
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param ip_type: Type of the IP address [IPV4,IPV6]
-        :rtype: ``str``
+        :type: ``str``
 
         :return: ``Node`` instance
         :rtype: ``Node``
@@ -707,14 +701,14 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes an IP address from the server
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param ip_id: ID of the IP address
-        :rtype: ``str``
+        :type: ``str``
 
         :param keep_ip: Indicates whether IP address will be removed from
-        the Cloud Panel
-        :rtype: ``boolean``
+                        the Cloud Panel
+        :type: ``boolean``
 
         :return: ``Node`` instance
         :rtype: ``Node``
@@ -735,11 +729,12 @@ class OneAndOneNodeDriver(NodeDriver):
     def ex_get_server_firewall_policies(self, server_id, ip_id):
         """
         Gets a firewall policy of attached to the server's IP
+
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param ip_id: ID of the IP address
-        :rtype: ``str``
+        :type: ``str``
 
         :return: IP address object
         :rtype: ``dict``
@@ -757,10 +752,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes a firewall policy from server's IP
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param ip_id: ID of the IP address
-        :rtype: ``str``
+        :type: ``str``
 
         :return: ``Node`` instance
         :rtype: ``Node``
@@ -777,13 +772,13 @@ class OneAndOneNodeDriver(NodeDriver):
         Adds a firewall policy to the server's IP address
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :param ip_id: ID of the IP address
-        :rtype: ``str``
+        :type: ``str``
 
         :param firewall_id: ID of the firewall policy
-        :rtype: ``str``
+        :type: ``str``
 
         :return: ``Node`` instance
         :rtype: ``Node``
@@ -805,20 +800,15 @@ class OneAndOneNodeDriver(NodeDriver):
 
     def ex_create_firewall_policy(self, name, rules, description=None):
         """
-        Creates a firewall Policy
+        Creates a firewall Policy.
+
         :param name:
         :param description:
         :param rules:
-        :rtype 'dict':  [
-                            {
-                            'protocol': 'TCP',
-                            'port_from': 80,
-                            'port_to': 80,
-                            'source': '0.0.0.0'
-                            }
-                        ]
 
-        :return: 'dict' firewall policy
+        :rtype: `dict`
+        :return: `dict` firewall policy
+
         """
         body = {
             'name': name
@@ -845,6 +835,7 @@ class OneAndOneNodeDriver(NodeDriver):
     def ex_list_firewall_policies(self):
         """"
         List firewall policies
+
         :return: 'dict'
         """
 
@@ -858,6 +849,7 @@ class OneAndOneNodeDriver(NodeDriver):
     def ex_get_firewall_policy(self, fw_id):
         """
         Gets firewall policy
+
         :param fw_id: ID of the firewall policy
         :return: 'dict'
         """
@@ -872,6 +864,7 @@ class OneAndOneNodeDriver(NodeDriver):
     def ex_delete_firewall_policy(self, fw_id):
         """
         Deletes firewall policy
+
         :param fw_id: ID of the Firewall
         :return: 'dict'
         """
@@ -943,7 +936,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes a shared storage
 
         :param storage_id: Id of the shared storage
-        :rtype: ``str``
+        :type: ``str``
 
         :return: Instnace of shared storage
         :rtype: ``list`` of ``dict``
@@ -1002,10 +995,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Detaches a server from shared storage
 
         :param storage_id: Id of the shared storage
-        :rtype: ``str``
+        :type: ``str``
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type: ``str``
 
         :return: Instance of shared storage
         :rtype: ``dict``
@@ -1033,48 +1026,34 @@ class OneAndOneNodeDriver(NodeDriver):
         """
 
         :param name: Name of the load balancer
-        :rtype:``str``
 
         :param method: Load balancer method
-        :rtype:``str``
 
         :param rules: Load balancer rules
-        :rtype: ``list`` of ``dict``
-            'rules': [
-                {
-                    'protocol': 'TCP',
-                    'port_balancer': 80,
-                    'port_server': 80,
-                    'source': '0.0.0.0'
-                },
-                {
-                    'protocol': 'TCP',
-                    'port_balancer': 9999,
-                    'port_server': 8888,
-                    'source': '0.0.0.0'
-                }
-            ]
+        :type rules: ``list`` of ``dict``
+
         :param persistence: Indictes if persistance is set
-        :rtype: ``boolean``
+        :type persistence: ``boolean``
 
         :param persistence_time: Persistance time
-        :rtype: ``int``
+        :type persistence_time: ``int``
 
         :param health_check_test: Type of test
-        :rtype:``str``
+        :type health_check_test:``str``
 
         :param health_check_interval: Interval of the check
 
         :param health_check_path: Path
-        :rtype:``str``
+        :type health_check_path: ``str``
+
         :param health_check_parser: Parser
-        :rtype:``str``
+        :type health_check_parser:``str``
 
         :param datacenter_id: Data center id
-        :rtype:``str``
+        :type datacenter_id:``str``
 
         :param description: Description of load balancer
-        :rtype:``str``
+        :type description:``str``
 
         :return: ``dict``
         """
@@ -1148,10 +1127,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Adds server's IP address to load balancer
 
         :param lb_id: Load balancer ID
-        :rtype: ``str``
+        :type: ``str``
 
         :param server_ips: Array of server IP IDs
-        :rtype: ``list`` of ``str``
+        :type: ``list`` of ``str``
 
         :return: Instance of load balancer
         :rtype: ``dict``
@@ -1173,10 +1152,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes server's IP from load balancer
 
         :param lb_id: Load balancer ID
-        :rtype: ``str``
+        :type: ``str``
 
         :param server_ip: ID of the server IP
-        :rtype: ``str``
+        :type: ``str``
 
         :return: Instance of load balancer
         :rtype: ``dict``
@@ -1272,7 +1251,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets a single load balancer
 
         :param lb_id: ID of the load balancer
-        :rtype: ``str``
+        :type lb_id: ``str``
 
         :return: Instance of load balancer
         :rtype: ``dict``
@@ -1289,7 +1268,7 @@ class OneAndOneNodeDriver(NodeDriver):
         List balanced server IP addresses
 
         :param lb_id: ID of the load balancer
-        :rtype: ``str``
+        :type lb_id: ``str``
 
         :return: Array of IP address IDs
         :rtype: ``dict``
@@ -1306,10 +1285,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets load balanced server id
 
         :param lb_id: ID of the load balancer
-        :rtype: ``str``
+        :type lb_id: ``str``
 
         :param server_ip: ID of the server IP
-        :rtype: ``str``
+        :type server_ip: ``str``
 
         :return: Server IP
         :rtype: ``dict``
@@ -1326,7 +1305,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Lists loadbalancer rules
 
         :param lb_id: ID of the load balancer
-        :rtype: ``str``
+        :type lb_id: ``str``
 
         :return: Lists of rules
         :rtype: ``list`` of ``dict``
@@ -1343,10 +1322,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Get a load balancer rule
 
         :param lb_id: ID of the load balancer
-        :rtype: ``str``
+        :type lb_id: ``str``
 
         :param rule_id: Rule ID
-        :rtype: ``str``
+        :type rule_id: ``str``
 
         :return: A load balancer rule
         :rtype: ``dict``
@@ -1363,10 +1342,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Deletes a load balancer rule
 
         :param lb_id: ID of the load balancer
-        :rtype: ``str``
+        :type lb_id: ``str``
 
         :param rule_id: Rule ID
-        :rtype: ``str``
+        :type rule_id: ``str``
 
         :return: Instance of load balancer
         :rtype: ``dict``
@@ -1400,14 +1379,14 @@ class OneAndOneNodeDriver(NodeDriver):
         """
         Creates a public IP
 
-        :param type: Type of IP IPV4 or IPV6]
-        :rtype: ``str``
+        :param type: Type of IP (IPV4 or IPV6)
+        :type type: ``str``
 
         :param reverse_dns: Reverse DNS
-        :rtype: ``str``
+        :type reverse_dns: ``str``
 
         :param datacenter_id: Datacenter ID where IP address will be crated
-        :rtype: ``str``
+        :type datacenter_id: ``str``
 
         :return: Instance of Public IP
         :rtype: ``dict``
@@ -1434,7 +1413,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Gets a Public IP
 
         :param ip_id: ID of the IP
-        :rtype: ``str``
+        :type ip_id: ``str``
 
         :return: Instance of Public IP
         :rtype: ``dict``
@@ -1451,7 +1430,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Deletes a public IP
 
         :param ip_id: ID of public IP
-        :rtype: ``str``
+        :type ip_id: ``str``
 
         :return: Instance of IP Address
         :rtype: ``dict``
@@ -1468,10 +1447,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Updates a Public IP
 
         :param ip_id: ID of public IP
-        :rtype: ``str``
+        :type ip_id: ``str``
 
         :param reverse_dns: Reverse DNS
-        :rtype: ``str``
+        :type reverse_dns: ``str``
 
         :return: Instance of Public IP
         :rtype: ``dict``
@@ -1514,19 +1493,19 @@ class OneAndOneNodeDriver(NodeDriver):
         Creates a private network
 
         :param name: Name of the private network
-        :rtype: ``str``
+        :type name: ``str``
 
         :param description: Description of the private network
-        :rtype: ``str``
+        :type description: ``str``
 
         :param datacenter_id: ID of the data center for the private network
-        :rtype: ``str``
+        :type datacenter_id: ``str``
 
         :param network_address: Network address of the private network
-        :rtype: ``str``
+        :type network_address: ``str``
 
         :param subnet_mask: Subnet mask of the private network
-        :rtype: ``str``
+        :type subnet_mask: ``str``
 
         :return: Newly created private network
         :rtype: ``dict``
@@ -1557,7 +1536,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Deletes a private network
 
         :param network_id: Id of the private network
-        :rtype: ``str``
+        :type network_id: ``str``
 
         :return: Instance of the private network being deleted
         :rtype: ``dict``
@@ -1575,26 +1554,26 @@ class OneAndOneNodeDriver(NodeDriver):
                                   network_address=None,
                                   subnet_mask=None):
         """
-           Updates a private network
+       Updates a private network
 
-           :param name: Name of the private network
-           :rtype: ``str``
+       :param name: Name of the private network
+       :type name: ``str``
 
-           :param description: Description of the private network
-           :rtype: ``str``
+       :param description: Description of the private network
+       :type description: ``str``
 
-           :param datacenter_id: ID of the data center for the private network
-           :rtype: ``str``
+       :param datacenter_id: ID of the data center for the private network
+       :type datacenter_id: ``str``
 
-           :param network_address: Network address of the private network
-           :rtype: ``str``
+       :param network_address: Network address of the private network
+       :type network_address: ``str``
 
-           :param subnet_mask: Subnet mask of the private network
-           :rtype: ``str``
+       :param subnet_mask: Subnet mask of the private network
+       :type subnet_mask: ``str``
 
-           :return: Instance of private network
-           :rtype: ``dict``
-           """
+       :return: Instance of private network
+       :rtype: ``dict``
+       """
         body = {}
 
         if name is not None:
@@ -1621,7 +1600,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Lists all private network servers
 
         :param network_id: Private network ID
-        :rtype: ``str``
+        :type network_id: ``str``
 
         :return: List of private network servers
         :rtype: ``dict``
@@ -1637,10 +1616,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Add servers to private network
 
         :param network_id: Private Network ID
-        :rtype: ``str``
+        :type network_id: ``str``
 
         :param server_ids: List of server IDs
-        :rtype: ``list`` of ``str``
+        :type server_ids: ``list`` of ``str``
 
         :return: List of attached servers
         :rtype: ``dict``
@@ -1664,10 +1643,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes a server from the private network
 
         :param network_id: Private Network ID
-        :rtype: ``str``
+        :type network_id: ``str``
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type server_id: ``str``
 
         :return: Instance of the private network
         :rtype: ``dict``
@@ -1708,92 +1687,25 @@ class OneAndOneNodeDriver(NodeDriver):
         Creates a monitoring policy
 
         :param name: Name for the monitoring policy
-        :rtype: ``str``
+        :type name: ``str``
 
         :param thresholds: Thresholds for the monitoring policy
-        :rtype: ``dict``
-        {
-           'cpu':{
-              'warning':{
-                 'value':90,
-                 'alert':false
-              },
-              'critical':{
-                 'value':95,
-                 'alert':false
-              }
-           },
-           'ram':{
-              'warning':{
-                 'value':90,
-                 'alert':false
-              },
-              'critical':{
-                 'value':95,
-                 'alert':false
-              }
-           },
-           'disk':{
-              'warning':{
-                 'value':80,
-                 'alert':false
-              },
-              'critical':{
-                 'value':90,
-                 'alert':false
-              }
-           },
-           'transfer':{
-              'warning':{
-                 'value':1000,
-                 'alert':false
-              },
-              'critical':{
-                 'value':2000,
-                 'alert':false
-              }
-           },
-           'internal_ping':{
-              'warning':{
-                 'value':50,
-                 'alert':false
-              },
-              'critical':{
-                 'value':100,
-                 'alert':false
-              }
-           }
-        }
-        :param ports: Monitoring policies for ports
-        :rtype: ``dict``
-        [
-           {
-              'protocol':'TCP',
-              'port':'22',
-              'alert_if':'RESPONDING',
-              'email_notification':true
-           }
-        ]
+        :type thresholds: ``dict``
 
+        :param ports: Monitoring policies for ports
+        :type ports: ``list`` of ``dict``
 
         :param processes: Processes to be monitored
-        :rtype: ``dict``
-        [
-           {
-              'process':'test',
-              'alert_if':'NOT_RUNNING',
-              'email_notification':true
-           }
-        ]
+        :type processes: ``list`` of ``dict``
 
         :param description: Description for the monitoring policy
-        :rtype: ``str``
+        :type description: ``str``
 
         :param email: Email for notifications
-        :rtype: ``str``
+        :type email: ``str``
 
         :param agent: Indicates if agent application will be installed
-        :rtype: ``boolean``
+        :type agent: ``boolean``
 
         :return: Newly created instance of monitofing policy
         :rtype: ``dict``
@@ -1824,7 +1736,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Deletes a monitoring policy
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :return: Instance of the monitoring policy being deleted
         :rtype: ``dict``
@@ -1844,17 +1756,19 @@ class OneAndOneNodeDriver(NodeDriver):
         Updates monitoring policy
 
         :param policy_id: Id of the monitoring policy
+        :type policy_id: ``str``
+
         :param email: Email to send notifications to
-        :rtype: ``str``
+        :type email: ``str``
 
         :param thresholds: Thresholds for the monitoring policy
-        :rtype: ``dict``
+        :type thresholds: ``dict``
 
         :param name: Name of the monitoring policy
-        :rtype: ``str``
+        :type name: ``str``
 
         :param description: Description of the monitoring policy
-        :rtype: ``str``
+        :type description: ``str``
 
         :return: Instance of the monitoring policy being deleted
         :rtype: ``dict``
@@ -1884,7 +1798,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Fetches a monitoring policy
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -1901,6 +1815,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Fetches monitoring policy ports
 
         :param policy_id: Id of the monitoring policy
+        :type policy_id:
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -1918,10 +1833,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Fetches monitoring policy port
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param port_id: Id of the port
-        :rtype: ``str``
+        :type port_id: ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -1939,10 +1854,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes monitoring policy port
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param port_id: Id of the port
-        :rtype: ``str``
+        :type port_id: ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -1960,10 +1875,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Add monitoring policy ports
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param ports: List of ports
-        :rtype: ``dict``
+        :type ports: ``dict``
         [
            {
               'protocol':'TCP',
@@ -1972,6 +1887,7 @@ class OneAndOneNodeDriver(NodeDriver):
               'email_notification':true
            }
         ]
+
         :return: Instance of a monitoring policy
         :rtype: ``dict``
         """
@@ -1991,6 +1907,7 @@ class OneAndOneNodeDriver(NodeDriver):
         Fetches monitoring policy processes
 
         :param policy_id: Id of the monitoring policy
+        :type policy_id: ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -2008,10 +1925,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Fetches monitoring policy process
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param process_id: Id of the process
-        :rtype: ``str``
+        :type process_id: ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -2030,10 +1947,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes monitoring policy process
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param process_id: Id of the process
-        :rtype: ``str``
+        :type process_id: ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -2052,10 +1969,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Add monitoring policy processes
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param processes: List of processes
-        :rtype: ``list`` of ``dict``
+        :type processes: ``list`` of ``dict``
         [
           {
             'process': 'taskmmgr',
@@ -2063,6 +1980,7 @@ class OneAndOneNodeDriver(NodeDriver):
             'email_notification': true
           }
         ]
+
         :return: Instance of a monitoring policy
         :rtype: ``dict``
         """
@@ -2082,7 +2000,7 @@ class OneAndOneNodeDriver(NodeDriver):
         List all servers that are being monitoried by the policy
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :return: List of servers being monitored
         :rtype: ``list`` of ``dict``
@@ -2100,10 +2018,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Adds servers to monitoring policy
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param servers: List of server ID
-        :rtype: ``list`` of ``str``
+        :type servers: ``list`` of ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``
@@ -2124,10 +2042,10 @@ class OneAndOneNodeDriver(NodeDriver):
         Removes a server from monitoring policy
 
         :param policy_id: Id of the monitoring policy
-        :rtype: ``str``
+        :type policy_id: ``str``
 
         :param server_id: Id of the server
-        :rtype: ``str``
+        :type server_id: ``str``
 
         :return: Instance of a monitoring policy
         :rtype: ``dict``

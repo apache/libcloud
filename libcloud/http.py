@@ -201,10 +201,8 @@ class LibcloudConnection(LibcloudBaseConnection):
     def request(self, method, url, body=None, headers=None, raw=False,
                 stream=False):
         url = urlparse.urljoin(self.host, url)
-        # all headers should be strings
-        for header, value in headers.items():
-            if isinstance(headers[header], int):
-                headers[header] = str(value)
+        headers = self._normalize_headers(headers=headers)
+
         self.response = self.session.request(
             method=method.lower(),
             url=url,
@@ -217,10 +215,8 @@ class LibcloudConnection(LibcloudBaseConnection):
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
-        # all headers should be strings
-        for header, value in headers.items():
-            if isinstance(headers[header], int):
-                headers[header] = str(value)
+        headers = self._normalize_headers(headers=headers)
+
         req = requests.Request(method, ''.join([self.host, url]),
                                data=body, headers=headers)
 
@@ -261,6 +257,16 @@ class LibcloudConnection(LibcloudBaseConnection):
     def close(self):  # pragma: no cover
         # return connection back to pool
         self.response.close()
+
+    def _normalize_headers(self, headers):
+        headers = headers or {}
+
+        # all headers should be strings
+        for key, value in headers.items():
+            if isinstance(value, (int, float)):
+                headers[key] = str(value)
+
+        return headers
 
 
 class HttpLibResponseProxy(object):
