@@ -1,7 +1,7 @@
 UpCloud Driver Documentation
 ===============================
-`UpCloud`_ is a Finnish IaaS provider offering the most high performance 
-servers with extremely redundant infrastructure to the most demanding customers.
+`UpCloud`_ is a Finnish IaaS provider offering high performance servers 
+from data centres based in multiple countries.
 
 .. figure:: /_static/images/provider_logos/upcloud.png
     :align: center
@@ -26,6 +26,20 @@ driver constructor:
 * ``username`` - Your API access enabled users username
 * ``password`` - Your API access enabled users password
 
-You can setup your API access enabled user account from https://my.upcloud.com/account
+Enabling API access
+-------------------
+
+To allow API access to your UpCloud account, you first need to enable the API 
+permissions by visiting `My Account -> User accounts`_ in your UpCloud Control 
+Panel. We recommend you to set up a sub-account specifically for the API usage 
+with its own username and password, as it allows you to assign specific permissions 
+for increased security.
+
+Click **Add user** and fill in the required details, and check the 
+“**Allow API connections**” checkbox to enable API for the user. You can also 
+limit the API connections to a specific IP address or address range for additional 
+security. Once you are done entering the user information, hit the **Save** button 
+at the bottom of the page to create the new username.
 
 .. _`UpCloud`: https://www.upcloud.com/
+.. _`My Account -> User accounts`: https://my.upcloud.com/account
