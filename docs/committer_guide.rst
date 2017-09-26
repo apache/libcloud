@@ -16,8 +16,8 @@ First congratulations and welcome to the team!
 1. Subscribe to the public mailing lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you haven't yet, subscribe to {dev,users,commits}@apache.libcloud.org
-mailing lists. Committs mailing list is especially important because all of
+If you haven't yet, subscribe to {dev,users,notifications}@libcloud.apache.org
+mailing lists. Notifications mailing list is especially important because all of
 the JIRA notification, Github Pull Request notifications and build notifications
 are sent there.
 
