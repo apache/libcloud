@@ -28,13 +28,6 @@ from libcloud.common.upcloud import UpcloudCreateNodeRequestBody
 from libcloud.common.upcloud import UpcloudNodeDestroyer
 from libcloud.common.upcloud import UpcloudNodeOperations
 
-SERVER_STATE = {
-    'started': NodeState.RUNNING,
-    'stopped': NodeState.STOPPED,
-    'maintenance': NodeState.RECONFIGURING,
-    'error': NodeState.ERROR
-}
-
 
 class UpcloudResponse(JsonResponse):
     """
@@ -91,6 +84,13 @@ class UpcloudDriver(NodeDriver):
     website = 'https://www.upcloud.com'
     connectionCls = UpcloudConnection
     features = {'create_node': ['ssh_key', 'generates_password']}
+
+    NODE_STATE_MAP = {
+        'started': NodeState.RUNNING,
+        'stopped': NodeState.STOPPED,
+        'maintenance': NodeState.RECONFIGURING,
+        'error': NodeState.ERROR
+    }
 
     def __init__(self, username, password, **kwargs):
         super(UpcloudDriver, self).__init__(key=username, secret=password,
@@ -236,7 +236,7 @@ class UpcloudDriver(NodeDriver):
             extra['password'] = server['password']
         return Node(id=server['uuid'],
                     name=server['title'],
-                    state=state or SERVER_STATE[server['state']],
+                    state=state or self.NODE_STATE_MAP[server['state']],
                     public_ips=public_ips,
                     private_ips=private_ips,
                     driver=self,
