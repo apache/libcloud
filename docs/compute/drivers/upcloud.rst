@@ -1,14 +1,14 @@
 UpCloud Driver Documentation
 ===============================
 `UpCloud`_ is a Finnish IaaS provider offering high performance servers 
-from data centres based in multiple countries.
+from data centers based in multiple countries.
 
 .. figure:: /_static/images/provider_logos/upcloud.png
     :align: center
     :width: 300
     :target: https://www.upcloud.com/
 
-UpCloud currently operates globally from six (6) data centres:
+UpCloud currently operates globally from six (6) data centers:
 
 * Amsterdam, Netherlands
 * Chicago, USA
