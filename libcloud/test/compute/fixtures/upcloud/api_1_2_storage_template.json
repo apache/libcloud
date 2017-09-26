@@ -1,0 +1,114 @@
+{
+   "storages" : {
+      "storage" : [
+         {
+            "access" : "public",
+            "license" : 3.36,
+            "size" : 20,
+            "state" : "online",
+            "title" : "Windows Server 2012 R2 Datacenter",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000010050200"
+         },
+         {
+            "access" : "public",
+            "license" : 0.694,
+            "size" : 20,
+            "state" : "online",
+            "title" : "Windows Server 2012 R2 Standard",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000010050300"
+         },
+         {
+            "access" : "public",
+            "license" : 3.36,
+            "size" : 20,
+            "state" : "online",
+            "title" : "Windows Server 2016 Datacenter",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000010060200"
+         },
+         {
+            "access" : "public",
+            "license" : 0.694,
+            "size" : 20,
+            "state" : "online",
+            "title" : "Windows Server 2016 Standard",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000010060300"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 7.8 (Wheezy)",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000020020100"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 8.7 (Jessie)",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000020030100"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "Ubuntu Server 12.04 LTS (Precise Pangolin)",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000030030200"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "Ubuntu Server 14.04 LTS (Trusty Tahr)",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000030040200"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "Ubuntu Server 16.04 LTS (Xenial Xerus)",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000030060200"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "CentOS 6.9",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000050010200"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "CentOS 7.0",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000050010300"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 5,
+            "state" : "online",
+            "title" : "CoreOS Stable 1068.8.0",
+            "type" : "template",
+            "uuid" : "01000000-0000-4000-8000-000080010200"
+         }
+      ]
+   }
+}
