@@ -108,7 +108,7 @@ class UpcloudNodeDestroyer(object):
         return self._do_destroy_node(node_id)
 
     def _do_destroy_node(self, node_id):
-        state = self._operations.node_state(node_id)
+        state = self._operations.get_node_state(node_id)
         if state == 'stopped':
             self._operations.destroy_node(node_id)
             return True
@@ -164,7 +164,7 @@ class UpcloudNodeOperations(object):
                                 method='POST',
                                 data=json.dumps(body))
 
-    def node_state(self, node_id):
+    def get_node_state(self, node_id):
         """
         Get the state of the node.
 
