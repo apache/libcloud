@@ -7,7 +7,7 @@ Changes in Apach Libcloud in development
 Compute
 ~~~~~~~
 
-- New driver for UpCloud (GITHUB-1102)
+- New driver for UpCloud (LIBCLOUD-938, GITHUB-1102)
   [Mika Lackman, Ilari Mäkelä]
 
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
@@ -19,7 +19,8 @@ Compute
 - Update ProfitBricks driver and add support for the new API v4. (GITHUB-1103)
   [Nurfet Becirevic]
 
-- [GCE] Support GCE node labels. (GITHUB-1115) [@maxlip]
+- [GCE] Support GCE node labels. (LIBCLOUD-934, GITHUB-1115)
+  [@maxlip]
 
 - [GCE] Fix `GCEList` pagination. (GITHUB-1095)
   [Yap Sok Ann]
