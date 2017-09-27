@@ -25,6 +25,9 @@ Compute
 - [GCE] Fix `GCEList` pagination. (GITHUB-1095)
   [Yap Sok Ann]
 
+- [ARM] Fix checking for "location is None" in several functions (LIBCLOUD-926, GITHUB-1098)
+  [Sameh Elsharkawy]
+
 Changes in Apache Libcloud 2.2.1
 --------------------------------
 
