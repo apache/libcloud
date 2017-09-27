@@ -7,6 +7,9 @@ Changes in Apach Libcloud in development
 Compute
 ~~~~~~~
 
+- New driver for UpCloud (GITHUB-1102)
+  [Mika Lackman, Ilari Mäkelä]
+
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
   [@zulupro]
 
