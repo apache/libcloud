@@ -194,7 +194,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           'on_host_maintenance="MIGRATE"', 'preemptible=True')
         # automatic_restart is True and prempt is  True
         self.assertRaises(ValueError,
-                          self.driver._build_service_account_gce_struct,
+                          self.driver._build_service_account_with_email_gce_struct,
                           'automatic_restart="True"', 'preemptible=True')
 
         actual = self.driver._build_scheduling_gce_struct('TERMINATE', True,
@@ -210,6 +210,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertRaises(ValueError,
                           self.driver._build_service_account_gce_struct, None)
         input = {'scopes': ['compute-ro']}
+        actual = self.driver._build_service_account_gce_struct(input)
+        self.assertTrue('email' in actual)
+        self.assertTrue('scopes' in actual)
+
+    def test_build_service_account_with_email_gce_struct(self):
+        self.assertRaises(ValueError,
+                          self.driver._build_service_account_gce_struct, None)
+        input = {'scopes': ['compute-ro'], 'email': 'test@test.com' }
         actual = self.driver._build_service_account_gce_struct(input)
         self.assertTrue('email' in actual)
         self.assertTrue('scopes' in actual)
