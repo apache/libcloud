@@ -31,6 +31,9 @@ Compute
 - [ARM] Fix error when using SSH key auth with Python 3 (GITHUB-1098)
   [Sameh Elsharkawy]
 
+- [GCE] Allow setting service account in instance templates (LIBCLOUD-947, GITHUB-1108)
+  [Evan Carter]
+
 Changes in Apache Libcloud 2.2.1
 --------------------------------
 
