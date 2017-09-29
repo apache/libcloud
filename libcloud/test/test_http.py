@@ -64,7 +64,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
         reload(libcloud.security)
 
-        self.assertEqual(libcloud.security.CA_CERTS_PATH, [file_path])
+        self.assertEqual(libcloud.security.CA_CERTS_PATH, file_path)
 
     @patch('warnings.warn')
     def test_setup_ca_cert(self, _):
@@ -78,7 +78,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
         # a valid path
         self.httplib_object.verify = True
 
-        libcloud.security.CA_CERTS_PATH = [os.path.abspath(__file__)]
+        libcloud.security.CA_CERTS_PATH = os.path.abspath(__file__)
         self.httplib_object._setup_ca_cert()
 
         self.assertTrue(self.httplib_object.ca_cert is not None)
