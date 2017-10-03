@@ -20,6 +20,7 @@ from datetime import datetime
 
 import mock
 
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import (NodeLocation, NodeSize, VolumeSnapshot,
                                    StorageVolume)
 from libcloud.compute.drivers.azure_arm import AzureImage, NodeAuthPassword
@@ -45,6 +46,9 @@ class AzureNodeDriverTests(LibcloudTestCase):
         Azure.connectionCls.conn_class = AzureMockHttp
         self.driver = Azure(self.TENANT_ID, self.SUBSCRIPTION_ID,
                             self.APPLICATION_ID, self.APPLICATION_PASS)
+
+    def tearDown(self):
+        AzureMockHttp.responses = []
 
     def test_get_image(self):
         # Default storage suffix
@@ -128,6 +132,61 @@ class AzureNodeDriverTests(LibcloudTestCase):
             'sku': image.sku,
             'version': image.version
         })
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # OK to the DELETE request
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 404 means node destroyed successfully
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__async(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 202 - The delete will happen asynchronously
+            lambda f: error(BaseHTTPError, code=202, message='Deleting'),
+            # 404 means node destroyed successfully
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__nic_not_cleaned_up(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # OK to the DELETE request
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 404 means node destroyed successfully
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+            # 500 - transient error when trying to clean up the NIC
+            lambda f: error(BaseHTTPError, code=500, message="Cloud weather")
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
+    def test_destroy_node__failed(self):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 403 - There was some problem with your request
+            lambda f: error(BaseHTTPError, code=403, message='Forbidden'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertFalse(ret)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -400,6 +459,9 @@ class AzureNodeDriverTests(LibcloudTestCase):
 
 class AzureMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('azure_arm')
+    # List of callables to be run in order as responses. Fixture
+    # passed as argument.
+    responses = []
 
     def _update(self, fixture, body):
         for key, value in body.items():
@@ -425,8 +487,12 @@ class AzureMockHttp(MockHttp):
                     fixture = json.dumps(fixture_tmp)
                 except ValueError:
                     pass
-            return (httplib.OK, fixture, headers,
-                    httplib.responses[httplib.OK])
+            if (not n.endswith('_oauth2_token')) and len(self.responses) > 0:
+                f = self.responses.pop(0)
+                return f(fixture)
+            else:
+                return (httplib.OK, fixture, headers,
+                        httplib.responses[httplib.OK])
         return fn
 
 

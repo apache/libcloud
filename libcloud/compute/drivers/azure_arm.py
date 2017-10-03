@@ -744,7 +744,8 @@ class AzureNodeDriver(NodeDriver):
                         if h.code == 400 and inuse:
                             time.sleep(10)
                         else:
-                            return False
+                            # NIC cleanup failed, try cleaning up the VHD.
+                            break
 
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
