@@ -16,7 +16,7 @@
 import os
 import sys
 import os.path
-from mock import patch
+import warnings
 
 import libcloud.security
 
@@ -65,6 +65,15 @@ class TestHttpLibSSLTests(unittest.TestCase):
         reload(libcloud.security)
 
         self.assertEqual(libcloud.security.CA_CERTS_PATH, file_path)
+
+    def test_ca_cert_list_warning(self):
+        with warnings.catch_warnings(record=True) as w:
+            self.httplib_object.verify = True
+            self.httplib_object._setup_ca_cert(
+                ca_cert=[ORIGINAL_CA_CERTS_PATH])
+            self.assertEqual(self.httplib_object.ca_cert,
+                             ORIGINAL_CA_CERTS_PATH)
+            self.assertEqual(w[0].category, DeprecationWarning)
 
     def test_setup_ca_cert(self):
         # verify = False, _setup_ca_cert should be a no-op
