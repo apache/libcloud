@@ -144,22 +144,24 @@ class LibcloudBaseConnection(object):
     def _setup_verify(self):
         self.verify = libcloud.security.VERIFY_SSL_CERT
 
-    def _setup_ca_cert(self):
+    def _setup_ca_cert(self, **kwargs):
+        # simulating keyword-only argument in Python 2
+        ca_certs_path = kwargs.get('ca_cert', libcloud.security.CA_CERTS_PATH)
+
         if self.verify is False:
             pass
         else:
-            if isinstance(libcloud.security.CA_CERTS_PATH, list):
-                if len(libcloud.security.CA_CERTS_PATH) > 1:
-                    msg = ('Providing a list of CA trusts is no longer '
-                           'supported since libcloud 2.0. Using the first '
-                           'element in the list. See '
-                           'http://libcloud.readthedocs.io/en/latest/other/'
-                           'changes_in_2_0.html#providing-a-list-of-ca-trusts-'
-                           'is-no-longer-supported')
-                    warnings.warn(msg)
-                self.ca_cert = libcloud.security.CA_CERTS_PATH[0]
+            if isinstance(ca_certs_path, list):
+                msg = (
+                    'Providing a list of CA trusts is no longer supported '
+                    'since libcloud 2.0. Using the first element in the list. '
+                    'See http://libcloud.readthedocs.io/en/latest/other/'
+                    'changes_in_2_0.html#providing-a-list-of-ca-trusts-is-no-'
+                    'longer-supported')
+                warnings.warn(msg, DeprecationWarning)
+                self.ca_cert = ca_certs_path[0]
             else:
-                self.ca_cert = libcloud.security.CA_CERTS_PATH
+                self.ca_cert = ca_certs_path
 
     def _setup_signing(self, cert_file=None, key_file=None):
         """
