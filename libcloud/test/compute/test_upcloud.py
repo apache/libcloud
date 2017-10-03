@@ -23,8 +23,9 @@ from libcloud.utils.py3 import httplib, ensure_string
 from libcloud.compute.drivers.upcloud import UpcloudDriver
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.upcloud import UpcloudResponse
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import NodeState, Provider
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey, Node
+from libcloud.compute import providers
 from libcloud.test import LibcloudTestCase, unittest, MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import UPCLOUD_PARAMS
@@ -60,6 +61,10 @@ class UpcloudDriverTests(LibcloudTestCase):
         UpcloudDriver.connectionCls.conn_class = UpcloudMockHttp
         # UpcloudDriver.connectionCls.responseCls = UpcloudPersistResponse
         self.driver = UpcloudDriver(*UPCLOUD_PARAMS)
+
+    def test_creating_driver(self):
+        cls = providers.get_driver(Provider.UPCLOUD)
+        self.assertIs(cls, UpcloudDriver)
 
     def test_features(self):
         features = self.driver.features['create_node']
@@ -237,6 +242,7 @@ class UpcloudMockHttp(MockHttp):
     def _1_2_server_00893c98_5d5a_4363_b177_88df518a2b60(self, method, url, body, headers):
         body = self.fixtures.load('api_1_2_server_00893c98-5d5a-4363-b177-88df518a2b60.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
