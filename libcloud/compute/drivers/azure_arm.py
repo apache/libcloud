@@ -953,6 +953,52 @@ class AzureNodeDriver(NodeDriver):
                                 data=data,
                                 method='DELETE')
 
+    def ex_create_network(self, name, resource_group, location=None, addressSpace="10.0.0.0/16"):
+        """
+        Create a virtual network.
+
+        :return: A list of virtual networks.
+        :rtype: ``list`` of :class:`.AzureNetwork`
+        """
+
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
+
+        action = "/subscriptions/%s/resourceGroups/%s/providers/" \
+                 "Microsoft.Network/virtualNetworks/%s" \
+                 % (self.subscription_id, resource_group, name)
+        data = {
+            "name": name,
+            "location": location.id,
+            "tags": {},
+            "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    addressSpace
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "Default",
+                    "properties": {
+                      "addressPrefix": "10.0.0.0/24"
+                    }
+                  }
+                ]
+            }
+        }
+
+        r = self.connection.request(action,
+                                    params={"api-version": "2017-08-01"},
+                                    data=data,
+                                    method='PUT')
+
+        return AzureNetwork(r.object["id"], r.object["name"],
+                            r.object["location"], r.object["properties"])
+
     def ex_list_networks(self):
         """
         List virtual networks.
