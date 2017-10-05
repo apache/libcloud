@@ -133,6 +133,38 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
         }
         self.assertDictEqual(expected_body, dict_body)
 
+    def test_creating_node_using_hostname(self):
+        image = NodeImage(id='01000000-0000-4000-8000-000030060200',
+                          name='Ubuntu Server 16.04 LTS (Xenial Xerus)',
+                          driver='',
+                          extra={'type': 'template'})
+        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver='')
+        size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
+                        extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver='')
+
+        body = UpcloudCreateNodeRequestBody(user_id='somename', name='ts', image=image, location=location, size=size,
+                                            ex_hostname='myhost.upcloud.com')
+        json_body = body.to_json()
+        dict_body = json.loads(json_body)
+        expected_body = {
+            'server': {
+                'title': 'ts',
+                'hostname': 'myhost.upcloud.com',
+                'plan': '1xCPU-1GB',
+                'zone': 'fi-hel1',
+                'login_user': {'username': 'somename',
+                               'create_password': 'yes'},
+                'storage_devices': {
+                    'storage_device': [{
+                        'action': 'clone',
+                        'title': 'Ubuntu Server 16.04 LTS (Xenial Xerus)',
+                        'storage': '01000000-0000-4000-8000-000030060200'
+                    }]
+                },
+            }
+        }
+        self.assertDictEqual(expected_body, dict_body)
+
 
 class TestUpcloudNodeDestroyer(unittest.TestCase):
 

@@ -49,13 +49,17 @@ class UpcloudCreateNodeRequestBody(object):
                             (optional)
     :type       auth: :class:`.NodeAuthSSHKey`
 
+    :param      ex_hostname: Hostname. Default is 'localhost'. (optional)
+    :type       ex_hostname: ``str``
+
     """
 
-    def __init__(self, user_id, name, size, image, location, auth=None):
+    def __init__(self, user_id, name, size, image, location, auth=None,
+                 **kwargs):
         self.body = {
             'server': {
                 'title': name,
-                'hostname': 'localhost',
+                'hostname': kwargs.get('ex_hostname', 'localhost'),
                 'plan': size.id,
                 'zone': location.id,
                 'login_user': _LoginUser(user_id, auth).to_dict(),
