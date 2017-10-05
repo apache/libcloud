@@ -44,7 +44,7 @@ class OvhNodeDriver(NodeDriver):
     VOLUME_STATE_MAP = OpenStackNodeDriver.VOLUME_STATE_MAP
     SNAPSHOT_STATE_MAP = OpenStackNodeDriver.SNAPSHOT_STATE_MAP
 
-    def __init__(self, key, secret, ex_project_id, ex_consumer_key=None):
+    def __init__(self, key, secret, ex_project_id, ex_consumer_key=None, ex_datacenter=None):
         """
         Instantiate the driver with the given API credentials.
 
@@ -60,12 +60,15 @@ class OvhNodeDriver(NodeDriver):
         :param ex_consumer_key: Your consumer key (required)
         :type ex_consumer_key: ``str``
 
+        :param ex_datacenter: The datacenter to connect to (optional)
+        :type ex_datacenter: ``str``
+
         :rtype: ``None``
         """
-        self.datacenter = None
+        self.datacenter = ex_datacenter
         self.project_id = ex_project_id
         self.consumer_key = ex_consumer_key
-        NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key)
+        NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key, ex_datacenter=ex_datacenter)
 
     def _get_project_action(self, suffix):
         base_url = '%s/cloud/project/%s/' % (API_ROOT, self.project_id)
@@ -533,4 +536,5 @@ class OvhNodeDriver(NodeDriver):
         return [self._to_snapshot(obj) for obj in objs]
 
     def _ex_connection_class_kwargs(self):
-        return {'ex_consumer_key': self.consumer_key}
+        return {'ex_consumer_key': self.consumer_key,
+                'ex_datacenter': self.datacenter}

@@ -37,9 +37,33 @@ __all__ = [
 API_HOST = 'api.ovh.com'
 API_ROOT = '/1.0'
 LOCATIONS = {
-    'SBG1': {'id': 'SBG1', 'name': 'Strasbourg 1', 'country': 'FR'},
     'BHS1': {'id': 'BHS1', 'name': 'Montreal 1', 'country': 'CA'},
-    'GRA1': {'id': 'GRA1', 'name': 'Gravelines 1', 'country': 'FR'}
+    'BHS2': {'id': 'BHS2', 'name': 'Montreal 2', 'country': 'CA'},
+    'BHS3': {'id': 'BHS3', 'name': 'Montreal 3', 'country': 'CA'},
+    'DC1': {'id': 'DC1', 'name': 'Paris DC1', 'country': 'FR'},
+    'DE1': {'id': 'DE1', 'name': 'DE1', 'country': 'DE'},
+    'ERI1': {'id': 'ERI1', 'name': 'Erith 1', 'country': 'UK'},
+    'GRA1': {'id': 'GRA1', 'name': 'Gravelines 1', 'country': 'FR'},
+    'GRA2': {'id': 'GRA2', 'name': 'Gravelines 2', 'country': 'FR'},
+    'GRA3': {'id': 'GRA3', 'name': 'Gravelines 3', 'country': 'FR'},
+    'GSW': {'id': 'GSW', 'name': 'Paris GSW', 'country': 'FR'},
+    'LIM1': {'id': 'LIM1', 'name': 'Limburg 1', 'country': 'DE'},
+    'P19': {'id': 'P19', 'name': 'Paris P19', 'country': 'FR'},
+    'RBX1': {'id': 'RBX1', 'name': 'Roubaix 1', 'country': 'FR'},
+    'RBX2': {'id': 'RBX2', 'name': 'Roubaix 2', 'country': 'FR'},
+    'RBX3': {'id': 'RBX3', 'name': 'Roubaix 3', 'country': 'FR'},
+    'RBX4': {'id': 'RBX4', 'name': 'Roubaix 4', 'country': 'FR'},
+    'RBX5': {'id': 'RBX5', 'name': 'Roubaix 5', 'country': 'FR'},
+    'RBX6': {'id': 'RBX6', 'name': 'Roubaix 6', 'country': 'FR'},
+    'RBX7': {'id': 'RBX7', 'name': 'Roubaix 7', 'country': 'FR'},
+    'SBG1': {'id': 'SBG1', 'name': 'Strasbourg 1', 'country': 'FR'},
+    'SBG2': {'id': 'SBG2', 'name': 'Strasbourg 2', 'country': 'FR'},
+    'SBG3': {'id': 'SBG3', 'name': 'Strasbourg 3', 'country': 'FR'},
+    'SBG4': {'id': 'SBG4', 'name': 'Strasbourg 4', 'country': 'FR'},
+    'SGP1': {'id': 'SGP1', 'name': 'Singapore 1', 'country': 'SG'},
+    'SYD1': {'id': 'SYD1', 'name': 'Sydney 1', 'country': 'AU'},
+    'VIN1': {'id': 'VIN1', 'name': 'Vint Hill 1', 'country': 'US'},
+    'WAW1': {'id': 'WAW1', 'name': 'Warsaw 1', 'country': 'PL'},
 }
 DEFAULT_ACCESS_RULES = [
     {'method': 'GET', 'path': '/*'},
@@ -83,6 +107,8 @@ class OvhConnection(ConnectionUserAndKey):
     allow_insecure = True
 
     def __init__(self, user_id, *args, **kwargs):
+        self.host = ('%s.%s' % (kwargs.pop('ex_datacenter', ''),
+                                API_HOST)).lstrip('.')
         self.consumer_key = kwargs.pop('ex_consumer_key', None)
         if self.consumer_key is None:
             consumer_key_json = self.request_consumer_key(user_id)
@@ -116,7 +142,7 @@ class OvhConnection(ConnectionUserAndKey):
 
     def get_timestamp(self):
         if not self._timedelta:
-            url = 'https://%s%s/auth/time' % (API_HOST, API_ROOT)
+            url = 'https://%s%s/auth/time' % (self.host, API_ROOT)
             response = get_response_object(url=url, method='GET', headers={})
             if not response or not response.body:
                 raise Exception('Failed to get current time from Ovh API')
@@ -126,7 +152,7 @@ class OvhConnection(ConnectionUserAndKey):
         return int(time.time()) + self._timedelta
 
     def make_signature(self, method, action, params, data, timestamp):
-        full_url = 'https://%s%s' % (API_HOST, action)
+        full_url = 'https://%s%s' % (self.host, action)
         if params:
             full_url += '?'
             for key, value in params.items():
