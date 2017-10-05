@@ -457,6 +457,12 @@ class OvhNodeDriver(NodeDriver):
         response = self.connection.request(action, method='DELETE')
         return response.status == httplib.OK
 
+    def ex_get_pricing(self, size_id):
+        pricing = self.connection.request('%s/cloud/price' % (API_ROOT),
+            params={'flavorId': size_id}).object['instances'][0]
+        return {'hourly': pricing['price']['value'],
+            'monthly': pricing['monthlyPrice']['value']}
+
     def _to_volume(self, obj):
         extra = obj.copy()
         extra.pop('id')
@@ -495,8 +501,8 @@ class OvhNodeDriver(NodeDriver):
         extra = {'vcpus': obj['vcpus'], 'type': obj['type'],
                  'region': obj['region']}
         return NodeSize(id=obj['id'], name=obj['name'], ram=obj['ram'],
-                        disk=obj['disk'], bandwidth=None, price=None,
-                        driver=self, extra=extra)
+                        disk=obj['disk'], bandwidth=obj['outboundBandwidth'],
+                        price=None, driver=self, extra=extra)
 
     def _to_sizes(self, objs):
         return [self._to_size(obj) for obj in objs]
