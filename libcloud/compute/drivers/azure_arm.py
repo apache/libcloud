@@ -1783,7 +1783,7 @@ class AzureNodeDriver(NodeDriver):
         if deallocate:
             target = "%s/deallocate" % node.id
         else:
-            target = "%s/stop" % node.id
+            target = "%s/powerOff" % node.id
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     method='POST')
