@@ -151,12 +151,16 @@ class UpcloudDriver(NodeDriver):
                             (optional)
         :type auth:   :class:`.NodeAuthSSHKey`
 
+        :param ex_hostname: Hostname. Default is 'localhost'. (optional)
+        :type ex_hostname: ``str``
+
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
         body = UpcloudCreateNodeRequestBody(user_id=self.connection.user_id,
                                             name=name, size=size, image=image,
-                                            location=location, auth=auth)
+                                            location=location, auth=auth,
+                                            **kwargs)
         response = self.connection.request('1.2/server',
                                            method='POST',
                                            data=body.to_json())
