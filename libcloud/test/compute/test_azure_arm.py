@@ -21,7 +21,6 @@ from datetime import datetime
 import mock
 
 from libcloud.common.exceptions import BaseHTTPError
-from libcloud.common.types import LibcloudError
 from libcloud.compute.base import (NodeLocation, NodeSize, VolumeSnapshot,
                                    StorageVolume)
 from libcloud.compute.drivers.azure_arm import AzureImage, NodeAuthPassword
