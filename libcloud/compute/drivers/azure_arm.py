@@ -699,8 +699,14 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
+        do_node_polling = True
+        success = True
+
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
+        # If returns 404, we may be retrying a previous destroy_node call that
+        # failed to clean up its related resources, so it isn't taken as a
+        # failure.
         try:
             self.connection.request(node.id,
                                     params={"api-version": "2015-06-15"},
@@ -708,11 +714,14 @@ class AzureNodeDriver(NodeDriver):
         except BaseHTTPError as h:
             if h.code == 202:
                 pass
+            elif h.code == 404:
+                # No need to ask again, node already down.
+                do_node_polling = False
             else:
                 return False
 
         # Need to poll until the node actually goes away.
-        while True:
+        while do_node_polling:
             try:
                 time.sleep(10)
                 self.connection.request(
@@ -738,13 +747,14 @@ class AzureNodeDriver(NodeDriver):
                             method='DELETE')
                         break
                     except BaseHTTPError as h:
-                        if h.code == 202:
+                        if h.code == 202 or h.code == 404:
                             break
                         inuse = h.message.startswith("[NicInUse]")
                         if h.code == 400 and inuse:
                             time.sleep(10)
                         else:
                             # NIC cleanup failed, try cleaning up the VHD.
+                            success = False
                             break
 
         # Optionally clean up OS disk VHD.
@@ -766,9 +776,10 @@ class AzureNodeDriver(NodeDriver):
                         # LibcloudError.  Wait a bit and try again.
                         time.sleep(10)
                     else:
-                        raise
+                        success = False
+                        break
 
-        return True
+        return success
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_resource_group=None, ex_account_type=None,

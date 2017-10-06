@@ -21,6 +21,7 @@ from datetime import datetime
 import mock
 
 from libcloud.common.exceptions import BaseHTTPError
+from libcloud.common.types import LibcloudError
 from libcloud.compute.base import (NodeLocation, NodeSize, VolumeSnapshot,
                                    StorageVolume)
 from libcloud.compute.drivers.azure_arm import AzureImage, NodeAuthPassword
@@ -147,6 +148,23 @@ class AzureNodeDriverTests(LibcloudTestCase):
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
 
+    def test_destroy_node__node_not_found(self):
+        """
+        This simulates the case when destroy_node is being called for the 2nd
+        time because some related resource failed to clean up, so the DELETE
+        operation on the node will return 404 (because it was already deleted)
+        but the method should return success.
+        """
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 404 (Not Found) to the DELETE request
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
     @mock.patch('time.sleep', return_value=None)
     def test_destroy_node__async(self, time_sleep_mock):
         def error(e, **kwargs):
@@ -172,10 +190,10 @@ class AzureNodeDriverTests(LibcloudTestCase):
             # 404 means node destroyed successfully
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
             # 500 - transient error when trying to clean up the NIC
-            lambda f: error(BaseHTTPError, code=500, message="Cloud weather")
+            lambda f: error(BaseHTTPError, code=500, message="Cloud weather"),
         ]
         ret = self.driver.destroy_node(node)
-        self.assertTrue(ret)
+        self.assertFalse(ret)
 
     def test_destroy_node__failed(self):
         def error(e, **kwargs):
