@@ -34,7 +34,7 @@ Compute
 - [GCE] Allow setting service account in instance templates (LIBCLOUD-947, GITHUB-1108)
   [Evan Carter]
 
-- [ARM] Fix API call on powerOff, convert more node states (GITHUB-1003)
+- [ARM] Fix API call on powerOff, understand PAUSED state (GITHUB-1003)
   [Markos Gogoulos]
 
 Changes in Apache Libcloud 2.2.1
