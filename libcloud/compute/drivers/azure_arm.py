@@ -111,6 +111,19 @@ class AzureResourceGroup(object):
         return (('<AzureResourceGroup: id=%s, name=%s, location=%s ...>')
                 % (self.id, self.name, self.location))
 
+class AzureStorageAccount(object):
+    """Represent an Azure storage account."""
+
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureStorageAccount: id=%s, name=%s, location=%s ...>')
+                % (self.id, self.name, self.location))
+
 
 class AzureNetworkSecurityGroup(object):
     """Represent an Azure network security group."""
@@ -882,6 +895,41 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(action,
                                     params={"api-version": "2016-09-01"})
         return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
+                                   grp["properties"])
+                for grp in r.object["value"]]
+
+    def ex_create_storage_account(self, name, ex_resource_group, kind, location):
+        """
+        Create storage account.
+        """
+
+        data = {
+            "sku": {
+                "name": "Standard_GRS"
+            },
+            "name": name,
+            "kind": kind,
+            "location": location.id
+        }
+        action = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" \
+                 % (self.subscription_id, ex_resource_group, name)
+        ret = self.connection.request(action,
+                                    params={"api-version": "2017-06-01"},
+                                    data=data,
+                                    method='PUT')
+
+    def ex_list_storage_accounts(self):
+        """
+        List storage accounts.
+
+        :return: A list of storage accounts.
+        :rtype: ``list`` of :class:`.AzureStorageAccount`
+        """
+
+        action = "/subscriptions/%s/providers/Microsoft.Storage/storageAccounts" % (self.subscription_id)
+        r = self.connection.request(action,
+                                    params={"api-version": "2017-06-01"})
+        return [AzureStorageAccount(grp["id"], grp["name"], grp["location"],
                                    grp["properties"])
                 for grp in r.object["value"]]
 
