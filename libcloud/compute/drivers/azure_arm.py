@@ -849,6 +849,27 @@ class AzureNodeDriver(NodeDriver):
                                     params={"api-version": "2015-06-15"})
         return [(img["id"], img["name"]) for img in r.object]
 
+    def ex_create_resource_group(self, name, location):
+        """
+        Create resource group.
+
+        :return: The resource group.
+        :rtype: :class:`.AzureResourceGroup`
+        """
+
+        data = {
+            "name": name,
+            "location": location.id
+        }
+        action = "/subscriptions/%s/resourceGroups/%s/" \
+                 % (self.subscription_id, name)
+        r = self.connection.request(action,
+                                    params={"api-version": "2017-08-01"},
+                                    data=data,
+                                    method='PUT')
+        return AzureResourceGroup(r.object["id"], r.object["name"],
+                                  r.object["location"], r.object["properties"])
+
     def ex_list_resource_groups(self):
         """
         List resource groups.
