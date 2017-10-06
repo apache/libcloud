@@ -16,7 +16,7 @@
 import os
 import sys
 import os.path
-from mock import patch
+import warnings
 
 import libcloud.security
 
@@ -25,14 +25,14 @@ from libcloud.http import LibcloudConnection
 
 from libcloud.test import unittest
 
-ORIGINAL_CA_CERS_PATH = libcloud.security.CA_CERTS_PATH
+ORIGINAL_CA_CERTS_PATH = libcloud.security.CA_CERTS_PATH
 
 
 class TestHttpLibSSLTests(unittest.TestCase):
 
     def setUp(self):
         libcloud.security.VERIFY_SSL_CERT = False
-        libcloud.security.CA_CERTS_PATH = ORIGINAL_CA_CERS_PATH
+        libcloud.security.CA_CERTS_PATH = ORIGINAL_CA_CERTS_PATH
         self.httplib_object = LibcloudConnection('foo.bar', port=80)
 
     def test_custom_ca_path_using_env_var_doesnt_exist(self):
@@ -66,8 +66,16 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
         self.assertEqual(libcloud.security.CA_CERTS_PATH, file_path)
 
-    @patch('warnings.warn')
-    def test_setup_ca_cert(self, _):
+    def test_ca_cert_list_warning(self):
+        with warnings.catch_warnings(record=True) as w:
+            self.httplib_object.verify = True
+            self.httplib_object._setup_ca_cert(
+                ca_cert=[ORIGINAL_CA_CERTS_PATH])
+            self.assertEqual(self.httplib_object.ca_cert,
+                             ORIGINAL_CA_CERTS_PATH)
+            self.assertEqual(w[0].category, DeprecationWarning)
+
+    def test_setup_ca_cert(self):
         # verify = False, _setup_ca_cert should be a no-op
         self.httplib_object.verify = False
         self.httplib_object._setup_ca_cert()
