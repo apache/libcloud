@@ -4,6 +4,12 @@
 Changes in Apach Libcloud in development
 ----------------------------------------
 
+Common
+~~~~~~
+
+- Improve warning when CA_CERTS_PATH is incorrectly passed as a list (GITHUB-1118)
+  [Quentin Pradet]
+
 Compute
 ~~~~~~~
 
