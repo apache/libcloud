@@ -114,7 +114,7 @@ class UpcloudDriverTests(LibcloudTestCase):
                           driver=self.driver)
         location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver=self.driver)
         size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
-                        extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver=self.driver)
+                        extra={'storage_tier': 'maxiops'}, price=None, driver=self.driver)
         node = self.driver.create_node(name='test_server', size=size, image=image, location=location, ex_hostname='myhost.somewhere')
 
         self.assertTrue(re.match('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$', node.id))
@@ -133,7 +133,7 @@ class UpcloudDriverTests(LibcloudTestCase):
                           driver=self.driver)
         location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver=self.driver)
         size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
-                        extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver=self.driver)
+                        extra={'storage_tier': 'maxiops'}, price=None, driver=self.driver)
 
         auth = NodeAuthSSHKey('publikey')
         node = self.driver.create_node(name='test_server', size=size, image=image, location=location, auth=auth)

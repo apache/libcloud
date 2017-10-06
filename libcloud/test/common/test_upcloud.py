@@ -18,6 +18,7 @@ import json
 from mock import Mock, call
 
 from libcloud.common.upcloud import UpcloudCreateNodeRequestBody, UpcloudNodeDestroyer, UpcloudNodeOperations
+from libcloud.common.upcloud import _StorageDevice
 from libcloud.common.upcloud import UpcloudTimeoutException
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey
 from libcloud.test import unittest
@@ -49,7 +50,9 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                     'storage_device': [{
                         'action': 'clone',
                         'title': 'Ubuntu Server 16.04 LTS (Xenial Xerus)',
-                        'storage': '01000000-0000-4000-8000-000030060200'
+                        'storage': '01000000-0000-4000-8000-000030060200',
+                        'size': 30,
+                        'tier': 'maxiops',
                     }]
                 },
             }
@@ -125,7 +128,9 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                 'storage_devices': {
                     'storage_device': [{
                         'action': 'clone',
+                        'size': 30,
                         'title': 'Ubuntu Server 16.04 LTS (Xenial Xerus)',
+                        'tier': 'maxiops',
                         'storage': '01000000-0000-4000-8000-000030060200'
                     }]
                 },
@@ -158,12 +163,38 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                     'storage_device': [{
                         'action': 'clone',
                         'title': 'Ubuntu Server 16.04 LTS (Xenial Xerus)',
-                        'storage': '01000000-0000-4000-8000-000030060200'
+                        'storage': '01000000-0000-4000-8000-000030060200',
+                        'tier': 'maxiops',
+                        'size': 30
                     }]
                 },
             }
         }
         self.assertDictEqual(expected_body, dict_body)
+
+
+class TestStorageDevice(unittest.TestCase):
+
+    def setUp(self):
+        self.image = NodeImage(id='01000000-0000-4000-8000-000030060200',
+                               name='Ubuntu Server 16.04 LTS (Xenial Xerus)',
+                               driver='',
+                               extra={'type': 'template'})
+        self.size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
+                             extra={'core_number': 1}, price=None, driver='')
+
+    def test_storage_tier_default_value(self):
+        storagedevice = _StorageDevice(self.image, self.size)
+        d = storagedevice.to_dict()
+
+        self.assertEquals(d['storage_device'][0]['tier'], 'maxiops')
+
+    def test_storage_tier_given(self):
+        self.size.extra['storage_tier'] = 'hdd'
+        storagedevice = _StorageDevice(self.image, self.size)
+        d = storagedevice.to_dict()
+
+        self.assertEquals(d['storage_device'][0]['tier'], 'hdd')
 
 
 class TestUpcloudNodeDestroyer(unittest.TestCase):
