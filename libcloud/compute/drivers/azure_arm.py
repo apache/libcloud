@@ -1947,7 +1947,8 @@ class AzureNodeDriver(NodeDriver):
             r = self.connection.request(action,
                                         params={"api-version": "2015-06-15"})
             for status in r.object["statuses"]:
-                if status["code"] == "ProvisioningState/creating":
+                if status["code"] in ["ProvisioningState/creating",
+                                      "ProvisioningState/updating"]:
                     state = NodeState.PENDING
                     break
                 elif status["code"] == "ProvisioningState/deleting":
@@ -1964,6 +1965,9 @@ class AzureNodeDriver(NodeDriver):
 
                 if status["code"] == "PowerState/deallocated":
                     state = NodeState.STOPPED
+                    break
+                elif status["code"] == "PowerState/stopped":
+                    state = NodeState.PAUSED
                     break
                 elif status["code"] == "PowerState/deallocating":
                     state = NodeState.PENDING
