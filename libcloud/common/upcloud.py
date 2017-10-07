@@ -29,9 +29,6 @@ class UpcloudCreateNodeRequestBody(object):
 
     Takes the create_node arguments (**kwargs) and constructs the request body
 
-    :param      user_id: required for authentication (required)
-    :type       user_id: ``str``
-
     :param      name: Name of the created server (required)
     :type       name: ``str``
 
@@ -52,17 +49,21 @@ class UpcloudCreateNodeRequestBody(object):
     :param      ex_hostname: Hostname. Default is 'localhost'. (optional)
     :type       ex_hostname: ``str``
 
+    :param ex_username: User's username, which is created.
+                        Default is 'root'. (optional)
+    :type ex_username: ``str``
     """
 
-    def __init__(self, user_id, name, size, image, location, auth=None,
+    def __init__(self, name, size, image, location, auth=None,
                  **kwargs):
+        username = kwargs.get('ex_username', 'root')
         self.body = {
             'server': {
                 'title': name,
                 'hostname': kwargs.get('ex_hostname', 'localhost'),
                 'plan': size.id,
                 'zone': location.id,
-                'login_user': _LoginUser(user_id, auth).to_dict(),
+                'login_user': _LoginUser(username, auth).to_dict(),
                 'storage_devices': _StorageDevice(image, size).to_dict()
             }
         }
