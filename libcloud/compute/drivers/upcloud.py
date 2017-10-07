@@ -154,11 +154,14 @@ class UpcloudDriver(NodeDriver):
         :param ex_hostname: Hostname. Default is 'localhost'. (optional)
         :type ex_hostname: ``str``
 
+        :param ex_username: User's username, which is created.
+                            Default is 'root'. (optional)
+        :type ex_username: ``str``
+
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
-        body = UpcloudCreateNodeRequestBody(user_id=self.connection.user_id,
-                                            name=name, size=size, image=image,
+        body = UpcloudCreateNodeRequestBody(name=name, size=size, image=image,
                                             location=location, auth=auth,
                                             **kwargs)
         response = self.connection.request('1.2/server',
