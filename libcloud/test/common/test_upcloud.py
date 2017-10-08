@@ -26,16 +26,17 @@ from libcloud.test import unittest
 
 class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
 
-    def test_creating_node_from_template_image(self):
-        image = NodeImage(id='01000000-0000-4000-8000-000030060200',
-                          name='Ubuntu Server 16.04 LTS (Xenial Xerus)',
-                          driver='',
-                          extra={'type': 'template'})
-        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver='')
-        size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
-                        extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver='')
+    def setUp(self):
+        self.image = NodeImage(id='01000000-0000-4000-8000-000030060200',
+                               name='Ubuntu Server 16.04 LTS (Xenial Xerus)',
+                               driver='',
+                               extra={'type': 'template'})
+        self.location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver='')
+        self.size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
+                             extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver='')
 
-        body = UpcloudCreateNodeRequestBody(user_id='somename', name='ts', image=image, location=location, size=size)
+    def test_creating_node_from_template_image(self):
+        body = UpcloudCreateNodeRequestBody(name='ts', image=self.image, location=self.location, size=self.size)
         json_body = body.to_json()
         dict_body = json.loads(json_body)
         expected_body = {
@@ -44,7 +45,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                 'hostname': 'localhost',
                 'plan': '1xCPU-1GB',
                 'zone': 'fi-hel1',
-                'login_user': {'username': 'somename',
+                'login_user': {'username': 'root',
                                'create_password': 'yes'},
                 'storage_devices': {
                     'storage_device': [{
@@ -64,11 +65,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                           name='Ubuntu Server 16.04 LTS (Xenial Xerus)',
                           driver='',
                           extra={'type': 'cdrom'})
-        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver='')
-        size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
-                        extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver='')
-
-        body = UpcloudCreateNodeRequestBody(user_id='somename', name='ts', image=image, location=location, size=size)
+        body = UpcloudCreateNodeRequestBody(name='ts', image=image, location=self.location, size=self.size)
         json_body = body.to_json()
         dict_body = json.loads(json_body)
         expected_body = {
@@ -77,7 +74,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                 'hostname': 'localhost',
                 'plan': '1xCPU-1GB',
                 'zone': 'fi-hel1',
-                'login_user': {'username': 'somename',
+                'login_user': {'username': 'root',
                                'create_password': 'yes'},
                 'storage_devices': {
                     'storage_device': [
@@ -99,16 +96,9 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
         self.assertDictEqual(expected_body, dict_body)
 
     def test_creating_node_using_ssh_keys(self):
-        image = NodeImage(id='01000000-0000-4000-8000-000030060200',
-                          name='Ubuntu Server 16.04 LTS (Xenial Xerus)',
-                          driver='',
-                          extra={'type': 'template'})
-        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver='')
-        size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
-                        extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver='')
         auth = NodeAuthSSHKey('sshkey')
 
-        body = UpcloudCreateNodeRequestBody(user_id='somename', name='ts', image=image, location=location, size=size, auth=auth)
+        body = UpcloudCreateNodeRequestBody(name='ts', image=self.image, location=self.location, size=self.size, auth=auth)
         json_body = body.to_json()
         dict_body = json.loads(json_body)
         expected_body = {
@@ -118,7 +108,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                 'plan': '1xCPU-1GB',
                 'zone': 'fi-hel1',
                 'login_user': {
-                    'username': 'somename',
+                    'username': 'root',
                     'ssh_keys': {
                         'ssh_key': [
                             'sshkey'
@@ -139,15 +129,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
         self.assertDictEqual(expected_body, dict_body)
 
     def test_creating_node_using_hostname(self):
-        image = NodeImage(id='01000000-0000-4000-8000-000030060200',
-                          name='Ubuntu Server 16.04 LTS (Xenial Xerus)',
-                          driver='',
-                          extra={'type': 'template'})
-        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver='')
-        size = NodeSize(id='1xCPU-1GB', name='1xCPU-1GB', ram=1024, disk=30, bandwidth=2048,
-                        extra={'core_number': 1, 'storage_tier': 'maxiops'}, price=None, driver='')
-
-        body = UpcloudCreateNodeRequestBody(user_id='somename', name='ts', image=image, location=location, size=size,
+        body = UpcloudCreateNodeRequestBody(name='ts', image=self.image, location=self.location, size=self.size,
                                             ex_hostname='myhost.upcloud.com')
         json_body = body.to_json()
         dict_body = json.loads(json_body)
@@ -157,7 +139,7 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
                 'hostname': 'myhost.upcloud.com',
                 'plan': '1xCPU-1GB',
                 'zone': 'fi-hel1',
-                'login_user': {'username': 'somename',
+                'login_user': {'username': 'root',
                                'create_password': 'yes'},
                 'storage_devices': {
                     'storage_device': [{
@@ -171,6 +153,15 @@ class TestUpcloudCreateNodeRequestBody(unittest.TestCase):
             }
         }
         self.assertDictEqual(expected_body, dict_body)
+
+    def test_creating_node_with_non_default_username(self):
+        body = UpcloudCreateNodeRequestBody(name='ts', image=self.image, location=self.location, size=self.size,
+                                            ex_username='someone')
+        json_body = body.to_json()
+        dict_body = json.loads(json_body)
+
+        login_user = dict_body['server']['login_user']
+        self.assertDictEqual({'username': 'someone', 'create_password': 'yes'}, login_user)
 
 
 class TestStorageDevice(unittest.TestCase):
