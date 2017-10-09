@@ -191,8 +191,8 @@ class AzureNodeDriverTests(LibcloudTestCase):
             # 500 - transient error when trying to clean up the NIC
             lambda f: error(BaseHTTPError, code=500, message="Cloud weather"),
         ]
-        ret = self.driver.destroy_node(node)
-        self.assertFalse(ret)
+        with self.assertRaises(BaseHTTPError):
+            self.driver.destroy_node(node)
 
     def test_destroy_node__failed(self):
         def error(e, **kwargs):
@@ -202,8 +202,8 @@ class AzureNodeDriverTests(LibcloudTestCase):
             # 403 - There was some problem with your request
             lambda f: error(BaseHTTPError, code=403, message='Forbidden'),
         ]
-        ret = self.driver.destroy_node(node)
-        self.assertFalse(ret)
+        with self.assertRaises(BaseHTTPError):
+            self.driver.destroy_node(node)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
