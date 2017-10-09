@@ -2978,6 +2978,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'status',
             'transform_func': str
         },
+        'encrypted': {
+            'xpath': 'encrypted',
+            'transform_func': lambda x: {'true': True, 'false': False}.get(x)
+        },
         'attach_time': {
             'xpath': 'attachmentSet/item/attachTime',
             'transform_func': parse_date
