@@ -695,7 +695,8 @@ class AzureNodeDriver(NodeDriver):
         this node (default True).
         :type node: ``bool``
 
-        :return: True if the destroy was successful, raises exception otherwise.
+        :return: True if the destroy was successful, raises exception
+        otherwise.
         :rtype: ``bool``
         """
 
