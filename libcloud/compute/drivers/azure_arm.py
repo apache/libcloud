@@ -695,12 +695,12 @@ class AzureNodeDriver(NodeDriver):
         this node (default True).
         :type node: ``bool``
 
-        :return: True if the destroy was successful, False otherwise.
+        :return: True if the destroy was successful, raises exception
+        otherwise.
         :rtype: ``bool``
         """
 
         do_node_polling = True
-        success = True
 
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
@@ -718,7 +718,7 @@ class AzureNodeDriver(NodeDriver):
                 # No need to ask again, node already down.
                 do_node_polling = False
             else:
-                return False
+                raise
 
         # Need to poll until the node actually goes away.
         while do_node_polling:
@@ -731,7 +731,7 @@ class AzureNodeDriver(NodeDriver):
                 if h.code == 404:
                     break
                 else:
-                    return False
+                    raise
 
         # Optionally clean up the network
         # interfaces that were attached to this node.
@@ -753,9 +753,7 @@ class AzureNodeDriver(NodeDriver):
                         if h.code == 400 and inuse:
                             time.sleep(10)
                         else:
-                            # NIC cleanup failed, try cleaning up the VHD.
-                            success = False
-                            break
+                            raise
 
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
@@ -776,10 +774,9 @@ class AzureNodeDriver(NodeDriver):
                         # LibcloudError.  Wait a bit and try again.
                         time.sleep(10)
                     else:
-                        success = False
-                        break
+                        raise
 
-        return success
+        return True
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_resource_group=None, ex_account_type=None,
