@@ -195,7 +195,7 @@ class AzureResourceManagementConnection(ConnectionUserAndKey):
         Log in and get bearer token used to authorize API requests.
         """
 
-        conn = self.conn_class(self.login_host, 443)
+        conn = self.conn_class(self.login_host, 443, timeout=self.timeout)
         conn.connect()
         params = urlencode({
             "grant_type": "client_credentials",
