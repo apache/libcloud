@@ -903,6 +903,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('vol', vol.name)
         self.assertEqual('creating', vol.extra['state'])
         self.assertTrue(isinstance(vol.extra['create_time'], datetime))
+        self.assertEqual(False, vol.extra['encrypted'])
+
+    def test_create_encrypted_volume(self):
+        location = self.driver.list_locations()[0]
+        vol = self.driver.create_volume(
+            10, 'vol', location,
+            ex_encrypted=True,
+            ex_kms_key_id='1234')
+
+        self.assertEqual(10, vol.size)
+        self.assertEqual('vol', vol.name)
+        self.assertEqual('creating', vol.extra['state'])
+        self.assertTrue(isinstance(vol.extra['create_time'], datetime))
+        self.assertEqual(True, vol.extra['encrypted'])
 
     def test_destroy_volume(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
@@ -1531,7 +1545,13 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _CreateVolume(self, method, url, body, headers):
-        body = self.fixtures.load('create_volume.xml')
+        if 'KmsKeyId=' in url:
+            assert 'Encrypted=1' in url, "If a KmsKeyId is specified, the " \
+                                         "Encrypted flag must also be set."
+        if 'Encrypted=1' in url:
+            body = self.fixtures.load('create_encrypted_volume.xml')
+        else:
+            body = self.fixtures.load('create_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeleteVolume(self, method, url, body, headers):
