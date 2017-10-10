@@ -409,8 +409,8 @@ class ScalewayNodeDriver(NodeDriver):
                          driver=self,
                          extra={
                             'arch': image['arch'],
-                            'creation_date': image['creation_date'],
-                            'modification_date': image['modification_date'],
+                            'creation_date': parse_date(image['creation_date']),
+                            'modification_date': parse_date(image['modification_date']),
                             'organization': image['organization'],
                          })
 
@@ -422,13 +422,18 @@ class ScalewayNodeDriver(NodeDriver):
     def _to_node(self, server):
         public_ip = server['public_ip']
         private_ip = server['private_ip']
+        location = server['location'] or {}
         return Node(id=server['id'],
                     name=server['name'],
                     state=NodeState.fromstring(server['state']),
                     public_ips=[public_ip['address']] if public_ip else [],
                     private_ips=[private_ip] if private_ip else [],
                     driver=self,
-                    extra={'volumes': server['volumes']},
+                    extra={'volumes': server['volumes'],
+                           'tags': server['tags'],
+                           'arch': server['arch'],
+                           'organization': server['organization'],
+                           'region': location.get('zone_id', 'par1')},
                     created_at=parse_date(server['creation_date']))
 
     def create_node(self, name, size, image, ex_volumes=None, ex_tags=None,
@@ -447,6 +452,8 @@ class ScalewayNodeDriver(NodeDriver):
                                            method='POST')
         server = response.object['server']
         node = self._to_node(server)
+        node.extra['region'] = (region.id if isinstance(region, NodeLocation)
+                                else region) or 'par1'
 
         # Scaleway doesn't start servers by default, let's do it
         self._action(node.id, 'poweron')
@@ -474,7 +481,13 @@ class ScalewayNodeDriver(NodeDriver):
         return StorageVolume(id=volume['id'],
                              name=volume['name'],
                              size=_kb_to_mb(volume['size']),
-                             driver=self)
+                             driver=self,
+                             extra={
+                                'organization': volume['organization'],
+                                'volume_type': volume['volume_type'],
+                                'creation_date': parse_date(volume['creation_date']),
+                                'modification_date': parse_date(volume['modification_date']),
+                             })
 
     def list_volume_snapshots(self, volume, region=None):
         response = self.connection.request('/snapshots', region=region)
@@ -489,7 +502,11 @@ class ScalewayNodeDriver(NodeDriver):
                               driver=self,
                               size=_kb_to_mb(snapshot['size']),
                               created=parse_date(snapshot['creation_date']),
-                              state=state)
+                              state=state,
+                              extra={
+                                'organization': snapshot['organization'],
+                                'volume_type': snapshot['volume_type'],
+                              })
 
     def create_volume(self, size, name, region=None):
         data = {
