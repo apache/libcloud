@@ -2024,7 +2024,7 @@ class AzureNodeDriver(NodeDriver):
         if fetch_power_state:
             state = self._fetch_power_state(data)
         else:
-            ps = data["properties"]["provisioningState"]
+            ps = data["properties"]["provisioningState"].lower()
             if ps == "creating":
                 state = NodeState.PENDING
             elif ps == "deleting":
