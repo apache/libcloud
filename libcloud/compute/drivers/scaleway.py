@@ -377,11 +377,7 @@ class ScalewayNodeDriver(NodeDriver):
     def list_images(self, region=None):
         response = self.connection.request('/images', region=region)
         images = response.object['images']
-        return [NodeImage(id=image['id'],
-                          name=image['name'],
-                          driver=self,
-                          extra={'arch': image['arch']})
-                for image in images]
+        return [self._to_image(image) for image in images]
 
     def create_image(self, node, name, description=None, region=None):
         data = {
@@ -394,7 +390,7 @@ class ScalewayNodeDriver(NodeDriver):
                                            region=region,
                                            method='POST')
         image = response.object['image']
-        return NodeImage(id=image['id'], name=image['name'], driver=self)
+        return self._to_image(image)
 
     def delete_image(self, node_image, region=None):
         return self.connection.request('/images/%s' % node_image.id,
@@ -405,7 +401,18 @@ class ScalewayNodeDriver(NodeDriver):
         response = self.connection.request('/images/%s' % image_id,
                                            region=region)
         image = response.object['image']
-        return NodeImage(id=image['id'], name=image['name'], driver=self)
+        return self._to_image(image)
+
+    def _to_image(self, image):
+        return NodeImage(id=image['id'],
+                         name=image['name'],
+                         driver=self,
+                         extra={
+                            'arch': image['arch'],
+                            'creation_date': image['creation_date'],
+                            'modification_date': image['modification_date'],
+                            'organization': image['organization'],
+                         })
 
     def list_nodes(self, region=None):
         response = self.connection.request('/servers', region=region)
