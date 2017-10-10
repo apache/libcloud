@@ -329,10 +329,12 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_authorize_security_group_ingress(self):
         ranges = ['1.1.1.1/32', '2.2.2.2/32']
-        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges)
+        description = "automated authorised IP ingress test"
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 22, cidr_ips=ranges, description=description)
         self.assertTrue(resp)
         groups = [{'group_id': 'sg-949265ff'}]
-        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 23, group_pairs=groups)
+        description = "automated authorised group ingress test"
+        resp = self.driver.ex_authorize_security_group_ingress('sg-42916629', 22, 23, group_pairs=groups, description=description)
         self.assertTrue(resp)
 
     def test_authorize_security_group_egress(self):
