@@ -4898,6 +4898,9 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      protocol: tcp/udp/icmp
         :type       protocol: ``str``
 
+        :param      description: description to be added to the rules inserted
+        :type       description: ``str``
+
         :rtype: ``bool``
         """
 
