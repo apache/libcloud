@@ -1,0 +1,6 @@
+{
+   "error" : {
+      "error_code" : "AUTHENTICATION_FAILED",
+      "error_message" : "Authentication failed using the given username and password."
+   }
+}

@@ -6,6 +6,7 @@
             <instanceType>t1.micro</instanceType>
             <availabilityZone>us-east-1b</availabilityZone>
             <start>2013-06-18T12:07:53.161Z</start>
+            <end>2014-06-18T12:07:53.161Z</end>
             <duration>31536000</duration>
             <fixedPrice>23.0</fixedPrice>
             <usagePrice>0.012</usagePrice>

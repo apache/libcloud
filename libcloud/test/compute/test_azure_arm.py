@@ -17,6 +17,16 @@ import sys
 import functools
 from datetime import datetime
 
+
+import json
+import sys
+import functools
+from datetime import datetime
+
+import mock
+
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.common.types import LibcloudError
 from libcloud.compute.base import (NodeLocation, NodeSize, VolumeSnapshot,
                                    StorageVolume)
 from libcloud.compute.drivers.azure_arm import AzureImage, NodeAuthPassword
@@ -33,7 +43,7 @@ from libcloud.utils.py3 import httplib
 class AzureNodeDriverTests(LibcloudTestCase):
 
     TENANT_ID = '77777777-7777-7777-7777-777777777777'
-    SUBSCRIPTION_ID = '99999999-9999-9999-9999-999999999999'
+    SUBSCRIPTION_ID = '99999999'
     APPLICATION_ID = '55555555-5555-5555-5555-555555555555'
     APPLICATION_PASS = 'p4ssw0rd'
 
@@ -42,6 +52,21 @@ class AzureNodeDriverTests(LibcloudTestCase):
         Azure.connectionCls.conn_class = AzureMockHttp
         self.driver = Azure(self.TENANT_ID, self.SUBSCRIPTION_ID,
                             self.APPLICATION_ID, self.APPLICATION_PASS)
+
+    def tearDown(self):
+        AzureMockHttp.responses = []
+
+    def test_get_image(self):
+        # Default storage suffix
+        image = self.driver.get_image(image_id='http://www.example.com/foo/image_name')
+        self.assertEqual(image.id, 'https://www.blob.core.windows.net/foo/image_name')
+        self.assertEqual(image.name, 'image_name')
+
+        # Custom storage suffix
+        self.driver.connection.storage_suffix = '.core.chinacloudapi.cn'
+        image = self.driver.get_image(image_id='http://www.example.com/foo/image_name')
+        self.assertEqual(image.id, 'https://www.blob.core.chinacloudapi.cn/foo/image_name')
+        self.assertEqual(image.name, 'image_name')
 
     def test_locations_returned_successfully(self):
         locations = self.driver.list_locations()
@@ -113,6 +138,79 @@ class AzureNodeDriverTests(LibcloudTestCase):
             'sku': image.sku,
             'version': image.version
         })
+
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # OK to the DELETE request
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 404 means node destroyed successfully
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
+    def test_destroy_node__node_not_found(self):
+        """
+        This simulates the case when destroy_node is being called for the 2nd
+        time because some related resource failed to clean up, so the DELETE
+        operation on the node will return 404 (because it was already deleted)
+        but the method should return success.
+        """
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 404 (Not Found) to the DELETE request
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__async(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 202 - The delete will happen asynchronously
+            lambda f: error(BaseHTTPError, code=202, message='Deleting'),
+            # 404 means node destroyed successfully
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__nic_not_cleaned_up(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # OK to the DELETE request
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 404 means node destroyed successfully
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+            # 500 - transient error when trying to clean up the NIC
+            lambda f: error(BaseHTTPError, code=500, message="Cloud weather"),
+        ]
+        with self.assertRaises(BaseHTTPError):
+            self.driver.destroy_node(node)
+
+    def test_destroy_node__failed(self):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 403 - There was some problem with your request
+            lambda f: error(BaseHTTPError, code=403, message='Forbidden'),
+        ]
+        with self.assertRaises(BaseHTTPError):
+            self.driver.destroy_node(node)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -367,9 +465,27 @@ class AzureNodeDriverTests(LibcloudTestCase):
         res_value = snapshot.destroy()
         self.assertTrue(res_value)
 
+    def test_get_instance_vhd(self):
+        with mock.patch.object(self.driver, '_ex_delete_old_vhd'):
+            # Default storage suffix
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.windows.net/vhds/test1-os_0.vhd')
+
+            # Custom storage suffix
+            self.driver.connection.storage_suffix = '.core.chinacloudapi.cn'
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.chinacloudapi.cn/vhds/test1-os_0.vhd')
+
 
 class AzureMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('azure_arm')
+    # List of callables to be run in order as responses. Fixture
+    # passed as argument.
+    responses = []
 
     def _update(self, fixture, body):
         for key, value in body.items():
@@ -381,7 +497,11 @@ class AzureMockHttp(MockHttp):
 
     def __getattr__(self, n):
         def fn(method, url, body, headers):
-            fixture = self.fixtures.load(n + ".json")
+            # Note: We use shorter fixture name so we don't exceed 143
+            # character limit for file names
+            file_name = n.replace('99999999_9999_9999_9999_999999999999',
+                                  AzureNodeDriverTests.SUBSCRIPTION_ID)
+            fixture = self.fixtures.load(file_name + ".json")
 
             if method in ('POST', 'PUT'):
                 try:
@@ -391,8 +511,13 @@ class AzureMockHttp(MockHttp):
                     fixture = json.dumps(fixture_tmp)
                 except ValueError:
                     pass
-            return (httplib.OK, fixture, headers,
-                    httplib.responses[httplib.OK])
+
+            if (not n.endswith('_oauth2_token')) and len(self.responses) > 0:
+                f = self.responses.pop(0)
+                return f(fixture)
+            else:
+                return (httplib.OK, fixture, headers,
+                        httplib.responses[httplib.OK])
         return fn
 
 

@@ -1,12 +1,12 @@
 {
     "id": "datacenters",
     "type": "collection",
-    "href": "/cloudapi/v3/datacenters/",
+    "href": "/cloudapi/v4/datacenters/",
     "items": [
         {
             "id": "dc-1",
             "type": "datacenter",
-            "href": "/cloudapi/v3/datacenters/dc-1",
+            "href": "/cloudapi/v4/datacenters/dc-1",
             "metadata": {
                 "createdDate": "2016-10-14T07:24:59Z",
                 "createdBy": "test@test.test",
@@ -16,9 +16,9 @@
                 "state": "AVAILABLE"
             },
             "properties": {
-                "name": "Test One.",
-                "description": "A test data center",
-                "location": "de/fra",
+                "name": "libcloud Test",
+                "description": "libcloud test datacenter",
+                "location": "us/las",
                 "version": 3,
                 "features": [
                     "SSD",
@@ -29,22 +29,22 @@
                 "servers": {
                     "id": "983a45be-a9aa-427a-8117-271ce9f392bb/servers",
                     "type": "collection",
-                    "href": "/cloudapi/v3/datacenters/dc-1/servers"
+                    "href": "/cloudapi/v4/datacenters/dc-1/servers"
                 },
                 "volumes": {
                     "id": "983a45be-a9aa-427a-8117-271ce9f392bb/volumes",
                     "type": "collection",
-                    "href": "/cloudapi/v3/datacenters/dc-1/volumes"
+                    "href": "/cloudapi/v4/datacenters/dc-1/volumes"
                 },
                 "loadbalancers": {
                     "id": "983a45be-a9aa-427a-8117-271ce9f392bb/loadbalancers",
                     "type": "collection",
-                    "href": "/cloudapi/v3/datacenters/dc-1/loadbalancers"
+                    "href": "/cloudapi/v4/datacenters/dc-1/loadbalancers"
                 },
                 "lans": {
                     "id": "983a45be-a9aa-427a-8117-271ce9f392bb/lans",
                     "type": "collection",
-                    "href": "/cloudapi/v3/datacenters/dc-1/lans"
+                    "href": "/cloudapi/v4/datacenters/dc-1/lans"
                 }
             }
         }

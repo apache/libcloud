@@ -14,7 +14,7 @@ Example below shows how to retrieve pricing for ``NodeSize`` objects using
 
 .. literalinclude:: /examples/compute/pricing.py
    :language: python
-   :emphasize-lines: 11-19
+   :emphasize-lines: 11-18
 
 As noted above this pricing information is an estimate and should only
 be used as such. You should always check your provider website / control panel

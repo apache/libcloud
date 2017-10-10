@@ -1,8 +1,183 @@
 ﻿Changelog
 =========
 
-Changes in current version of Apache Libcloud
----------------------------------------------
+Changes in Apach Libcloud in development
+----------------------------------------
+
+Common
+~~~~~~
+
+- Improve warning when CA_CERTS_PATH is incorrectly passed as a list (GITHUB-1118)
+  [Quentin Pradet]
+
+Compute
+~~~~~~~
+
+- [UpCloud] New driver for UpCloud (LIBCLOUD-938, GITHUB-1102)
+  [Mika Lackman, Ilari Mäkelä]
+
+- [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
+  [@zulupro]
+
+- [EC2] Update pricing information for EC2 instances.
+  [Tomaz Muraus]
+
+- Update ProfitBricks driver and add support for the new API v4. (GITHUB-1103)
+  [Nurfet Becirevic]
+
+- [GCE] Support GCE node labels. (LIBCLOUD-934, GITHUB-1115)
+  [@maxlip]
+
+- [GCE] Fix `GCEList` pagination. (GITHUB-1095)
+  [Yap Sok Ann]
+
+- [ARM] Fix checking for "location is None" in several functions (LIBCLOUD-926, GITHUB-1098)
+  [Sameh Elsharkawy]
+
+- [ARM] Fix error when using SSH key auth with Python 3 (GITHUB-1098)
+  [Sameh Elsharkawy]
+
+- [GCE] Allow setting service account in instance templates (LIBCLOUD-947, GITHUB-1108)
+  [Evan Carter]
+
+- [ARM] Fix API call on powerOff, understand PAUSED state (GITHUB-1003)
+  [Markos Gogoulos]
+
+- [UpCloud] Use disk size and storage tier also when creating node from template
+  (LIBCLOUD-952, GITHUB-1124)
+  [Mika Lackman]
+
+- [UpCloud] Allow to define hostname and username
+  (LIBCLOUD-951, LIBCLOUD-953, GITHUB-1123, GITHUB-1125)
+  [Mika Lackman]
+
+- [ARM] Delete VHDs more reliably in destroy_node(), raise exception on unhandled errors
+  (GITHUB-1120)
+  [Lucas Di Pentima]
+
+
+Changes in Apache Libcloud 2.2.1
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix an issue with installation failing on some operating system and file
+  systems combinations (e.g. ecryptfs layered on top of ext4) which don't
+  support file names longer than 143 characters. (LIBCLOUD-946, GITHUB-1112)
+
+  Reported by Cyrille Verrier.
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [EC2] add g3 instance types
+  [GITHUB-1101]
+  (@zulupro)
+
+- [EC2] add 'end' to ec2 reserved_node
+  [GITHUB-1099]
+  (@xofer)
+
+- Decrease sleep delay (from 1.5 to 0.2 seconds) inside paramiko client which
+  is used to prevent busy waiting while waiting for data on the channel.
+
+  This should cause deploy scripts which produce a lot of output in incremental
+  manner to finish faster.
+  [Tomaz Muraus]
+
+- Fix a regression in the Azure ARM driver which didn't allow custom storage
+  URI suffix to be used with create_node. (GITHUB-1110)
+  [Lucas Di Pentima]
+
+Tests
+~~~~~
+
+- Make sure we normalize header values and cast all the numbers to strings in
+  base connection classes used by tests. (LIBCLOUD-945, GITHUB-1111)
+
+  Reported by Erich Eckner.
+  [Tomaz Muraus]
+
+Changes in Apache Libcloud 2.2.0
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [EC2] add g3 instance types
+  [GITHUB-1101]
+  (@zulupro)
+
+- [EC2] add 'end' to ec2 reserved_node
+  [GITHUB-1099]
+  (@xofer)
+
+Changes in Apache Libcloud 2.2.0
+--------------------------------
+
+Common
+~~~~~~
+
+- [GCE] Scrape prices for GCE Australia Region
+  [GITHUB-1085]
+  (Francisco Ros)
+
+Compute
+~~~~~~~
+
+- [ARM] Add option to create static public IP
+  [GITHUB-1091, LIBCLOUD-918]
+  (Aki Ketolainen)
+
+- [SOFTLAYER] Add `get_image` method to class
+  [GITHUB-1066]
+  (Francois Regnoult)
+
+- [ARM] Add Storage support, volumes, snapshots
+  [GITHUB-1087]
+  (Sergey Babak)
+
+Container
+~~~~~~~~~
+
+- [DOCKER] Fixes to support TLS connection
+  [GITHUB-1067]
+  (johnnyWalnut)
+
+DNS
+~~~
+
+- [ROUTE53] Fix for TXT and SPF records, when user didn't escapsulate data in quotes, 
+  the API would fire error. As reported by @glyph
+  [LIBCLOUD-875, GITHUB-1093]
+  (Anthony Shaw)
+
+- [LINODE] Add priority to the extra dictionary in record instances
+  [GITHUB-1088]
+  (@mete0r)
+
+Load Balancer
+~~~~~~~~~~~~~
+
+- Fixed AWS ALB/ELB driver init method to instantiate nested connection object properly
+  [LIBCLOUD-936, GITHUB-1089]
+  (Anton Kozyrev) 
+
+Storage
+~~~~~~~
+
+- [CLOUDFILES] Update OpenStackSwiftConnection to work with auth version 3.0
+  [GITHUB-1068]
+  (Hakan Carlsson)
+
+- [CLOUDFILES] Add SSL URI support
+  [GITHUB-1076, LIBCLOUD-458]
+  (@ayleph)
+
+Changes in Apache Libcloud 2.1.0
+--------------------------------
 
 Common
 ~~~~~~
@@ -30,8 +205,12 @@ Common
 Compute
 ~~~~~~~
 
+- [OPENSTACK] Add support for Nova 2.x and Keystone 3
+  [GITHUB-1052]
+  (Anthony Shaw)
+
 - [GCE] Add loadBalancingScheme parameter for
- ex_create_forwarding_rule method in GCE driver.
+  ex_create_forwarding_rule method in GCE driver.
   [GITHUB-1079]
   (@sT331h0rs3)
 

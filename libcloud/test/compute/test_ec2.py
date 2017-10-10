@@ -282,6 +282,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['instance_type'], 't1.micro')
         self.assertEqual(node.extra['availability'], 'us-east-1b')
         self.assertEqual(node.extra['start'], '2013-06-18T12:07:53.161Z')
+        self.assertEqual(node.extra['end'], '2014-06-18T12:07:53.161Z')
         self.assertEqual(node.extra['duration'], 31536000)
         self.assertEqual(node.extra['usage_price'], 0.012)
         self.assertEqual(node.extra['fixed_price'], 23.0)
@@ -444,21 +445,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                 self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 67)
+                self.assertEqual(len(sizes), 72)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
                 self.assertTrue('x1.32xlarge' in ids)
             elif region_name == 'us-west-1':
-                self.assertEqual(len(sizes), 58)
-            if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 68)
-            elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 57)
-            elif region_name == 'ap-southeast-2':
                 self.assertEqual(len(sizes), 61)
+            if region_name == 'us-west-2':
+                self.assertEqual(len(sizes), 73)
+            elif region_name == 'ap-southeast-1':
+                self.assertEqual(len(sizes), 59)
+            elif region_name == 'ap-southeast-2':
+                self.assertEqual(len(sizes), 63)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 65)
+                self.assertEqual(len(sizes), 70)
             elif region_name == 'ap-south-1':
                 self.assertEqual(len(sizes), 41)
 
@@ -1526,10 +1527,6 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('modify_snapshot_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _idempotent_CreateTags(self, method, url, body, headers):
-        body = self.fixtures.load('create_tags.xml')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
     def _CreateVolume(self, method, url, body, headers):
         body = self.fixtures.load('create_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1740,10 +1737,6 @@ class EucMockHttp(EC2MockHttp):
     def _services_Eucalyptus_RunInstances(self, method, url, body,
                                           headers):
         return self._RunInstances(method, url, body, headers)
-
-    def _services_Eucalyptus_CreateTags(self, method, url, body,
-                                        headers):
-        return self._CreateTags(method, url, body, headers)
 
     def _services_Eucalyptus_DescribeInstanceTypes(self, method, url, body,
                                                    headers):

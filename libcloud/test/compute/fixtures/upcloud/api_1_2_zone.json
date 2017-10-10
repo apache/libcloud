@@ -1,0 +1,30 @@
+{
+   "zones" : {
+      "zone" : [
+         {
+            "description" : "Frankfurt #1",
+            "id" : "de-fra1"
+         },
+         {
+            "description" : "Helsinki #1",
+            "id" : "fi-hel1"
+         },
+         {
+            "description" : "Amsterdam #1",
+            "id" : "nl-ams1"
+         },
+         {
+            "description" : "Singapore #1",
+            "id" : "sg-sin1"
+         },
+         {
+            "description" : "London #1",
+            "id" : "uk-lon1"
+         },
+         {
+            "description" : "Chicago #1",
+            "id" : "us-chi1"
+         }
+      ]
+   }
+}

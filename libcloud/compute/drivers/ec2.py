@@ -333,6 +333,42 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'g3.4xlarge': {
+        'id': 'g3.4xlarge',
+        'name': 'Cluster GPU G3 Four Extra Large Instance',
+        'ram': GiB(122),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16,
+            'gpu': 1,
+            'gpu_ram': GiB(8)
+        }
+    },
+    'g3.8xlarge': {
+        'id': 'g3.8xlarge',
+        'name': 'Cluster GPU G3 Eight Extra Large Instance',
+        'ram': GiB(244),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32,
+            'gpu': 2,
+            'gpu_ram': GiB(16)
+        }
+    },
+    'g3.16xlarge': {
+        'id': 'g3.16xlarge',
+        'name': 'Cluster GPU G3 16 Extra Large Instance',
+        'ram': GiB(488),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64,
+            'gpu': 4,
+            'gpu_ram': GiB(32)
+        }
+    },
     'p2.xlarge': {
         'id': 'p2.xlarge',
         'name': 'Cluster GPU P2 Large Instance',
@@ -825,6 +861,26 @@ INSTANCE_TYPES = {
             'cpu': 8
         }
     },
+    'x1.16xlarge': {
+        'id': 'x1.16xlarge',
+        'name': 'Memory Optimized Sixteen Extra Large instance',
+        'ram': GiB(976),
+        'disk': 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
+    'x1e.32xlarge': {
+        'id': 'x1e.32xlarge',
+        'name': 'Memory Optimized ThirtyTwo E Extra Large instance',
+        'ram': GiB(3904),
+        'disk': 2 * 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 128
+        }
+    },
     'x1.32xlarge': {
         'id': 'x1.32xlarge',
         'name': 'Memory Optimized ThirtyTwo Extra Large instance',
@@ -880,6 +936,9 @@ REGION_DETAILS = {
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -912,7 +971,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Northern California) Region
@@ -944,6 +1005,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1023,6 +1087,9 @@ REGION_DETAILS = {
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -1055,7 +1122,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Oregon) Region
@@ -1087,6 +1156,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'p2.xlarge',
             'p2.8xlarge',
             'p2.16xlarge',
@@ -1132,7 +1204,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Ireland) Region
@@ -1164,6 +1238,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1206,7 +1283,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (London) Region
@@ -1276,7 +1355,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (London) Region
@@ -1399,7 +1480,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Mumbai, India) Region
@@ -1515,7 +1598,9 @@ REGION_DETAILS = {
             'r4.4xlarge',
             'r4.8xlarge',
             'r4.16xlarge',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -1588,7 +1673,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Seoul) Region
@@ -1639,7 +1726,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # South America (Sao Paulo) Region
@@ -1749,7 +1838,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Canada (Central) Region
@@ -1819,73 +1910,12 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
-    # Canada (Central) Region
-    'ca-central-1': {
-        'endpoint': 'ec2.ca-central-1.amazonaws.com',
-        'api_name': 'ec2_ca_central_1',
-        'country': 'Canada',
-        'signature_version': '4',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'cc2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'cg1.4xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'cr1.8xlarge',
-            'hs1.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
+    # GovCloud Region
     'us-gov-west-1': {
         'endpoint': 'ec2.us-gov-west-1.amazonaws.com',
         'api_name': 'ec2_us_govwest',
@@ -1914,6 +1944,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -2363,90 +2396,6 @@ OUTSCALE_SAS_REGION_DETAILS = {
     'us-east-1': {
         'endpoint': 'api.us-east-1.outscale.com',
         'api_name': 'osc_sas_us_east_1',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'p2.xlarge',
-            'p2.8xlarge',
-            'p2.16xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
         'country': 'USA',
         'instance_types': [
             't1.micro',
@@ -2986,6 +2935,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         'start': {
             'xpath': 'start',
+            'transform_func': str
+        },
+        'end': {
+            'xpath': 'end',
             'transform_func': str
         },
         'duration': {
@@ -3992,19 +3945,23 @@ class BaseEC2NodeDriver(NodeDriver):
             if subnet_id:
                 params['SubnetId'] = subnet_id
 
+        # Specify tags at instance creation time
+        tags = {'Name': kwargs['name']}
+        if 'ex_metadata' in kwargs:
+            tags.update(kwargs['ex_metadata'])
+        tagspec_root = 'TagSpecification.1.'
+        params[tagspec_root + 'ResourceType'] = 'instance'
+        tag_nr = 1
+        for k, v in tags.items():
+            tag_root = tagspec_root + 'Tag.%d.' % tag_nr
+            params[tag_root + 'Key'] = k
+            params[tag_root + 'Value'] = v
+            tag_nr += 1
+
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         for node in nodes:
-            tags = {'Name': kwargs['name']}
-            if 'ex_metadata' in kwargs:
-                tags.update(kwargs['ex_metadata'])
-
-            try:
-                self.ex_create_tags(resource=node, tags=tags)
-            except Exception:
-                continue
-
             node.name = kwargs['name']
             node.extra.update({'tags': tags})
 

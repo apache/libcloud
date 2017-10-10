@@ -1,0 +1,22 @@
+{
+  "value": [
+    {
+      "properties": {
+        "accountType": "Standard_LRS",
+        "osType": "Linux",
+        "creationData": {
+          "createOption": "Empty"
+        },
+        "diskSizeGB": 10,
+        "timeCreated": "2017-03-09T10:08:42.6418313+00:00",
+        "provisioningState": "Succeeded",
+        "diskState": "Unattached"
+      },
+      "type": "Microsoft.Compute/disks",
+      "location": "eastus",
+      "tags": {},
+      "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/111111/providers/Microsoft.Compute/disks/test-disk-3",
+      "name": "test-disk-3"
+    }
+  ]
+}

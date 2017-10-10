@@ -55,16 +55,6 @@ from libcloud.backup.providers import get_driver as get_backup_driver
 from libcloud.backup.providers import DRIVERS as BACKUP_DRIVERS
 from libcloud.backup.types import Provider as BackupProvider
 
-REQUIRED_DEPENDENCIES = [
-    'pysphere'
-]
-
-for dependency in REQUIRED_DEPENDENCIES:
-    try:
-        __import__(dependency)
-    except ImportError:
-        msg = 'Missing required dependency: %s' % (dependency)
-        raise ImportError(msg)
 
 HEADER = ('.. NOTE: This file has been generated automatically using '
           'generate_provider_feature_matrix_table.py script, don\'t manually '
@@ -215,7 +205,6 @@ FRIENDLY_METHODS_NAMES = {
 
 IGNORED_PROVIDERS = [
     'dummy',
-    'local',
 
     # Deprecated constants
     'cloudsigma_us',
@@ -274,9 +263,9 @@ def generate_providers_table(api):
 
         try:
             cls = get_driver_method(enum)
-        except Exception:
+        except Exception as e:
             # Deprecated providers throw an exception
-            print('Ignoring deprecated constant "%s"' % (enum))
+            print('Ignoring deprecated constant "%s": %s' % (enum, str(e)))
             continue
 
         # Hack for providers which expose multiple classes and support multiple
@@ -299,9 +288,9 @@ def generate_providers_table(api):
             continue
 
         driver_methods = dict(inspect.getmembers(cls,
-                                                 predicate=inspect.ismethod))
+                                                 predicate=inspect.isfunction))
         base_methods = dict(inspect.getmembers(driver,
-                                               predicate=inspect.ismethod))
+                                               predicate=inspect.isfunction))
         base_api_methods = BASE_API_METHODS[api]
 
         result[name] = {'name': cls.name, 'website': cls.website,
@@ -318,8 +307,8 @@ def generate_providers_table(api):
                 features = getattr(cls, 'features', {}).get('create_node', [])
                 is_implemented = len(features) >= 1
             else:
-                is_implemented = (id(driver_method.im_func) !=
-                                  id(base_method.im_func))
+                is_implemented = (id(driver_method) !=
+                                  id(base_method))
 
             result[name]['methods'][method_name] = is_implemented
 
@@ -414,6 +403,8 @@ def generate_supported_providers_table(api, provider_matrix):
             else None
 
         if supported_regions:
+            # Sort the regions to achieve stable output
+            supported_regions = sorted(supported_regions)
             supported_regions = ', '.join(supported_regions)
         else:
             supported_regions = 'single region driver'

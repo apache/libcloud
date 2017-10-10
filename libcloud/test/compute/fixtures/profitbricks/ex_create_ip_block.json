@@ -1,7 +1,7 @@
 {
     "id": "ipb-1",
     "type": "ipblock",
-    "href": "/cloudapi/v3/ipblocks/ipb-1",
+    "href": "/cloudapi/v4/ipblocks/ipb-1",
     "metadata": {
         "createdDate": "2016-10-26T15:05:36Z",
         "createdBy": "test@test.te",
@@ -15,8 +15,8 @@
             "11.12.13.14",
             "15.16.17.18"
         ],
-        "location": "de/fkb",
+        "location": "us/las",
         "size": 2,
-        "name": "Test Created IP Block"
+        "name": "libcloud Test"
     }
 }
