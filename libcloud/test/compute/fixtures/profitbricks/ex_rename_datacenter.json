@@ -1,7 +1,7 @@
 {
     "id": "dc-1",
     "type": "datacenter",
-    "href": "/cloudapi/v3/datacenters/dc-1",
+    "href": "/cloudapi/v4/datacenters/dc-1",
     "metadata" : {
         "createdDate": "2016-10-17T11:33:11Z",
         "createdBy": "test@test.test",
@@ -11,9 +11,9 @@
         "state" : "BUSY"
     },
     "properties" : {
-        "name": "Test Data Center",
-        "description": "This is a test data center.",
-        "location": "de/fkb",
+        "name": "libcloud Test - RENAME",
+        "description": "libcloud test datacenter",
+        "location": "us/las",
         "version": 35,
         "features": [
             "SSD",
@@ -24,23 +24,23 @@
         "servers" : {
             "id": "dc-1/servers",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers"
+            "href": "/cloudapi/v4/datacenters/dc-1/servers"
         },
         "volumes" : {
             "id": "dc-1/volumes",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/volumes"
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes"
         },
         "loadbalancers" : {
             "id": "dc-1/loadbalancers",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/loadbalancers",
+            "href": "/cloudapi/v4/datacenters/dc-1/loadbalancers",
             "items": []
         },
         "lans" : {
             "id": "dc-1/lans",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/lans"
+            "href": "/cloudapi/v4/datacenters/dc-1/lans"
         }
     }
 }

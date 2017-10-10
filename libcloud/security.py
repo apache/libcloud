@@ -20,7 +20,7 @@ Usage:
     libcloud.security.VERIFY_SSL_CERT = True
 
     # Optional.
-    libcloud.security.CA_CERTS_PATH.append('/path/to/cacert.txt')
+    libcloud.security.CA_CERTS_PATH = '/path/to/certfile'
 """
 
 import os
@@ -71,7 +71,7 @@ if environment_cert_file is not None:
 
     # If a provided file exists we ignore other common paths because we
     # don't want to fall-back to a potentially less restrictive bundle
-    CA_CERTS_PATH = [environment_cert_file]
+    CA_CERTS_PATH = environment_cert_file
 
 CA_CERTS_UNAVAILABLE_ERROR_MSG = (
     'No CA Certificates were found in CA_CERTS_PATH. For information on '

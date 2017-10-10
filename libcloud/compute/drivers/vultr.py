@@ -316,7 +316,6 @@ class VultrNodeDriver(NodeDriver):
                 created_node = [n for n in nodes if n.id == subid][0]
             except IndexError:
                 time.sleep(1)
-                pass
             else:
                 break
 

@@ -536,23 +536,12 @@ class AzureNodeDriver(NodeDriver):
                  "/Microsoft.Compute/virtualMachines/%s" % \
                  (self.subscription_id, ex_resource_group, name)
 
-        def _get_instance_vhd():
-            n = 0
-            while True:
-                try:
-                    instance_vhd = "https://%s.blob%s" \
-                                   "/%s/%s-os_%i.vhd" \
-                                   % (ex_storage_account,
-                                      self.connection.storage_suffix,
-                                      ex_blob_container,
-                                      name,
-                                      n)
-                    self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-                    return instance_vhd
-                except LibcloudError:
-                    n += 1
-
         if isinstance(image, AzureVhdImage):
+            instance_vhd = self._get_instance_vhd(
+                name=name,
+                ex_resource_group=ex_resource_group,
+                ex_storage_account=ex_storage_account,
+                ex_blob_container=ex_blob_container)
             storage_profile = {
                 "osDisk": {
                     "name": name,
@@ -563,7 +552,7 @@ class AzureNodeDriver(NodeDriver):
                         "uri": image.id
                     },
                     "vhd": {
-                        "uri": _get_instance_vhd(),
+                        "uri": instance_vhd,
                     }
                 }
             }
@@ -591,8 +580,13 @@ class AzureNodeDriver(NodeDriver):
                     "storageAccountType": ex_storage_account_type
                 }
             else:
+                instance_vhd = self._get_instance_vhd(
+                    name=name,
+                    ex_resource_group=ex_resource_group,
+                    ex_storage_account=ex_storage_account,
+                    ex_blob_container=ex_blob_container)
                 storage_profile["osDisk"]["vhd"] = {
-                    "uri": _get_instance_vhd()
+                    "uri": instance_vhd
                 }
         else:
             raise LibcloudError(
@@ -631,7 +625,7 @@ class AzureNodeDriver(NodeDriver):
 
         if isinstance(auth, NodeAuthSSHKey):
             data["properties"]["osProfile"]["adminPassword"] = \
-                binascii.hexlify(os.urandom(20))
+                binascii.hexlify(os.urandom(20)).decode("utf-8")
             data["properties"]["osProfile"]["linuxConfiguration"] = {
                 "disablePasswordAuthentication": "true",
                 "ssh": {
@@ -703,12 +697,18 @@ class AzureNodeDriver(NodeDriver):
         this node (default True).
         :type node: ``bool``
 
-        :return: True if the destroy was successful, False otherwise.
+        :return: True if the destroy was successful, raises exception
+        otherwise.
         :rtype: ``bool``
         """
 
+        do_node_polling = True
+
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
+        # If returns 404, we may be retrying a previous destroy_node call that
+        # failed to clean up its related resources, so it isn't taken as a
+        # failure.
         try:
             self.connection.request(node.id,
                                     params={"api-version": "2015-06-15"},
@@ -716,11 +716,14 @@ class AzureNodeDriver(NodeDriver):
         except BaseHTTPError as h:
             if h.code == 202:
                 pass
+            elif h.code == 404:
+                # No need to ask again, node already down.
+                do_node_polling = False
             else:
-                return False
+                raise
 
         # Need to poll until the node actually goes away.
-        while True:
+        while do_node_polling:
             try:
                 time.sleep(10)
                 self.connection.request(
@@ -730,7 +733,7 @@ class AzureNodeDriver(NodeDriver):
                 if h.code == 404:
                     break
                 else:
-                    return False
+                    raise
 
         # Optionally clean up the network
         # interfaces that were attached to this node.
@@ -746,13 +749,13 @@ class AzureNodeDriver(NodeDriver):
                             method='DELETE')
                         break
                     except BaseHTTPError as h:
-                        if h.code == 202:
+                        if h.code == 202 or h.code == 404:
                             break
                         inuse = h.message.startswith("[NicInUse]")
                         if h.code == 400 and inuse:
                             time.sleep(10)
                         else:
-                            return False
+                            raise
 
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
@@ -1415,10 +1418,11 @@ class AzureNodeDriver(NodeDriver):
         :type location: :class:`.NodeLocation`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
@@ -1448,10 +1452,11 @@ class AzureNodeDriver(NodeDriver):
         :type location: :class:`.NodeLocation`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
@@ -1516,7 +1521,9 @@ class AzureNodeDriver(NodeDriver):
             action = "/subscriptions/%s/resourceGroups/%s/providers" \
                      "/Microsoft.Network/networkInterfaces" % \
                      (self.subscription_id, resource_group)
-        r = self.connection.request(action, params={"api-version": NIC_API_VERSION})
+        r = self.connection.request(
+            action,
+            params={"api-version": NIC_API_VERSION})
         return [self._to_nic(net) for net in r.object["value"]]
 
     def ex_get_nic(self, id):
@@ -1614,7 +1621,8 @@ class AzureNodeDriver(NodeDriver):
                                     params={"api-version": "2015-06-15"})
         return [self._to_ip_address(net) for net in r.object["value"]]
 
-    def ex_create_public_ip(self, name, resource_group, location=None):
+    def ex_create_public_ip(self, name, resource_group, location=None,
+                            public_ip_allocation_method=None):
         """
         Create a public IP resources.
 
@@ -1628,14 +1636,20 @@ class AzureNodeDriver(NodeDriver):
         (if None, use default location specified as 'region' in __init__)
         :type location: :class:`.NodeLocation`
 
+        :param public_ip_allocation_method: Call ex_create_public_ip with
+        public_ip_allocation_method="Static" to create a static public
+        IP address
+        :type public_ip_allocation_method: ``str``
+
         :return: The newly created public ip object
         :rtype: :class:`.AzureIPAddress`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/publicIPAddresses/%s" \
@@ -1647,6 +1661,10 @@ class AzureNodeDriver(NodeDriver):
                 "publicIPAllocationMethod": "Dynamic"
             }
         }
+
+        if public_ip_allocation_method == "Static":
+            data['properties']['publicIPAllocationMethod'] = "Static"
+
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     data=data,
@@ -1780,7 +1798,7 @@ class AzureNodeDriver(NodeDriver):
         if deallocate:
             target = "%s/deallocate" % node.id
         else:
-            target = "%s/stop" % node.id
+            target = "%s/powerOff" % node.id
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
                                     method='POST')
@@ -1944,7 +1962,7 @@ class AzureNodeDriver(NodeDriver):
             r = self.connection.request(action,
                                         params={"api-version": "2015-06-15"})
             for status in r.object["statuses"]:
-                if status["code"] == "ProvisioningState/creating":
+                if status["code"] in ["ProvisioningState/creating"]:
                     state = NodeState.PENDING
                     break
                 elif status["code"] == "ProvisioningState/deleting":
@@ -1961,6 +1979,9 @@ class AzureNodeDriver(NodeDriver):
 
                 if status["code"] == "PowerState/deallocated":
                     state = NodeState.STOPPED
+                    break
+                elif status["code"] == "PowerState/stopped":
+                    state = NodeState.PAUSED
                     break
                 elif status["code"] == "PowerState/deallocating":
                     state = NodeState.PENDING
@@ -2007,6 +2028,23 @@ class AzureNodeDriver(NodeDriver):
         loc_id = loc.lower().replace(" ", "")
         return NodeLocation(loc_id, loc, self._location_to_country.get(loc_id),
                             self.connection.driver)
+
+    def _get_instance_vhd(self, name, ex_resource_group, ex_storage_account,
+                          ex_blob_container="vhds"):
+        n = 0
+        while True:
+            try:
+                instance_vhd = "https://%s.blob%s" \
+                               "/%s/%s-os_%i.vhd" \
+                               % (ex_storage_account,
+                                  self.connection.storage_suffix,
+                                  ex_blob_container,
+                                  name,
+                                  n)
+                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
+                return instance_vhd
+            except LibcloudError:
+                n += 1
 
 
 def _split_blob_uri(uri):

@@ -1,0 +1,38 @@
+{
+  "value": [
+    {
+      "properties": {
+        "accountType": "Standard_LRS",
+        "creationData": {
+          "createOption": "Copy",
+          "sourceUri": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/111111/providers/Microsoft.Compute/disks/test-disk-3"
+        },
+        "diskSizeGB": 2,
+        "timeCreated": "2017-02-02T17:52:44.4557501+00:00",
+        "provisioningState": "Failed",
+        "diskState": "Unattached"
+      },
+      "type": "Microsoft.Compute/snapshots",
+      "location": "eastus",
+      "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/111111/providers/Microsoft.Compute/snapshots/test-snap-3",
+      "name": "test-snap-3"
+    },
+    {
+      "properties": {
+        "accountType": "Standard_LRS",
+        "creationData": {
+          "createOption": "Copy",
+          "sourceUri": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/111111/providers/Microsoft.Compute/disks/test-disk-4"
+        },
+        "diskSizeGB": 2,
+        "timeCreated": "2017-02-02T17:52:50.0027361+00:00",
+        "provisioningState": "Failed",
+        "diskState": "Unattached"
+      },
+      "type": "Microsoft.Compute/snapshots",
+      "location": "eastus",
+      "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/111111/providers/Microsoft.Compute/snapshots/test-snap-4",
+      "name": "test-snap-4"
+    }
+  ]
+}
