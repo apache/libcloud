@@ -360,7 +360,7 @@ class AzureNodeDriver(NodeDriver):
                                  ex_offer, ex_sku, ex_version)
             return i[0] if i else None
 
-    def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True, ex_fetch_status=True):
+    def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True, ex_fetch_power_state=True):
         """
         List all nodes.
 
@@ -368,10 +368,13 @@ class AzureNodeDriver(NodeDriver):
         :type ex_urn: ``str``
 
         :param ex_fetch_nic: Fetch NIC resources in order to get
-        IP address information for nodes (requires extra API calls).
+        IP address information for nodes.  If True, requires an extra API call
+        for each NIC of each node.  If False, IP addresses will not be returned.
         :type ex_urn: ``bool``
 
-        :param ex_fetch_status: Fetch node instance status (requires extra API calls).
+        :param ex_fetch_power_state: Fetch node power state.  If True, requires
+        an extra API call for each node.  If False, node state
+        will be returned based on provisioning state only.
         :type ex_urn: ``bool``
 
         :return:  list of node objects
@@ -388,7 +391,7 @@ class AzureNodeDriver(NodeDriver):
                      % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
-        return [self._to_node(n, fetch_nic=ex_fetch_nic, fetch_status=ex_fetch_status)
+        return [self._to_node(n, fetch_nic=ex_fetch_nic, fetch_power_state=ex_fetch_power_state)
                 for n in r.object["value"]]
 
     def create_node(self,
@@ -1953,7 +1956,44 @@ class AzureNodeDriver(NodeDriver):
         kwargs["cloud_environment"] = self.cloud_environment
         return kwargs
 
-    def _to_node(self, data, fetch_nic=True, fetch_status=True):
+    def _fetch_power_state(self, data):
+        state = NodeState.UNKNOWN
+        try:
+            action = "%s/InstanceView" % (data["id"])
+            r = self.connection.request(action,
+                                        params={"api-version": "2015-06-15"})
+            for status in r.object["statuses"]:
+                if status["code"] in ["ProvisioningState/creating"]:
+                    state = NodeState.PENDING
+                    break
+                elif status["code"] == "ProvisioningState/deleting":
+                    state = NodeState.TERMINATED
+                    break
+                elif status["code"].startswith("ProvisioningState/failed"):
+                    state = NodeState.ERROR
+                    break
+                elif status["code"] == "ProvisioningState/updating":
+                    state = NodeState.UPDATING
+                    break
+                elif status["code"] == "ProvisioningState/succeeded":
+                    pass
+
+                if status["code"] == "PowerState/deallocated":
+                    state = NodeState.STOPPED
+                    break
+                elif status["code"] == "PowerState/stopped":
+                    state = NodeState.PAUSED
+                    break
+                elif status["code"] == "PowerState/deallocating":
+                    state = NodeState.PENDING
+                    break
+                elif status["code"] == "PowerState/running":
+                    state = NodeState.RUNNING
+        except BaseHTTPError:
+            pass
+        return state
+
+    def _to_node(self, data, fetch_nic=True, fetch_power_state=True):
         private_ips = []
         public_ips = []
         nics = data["properties"]["networkProfile"]["networkInterfaces"]
@@ -1976,40 +2016,19 @@ class AzureNodeDriver(NodeDriver):
                     pass
 
         state = NodeState.UNKNOWN
-        if fetch_status:
-            try:
-                action = "%s/InstanceView" % (data["id"])
-                r = self.connection.request(action,
-                                            params={"api-version": "2015-06-15"})
-                for status in r.object["statuses"]:
-                    if status["code"] in ["ProvisioningState/creating"]:
-                        state = NodeState.PENDING
-                        break
-                    elif status["code"] == "ProvisioningState/deleting":
-                        state = NodeState.TERMINATED
-                        break
-                    elif status["code"].startswith("ProvisioningState/failed"):
-                        state = NodeState.ERROR
-                        break
-                    elif status["code"] == "ProvisioningState/updating":
-                        state = NodeState.UPDATING
-                        break
-                    elif status["code"] == "ProvisioningState/succeeded":
-                        pass
-
-                    if status["code"] == "PowerState/deallocated":
-                        state = NodeState.STOPPED
-                        break
-                    elif status["code"] == "PowerState/stopped":
-                        state = NodeState.PAUSED
-                        break
-                    elif status["code"] == "PowerState/deallocating":
-                        state = NodeState.PENDING
-                        break
-                    elif status["code"] == "PowerState/running":
-                        state = NodeState.RUNNING
-            except BaseHTTPError:
-                pass
+        if fetch_power_state:
+            state = self._fetch_power_state(data)
+        else:
+            if data["provisioningState"] == "creating":
+                state = NodeState.PENDING
+            elif data["provisioningState"] == "deleting":
+                state = NodeState.TERMINATED
+            elif data["provisioningState"] == "failed":
+                state = NodeState.ERROR
+            elif data["provisioningState"] == "updating":
+                state = NodeState.UPDATING
+            elif data["provisioningState"] == "succeeded":
+                state = NodeState.RUNNING
 
         node = Node(data["id"],
                     data["name"],
