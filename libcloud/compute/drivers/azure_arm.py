@@ -695,12 +695,18 @@ class AzureNodeDriver(NodeDriver):
         this node (default True).
         :type node: ``bool``
 
-        :return: True if the destroy was successful, False otherwise.
+        :return: True if the destroy was successful, raises exception
+        otherwise.
         :rtype: ``bool``
         """
 
+        do_node_polling = True
+
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
+        # If returns 404, we may be retrying a previous destroy_node call that
+        # failed to clean up its related resources, so it isn't taken as a
+        # failure.
         try:
             self.connection.request(node.id,
                                     params={"api-version": "2015-06-15"},
@@ -708,11 +714,14 @@ class AzureNodeDriver(NodeDriver):
         except BaseHTTPError as h:
             if h.code == 202:
                 pass
+            elif h.code == 404:
+                # No need to ask again, node already down.
+                do_node_polling = False
             else:
-                return False
+                raise
 
         # Need to poll until the node actually goes away.
-        while True:
+        while do_node_polling:
             try:
                 time.sleep(10)
                 self.connection.request(
@@ -722,7 +731,7 @@ class AzureNodeDriver(NodeDriver):
                 if h.code == 404:
                     break
                 else:
-                    return False
+                    raise
 
         # Optionally clean up the network
         # interfaces that were attached to this node.
@@ -738,13 +747,13 @@ class AzureNodeDriver(NodeDriver):
                             method='DELETE')
                         break
                     except BaseHTTPError as h:
-                        if h.code == 202:
+                        if h.code == 202 or h.code == 404:
                             break
                         inuse = h.message.startswith("[NicInUse]")
                         if h.code == 400 and inuse:
                             time.sleep(10)
                         else:
-                            return False
+                            raise
 
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
