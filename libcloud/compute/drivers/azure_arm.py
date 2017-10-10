@@ -41,10 +41,7 @@ from libcloud.utils import iso8601
 
 
 RESOURCE_API_VERSION = '2016-04-30-preview'
-<<<<<<< HEAD
 NIC_API_VERSION = '2016-09-01'
-=======
->>>>>>> 7d442a1ab2b2ac37be0a081a589e35730737ca6e
 
 
 class AzureImage(NodeImage):
@@ -748,7 +745,7 @@ class AzureNodeDriver(NodeDriver):
                     try:
                         self.connection.request(
                             nic["id"],
-                            params={"api-version": RESOURCE_API_VERSION},
+                            params={"api-version": NIC_API_VERSION},
                             method='DELETE')
                         break
                     except BaseHTTPError as h:
@@ -1526,7 +1523,7 @@ class AzureNodeDriver(NodeDriver):
                      (self.subscription_id, resource_group)
         r = self.connection.request(
             action,
-            params={"api-version": RESOURCE_API_VERSION})
+            params={"api-version": NIC_API_VERSION})
         return [self._to_nic(net) for net in r.object["value"]]
 
     def ex_get_nic(self, id):
