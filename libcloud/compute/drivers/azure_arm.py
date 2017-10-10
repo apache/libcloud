@@ -360,7 +360,9 @@ class AzureNodeDriver(NodeDriver):
                                  ex_offer, ex_sku, ex_version)
             return i[0] if i else None
 
-    def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True, ex_fetch_power_state=True):
+    def list_nodes(self, ex_resource_group=None,
+                   ex_fetch_nic=True,
+                   ex_fetch_power_state=True):
         """
         List all nodes.
 
@@ -368,8 +370,9 @@ class AzureNodeDriver(NodeDriver):
         :type ex_urn: ``str``
 
         :param ex_fetch_nic: Fetch NIC resources in order to get
-        IP address information for nodes.  If True, requires an extra API call
-        for each NIC of each node.  If False, IP addresses will not be returned.
+        IP address information for nodes.  If True, requires an extra API
+        call for each NIC of each node.  If False, IP addresses will not
+        be returned.
         :type ex_urn: ``bool``
 
         :param ex_fetch_power_state: Fetch node power state.  If True, requires
@@ -391,7 +394,9 @@ class AzureNodeDriver(NodeDriver):
                      % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
-        return [self._to_node(n, fetch_nic=ex_fetch_nic, fetch_power_state=ex_fetch_power_state)
+        return [self._to_node(n,
+                              fetch_nic=ex_fetch_nic,
+                              fetch_power_state=ex_fetch_power_state)
                 for n in r.object["value"]]
 
     def create_node(self,
@@ -1998,15 +2003,16 @@ class AzureNodeDriver(NodeDriver):
         if fetch_power_state:
             state = self._fetch_power_state(data)
         else:
-            if data["provisioningState"] == "creating":
+            ps = data["properties"]["provisioningState"]
+            if ps == "creating":
                 state = NodeState.PENDING
-            elif data["provisioningState"] == "deleting":
+            elif ps == "deleting":
                 state = NodeState.TERMINATED
-            elif data["provisioningState"] == "failed":
+            elif ps == "failed":
                 state = NodeState.ERROR
-            elif data["provisioningState"] == "updating":
+            elif ps == "updating":
                 state = NodeState.UPDATING
-            elif data["provisioningState"] == "succeeded":
+            elif ps == "succeeded":
                 state = NodeState.RUNNING
 
         node = Node(data["id"],
