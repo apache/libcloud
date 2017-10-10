@@ -13,7 +13,7 @@ Common
 Compute
 ~~~~~~~
 
-- New driver for UpCloud (LIBCLOUD-938, LIBCLOUD-951, LIBCLOUD-952, GITHUB-1102, GITHUB-1123, GITHUB-1124)
+- [UpCloud] New driver for UpCloud (LIBCLOUD-938, GITHUB-1102)
   [Mika Lackman, Ilari Mäkelä]
 
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
@@ -42,6 +42,15 @@ Compute
 
 - [ARM] Fix API call on powerOff, understand PAUSED state (GITHUB-1003)
   [Markos Gogoulos]
+
+- [UpCloud] Use disk size and storage tier also when creating node from template
+  (LIBCLOUD-952, GITHUB-1124)
+  [Mika Lackman]
+
+- [UpCloud] Allow to define hostname and username
+  (LIBCLOUD-951, LIBCLOUD-953, GITHUB-1123, GITHUB-1125)
+  [Mika Lackman]
+
 
 Changes in Apache Libcloud 2.2.1
 --------------------------------
