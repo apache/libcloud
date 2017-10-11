@@ -957,7 +957,7 @@ class AzureNodeDriver(NodeDriver):
                 for net in r.object["value"]]
 
     def ex_create_network_security_group(self, name, resource_group,
-                                         location=None):
+                                         location=None, securityRules=[]):
         """
         Update tags on any resource supporting tags.
 
@@ -973,21 +973,29 @@ class AzureNodeDriver(NodeDriver):
         :type location: :class:`.NodeLocation`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
                  % (self.subscription_id, resource_group, name)
         data = {
             "location": location.id,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "securityRules": securityRules
+            }
         }
-        self.connection.request(target,
-                                params={"api-version": "2016-09-01"},
+        r = self.connection.request(target,
+                                params={"api-version": "2017-09-01"},
                                 data=data,
                                 method='PUT')
+
+        return AzureNetworkSecurityGroup(r.object["id"], r.object["name"],
+                            r.object["location"], r.object["properties"])
 
     def ex_delete_network_security_group(self, name, resource_group,
                                          location=None):
@@ -1208,7 +1216,7 @@ class AzureNodeDriver(NodeDriver):
         return self._to_ip_address(r.object)
 
     def ex_create_network_interface(self, name, subnet, resource_group,
-                                    location=None, public_ip=None):
+                                    location=None, public_ip=None, networkSecurityGroup=""):
         """
         Create a virtual network interface (NIC).
 
@@ -1248,7 +1256,8 @@ class AzureNodeDriver(NodeDriver):
             "tags": {},
             "properties": {
                 "ipConfigurations": [{
-                    "name": "myip1",
+                    "name": name,
+                    "networkSecurityGroup": networkSecurityGroup,
                     "properties": {
                         "subnet": {
                             "id": subnet.id
@@ -1258,12 +1267,6 @@ class AzureNodeDriver(NodeDriver):
                 }]
             }
         }
-
-        if public_ip:
-            ip_config = data["properties"]["ipConfigurations"][0]
-            ip_config["properties"]["publicIPAddress"] = {
-                "id": public_ip.id
-            }
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
