@@ -1976,7 +1976,6 @@ class AzureNodeDriver(NodeDriver):
             pass
         return state
 
-
     def _to_node(self, data, fetch_nic=True, fetch_power_state=True):
         private_ips = []
         public_ips = []
