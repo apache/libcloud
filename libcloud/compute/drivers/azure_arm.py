@@ -747,7 +747,7 @@ class AzureNodeDriver(NodeDriver):
                         break
                     except BaseHTTPError as h:
                         if (h.code == 400 and
-                            h.message.startswith("[NicInUse]")):
+                                h.message.startswith("[NicInUse]")):
                             time.sleep(10)
                         else:
                             raise
