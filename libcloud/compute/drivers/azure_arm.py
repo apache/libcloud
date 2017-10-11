@@ -714,8 +714,8 @@ class AzureNodeDriver(NodeDriver):
         except BaseHTTPError as h:
             if h.code == 202:
                 pass
-            elif h.code == 404:
-                # No need to ask again, node already down.
+            elif h.code == 204:
+                # Returns 204 if node already deleted.
                 do_node_polling = False
             else:
                 raise
@@ -741,13 +741,10 @@ class AzureNodeDriver(NodeDriver):
             for nic in interfaces:
                 while True:
                     try:
-                        self.connection.request(
-                            nic["id"],
-                            params={"api-version": RESOURCE_API_VERSION},
-                            method='DELETE')
+                        self.ex_destroy_nic(self._to_nic(nic))
                         break
                     except BaseHTTPError as h:
-                        if h.code == 202 or h.code == 404:
+                        if h.code in (202, 204):
                             break
                         inuse = h.message.startswith("[NicInUse]")
                         if h.code == 400 and inuse:
@@ -1521,7 +1518,7 @@ class AzureNodeDriver(NodeDriver):
                      (self.subscription_id, resource_group)
         r = self.connection.request(
             action,
-            params={"api-version": RESOURCE_API_VERSION})
+            params={"api-version": "2015-06-15"})
         return [self._to_nic(net) for net in r.object["value"]]
 
     def ex_get_nic(self, id):
@@ -1537,6 +1534,23 @@ class AzureNodeDriver(NodeDriver):
 
         r = self.connection.request(id, params={"api-version": "2015-06-15"})
         return self._to_nic(r.object)
+
+    def ex_destroy_nic(self, nic):
+        """
+        Destroy a NIC.
+
+        :param id: The NIC to destroy.
+        :type id: ``.AzureNic``
+
+        :return: True on success
+        :rtype: ``bool``
+        """
+
+        self.connection.request(
+            nic.id,
+            params={"api-version": "2015-06-15"},
+            method='DELETE')
+        return True
 
     def ex_get_node(self, id):
         """
