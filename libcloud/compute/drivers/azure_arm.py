@@ -700,7 +700,7 @@ class AzureNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        do_node_polling = True
+        do_node_polling = (ex_destroy_nic or ex_destroy_vhd)
 
         # This returns a 202 (Accepted) which means that the delete happens
         # asynchronously.
@@ -714,13 +714,14 @@ class AzureNodeDriver(NodeDriver):
         except BaseHTTPError as h:
             if h.code == 202:
                 pass
-            elif h.code == 404:
-                # No need to ask again, node already down.
+            elif h.code == 204:
+                # Returns 204 if node already deleted.
                 do_node_polling = False
             else:
                 raise
 
-        # Need to poll until the node actually goes away.
+        # Poll until the node actually goes away (otherwise attempt to delete
+        # NIC and VHD will fail with "resource in use" errors).
         while do_node_polling:
             try:
                 time.sleep(10)
@@ -728,7 +729,8 @@ class AzureNodeDriver(NodeDriver):
                     node.id,
                     params={"api-version": RESOURCE_API_VERSION})
             except BaseHTTPError as h:
-                if h.code == 404:
+                if h.code in (204, 404):
+                    # Node is gone
                     break
                 else:
                     raise
@@ -741,16 +743,11 @@ class AzureNodeDriver(NodeDriver):
             for nic in interfaces:
                 while True:
                     try:
-                        self.connection.request(
-                            nic["id"],
-                            params={"api-version": RESOURCE_API_VERSION},
-                            method='DELETE')
+                        self.ex_destroy_nic(self._to_nic(nic))
                         break
                     except BaseHTTPError as h:
-                        if h.code == 202 or h.code == 404:
-                            break
-                        inuse = h.message.startswith("[NicInUse]")
-                        if h.code == 400 and inuse:
+                        if (h.code == 400 and
+                                h.message.startswith("[NicInUse]")):
                             time.sleep(10)
                         else:
                             raise
@@ -1521,7 +1518,7 @@ class AzureNodeDriver(NodeDriver):
                      (self.subscription_id, resource_group)
         r = self.connection.request(
             action,
-            params={"api-version": RESOURCE_API_VERSION})
+            params={"api-version": "2015-06-15"})
         return [self._to_nic(net) for net in r.object["value"]]
 
     def ex_get_nic(self, id):
@@ -1537,6 +1534,31 @@ class AzureNodeDriver(NodeDriver):
 
         r = self.connection.request(id, params={"api-version": "2015-06-15"})
         return self._to_nic(r.object)
+
+    def ex_destroy_nic(self, nic):
+        """
+        Destroy a NIC.
+
+        :param id: The NIC to destroy.
+        :type id: ``.AzureNic``
+
+        :return: True on success
+        :rtype: ``bool``
+        """
+
+        try:
+            self.connection.request(
+                nic.id,
+                params={"api-version": "2015-06-15"},
+                method='DELETE')
+            return True
+        except BaseHTTPError as h:
+            if h.code in (202, 204):
+                # Deletion is accepted (but deferred), or NIC is already
+                # deleted
+                return True
+            else:
+                raise
 
     def ex_get_node(self, id):
         """
@@ -2009,8 +2031,8 @@ class AzureNodeDriver(NodeDriver):
                                "maxDataDiskCount": data["maxDataDiskCount"]})
 
     def _to_nic(self, data):
-        return AzureNic(data["id"], data["name"], data["location"],
-                        data["properties"])
+        return AzureNic(data["id"], data.get("name"), data.get("location"),
+                        data.get("properties"))
 
     def _to_ip_address(self, data):
         return AzureIPAddress(data["id"], data["name"], data["properties"])
