@@ -141,7 +141,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         AzureMockHttp.responses = [
             # OK to the DELETE request
             lambda f: (httplib.OK, None, {}, 'OK'),
-            # 404 means node destroyed successfully
+            # 404 means node is gone
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
         ]
         ret = self.driver.destroy_node(node)
@@ -151,15 +151,15 @@ class AzureNodeDriverTests(LibcloudTestCase):
         """
         This simulates the case when destroy_node is being called for the 2nd
         time because some related resource failed to clean up, so the DELETE
-        operation on the node will return 404 (because it was already deleted)
+        operation on the node will return 204 (because it was already deleted)
         but the method should return success.
         """
         def error(e, **kwargs):
             raise e(**kwargs)
         node = self.driver.list_nodes()[0]
         AzureMockHttp.responses = [
-            # 404 (Not Found) to the DELETE request
-            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+            # 204 (No content) to the DELETE request on a deleted/non-existent node
+            lambda f: error(BaseHTTPError, code=204, message='No content'),
         ]
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
@@ -172,7 +172,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         AzureMockHttp.responses = [
             # 202 - The delete will happen asynchronously
             lambda f: error(BaseHTTPError, code=202, message='Deleting'),
-            # 404 means node destroyed successfully
+            # 404 means node is gone
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
         ]
         ret = self.driver.destroy_node(node)
@@ -186,7 +186,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         AzureMockHttp.responses = [
             # OK to the DELETE request
             lambda f: (httplib.OK, None, {}, 'OK'),
-            # 404 means node destroyed successfully
+            # 404 means node is gone
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
             # 500 - transient error when trying to clean up the NIC
             lambda f: error(BaseHTTPError, code=500, message="Cloud weather"),

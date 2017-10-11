@@ -55,6 +55,9 @@ Compute
   (GITHUB-1120)
   [Lucas Di Pentima]
 
+- [ARM] Fix api version used to list and delete NICs (GITHUB-1128)
+  [Peter Amstutz]
+
 
 Changes in Apache Libcloud 2.2.1
 --------------------------------
