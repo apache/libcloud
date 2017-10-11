@@ -75,6 +75,8 @@ class BaseEC2Tests(LibcloudTestCase):
         unsupported_regions = list()
 
         for region in VALID_EC2_REGIONS:
+            if region in ['cn-north-1']:
+                continue  # pricing not available
             driver = EC2NodeDriver(*EC2_PARAMS, **{'region': region})
             try:
                 driver.list_sizes()

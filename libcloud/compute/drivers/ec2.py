@@ -3059,9 +3059,7 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
 }
 
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
-VALID_EC2_REGIONS = [
-    r for r in VALID_EC2_REGIONS if r != 'nimbus' and r != 'cn-north-1'
-]
+VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
