@@ -159,7 +159,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         node = self.driver.list_nodes()[0]
         AzureMockHttp.responses = [
             # 204 (No content) to the DELETE request on a deleted/non-existent node
-            lambda f: error(BaseHTTPError, code=204, message='Not found'),
+            lambda f: error(BaseHTTPError, code=204, message='No content'),
         ]
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
@@ -186,8 +186,8 @@ class AzureNodeDriverTests(LibcloudTestCase):
         AzureMockHttp.responses = [
             # OK to the DELETE request
             lambda f: (httplib.OK, None, {}, 'OK'),
-            # 204 means node destroyed successfully
-            lambda f: error(BaseHTTPError, code=204, message='No content'),
+            # 404 means node is gone
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
             # 500 - transient error when trying to clean up the NIC
             lambda f: error(BaseHTTPError, code=500, message="Cloud weather"),
         ]
