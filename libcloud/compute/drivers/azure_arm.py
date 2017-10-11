@@ -1030,7 +1030,7 @@ class AzureNodeDriver(NodeDriver):
                                 data=data,
                                 method='DELETE')
 
-    def ex_create_network(self, name, resource_group, location=None, addressSpace="10.0.0.0/16"):
+    def ex_create_network(self, name, resource_group, location=None, addressSpace="10.0.0.0/16", networkSecurityGroup=''):
         """
         Create a virtual network.
 
@@ -1061,6 +1061,7 @@ class AzureNodeDriver(NodeDriver):
                   {
                     "name": "Default",
                     "properties": {
+                      "networkSecurityGroup": {"id":networkSecurityGroup},
                       "addressPrefix": "10.0.0.0/24"
                     }
                   }
@@ -1257,8 +1258,10 @@ class AzureNodeDriver(NodeDriver):
             "properties": {
                 "ipConfigurations": [{
                     "name": name,
-                    "networkSecurityGroup": networkSecurityGroup,
                     "properties": {
+                        "publicIPAddress": {
+                            "id": public_ip.id
+                        },
                         "subnet": {
                             "id": subnet.id
                         },
