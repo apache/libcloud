@@ -24,7 +24,7 @@ except:
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import NodeDriver, NodeImage, Node, NodeSize, NodeLocation
-from libcloud.compute.base import StorageVolume, VolumeSnapshot
+from libcloud.compute.base import StorageVolume, VolumeSnapshot, KeyPair
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState, VolumeSnapshotState
 from libcloud.utils.iso8601 import parse_date
@@ -36,7 +36,12 @@ __all__ = [
     'ScalewayNodeDriver'
 ]
 
-SCALEWAY_API_HOST = 'api.scaleway.com'
+SCALEWAY_API_HOSTS = {
+    'default': 'api.scaleway.com',
+    'account': 'account.scaleway.com',
+    'par1': 'cp-par1.scaleway.com',
+    'ams1': 'cp-ams1.scaleway.com',
+}
 
 # The API doesn't currently expose all of the required values for libcloud,
 # so we simply list what's available right now, along with all of the various
@@ -318,7 +323,7 @@ class ScalewayConnection(ConnectionUserAndKey):
     Connection class for the Scaleway driver.
     """
 
-    host = SCALEWAY_API_HOST
+    host = SCALEWAY_API_HOSTS['default']
     allow_insecure = False
     responseCls = ScalewayResponse
 
@@ -326,8 +331,9 @@ class ScalewayConnection(ConnectionUserAndKey):
                 method='GET', raw=False, stream=False, region=None):
         if region:
             old_host = self.host
-            self.host = 'cp-%s.scaleway.com' % (region.id if isinstance(region,
-                                                NodeLocation) else region)
+            self.host = SCALEWAY_API_HOSTS[region.id
+                                           if isinstance(region, NodeLocation)
+                                           else region]
             if not self.host == old_host:
                 self.connect()
 
@@ -544,3 +550,42 @@ class ScalewayNodeDriver(NodeDriver):
         return self.connection.request('/snapshots/%s' % snapshot.id,
                                        region=region,
                                        method='DELETE').success()
+
+    def list_key_pairs(self):
+        response = self.connection.request('/users/%s' % (self._get_user_id()),
+                                           region='account')
+        keys = response.object['user']['ssh_public_keys']
+        return [KeyPair(name=' '.join(key['key'].split(' ')[2:]),
+                        public_key=' '.join(key['key'].split(' ')[:2]),
+                        fingerprint=key['fingerprint'],
+                        driver=self) for key in keys]
+
+    def import_key_pair_from_string(self, name, key_material):
+        new_key = KeyPair(name=name,
+                          public_key=' '.join(key_material.split(' ')[:2]),
+                          fingerprint=None,
+                          driver=self)
+        keys = [key for key in self.list_key_pairs() if not key.name == name]
+        keys.append(new_key)
+        return self._save_keys(keys)
+
+    def delete_key_pair(self, key_pair):
+        keys = [key for key in self.list_key_pairs()
+                if not key.name == key_pair.name]
+        return self._save_keys(keys)
+
+    def _get_user_id(self):
+        response = self.connection.request('/tokens/%s' % (self.secret),
+                                           region='account')
+        return response.object['token']['user_id']
+
+    def _save_keys(self, keys):
+        data = {
+            'ssh_public_keys': [{'key': '%s %s' % (key.public_key, key.name)}
+                                for key in keys]
+        }
+        response = self.connection.request('/users/%s' % (self._get_user_id()),
+                                           region='account',
+                                           method='PATCH',
+                                           data=json.dumps(data))
+        return response.success()
