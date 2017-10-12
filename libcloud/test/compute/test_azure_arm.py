@@ -205,7 +205,9 @@ class AzureNodeDriverTests(LibcloudTestCase):
         with self.assertRaises(BaseHTTPError):
             self.driver.destroy_node(node)
 
-    def test_list_nodes(self):
+    @mock.patch('libcloud.compute.drivers.azure_arm.AzureNodeDriver'
+                '._fetch_power_state', return_value=NodeState.UPDATING)
+    def test_list_nodes(self, fps_mock):
         nodes = self.driver.list_nodes()
 
         self.assertEqual(len(nodes), 1)
@@ -214,6 +216,22 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(nodes[0].state, NodeState.UPDATING)
         self.assertEqual(nodes[0].private_ips, ['10.0.0.1'])
         self.assertEqual(nodes[0].public_ips, [])
+
+        fps_mock.assert_called()
+
+    @mock.patch('libcloud.compute.drivers.azure_arm.AzureNodeDriver'
+                '._fetch_power_state', return_value=NodeState.UPDATING)
+    def test_list_nodes__no_fetch_power_state(self, fps_mock):
+        nodes = self.driver.list_nodes(ex_fetch_power_state=False)
+
+        self.assertEqual(len(nodes), 1)
+
+        self.assertEqual(nodes[0].name, 'test-node-1')
+        self.assertNotEqual(nodes[0].state, NodeState.UPDATING)
+        self.assertEqual(nodes[0].private_ips, ['10.0.0.1'])
+        self.assertEqual(nodes[0].public_ips, [])
+
+        fps_mock.assert_not_called()
 
     def test_create_volume(self):
         location = self.driver.list_locations()[-1]
