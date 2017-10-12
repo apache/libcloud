@@ -360,7 +360,9 @@ class AzureNodeDriver(NodeDriver):
                                  ex_offer, ex_sku, ex_version)
             return i[0] if i else None
 
-    def list_nodes(self, ex_resource_group=None, ex_fetch_nic=True):
+    def list_nodes(self, ex_resource_group=None,
+                   ex_fetch_nic=True,
+                   ex_fetch_power_state=True):
         """
         List all nodes.
 
@@ -368,7 +370,14 @@ class AzureNodeDriver(NodeDriver):
         :type ex_urn: ``str``
 
         :param ex_fetch_nic: Fetch NIC resources in order to get
-        IP address information for nodes (requires extra API calls).
+        IP address information for nodes.  If True, requires an extra API
+        call for each NIC of each node.  If False, IP addresses will not
+        be returned.
+        :type ex_urn: ``bool``
+
+        :param ex_fetch_power_state: Fetch node power state.  If True, requires
+        an extra API call for each node.  If False, node state
+        will be returned based on provisioning state only.
         :type ex_urn: ``bool``
 
         :return:  list of node objects
@@ -385,7 +394,9 @@ class AzureNodeDriver(NodeDriver):
                      % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
-        return [self._to_node(n, fetch_nic=ex_fetch_nic)
+        return [self._to_node(n,
+                              fetch_nic=ex_fetch_nic,
+                              fetch_power_state=ex_fetch_power_state)
                 for n in r.object["value"]]
 
     def create_node(self,
@@ -1950,28 +1961,7 @@ class AzureNodeDriver(NodeDriver):
         kwargs["cloud_environment"] = self.cloud_environment
         return kwargs
 
-    def _to_node(self, data, fetch_nic=True):
-        private_ips = []
-        public_ips = []
-        nics = data["properties"]["networkProfile"]["networkInterfaces"]
-        if fetch_nic:
-            for nic in nics:
-                try:
-                    n = self.ex_get_nic(nic["id"])
-                    priv = n.extra["ipConfigurations"][0]["properties"] \
-                        .get("privateIPAddress")
-                    if priv:
-                        private_ips.append(priv)
-                    pub = n.extra["ipConfigurations"][0]["properties"].get(
-                        "publicIPAddress")
-                    if pub:
-                        pub_addr = self.ex_get_public_ip(pub["id"])
-                        addr = pub_addr.extra.get("ipAddress")
-                        if addr:
-                            public_ips.append(addr)
-                except BaseHTTPError:
-                    pass
-
+    def _fetch_power_state(self, data):
         state = NodeState.UNKNOWN
         try:
             action = "%s/InstanceView" % (data["id"])
@@ -2006,6 +1996,45 @@ class AzureNodeDriver(NodeDriver):
                     state = NodeState.RUNNING
         except BaseHTTPError:
             pass
+        return state
+
+    def _to_node(self, data, fetch_nic=True, fetch_power_state=True):
+        private_ips = []
+        public_ips = []
+        nics = data["properties"]["networkProfile"]["networkInterfaces"]
+        if fetch_nic:
+            for nic in nics:
+                try:
+                    n = self.ex_get_nic(nic["id"])
+                    priv = n.extra["ipConfigurations"][0]["properties"] \
+                        .get("privateIPAddress")
+                    if priv:
+                        private_ips.append(priv)
+                    pub = n.extra["ipConfigurations"][0]["properties"].get(
+                        "publicIPAddress")
+                    if pub:
+                        pub_addr = self.ex_get_public_ip(pub["id"])
+                        addr = pub_addr.extra.get("ipAddress")
+                        if addr:
+                            public_ips.append(addr)
+                except BaseHTTPError:
+                    pass
+
+        state = NodeState.UNKNOWN
+        if fetch_power_state:
+            state = self._fetch_power_state(data)
+        else:
+            ps = data["properties"]["provisioningState"].lower()
+            if ps == "creating":
+                state = NodeState.PENDING
+            elif ps == "deleting":
+                state = NodeState.TERMINATED
+            elif ps == "failed":
+                state = NodeState.ERROR
+            elif ps == "updating":
+                state = NodeState.UPDATING
+            elif ps == "succeeded":
+                state = NodeState.RUNNING
 
         node = Node(data["id"],
                     data["name"],
