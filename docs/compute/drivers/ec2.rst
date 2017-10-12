@@ -29,6 +29,9 @@ It allows users to rent virtual servers in more than 15 regions such as:
 * China (Beijing) Region
 * South America (Sao Paulo) Region
 
+Note that pricing information is not available for China (Beijing)
+region.
+
 Using temporary security credentials
 ------------------------------------
 
