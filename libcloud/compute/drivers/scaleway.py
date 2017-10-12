@@ -58,35 +58,35 @@ SCALEWAY_INSTANCE_TYPES = [
             'cores': 4,
             'monthly': 2.99,
             'range': 'Starter',
-            'arch': 'arm',
+            'arch': 'arm64',
         },
     },
     {
         'id': 'ARM64-4GB',
         'name': 'ARM64-4GB',
         'ram': 4096,
-        'disk': 50,
+        'disk': 100,
         'bandwidth': 200,
         'price': 0.012,
         'extra': {
             'cores': 6,
             'monthly': 5.99,
             'range': 'Starter',
-            'arch': 'arm',
+            'arch': 'arm64',
         },
     },
     {
         'id': 'ARM64-8GB',
         'name': 'ARM64-8GB',
         'ram': 8192,
-        'disk': 50,
+        'disk': 200,
         'bandwidth': 200,
         'price': 0.024,
         'extra': {
             'cores': 8,
             'monthly': 11.99,
             'range': 'Starter',
-            'arch': 'arm',
+            'arch': 'arm64',
         },
     },
     {
@@ -107,7 +107,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'VC1M',
         'name': 'VC1M',
         'ram': 4096,
-        'disk': 50,
+        'disk': 100,
         'bandwidth': 200,
         'price': 0.012,
         'extra': {
@@ -121,7 +121,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'VC1L',
         'name': 'VC1L',
         'ram': 8192,
-        'disk': 50,
+        'disk': 200,
         'bandwidth': 200,
         'price': 0.02,
         'extra': {
@@ -191,63 +191,63 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'ARM64-16GB',
         'name': 'ARM64-16GB',
         'ram': 16384,
-        'disk': 50,
+        'disk': 200,
         'bandwidth': 500,
         'price': 0.07,
         'extra': {
             'cores': 16,
             'monthly': 34.99,
             'range': 'Intensive',
-            'arch': 'arm',
+            'arch': 'arm64',
         },
     },
     {
         'id': 'ARM64-32GB',
         'name': 'ARM64-32GB',
         'ram': 32768,
-        'disk': 50,
+        'disk': 300,
         'bandwidth': 500,
         'price': 0.14,
         'extra': {
             'cores': 32,
             'monthly': 69.99,
             'range': 'Intensive',
-            'arch': 'arm',
+            'arch': 'arm64',
         },
     },
     {
         'id': 'ARM64-64GB',
         'name': 'ARM64-64GB',
         'ram': 65536,
-        'disk': 50,
+        'disk': 800, # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.28,
         'extra': {
             'cores': 48,
             'monthly': 139.99,
             'range': 'Intensive',
-            'arch': 'arm',
+            'arch': 'arm64',
         },
     },
     {
         'id': 'ARM64-128GB',
         'name': 'ARM64-128GB',
         'ram': 131072,
-        'disk': 50,
+        'disk': 1000, # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.56,
         'extra': {
             'cores': 64,
             'monthly': 279.99,
             'range': 'Intensive',
-            'arch': 'arm',
+            'arch': 'arm64',
         },
     },
     {
         'id': 'X64-15GB',
         'name': 'X64-15GB',
         'ram': 15360,
-        'disk': 50,
+        'disk': 200,
         'bandwidth': 250,
         'price': 0.05,
         'extra': {
@@ -261,7 +261,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'X64-30GB',
         'name': 'X64-30GB',
         'ram': 30720,
-        'disk': 50,
+        'disk': 300,
         'bandwidth': 500,
         'price': 0.1,
         'extra': {
@@ -275,7 +275,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'X64-60GB',
         'name': 'X64-60GB',
         'ram': 61440,
-        'disk': 50,
+        'disk': 700, # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.18,
         'extra': {
@@ -289,7 +289,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'X64-120GB',
         'name': 'X64-120GB',
         'ram': 122880,
-        'disk': 50,
+        'disk': 1000, # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.36,
         'extra': {
@@ -452,6 +452,25 @@ class ScalewayNodeDriver(NodeDriver):
             'commercial_type': size.id,
             'tags': ex_tags or []
         }
+
+        allocate_space = 50
+        for volume in data['volumes']:
+            allocate_space += _kb_to_mb(volume['size'])
+
+        while allocate_space < size.disk:
+            if size.disk - allocate_space > 150:
+                bump = 150
+            else:
+                bump = size.disk - allocate_space
+
+            vol_num = len(data['volumes']) + 1
+            data['volumes'][str(vol_num)] = {
+                "name": "%s-%d" % (name, vol_num),
+                "organization": self.key,
+                "size": _mb_to_kb(bump),
+                "volume_type": "l_ssd"
+            }
+            allocate_space += bump
 
         response = self.connection.request('/servers', data=json.dumps(data),
                                            region=region,
