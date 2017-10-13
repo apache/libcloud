@@ -62,6 +62,10 @@ Compute
   (GITHUB-1126)
   [Peter Amstutz, Lucas Di Pentima]
 
+- [EC2] Allow cn-north-1 even without pricing information
+  (LIBCLOUD-954, GITHUB-1127)
+  [Quentin Pradet]
+
 
 Changes in Apache Libcloud 2.2.1
 --------------------------------
