@@ -3059,9 +3059,7 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
 }
 
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
-VALID_EC2_REGIONS = [
-    r for r in VALID_EC2_REGIONS if r != 'nimbus' and r != 'cn-north-1'
-]
+VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
@@ -3570,8 +3568,11 @@ class BaseEC2NodeDriver(NodeDriver):
         for instance_type in available_types:
             attributes = INSTANCE_TYPES[instance_type]
             attributes = copy.deepcopy(attributes)
-            price = self._get_size_price(size_id=instance_type)
-            attributes.update({'price': price})
+            try:
+                price = self._get_size_price(size_id=instance_type)
+                attributes['price'] = price
+            except KeyError:
+                attributes['price'] = None  # pricing not available
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
