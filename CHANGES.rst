@@ -58,6 +58,10 @@ Compute
 - [ARM] Fix api version used to list and delete NICs (GITHUB-1128)
   [Peter Amstutz]
 
+- [ARM] Allow faster list_nodes() with ex_fetch_power_state=False
+  (GITHUB-1126)
+  [Peter Amstutz, Lucas Di Pentima]
+
 
 Changes in Apache Libcloud 2.2.1
 --------------------------------
