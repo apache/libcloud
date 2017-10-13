@@ -645,7 +645,7 @@ class AzureNodeDriver(NodeDriver):
         if isinstance(auth, NodeAuthSSHKey):
             data["properties"]["osProfile"]["adminPassword"] = \
                 binascii.hexlify(os.urandom(20))
-            if not "Windows" in image.id:
+            if not "windows" in image.id.lower():
                 data["properties"]["osProfile"]["linuxConfiguration"] = {
                     "disablePasswordAuthentication": "true",
                     "ssh": {
@@ -659,7 +659,7 @@ class AzureNodeDriver(NodeDriver):
                     }
                 }
         elif isinstance(auth, NodeAuthPassword):
-            if not "Windows" in image.id:
+            if not "Windows" in image.id.lower():
                 data["properties"]["osProfile"]["linuxConfiguration"] = {
                     "disablePasswordAuthentication": "false"
                 }
