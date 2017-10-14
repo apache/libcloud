@@ -22,10 +22,11 @@ from libcloud.storage.drivers.digitalocean_spaces import (
     DOSpacesConnectionAWS4,
     DOSpacesConnectionAWS2)
 
+from libcloud.test import LibcloudTestCase
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
 
-class DigitalOceanSpacesTests_v2(unittest.TestCase):
+class DigitalOceanSpacesTests(LibcloudTestCase):
     driver_type = DigitalOceanSpacesStorageDriver
     driver_args = STORAGE_S3_PARAMS
     default_host = 'nyc3.digitaloceanspaces.com'
@@ -67,7 +68,7 @@ class DigitalOceanSpacesTests_v2(unittest.TestCase):
             self.object.get_cdn_url()
 
 
-class DigitalOceanSpacesTests_v4(unittest.TestCase):
+class DigitalOceanSpacesTests_v4(DigitalOceanSpacesTests):
     driver_type = DigitalOceanSpacesStorageDriver
     driver_args = STORAGE_S3_PARAMS
     default_host = 'nyc3.digitaloceanspaces.com'
@@ -76,9 +77,6 @@ class DigitalOceanSpacesTests_v4(unittest.TestCase):
     def create_driver(self):
         return self.driver_type(*self.driver_args,
                                 signature_version='4')
-
-    def setUp(self):
-        self.driver = self.create_driver()
 
     def test_connection_class_type(self):
         res = self.driver.connectionCls is DOSpacesConnectionAWS4
@@ -89,7 +87,7 @@ class DigitalOceanSpacesTests_v4(unittest.TestCase):
         self.assertEqual(host, self.default_host)
 
 
-class DigitalOceanSpacesDoubleInstanceTests(unittest.TestCase):
+class DigitalOceanSpacesDoubleInstanceTests(LibcloudTestCase):
     driver_type = DigitalOceanSpacesStorageDriver
     driver_args = STORAGE_S3_PARAMS
     default_host = 'nyc3.digitaloceanspaces.com'
