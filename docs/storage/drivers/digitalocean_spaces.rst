@@ -20,6 +20,13 @@ below.
 .. literalinclude:: /examples/storage/digitalocean_spaces/instantiate.py
    :language: python
 
+Spaces supports both the v2 and v4 AWS signature types. By default, this driver
+will use v2. You can configure it to use v4 by passing the ``signature_version``
+argument when instantiating the driver as shown below.
+
+.. literalinclude:: /examples/storage/digitalocean_spaces/v4sig.py
+   :language: python
+
 Specifying canned ACLs
 ~~~~~~~~~~~~~~~~~~~~~~
 
