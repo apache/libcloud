@@ -14,22 +14,23 @@
 # limitations under the License.
 
 from libcloud.common.types import LibcloudError
-from libcloud.common.aws import SignedAWSConnection, DEFAULT_SIGNATURE_VERSION
+from libcloud.common.aws import SignedAWSConnection
 from libcloud.storage.drivers.s3 import BaseS3Connection, S3Connection
-from libcloud.storage.drivers.s3 import S3StorageDriver, API_VERSION
+from libcloud.storage.drivers.s3 import S3StorageDriver
 
 __all__ = [
     'DigitalOceanSpacesStorageDriver'
 ]
 
 DO_SPACES_HOSTS_BY_REGION = {'nyc3': 'nyc3.digitaloceanspaces.com'}
-
 DO_SPACES_DEFAULT_REGION = 'nyc3'
+DEFAULT_SIGNATURE_VERSION = '2'
+S3_API_VERSION = '2006-03-01'
 
 
 class DOSpacesConnectionAWS4(SignedAWSConnection, BaseS3Connection):
     service_name = 's3'
-    version = API_VERSION
+    version = S3_API_VERSION
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None, token=None,
@@ -42,7 +43,7 @@ class DOSpacesConnectionAWS4(SignedAWSConnection, BaseS3Connection):
                                                      proxy_url, token,
                                                      retry_delay,
                                                      backoff,
-                                                     4)  # force aws4
+                                                     signature_version=4)
 
 
 class DOSpacesConnectionAWS2(S3Connection):
@@ -79,14 +80,13 @@ class DigitalOceanSpacesStorageDriver(S3StorageDriver):
         self.signature_version = str(kwargs.pop('signature_version',
                                                 DEFAULT_SIGNATURE_VERSION))
 
-        if self.signature_version not in ['2', '4']:
-            raise ValueError('Invalid signature_version: %s' %
-                             (self.signature_version))
-
         if self.signature_version == '2':
             self.connectionCls = DOSpacesConnectionAWS2
         elif self.signature_version == '4':
             self.connectionCls = DOSpacesConnectionAWS4
+        else:
+            raise ValueError('Invalid signature_version: %s' %
+                             (self.signature_version))
         self.connectionCls.host = host
 
         super(DigitalOceanSpacesStorageDriver,

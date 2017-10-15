@@ -16,6 +16,8 @@
 import sys
 import unittest
 
+from libcloud.common.types import LibcloudError
+
 from libcloud.storage.base import Container, Object
 from libcloud.storage.drivers.digitalocean_spaces import (
     DigitalOceanSpacesStorageDriver,
@@ -66,6 +68,18 @@ class DigitalOceanSpacesTests(LibcloudTestCase):
     def test_object_get_cdn_url_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             self.object.get_cdn_url()
+
+    def test_invalid_signature_version(self):
+        with self.assertRaises(ValueError):
+            self.driver_type(*self.driver_args,
+                             signature_version='3',
+                             host=self.default_host)
+
+    def test_invalid_region(self):
+        with self.assertRaises(LibcloudError):
+            self.driver_type(*self.driver_args,
+                             region='atlantis',
+                             host=self.default_host)
 
 
 class DigitalOceanSpacesTests_v4(DigitalOceanSpacesTests):
