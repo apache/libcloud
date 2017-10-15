@@ -8,6 +8,8 @@ Provider                      Documentation                                   Pr
 `Microsoft Azure (blobs)`_    :doc:`Click </storage/drivers/azure_blobs>`     AZURE_BLOBS       single region driver         :mod:`libcloud.storage.drivers.azure_blobs`    :class:`AzureBlobsStorageDriver`    
 `Backblaze B2`_               :doc:`Click </storage/drivers/backblaze_b2>`    BACKBLAZE_B2      single region driver         :mod:`libcloud.storage.drivers.backblaze_b2`   :class:`BackblazeB2StorageDriver`   
 `CloudFiles`_                                                                 CLOUDFILES        dfw, hkg, iad, lon, ord, syd :mod:`libcloud.storage.drivers.cloudfiles`     :class:`CloudFilesStorageDriver`    
+`DigitalOcean Spaces`_        :doc:`Click </storage/drivers/digitalocean_spaces>` DIGITALOCEAN_SPACES single region driver         :mod:`libclo
+ud.storage.drivers.digitalocean_spaces` :class:`DigitalOceanSpacesStorageDriver`
 `Google Cloud Storage`_       :doc:`Click </storage/drivers/google_storage>`  GOOGLE_STORAGE    single region driver         :mod:`libcloud.storage.drivers.google_storage` :class:`GoogleStorageDriver`        
 `KTUCloud Storage`_                                                           KTUCLOUD          dfw, hkg, iad, lon, ord, syd :mod:`libcloud.storage.drivers.ktucloud`       :class:`KTUCloudStorageDriver`      
 `Local Storage`_                                                              LOCAL             single region driver         :mod:`libcloud.storage.drivers.local`          :class:`LocalStorageDriver`         
@@ -40,6 +42,7 @@ Provider                      Documentation                                   Pr
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
 .. _`CloudFiles`: http://www.rackspace.com/
+.. _`DigitalOcean Spaces`: https://www.digitalocean.com/products/object-storage/
 .. _`Google Cloud Storage`: http://cloud.google.com/storage
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Local Storage`: http://example.com

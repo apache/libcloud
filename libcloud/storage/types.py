@@ -62,6 +62,7 @@ class Provider(object):
     AZURE_BLOBS = 'azure_blobs'
     BACKBLAZE_B2 = 'backblaze_b2'
     CLOUDFILES = 'cloudfiles'
+    DIGITALOCEAN_SPACES = 'digitalocean_spaces'
     GOOGLE_STORAGE = 'google_storage'
     KTUCLOUD = 'ktucloud'
     LOCAL = 'local'
