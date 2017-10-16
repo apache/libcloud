@@ -166,6 +166,12 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.ex_change_kernel(node, 7515)
         self.assertTrue(result)
 
+    def test_ex_enable_ipv6_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'ENABLEIPV6'
+        result = self.driver.ex_enable_ipv6(node)
+        self.assertTrue(result)
+
     def test_ex_rename_node_success(self):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'RENAME'
@@ -310,6 +316,11 @@ class DigitalOceanMockHttp(MockHttp):
     def _v2_droplets_3164444_actions_KERNELCHANGE(self, method, url, body, headers):
         # change_kernel
         body = self.fixtures.load('ex_change_kernel.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _v2_droplets_3164444_actions_ENABLEIPV6(self, method, url, body, headers):
+        # enable_ipv6
+        body = self.fixtures.load('ex_enable_ipv6.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
     def _v2_droplets_3164444_actions_RENAME(self, method, url, body, headers):
