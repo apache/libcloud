@@ -691,7 +691,10 @@ class AzureNodeDriver(NodeDriver):
             else:
                 return False
 
-    def destroy_node(self, node, ex_destroy_nic=True, ex_destroy_vhd=True):
+    def destroy_node(self, node,
+                     ex_destroy_nic=True,
+                     ex_destroy_vhd=True,
+                     ex_retries=10):
         """
         Destroy a node.
 
@@ -705,6 +708,10 @@ class AzureNodeDriver(NodeDriver):
         :param ex_destroy_vhd: Destroy the OS disk blob associated with
         this node (default True).
         :type node: ``bool``
+
+        :param ex_retries: Number of times to retry checking if the node is gone,
+        destroying the NIC or destroying the VHD.
+        :type node: ``int``
 
         :return: True if the destroy was successful, raises exception
         otherwise.
@@ -733,12 +740,14 @@ class AzureNodeDriver(NodeDriver):
 
         # Poll until the node actually goes away (otherwise attempt to delete
         # NIC and VHD will fail with "resource in use" errors).
-        while do_node_polling:
+        retries = ex_retries
+        while do_node_polling and retries > 0:
             try:
                 time.sleep(10)
                 self.connection.request(
                     node.id,
                     params={"api-version": RESOURCE_API_VERSION})
+                retries -= 1
             except BaseHTTPError as h:
                 if h.code in (204, 404):
                     # Node is gone
@@ -752,13 +761,16 @@ class AzureNodeDriver(NodeDriver):
             node.extra["properties"]["networkProfile"]["networkInterfaces"]
         if ex_destroy_nic:
             for nic in interfaces:
-                while True:
+                retries = ex_retries
+                while retries > 0:
                     try:
                         self.ex_destroy_nic(self._to_nic(nic))
                         break
                     except BaseHTTPError as h:
+                        retries -= 1
                         if (h.code == 400 and
-                                h.message.startswith("[NicInUse]")):
+                                h.message.startswith("[NicInUse]") and
+                                retries > 0):
                             time.sleep(10)
                         else:
                             raise
@@ -766,7 +778,8 @@ class AzureNodeDriver(NodeDriver):
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
         if ex_destroy_vhd and vhd is not None:
-            while True:
+            retries = ex_retries
+            while retries > 0:
                 try:
                     resourceGroup = node.id.split("/")[4]
                     self._ex_delete_old_vhd(
@@ -774,7 +787,8 @@ class AzureNodeDriver(NodeDriver):
                         vhd["uri"])
                     break
                 except LibcloudError as e:
-                    if "LeaseIdMissing" in str(e):
+                    retries -= 1
+                    if "LeaseIdMissing" in str(e) and retries > 0:
                         # Unfortunately lease errors
                         # (which occur if the vhd blob
                         # hasn't yet been released by the VM being destroyed)
