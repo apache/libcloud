@@ -66,6 +66,10 @@ Compute
   (LIBCLOUD-954, GITHUB-1127)
   [Quentin Pradet]
 
+- [Digital Ocean] Add ex_enable_ipv6 in DigitalOcean_v2 driver
+  (GITHUB-1130)
+  [Rick van de Loo]
+
 Storage
 ~~~~~~~
 
