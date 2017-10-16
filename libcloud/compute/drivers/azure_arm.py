@@ -659,7 +659,7 @@ class AzureNodeDriver(NodeDriver):
                     }
                 }
         elif isinstance(auth, NodeAuthPassword):
-            if not "Windows" in image.id.lower():
+            if not "windows" in image.id.lower():
                 data["properties"]["osProfile"]["linuxConfiguration"] = {
                     "disablePasswordAuthentication": "false"
                 }
