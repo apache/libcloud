@@ -78,12 +78,11 @@ class BrightboxConnection(ConnectionUserAndKey):
         response = self.connection.request(method='POST', url='/token',
                                            body=body, headers=headers)
 
-        response = self.connection.getresponse()
-
         if response.status == httplib.OK:
             return json.loads(response.read())['access_token']
         else:
-            responseCls = BrightboxResponse(response=response, connection=self)
+            responseCls = BrightboxResponse(
+                response=response.getresponse(), connection=self)
             message = responseCls.parse_error()
             raise InvalidCredsError(message)
 
