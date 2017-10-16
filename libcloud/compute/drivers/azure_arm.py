@@ -1030,7 +1030,7 @@ class AzureNodeDriver(NodeDriver):
                                 data=data,
                                 method='DELETE')
 
-    def ex_create_network(self, name, resource_group, location=None, addressSpace="10.0.0.0/16", networkSecurityGroup=''):
+    def ex_create_network(self, name, resource_group, location=None, addressSpace="10.0.0.0/16", networkSecurityGroup='', subnets=[]):
         """
         Create a virtual network.
 
@@ -1047,6 +1047,18 @@ class AzureNodeDriver(NodeDriver):
         action = "/subscriptions/%s/resourceGroups/%s/providers/" \
                  "Microsoft.Network/virtualNetworks/%s" \
                  % (self.subscription_id, resource_group, name)
+
+        if not subnets:
+            subnets = [
+              {
+                "name": "Default",
+                "properties": {
+                  "networkSecurityGroup": {"id":networkSecurityGroup},
+                  "addressPrefix": "10.0.0.0/24"
+                }
+              }
+            ]
+
         data = {
             "name": name,
             "location": location.id,
@@ -1057,15 +1069,7 @@ class AzureNodeDriver(NodeDriver):
                     addressSpace
                   ]
                 },
-                "subnets": [
-                  {
-                    "name": "Default",
-                    "properties": {
-                      "networkSecurityGroup": {"id":networkSecurityGroup},
-                      "addressPrefix": "10.0.0.0/24"
-                    }
-                  }
-                ]
+                "subnets": subnets
             }
         }
 
