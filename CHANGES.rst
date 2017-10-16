@@ -66,6 +66,12 @@ Compute
   (LIBCLOUD-954, GITHUB-1127)
   [Quentin Pradet]
 
+Storage
+~~~~~~~
+
+- Added Digital Ocean Spaces driver (LIBCLOUD-955, GITHUB-1129)
+  [Andrew Starr-Bochicchio]
+
 
 Changes in Apache Libcloud 2.2.1
 --------------------------------
