@@ -1,5 +1,5 @@
 <CreateVolumeResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
-  <requestId>59dbff89-35bd-4eac-99ed-be587EXAMPLE</requestId> 
+  <requestId>59dbff89-35bd-4eac-99ed-be587EXAMPLE</requestId>
   <volumeId>vol-4d826724</volumeId>
   <size>10</size>
   <snapshotId/>
@@ -7,5 +7,5 @@
   <status>creating</status>
   <createTime>2008-05-07T11:51:50.000Z</createTime>
   <volumeType>standard</volumeType>
-  <encrypted>false</encrypted>
+  <encrypted>true</encrypted>
 </CreateVolumeResponse>
