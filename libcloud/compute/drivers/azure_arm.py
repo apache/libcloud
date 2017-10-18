@@ -766,23 +766,23 @@ class AzureNodeDriver(NodeDriver):
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
         if ex_destroy_vhd and vhd is not None:
+            resourceGroup = node.id.split("/")[4]
             while True:
                 try:
-                    resourceGroup = node.id.split("/")[4]
-                    self._ex_delete_old_vhd(
-                        resourceGroup,
-                        vhd["uri"])
-                    break
+                    if self._ex_delete_old_vhd(
+                            resourceGroup,
+                            vhd["uri"]):
+                        break
+                    # Unfortunately lease errors usually result in it returning
+                    # "False" with no more information.  Need to wait and try
+                    # again.
                 except LibcloudError as e:
                     if "LeaseIdMissing" in str(e):
-                        # Unfortunately lease errors
-                        # (which occur if the vhd blob
-                        # hasn't yet been released by the VM being destroyed)
-                        # get raised as plain
-                        # LibcloudError.  Wait a bit and try again.
-                        time.sleep(10)
+                        # If we get an lease error, need to wait and try again.
+                        pass
                     else:
                         raise
+                time.sleep(10)
 
         return True
 
@@ -1948,9 +1948,8 @@ class AzureNodeDriver(NodeDriver):
                 keys["key1"],
                 host="%s.blob%s" % (storageAccount,
                                     self.connection.storage_suffix))
-            blobdriver.delete_object(blobdriver.get_object(blobContainer,
+            return blobdriver.delete_object(blobdriver.get_object(blobContainer,
                                                            blob))
-            return True
         except ObjectDoesNotExistError:
             return True
 
@@ -2086,10 +2085,12 @@ class AzureNodeDriver(NodeDriver):
                                   ex_blob_container,
                                   name,
                                   n)
-                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-                return instance_vhd
+                if self._ex_delete_old_vhd(ex_resource_group, instance_vhd):
+                    # We were able to remove it or it doesn't exist.
+                    return instance_vhd
             except LibcloudError:
-                n += 1
+                pass
+            n += 1
 
 
 def _split_blob_uri(uri):
