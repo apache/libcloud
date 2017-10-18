@@ -3241,7 +3241,7 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_image(self, name, volume, description=None, family=None,
                         guest_os_features=None, use_existing=True,
-                        wait_for_completion=True):
+                        wait_for_completion=True, ex_licenses=None):
         """
         Create an image from the provided volume.
 
@@ -3265,6 +3265,10 @@ class GCENodeDriver(NodeDriver):
         :keyword  guest_os_features: Features of the guest operating system,
                                      valid for bootable images only.
         :type     guest_os_features: ``list`` of ``str`` or ``None``
+
+        :keyword  ex_licenses: List of strings representing licenses
+                               to be associated with the image.
+        :type     ex_licenses: ``list`` of ``str``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -3295,6 +3299,11 @@ class GCENodeDriver(NodeDriver):
             image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
+        if ex_licenses:
+            if isinstance(ex_licenses, str):
+                ex_licenses = [ex_licenses]
+            image_data['licenses'] = ex_licenses
+
         if guest_os_features:
             image_data['guestOsFeatures'] = []
             if isinstance(guest_os_features, str):
