@@ -131,8 +131,7 @@ class OvhConnection(ConnectionUserAndKey):
             full_url += '?'
             for key, value in params.items():
                 full_url += '%s=%s&' % (key, value)
-            else:
-                full_url = full_url[:-1]
+            full_url = full_url[:-1]
         sha1 = hashlib.sha1()
         base_signature = "+".join([
             self.key,

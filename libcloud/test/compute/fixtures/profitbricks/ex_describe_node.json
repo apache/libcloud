@@ -1,7 +1,7 @@
 {
     "id": "srv-1",
     "type": "server",
-    "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1",
+    "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1",
     "metadata": {
         "createdDate": "2016-10-18T07:28:05Z",
         "createdBy": "test@test.test",
@@ -11,16 +11,16 @@
         "state": "AVAILABLE"
     },
     "properties": {
-        "name": "A test node",
-        "cores": 2,
-        "ram": 4096,
-        "availabilityZone": "AUTO",
+        "name": "libcloud Test",
+        "cores": 1,
+        "ram": 1024,
+        "availabilityZone": "ZONE_1",
         "vmState": "RUNNING",
         "bootCdrom": null,
         "bootVolume": {
             "id": "bvol-1",
             "type": "volume",
-            "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1",
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1",
             "metadata": {
                 "createdDate": "2016-10-18T07:20:41Z",
                 "createdBy": "test@test.test",
@@ -30,9 +30,9 @@
                 "state": "AVAILABLE"
             },
             "properties": {
-                "name": "A test node boot volume",
+                "name": "libcloud Test",
                 "type": "HDD",
-                "size": 10,
+                "size": 2,
                 "image": "bvol-img",
                 "imagePassword": null,
                 "bus": "VIRTIO",
@@ -56,18 +56,18 @@
         "cdroms": {
             "id": "srv-1/cdroms",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/cdroms",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/cdroms",
             "items": []
         },
         "volumes": {
             "id": "srv-1/volumes",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/volumes",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/volumes",
             "items": [
                 {
                     "id": "bvol-1",
                     "type": "volume",
-                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1",
+                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1",
                     "metadata": {
                         "createdDate": "2016-10-18T07:20:41Z",
                         "createdBy": "test@test.test",
@@ -77,9 +77,9 @@
                         "state": "AVAILABLE"
                     },
                     "properties": {
-                        "name": "A test node volume",
+                        "name": "libcloud Test",
                         "type": "HDD",
-                        "size": 10,
+                        "size": 2,
                         "availabilityZone": "AUTO",
                         "image": "bvol-img",
                         "imagePassword": null,
@@ -104,7 +104,7 @@
         "nics": {
             "id": "srv-1/nics",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/nics",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/nics",
             "items": []
         }
     }

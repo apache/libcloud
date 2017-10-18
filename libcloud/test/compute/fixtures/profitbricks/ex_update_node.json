@@ -1,7 +1,7 @@
 {
     "id": "srv-1",
     "type": "server",
-    "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1",
+    "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1",
     "metadata" : {
         "createdDate": "2016-10-18T07:28:05Z",
         "createdBy": "test@test.test",
@@ -11,17 +11,17 @@
         "state" : "BUSY"
     },
     "properties" : {
-        "name" : "A test node",
+        "name" : "libcloud Test RENAME",
         "cores" : 1,
-        "ram" : 512,
+        "ram" : 1024,
         "bootCdrom" : null,
-        "availabilityZone": "AUTO",
+        "availabilityZone": "ZONE_1",
         "vmState": "RUNNING",
         "bootCdrom": null,
         "bootVolume": {
             "id": "bvol-1",
             "type": "volume",
-            "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1"
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1"
         },
         "cpuFamily" : "AMD_OPTERON"
     },
@@ -29,17 +29,17 @@
         "cdroms": {
             "id": "srv-1/cdroms",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/cdroms"
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/cdroms"
         },
         "volumes": {
             "id": "srv-1/volumes",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/volumes"
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/volumes"
         },
         "nics": {
             "id": "srv-1/nics",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/nics"
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/nics"
         }
     }
 }

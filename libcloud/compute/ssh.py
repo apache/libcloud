@@ -202,8 +202,9 @@ class ParamikoSSHClient(BaseSSHClient):
     # Maximum number of bytes to read at once from a socket
     CHUNK_SIZE = 4096
 
-    # How long to sleep while waiting for command to finish
-    SLEEP_DELAY = 1.5
+    # How long to sleep while waiting for command to finish (to prevent busy
+    # waiting)
+    SLEEP_DELAY = 0.2
 
     def __init__(self, hostname, port=22, username='root', password=None,
                  key=None, key_files=None, key_material=None, timeout=None):

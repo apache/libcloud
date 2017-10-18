@@ -58,7 +58,6 @@ Provider                              list key pairs get key pair create key pai
 `vCloud`_                             no             no           no              no                            no                          no             
 `Voxel VoxCLOUD`_                     no             no           no              no                            no                          no             
 `vps.net`_                            no             no           no              no                            no                          no             
-`VMware vSphere`_                     no             no           no              no                            no                          no             
 `Vultr`_                              yes            no           yes             no                            no                          yes            
 ===================================== ============== ============ =============== ============================= =========================== ===============
 
@@ -117,5 +116,4 @@ Provider                              list key pairs get key pair create key pai
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
-.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com

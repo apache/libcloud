@@ -133,6 +133,7 @@ class MockHttp(LibcloudConnection):
         return meth(method, url, body, headers)
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):
+        headers = self._normalize_headers(headers=headers)
         r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
         if r_body is None:
             r_body = ''
@@ -153,6 +154,7 @@ class MockHttp(LibcloudConnection):
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
+        headers = self._normalize_headers(headers=headers)
         r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
 
         with requests_mock.mock() as m:

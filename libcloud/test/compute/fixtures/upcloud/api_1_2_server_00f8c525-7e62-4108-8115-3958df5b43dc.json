@@ -1,0 +1,57 @@
+{
+   "server" : {
+      "boot_order" : "disk",
+      "core_number" : "1",
+      "firewall" : "off",
+      "host" : 4964762243,
+      "hostname" : "localhost",
+      "ip_addresses" : {
+         "ip_address" : [
+            {
+               "access" : "private",
+               "address" : "10.1.7.68",
+               "family" : "IPv4"
+            },
+            {
+               "access" : "public",
+               "address" : "2a04:3540:1000:310:7cae:1dff:fead:19dc",
+               "family" : "IPv6"
+            },
+            {
+               "access" : "public",
+               "address" : "94.237.37.249",
+               "family" : "IPv4",
+               "part_of_plan" : "yes"
+            }
+         ]
+      },
+      "license" : 0,
+      "memory_amount" : "1024",
+      "nic_model" : "virtio",
+      "plan" : "1xCPU-1GB",
+      "plan_ipv4_bytes" : "8242",
+      "plan_ipv6_bytes" : "3440",
+      "state" : "started",
+      "storage_devices" : {
+         "storage_device" : [
+            {
+               "address" : "virtio:0",
+               "storage" : "01e5411f-37c9-4b8e-b0bb-4cad5119b3ea",
+               "storage_size" : 10,
+               "storage_title" : "Ubuntu Server 16.04 LTS (Xenial Xerus)",
+               "type" : "disk"
+            }
+         ]
+      },
+      "tags" : {
+         "tag" : []
+      },
+      "timezone" : "UTC",
+      "title" : "test_server",
+      "uuid" : "00f8c525-7e62-4108-8115-3958df5b43dc",
+      "video_model" : "cirrus",
+      "vnc" : "off",
+      "vnc_password" : "r362XMmV",
+      "zone" : "fi-hel1"
+   }
+}

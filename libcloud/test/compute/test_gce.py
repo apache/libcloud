@@ -214,6 +214,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue('email' in actual)
         self.assertTrue('scopes' in actual)
 
+        input = {'scopes': ['compute-ro'], 'email': 'test@test.com'}
+        actual = self.driver._build_service_account_gce_struct(input)
+        self.assertTrue('email' in actual)
+        self.assertEqual(actual['email'], 'test@test.com')
+        self.assertTrue('scopes' in actual)
+
     def test_build_service_account_gce_list(self):
         # ensure we have a list
         self.assertRaises(ValueError,
@@ -1216,6 +1222,21 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(data['metadata']['items'][0]['key'], 'k0')
         self.assertEqual(data['metadata']['items'][0]['value'], 'v0')
 
+    def test_create_node_with_labels(self):
+        node_name = 'node-name'
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+        zone = self.driver.ex_get_zone('us-central1-a')
+
+        # labels is a dict
+        labels = {'label1': 'v1', 'label2': 'v2'}
+        request, data = self.driver._create_node_req(node_name, size, image,
+                                                     zone, ex_labels=labels)
+        self.assertTrue(data['labels'] is not None)
+        self.assertEqual(len(data['labels']), 2)
+        self.assertEqual(data['labels']['label1'], 'v1')
+        self.assertEqual(data['labels']['label2'], 'v2')
+
     def test_create_node_existing(self):
         node_name = 'libcloud-demo-europe-np-node'
         image = self.driver.ex_get_image('debian-7')
@@ -1862,6 +1883,15 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                                                'value': 'v2'}]}
         self.driver.ex_set_node_metadata(node, gcedict)
 
+    def test_ex_set_node_labels(self):
+        node = self.driver.ex_get_node('node-name', 'us-central1-a')
+        # Test basic values
+        simplelabel = {'key': 'value'}
+        self.driver.ex_set_node_labels(node, simplelabel)
+        # Test multiple values
+        multilabels = {'item1': 'val1', 'item2': 'val2'}
+        self.driver.ex_set_node_labels(node, multilabels)
+
     def test_ex_get_region(self):
         region_name = 'us-central1'
         region = self.driver.ex_get_region(region_name)
@@ -2077,6 +2107,12 @@ class GCEMockHttp(MockHttp):
                                                              body, headers):
         body = self.fixtures.load(
             'zones_us_central1_a_instances_node_name_setMetadata_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_node_name_setLabels(self, method, url,
+                                                           body, headers):
+        body = self.fixtures.load(
+            'zones_us_central1_a_instances_node_name_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _setCommonInstanceMetadata(self, method, url, body, headers):
@@ -2552,6 +2588,12 @@ class GCEMockHttp(MockHttp):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_zones_us_central1_a_node_name_setMetadata_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_setLabels_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_node_name_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_post(

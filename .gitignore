@@ -10,6 +10,7 @@ MANIFEST
 /.ropeproject/config.py
 /.coverage
 coverage_html_report/
+coverage.xml
 .idea
 dist/*apache-libcloud*
 dist/*apache_libcloud*
@@ -23,3 +24,9 @@ apache_libcloud.egg-info/
 .eggs/
 .cache/
 .vscode/
+.Python
+bin/
+include/
+lib/
+pip-selfcheck.json
+report.html

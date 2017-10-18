@@ -1,12 +1,12 @@
 {
     "id": "images",
     "type": "collection",
-    "href": "/cloudapi/v3/images",
+    "href": "/cloudapi/v4/images",
     "items": [
         {
             "id": "img-2",
             "type": "image",
-            "href": "/cloudapi/v3/images/img-2",
+            "href": "/cloudapi/v4/images/img-2",
             "metadata": {
                 "createdDate": "2016-06-02T11:33:49Z",
                 "createdBy": "System",
@@ -32,13 +32,14 @@
                 "discScsiHotUnplug": false,
                 "licenceType": "LINUX",
                 "imageType": "CDROM",
+                "imageAliases": [ ],
                 "public": false
             }
         },
         {
             "id": "img-1",
             "type": "image",
-            "href": "/cloudapi/v3/images/img-1",
+            "href": "/cloudapi/v4/images/img-1",
             "metadata": {
                 "createdDate": "2014-11-14T15:22:19Z",
                 "createdBy": "System",
@@ -64,13 +65,14 @@
                 "discScsiHotUnplug": false,
                 "licenceType": "OTHER",
                 "imageType": "CDROM",
+                "imageAliases": [ ],
                 "public": true
             }
         },
         {
             "id": "62c525d9-b2cf-11e5-afa0-52540066fee9",
             "type": "image",
-            "href": "/cloudapi/v3/images/62c525d9-b2cf-11e5-afa0-52540066fee9",
+            "href": "/cloudapi/v4/images/62c525d9-b2cf-11e5-afa0-52540066fee9",
             "metadata": {
                 "createdDate": "2016-01-04T10:39:08Z",
                 "createdBy": "System",
@@ -82,7 +84,7 @@
             "properties": {
                 "name": "Test-Image-Three-CDROM",
                 "description": "",
-                "location": "de/fkb",
+                "location": "us/las",
                 "size": 0.37,
                 "cpuHotPlug": true,
                 "cpuHotUnplug": false,
@@ -96,13 +98,14 @@
                 "discScsiHotUnplug": false,
                 "licenceType": "LINUX",
                 "imageType": "CDROM",
+                "imageAliases": [ ],
                 "public": true
             }
         },
         {
             "id": "e2c323ba-3c6d-11e6-9336-52540005ab80",
             "type": "image",
-            "href": "/cloudapi/v3/images/e2c323ba-3c6d-11e6-9336-52540005ab80",
+            "href": "/cloudapi/v4/images/e2c323ba-3c6d-11e6-9336-52540005ab80",
             "metadata": {
                 "createdDate": "2016-06-27T13:48:53Z",
                 "createdBy": "System",
@@ -114,7 +117,7 @@
             "properties": {
                 "name": "Test-Image-Four-HDD",
                 "description": "",
-                "location": "de/fkb",
+                "location": "us/las",
                 "size": 0.28,
                 "cpuHotPlug": false,
                 "cpuHotUnplug": false,
@@ -128,13 +131,14 @@
                 "discScsiHotUnplug": false,
                 "licenceType": "OTHER",
                 "imageType": "HDD",
+                "imageAliases": [ ],
                 "public": false
             }
         },
         {
             "id": "f1d2be4a-7937-11e4-8053-52540066fee9",
             "type": "image",
-            "href": "/cloudapi/v3/images/f1d2be4a-7937-11e4-8053-52540066fee9",
+            "href": "/cloudapi/v4/images/f1d2be4a-7937-11e4-8053-52540066fee9",
             "metadata": {
                 "createdDate": "2014-12-01T08:56:31Z",
                 "createdBy": "System",
@@ -146,7 +150,7 @@
             "properties": {
                 "name": "Test-Image-Two-HDD",
                 "description": "",
-                "location": "de/fkb",
+                "location": "us/las",
                 "size": 0.45,
                 "cpuHotPlug": false,
                 "cpuHotUnplug": false,
@@ -160,13 +164,14 @@
                 "discScsiHotUnplug": false,
                 "licenceType": "LINUX",
                 "imageType": "HDD",
+                "imageAliases": [ ],
                 "public": true
             }
         },
         {
             "id": "dfa08a48-7937-11e4-8053-52540066fee9",
             "type": "image",
-            "href": "/cloudapi/v3/images/dfa08a48-7937-11e4-8053-52540066fee9",
+            "href": "/cloudapi/v4/images/dfa08a48-7937-11e4-8053-52540066fee9",
             "metadata": {
                 "createdDate": "2014-12-01T08:56:00Z",
                 "createdBy": "System",
@@ -192,6 +197,7 @@
                 "discScsiHotUnplug": false,
                 "licenceType": "LINUX",
                 "imageType": "HDD",
+                "imageAliases": [ ],
                 "public": true
             }
         }

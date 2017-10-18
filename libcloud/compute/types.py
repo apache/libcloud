@@ -98,6 +98,7 @@ class Provider(Type):
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     :cvar RIMUHOSTING: RimuHosting.com
     :cvar TERREMARK: Terremark
+    :cvar UPCLOUD: UpCloud
     :cvar VCL: VCL driver
     :cvar VCLOUD: vmware vCloud
     :cvar VPSNET: VPS.net
@@ -161,6 +162,7 @@ class Provider(Type):
     SKALICLOUD = 'skalicloud'
     SOFTLAYER = 'softlayer'
     TERREMARK = 'terremark'
+    UPCLOUD = 'upcloud'
     VCL = 'vcl'
     VCLOUD = 'vcloud'
     VOXEL = 'voxel'
@@ -286,6 +288,7 @@ class NodeState(Type):
     RECONFIGURING = 'reconfiguring'
     MIGRATING = 'migrating'
     NORMAL = 'normal'
+    UPDATING = 'updating'
 
 
 class StorageVolumeState(Type):
@@ -302,6 +305,7 @@ class StorageVolumeState(Type):
     ATTACHING = 'attaching'
     UNKNOWN = 'unknown'
     MIGRATING = 'migrating'
+    UPDATING = 'updating'
 
 
 class VolumeSnapshotState(Type):
@@ -314,6 +318,7 @@ class VolumeSnapshotState(Type):
     DELETING = 'deleting'
     RESTORING = 'restoring'
     UNKNOWN = 'unknown'
+    UPDATING = 'updating'
 
 
 class Architecture(object):

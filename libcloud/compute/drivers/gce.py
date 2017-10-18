@@ -69,7 +69,7 @@ class GCEConnection(GoogleBaseConnection):
     """
     Connection class for the GCE driver.
 
-    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+    GCEConnection extends :class:`google.GoogleBaseConnection` for 3 reasons:
       1. modify request_path for GCE URI.
       2. Implement gce_params functionality described below.
       3. Add request_aggregated_items method for making aggregated API calls.
@@ -1919,6 +1919,29 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
+    def ex_set_node_labels(self, node, labels):
+        """
+        Set labels for the specified node.
+
+        :keyword  node: The existing target Node (instance) for the request.
+        :type     node: ``Node``
+
+        :keyword  labels: Set (or clear with None) labels for this node.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(node, Node):
+            raise ValueError("Must specify a valid libcloud node object.")
+        node_name = node.name
+        zone_name = node.extra['zone'].name
+        current_fp = node.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/zones/%s/instances/%s/setLabels' % (zone_name, node_name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
     def ex_get_serial_output(self, node):
         """
         Fetch the console/serial port output from the node.
@@ -3126,7 +3149,8 @@ class GCENodeDriver(NodeDriver):
     def ex_create_forwarding_rule(self, name, target=None, region=None,
                                   protocol='tcp', port_range=None,
                                   address=None, description=None,
-                                  global_rule=False, targetpool=None):
+                                  global_rule=False, targetpool=None,
+                                  lb_scheme=None):
         """
         Create a forwarding rule.
 
@@ -3168,6 +3192,10 @@ class GCENodeDriver(NodeDriver):
                               Use target instead.
         :type     targetpool: ``str`` or :class:`GCETargetPool`
 
+        :keyword  lb_scheme: Load balancing scheme, can be 'EXTERNAL' or
+                             'INTERNAL'. Defaults to 'EXTERNAL'.
+        :type     lb_scheme: ``str`` or ``None``
+
         :return:  Forwarding Rule object
         :rtype:   :class:`GCEForwardingRule`
         """
@@ -3197,6 +3225,9 @@ class GCENodeDriver(NodeDriver):
             forwarding_rule_data['portRange'] = port_range
         if description:
             forwarding_rule_data['description'] = description
+
+        if lb_scheme:
+            forwarding_rule_data['loadBalancingScheme'] = lb_scheme
 
         if global_rule:
             request = '/global/forwardingRules'
@@ -3472,7 +3503,8 @@ class GCENodeDriver(NodeDriver):
         :type   priority: ``int``
 
         :param  network: The network the route belongs to. Can be either the
-                         full URL of the network or a libcloud object.
+                         full URL of the network, the name of the network  or
+                         a libcloud object.
         :type   network: ``str`` or ``GCENetwork``
 
         :param  tags: List of instance-tags for routing, empty for all nodes
@@ -3690,7 +3722,7 @@ class GCENodeDriver(NodeDriver):
             ex_service_accounts=None, description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_image_family=None):
+            ex_preemptible=None, ex_image_family=None, ex_labels=None):
         """
         Create a new node and return a node object for the node.
 
@@ -3811,6 +3843,9 @@ class GCENodeDriver(NodeDriver):
                                    to use this keyword.
         :type     ex_image_family: ``str`` or ``None``
 
+        :keyword  ex_labels: Labels dictionary for instance.
+        :type     ex_labels: ``dict`` or ``None``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -3870,7 +3905,7 @@ class GCENodeDriver(NodeDriver):
             ex_boot_disk, external_ip, ex_disk_type, ex_disk_auto_delete,
             ex_service_accounts, description, ex_can_ip_forward,
             ex_disks_gce_struct, ex_nic_gce_struct, ex_on_host_maintenance,
-            ex_automatic_restart, ex_preemptible, ex_subnetwork)
+            ex_automatic_restart, ex_preemptible, ex_subnetwork, ex_labels)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -3999,7 +4034,7 @@ class GCENodeDriver(NodeDriver):
 
         properties = self._create_instance_properties(
             name, node_size=size, source=source, image=image,
-            disk_type='pd-standard', disk_auto_delete=True,
+            disk_type=disk_type, disk_auto_delete=True,
             external_ip=external_ip, network=network, subnetwork=subnetwork,
             can_ip_forward=can_ip_forward, service_accounts=service_accounts,
             on_host_maintenance=on_host_maintenance,
@@ -4024,7 +4059,7 @@ class GCENodeDriver(NodeDriver):
             service_accounts=None, on_host_maintenance=None,
             automatic_restart=None, preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
-            use_selflinks=True):
+            use_selflinks=True, labels=None):
         """
         Create the GCE instance properties needed for instance templates.
 
@@ -4134,6 +4169,9 @@ class GCENodeDriver(NodeDriver):
                                   details.
         :type     nic_gce_struct: ``list`` or ``None``
 
+        :type     labels: Labels dict for instance
+        :type     labels: ``dict`` or ``None``
+
         :return:  A dictionary formatted for use with the GCE API.
         :rtype:   ``dict``
         """
@@ -4209,6 +4247,8 @@ class GCENodeDriver(NodeDriver):
         if metadata:
             instance_properties['metadata'] = self._format_metadata(
                 fingerprint='na', metadata=metadata)
+        if labels:
+            instance_properties['labels'] = labels
         if can_ip_forward:
             instance_properties['canIpForward'] = True
 
@@ -4434,6 +4474,8 @@ class GCENodeDriver(NodeDriver):
         sa = {}
         if 'email' not in service_account:
             sa['email'] = default_email
+        else:
+            sa['email'] = service_account['email']
 
         if 'scopes' not in service_account:
             sa['scopes'] = [self.AUTH_URL + default_scope]
@@ -4528,7 +4570,7 @@ class GCENodeDriver(NodeDriver):
             maint_opts = ['MIGRATE', 'TERMINATE']
             if isinstance(on_host_maintenance,
                           str) and on_host_maintenance in maint_opts:
-                if preemptible is True and on_host_maintenance is 'MIGRATE':
+                if preemptible is True and on_host_maintenance == 'MIGRATE':
                     raise ValueError(("host maintenance cannot be 'MIGRATE' "
                                       "if instance is preemptible."))
                 scheduling['onHostMaintenance'] = on_host_maintenance
@@ -4557,7 +4599,7 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None,
-            ex_preemptible=None):
+            ex_preemptible=None, ex_labels=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -4693,6 +4735,9 @@ class GCENodeDriver(NodeDriver):
                                    to use this keyword.
         :type     ex_image_family: ``str`` or ``None``
 
+        :param    ex_labels: Label dict for node.
+        :type     ex_labels: ``dict``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
 
@@ -4743,7 +4788,8 @@ class GCENodeDriver(NodeDriver):
                       'ex_nic_gce_struct': ex_nic_gce_struct,
                       'ex_on_host_maintenance': ex_on_host_maintenance,
                       'ex_automatic_restart': ex_automatic_restart,
-                      'ex_preemptible': ex_preemptible}
+                      'ex_preemptible': ex_preemptible,
+                      'ex_labels': ex_labels}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -6942,7 +6988,7 @@ class GCENodeDriver(NodeDriver):
         if not region_name:
             region = self._set_region(region)
             if not region:
-                raise ("Could not determine region for subnetwork.")
+                raise ValueError("Could not determine region for subnetwork.")
             else:
                 region_name = region.name
 
@@ -6980,7 +7026,7 @@ class GCENodeDriver(NodeDriver):
         if not region_name:
             region = self._set_region(region)
             if not region:
-                raise ("Could not determine region for subnetwork.")
+                raise ValueError("Could not determine region for subnetwork.")
             else:
                 region_name = region.name
 
@@ -7407,7 +7453,7 @@ class GCENodeDriver(NodeDriver):
         # Disk names are not unique across zones, so if zone is None or
         # 'all', we return the first one we find for that disk name.  For
         # consistency, we sort by keys and set the zone to the first key.
-        if zone is None or zone is 'all':
+        if zone is None or zone == 'all':
             zone = sorted(self._ex_volume_dict[volume_name])[0]
 
         volume = self._ex_volume_dict[volume_name].get(zone, None)
@@ -7575,10 +7621,10 @@ class GCENodeDriver(NodeDriver):
                   if no matching image is found.
         :rtype:   :class:`GCENodeImage` or ``None``
         """
-        project_images_pages = self.ex_list(
+        project_images_list = self.ex_list(
             self.list_images, ex_project=project, ex_include_deprecated=True)
         partial_match = []
-        for page in project_images_pages:
+        for page in project_images_list.page():
             for image in page:
                 if image.name == partial_name:
                     return image
@@ -7635,7 +7681,7 @@ class GCENodeDriver(NodeDriver):
             ex_service_accounts=None, description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_subnetwork=None):
+            ex_preemptible=None, ex_subnetwork=None, ex_labels=None):
         """
         Returns a request and body to create a new node.
 
@@ -7750,6 +7796,9 @@ class GCENodeDriver(NodeDriver):
         :param  ex_subnetwork: The network to associate with the node.
         :type   ex_subnetwork: :class:`GCESubnetwork`
 
+        :param  ex_labels: Label dict for node.
+        :type   ex_labels: ``dict`` or ``None``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -7777,8 +7826,8 @@ class GCENodeDriver(NodeDriver):
             service_accounts=ex_service_accounts,
             on_host_maintenance=ex_on_host_maintenance,
             automatic_restart=ex_automatic_restart, preemptible=ex_preemptible,
-            tags=tags, metadata=metadata, description=description,
-            disks_gce_struct=ex_disks_gce_struct,
+            tags=tags, metadata=metadata, labels=ex_labels,
+            description=description, disks_gce_struct=ex_disks_gce_struct,
             nic_gce_struct=ex_nic_gce_struct, use_selflinks=use_selflinks)
         node_data['name'] = name
 
@@ -7882,7 +7931,9 @@ class GCENodeDriver(NodeDriver):
             ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
             ex_automatic_restart=node_attrs['ex_automatic_restart'],
             ex_subnetwork=node_attrs['subnetwork'],
-            ex_preemptible=node_attrs['ex_preemptible'])
+            ex_preemptible=node_attrs['ex_preemptible'],
+            ex_labels=node_attrs['ex_labels']
+        )
 
         try:
             node_res = self.connection.request(request, method='POST',
@@ -7915,8 +7966,6 @@ class GCENodeDriver(NodeDriver):
             error = e.value
             code = e.code
             response = {'status': 'DONE'}
-        except ResourceNotFoundError:
-            return
         if response['status'] == 'DONE':
             status['node_response'] = None
             if error:
@@ -8355,6 +8404,8 @@ class GCENodeDriver(NodeDriver):
         extra['serviceAccounts'] = node.get('serviceAccounts', [])
         extra['scheduling'] = node.get('scheduling', {})
         extra['boot_disk'] = None
+        extra['labels'] = node.get('labels')
+        extra['labelFingerprint'] = node.get('labelFingerprint')
 
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':

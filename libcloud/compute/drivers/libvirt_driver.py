@@ -411,7 +411,7 @@ class LibvirtNodeDriver(NodeDriver):
         Sets up the regexp for parsing out IP addresses from the 'ip neighbor'
         command and pass it along to the parser function.
 
-        :return: Dictionary from the parsing funtion
+        :return: Dictionary from the parsing function
         :rtype: ``dict``
         """
         ip_regex = re.compile('(.*?)\s+.*lladdr\s+(.*?)\s+')

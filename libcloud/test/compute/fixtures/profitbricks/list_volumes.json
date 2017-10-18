@@ -1,12 +1,12 @@
 {
     "id": "dc-1/volumes",
     "type": "collection",
-    "href": "/cloudapi/v3/datacenters/dc-1/volumes",
+    "href": "/cloudapi/v4/datacenters/dc-1/volumes",
     "items": [
         {
             "id": "bvol-1",
             "type": "volume",
-            "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1",
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1",
             "metadata": {
                 "createdDate": "2016-10-18T07:20:41Z",
                 "createdBy": "test@test.test",
@@ -16,7 +16,7 @@
                 "state": "AVAILABLE"
             },
             "properties": {
-                "name": "Test Volume",
+                "name": "Test",
                 "type": "HDD",
                 "size": 10,
                 "availabilityZone": "AUTO",
@@ -41,7 +41,7 @@
         {
             "id": "d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
             "type": "volume",
-            "href": "/cloudapi/v3/datacenters/dc-1/volumes/d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes/d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
             "metadata": {
                 "createdDate": "2016-10-17T13:13:36Z",
                 "createdBy": "test@test.test",
@@ -76,7 +76,7 @@
         {
             "id": "21d7e7de-5054-4041-b691-717aa8b3c799",
             "type": "volume",
-            "href": "/cloudapi/v3/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799",
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799",
             "metadata": {
                 "createdDate": "2016-10-17T11:33:20Z",
                 "createdBy": "test@test.test",

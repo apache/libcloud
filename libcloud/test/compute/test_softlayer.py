@@ -73,6 +73,16 @@ class SoftLayerTests(unittest.TestCase):
         image = images[0]
         self.assertEqual(image.id, 'CENTOS_6_64')
 
+    def test_get_image(self):
+        image = self.driver.get_image('CENTOS_6_64')
+        self.assertEqual(image.id, 'CENTOS_6_64')
+
+    def test_fail_get_image(self):
+        self.assertRaises(
+            SoftLayerException,
+            self.driver.get_image,
+            'NOT_IMAGE')
+
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertEqual(len(sizes), 13)

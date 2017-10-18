@@ -19,13 +19,14 @@ import base64
 import json
 import copy
 import time
-import urllib
 
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import urlencode
 from libcloud.compute.providers import Provider
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
+from libcloud.compute.base import NodeAuthPassword, NodeAuthSSHKey
 from libcloud.compute.base import UuidMixin
 from libcloud.compute.types import NodeState
 from libcloud.common.types import LibcloudError, MalformedResponseError
@@ -41,13 +42,14 @@ __all__ = [
     'ProfitBricksNetworkInterface',
     'ProfitBricksFirewallRule',
     'ProfitBricksLan',
+    'ProfitBricksIPFailover',
     'ProfitBricksLoadBalancer',
     'ProfitBricksAvailabilityZone',
     'ProfitBricksIPBlock'
 ]
 
 API_HOST = 'api.profitbricks.com'
-API_VERSION = '/cloudapi/v3/'
+API_VERSION = '/cloudapi/v4/'
 
 
 class ProfitBricksResponse(JsonResponse):
@@ -294,6 +296,30 @@ class ProfitBricksLan(object):
     def __repr__(self):
         return (('<ProfitBricksLan: id=%s, name=%s, href=%s>')
                 % (self.id, self.name, self.href))
+
+
+class ProfitBricksIPFailover(object):
+    """
+    Extension class which stores information about a
+    ProfitBricks LAN's failover
+
+    :param      ip: The IP address to fail over.
+    :type       ip: ``str``
+
+    :param      nic_uuid: The ID of the NIC to fail over.
+    :param      nic_uuid: ``str``
+
+    Note: This class is ProfitBricks specific.
+
+    """
+
+    def __init__(self, ip, nic_uuid):
+        self.ip = ip
+        self.nic_uuid = nic_uuid
+
+    def __repr__(self):
+        return (('<ProfitBricksIPFailover: ip=%s, nic_uuid=%s>')
+                % (self.ip, self.nic_uuid))
 
 
 class ProfitBricksLoadBalancer(object):
@@ -670,10 +696,11 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type   ex_disk: ``int``
 
         :param  ex_password: The password for the volume.
-        :type   ex_password: ``str``
+        :type   ex_password: :class:`NodeAuthPassword` or ``str``
 
         :param  ex_ssh_keys: Optional SSH keys for the volume.
-        :type   ex_ssh_keys: ``list`` of ``str``
+        :type   ex_ssh_keys: ``list`` of :class:`NodeAuthSSHKey` or
+                             ``list`` of ``str``
 
         :param  ex_bus_type: Volume bus type (VIRTIO, IDE).
         :type   ex_bus_type: ``str``
@@ -736,7 +763,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         '''
         If passing in an image we need
-        to enfore a password or ssh keys.
+        to enforce a password or ssh keys.
         '''
         if not volume and image is not None:
             if ex_password is None and ex_ssh_keys is None:
@@ -807,10 +834,18 @@ class ProfitBricksNodeDriver(NodeDriver):
             }
 
             if ex_password is not None:
-                new_volume['properties']['imagePassword'] = ex_password
+                if isinstance(ex_password, NodeAuthPassword):
+                    new_volume['properties']['imagePassword'] = \
+                        ex_password.password
+                else:
+                    new_volume['properties']['imagePassword'] = ex_password
 
             if ex_ssh_keys is not None:
-                new_volume['properties']['sshKeys'] = ex_ssh_keys
+                if isinstance(ex_ssh_keys[0], NodeAuthSSHKey):
+                    new_volume['properties']['sshKeys'] = \
+                        [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+                else:
+                    new_volume['properties']['sshKeys'] = ex_ssh_keys
 
             body['entities']['volumes']['items'].append(new_volume)
 
@@ -1008,9 +1043,10 @@ class ProfitBricksNodeDriver(NodeDriver):
     def create_volume(
         self,
         size,
-        image,
         ex_datacenter,
         name=None,
+        image=None,
+        ex_image_alias=None,
         ex_type=None,
         ex_bus_type=None,
         ex_ssh_keys=None,
@@ -1023,15 +1059,19 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param  size: The size of the volume in GB.
         :type   size: ``int``
 
-        :param  image: The OS image for the volume.
-        :type   image: :class:`NodeImage`
-
         :param  ex_datacenter: The datacenter you're placing
                               the storage in. (req)
         :type   ex_datacenter: :class:`Datacenter`
 
         :param  name: The name to be given to the volume.
         :param  name: ``str``
+
+        :param  image: The OS image for the volume.
+        :type   image: :class:`NodeImage`
+
+        :param  ex_image_alias: An alias to a ProfitBricks public image.
+                                Use instead of 'image'.
+        :type   ex_image_alias: ``str``
 
         :param  ex_type: The type to be given to the volume (SSD or HDD).
         :param  ex_type: ``str``
@@ -1040,10 +1080,11 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type   ex_bus_type: ``str``
 
         :param  ex_ssh_keys: Optional SSH keys.
-        :type   ex_ssh_keys: ``dict``
+        :type   ex_ssh_keys: ``list`` of :class:`NodeAuthSSHKey` or
+                             ``list`` of ``str``
 
         :param  ex_password: Optional password for root.
-        :type   ex_password: ``str``
+        :type   ex_password: :class:`NodeAuthPassword` or ``str``
 
         :param  ex_availability_zone: Volume Availability Zone.
         :type   ex_availability_zone: ``str``
@@ -1056,39 +1097,43 @@ class ProfitBricksNodeDriver(NodeDriver):
             raise ValueError('You need to specify a data center'
                              ' to attach this volume to.')
 
-        if not image:
-            raise ValueError('You need to specify an image'
-                             ' to create this volume from.')
+        if image is not None:
+            if image.extra['image_type'] != 'HDD':
+                raise ValueError('Invalid type of {image_type} specified for '
+                                 '{image_name}, which needs to be of type HDD'
+                                 .format(image_type=image.extra['image_type'],
+                                         image_name=image.name))
 
-        if image.extra['image_type'] != 'HDD':
-            raise ValueError('Invalid type of {image_type} specified for '
-                             '{image_name}, which needs to be of type HDD'
-                             .format(image_type=image.extra['image_type'],
-                                     image_name=image.name))
-
-        if ex_datacenter.extra['location'] != image.extra['location']:
-            raise ValueError(
-                'The image {image_name} '
-                '(location: {image_location}) you specified '
-                'is not available at the data center '
-                '{datacenter_name} '
-                '(location: {datacenter_location}).'
-                .format(
-                    image_name=image.extra['name'],
-                    datacenter_name=ex_datacenter.extra['name'],
-                    image_location=image.extra['location'],
-                    datacenter_location=ex_datacenter.extra['location']
+            if ex_datacenter.extra['location'] != image.extra['location']:
+                raise ValueError(
+                    'The image {image_name} '
+                    '(location: {image_location}) you specified '
+                    'is not available at the data center '
+                    '{datacenter_name} '
+                    '(location: {datacenter_location}).'
+                    .format(
+                        image_name=image.extra['name'],
+                        datacenter_name=ex_datacenter.extra['name'],
+                        image_location=image.extra['location'],
+                        datacenter_location=ex_datacenter.extra['location']
+                    )
                 )
-            )
+        else:
+            if not ex_image_alias:
+                raise ValueError('You need to specify an image or image alias'
+                                 ' to create this volume from.')
 
         action = ex_datacenter.href + '/volumes'
         body = {
             'properties': {
-                'size': size,
-                'image': image.id
+                'size': size
             }
         }
 
+        if image is not None:
+            body['properties']['image'] = image.id
+        else:
+            body['properties']['imageAlias'] = ex_image_alias
         if name is not None:
             body['properties']['name'] = name
         if ex_type is not None:
@@ -1096,9 +1141,16 @@ class ProfitBricksNodeDriver(NodeDriver):
         if ex_bus_type is not None:
             body['properties']['bus'] = ex_bus_type
         if ex_ssh_keys is not None:
-            body['properties']['sshKeys'] = ex_ssh_keys
+            if isinstance(ex_ssh_keys[0], NodeAuthSSHKey):
+                body['properties']['sshKeys'] = \
+                    [ssh_key.pubkey for ssh_key in ex_ssh_keys]
+            else:
+                body['properties']['sshKeys'] = ex_ssh_keys
         if ex_password is not None:
-            body['properties']['imagePassword'] = ex_password
+            if isinstance(ex_password, NodeAuthPassword):
+                body['properties']['imagePassword'] = ex_password.password
+            else:
+                body['properties']['imagePassword'] = ex_password
         if ex_availability_zone is not None:
             body['properties']['availabilityZone'] = ex_availability_zone
 
@@ -1382,7 +1434,8 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param  availability_zone: Update the availability zone.
         :type   availability_zone: :class:`ProfitBricksAvailabilityZone`
 
-        :param  ex_licence_type: Licence type (WINDOWS, LINUX, OTHER).
+        :param  ex_licence_type: Licence type (WINDOWS, WINDOWS2016, LINUX,
+                                OTHER, UNKNOWN).
         :type   ex_licence_type: ``str``
 
         :param  ex_boot_volume: Setting the new boot (HDD) volume.
@@ -1531,7 +1584,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                         you are describing.
         :type   ex_href: ``str``
 
-        :param  ex_datacenter_id: The ID for the data cente
+        :param  ex_datacenter_id: The ID for the data center
                                 you are describing.
         :type   ex_datacenter_id: ``str``
 
@@ -1696,37 +1749,37 @@ class ProfitBricksNodeDriver(NodeDriver):
             body['description'] = description
 
         if licence_type is not None:
-            body['licence_type'] = licence_type
+            body['licenceType'] = licence_type
 
         if cpu_hot_plug is not None:
-            body['cpu_hot_plug'] = cpu_hot_plug
+            body['cpuHotPlug'] = cpu_hot_plug
 
         if cpu_hot_unplug is not None:
-            body['cpu_hot_unplug'] = cpu_hot_unplug
+            body['cpuHotUnplug'] = cpu_hot_unplug
 
         if ram_hot_plug is not None:
-            body['ram_hot_plug'] = ram_hot_plug
+            body['ramHotPlug'] = ram_hot_plug
 
         if ram_hot_unplug is not None:
-            body['ram_hot_unplug'] = ram_hot_unplug
+            body['ramHotUnplug'] = ram_hot_unplug
 
         if nic_hot_plug is not None:
-            body['nic_hot_plug'] = nic_hot_plug
+            body['nicHotPlug'] = nic_hot_plug
 
         if nic_hot_unplug is not None:
-            body['nic_hot_unplug'] = nic_hot_unplug
+            body['nicHotUnplug'] = nic_hot_unplug
 
         if disc_virtio_hot_plug is not None:
-            body['disc_virtio_hot_plug'] = disc_virtio_hot_plug
+            body['discVirtioHotPlug'] = disc_virtio_hot_plug
 
         if disc_virtio_hot_unplug is not None:
-            body['disc_virtio_hot_unplug'] = disc_virtio_hot_unplug
+            body['discVirtioHotUnplug'] = disc_virtio_hot_unplug
 
         if disc_scsi_hot_plug is not None:
-            body['disc_scsi_hot_plug'] = disc_scsi_hot_plug
+            body['discScsiHotPlug'] = disc_scsi_hot_plug
 
         if disc_scsi_hot_unplug is not None:
-            body['disc_scsi_hot_unplug'] = disc_scsi_hot_unplug
+            body['discScsiHotUnplug'] = disc_scsi_hot_unplug
 
         response = self.connection.request(
             action=action,
@@ -1754,7 +1807,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         :type       ex_href: ``str``
 
         :param      ex_location_id: The id for the location you are
-                        describing ('de/fra', 'de/fkb', 'us/las')
+                        describing ('de/fra', 'de/fkb', 'us/las', 'us/ewr')
         :type       ex_location_id: ``str``
 
         :return:    Instance of class ``NodeLocation``
@@ -1766,7 +1819,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         if ex_href is None:
             if ex_location_id is None:
                 raise ValueError(
-                    'The loctation ID is required.'
+                    'The location ID is required.'
                 )
             else:
                 use_full_url = False
@@ -2347,7 +2400,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         - a datacenter if one is specified
         - all datacenters if none specified
 
-        :param  datacenter: The DC you are renaming.
+        :param  datacenter: The parent DC for the LAN.
         :type   datacenter: :class:`Datacenter`
 
         :return:    ``list`` of class ``ProfitBricksLan``
@@ -2378,12 +2431,15 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return lans
 
-    def ex_create_lan(self, datacenter, is_public=False, nics=None):
+    def ex_create_lan(self, datacenter, name=None, is_public=False, nics=None):
         """
         Create and attach a Lan to a data center.
 
-        :param  datacenter: The DC you are renaming.
+        :param  datacenter: The parent DC for the LAN..
         :type   datacenter: :class:`Datacenter`
+
+        :param  name: LAN name.
+        :type   name: ``str``
 
         :param  is_public: True if the Lan is to have internet access.
         :type   is_public: ``bool``
@@ -2398,7 +2454,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         action = datacenter.extra['entities']['lans']['href']
         body = {
             'properties': {
-                'name': 'LAN - {datacenter_name}'.format(
+                'name':
+                name or
+                'LAN - {datacenter_name}'.format(
                     datacenter_name=datacenter.name
                 ),
                 'public': is_public
@@ -2472,7 +2530,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return self._to_lan(response.object)
 
-    def ex_update_lan(self, lan, is_public, name=None):
+    def ex_update_lan(self, lan, is_public, name=None, ip_failover=None):
         """
         Update a local area network
 
@@ -2486,6 +2544,9 @@ class ProfitBricksNodeDriver(NodeDriver):
         :param  name: The name of the lan.
         :type   name: ``str``
 
+        :param  ip_failover: The IP to fail over.
+        :type   ip_failover: ``list`` of :class: ``ProfitBricksIPFailover``
+
         :return:    Instance class ``ProfitBricksLan``
         :rtype:     :class:`ProfitBricksLan`
         """
@@ -2496,6 +2557,10 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         if name is not None:
             body['name'] = name
+
+        if ip_failover is not None:
+            body['ipFailover'] = [{'ip': item.ip, 'nicUuid': item.nic_uuid}
+                                  for item in ip_failover]
 
         request = self.connection.request(
             action=action,
@@ -2647,7 +2712,7 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         action = volume.extra['href'] + '/restore-snapshot'
         data = {'snapshotId': snapshot.id}
-        body = urllib.urlencode(data)
+        body = urlencode(data)
 
         self.connection.request(
             action=action,
@@ -2908,7 +2973,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
         Create and attach a load balancer to a data center.
 
-        :param  datacenter: The DC you are renaming.
+        :param  datacenter: The parent DC for the load balancer.
         :type   datacenter: :class:`Datacenter`
 
         :param  name: Load balancer name.
@@ -3595,6 +3660,7 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'discScsiHotUnplug': 'disc_scsi_hot_unplug',
                 'licenceType': 'licence_type',
                 'imageType': 'image_type',
+                'imageAliases': 'image_aliases',
                 'public': 'public'
             }
         }

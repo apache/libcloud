@@ -1,7 +1,7 @@
 {
     "id": "dc-1",
     "type": "datacenter",
-    "href": "/cloudapi/v3/datacenters/dc-1",
+    "href": "/cloudapi/v4/datacenters/dc-1",
     "metadata": {
         "createdDate": "2016-10-17T11:33:11Z",
         "createdBy": "test@test.test",
@@ -11,9 +11,9 @@
         "state": "AVAILABLE"
     },
     "properties": {
-        "name": "Test Data Center",
-        "description": "This is a test data center.",
-        "location": "de/fkb",
+        "name": "libcloud Test",
+        "description": "libcloud test datacenter",
+        "location": "us/las",
         "version": 35,
         "features": [
             "SSD",
@@ -24,12 +24,12 @@
         "servers": {
             "id": "dc-1/servers",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/servers",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers",
             "items": [
                 {
                     "id": "srv-1",
                     "type": "server",
-                    "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1",
+                    "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1",
                     "metadata": {
                         "createdDate": "2016-10-18T07:28:05Z",
                         "createdBy": "test@test.test",
@@ -48,7 +48,7 @@
                         "bootVolume": {
                             "id": "bvol-1",
                             "type": "volume",
-                            "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1",
+                            "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1",
                             "metadata": {
                                 "createdDate": "2016-10-18T07:20:41Z",
                                 "createdBy": "test@test.test",
@@ -84,35 +84,35 @@
                         "cdroms": {
                             "id": "srv-1/cdroms",
                             "type": "collection",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/cdroms",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/cdroms",
                             "items": []
                         },
                         "volumes": {
                             "id": "srv-1/volumes",
                             "type": "collection",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/volumes",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/volumes",
                             "items": [
                                 {
                                     "id": "d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
                                     "type": "volume",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/d6688ced-700d-4c9c-a3a7-9f7170c5edc3"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/d6688ced-700d-4c9c-a3a7-9f7170c5edc3"
                                 },
                                 {
                                     "id": "vol-2",
                                     "type": "volume",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/vol-2"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/vol-2"
                                 },
                                 {
                                     "id": "bvol-1",
                                     "type": "volume",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1"
                                 }
                             ]
                         },
                         "nics": {
                             "id": "srv-1/nics",
                             "type": "collection",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/srv-1/nics",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/nics",
                             "items": []
                         }
                     }
@@ -120,7 +120,7 @@
                 {
                     "id": "s-3",
                     "type": "server",
-                    "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3",
+                    "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3",
                     "metadata": {
                         "createdDate": "2016-10-17T11:33:20Z",
                         "createdBy": "test@test.test",
@@ -139,7 +139,7 @@
                         "bootVolume": {
                             "id": "21d7e7de-5054-4041-b691-717aa8b3c799",
                             "type": "volume",
-                            "href": "/cloudapi/v3/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799",
+                            "href": "/cloudapi/v4/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799",
                             "metadata": {
                                 "createdDate": "2016-10-17T11:33:20Z",
                                 "createdBy": "test@test.test",
@@ -175,30 +175,30 @@
                         "cdroms": {
                             "id": "s-3/cdroms",
                             "type": "collection",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/cdroms",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/cdroms",
                             "items": []
                         },
                         "volumes": {
                             "id": "s-3/volumes",
                             "type": "collection",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/volumes",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/volumes",
                             "items": [
                                 {
                                     "id": "21d7e7de-5054-4041-b691-717aa8b3c799",
                                     "type": "volume",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799"
                                 }
                             ]
                         },
                         "nics": {
                             "id": "s-3/nics",
                             "type": "collection",
-                            "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics",
+                            "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics",
                             "items": [
                                 {
                                     "id": "nic-1",
                                     "type": "nic",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics/nic-1"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-1"
                                 }
                             ]
                         }
@@ -209,12 +209,12 @@
         "volumes": {
             "id": "dc-1/volumes",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/volumes",
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes",
             "items": [
                 {
                     "id": "vol-2",
                     "type": "volume",
-                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/vol-2",
+                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/vol-2",
                     "metadata": {
                         "createdDate": "2016-10-18T15:13:44Z",
                         "createdBy": "test@test.test",
@@ -249,7 +249,7 @@
                 {
                     "id": "bvol-1",
                     "type": "volume",
-                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/bvol-1",
+                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1",
                     "metadata": {
                         "createdDate": "2016-10-18T07:20:41Z",
                         "createdBy": "test@test.test",
@@ -284,7 +284,7 @@
                 {
                     "id": "d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
                     "type": "volume",
-                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
+                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/d6688ced-700d-4c9c-a3a7-9f7170c5edc3",
                     "metadata": {
                         "createdDate": "2016-10-17T13:13:36Z",
                         "createdBy": "test@test.test",
@@ -319,7 +319,7 @@
                 {
                     "id": "21d7e7de-5054-4041-b691-717aa8b3c799",
                     "type": "volume",
-                    "href": "/cloudapi/v3/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799",
+                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/21d7e7de-5054-4041-b691-717aa8b3c799",
                     "metadata": {
                         "createdDate": "2016-10-17T11:33:20Z",
                         "createdBy": "test@test.test",
@@ -356,18 +356,18 @@
         "loadbalancers": {
             "id": "dc-1/loadbalancers",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/loadbalancers",
+            "href": "/cloudapi/v4/datacenters/dc-1/loadbalancers",
             "items": []
         },
         "lans": {
             "id": "dc-1/lans",
             "type": "collection",
-            "href": "/cloudapi/v3/datacenters/dc-1/lans",
+            "href": "/cloudapi/v4/datacenters/dc-1/lans",
             "items": [
                 {
                     "id": "2",
                     "type": "lan",
-                    "href": "/cloudapi/v3/datacenters/dc-1/lans/2",
+                    "href": "/cloudapi/v4/datacenters/dc-1/lans/2",
                     "metadata": {
                         "createdDate": "2016-10-17T18:19:43Z",
                         "createdBy": "test@test.test",
@@ -384,12 +384,12 @@
                         "nics": {
                             "id": "2/nics",
                             "type": "collection",
-                            "href": "/cloudapi/v3/datacenters/dc-1/lans/2/nics",
+                            "href": "/cloudapi/v4/datacenters/dc-1/lans/2/nics",
                             "items": [
                                 {
                                     "id": "nic-1",
                                     "type": "nic",
-                                    "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics/nic-1"
+                                    "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-1"
                                 }
                             ]
                         }

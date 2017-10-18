@@ -14,9 +14,9 @@ following in ``pdns.conf``::
 
 For PowerDNS 4.x, please read the `PowerDNS 4 HTTP API documentation`_. The
 ``pdns.conf`` options are slightly different (the options are no longer
-prefixed with ``experimental-``)::
+prefixed with ``experimental-``, and ``json-interface`` is no longer
+required.)::
 
-  json-interface=yes
   api-key=changeme
   webserver=yes
 
@@ -40,4 +40,4 @@ API Docs
 
 .. _`PowerDNS`: https://doc.powerdns.com/
 .. _`PowerDNS 3 HTTP API documentation`: https://doc.powerdns.com/3/httpapi/README/
-.. _`PowerDNS 4 HTTP API documentation`: https://doc.powerdns.com/md/httpapi/README/
+.. _`PowerDNS 4 HTTP API documentation`: https://doc.powerdns.com/authoritative/http-api/
