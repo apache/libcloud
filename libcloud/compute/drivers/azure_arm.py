@@ -1948,8 +1948,9 @@ class AzureNodeDriver(NodeDriver):
                 keys["key1"],
                 host="%s.blob%s" % (storageAccount,
                                     self.connection.storage_suffix))
-            return blobdriver.delete_object(blobdriver.get_object(blobContainer,
-                                                           blob))
+            return blobdriver.delete_object(
+                blobdriver.get_object(blobContainer,
+                                      blob))
         except ObjectDoesNotExistError:
             return True
 
