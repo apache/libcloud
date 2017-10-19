@@ -351,7 +351,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         local_plus_deb = self.driver.list_images(
             ['debian-cloud', 'project_name'])
         self.assertEqual(len(local_images), 23)
-        self.assertEqual(len(all_deprecated_images), 156)
+        self.assertEqual(len(all_deprecated_images), 158)
         self.assertEqual(len(debian_images), 2)
         self.assertEqual(len(local_plus_deb), 3)
         self.assertEqual(local_images[0].name, 'aws-ubuntu')
@@ -763,9 +763,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_create_image(self):
         volume = self.driver.ex_get_volume('lcdisk')
-        description = 'CoreOS beta 522.3.0'
+        description = 'CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12'
         name = 'coreos'
-        family = 'coreos'
+        family = 'coreos-stable'
+        licenses = ["projects/coreos-cloud/global/licenses/coreos-stable"]
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
         expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         mock_request = mock.Mock()
@@ -773,17 +774,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.driver.connection.async_request = mock_request
 
         image = self.driver.ex_create_image(
-            name, volume, description=description, family='coreos',
-            guest_os_features=guest_os_features)
+            name, volume, description=description, family=family,
+            guest_os_features=guest_os_features, ex_licenses=licenses)
         self.assertTrue(isinstance(image, GCENodeImage))
         self.assertTrue(image.name.startswith(name))
         self.assertEqual(image.extra['description'], description)
         self.assertEqual(image.extra['family'], family)
         self.assertEqual(image.extra['guestOsFeatures'], expected_features)
+        self.assertEqual(image.extra['licenses'][0].name, licenses[0].split("/")[-1])
         expected_data = {'description': description,
                          'family': family,
                          'guestOsFeatures': expected_features,
                          'name': name,
+                         'licenses': licenses,
                          'sourceDisk': volume.extra['selfLink'],
                          'zone': volume.extra['zone'].name}
         mock_request.assert_called_once_with('/global/images',
@@ -792,8 +795,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_copy_image(self):
         name = 'coreos'
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
-        description = 'CoreOS beta 522.3.0'
-        family = 'coreos'
+        description = 'CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12'
+        family = 'coreos-stable'
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
         expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         image = self.driver.ex_copy_image(name, url, description=description,
@@ -2766,6 +2769,12 @@ class GCEMockHttp(MockHttp):
                                                            body, headers):
         body = self.fixtures.load(
             'projects_rhel-cloud_global_licenses_rhel_server.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_coreos_cloud_global_licenses_coreos_stable(self, method, url,
+                                                             body, headers):
+        body = self.fixtures.load(
+            'projects_coreos-cloud_global_licenses_coreos_stable.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_suse_cloud_global_licenses_sles_12(self, method, url, body,
