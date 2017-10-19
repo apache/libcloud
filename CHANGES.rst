@@ -13,6 +13,9 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Allow adding license strings to images (GITHUB-1136)
+  [Katriel Traum, Eric Johnson]
+
 - [UpCloud] New driver for UpCloud (LIBCLOUD-938, GITHUB-1102)
   [Mika Lackman, Ilari Mäkelä]
 
