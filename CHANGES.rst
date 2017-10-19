@@ -70,6 +70,9 @@ Compute
   (GITHUB-1130)
   [Rick van de Loo]
 
+- [EC2] Fix EBS volume encryption (GITHUB-1008)
+  [Sergey Babak]
+
 Storage
 ~~~~~~~
 
