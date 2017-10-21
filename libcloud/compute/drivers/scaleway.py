@@ -350,11 +350,11 @@ class ScalewayConnection(ConnectionUserAndKey):
         return headers
 
 
-def _kb_to_mb(size):
+def _to_lib_size(size):
     return int(size / 1000 / 1000 / 1000)
 
 
-def _mb_to_kb(size):
+def _to_api_size(size):
     return int(size * 1000 * 1000 * 1000)
 
 
@@ -455,7 +455,7 @@ class ScalewayNodeDriver(NodeDriver):
 
         allocate_space = 50
         for volume in data['volumes']:
-            allocate_space += _kb_to_mb(volume['size'])
+            allocate_space += _to_lib_size(volume['size'])
 
         while allocate_space < size.disk:
             if size.disk - allocate_space > 150:
@@ -467,7 +467,7 @@ class ScalewayNodeDriver(NodeDriver):
             data['volumes'][str(vol_num)] = {
                 "name": "%s-%d" % (name, vol_num),
                 "organization": self.key,
-                "size": _mb_to_kb(bump),
+                "size": _to_api_size(bump),
                 "volume_type": "l_ssd"
             }
             allocate_space += bump
@@ -505,7 +505,7 @@ class ScalewayNodeDriver(NodeDriver):
     def _to_volume(self, volume):
         return StorageVolume(id=volume['id'],
                              name=volume['name'],
-                             size=_kb_to_mb(volume['size']),
+                             size=_to_lib_size(volume['size']),
                              driver=self,
                              extra={
                                 'organization': volume['organization'],
@@ -525,7 +525,7 @@ class ScalewayNodeDriver(NodeDriver):
                                             VolumeSnapshotState.UNKNOWN)
         return VolumeSnapshot(id=snapshot['id'],
                               driver=self,
-                              size=_kb_to_mb(snapshot['size']),
+                              size=_to_lib_size(snapshot['size']),
                               created=parse_date(snapshot['creation_date']),
                               state=state,
                               extra={
@@ -538,7 +538,7 @@ class ScalewayNodeDriver(NodeDriver):
             'name': name,
             'organization': self.key,
             'volume_type': 'l_ssd',
-            'size': _mb_to_kb(size)
+            'size': _to_api_size(size)
         }
         response = self.connection.request('/volumes',
                                            region=region,
