@@ -111,6 +111,19 @@ class AzureResourceGroup(object):
         return (('<AzureResourceGroup: id=%s, name=%s, location=%s ...>')
                 % (self.id, self.name, self.location))
 
+class AzureStorageAccount(object):
+    """Represent an Azure storage account."""
+
+    def __init__(self, id, name, location, extra):
+        self.id = id
+        self.name = name
+        self.location = location
+        self.extra = extra
+
+    def __repr__(self):
+        return (('<AzureStorageAccount: id=%s, name=%s, location=%s ...>')
+                % (self.id, self.name, self.location))
+
 
 class AzureNetworkSecurityGroup(object):
     """Represent an Azure network security group."""
@@ -546,20 +559,13 @@ class AzureNodeDriver(NodeDriver):
                  "/Microsoft.Compute/virtualMachines/%s" % \
                  (self.subscription_id, ex_resource_group, name)
 
-        n = 0
-        while True:
-            try:
-                instance_vhd = "https://%s.blob%s" \
-                               "/%s/%s-os_%i.vhd" \
-                               % (ex_storage_account,
-                                  self.connection.storage_suffix,
-                                  ex_blob_container,
-                                  name,
-                                  n)
-                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-                break
-            except LibcloudError:
-                n += 1
+
+        instance_vhd = "https://%s.blob%s" \
+                       "/%s/%s-os.vhd" \
+                       % (ex_storage_account,
+                          self.connection.storage_suffix,
+                          ex_blob_container,
+                          name)
 
         if isinstance(image, AzureVhdImage):
             storageProfile = {
@@ -632,26 +638,29 @@ class AzureNodeDriver(NodeDriver):
         if isinstance(auth, NodeAuthSSHKey):
             data["properties"]["osProfile"]["adminPassword"] = \
                 binascii.hexlify(os.urandom(20))
-            data["properties"]["osProfile"]["linuxConfiguration"] = {
-                "disablePasswordAuthentication": "true",
-                "ssh": {
-                    "publicKeys": [
-                        {
-                            "path": '/home/%s/.ssh/authorized_keys' % (
-                                ex_user_name),
-                            "keyData": auth.pubkey
-                        }
-                    ]
+            if not "windows" in image.id.lower():
+                data["properties"]["osProfile"]["linuxConfiguration"] = {
+                    "disablePasswordAuthentication": "true",
+                    "ssh": {
+                        "publicKeys": [
+                            {
+                                "path": '/home/%s/.ssh/authorized_keys' % (
+                                    ex_user_name),
+                                "keyData": auth.pubkey
+                            }
+                        ]
+                    }
                 }
-            }
         elif isinstance(auth, NodeAuthPassword):
-            data["properties"]["osProfile"]["linuxConfiguration"] = {
-                "disablePasswordAuthentication": "false"
-            }
+            if not "windows" in image.id.lower():
+                data["properties"]["osProfile"]["linuxConfiguration"] = {
+                    "disablePasswordAuthentication": "false"
+                }
             data["properties"]["osProfile"]["adminPassword"] = auth.password
         else:
             raise ValueError(
                 "Must provide NodeAuthSSHKey or NodeAuthPassword in auth")
+
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
@@ -846,6 +855,27 @@ class AzureNodeDriver(NodeDriver):
                                     params={"api-version": "2015-06-15"})
         return [(img["id"], img["name"]) for img in r.object]
 
+    def ex_create_resource_group(self, name, location):
+        """
+        Create resource group.
+
+        :return: The resource group.
+        :rtype: :class:`.AzureResourceGroup`
+        """
+
+        data = {
+            "name": name,
+            "location": location.id
+        }
+        action = "/subscriptions/%s/resourceGroups/%s/" \
+                 % (self.subscription_id, name)
+        r = self.connection.request(action,
+                                    params={"api-version": "2017-08-01"},
+                                    data=data,
+                                    method='PUT')
+        return AzureResourceGroup(r.object["id"], r.object["name"],
+                                  r.object["location"], r.object["properties"])
+
     def ex_list_resource_groups(self):
         """
         List resource groups.
@@ -858,6 +888,41 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(action,
                                     params={"api-version": "2016-09-01"})
         return [AzureResourceGroup(grp["id"], grp["name"], grp["location"],
+                                   grp["properties"])
+                for grp in r.object["value"]]
+
+    def ex_create_storage_account(self, name, ex_resource_group, kind, location):
+        """
+        Create storage account.
+        """
+
+        data = {
+            "sku": {
+                "name": "Standard_GRS"
+            },
+            "name": name,
+            "kind": kind,
+            "location": location.id
+        }
+        action = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s" \
+                 % (self.subscription_id, ex_resource_group, name)
+        ret = self.connection.request(action,
+                                    params={"api-version": "2017-06-01"},
+                                    data=data,
+                                    method='PUT')
+
+    def ex_list_storage_accounts(self):
+        """
+        List storage accounts.
+
+        :return: A list of storage accounts.
+        :rtype: ``list`` of :class:`.AzureStorageAccount`
+        """
+
+        action = "/subscriptions/%s/providers/Microsoft.Storage/storageAccounts" % (self.subscription_id)
+        r = self.connection.request(action,
+                                    params={"api-version": "2017-06-01"})
+        return [AzureStorageAccount(grp["id"], grp["name"], grp["location"],
                                    grp["properties"])
                 for grp in r.object["value"]]
 
@@ -885,7 +950,7 @@ class AzureNodeDriver(NodeDriver):
                 for net in r.object["value"]]
 
     def ex_create_network_security_group(self, name, resource_group,
-                                         location=None):
+                                         location=None, securityRules=[]):
         """
         Update tags on any resource supporting tags.
 
@@ -901,21 +966,29 @@ class AzureNodeDriver(NodeDriver):
         :type location: :class:`.NodeLocation`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/networkSecurityGroups/%s" \
                  % (self.subscription_id, resource_group, name)
         data = {
             "location": location.id,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "securityRules": securityRules
+            }
         }
-        self.connection.request(target,
-                                params={"api-version": "2016-09-01"},
+        r = self.connection.request(target,
+                                params={"api-version": "2017-09-01"},
                                 data=data,
                                 method='PUT')
+
+        return AzureNetworkSecurityGroup(r.object["id"], r.object["name"],
+                            r.object["location"], r.object["properties"])
 
     def ex_delete_network_security_group(self, name, resource_group,
                                          location=None):
@@ -949,6 +1022,57 @@ class AzureNodeDriver(NodeDriver):
                                 params={"api-version": "2016-09-01"},
                                 data=data,
                                 method='DELETE')
+
+    def ex_create_network(self, name, resource_group, location=None, addressSpace="10.0.0.0/16", networkSecurityGroup='', subnets=[]):
+        """
+        Create a virtual network.
+
+        :return: A list of virtual networks.
+        :rtype: ``list`` of :class:`.AzureNetwork`
+        """
+
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
+
+        action = "/subscriptions/%s/resourceGroups/%s/providers/" \
+                 "Microsoft.Network/virtualNetworks/%s" \
+                 % (self.subscription_id, resource_group, name)
+
+        if not subnets:
+            subnets = [
+              {
+                "name": "Default",
+                "properties": {
+                  "networkSecurityGroup": {"id":networkSecurityGroup},
+                  "addressPrefix": "10.0.0.0/24"
+                }
+              }
+            ]
+
+        data = {
+            "name": name,
+            "location": location.id,
+            "tags": {},
+            "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    addressSpace
+                  ]
+                },
+                "subnets": subnets
+            }
+        }
+
+        r = self.connection.request(action,
+                                    params={"api-version": "2017-08-01"},
+                                    data=data,
+                                    method='PUT')
+
+        return AzureNetwork(r.object["id"], r.object["name"],
+                            r.object["location"], r.object["properties"])
 
     def ex_list_networks(self):
         """
@@ -1067,10 +1191,11 @@ class AzureNodeDriver(NodeDriver):
         :rtype: :class:`.AzureIPAddress`
         """
 
-        if location is None and self.default_location:
-            location = self.default_location
-        else:
-            raise ValueError("location is required.")
+        if location is None:
+            if self.default_location:
+                location = self.default_location
+            else:
+                raise ValueError("location is required.")
 
         target = "/subscriptions/%s/resourceGroups/%s/" \
                  "providers/Microsoft.Network/publicIPAddresses/%s" \
@@ -1089,7 +1214,7 @@ class AzureNodeDriver(NodeDriver):
         return self._to_ip_address(r.object)
 
     def ex_create_network_interface(self, name, subnet, resource_group,
-                                    location=None, public_ip=None):
+                                    location=None, public_ip=None, networkSecurityGroup=""):
         """
         Create a virtual network interface (NIC).
 
@@ -1129,8 +1254,11 @@ class AzureNodeDriver(NodeDriver):
             "tags": {},
             "properties": {
                 "ipConfigurations": [{
-                    "name": "myip1",
+                    "name": name,
                     "properties": {
+                        "publicIPAddress": {
+                            "id": public_ip.id
+                        },
                         "subnet": {
                             "id": subnet.id
                         },
@@ -1139,12 +1267,6 @@ class AzureNodeDriver(NodeDriver):
                 }]
             }
         }
-
-        if public_ip:
-            ip_config = data["properties"]["ipConfigurations"][0]
-            ip_config["properties"]["publicIPAddress"] = {
-                "id": public_ip.id
-            }
 
         r = self.connection.request(target,
                                     params={"api-version": "2015-06-15"},
