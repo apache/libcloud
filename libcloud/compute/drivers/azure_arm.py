@@ -559,20 +559,13 @@ class AzureNodeDriver(NodeDriver):
                  "/Microsoft.Compute/virtualMachines/%s" % \
                  (self.subscription_id, ex_resource_group, name)
 
-        n = 0
-        while True:
-            try:
-                instance_vhd = "https://%s.blob%s" \
-                               "/%s/%s-os_%i.vhd" \
-                               % (ex_storage_account,
-                                  self.connection.storage_suffix,
-                                  ex_blob_container,
-                                  name,
-                                  n)
-                #self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-                break
-            except LibcloudError:
-                n += 1
+
+        instance_vhd = "https://%s.blob%s" \
+                       "/%s/%s-os.vhd" \
+                       % (ex_storage_account,
+                          self.connection.storage_suffix,
+                          ex_blob_container,
+                          name)
 
         if isinstance(image, AzureVhdImage):
             storageProfile = {
