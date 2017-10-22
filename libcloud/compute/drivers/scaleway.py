@@ -23,7 +23,8 @@ except:
     import json
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
-from libcloud.compute.base import NodeDriver, NodeImage, Node, NodeSize, NodeLocation
+from libcloud.compute.base import NodeDriver, NodeImage, Node, NodeSize
+from libcloud.compute.base import NodeLocation
 from libcloud.compute.base import StorageVolume, VolumeSnapshot, KeyPair
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState, VolumeSnapshotState
@@ -219,7 +220,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'ARM64-64GB',
         'name': 'ARM64-64GB',
         'ram': 65536,
-        'disk': 800, # TODO: Update to _minimum_ required storage
+        'disk': 800,  # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.28,
         'extra': {
@@ -233,7 +234,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'ARM64-128GB',
         'name': 'ARM64-128GB',
         'ram': 131072,
-        'disk': 1000, # TODO: Update to _minimum_ required storage
+        'disk': 1000,  # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.56,
         'extra': {
@@ -275,7 +276,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'X64-60GB',
         'name': 'X64-60GB',
         'ram': 61440,
-        'disk': 700, # TODO: Update to _minimum_ required storage
+        'disk': 700,  # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.18,
         'extra': {
@@ -289,7 +290,7 @@ SCALEWAY_INSTANCE_TYPES = [
         'id': 'X64-120GB',
         'name': 'X64-120GB',
         'ram': 122880,
-        'disk': 1000, # TODO: Update to _minimum_ required storage
+        'disk': 1000,  # TODO: Update to _minimum_ required storage
         'bandwidth': 1000,
         'price': 0.36,
         'extra': {
@@ -306,6 +307,7 @@ SCALEWAY_LOCATION_DATA = [
     {'id': 'par1', 'name': 'Paris 1', 'country': 'FR'},
     {'id': 'ams1', 'name': 'Amsterdam 1', 'country': 'NL'},
 ]
+
 
 class ScalewayResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED,
@@ -410,15 +412,16 @@ class ScalewayNodeDriver(NodeDriver):
         return self._to_image(image)
 
     def _to_image(self, image):
+        extra = {
+            'arch': image['arch'],
+            'creation_date': parse_date(image['creation_date']),
+            'modification_date': parse_date(image['modification_date']),
+            'organization': image['organization'],
+        }
         return NodeImage(id=image['id'],
                          name=image['name'],
                          driver=self,
-                         extra={
-                            'arch': image['arch'],
-                            'creation_date': parse_date(image['creation_date']),
-                            'modification_date': parse_date(image['modification_date']),
-                            'organization': image['organization'],
-                         })
+                         extra=extra)
 
     def list_nodes(self, region=None):
         response = self.connection.request('/servers', region=region)
@@ -503,16 +506,17 @@ class ScalewayNodeDriver(NodeDriver):
         return [self._to_volume(volume) for volume in volumes]
 
     def _to_volume(self, volume):
+        extra = {
+            'organization': volume['organization'],
+            'volume_type': volume['volume_type'],
+            'creation_date': parse_date(volume['creation_date']),
+            'modification_date': parse_date(volume['modification_date']),
+        }
         return StorageVolume(id=volume['id'],
                              name=volume['name'],
                              size=_to_lib_size(volume['size']),
                              driver=self,
-                             extra={
-                                'organization': volume['organization'],
-                                'volume_type': volume['volume_type'],
-                                'creation_date': parse_date(volume['creation_date']),
-                                'modification_date': parse_date(volume['modification_date']),
-                             })
+                             extra=extra)
 
     def list_volume_snapshots(self, volume, region=None):
         response = self.connection.request('/snapshots', region=region)
@@ -523,15 +527,16 @@ class ScalewayNodeDriver(NodeDriver):
     def _to_snapshot(self, snapshot):
         state = self.SNAPSHOT_STATE_MAP.get(snapshot['state'],
                                             VolumeSnapshotState.UNKNOWN)
+        extra = {
+            'organization': snapshot['organization'],
+            'volume_type': snapshot['volume_type'],
+        }
         return VolumeSnapshot(id=snapshot['id'],
                               driver=self,
                               size=_to_lib_size(snapshot['size']),
                               created=parse_date(snapshot['creation_date']),
                               state=state,
-                              extra={
-                                'organization': snapshot['organization'],
-                                'volume_type': snapshot['volume_type'],
-                              })
+                              extra=extra)
 
     def create_volume(self, size, name, region=None):
         data = {
