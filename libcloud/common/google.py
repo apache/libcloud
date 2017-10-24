@@ -24,7 +24,7 @@ OAUTH2: Service Accounts and Client IDs for Installed Applications.
 Both are initially set up from the Cloud Console Console -
 https://cloud.google.com/console
 
-Setting up Service Account authentication (note that you need the PyCrypto
+Setting up Service Account authentication (note that you need the cryptography
 package installed to use this):
 
 - Go to the Console
@@ -470,7 +470,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
     """Authentication class for "Service Account" authentication."""
     def __init__(self, user_id, key, *args, **kwargs):
         """
-        Check to see if PyCrypto is available, and convert key file path into a
+        Check to see if cryptography is available, and convert key file path into a
         key string if the key is in a file.
 
         :param  user_id: Email address to be used for Service Account
