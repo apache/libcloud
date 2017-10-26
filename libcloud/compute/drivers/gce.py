@@ -1942,6 +1942,28 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
+    def ex_set_image_labels(self, image, labels):
+        """
+        Set labels for the specified image.
+
+        :keyword  image: The existing target Image for the request.
+        :type     image: ``NodeImage``
+
+        :keyword  labels: Set (or clear with None) labels for this image.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(image, NodeImage):
+            raise ValueError("Must specify a valid libcloud image object.")
+        image_name = image.name
+        current_fp = image.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/global/%s/setLabels' % (image_name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
     def ex_get_serial_output(self, node):
         """
         Fetch the console/serial port output from the node.
@@ -3241,7 +3263,8 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_image(self, name, volume, description=None, family=None,
                         guest_os_features=None, use_existing=True,
-                        wait_for_completion=True, ex_licenses=None):
+                        wait_for_completion=True, ex_licenses=None,
+                        ex_labels=None):
         """
         Create an image from the provided volume.
 
@@ -3269,6 +3292,9 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_licenses: List of strings representing licenses
                                to be associated with the image.
         :type     ex_licenses: ``list`` of ``str``
+
+        :keyword  ex_labels: Labels dictionary for image.
+        :type     ex_labels: ``dict`` or ``None``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -3303,6 +3329,9 @@ class GCENodeDriver(NodeDriver):
             if isinstance(ex_licenses, str):
                 ex_licenses = [ex_licenses]
             image_data['licenses'] = ex_licenses
+
+        if ex_labels:
+            image_data['labels'] = ex_labels
 
         if guest_os_features:
             image_data['guestOsFeatures'] = []
@@ -8357,6 +8386,8 @@ class GCENodeDriver(NodeDriver):
         if 'licenses' in image:
             lic_objs = self._licenses_from_urls(licenses=image['licenses'])
             extra['licenses'] = lic_objs
+        extra['labels'] = image.get('labels', None)
+        extra['labelFingerprint'] = image.get('labelFingerprint', None)
 
         return GCENodeImage(id=image['id'], name=image['name'], driver=self,
                             extra=extra)
