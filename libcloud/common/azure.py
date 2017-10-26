@@ -253,7 +253,7 @@ class AzureServiceManagementConnection(CertificateConnection):
 
     def __init__(self, subscription_id, key_file, *args, **kwargs):
         """
-        Check to see if PyCrypto is available, and convert key file path into a
+        Check to see if cryptography is available, and convert key file path into a
         key string if the key is in a file.
 
         :param  subscription_id: Azure subscription ID.

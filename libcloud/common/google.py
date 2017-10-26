@@ -24,7 +24,7 @@ OAUTH2: Service Accounts and Client IDs for Installed Applications.
 Both are initially set up from the Cloud Console Console -
 https://cloud.google.com/console
 
-Setting up Service Account authentication (note that you need the PyCrypto
+Setting up Service Account authentication (note that you need the cryptography
 package installed to use this):
 
 - Go to the Console
@@ -89,16 +89,14 @@ from libcloud.common.types import (ProviderError,
                                    LibcloudError)
 
 try:
-    from Crypto.Hash import SHA256
-    from Crypto.PublicKey import RSA
-    from Crypto.Signature import PKCS1_v1_5
-    import Crypto.Random
-    Crypto.Random.atfork()
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import padding
+    cryptography_available = True
 except ImportError:
-    # The pycrypto library is unavailable
-    SHA256 = None
-    RSA = None
-    PKCS1_v1_5 = None
+    # The cryptography library is unavailable
+    cryptography_available = False
 
 UTC_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -472,7 +470,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
     """Authentication class for "Service Account" authentication."""
     def __init__(self, user_id, key, *args, **kwargs):
         """
-        Check to see if PyCrypto is available, and convert key file path into a
+        Check to see if cryptography is available, and convert key file path into a
         key string if the key is in a file.
 
         :param  user_id: Email address to be used for Service Account
@@ -482,8 +480,8 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         :param  key: The RSA Key or path to file containing the key.
         :type   key: ``str``
         """
-        if SHA256 is None:
-            raise GoogleAuthError('PyCrypto library required for '
+        if not cryptography_available:
+            raise GoogleAuthError('cryptography library required for '
                                   'Service Account Authentication.')
         # Check to see if 'key' is a file and read the file if it is.
         if key.find("PRIVATE KEY---") == -1:
@@ -526,10 +524,10 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         # The message contains both the header and claim set
         message = b'.'.join((header_enc, claim_set_enc))
         # Then the message is signed using the key supplied
-        key = RSA.importKey(self.key)
-        hash_func = SHA256.new(message)
-        signer = PKCS1_v1_5.new(key)
-        signature = base64.urlsafe_b64encode(signer.sign(hash_func))
+        rsa_key = serialization.load_pem_private_key(self.key.encode(), password=None,
+                                                     backend=default_backend())
+        signature = rsa_key.sign(message, padding.PKCS1v15(), hashes.SHA256())
+        signature = base64.urlsafe_b64encode(signature)
 
         # Finally the message and signature are sent to get a token
         jwt = b'.'.join((message, signature))

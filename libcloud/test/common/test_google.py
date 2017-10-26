@@ -40,11 +40,11 @@ from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.utils.py3 import httplib
 
 
-# Skip some tests if PyCrypto is unavailable
+# Skip some tests if cryptography is unavailable
 try:
-    from Crypto.Hash import SHA256
+    import cryptography
 except ImportError:
-    SHA256 = None
+    cryptography = None
 
 
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -284,7 +284,7 @@ class GoogleOAuth2CredentialTest(GoogleTestCase):
 
         kwargs = {}
 
-        if SHA256:
+        if cryptography:
             kwargs['auth_type'] = GoogleAuthType.SA
             cred1 = GoogleOAuth2Credential(*GCE_PARAMS_PEM_KEY, **kwargs)
             self.assertTrue(isinstance(cred1.oauth2_conn,
