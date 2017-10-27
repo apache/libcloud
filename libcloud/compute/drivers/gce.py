@@ -1919,6 +1919,29 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
+    def ex_set_node_labels(self, node, labels):
+        """
+        Set labels for the specified node.
+
+        :keyword  node: The existing target Node (instance) for the request.
+        :type     node: ``Node``
+
+        :keyword  labels: Set (or clear with None) labels for this node.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(node, Node):
+            raise ValueError("Must specify a valid libcloud node object.")
+        node_name = node.name
+        zone_name = node.extra['zone'].name
+        current_fp = node.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/zones/%s/instances/%s/setLabels' % (zone_name, node_name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
     def ex_get_serial_output(self, node):
         """
         Fetch the console/serial port output from the node.
@@ -3218,7 +3241,7 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_image(self, name, volume, description=None, family=None,
                         guest_os_features=None, use_existing=True,
-                        wait_for_completion=True):
+                        wait_for_completion=True, ex_licenses=None):
         """
         Create an image from the provided volume.
 
@@ -3242,6 +3265,10 @@ class GCENodeDriver(NodeDriver):
         :keyword  guest_os_features: Features of the guest operating system,
                                      valid for bootable images only.
         :type     guest_os_features: ``list`` of ``str`` or ``None``
+
+        :keyword  ex_licenses: List of strings representing licenses
+                               to be associated with the image.
+        :type     ex_licenses: ``list`` of ``str``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -3272,6 +3299,11 @@ class GCENodeDriver(NodeDriver):
             image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
+        if ex_licenses:
+            if isinstance(ex_licenses, str):
+                ex_licenses = [ex_licenses]
+            image_data['licenses'] = ex_licenses
+
         if guest_os_features:
             image_data['guestOsFeatures'] = []
             if isinstance(guest_os_features, str):
@@ -3700,7 +3732,7 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_image_family=None):
+            ex_preemptible=None, ex_image_family=None, ex_labels=None):
         """
         Create a new node and return a node object for the node.
 
@@ -3824,6 +3856,9 @@ class GCENodeDriver(NodeDriver):
                                    to use this keyword.
         :type     ex_image_family: ``str`` or ``None``
 
+        :keyword  ex_labels: Labels dictionary for instance.
+        :type     ex_labels: ``dict`` or ``None``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -3880,11 +3915,11 @@ class GCENodeDriver(NodeDriver):
 
         request, node_data = self._create_node_req(
             name, size, image, location, ex_network, ex_tags, ex_metadata,
-            ex_boot_disk, external_ip, internal_ip, ex_disk_type,
-            ex_disk_auto_delete, ex_service_accounts, description,
-            ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
-            ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
-            ex_subnetwork)
+            ex_boot_disk, external_ip, ex_disk_type, ex_disk_auto_delete,
+            ex_service_accounts, description, ex_can_ip_forward,
+            ex_disks_gce_struct, ex_nic_gce_struct, ex_on_host_maintenance,
+            ex_automatic_restart, ex_preemptible, ex_subnetwork, ex_labels,
+            internal_ip)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -4042,7 +4077,7 @@ class GCENodeDriver(NodeDriver):
             on_host_maintenance=None, automatic_restart=None,
             preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
-            use_selflinks=True):
+            use_selflinks=True, labels=None):
         """
         Create the GCE instance properties needed for instance templates.
 
@@ -4155,6 +4190,9 @@ class GCENodeDriver(NodeDriver):
                                   details.
         :type     nic_gce_struct: ``list`` or ``None``
 
+        :type     labels: Labels dict for instance
+        :type     labels: ``dict`` or ``None``
+
         :return:  A dictionary formatted for use with the GCE API.
         :rtype:   ``dict``
         """
@@ -4231,6 +4269,8 @@ class GCENodeDriver(NodeDriver):
         if metadata:
             instance_properties['metadata'] = self._format_metadata(
                 fingerprint='na', metadata=metadata)
+        if labels:
+            instance_properties['labels'] = labels
         if can_ip_forward:
             instance_properties['canIpForward'] = True
 
@@ -4463,6 +4503,8 @@ class GCENodeDriver(NodeDriver):
         sa = {}
         if 'email' not in service_account:
             sa['email'] = default_email
+        else:
+            sa['email'] = service_account['email']
 
         if 'scopes' not in service_account:
             sa['scopes'] = [self.AUTH_URL + default_scope]
@@ -4586,7 +4628,7 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None,
-            ex_preemptible=None):
+            ex_preemptible=None, ex_labels=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -4726,6 +4768,9 @@ class GCENodeDriver(NodeDriver):
                                    to use this keyword.
         :type     ex_image_family: ``str`` or ``None``
 
+        :param    ex_labels: Label dict for node.
+        :type     ex_labels: ``dict``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
 
@@ -4777,7 +4822,8 @@ class GCENodeDriver(NodeDriver):
                       'ex_nic_gce_struct': ex_nic_gce_struct,
                       'ex_on_host_maintenance': ex_on_host_maintenance,
                       'ex_automatic_restart': ex_automatic_restart,
-                      'ex_preemptible': ex_preemptible}
+                      'ex_preemptible': ex_preemptible,
+                      'ex_labels': ex_labels}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -7609,10 +7655,10 @@ class GCENodeDriver(NodeDriver):
                   if no matching image is found.
         :rtype:   :class:`GCENodeImage` or ``None``
         """
-        project_images_pages = self.ex_list(
+        project_images_list = self.ex_list(
             self.list_images, ex_project=project, ex_include_deprecated=True)
         partial_match = []
-        for page in project_images_pages:
+        for page in project_images_list.page():
             for image in page:
                 if image.name == partial_name:
                     return image
@@ -7670,7 +7716,7 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_subnetwork=None):
+            ex_preemptible=None, ex_subnetwork=None, ex_labels=None):
         """
         Returns a request and body to create a new node.
 
@@ -7788,6 +7834,9 @@ class GCENodeDriver(NodeDriver):
         :param  ex_subnetwork: The network to associate with the node.
         :type   ex_subnetwork: :class:`GCESubnetwork`
 
+        :param  ex_labels: Label dict for node.
+        :type   ex_labels: ``dict`` or ``None``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -7815,8 +7864,8 @@ class GCENodeDriver(NodeDriver):
             service_accounts=ex_service_accounts,
             on_host_maintenance=ex_on_host_maintenance,
             automatic_restart=ex_automatic_restart, preemptible=ex_preemptible,
-            tags=tags, metadata=metadata, description=description,
-            disks_gce_struct=ex_disks_gce_struct,
+            tags=tags, metadata=metadata, labels=ex_labels,
+            description=description, disks_gce_struct=ex_disks_gce_struct,
             nic_gce_struct=ex_nic_gce_struct, use_selflinks=use_selflinks)
         node_data['name'] = name
 
@@ -7921,7 +7970,9 @@ class GCENodeDriver(NodeDriver):
             ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
             ex_automatic_restart=node_attrs['ex_automatic_restart'],
             ex_subnetwork=node_attrs['subnetwork'],
-            ex_preemptible=node_attrs['ex_preemptible'])
+            ex_preemptible=node_attrs['ex_preemptible'],
+            ex_labels=node_attrs['ex_labels']
+        )
 
         try:
             node_res = self.connection.request(request, method='POST',
@@ -8392,6 +8443,8 @@ class GCENodeDriver(NodeDriver):
         extra['serviceAccounts'] = node.get('serviceAccounts', [])
         extra['scheduling'] = node.get('scheduling', {})
         extra['boot_disk'] = None
+        extra['labels'] = node.get('labels')
+        extra['labelFingerprint'] = node.get('labelFingerprint')
 
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':

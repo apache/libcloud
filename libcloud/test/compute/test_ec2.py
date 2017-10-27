@@ -75,9 +75,12 @@ class BaseEC2Tests(LibcloudTestCase):
         unsupported_regions = list()
 
         for region in VALID_EC2_REGIONS:
+            no_pricing = region in ['cn-north-1']
             driver = EC2NodeDriver(*EC2_PARAMS, **{'region': region})
             try:
-                driver.list_sizes()
+                sizes = driver.list_sizes()
+                if no_pricing:
+                    self.assertTrue(all([s.price is None for s in sizes]))
             except:
                 unsupported_regions.append(region)
 
@@ -445,7 +448,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                 self.assertTrue('m2.4xlarge' in ids)
 
             if region_name == 'us-east-1':
-                self.assertEqual(len(sizes), 70)
+                self.assertEqual(len(sizes), 72)
                 self.assertTrue('cg1.4xlarge' in ids)
                 self.assertTrue('cc2.8xlarge' in ids)
                 self.assertTrue('cr1.8xlarge' in ids)
@@ -453,13 +456,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             elif region_name == 'us-west-1':
                 self.assertEqual(len(sizes), 61)
             if region_name == 'us-west-2':
-                self.assertEqual(len(sizes), 71)
+                self.assertEqual(len(sizes), 73)
             elif region_name == 'ap-southeast-1':
-                self.assertEqual(len(sizes), 57)
+                self.assertEqual(len(sizes), 59)
             elif region_name == 'ap-southeast-2':
-                self.assertEqual(len(sizes), 61)
+                self.assertEqual(len(sizes), 63)
             elif region_name == 'eu-west-1':
-                self.assertEqual(len(sizes), 68)
+                self.assertEqual(len(sizes), 70)
             elif region_name == 'ap-south-1':
                 self.assertEqual(len(sizes), 41)
 
@@ -904,6 +907,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('vol', vol.name)
         self.assertEqual('creating', vol.extra['state'])
         self.assertTrue(isinstance(vol.extra['create_time'], datetime))
+        self.assertEqual(False, vol.extra['encrypted'])
+
+    def test_create_encrypted_volume(self):
+        location = self.driver.list_locations()[0]
+        vol = self.driver.create_volume(
+            10, 'vol', location,
+            ex_encrypted=True,
+            ex_kms_key_id='1234')
+
+        self.assertEqual(10, vol.size)
+        self.assertEqual('vol', vol.name)
+        self.assertEqual('creating', vol.extra['state'])
+        self.assertTrue(isinstance(vol.extra['create_time'], datetime))
+        self.assertEqual(True, vol.extra['encrypted'])
 
     def test_destroy_volume(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
@@ -1528,7 +1545,13 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _CreateVolume(self, method, url, body, headers):
-        body = self.fixtures.load('create_volume.xml')
+        if 'KmsKeyId=' in url:
+            assert 'Encrypted=1' in url, "If a KmsKeyId is specified, the " \
+                                         "Encrypted flag must also be set."
+        if 'Encrypted=1' in url:
+            body = self.fixtures.load('create_encrypted_volume.xml')
+        else:
+            body = self.fixtures.load('create_volume.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeleteVolume(self, method, url, body, headers):

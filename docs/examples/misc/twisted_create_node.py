@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from pprint import pprint
 
+# pylint: disable=import-error
 from twisted.internet import defer, threads, reactor
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
@@ -28,7 +29,7 @@ def stop(*args, **kwargs):
     reactor.stop()
 
 d = create_node(name='my-lc-node')
-d.addCallback(stop)
-d.addErrback(stop)
+d.addCallback(stop)  # pylint: disable=no-member
+d.addErrback(stop)  # pylint: disable=no-member
 
 reactor.run()

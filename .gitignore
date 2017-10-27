@@ -10,6 +10,7 @@ MANIFEST
 /.ropeproject/config.py
 /.coverage
 coverage_html_report/
+coverage.xml
 .idea
 dist/*apache-libcloud*
 dist/*apache_libcloud*

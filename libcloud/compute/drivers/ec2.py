@@ -850,6 +850,26 @@ INSTANCE_TYPES = {
             'cpu': 8
         }
     },
+    'x1.16xlarge': {
+        'id': 'x1.16xlarge',
+        'name': 'Memory Optimized Sixteen Extra Large instance',
+        'ram': GiB(976),
+        'disk': 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
+    'x1e.32xlarge': {
+        'id': 'x1e.32xlarge',
+        'name': 'Memory Optimized ThirtyTwo E Extra Large instance',
+        'ram': GiB(3904),
+        'disk': 2 * 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 128
+        }
+    },
     'x1.32xlarge': {
         'id': 'x1.32xlarge',
         'name': 'Memory Optimized ThirtyTwo Extra Large instance',
@@ -940,7 +960,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Northern California) Region
@@ -1089,7 +1111,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Oregon) Region
@@ -1169,7 +1193,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Ireland) Region
@@ -1246,7 +1272,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (London) Region
@@ -1316,7 +1344,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Frankfurt) Region
@@ -1375,7 +1405,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Mumbai, India) Region
@@ -1491,7 +1523,9 @@ REGION_DETAILS = {
             'r4.4xlarge',
             'r4.8xlarge',
             'r4.16xlarge',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -1564,7 +1598,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Seoul) Region
@@ -1615,7 +1651,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # South America (Sao Paulo) Region
@@ -1725,7 +1763,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Canada (Central) Region
@@ -1795,7 +1835,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # GovCloud Region
@@ -2936,6 +2978,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'status',
             'transform_func': str
         },
+        'encrypted': {
+            'xpath': 'encrypted',
+            'transform_func': lambda x: {'true': True, 'false': False}.get(x)
+        },
         'attach_time': {
             'xpath': 'attachmentSet/item/attachTime',
             'transform_func': parse_date
@@ -3017,9 +3063,7 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
 }
 
 VALID_EC2_REGIONS = REGION_DETAILS.keys()
-VALID_EC2_REGIONS = [
-    r for r in VALID_EC2_REGIONS if r != 'nimbus' and r != 'cn-north-1'
-]
+VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
 VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
@@ -3528,8 +3572,11 @@ class BaseEC2NodeDriver(NodeDriver):
         for instance_type in available_types:
             attributes = INSTANCE_TYPES[instance_type]
             attributes = copy.deepcopy(attributes)
-            price = self._get_size_price(size_id=instance_type)
-            attributes.update({'price': price})
+            try:
+                price = self._get_size_price(size_id=instance_type)
+                attributes['price'] = price
+            except KeyError:
+                attributes['price'] = None  # pricing not available
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
@@ -3863,7 +3910,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=None, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None):
         """
         Create a new volume.
 
@@ -3929,11 +3976,11 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type == 'io1' and ex_iops:
             params['Iops'] = ex_iops
 
-        if ex_encrypted is not None:
+        if ex_encrypted:
             params['Encrypted'] = 1
 
-        if ex_kms_key_id is not None:
-            params['KmsKeyId'] = ex_kms_key_id
+            if ex_kms_key_id is not None:
+                params['KmsKeyId'] = ex_kms_key_id
 
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,

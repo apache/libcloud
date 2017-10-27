@@ -12,7 +12,7 @@ Provider                               Documentation                            
 `Google Compute Engine Load Balancer`_ :doc:`Click </loadbalancer/drivers/gce>`           GCE               single region driver         :mod:`libcloud.loadbalancer.drivers.gce`           :class:`GCELBDriver`          
 `GoGrid LB`_                                                                              GOGRID            single region driver         :mod:`libcloud.loadbalancer.drivers.gogrid`        :class:`GoGridLBDriver`       
 `Ninefold LB`_                                                                            NINEFOLD          single region driver         :mod:`libcloud.loadbalancer.drivers.ninefold`      :class:`NinefoldLBDriver`     
-`Rackspace LB`_                                                                           RACKSPACE         dfw, ord, iad, lon, syd, hkg :mod:`libcloud.loadbalancer.drivers.rackspace`     :class:`RackspaceLBDriver`    
+`Rackspace LB`_                                                                           RACKSPACE         dfw, hkg, iad, lon, ord, syd :mod:`libcloud.loadbalancer.drivers.rackspace`     :class:`RackspaceLBDriver`    
 `Softlayer Load Balancing`_                                                               SOFTLAYER         single region driver         :mod:`libcloud.loadbalancer.drivers.softlayer`     :class:`SoftlayerLBDriver`    
 ====================================== ================================================== ================= ============================ ================================================== ==============================
 

@@ -7,7 +7,7 @@ Provider                              list volumes create volume destroy volume 
 `Aliyun ECS`_                         yes          yes           yes            yes           yes           yes            yes            
 `PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           no             yes            
 `Azure Virtual machines`_             yes          yes           yes            yes           yes           no             yes            
-`Azure Virtual machines`_             no           no            no             no            no            no             no             
+`Azure Virtual machines`_             yes          yes           yes            yes           yes           yes            yes            
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
 `BSNL`_                               no           no            no             no            no            no             no             

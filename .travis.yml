@@ -23,6 +23,9 @@ addons:
 matrix:
   fast_finish: true
   include:
+    - env: ENV=checks
+      python: 2.7
+      before_script: TOX_ENV=checks
     - env: ENV=lint
       python: 2.7
       before_script: TOX_ENV=lint
@@ -31,7 +34,7 @@ matrix:
       before_script: TOX_ENV=pylint
     - env: ENV=coverage
       python: 2.7
-      before_script: TOX_ENV=coverage
+      before_script: TOX_ENV=coverage-travis
     - env: ENV=docs
       python: 3.5
       before_script: TOX_ENV=docs-travis
@@ -55,9 +58,9 @@ matrix:
       # Trigger ReadTheDocs build
 
 install:
-  - pip install --upgrade "pip<8.0.0"
-  - pip install "virtualenv<14.0.0"
-  - pip install "tox>=2.3.0,<2.4"
+  - pip install --upgrade "pip==9.0.1"
+  - pip install "virtualenv==15.1.0"
+  - pip install "tox==2.8.2"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:

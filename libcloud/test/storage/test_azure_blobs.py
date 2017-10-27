@@ -17,7 +17,6 @@ from __future__ import with_statement
 
 import os
 import sys
-import unittest
 import tempfile
 from io import BytesIO
 
@@ -25,6 +24,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import basestring
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
@@ -39,12 +39,13 @@ from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
 from libcloud.storage.drivers.azure_blobs import AZURE_PAGE_CHUNK_SIZE
 
+from libcloud.test import unittest
 from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
 
 
-class AzureBlobsMockHttp(MockHttp):
+class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('azure_blobs')
     base_headers = {}
@@ -247,6 +248,8 @@ class AzureBlobsMockHttp(MockHttp):
 
     def _foo_bar_container_foo_test_upload(self, method, url, body, headers):
         # test_upload_object_success
+        self._assert_content_length_header_is_string(headers=headers)
+
         body = ''
         headers = {}
         headers['etag'] = '0x8CFB877BB56A6FB'
@@ -259,6 +262,8 @@ class AzureBlobsMockHttp(MockHttp):
     def _foo_bar_container_foo_test_upload_block(self, method, url,
                                                  body, headers):
         # test_upload_object_success
+        self._assert_content_length_header_is_string(headers=headers)
+
         body = ''
         headers = {}
         headers['etag'] = '0x8CFB877BB56A6FB'
@@ -281,6 +286,8 @@ class AzureBlobsMockHttp(MockHttp):
     def _foo_bar_container_foo_test_upload_blocklist(self, method, url,
                                                      body, headers):
         # test_upload_object_success
+        self._assert_content_length_header_is_string(headers=headers)
+
         body = ''
         headers = {}
         headers['etag'] = '0x8CFB877BB56A6FB'
@@ -294,6 +301,8 @@ class AzureBlobsMockHttp(MockHttp):
     def _foo_bar_container_foo_test_upload_lease(self, method, url,
                                                  body, headers):
         # test_upload_object_success
+        self._assert_content_length_header_is_string(headers=headers)
+
         action = headers['x-ms-lease-action']
         rheaders = {'x-ms-lease-id': 'someleaseid'}
         body = ''
@@ -318,12 +327,14 @@ class AzureBlobsMockHttp(MockHttp):
 
     def _foo_bar_container_foo_test_upload_INVALID_HASH(self, method, url,
                                                         body, headers):
+        # test_upload_object_invalid_hash1
+        self._assert_content_length_header_is_string(headers=headers)
+
         body = ''
         headers = {}
         headers['etag'] = '0x8CFB877BB56A6FB'
         headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
 
-        # test_upload_object_invalid_hash1
         return (httplib.CREATED,
                 body,
                 headers,
@@ -331,6 +342,8 @@ class AzureBlobsMockHttp(MockHttp):
 
     def _foo_bar_container_foo_bar_object(self, method, url, body, headers):
         # test_upload_object_invalid_file_size
+        self._assert_content_length_header_is_string(headers=headers)
+
         body = generate_random_data(1000)
         return (httplib.OK,
                 body,
@@ -340,11 +353,17 @@ class AzureBlobsMockHttp(MockHttp):
     def _foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url,
                                                        body, headers):
         # test_upload_object_invalid_file_size
+        self._assert_content_length_header_is_string(headers=headers)
+
         body = ''
         return (httplib.OK,
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
+    def _assert_content_length_header_is_string(self, headers):
+        if 'Content-Length' in headers:
+            self.assertTrue(isinstance(headers['Content-Length'], basestring))
 
 
 class AzureBlobsTests(unittest.TestCase):

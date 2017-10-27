@@ -371,7 +371,14 @@
         <revision>v2.2.0</revision>
       </Version>
   </release>
-    <repository>
+  <release>
+      <Version>
+        <name>2.2.1</name>
+        <created>2017-09-21</created>
+        <revision>v2.2.1</revision>
+      </Version>
+  </release>
+  <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>
         <browse rdf:resource="https://svn.apache.org/viewvc/libcloud/trunk/"/>

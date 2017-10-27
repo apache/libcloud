@@ -205,7 +205,6 @@ FRIENDLY_METHODS_NAMES = {
 
 IGNORED_PROVIDERS = [
     'dummy',
-    'local',
 
     # Deprecated constants
     'cloudsigma_us',
@@ -264,9 +263,9 @@ def generate_providers_table(api):
 
         try:
             cls = get_driver_method(enum)
-        except Exception:
+        except Exception as e:
             # Deprecated providers throw an exception
-            print('Ignoring deprecated constant "%s"' % (enum))
+            print('Ignoring deprecated constant "%s": %s' % (enum, str(e)))
             continue
 
         # Hack for providers which expose multiple classes and support multiple
@@ -404,6 +403,8 @@ def generate_supported_providers_table(api, provider_matrix):
             else None
 
         if supported_regions:
+            # Sort the regions to achieve stable output
+            supported_regions = sorted(supported_regions)
             supported_regions = ', '.join(supported_regions)
         else:
             supported_regions = 'single region driver'
