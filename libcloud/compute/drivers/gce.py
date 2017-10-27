@@ -3918,7 +3918,7 @@ class GCENodeDriver(NodeDriver):
             ex_boot_disk, external_ip, internal_ip, ex_disk_type,
             ex_disk_auto_delete, ex_service_accounts, description,
             ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
-            ex_on_host_maintenance,ex_automatic_restart, ex_preemptible,
+            ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
             ex_subnetwork, ex_labels)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
