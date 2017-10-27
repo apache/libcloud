@@ -2913,11 +2913,7 @@ class GCEMockHttp(MockHttp):
 
     def _regions_us_central1_addresses_testaddress(self, method, url, body,
                                                    headers):
-        if method == 'DELETE':
-            body = self.fixtures.load(
-                'regions_us-central1_addresses_testaddress_delete.json')
-        else:
-            body = self.fixtures.load(
+        body = self.fixtures.load(
                 'regions_us-central1_addresses_testaddress.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
