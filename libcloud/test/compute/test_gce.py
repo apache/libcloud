@@ -176,8 +176,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue('kind' in d and
                         d['kind'] == 'compute#instanceNetworkInterface')
         self.assertEqual(d['accessConfigs'][0]['natIP'], address.address)
-        #test with internal IP
-        d = self.driver._build_network_gce_struct(network, subnetwork,address,
+        # test with internal IP
+        d = self.driver._build_network_gce_struct(network, subnetwork, address,
                                                   internal_ip=internalip)
         self.assertTrue('network' in d)
         self.assertTrue('subnetwork' in d)
@@ -2912,7 +2912,7 @@ class GCEMockHttp(MockHttp):
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_addresses_testaddress(self, method, url, body,
-                                                 headers):
+                                                   headers):
         if method == 'DELETE':
             body = self.fixtures.load(
                 'regions_us-central1_addresses_testaddress_delete.json')
