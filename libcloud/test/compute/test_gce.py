@@ -15,6 +15,7 @@
 """
 Tests for Google Compute Engine Driver
 """
+
 import datetime
 import mock
 import sys
@@ -166,6 +167,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_build_network_gce_struct(self):
         network = self.driver.ex_get_network('lcnetwork')
         address = self.driver.ex_get_address('lcaddress')
+        internalip = self.driver.ex_get_address('testaddress')
         subnetwork_name = 'cf-972cf02e6ad49112'
         subnetwork = self.driver.ex_get_subnetwork(subnetwork_name)
         d = self.driver._build_network_gce_struct(network, subnetwork, address)
@@ -173,7 +175,16 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue('subnetwork' in d)
         self.assertTrue('kind' in d and
                         d['kind'] == 'compute#instanceNetworkInterface')
-
+        self.assertEqual(d['accessConfigs'][0]['natIP'], address.address)
+        # test with internal IP
+        d = self.driver._build_network_gce_struct(network, subnetwork, address,
+                                                  internal_ip=internalip)
+        self.assertTrue('network' in d)
+        self.assertTrue('subnetwork' in d)
+        self.assertTrue('kind' in d and
+                        d['kind'] == 'compute#instanceNetworkInterface')
+        self.assertEqual(d['accessConfigs'][0]['natIP'], address.address)
+        self.assertEqual(d['networkIP'], internalip)
         network = self.driver.ex_get_network('default')
         d = self.driver._build_network_gce_struct(network)
         self.assertTrue('network' in d)
@@ -2898,6 +2909,11 @@ class GCEMockHttp(MockHttp):
         else:
             body = self.fixtures.load(
                 'regions_us-central1_addresses_lcaddress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_addresses_testaddress(self, method, url, body,
+                                                   headers):
+        body = self.fixtures.load('regions_us-central1_addresses_testaddress.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_forwardingRules(self, method, url, body, headers):
