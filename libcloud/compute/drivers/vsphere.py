@@ -182,6 +182,7 @@ class VSphereNodeDriver(NodeDriver):
         ip_addresses = []
         if summary.guest is not None:
             ip_addresses.append(summary.guest.ipAddress)
+        # this might not be necessary, need to investigate
         if hasattr(virtual_machine.guest, "net"):
             for ip_address in virtual_machine.guest.net:
                 for ip in ip_address.ipAddress:
