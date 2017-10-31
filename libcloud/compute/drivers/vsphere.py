@@ -128,7 +128,8 @@ class VSphereNodeDriver(NodeDriver):
         content = self.connection.RetrieveContent()
         children = content.rootFolder.childEntity
         # this will be needed for custom VM metadata
-        self.custom_fields = content.customFieldsManager.field
+        self.custom_fields = content.customFieldsManager.field if \
+            content.customFieldsManager else []
         for child in children:
             if hasattr(child, 'vmFolder'):
                 datacenter = child
