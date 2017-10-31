@@ -361,11 +361,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         local_plus_deb = self.driver.list_images(
             ['debian-cloud', 'project_name'])
-        self.assertEqual(len(local_images), 23)
-        self.assertEqual(len(all_deprecated_images), 158)
+        self.assertEqual(len(local_images), 24)
+        self.assertEqual(len(all_deprecated_images), 159)
         self.assertEqual(len(debian_images), 2)
-        self.assertEqual(len(local_plus_deb), 3)
-        self.assertEqual(local_images[0].name, 'aws-ubuntu')
+        self.assertEqual(len(local_plus_deb), 4)
+        self.assertEqual(local_images[0].name, 'custom-image')
         self.assertEqual(debian_images[1].name, 'debian-7-wheezy-v20131120')
 
     def test_ex_destroy_instancegroup(self):
@@ -1906,6 +1906,21 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         multilabels = {'item1': 'val1', 'item2': 'val2'}
         self.driver.ex_set_node_labels(node, multilabels)
 
+    def test_ex_set_image_labels(self):
+        image = self.driver.ex_get_image('custom-image')
+        # Test basic values
+        simplelabel = {'foo': 'bar'}
+        self.driver.ex_set_image_labels(image, simplelabel)
+        image = self.driver.ex_get_image('custom-image')
+        self.assertTrue('foo' in image.extra['labels'])
+        # Test multiple values
+        multilabels = {'one': '1', 'two': 'two'}
+        self.driver.ex_set_image_labels(image, multilabels)
+        image = self.driver.ex_get_image('custom-image')
+        self.assertEqual(len(image.extra['labels']), 3)
+        self.assertTrue('two' in image.extra['labels'])
+        self.assertTrue('two' in image.extra['labels'])
+
     def test_ex_get_region(self):
         region_name = 'us-central1'
         region = self.driver.ex_get_region(region_name)
@@ -2127,6 +2142,11 @@ class GCEMockHttp(MockHttp):
                                                            body, headers):
         body = self.fixtures.load(
             'zones_us_central1_a_instances_node_name_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_custom_image_setLabels(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'global_custom_image_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _setCommonInstanceMetadata(self, method, url, body, headers):
@@ -2608,6 +2628,12 @@ class GCEMockHttp(MockHttp):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_zones_us_central1_a_node_name_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_setImageLabels_post(self, method, url,
+                                                         body, headers):
+        body = self.fixtures.load(
+            'global_operations_operation_setImageLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_post(
