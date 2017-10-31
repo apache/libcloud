@@ -2088,12 +2088,16 @@ class AzureNodeDriver(NodeDriver):
                                   name,
                                   n)
                 if self._ex_delete_old_vhd(ex_resource_group, instance_vhd):
-                    # We were able to remove it or it doesn't exist, so we can use it.
+                    # We were able to remove it or it doesn't exist,
+                    # so we can use it.
                     return instance_vhd
             except LibcloudError as lce:
                 errors.append(str(lce))
             n += 1
-        raise LibcloudError("Unable to find a name for a VHD to use for instance in 10 tries, errors were:\n  - %s" % ("\n  - ".join(errors)))
+        raise LibcloudError("Unable to find a name for a VHD to use for "
+                            "instance in 10 tries, errors were:\n  - %s" %
+                            ("\n  - ".join(errors)))
+
 
 def _split_blob_uri(uri):
     uri = uri.split('/')
