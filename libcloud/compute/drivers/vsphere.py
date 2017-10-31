@@ -129,41 +129,58 @@ class VSphereNodeDriver(NodeDriver):
         children = content.rootFolder.childEntity
         # this will be needed for custom VM metadata
         self.custom_fields = content.customFieldsManager.field
-
         for child in children:
             if hasattr(child, 'vmFolder'):
                 datacenter = child
                 vm_folder = datacenter.vmFolder
                 vm_list = vm_folder.childEntity
-
-                for virtual_machine in vm_list:
-                    node = self._to_node(virtual_machine)
-                    if node:
-                        node.extra['vSphere version'] = content.about.version
-                        nodes.append(node)
+                nodes.extend(self._to_nodes(vm_list))
+        for node in nodes:
+            node.extra['vSphere version'] = content.about.version
         return nodes
 
-    def _to_node(self, virtual_machine, depth=1):
-        maxdepth = 10
+    def _to_nodes(self, vm_list):
+        nodes_list = []
+        nodes = []
+        for virtual_machine in vm_list:
+            # get children VMs
+            children = self._to_children(virtual_machine)
+            for child in children:
+                # get children VMs of vApps
+                c = self._to_child_vms(child)
+                nodes.extend(c)
+        for n in nodes:
+            node = self._to_node(n)
+            nodes_list.append(node)
+
+        return nodes_list
+
+    def _to_children(self, virtual_machine):
         # if this is a group it will have children.
         # if it does, recurse into them and then return
+        nodes = []
         if hasattr(virtual_machine, 'childEntity'):
-            if depth > maxdepth:
-                return
             vmList = virtual_machine.childEntity
             for c in vmList:
-                self._to_node(c, depth + 1)
-            return
+                nodes.append(c)
+        else:
+            nodes.append(virtual_machine)
+        return nodes
 
+    def _to_child_vms(self, virtual_machine):
+        nodes = []
         # if this is a vApp, it likely contains child VMs
         # (vApps can nest vApps, but it is hardly a common usecase,
         # so ignore that)
         if isinstance(virtual_machine, vim.VirtualApp):
             vmList = virtual_machine.vm
             for c in vmList:
-                self._to_node(c, depth + 1)
-            return
+                nodes.append(c)
+        else:
+            nodes.append(virtual_machine)
+        return nodes
 
+    def _to_node(self, virtual_machine):
         summary = virtual_machine.summary
         name = summary.config.name
         path = summary.config.vmPathName
@@ -182,7 +199,8 @@ class VSphereNodeDriver(NodeDriver):
         ip_addresses = []
         if summary.guest is not None:
             ip_addresses.append(summary.guest.ipAddress)
-        # this might not be necessary, as it seems to perform network calls
+        # this will bring all ip addresses of VM
+        # however it seems to perform network calls
         # need to investigate more if this can be fetched in one call
         # if hasattr(virtual_machine.guest, "net"):
         #    for ip_address in virtual_machine.guest.net:
