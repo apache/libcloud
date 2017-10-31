@@ -13,6 +13,9 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Allow adding labels to images (GITHUB-1138)
+  [Katriel Traum, Eric Johnson]
+
 - [GCE] Allow adding license strings to images (GITHUB-1136)
   [Katriel Traum, Eric Johnson]
 
