@@ -694,7 +694,8 @@ class AzureNodeDriver(NodeDriver):
     def destroy_node(self, node,
                      ex_destroy_nic=True,
                      ex_destroy_vhd=True,
-                     ex_retries=10):
+                     ex_poll_qty=10,
+                     ex_poll_wait=10):
         """
         Destroy a node.
 
@@ -709,8 +710,11 @@ class AzureNodeDriver(NodeDriver):
         this node (default True).
         :type node: ``bool``
 
-        :param ex_retries: Number of times to retry checking if the node is gone,
-        destroying the NIC or destroying the VHD.
+        :param ex_poll_qty: Number of retries checking if the node
+        is gone, destroying the NIC or destroying the VHD (default 10).
+        :type node: ``int``
+
+        :param ex_poll_wait: Delay in seconds between retries (default 10).
         :type node: ``int``
 
         :return: True if the destroy was successful, raises exception
@@ -740,10 +744,10 @@ class AzureNodeDriver(NodeDriver):
 
         # Poll until the node actually goes away (otherwise attempt to delete
         # NIC and VHD will fail with "resource in use" errors).
-        retries = ex_retries
+        retries = ex_poll_qty
         while do_node_polling and retries > 0:
             try:
-                time.sleep(10)
+                time.sleep(ex_poll_wait)
                 self.connection.request(
                     node.id,
                     params={"api-version": RESOURCE_API_VERSION})
@@ -761,7 +765,7 @@ class AzureNodeDriver(NodeDriver):
             node.extra["properties"]["networkProfile"]["networkInterfaces"]
         if ex_destroy_nic:
             for nic in interfaces:
-                retries = ex_retries
+                retries = ex_poll_qty
                 while retries > 0:
                     try:
                         self.ex_destroy_nic(self._to_nic(nic))
@@ -771,14 +775,14 @@ class AzureNodeDriver(NodeDriver):
                         if (h.code == 400 and
                                 h.message.startswith("[NicInUse]") and
                                 retries > 0):
-                            time.sleep(10)
+                            time.sleep(ex_poll_wait)
                         else:
                             raise
 
         # Optionally clean up OS disk VHD.
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
         if ex_destroy_vhd and vhd is not None:
-            retries = ex_retries
+            retries = ex_poll_qty
             while retries > 0:
                 try:
                     resourceGroup = node.id.split("/")[4]
@@ -794,7 +798,7 @@ class AzureNodeDriver(NodeDriver):
                         # hasn't yet been released by the VM being destroyed)
                         # get raised as plain
                         # LibcloudError.  Wait a bit and try again.
-                        time.sleep(10)
+                        time.sleep(ex_poll_wait)
                     else:
                         raise
 
