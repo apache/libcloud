@@ -1957,10 +1957,9 @@ class GCENodeDriver(NodeDriver):
         """
         if not isinstance(image, NodeImage):
             raise ValueError("Must specify a valid libcloud image object.")
-        image_name = image.name
         current_fp = image.extra['labelFingerprint']
         body = {'labels': labels, 'labelFingerprint': current_fp}
-        request = '/global/%s/setLabels' % (image_name)
+        request = '/global/%s/setLabels' % (image.name)
         self.connection.async_request(request, method='POST', data=body)
         return True
 
