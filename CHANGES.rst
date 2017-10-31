@@ -76,6 +76,10 @@ Compute
 - [EC2] Fix EBS volume encryption (GITHUB-1008)
   [Sergey Babak]
 
+- [GCE] Add support for private IP addresses in GCE instance creation
+  (LIBCLOUD-944, GITHUB-1107)
+  [Gareth Mcfarlane]
+
 Storage
 ~~~~~~~
 
