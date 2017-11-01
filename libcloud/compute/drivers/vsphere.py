@@ -128,8 +128,10 @@ class VSphereNodeDriver(NodeDriver):
         content = self.connection.RetrieveContent()
         children = content.rootFolder.childEntity
         # this will be needed for custom VM metadata
-        self.custom_fields = content.customFieldsManager.field if \
-            content.customFieldsManager else []
+        if content.customFieldsManager:
+            self.custom_fields = content.customFieldsManager.field
+        else:
+            self.custom_fields = []
         for child in children:
             if hasattr(child, 'vmFolder'):
                 datacenter = child
@@ -283,7 +285,10 @@ class VSphereNodeDriver(NodeDriver):
         """
         if not hasattr(self, "custom_fields"):
             content = self.connection.RetrieveContent()
-            self.custom_fields = content.customFieldsManager.field
+            if content.customFieldsManager:
+                self.custom_fields = content.customFieldsManager.field
+            else:
+                self.custom_fields = []
         for k in self.custom_fields:
             if k.key == key_id:
                 return k.name
