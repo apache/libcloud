@@ -141,44 +141,19 @@ class VSphereNodeDriver(NodeDriver):
         return nodes
 
     def _to_nodes(self, vm_list):
-        nodes_list = []
         nodes = []
         for virtual_machine in vm_list:
-            # get children VMs
-            children = self._to_children(virtual_machine)
-            for child in children:
-                # get children VMs of vApps
-                c = self._to_child_vms(child)
-                nodes.extend(c)
-        for n in nodes:
-            node = self._to_node(n)
-            nodes_list.append(node)
-
-        return nodes_list
-
-    def _to_children(self, virtual_machine):
-        # if this is a group it will have children.
-        # if it does, recurse into them and then return
-        nodes = []
-        if hasattr(virtual_machine, 'childEntity'):
-            vmList = virtual_machine.childEntity
-            for c in vmList:
-                nodes.append(c)
-        else:
-            nodes.append(virtual_machine)
-        return nodes
-
-    def _to_child_vms(self, virtual_machine):
-        nodes = []
-        # if this is a vApp, it likely contains child VMs
-        # (vApps can nest vApps, but it is hardly a common usecase,
-        # so ignore that)
-        if isinstance(virtual_machine, vim.VirtualApp):
-            vmList = virtual_machine.vm
-            for c in vmList:
-                nodes.append(c)
-        else:
-            nodes.append(virtual_machine)
+            if hasattr(virtual_machine, 'childEntity'):
+                # If this is a group it will have children.
+                # If it does, recurse into them and then return
+                nodes.extend(self._to_nodes(virtual_machine.childEntity))
+            elif isinstance(virtual_machine, vim.VirtualApp):
+                # If this is a vApp, it likely contains child VMs
+                # (vApps can nest vApps, but it is hardly
+                # a common usecase, so ignore that)
+                nodes.extend(self._to_nodes(virtual_machine.vm))
+            else:
+                nodes.append(self._to_node(virtual_machine))
         return nodes
 
     def _to_node(self, virtual_machine):
