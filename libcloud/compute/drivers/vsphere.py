@@ -22,7 +22,7 @@ Author: Markos Gogoulos -  mgogoulos@mist.io
 
 try:
     from pyVim import connect
-    from pyVmomi import vmodl
+    from pyVmomi import vim
 except ImportError:
     raise ImportError('Missing "pyvmomi" dependency. You can install it '
                       'using pip - pip install pyvmomi')
@@ -31,8 +31,6 @@ import atexit
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import NodeLocation
-from libcloud.compute.base import NodeImage
 from libcloud.compute.base import Node
 from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
@@ -129,33 +127,38 @@ class VSphereNodeDriver(NodeDriver):
         nodes = []
         content = self.connection.RetrieveContent()
         children = content.rootFolder.childEntity
+        # this will be needed for custom VM metadata
+        if content.customFieldsManager:
+            self.custom_fields = content.customFieldsManager.field
+        else:
+            self.custom_fields = []
         for child in children:
             if hasattr(child, 'vmFolder'):
                 datacenter = child
-            else:
-            # some other non-datacenter type object
-                continue
-            vm_folder = datacenter.vmFolder
-            vm_list = vm_folder.childEntity
-
-            for virtual_machine in vm_list:
-                node = self._to_node(virtual_machine, 10)
-                if node:
-                    nodes.append(node)
+                vm_folder = datacenter.vmFolder
+                vm_list = vm_folder.childEntity
+                nodes.extend(self._to_nodes(vm_list))
+        for node in nodes:
+            node.extra['vSphere version'] = content.about.version
         return nodes
 
-    def _to_node(self, virtual_machine, depth=1):
-        maxdepth = 10
-        # if this is a group it will have children.
-        # if it does, recurse into them and then return
-        if hasattr(virtual_machine, 'childEntity'):
-            if depth > maxdepth:
-                return
-            vmList = virtual_machine.childEntity
-            for c in vmList:
-                self._to_node(c, depth + 1)
-            return
+    def _to_nodes(self, vm_list):
+        nodes = []
+        for virtual_machine in vm_list:
+            if hasattr(virtual_machine, 'childEntity'):
+                # If this is a group it will have children.
+                # If it does, recurse into them and then return
+                nodes.extend(self._to_nodes(virtual_machine.childEntity))
+            elif isinstance(virtual_machine, vim.VirtualApp):
+                # If this is a vApp, it likely contains child VMs
+                # (vApps can nest vApps, but it is hardly
+                # a common usecase, so ignore that)
+                nodes.extend(self._to_nodes(virtual_machine.vm))
+            else:
+                nodes.append(self._to_node(virtual_machine))
+        return nodes
 
+    def _to_node(self, virtual_machine):
         summary = virtual_machine.summary
         name = summary.config.name
         path = summary.config.vmPathName
@@ -171,9 +174,9 @@ class VSphereNodeDriver(NodeDriver):
         state = summary.runtime.powerState
         status = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)
         boot_time = summary.runtime.bootTime
-
+        ip_addresses = []
         if summary.guest is not None:
-            ip_address = summary.guest.ipAddress
+            ip_addresses.append(summary.guest.ipAddress)
 
         overallStatus = str(summary.overallStatus)
         public_ips = []
@@ -185,7 +188,8 @@ class VSphereNodeDriver(NodeDriver):
             "os_type": os_type,
             "memory_MB": memory,
             "cpus": cpus,
-            "overallStatus": overallStatus
+            "overallStatus": overallStatus,
+            "metadata": {}
         }
 
         if boot_time:
@@ -193,7 +197,7 @@ class VSphereNodeDriver(NodeDriver):
         if annotation:
             extra['annotation'] = annotation
 
-        if ip_address:
+        for ip_address in ip_addresses:
             try:
                 if is_public_subnet(ip_address):
                     public_ips.append(ip_address)
@@ -202,6 +206,11 @@ class VSphereNodeDriver(NodeDriver):
             except:
                 # IPV6 not supported
                 pass
+
+        for custom_field in virtual_machine.customValue:
+            key_id = custom_field.key
+            key = self.find_custom_field_key(key_id)
+            extra["metadata"][key] = custom_field.value
 
         node = Node(id=uuid, name=name, state=status,
                     public_ips=public_ips, private_ips=private_ips,
@@ -262,3 +271,17 @@ class VSphereNodeDriver(NodeDriver):
         if not vm:
             raise Exception("Unable to locate VirtualMachine.")
         return vm
+
+    def find_custom_field_key(self, key_id):
+        """Return custom field key name, provided it's id
+        """
+        if not hasattr(self, "custom_fields"):
+            content = self.connection.RetrieveContent()
+            if content.customFieldsManager:
+                self.custom_fields = content.customFieldsManager.field
+            else:
+                self.custom_fields = []
+        for k in self.custom_fields:
+            if k.key == key_id:
+                return k.name
+        return None
