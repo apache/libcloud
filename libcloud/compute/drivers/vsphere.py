@@ -177,14 +177,6 @@ class VSphereNodeDriver(NodeDriver):
         ip_addresses = []
         if summary.guest is not None:
             ip_addresses.append(summary.guest.ipAddress)
-        # this will bring all ip addresses of VM
-        # however it seems to perform network calls
-        # need to investigate more if this can be fetched in one call
-        # if hasattr(virtual_machine.guest, "net"):
-        #    for ip_address in virtual_machine.guest.net:
-        #        for ip in ip_address.ipAddress:
-        #            if ip not in ip_addresses:
-        #                ip_addresses.append(ip)
 
         overallStatus = str(summary.overallStatus)
         public_ips = []
