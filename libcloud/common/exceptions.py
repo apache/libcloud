@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+
+from email.utils import parsedate_tz, mktime_tz
+
 __all__ = [
     'BaseHTTPError',
     'RateLimitReachedError',
@@ -47,7 +51,7 @@ class RateLimitReachedError(BaseHTTPError):
     message = '%s Rate limit exceeded' % (code)
 
     def __init__(self, *args, **kwargs):
-        self.retry_after = int(kwargs.pop('retry_after', 0))
+        self.retry_after = int(kwargs.pop('headers', {}).get('retry-after', 0))
 
 
 _error_classes = [RateLimitReachedError]
@@ -68,7 +72,11 @@ def exception_from_message(code, message, headers=None):
         'headers': headers
     }
 
-    if headers and 'retry_after' in headers:
-        kwargs['retry_after'] = headers['retry_after']
+    if headers and 'retry-after' in headers:
+        http_date = parsedate_tz(headers['retry-after'])
+        if http_date is not None:
+            # Convert HTTP-date to delay-seconds
+            delay = max(0, int(mktime_tz(http_date) - time.time()))
+            headers['retry-after'] = str(delay)
     cls = _code_map.get(code, BaseHTTPError)
     return cls(**kwargs)
