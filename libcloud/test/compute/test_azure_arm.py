@@ -21,6 +21,7 @@ from datetime import datetime
 import mock
 
 from libcloud.common.exceptions import BaseHTTPError
+from libcloud.common.types import LibcloudError
 from libcloud.compute.base import (NodeLocation, NodeSize, VolumeSnapshot,
                                    StorageVolume)
 from libcloud.compute.drivers.azure_arm import AzureImage, NodeAuthPassword
@@ -490,6 +491,21 @@ class AzureNodeDriverTests(LibcloudTestCase):
                                                     ex_resource_group='000000',
                                                     ex_storage_account='sga1')
             self.assertEqual(vhd_url, 'https://sga1.blob.core.chinacloudapi.cn/vhds/test1-os_0.vhd')
+
+    def test_get_instance_vhd__retries_ten_times(self):
+        with mock.patch.object(self.driver, '_ex_delete_old_vhd') as m:
+            # 10 retries are OK
+            m.side_effect = [False] * 9 + [True]
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.windows.net/vhds/test1-os_9.vhd')
+            # Fail on the 11th
+            m.side_effect = [False] * 10 + [True]
+            with self.assertRaises(LibcloudError):
+                self.driver._get_instance_vhd(name='test1',
+                                              ex_resource_group='000000',
+                                              ex_storage_account='sga1')
 
 
 class AzureMockHttp(MockHttp):

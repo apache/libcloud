@@ -13,6 +13,12 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Allow adding labels to images (GITHUB-1138)
+  [Katriel Traum, Eric Johnson]
+
+- [GCE] Allow adding license strings to images (GITHUB-1136)
+  [Katriel Traum, Eric Johnson]
+
 - [UpCloud] New driver for UpCloud (LIBCLOUD-938, GITHUB-1102)
   [Mika Lackman, Ilari Mäkelä]
 
@@ -69,6 +75,16 @@ Compute
 - [Digital Ocean] Add ex_enable_ipv6 in DigitalOcean_v2 driver
   (GITHUB-1130)
   [Rick van de Loo]
+
+- [EC2] Fix EBS volume encryption (GITHUB-1008)
+  [Sergey Babak]
+
+- [GCE] Add support for private IP addresses in GCE instance creation
+  (LIBCLOUD-944, GITHUB-1107)
+  [Gareth Mcfarlane]
+
+- [ARM] Fix delete_old_vhd (GITHUB-1137)
+  [Peter Amstutz, Lucas Di Pentima]
 
 Storage
 ~~~~~~~

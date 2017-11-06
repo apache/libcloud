@@ -783,13 +783,14 @@ class AzureNodeDriver(NodeDriver):
         vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
         if ex_destroy_vhd and vhd is not None:
             retries = ex_poll_qty
+            resourceGroup = node.id.split("/")[4]
             while retries > 0:
                 try:
-                    resourceGroup = node.id.split("/")[4]
-                    self._ex_delete_old_vhd(
-                        resourceGroup,
-                        vhd["uri"])
-                    break
+                    if self._ex_delete_old_vhd(resourceGroup, vhd["uri"]):
+                        break
+                    # Unfortunately lease errors usually result in it returning
+                    # "False" with no more information.  Need to wait and try
+                    # again.
                 except LibcloudError as e:
                     retries -= 1
                     if "LeaseIdMissing" in str(e) and retries > 0:
@@ -801,6 +802,7 @@ class AzureNodeDriver(NodeDriver):
                         time.sleep(ex_poll_wait)
                     else:
                         raise
+                time.sleep(10)
 
         return True
 
@@ -1966,9 +1968,8 @@ class AzureNodeDriver(NodeDriver):
                 keys["key1"],
                 host="%s.blob%s" % (storageAccount,
                                     self.connection.storage_suffix))
-            blobdriver.delete_object(blobdriver.get_object(blobContainer,
-                                                           blob))
-            return True
+            return blobdriver.delete_object(
+                blobdriver.get_object(blobContainer, blob))
         except ObjectDoesNotExistError:
             return True
 
@@ -2095,7 +2096,8 @@ class AzureNodeDriver(NodeDriver):
     def _get_instance_vhd(self, name, ex_resource_group, ex_storage_account,
                           ex_blob_container="vhds"):
         n = 0
-        while True:
+        errors = []
+        while n < 10:
             try:
                 instance_vhd = "https://%s.blob%s" \
                                "/%s/%s-os_%i.vhd" \
@@ -2104,10 +2106,16 @@ class AzureNodeDriver(NodeDriver):
                                   ex_blob_container,
                                   name,
                                   n)
-                self._ex_delete_old_vhd(ex_resource_group, instance_vhd)
-                return instance_vhd
-            except LibcloudError:
-                n += 1
+                if self._ex_delete_old_vhd(ex_resource_group, instance_vhd):
+                    # We were able to remove it or it doesn't exist,
+                    # so we can use it.
+                    return instance_vhd
+            except LibcloudError as lce:
+                errors.append(str(lce))
+            n += 1
+        raise LibcloudError("Unable to find a name for a VHD to use for "
+                            "instance in 10 tries, errors were:\n  - %s" %
+                            ("\n  - ".join(errors)))
 
 
 def _split_blob_uri(uri):
