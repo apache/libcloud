@@ -83,6 +83,9 @@ Compute
   (LIBCLOUD-944, GITHUB-1107)
   [Gareth Mcfarlane]
 
+- [ARM] Fix delete_old_vhd (GITHUB-1137)
+  [Peter Amstutz, Lucas Di Pentima]
+
 Storage
 ~~~~~~~
 
