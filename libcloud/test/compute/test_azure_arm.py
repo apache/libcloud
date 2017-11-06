@@ -184,7 +184,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         ]
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
-        self.assertEqual(4, time_sleep_mock.call_count) # Retries
+        self.assertEqual(4, time_sleep_mock.call_count)  # Retries
 
     @mock.patch('time.sleep', return_value=None)
     def test_destroy_node__destroy_nic_retries(self, time_sleep_mock):
@@ -193,15 +193,15 @@ class AzureNodeDriverTests(LibcloudTestCase):
         node = self.driver.list_nodes()[0]
         err = BaseHTTPError(code=400, message='[NicInUse] Cannot destroy')
         with mock.patch.object(self.driver, 'ex_destroy_nic') as m:
-            m.side_effect = [err] * 5 + [True] # 5 errors before a success
+            m.side_effect = [err] * 5 + [True]  # 5 errors before a success
             ret = self.driver.destroy_node(node)
             self.assertTrue(ret)
-            self.assertEqual(6, m.call_count) # 6th call was a success
+            self.assertEqual(6, m.call_count)  # 6th call was a success
 
-            m.side_effect = [err] * 10 + [True] # 10 errors before a success
+            m.side_effect = [err] * 10 + [True]  # 10 errors before a success
             with self.assertRaises(BaseHTTPError):
                 self.driver.destroy_node(node)
-                self.assertEqual(10, m.call_count) # try 10 times & fail
+                self.assertEqual(10, m.call_count)  # try 10 times & fail
 
     @mock.patch('time.sleep', return_value=None)
     def test_destroy_node__async(self, time_sleep_mock):
