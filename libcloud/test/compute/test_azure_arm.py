@@ -166,6 +166,44 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertTrue(ret)
 
     @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__retry(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 202 - The delete will happen asynchronously
+            lambda f: error(BaseHTTPError, code=202, message='Deleting'),
+            # 200 means the node is still here - Try 1
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 200 means the node is still here - Try 2
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 200 means the node is still here - Try 3
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 404 means node is gone - 4th retry: success!
+            lambda f: error(BaseHTTPError, code=404, message='Not found'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+        self.assertEqual(4, time_sleep_mock.call_count)  # Retries
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__destroy_nic_retries(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        err = BaseHTTPError(code=400, message='[NicInUse] Cannot destroy')
+        with mock.patch.object(self.driver, 'ex_destroy_nic') as m:
+            m.side_effect = [err] * 5 + [True]  # 5 errors before a success
+            ret = self.driver.destroy_node(node)
+            self.assertTrue(ret)
+            self.assertEqual(6, m.call_count)  # 6th call was a success
+
+            m.side_effect = [err] * 10 + [True]  # 10 errors before a success
+            with self.assertRaises(BaseHTTPError):
+                self.driver.destroy_node(node)
+                self.assertEqual(10, m.call_count)  # try 10 times & fail
+
+    @mock.patch('time.sleep', return_value=None)
     def test_destroy_node__async(self, time_sleep_mock):
         def error(e, **kwargs):
             raise e(**kwargs)
