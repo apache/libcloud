@@ -154,7 +154,8 @@ class Response(object):
 
         if not self.success():
             raise exception_from_message(code=self.status,
-                                         message=self.parse_error())
+                                         message=self.parse_error(),
+                                         headers=self.headers)
 
         self.object = self.parse_body()
 
