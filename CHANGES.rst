@@ -86,6 +86,9 @@ Compute
 - [ARM] Fix delete_old_vhd (GITHUB-1137)
   [Peter Amstutz, Lucas Di Pentima]
 
+- [ARM] Limit number of retries in destroy_node (GITHUB-1134)
+  [Peter Amstutz, Lucas Di Pentima]
+
 Storage
 ~~~~~~~
 
