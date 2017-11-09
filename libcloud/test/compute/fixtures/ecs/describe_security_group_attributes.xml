@@ -9,10 +9,10 @@
 	<Permissions>
 		<Permission>
 			<SourceCidrIp>121.43.18.0/24</SourceCidrIp>
-			<DestCidrIp></DestCidrIp/>
+			<DestCidrIp></DestCidrIp>
 			<Description></Description>
 			<NicType>internet</NicType>
-			<DestGroupName></DestGroupName/>
+			<DestGroupName></DestGroupName>
 			<PortRange>-1/-1</PortRange>
 			<DestGroupId></DestGroupId>
 			<Direction>ingress</Direction>
