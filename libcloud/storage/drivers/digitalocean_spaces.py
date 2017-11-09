@@ -22,7 +22,8 @@ __all__ = [
     'DigitalOceanSpacesStorageDriver'
 ]
 
-DO_SPACES_HOSTS_BY_REGION = {'nyc3': 'nyc3.digitaloceanspaces.com'}
+DO_SPACES_HOSTS_BY_REGION = {'nyc3': 'nyc3.digitaloceanspaces.com',
+                             'ams3': 'ams3.digitaloceanspaces.com'}
 DO_SPACES_DEFAULT_REGION = 'nyc3'
 DEFAULT_SIGNATURE_VERSION = '2'
 S3_API_VERSION = '2006-03-01'

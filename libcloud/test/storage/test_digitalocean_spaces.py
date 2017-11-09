@@ -105,12 +105,14 @@ class DigitalOceanSpacesDoubleInstanceTests(LibcloudTestCase):
     driver_type = DigitalOceanSpacesStorageDriver
     driver_args = STORAGE_S3_PARAMS
     default_host = 'nyc3.digitaloceanspaces.com'
+    alt_host = 'ams3.digitaloceanspaces.com'
 
     def setUp(self):
         self.driver_v2 = self.driver_type(*self.driver_args,
                                           signature_version='2')
         self.driver_v4 = self.driver_type(*self.driver_args,
-                                          signature_version='4')
+                                          signature_version='4',
+                                          region='ams3')
 
     def test_connection_class_type(self):
         res = self.driver_v2.connectionCls is DOSpacesConnectionAWS2
@@ -129,7 +131,7 @@ class DigitalOceanSpacesDoubleInstanceTests(LibcloudTestCase):
         self.assertEqual(host, self.default_host)
 
         host = self.driver_v4.connectionCls.host
-        self.assertEqual(host, self.default_host)
+        self.assertEqual(host, self.alt_host)
 
 
 if __name__ == '__main__':
