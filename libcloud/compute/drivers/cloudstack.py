@@ -4648,6 +4648,8 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         private_ips = []
 
         for nic in data['nic']:
+            if 'ipaddress' not in nic:
+                continue
             if is_private_subnet(nic['ipaddress']):
                 private_ips.append(nic['ipaddress'])
             else:
