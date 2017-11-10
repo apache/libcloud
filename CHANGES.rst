@@ -89,6 +89,9 @@ Compute
 - [ARM] Limit number of retries in destroy_node (GITHUB-1134)
   [Peter Amstutz, Lucas Di Pentima]
 
+- [ARM] Fix Retry-After header handling (GITHUB-1139)
+  [Lucas Di Pentima]
+
 Storage
 ~~~~~~~
 
