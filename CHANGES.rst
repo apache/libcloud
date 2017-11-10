@@ -92,6 +92,9 @@ Compute
 - [ARM] Fix Retry-After header handling (GITHUB-1139)
   [Lucas Di Pentima]
 
+- [CloudStack] Handle NICs without addresses (GITHUB-1141)
+  [Pierre-Yves Ritschard]
+
 Storage
 ~~~~~~~
 
