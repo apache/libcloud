@@ -1732,16 +1732,37 @@ class GCENodeDriver(NodeDriver):
     }
 
     IMAGE_PROJECTS = {
-        "centos-cloud": ["centos"],
-        "coreos-cloud": ["coreos"],
-        "debian-cloud": ["debian", "backports"],
-        "gce-nvme": ["nvme-backports"],
-        "google-containers": ["container-vm"],
-        "opensuse-cloud": ["opensuse"],
-        "rhel-cloud": ["rhel"],
-        "suse-cloud": ["sles", "suse"],
-        "ubuntu-os-cloud": ["ubuntu"],
-        "windows-cloud": ["windows"],
+        "centos-cloud": ["centos-6", "centos-7"],
+        "cos-cloud": ["cos-beta", "cos-dev", "cos-stable"],
+        "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
+        "debian-cloud": ["debian-8", "debian-9"],
+        "rhel-cloud": ["rhel-6", "rhel-7"],
+        "suse-cloud": ["sles-11", "sles-12"],
+        "suse-byos-cloud": [
+            "sles-11-byos", "sles-12-byos",
+            "sles-12-sp2-sap-byos", "sles-12-sp3-sap-byos",
+            "suse-manager-proxy-byos", "suse-manager-server-byos"
+        ],
+        "suse-sap-cloud": ["sles-12-sp2-sap", "sles-12-sp3-sap"],
+        "ubuntu-os-cloud": [
+            "ubuntu-1404-lts", "ubuntu-1604-lts", "ubuntu-1710"
+        ],
+        "windows-cloud": [
+            "windows-1709-core-for-containers", "windows-1709-core",
+            "windows-2008-r2", "windows-2012-r2-core", "windows-2012-r2",
+            "windows-2016-core", "windows-2016"
+        ],
+        "windows-sql-cloud": [
+            "sql-ent-2012-win-2012-r2", "sql-std-2012-win-2012-r2",
+            "sql-web-2012-win-2012-r2", "sql-ent-2014-win-2012-r2",
+            "sql-ent-2014-win-2016", "sql-std-2014-win-2012-r2",
+            "sql-web-2014-win-2012-r2", "sql-ent-2016-win-2012-r2",
+            "sql-ent-2016-win-2016", "sql-std-2016-win-2012-r2",
+            "sql-std-2016-win-2016", "sql-web-2016-win-2012-r2",
+            "sql-web-2016-win-2016", "sql-ent-2017-win-2016",
+            "sql-exp-2017-win-2012-r2", "sql-exp-2017-win-2016",
+            "sql-std-2017-win-2016", "sql-web-2017-win-2016"
+        ],
     }
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
