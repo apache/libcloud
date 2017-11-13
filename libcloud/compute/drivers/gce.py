@@ -569,15 +569,23 @@ class GCEHealthCheck(UuidMixin):
 class GCEFirewall(UuidMixin):
     """A GCE Firewall rule class."""
 
-    def __init__(self, id, name, allowed, network, source_ranges, source_tags,
-                 target_tags, driver, extra=None):
+    def __init__(self, id, name, allowed, denied, direction, network,
+                 source_ranges, source_tags, priority,
+                 source_service_accounts, target_service_accounts,
+                 target_tags, target_ranges, driver, extra=None):
         self.id = str(id)
         self.name = name
         self.network = network
         self.allowed = allowed
+        self.denied = denied
+        self.direction = direction
+        self.priority = priority
         self.source_ranges = source_ranges
         self.source_tags = source_tags
+        self.source_service_accounts = source_service_accounts
         self.target_tags = target_tags
+        self.target_service_accounts = target_service_accounts
+        self.target_ranges = target_ranges
         self.driver = driver
         self.extra = extra
         UuidMixin.__init__(self)
@@ -3096,14 +3104,22 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=hc_data)
         return self.ex_get_healthcheck(name)
 
-    def ex_create_firewall(self, name, allowed, network='default',
+    def ex_create_firewall(self, name, allowed=None, denied=None,
+                           network='default', target_ranges=None,
+                           direction='INGRESS', priority=1000,
+                           source_service_accounts=None,
+                           target_service_accounts=None,
                            source_ranges=None, source_tags=None,
-                           target_tags=None):
+                           target_tags=None, description=None):
         """
-        Create a firewall on a network.
+        Create a firewall rule on a network.
+        Rules can be for Ingress or Egress, and they may Allow or
+        Deny traffic. They are also applied in order based on action
+        (Deny, Allow) and Priority. Rules can be applied using various Source
+        and Target filters.
 
-        Firewall rules should be supplied in the "allowed" field.  This is a
-        list of dictionaries formated like so ("ports" is optional)::
+        Firewall rules should be supplied in the "allowed" or "denied" field.
+        This is a list of dictionaries formatted like so ("ports" is optional):
 
             [{"IPProtocol": "<protocol string or number>",
               "ports": "<port_numbers or ranges>"}]
@@ -3115,14 +3131,31 @@ class GCENodeDriver(NodeDriver):
               "ports": ["8080"]},
              {"IPProtocol": "udp"}]
 
+        Note that valid inputs vary by direction (INGRESS vs EGRESS), action
+        (allow/deny), and source/target filters (tag vs range etc).
+
         See `Firewall Reference <https://developers.google.com/compute/docs/
         reference/latest/firewalls/insert>`_ for more information.
 
         :param  name: Name of the firewall to be created
         :type   name: ``str``
 
-        :param  allowed: List of dictionaries with rules
+        :param  description: Optional description of the rule.
+        :type   description: ``str``
+
+        :param  direction: Direction of the FW rule - "INGRESS" or "EGRESS"
+                           Defaults to 'INGRESS'.
+        :type   direction: ``str``
+
+        :param  priority: Priority integer of the rule -
+                          lower is applied first. Defaults to 1000
+        :type   priority: ``int``
+
+        :param  allowed: List of dictionaries with rules for type INGRESS
         :type   allowed: ``list`` of ``dict``
+
+        :param  denied: List of dictionaries with rules for type EGRESS
+        :type   denied: ``list`` of ``dict``
 
         :keyword  network: The network that the firewall applies to.
         :type     network: ``str`` or :class:`GCENetwork`
@@ -3132,6 +3165,10 @@ class GCENodeDriver(NodeDriver):
                                  ['0.0.0.0/0']
         :type     source_ranges: ``list`` of ``str``
 
+        :keyword  source_service_accounts: A list of source service accounts
+                                        the rules apply to.
+        :type     source_service_accounts: ``list`` of ``str``
+
         :keyword  source_tags: A list of source instance tags the rules apply
                                to.
         :type     source_tags: ``list`` of ``str``
@@ -3139,6 +3176,15 @@ class GCENodeDriver(NodeDriver):
         :keyword  target_tags: A list of target instance tags the rules apply
                                to.
         :type     target_tags: ``list`` of ``str``
+
+        :keyword  target_service_accounts: A list of target service accounts
+                                        the rules apply to.
+        :type     target_service_accounts: ``list`` of ``str``
+
+        :keyword  target_ranges: A list of IP ranges in CIDR format that the
+                                EGRESS type rule should apply to. Defaults
+                                to ['0.0.0.0/0']
+        :type     target_ranges: ``list`` of ``str``
 
         :return:  Firewall object
         :rtype:   :class:`GCEFirewall`
@@ -3150,16 +3196,29 @@ class GCENodeDriver(NodeDriver):
             nw = network
 
         firewall_data['name'] = name
-        firewall_data['allowed'] = allowed
+        firewall_data['direction'] = direction
+        firewall_data['priority'] = priority
+        firewall_data['description'] = description
+        if direction == 'INGRESS':
+            firewall_data['allowed'] = allowed
+        elif direction == 'EGRESS':
+            firewall_data['denied'] = denied
         firewall_data['network'] = nw.extra['selfLink']
-        if source_ranges is None and source_tags is None:
+        if source_ranges is None and source_tags is None \
+                and source_service_accounts is None:
             source_ranges = ['0.0.0.0/0']
         if source_ranges is not None:
             firewall_data['sourceRanges'] = source_ranges
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
+        if source_service_accounts is not None:
+            firewall_data['sourceServiceAccounts'] = source_service_accounts
         if target_tags is not None:
             firewall_data['targetTags'] = target_tags
+        if target_service_accounts is not None:
+            firewall_data['targetServiceAccounts'] = target_service_accounts
+        if target_ranges is not None:
+            firewall_data['destinationRanges'] = target_ranges
 
         request = '/global/firewalls'
 
@@ -5279,13 +5338,23 @@ class GCENodeDriver(NodeDriver):
         firewall_data = {}
         firewall_data['name'] = firewall.name
         firewall_data['allowed'] = firewall.allowed
+        firewall_data['denied'] = firewall.denied
+        # Priority updates not yet exposed via API
         firewall_data['network'] = firewall.network.extra['selfLink']
         if firewall.source_ranges:
             firewall_data['sourceRanges'] = firewall.source_ranges
         if firewall.source_tags:
             firewall_data['sourceTags'] = firewall.source_tags
+        if firewall.source_service_accounts:
+            firewall_data['sourceServiceAccounts'] = \
+                firewall.source_service_accounts
         if firewall.target_tags:
             firewall_data['targetTags'] = firewall.target_tags
+        if firewall.target_service_accounts:
+            firewall_data['targetServiceAccounts'] = \
+                firewall.target_service_accounts
+        if firewall.target_ranges:
+            firewall_data['destinationRanges'] = firewall.target_ranges
         if firewall.extra['description']:
             firewall_data['description'] = firewall.extra['description']
 
@@ -8215,7 +8284,7 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Firewall object from the JSON-response dictionary.
 
-        :param  firewall: The dictionary describing the firewall.
+        :param  firewall: The dictionary deFscribing the firewall.
         :type   firewall: ``dict``
 
         :return: Firewall object
@@ -8229,15 +8298,26 @@ class GCENodeDriver(NodeDriver):
             'network'])['name']
 
         network = self.ex_get_network(extra['network_name'])
+
+        allowed = firewall.get('allowed')
+        denied = firewall.get('denied')
+        priority = firewall.get('priority')
+        direction = firewall.get('direction')
         source_ranges = firewall.get('sourceRanges')
         source_tags = firewall.get('sourceTags')
+        source_service_accounts = firewall.get('sourceServiceAccounts')
         target_tags = firewall.get('targetTags')
+        target_service_accounts = firewall.get('targetServiceAccounts')
+        target_ranges = firewall.get('targetRanges')
 
         return GCEFirewall(id=firewall['id'], name=firewall['name'],
-                           allowed=firewall.get('allowed'), network=network,
-                           source_ranges=source_ranges,
+                           allowed=allowed, denied=denied,
+                           network=network, target_ranges=target_ranges,
+                           source_ranges=source_ranges, priority=priority,
                            source_tags=source_tags, target_tags=target_tags,
-                           driver=self, extra=extra)
+                           source_service_accounts=source_service_accounts,
+                           target_service_accounts=target_service_accounts,
+                           direction=direction, driver=self, extra=extra)
 
     def _to_forwarding_rule(self, forwarding_rule):
         """

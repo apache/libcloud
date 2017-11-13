@@ -820,9 +820,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_create_firewall(self):
         firewall_name = 'lcfirewall'
+        priority = 900
         allowed = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
         source_tags = ['libcloud']
+        target_tags = ['libcloud']
         firewall = self.driver.ex_create_firewall(firewall_name, allowed,
+                                                  priority=priority,
+                                                  target_tags=target_tags,
                                                   source_tags=source_tags)
         self.assertTrue(isinstance(firewall, GCEFirewall))
         self.assertEqual(firewall.name, firewall_name)
@@ -1394,7 +1398,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         firewall_name = 'lcfirewall'
         firewall = self.driver.ex_get_firewall(firewall_name)
         firewall.source_ranges = ['10.0.0.0/16']
-        firewall.source_tags = ['libcloud', 'test']
+        firewall.target_service_accounts = ['libcloud@apache.com']
         firewall2 = self.driver.ex_update_firewall(firewall)
         self.assertTrue(isinstance(firewall2, GCEFirewall))
 
