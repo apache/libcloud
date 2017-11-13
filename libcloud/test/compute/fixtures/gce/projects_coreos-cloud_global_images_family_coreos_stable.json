@@ -1,0 +1,26 @@
+{
+   "kind": "compute#image",
+   "id": "5454100008489088098",
+   "creationTimestamp": "2017-10-12T13:03:25.293-07:00",
+   "name": "coreos-stable-1520-6-0-v20171012",
+   "description": "CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12",
+   "sourceType": "RAW",
+   "rawDisk": {
+    "source": "",
+    "containerType": "TAR"
+   },
+   "status": "READY",
+   "archiveSizeBytes": "445453184",
+   "diskSizeGb": "9",
+   "licenses": [
+    "https://www.googleapis.com/compute/beta/projects/coreos-cloud/global/licenses/coreos-stable"
+   ],
+   "family": "coreos-stable",
+   "selfLink": "https://www.googleapis.com/compute/beta/projects/coreos-cloud/global/images/coreos-stable-1520-6-0-v20171012",
+   "labelFingerprint": "42WmSpB8rSM=",
+   "guestOsFeatures": [
+    {
+     "type": "VIRTIO_SCSI_MULTIQUEUE"
+    }
+   ]
+ }

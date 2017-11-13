@@ -1,0 +1,600 @@
+{
+ "kind": "compute#imageList",
+ "id": "projects/windows-sql-cloud/global/images",
+ "items": [
+  {
+    "archiveSizeBytes": "292570851840",
+    "creationTimestamp": "2018-03-16T12:56:34.051-07:00",
+    "description": "Microsoft, SQL Server 2012 Enterprise, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-ent-2012-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "691184437710397342",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2012-enterprise",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2012-enterprise-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2012-enterprise-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "289458120960",
+    "creationTimestamp": "2018-03-16T12:56:34.100-07:00",
+    "description": "Microsoft, SQL Server 2012 Standard, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-std-2012-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "7039869042978561950",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2012-standard",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2012-standard-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2012-standard-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "281538677760",
+    "creationTimestamp": "2018-03-16T12:56:33.984-07:00",
+    "description": "Microsoft, SQL Server 2012 Web, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-web-2012-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "8315170259090907038",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2012-web",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2012-web-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2012-web-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "241746543360",
+    "creationTimestamp": "2018-03-16T12:56:31.079-07:00",
+    "description": "Microsoft, SQL Server 2012 Enterprise, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-ent-2014-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "6850934007153139585",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2014-enterprise",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2014-enterprise-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2014-enterprise-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "215371714560",
+    "creationTimestamp": "2018-03-16T12:56:34.317-07:00",
+    "description": "Microsoft, SQL Server 2012 Enterprise, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-ent-2014-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "8779506358941753246",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2014-enterprise",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2014-enterprise-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2014-enterprise-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "241815690240",
+    "creationTimestamp": "2018-03-16T12:56:34.015-07:00",
+    "description": "Microsoft, SQL Server 2014 Standard, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-std-2014-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "2727026445279928222",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2014-standard",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2014-standard-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2014-standard-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "235978583040",
+    "creationTimestamp": "2018-03-16T12:56:34.136-07:00",
+    "description": "Microsoft, SQL Server 2014 Web, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-web-2014-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "8854164671641526174",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2014-web",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2014-web-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2014-web-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "275054722560",
+    "creationTimestamp": "2018-03-16T12:56:34.145-07:00",
+    "description": "Microsoft, SQL Server 2016 Enterprise, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-ent-2016-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "7568452089731456926",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2016-enterprise",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2016-enterprise-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2016-enterprise-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "217748267520",
+    "creationTimestamp": "2018-03-16T12:56:34.162-07:00",
+    "description": "Microsoft, SQL Server 2016 Enterprise, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-ent-2016-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "8158037467522506654",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2016-enterprise",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2016-enterprise-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2016-enterprise-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "275475156480",
+    "creationTimestamp": "2018-03-16T12:56:34.135-07:00",
+    "description": "Microsoft, SQL Server 2016 Standard, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-std-2016-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "7321671631204622238",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2016-standard",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2016-standard-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2016-standard-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "216044855040",
+    "creationTimestamp": "2018-03-16T12:56:34.139-07:00",
+    "description": "Microsoft, SQL Server 2016 Standard, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-std-2016-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "7345241359458082718",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2016-standard",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2016-standard-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2016-standard-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "257308473600",
+    "creationTimestamp": "2018-03-16T12:56:34.090-07:00",
+    "description": "Microsoft, SQL Server 2016 Web, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-web-2016-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "5306288240788086686",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2016-web",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2016-web-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2016-web-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "206679609600",
+    "creationTimestamp": "2018-03-16T12:56:34.116-07:00",
+    "description": "Microsoft, SQL Server 2016 Web, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-web-2016-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "3442119052452011934",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2016-web",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2016-web-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2016-web-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "180692828160",
+    "creationTimestamp": "2018-03-16T12:56:33.957-07:00",
+    "description": "Microsoft, SQL Server 2017 Enterprise, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-ent-2017-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "5009147572728733598",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2017-enterprise",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2017-enterprise-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2017-enterprise-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "186363325440",
+    "creationTimestamp": "2018-03-16T12:56:33.978-07:00",
+    "description": "Microsoft, SQL Server 2017 Express, on Windows Server 2012 R2 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-exp-2017-win-2012-r2",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "5306872833081712542",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2017-express",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2012-r2-dc"
+    ],
+    "name": "sql-2017-express-windows-2012-r2-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2017-express-windows-2012-r2-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "161739521280",
+    "creationTimestamp": "2018-03-16T12:56:33.964-07:00",
+    "description": "Microsoft, SQL Server 2017 Express, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-exp-2017-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "2606423252507139998",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2017-express",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2017-express-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2017-express-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "180530031360",
+    "creationTimestamp": "2018-03-16T12:56:33.960-07:00",
+    "description": "Microsoft, SQL Server 2017 Standard, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-std-2017-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "7610921752851488670",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2017-standard",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2017-standard-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2017-standard-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "176303884800",
+    "creationTimestamp": "2018-03-16T12:56:34.055-07:00",
+    "description": "Microsoft, SQL Server 2017 Web, on Windows Server 2016 Datacenter, x64 built on 20180313",
+    "diskSizeGb": "50",
+    "family": "sql-web-2017-win-2016",
+    "guestOsFeatures": [
+      {
+        "type": "WINDOWS"
+      },
+      {
+        "type": "VIRTIO_SCSI_MULTIQUEUE"
+      },
+      {
+        "type": "MULTI_IP_SUBNET"
+      }
+    ],
+    "id": "8377634188974727070",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/licenses/sql-server-2017-web",
+      "https://www.googleapis.com/compute/v1/projects/windows-cloud/global/licenses/windows-server-2016-dc"
+    ],
+    "name": "sql-2017-web-windows-2016-dc-v20180313",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2017-web-windows-2016-dc-v20180313",
+    "sourceType": "RAW",
+    "status": "READY"
+  }
+ ]
+}
