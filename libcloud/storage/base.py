@@ -65,14 +65,14 @@ class Object(object):
         :param hash: Object hash.
         :type  hash: ``str``
 
-        :param container: Object container.
-        :type  container: :class:`Container`
-
         :param extra: Extra attributes.
         :type  extra: ``dict``
 
         :param meta_data: Optional object meta data.
         :type  meta_data: ``dict``
+
+        :param container: Object container.
+        :type  container: :class:`Container`
 
         :param driver: StorageDriver instance.
         :type  driver: :class:`StorageDriver`

@@ -84,6 +84,8 @@ DRIVERS = {
     Provider.DIGITALOCEAN_SPACES:
     ('libcloud.storage.drivers.digitalocean_spaces',
      'DigitalOceanSpacesStorageDriver'),
+    Provider.TENCENT_COS:
+    ('libcloud.storage.drivers.tencent_cos', 'TencentCosDriver'),
 }
 
 
