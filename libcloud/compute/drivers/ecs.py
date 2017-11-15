@@ -820,7 +820,11 @@ class ECSDriver(NodeDriver):
         resp = self.connection.request(self.path, params)
         return resp.success()
 
-    def ex_modify_security_group_by_id(self, group_id=None, name=None, description=None):
+    def ex_modify_security_group_by_id(
+            self,
+            group_id=None,
+            name=None,
+            description=None):
         """
         Modify a new security group.
 
@@ -829,22 +833,22 @@ class ECSDriver(NodeDriver):
 
         :keyword name: new name of the security group
         :type name: ``unicode``
-        
+
         :keyword description: new description of the security group
         :type description: ``unicode``
         """
-        
+
         params = {'Action': 'ModifySecurityGroupAttribute',
                   'RegionId': self.region}
         if not group_id:
-            raise AttributeError('group_id is required') 
+            raise AttributeError('group_id is required')
         params["SecurityGroupId"] = group_id
-       
+
         if name:
             params["SecurityGroupName"] = name
         if description:
             params["Description"] = description
-        
+
         resp = self.connection.request(self.path, params)
         return resp.success()
 
