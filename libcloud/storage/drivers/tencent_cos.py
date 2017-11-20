@@ -207,10 +207,15 @@ class TencentCosDriver(StorageDriver):
         return Container(obj['name'].rstrip('/'), extra, self)
 
     def _walk_container_folder(self, container, folder):
-        # TODO: handle paging
-        response = self.cos_client.list_folder(
-            ListFolderRequest(container.name, folder))
-        if response['message'] == 'SUCCESS':
+        exhausted = False
+        context = ''
+        while not exhausted:
+            response = self.cos_client.list_folder(
+                ListFolderRequest(container.name, folder, context=context))
+            if response.get('message') != 'SUCCESS':
+                return
+            exhausted = response['data']['listover']
+            context = response['data']['context']
             for obj in response['data']['infos']:
                 if obj['name'].endswith('/'):
                     # need to recurse into folder
@@ -237,10 +242,16 @@ class TencentCosDriver(StorageDriver):
         :return: A generator of Container instances.
         :rtype: ``generator`` of :class:`Container`
         """
-        # TODO: handle paging
-        response = self.cos_client.list_folder(ListFolderRequest('', '/'))
-        if response['message'] == 'SUCCESS':
-            return self._to_containers(response['data']['infos'])
+        exhausted = False
+        context = ''
+        while not exhausted:
+            response = self.cos_client.list_folder(
+                ListFolderRequest('', '/', context=context))
+            if response.get('message') != 'SUCCESS':
+                return
+            exhausted = response['data']['listover']
+            context = response['data']['context']
+            yield from self._to_containers(response['data']['infos'])
 
     def iterate_container_objects(self, container):
         """
