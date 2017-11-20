@@ -3158,6 +3158,7 @@ class EC2Response(AWSBaseResponse):
     """
     EC2 specific response parsing and error handling.
     """
+    parse_zero_length_body = True
 
     def parse_error(self):
         err_list = []
