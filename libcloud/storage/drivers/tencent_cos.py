@@ -19,8 +19,11 @@ from pprint import pprint
 
 import email.utils
 
-from qcloud_cos import ListFolderRequest
-from qcloud_cos import StatFolderRequest
+from qcloud_cos import (
+    ListFolderRequest,
+    StatFileRequest,
+    StatFolderRequest,
+)
 
 from libcloud.common.base import ConnectionAppIdAndUserAndKey
 from libcloud.common.google import GoogleAuthType
@@ -31,6 +34,8 @@ from libcloud.storage.base import StorageDriver, Container, Object
 from libcloud.storage.drivers.s3 import BaseS3Connection
 from libcloud.storage.drivers.s3 import S3RawResponse
 from libcloud.storage.drivers.s3 import S3Response
+from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 
@@ -279,10 +284,35 @@ class TencentCosDriver(StorageDriver):
         response = self.cos_client.stat_folder(
             StatFolderRequest(container_name, '/'))
         if response.get('message') != 'SUCCESS':
-            return None
+            raise ContainerDoesNotExistError(value=None, driver=self,
+                                             container_name=container_name)
         # "inject" the container name to the dictionary for `_to_container`
         response['data']['name'] = container_name
         return self._to_container(response['data'])
+
+    def get_object(self, container_name, object_name):
+        """
+        Return an object instance.
+
+        :param container_name: Container name.
+        :type  container_name: ``str``
+
+        :param object_name: Object name.
+        :type  object_name: ``str``
+
+        :return: :class:`Object` instance.
+        :rtype: :class:`Object`
+        """
+        response = self.cos_client.stat_file(
+            StatFileRequest(container_name, object_name))
+        if response.get('message') != 'SUCCESS':
+            raise ObjectDoesNotExistError(value=None, driver=self,
+                                          object_name=object_name)
+        # "inject" the object name to the dictionary for `_to_obj`
+        response['data']['name'] = object_name
+        return self._to_obj(response['data'], '',
+                            self.get_container(container_name))
+
 
     # def _get_container_permissions(self, container_name):
     #     """
