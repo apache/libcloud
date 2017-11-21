@@ -20,6 +20,7 @@ from pprint import pprint
 import email.utils
 
 from qcloud_cos import ListFolderRequest
+from qcloud_cos import StatFolderRequest
 
 from libcloud.common.base import ConnectionAppIdAndUserAndKey
 from libcloud.common.google import GoogleAuthType
@@ -264,6 +265,24 @@ class TencentCosDriver(StorageDriver):
         :rtype: ``generator`` of :class:`Object`
         """
         return self._walk_container_folder(container, '/')
+
+    def get_container(self, container_name):
+        """
+        Return a container instance.
+
+        :param container_name: Container name.
+        :type container_name: ``str``
+
+        :return: :class:`Container` instance.
+        :rtype: :class:`Container`
+        """
+        response = self.cos_client.stat_folder(
+            StatFolderRequest(container_name, '/'))
+        if response.get('message') != 'SUCCESS':
+            return None
+        # "inject" the container name to the dictionary for `_to_container`
+        response['data']['name'] = container_name
+        return self._to_container(response['data'])
 
     # def _get_container_permissions(self, container_name):
     #     """
