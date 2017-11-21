@@ -20,6 +20,7 @@ from pprint import pprint
 import email.utils
 
 from qcloud_cos import (
+    DownloadFileRequest,
     ListFolderRequest,
     StatFileRequest,
     StatFolderRequest,
@@ -29,6 +30,7 @@ from libcloud.common.base import ConnectionAppIdAndUserAndKey
 from libcloud.common.google import GoogleAuthType
 from libcloud.common.google import GoogleOAuth2Credential
 from libcloud.common.google import GoogleResponse
+from libcloud.common.types import LibcloudError
 from libcloud.common.types import ProviderError
 from libcloud.storage.base import StorageDriver, Container, Object
 from libcloud.storage.drivers.s3 import BaseS3Connection
@@ -238,7 +240,7 @@ class TencentCosDriver(StorageDriver):
             'source_url': obj['source_url'],
         }
         meta_data = {}
-        return Object(folder + obj['name'], obj['filesize'], obj['sha'],
+        return Object(folder[1:] + obj['name'], obj['filesize'], obj['sha'],
                       extra, meta_data, container, self)
 
     def iterate_containers(self):
@@ -304,7 +306,7 @@ class TencentCosDriver(StorageDriver):
         :rtype: :class:`Object`
         """
         response = self.cos_client.stat_file(
-            StatFileRequest(container_name, object_name))
+            StatFileRequest(container_name, '/' + object_name))
         if response.get('message') != 'SUCCESS':
             raise ObjectDoesNotExistError(value=None, driver=self,
                                           object_name=object_name)
@@ -312,7 +314,6 @@ class TencentCosDriver(StorageDriver):
         response['data']['name'] = object_name
         return self._to_obj(response['data'], '',
                             self.get_container(container_name))
-
 
     # def _get_container_permissions(self, container_name):
     #     """
