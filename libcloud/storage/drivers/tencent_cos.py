@@ -15,12 +15,16 @@
 
 import copy
 import json
+import os
 from pprint import pprint
+import shutil
+import tempfile
 
 import email.utils
 
 from qcloud_cos import (
     DownloadFileRequest,
+    DownloadObjectRequest,
     ListFolderRequest,
     StatFileRequest,
     StatFolderRequest,
@@ -38,6 +42,7 @@ from libcloud.storage.drivers.s3 import S3RawResponse
 from libcloud.storage.drivers.s3 import S3Response
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
+from libcloud.utils.files import read_in_chunks
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 
@@ -319,6 +324,56 @@ class TencentCosDriver(StorageDriver):
         response['data']['name'] = object_name
         return self._to_obj(response['data'], '',
                             self.get_container(container_name))
+
+    def download_object(self, obj, destination_path, overwrite_existing=False,
+                        delete_on_failure=True):
+        """
+        Download an object to the specified destination path.
+
+        :param obj: Object instance.
+        :type obj: :class:`Object`
+
+        :param destination_path: Full path to a file or a directory where the
+                                 incoming file will be saved.
+        :type destination_path: ``str``
+
+        :param overwrite_existing: True to overwrite an existing file,
+                                   defaults to False.
+        :type overwrite_existing: ``bool``
+
+        :param delete_on_failure: True to delete a partially downloaded file if
+                                   the download was not successful (hash
+                                   mismatch / file size).
+        :type delete_on_failure: ``bool``
+
+        :return: True if an object has been successfully downloaded, False
+                 otherwise.
+        :rtype: ``bool``
+        """
+        if os.path.exists(destination_path) and not overwrite_existing:
+            return False
+        req = DownloadFileRequest(obj.container.name, '/' + obj.name,
+                                  destination_path)
+        response = self.cos_client.download_file(req)
+        if self._is_ok(response):
+            return True
+        if delete_on_failure and os.path.exists(destination_path):
+            os.remove(destination_path)
+        return False
+
+    def download_object_as_stream(self, obj, chunk_size=None):
+        """
+        Return a generator which yields object data.
+
+        :param obj: Object instance
+        :type obj: :class:`Object`
+
+        :param chunk_size: Optional chunk size (in bytes).
+        :type chunk_size: ``int``
+        """
+        req = DownloadObjectRequest(obj.container.name, '/' + obj.name)
+        response = self.cos_client.download_object(req)
+        return read_in_chunks(response, chunk_size)
 
     # def _get_container_permissions(self, container_name):
     #     """
