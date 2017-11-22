@@ -375,7 +375,7 @@ class TencentCosDriver(StorageDriver):
         """
         req = DownloadObjectRequest(obj.container.name, '/' + obj.name)
         response = self.cos_client.download_object(req)
-        return read_in_chunks(response, chunk_size)
+        return read_in_chunks(response, chunk_size, yield_empty=True)
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
