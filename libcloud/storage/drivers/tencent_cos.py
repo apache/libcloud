@@ -478,10 +478,13 @@ class TencentCosDriver(StorageDriver):
 
         :rtype: ``object``
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             tmp_file.write(exhaust_iterator(iterator))
+        try:
             return self.upload_object(
                 tmp_file.name, container, object_name, extra, headers)
+        finally:
+            os.remove(tmp_file.name)
 
     def delete_object(self, obj):
         """
