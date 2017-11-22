@@ -23,6 +23,7 @@ import tempfile
 import email.utils
 
 from qcloud_cos import (
+    DelFileRequest,
     DownloadFileRequest,
     DownloadObjectRequest,
     ListFolderRequest,
@@ -481,6 +482,20 @@ class TencentCosDriver(StorageDriver):
             tmp_file.write(exhaust_iterator(iterator))
             return self.upload_object(
                 tmp_file.name, container, object_name, extra, headers)
+
+    def delete_object(self, obj):
+        """
+        Delete an object.
+
+        :param obj: Object instance.
+        :type obj: :class:`Object`
+
+        :return: ``bool`` True on success.
+        :rtype: ``bool``
+        """
+        req = DelFileRequest(obj.container.name, '/' + obj.name)
+        response = self.cos_client.del_file(req)
+        return self._is_ok(response)
 
     # def _get_container_permissions(self, container_name):
     #     """
