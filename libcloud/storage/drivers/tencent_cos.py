@@ -408,7 +408,7 @@ class TencentCosDriver(StorageDriver):
         req = UploadFileRequest(container.name, '/' + object_name, file_path)
 
         def set_extra(field_name):
-            if field_name in extra:
+            if extra and field_name in extra:
                 set_func = req.getattr('set_%s' % (field_name))
                 set_func(extra[field_name])
 
