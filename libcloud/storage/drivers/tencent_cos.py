@@ -203,6 +203,10 @@ class TencentCosDriver(StorageDriver):
         # self.json_connection = GoogleStorageJSONConnection(
         #     key, secret, **kwargs)
 
+    @staticmethod
+    def _is_ok(response):
+        return response['code'] == 0
+
     def _to_containers(self, obj_list):
         for obj in obj_list:
             yield self._to_container(obj)
@@ -218,9 +222,9 @@ class TencentCosDriver(StorageDriver):
         exhausted = False
         context = ''
         while not exhausted:
-            response = self.cos_client.list_folder(
-                ListFolderRequest(container.name, folder, context=context))
-            if response.get('message') != 'SUCCESS':
+            req = ListFolderRequest(container.name, folder, context=context)
+            response = self.cos_client.list_folder(req)
+            if not self._is_ok(response):
                 return
             exhausted = response['data']['listover']
             context = response['data']['context']
@@ -240,7 +244,8 @@ class TencentCosDriver(StorageDriver):
             'source_url': obj['source_url'],
         }
         meta_data = {}
-        return Object(folder[1:] + obj['name'], obj['filesize'], obj['sha'],
+        return Object(folder.lstrip('/') + obj['name'],
+                      obj['filesize'], obj['sha'],
                       extra, meta_data, container, self)
 
     def iterate_containers(self):
@@ -253,9 +258,9 @@ class TencentCosDriver(StorageDriver):
         exhausted = False
         context = ''
         while not exhausted:
-            response = self.cos_client.list_folder(
-                ListFolderRequest('', '/', context=context))
-            if response.get('message') != 'SUCCESS':
+            req = ListFolderRequest('', '/', context=context)
+            response = self.cos_client.list_folder(req)
+            if not self._is_ok(response):
                 return
             exhausted = response['data']['listover']
             context = response['data']['context']
@@ -283,9 +288,9 @@ class TencentCosDriver(StorageDriver):
         :return: :class:`Container` instance.
         :rtype: :class:`Container`
         """
-        response = self.cos_client.stat_folder(
-            StatFolderRequest(container_name, '/'))
-        if response.get('message') != 'SUCCESS':
+        req = StatFolderRequest(container_name, '/')
+        response = self.cos_client.stat_folder(req)
+        if not self._is_ok(response):
             raise ContainerDoesNotExistError(value=None, driver=self,
                                              container_name=container_name)
         # "inject" the container name to the dictionary for `_to_container`
@@ -305,9 +310,9 @@ class TencentCosDriver(StorageDriver):
         :return: :class:`Object` instance.
         :rtype: :class:`Object`
         """
-        response = self.cos_client.stat_file(
-            StatFileRequest(container_name, '/' + object_name))
-        if response.get('message') != 'SUCCESS':
+        req = StatFileRequest(container_name, '/' + object_name)
+        response = self.cos_client.stat_file(req)
+        if not self._is_ok(response):
             raise ObjectDoesNotExistError(value=None, driver=self,
                                           object_name=object_name)
         # "inject" the object name to the dictionary for `_to_obj`
