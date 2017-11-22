@@ -28,6 +28,7 @@ from qcloud_cos import (
     ListFolderRequest,
     StatFileRequest,
     StatFolderRequest,
+    UploadFileRequest,
 )
 
 from libcloud.common.base import ConnectionAppIdAndUserAndKey
@@ -42,7 +43,7 @@ from libcloud.storage.drivers.s3 import S3RawResponse
 from libcloud.storage.drivers.s3 import S3Response
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
-from libcloud.utils.files import read_in_chunks
+from libcloud.utils.files import exhaust_iterator, read_in_chunks
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 
@@ -196,7 +197,7 @@ class TencentCosDriver(StorageDriver):
     website = 'https://cloud.tencent.com/product/cos'
     # connectionCls = GoogleStorageConnection
     # jsonConnectionCls = GoogleStorageJSONConnection
-    hash_type = 'md5'
+    hash_type = 'sha1'
     supports_chunked_encoding = False
     supports_s3_multipart_upload = False
 
@@ -374,6 +375,112 @@ class TencentCosDriver(StorageDriver):
         req = DownloadObjectRequest(obj.container.name, '/' + obj.name)
         response = self.cos_client.download_object(req)
         return read_in_chunks(response, chunk_size)
+
+    def upload_object(self, file_path, container, object_name, extra=None,
+                      verify_hash=True, headers=None):
+        """
+        Upload an object currently located on a disk.
+
+        :param file_path: Path to the object on disk.
+        :type file_path: ``str``
+
+        :param container: Destination container.
+        :type container: :class:`Container`
+
+        :param object_name: Object name.
+        :type object_name: ``str``
+
+        :param verify_hash: Verify hash
+        :type verify_hash: ``bool``
+
+        :param extra: Extra attributes (driver specific). (optional)
+        :type extra: ``dict``
+
+        :param headers: (optional) Additional request headers,
+            such as CORS headers. For example:
+            headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
+        :type headers: ``dict``
+
+        :rtype: :class:`Object`
+        """
+        if file_path and not os.path.exists(file_path):
+            raise OSError('File %s does not exist' % (file_path))
+        req = UploadFileRequest(container.name, '/' + object_name, file_path)
+
+        def set_extra(field_name):
+            if field_name in extra:
+                set_func = req.getattr('set_%s' % (field_name))
+                set_func(extra[field_name])
+
+        set_extra('authority')
+        set_extra('biz_attr')
+        set_extra('cache_control')
+        set_extra('content_type')
+        set_extra('content_language')
+        set_extra('content_encoding')
+        set_extra('x_cos_meta')
+        response = self.cos_client.upload_file(req)
+        if not self._is_ok(response):
+            raise LibcloudError(
+                'Error in uploading object: %s' % (response['message']),
+                driver=self)
+        obj = self.get_object(container.name, object_name)
+        if verify_hash:
+            hasher = self._get_hash_function()
+            with open(file_path, 'rb') as src_file:
+                hasher.update(src_file.read())
+            data_hash = hasher.hexdigest()
+            if data_hash != obj.hash:
+                raise ObjectHashMismatchError(
+                    value='SHA1 hash {0} checksum does not match {1}'.format(
+                        obj.hash, data_hash),
+                    object_name=object_name, driver=self)
+        return obj
+
+    def upload_object_via_stream(self, iterator, container, object_name,
+                                 extra=None, headers=None):
+        """
+        Upload an object using an iterator.
+
+        If a provider supports it, chunked transfer encoding is used and you
+        don't need to know in advance the amount of data to be uploaded.
+
+        Otherwise if a provider doesn't support it, iterator will be exhausted
+        so a total size for data to be uploaded can be determined.
+
+        Note: Exhausting the iterator means that the whole data must be
+        buffered in memory which might result in memory exhausting when
+        uploading a very large object.
+
+        If a file is located on a disk you are advised to use upload_object
+        function which uses fs.stat function to determine the file size and it
+        doesn't need to buffer whole object in the memory.
+
+        :param iterator: An object which implements the iterator interface.
+        :type iterator: :class:`object`
+
+        :param container: Destination container.
+        :type container: :class:`Container`
+
+        :param object_name: Object name.
+        :type object_name: ``str``
+
+        :param extra: (optional) Extra attributes (driver specific). Note:
+            This dictionary must contain a 'content_type' key which represents
+            a content type of the stored object.
+        :type extra: ``dict``
+
+        :param headers: (optional) Additional request headers,
+            such as CORS headers. For example:
+            headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
+        :type headers: ``dict``
+
+        :rtype: ``object``
+        """
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            tmp_file.write(exhaust_iterator(iterator))
+            return self.upload_object(
+                tmp_file.name, container, object_name, extra, headers)
 
     # def _get_container_permissions(self, container_name):
     #     """
