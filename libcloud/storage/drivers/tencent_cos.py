@@ -61,6 +61,26 @@ class TencentCosDriver(StorageDriver):
     def _is_ok(response):
         return response['code'] == 0
 
+    @classmethod
+    def _make_request(cls, method, req):
+        """Make a COS API request.
+
+        :param method: COS client method to use for request.
+        :type method: ``callable``
+
+        :param req: COS client method to use for request.
+        :type req: ``qcloud_cos.BaseRequest``
+
+        :return: :class:Tuple with (result, error).
+        :rtype: :class:`tuple(dict, str)`
+        On success: result is the response data, error is None.
+        On error: result is None, error is the API error message.
+        """
+        response = method(req)
+        if cls._is_ok(response):
+            return response.get('data', {}), None
+        return None, response['message']
+
     def _to_containers(self, obj_list):
         for obj in obj_list:
             yield self._to_container(obj)
@@ -77,12 +97,12 @@ class TencentCosDriver(StorageDriver):
         context = ''
         while not exhausted:
             req = ListFolderRequest(container.name, folder, context=context)
-            response = self.cos_client.list_folder(req)
-            if not self._is_ok(response):
+            result, err = self._make_request(self.cos_client.list_folder, req)
+            if err is not None:
                 return
-            exhausted = response['data']['listover']
-            context = response['data']['context']
-            for obj in response['data']['infos']:
+            exhausted = result['listover']
+            context = result['context']
+            for obj in result['infos']:
                 if obj['name'].endswith('/'):
                     # need to recurse into folder
                     yield from self._walk_container_folder(
@@ -113,12 +133,12 @@ class TencentCosDriver(StorageDriver):
         context = ''
         while not exhausted:
             req = ListFolderRequest('', '/', context=context)
-            response = self.cos_client.list_folder(req)
-            if not self._is_ok(response):
+            result, err = self._make_request(self.cos_client.list_folder, req)
+            if err is not None:
                 return
-            exhausted = response['data']['listover']
-            context = response['data']['context']
-            yield from self._to_containers(response['data']['infos'])
+            exhausted = result['listover']
+            context = result['context']
+            yield from self._to_containers(result['infos'])
 
     def iterate_container_objects(self, container):
         """
@@ -143,13 +163,13 @@ class TencentCosDriver(StorageDriver):
         :rtype: :class:`Container`
         """
         req = StatFolderRequest(container_name, '/')
-        response = self.cos_client.stat_folder(req)
-        if not self._is_ok(response):
+        result, err = self._make_request(self.cos_client.stat_folder, req)
+        if err is not None:
             raise ContainerDoesNotExistError(value=None, driver=self,
                                              container_name=container_name)
         # "inject" the container name to the dictionary for `_to_container`
-        response['data']['name'] = container_name
-        return self._to_container(response['data'])
+        result['name'] = container_name
+        return self._to_container(result)
 
     def get_object(self, container_name, object_name):
         """
@@ -165,14 +185,13 @@ class TencentCosDriver(StorageDriver):
         :rtype: :class:`Object`
         """
         req = StatFileRequest(container_name, '/' + object_name)
-        response = self.cos_client.stat_file(req)
-        if not self._is_ok(response):
+        result, err = self._make_request(self.cos_client.stat_file, req)
+        if err is not None:
             raise ObjectDoesNotExistError(value=None, driver=self,
                                           object_name=object_name)
         # "inject" the object name to the dictionary for `_to_obj`
-        response['data']['name'] = object_name
-        return self._to_obj(response['data'], '',
-                            self.get_container(container_name))
+        result['name'] = object_name
+        return self._to_obj(result, '', self.get_container(container_name))
 
     def get_object_cdn_url(self, obj):
         """
@@ -215,8 +234,8 @@ class TencentCosDriver(StorageDriver):
             return False
         req = DownloadFileRequest(obj.container.name, '/' + obj.name,
                                   destination_path)
-        response = self.cos_client.download_file(req)
-        if self._is_ok(response):
+        result, err = self._make_request(self.cos_client.download_file, req)
+        if err is None:
             return True
         if delete_on_failure and os.path.exists(destination_path):
             os.remove(destination_path)
@@ -279,11 +298,10 @@ class TencentCosDriver(StorageDriver):
         set_extra('content_language')
         set_extra('content_encoding')
         set_extra('x_cos_meta')
-        response = self.cos_client.upload_file(req)
-        if not self._is_ok(response):
-            raise LibcloudError(
-                'Error in uploading object: %s' % (response['message']),
-                driver=self)
+        _, err = self._make_request(self.cos_client.upload_file, req)
+        if err is not None:
+            raise LibcloudError('Error in uploading object: %s' % (err),
+                                driver=self)
         obj = self.get_object(container.name, object_name)
         if verify_hash:
             hasher = self._get_hash_function()
@@ -356,5 +374,5 @@ class TencentCosDriver(StorageDriver):
         :rtype: ``bool``
         """
         req = DelFileRequest(obj.container.name, '/' + obj.name)
-        response = self.cos_client.del_file(req)
-        return self._is_ok(response)
+        _, err = self._make_request(self.cos_client.del_file, req)
+        return err is None
