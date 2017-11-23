@@ -327,6 +327,18 @@ class TencentCosDriver(StorageDriver):
         return self._to_obj(response['data'], '',
                             self.get_container(container_name))
 
+    def get_object_cdn_url(self, obj):
+        """
+        Return an object CDN URL.
+
+        :param obj: Object instance
+        :type  obj: :class:`Object`
+
+        :return: A CDN URL for this object.
+        :rtype: ``str``
+        """
+        return obj.extra['access_url']
+
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
         """
