@@ -55,7 +55,7 @@ class Provider(object):
     :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
     :cvar S3_RGW: S3 RGW
     :cvar S3_RGW_OUTSCALE: OUTSCALE S3 RGW
-    :cvar TENCENT_COS Tencent COS
+    :cvar TENCENT_COS: Tencent COS
     """
     DUMMY = 'dummy'
     ALIYUN_OSS = 'aliyun_oss'
