@@ -105,8 +105,9 @@ class TencentCosDriver(StorageDriver):
             for obj in result['infos']:
                 if obj['name'].endswith('/'):
                     # need to recurse into folder
-                    yield from self._walk_container_folder(
-                        container, folder + obj['name'])
+                    for obj in self._walk_container_folder(
+                            container, folder + obj['name']):
+                        yield obj
                 else:
                     yield self._to_obj(obj, folder, container)
 
@@ -138,7 +139,8 @@ class TencentCosDriver(StorageDriver):
                 return
             exhausted = result['listover']
             context = result['context']
-            yield from self._to_containers(result['infos'])
+            for container in self._to_containers(result['infos']):
+                yield container
 
     def iterate_container_objects(self, container):
         """
