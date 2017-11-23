@@ -18,6 +18,7 @@ import shutil
 import tempfile
 
 from qcloud_cos import (
+    CosClient,
     DelFileRequest,
     DownloadFileRequest,
     DownloadObjectRequest,
@@ -54,7 +55,6 @@ class TencentCosDriver(StorageDriver):
 
     def __init__(self, key, secret=None, app_id=None, region=None, **kwargs):
         super(TencentCosDriver, self).__init__(key, secret, **kwargs)
-        from qcloud_cos import CosClient
         self.cos_client = CosClient(app_id, key, secret, region)
 
     @staticmethod
