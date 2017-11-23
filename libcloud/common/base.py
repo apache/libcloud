@@ -912,24 +912,6 @@ class ConnectionUserAndKey(ConnectionKey):
         self.user_id = user_id
 
 
-class ConnectionAppIdAndUserAndKey(ConnectionKey):
-    """
-    Base connection class which accepts an ``app_id``, ``user_id`` and
-    ``key`` argument.
-    """
-
-    user_id = None
-
-    def __init__(self, app_id, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, proxy_url=None,
-                 backoff=None, retry_delay=None):
-        super(ConnectionAppIdAndUserAndKey, self).__init__(
-            user_id, key, secure=secure, host=host, port=port, url=url,
-            timeout=timeout, backoff=backoff, retry_delay=retry_delay,
-            proxy_url=proxy_url)
-        self.app_id = app_id
-
-
 class BaseDriver(object):
     """
     Base driver class from which other classes can inherit from.
