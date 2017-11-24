@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 
+import collections
 import os
 import sys
 from datetime import datetime
@@ -897,35 +898,72 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(StorageVolumeState.UNKNOWN, volumes[2].state)
 
     def test_create_volume(self):
-        location = self.driver.list_locations()[0]
-        vol = self.driver.create_volume(10, 'vol', location)
+        volume = self.driver.create_volume(
+            size=10,
+            name='volume-name',
+            location=self.driver.list_locations()[0])
 
-        self.assertEqual(10, vol.size)
-        self.assertEqual('vol', vol.name)
-        self.assertEqual('creating', vol.extra['state'])
-        self.assertTrue(isinstance(vol.extra['create_time'], datetime))
-        self.assertEqual(False, vol.extra['encrypted'])
+        self.assertEqual(10, volume.size)
+        self.assertEqual('volume-name', volume.name)
+        self.assertEqual('creating', volume.extra['state'])
+        self.assertTrue(isinstance(volume.extra['create_time'], datetime))
+        self.assertEqual(False, volume.extra['encrypted'])
+        self.assertLatestUrlContainsQueryParams({
+            'TagSpecification.0.ResourceType': 'volume',
+            'TagSpecification.0.Tag.0.Key': 'Name',
+            'TagSpecification.0.Tag.0.Value': 'volume-name',
+        })
+
+        # create volume without required keyword argument
+        self.assertRaises(
+            ValueError, self.driver.create_volume,
+            size=10, name='volume-name')
 
     def test_create_encrypted_volume(self):
-        location = self.driver.list_locations()[0]
-        vol = self.driver.create_volume(
-            10, 'vol', location,
+        volume = self.driver.create_volume(
+            size=10,
+            name='volume-name',
+            location=self.driver.list_locations()[0],
             ex_encrypted=True,
             ex_kms_key_id='1234')
 
-        self.assertEqual(10, vol.size)
-        self.assertEqual('vol', vol.name)
-        self.assertEqual('creating', vol.extra['state'])
-        self.assertTrue(isinstance(vol.extra['create_time'], datetime))
-        self.assertEqual(True, vol.extra['encrypted'])
+        self.assertEqual(10, volume.size)
+        self.assertEqual('volume-name', volume.name)
+        self.assertEqual('creating', volume.extra['state'])
+        self.assertTrue(isinstance(volume.extra['create_time'], datetime))
+        self.assertEqual(True, volume.extra['encrypted'])
+        self.assertLatestUrlContainsQueryParams({
+            'Encrypted': '1',
+            'KmsKeyId': '1234'
+        })
+
+    def test_create_volume_with_tags(self):
+        self.driver.create_volume(
+            size=10,
+            name='volume-name',
+            location=self.driver.list_locations()[0],
+            ex_tags=collections.OrderedDict([
+                ('tag1', 'value1'),
+                ('tag2', 'value2')
+            ]))
+
+        self.assertLatestUrlContainsQueryParams({
+            'TagSpecification.0.ResourceType': 'volume',
+            'TagSpecification.0.Tag.0.Key': 'Name',
+            'TagSpecification.0.Tag.0.Value': 'volume-name',
+            'TagSpecification.0.Tag.1.Key': 'tag1',
+            'TagSpecification.0.Tag.1.Value': 'value1',
+            'TagSpecification.0.Tag.2.Key': 'tag2',
+            'TagSpecification.0.Tag.2.Value': 'value2',
+        })
 
     def test_destroy_volume(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
                             state=StorageVolumeState.AVAILABLE,
                             size=10, driver=self.driver)
 
-        retValue = self.driver.destroy_volume(vol)
-        self.assertTrue(retValue)
+        ret_value = self.driver.destroy_volume(vol)
+        self.assertTrue(ret_value)
 
     def test_attach(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
@@ -933,17 +971,17 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                             driver=self.driver)
 
         node = Node('i-4382922a', None, None, None, None, self.driver)
-        retValue = self.driver.attach_volume(node, vol, '/dev/sdh')
+        ret_value = self.driver.attach_volume(node, vol, '/dev/sdh')
 
-        self.assertTrue(retValue)
+        self.assertTrue(ret_value)
 
     def test_detach(self):
         vol = StorageVolume(id='vol-4282672b', name='test',
                             state=StorageVolumeState.INUSE,
                             size=10, driver=self.driver)
 
-        retValue = self.driver.detach_volume(vol)
-        self.assertTrue(retValue)
+        ret_value = self.driver.detach_volume(vol)
+        self.assertTrue(ret_value)
 
     def test_create_volume_snapshot(self):
         vol = StorageVolume(id='vol-4282672b', name='test',

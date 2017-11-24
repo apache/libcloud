@@ -3988,65 +3988,68 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=False, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None, ex_tags=None):
         """
         Create a new volume.
 
-        :param size: Size of volume in gigabytes (required)
+        :param size: Size of volume in gigabytes. (required)
         :type size: ``int``
 
-        :param name: Name of the volume to be created
+        :param name: Name of the volume to be created. (required)
         :type name: ``str``
 
-        :param location: Which data center to create a volume in. If
-                               empty, undefined behavior will be selected.
-                               (optional)
-        :type location: :class:`.NodeLocation`
+        :param location: Which data center to create a volume in. (required)
+        :type location: :class:`.EC2NodeLocation`
 
-        :param snapshot:  Snapshot from which to create the new
-                               volume.  (optional)
-        :type snapshot:  :class:`.VolumeSnapshot`
+        :param snapshot: Snapshot from which to create the new volume.
+            (optional)
+        :type snapshot: :class:`.VolumeSnapshot`
 
-        :param location: Datacenter in which to create a volume in.
-        :type location: :class:`.ExEC2AvailabilityZone`
-
-        :param ex_volume_type: Type of volume to create.
+        :param ex_volume_type: Type of volume to create. (optional)
         :type ex_volume_type: ``str``
 
-        :param iops: The number of I/O operations per second (IOPS)
-                     that the volume supports. Only used if ex_volume_type
-                     is io1.
-        :type iops: ``int``
+        :param ex_iops: The number of I/O operations per second (IOPS) that
+            the volume supports. Only used if ex_volume_type is io1. (optional)
+        :type ex_iops: ``int``
 
         :param ex_encrypted: Specifies whether the volume should be encrypted.
+            (optional)
         :type ex_encrypted: ``bool``
 
-        :param ex_kms_key_id: The full ARN of the AWS Key Management
-                            Service (AWS KMS) customer master key (CMK) to use
-                            when creating the encrypted volume.
-                            Example:
-                            arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123
-                            -456a-a12b-a123b4cd56ef.
-                            Only used if encrypted is set to True.
+        :param ex_kms_key_id: The full ARN of the AWS Key Management Service
+            (AWS KMS) customer master key (CMK) to use when creating the
+            encrypted volume.
+            Example:
+                arn:aws:kms:us-east-1:012345678910:key/
+                abcd1234-a123-456a-a12b-a123b4cd56ef.
+            Only used if encrypted is set to True. (optional)
         :type ex_kms_key_id: ``str``
+
+        :param ex_tags: The tags to apply to a volume when the volume is
+            being created. (optional)
+        :type ex_tags: ``dict``
 
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
-
         params = {
             'Action': 'CreateVolume',
             'Size': str(size)}
 
         if ex_volume_type and ex_volume_type not in VALID_VOLUME_TYPES:
-            raise ValueError('Invalid volume type specified: %s' %
-                             (ex_volume_type))
+            raise ValueError((
+                "Invalid volume type specified: {0}"
+            ).format(ex_volume_type))
 
         if snapshot:
             params['SnapshotId'] = snapshot.id
 
         if location is not None:
             params['AvailabilityZone'] = location.availability_zone.name
+        else:
+            raise ValueError(
+                "The location parameter is required for a volume "
+                "creation.")
 
         if ex_volume_type:
             params['VolumeType'] = ex_volume_type
@@ -4060,14 +4063,19 @@ class BaseEC2NodeDriver(NodeDriver):
             if ex_kms_key_id is not None:
                 params['KmsKeyId'] = ex_kms_key_id
 
-        volume = self._to_volume(
-            self.connection.request(self.path, params=params).object,
-            name=name)
+        volume_tags = [('Name', name)]
+        if ex_tags is not None:
+            volume_tags.extend(ex_tags.items())
 
-        if self.ex_create_tags(volume, {'Name': name}):
-            volume.extra['tags']['Name'] = name
+        tagspec_root = 'TagSpecification.0'
+        params['{0}.ResourceType'.format(tagspec_root)] = 'volume'
+        for tag_number, (key, value) in enumerate(volume_tags):
+            tag_root = '{0}.Tag.{1}'.format(tagspec_root, tag_number)
+            params['{0}.Key'.format(tag_root)] = key
+            params['{0}.Value'.format(tag_root)] = value
 
-        return volume
+        response = self.connection.request(self.path, params=params)
+        return self._to_volume(response.object, name=name)
 
     def attach_volume(self, node, volume, device):
         params = {

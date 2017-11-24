@@ -64,6 +64,9 @@ class LibcloudTestCase(unittest.TestCase):
                          'expected %d, but %d mock methods were executed'
                          % (expected, actual))
 
+    def assertLatestUrlContainsQueryParams(self, expected_params, strict=False):
+        MockHttp.assertLatestUrlContainsQueryParams(expected_params, strict=strict)
+
 
 class multipleresponse(object):
     """
@@ -108,6 +111,8 @@ class MockHttp(LibcloudConnection):
     test = None  # TestCase instance which is using this mock
     proxy_url = None
 
+    _latest_requested_url = None
+
     def __init__(self, *args, **kwargs):
         # Load assertion methods into the class, incase people want to assert
         # within a response
@@ -133,6 +138,7 @@ class MockHttp(LibcloudConnection):
         return meth(method, url, body, headers)
 
     def request(self, method, url, body=None, headers=None, raw=False, stream=False):
+        MockHttp._latest_requested_url = url
         headers = self._normalize_headers(headers=headers)
         r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
         if r_body is None:
@@ -192,7 +198,8 @@ class MockHttp(LibcloudConnection):
 
         return meth_name
 
-    def assertUrlContainsQueryParams(self, url, expected_params, strict=False):
+    @classmethod
+    def assertUrlContainsQueryParams(cls, url, expected_params, strict=False):
         """
         Assert that provided url contains provided query parameters.
 
@@ -220,10 +227,18 @@ class MockHttp(LibcloudConnection):
                 assert key in params
                 assert params[key] == value
 
+    @classmethod
+    def assertLatestUrlContainsQueryParams(cls, expected_params, strict=False):
+        cls.assertUrlContainsQueryParams(
+            cls._latest_requested_url,
+            expected_params,
+            strict=strict)
+
 
 class MockConnection(object):
     def __init__(self, action):
         self.action = action
+
 
 StorageMockHttp = MockHttp
 
