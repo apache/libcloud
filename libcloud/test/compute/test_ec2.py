@@ -76,6 +76,8 @@ class BaseEC2Tests(LibcloudTestCase):
         unsupported_regions = list()
 
         for region in VALID_EC2_REGIONS:
+            if region == 'cn-north-1':
+                continue  # reason: SCALRCORE-7105
             driver = EC2NodeDriver(*EC2_PARAMS, **{'region': region})
             try:
                 driver.list_sizes()
