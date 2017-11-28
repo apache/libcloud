@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import shutil
 import tempfile
 
 from qcloud_cos import (
@@ -32,6 +31,7 @@ from libcloud.common.types import LibcloudError
 from libcloud.storage.base import StorageDriver, Container, Object
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
+from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.utils.files import exhaust_iterator, read_in_chunks
 
 

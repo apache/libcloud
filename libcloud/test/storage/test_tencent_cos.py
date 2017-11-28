@@ -13,31 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
-import json
 import mock
-import re
 import sys
 import unittest
 
-from io import BytesIO
-
-import email.utils
-import pytest
-
-from libcloud.common.types import InvalidCredsError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.drivers import tencent_cos
-from libcloud.storage.types import ContainerDoesNotExistError
-from libcloud.storage.types import ObjectDoesNotExistError
 
 
 def _qcloud_access_url(path):
-    return 'http://foobar.file.myqcloud.com/{}'.format(path)
+    return 'http://foo.file.myqcloud.com/{}'.format(path)
 
 
 def _qcloud_source_url(path):
-    return 'http://foobar.cosgz.myqcloud.com/{}'.format(path)
+    return 'http://foo.cosgz.myqcloud.com/{}'.format(path)
 
 
 _MOCK_CONTAINERS = [
@@ -232,7 +221,6 @@ _MOCK_STAT = {
 class MockCosClient(object):
 
     def list_folder(self, req):
-        cos_path = req.get_cos_path()
         bucket_name = req.get_bucket_name()
         context = req.get_context()
         if bucket_name == '':
@@ -270,7 +258,7 @@ class TencentStorageTests(unittest.TestCase):
                 '.TencentCosDriver._get_client')
     def test_create_driver(self, mock_get_client):
         mock_get_client.return_value = MockCosClient()
-        driver = self._get_driver()
+        self._get_driver()
         mock_get_client.assert_called_with(
             1111111, 'api-key-id', 'api-secret-key', 'gz')
 
@@ -314,15 +302,15 @@ class TencentStorageTests(unittest.TestCase):
         exp_extra = {
             'creation_date': 1511438556,
             'modified_data': 1511438556,
-            'access_url': 'http://foobar.file.myqcloud.com/deep/tree/object/1',
-            'source_url': 'http://foobar.cosgz.myqcloud.com/deep/tree/object/1',
+            'access_url': 'http://foo.file.myqcloud.com/deep/tree/object/1',
+            'source_url': 'http://foo.cosgz.myqcloud.com/deep/tree/object/1',
         }
         self.assertIsInstance(obj, Object)
         self.assertEqual('deep/tree/object/1', obj.name)
         self.assertEqual(464364, obj.size)
         self.assertEqual('7fa357010b6581b8f4cb0e06948fae352e1e8458', obj.hash)
         self.assertDictEqual(exp_extra, obj.extra)
-        self.assertEqual('http://foobar.file.myqcloud.com/deep/tree/object/1',
+        self.assertEqual('http://foo.file.myqcloud.com/deep/tree/object/1',
                          obj.get_cdn_url())
 
 
