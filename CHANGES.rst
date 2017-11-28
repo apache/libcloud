@@ -13,6 +13,12 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Allow adding labels to images (GITHUB-1138)
+  [Katriel Traum, Eric Johnson]
+
+- [GCE] Allow adding license strings to images (GITHUB-1136)
+  [Katriel Traum, Eric Johnson]
+
 - [UpCloud] New driver for UpCloud (LIBCLOUD-938, GITHUB-1102)
   [Mika Lackman, Ilari Mäkelä]
 
@@ -54,6 +60,40 @@ Compute
 - [ARM] Delete VHDs more reliably in destroy_node(), raise exception on unhandled errors
   (GITHUB-1120)
   [Lucas Di Pentima]
+
+- [ARM] Fix api version used to list and delete NICs (GITHUB-1128)
+  [Peter Amstutz]
+
+- [ARM] Allow faster list_nodes() with ex_fetch_power_state=False
+  (GITHUB-1126)
+  [Peter Amstutz, Lucas Di Pentima]
+
+- [EC2] Allow cn-north-1 even without pricing information
+  (LIBCLOUD-954, GITHUB-1127)
+  [Quentin Pradet]
+
+- [Digital Ocean] Add ex_enable_ipv6 in DigitalOcean_v2 driver
+  (GITHUB-1130)
+  [Rick van de Loo]
+
+- [EC2] Fix EBS volume encryption (GITHUB-1008)
+  [Sergey Babak]
+
+- [GCE] Add support for private IP addresses in GCE instance creation
+  (LIBCLOUD-944, GITHUB-1107)
+  [Gareth Mcfarlane]
+
+- [ARM] Fix delete_old_vhd (GITHUB-1137)
+  [Peter Amstutz, Lucas Di Pentima]
+
+- [ARM] Limit number of retries in destroy_node (GITHUB-1134)
+  [Peter Amstutz, Lucas Di Pentima]
+
+Storage
+~~~~~~~
+
+- Added Digital Ocean Spaces driver (LIBCLOUD-955, GITHUB-1129)
+  [Andrew Starr-Bochicchio]
 
 
 Changes in Apache Libcloud 2.2.1
