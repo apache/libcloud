@@ -55,7 +55,11 @@ class TencentCosDriver(StorageDriver):
 
     def __init__(self, key, secret=None, app_id=None, region=None, **kwargs):
         super(TencentCosDriver, self).__init__(key, secret, **kwargs)
-        self.cos_client = CosClient(app_id, key, secret, region)
+        self.cos_client = self._get_client(app_id, key, secret, region)
+
+    @staticmethod
+    def _get_client(app_id, key, secret, region):
+        return CosClient(app_id, key, secret, region)
 
     @staticmethod
     def _is_ok(response):
@@ -136,7 +140,8 @@ class TencentCosDriver(StorageDriver):
             req = ListFolderRequest('', '/', context=context)
             result, err = self._make_request(self.cos_client.list_folder, req)
             if err is not None:
-                return
+                raise LibcloudError('Error in ListFolder: %s' % (err),
+                                    driver=self)
             exhausted = result['listover']
             context = result['context']
             for container in self._to_containers(result['infos']):
