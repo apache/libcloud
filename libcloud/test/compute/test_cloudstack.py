@@ -649,6 +649,17 @@ class CloudStackCommonTestCase(TestCaseMixin):
         finally:
             del CloudStackMockHttp._cmd_listVirtualMachines
 
+    def test_list_nodes_noipaddress_filter(self):
+        def list_nodes_mock(self, **kwargs):
+            body, obj = self._load_fixture('listVirtualMachines_noipaddress.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        CloudStackMockHttp._cmd_listVirtualMachines = list_nodes_mock
+        try:
+            self.driver.list_nodes()
+        finally:
+            del CloudStackMockHttp._cmd_listVirtualMachines
+
     def test_ex_get_node(self):
         node = self.driver.ex_get_node(2600)
         self.assertEqual('test', node.name)

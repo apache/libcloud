@@ -322,6 +322,42 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'g3.4xlarge': {
+        'id': 'g3.4xlarge',
+        'name': 'Cluster GPU G3 Four Extra Large Instance',
+        'ram': GiB(122),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16,
+            'gpu': 1,
+            'gpu_ram': GiB(8)
+        }
+    },
+    'g3.8xlarge': {
+        'id': 'g3.8xlarge',
+        'name': 'Cluster GPU G3 Eight Extra Large Instance',
+        'ram': GiB(244),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32,
+            'gpu': 2,
+            'gpu_ram': GiB(16)
+        }
+    },
+    'g3.16xlarge': {
+        'id': 'g3.16xlarge',
+        'name': 'Cluster GPU G3 16 Extra Large Instance',
+        'ram': GiB(488),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64,
+            'gpu': 4,
+            'gpu_ram': GiB(32)
+        }
+    },
     'p2.xlarge': {
         'id': 'p2.xlarge',
         'name': 'Cluster GPU P2 Large Instance',
@@ -814,6 +850,26 @@ INSTANCE_TYPES = {
             'cpu': 8
         }
     },
+    'x1.16xlarge': {
+        'id': 'x1.16xlarge',
+        'name': 'Memory Optimized Sixteen Extra Large instance',
+        'ram': GiB(976),
+        'disk': 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
+    'x1e.32xlarge': {
+        'id': 'x1e.32xlarge',
+        'name': 'Memory Optimized ThirtyTwo E Extra Large instance',
+        'ram': GiB(3904),
+        'disk': 2 * 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 128
+        }
+    },
     'x1.32xlarge': {
         'id': 'x1.32xlarge',
         'name': 'Memory Optimized ThirtyTwo Extra Large instance',
@@ -869,6 +925,9 @@ REGION_DETAILS = {
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -901,7 +960,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Northern California) Region
@@ -933,6 +994,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1012,6 +1076,9 @@ REGION_DETAILS = {
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
@@ -1044,7 +1111,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Oregon) Region
@@ -1076,6 +1145,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'p2.xlarge',
             'p2.8xlarge',
             'p2.16xlarge',
@@ -1121,7 +1193,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Ireland) Region
@@ -1153,6 +1227,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1195,7 +1272,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (London) Region
@@ -1265,7 +1344,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Frankfurt) Region
@@ -1324,7 +1405,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Mumbai, India) Region
@@ -1440,7 +1523,9 @@ REGION_DETAILS = {
             'r4.4xlarge',
             'r4.8xlarge',
             'r4.16xlarge',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -1513,7 +1598,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Seoul) Region
@@ -1564,7 +1651,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # South America (Sao Paulo) Region
@@ -1674,7 +1763,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Canada (Central) Region
@@ -1744,9 +1835,12 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
+    # GovCloud Region
     'us-gov-west-1': {
         'endpoint': 'ec2.us-gov-west-1.amazonaws.com',
         'api_name': 'ec2_us_govwest',
@@ -1775,6 +1869,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -2274,90 +2371,6 @@ OUTSCALE_SAS_REGION_DETAILS = {
             'cr1.8xlarge',
             'os1.8xlarge'
         ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'p2.xlarge',
-            'p2.8xlarge',
-            'p2.16xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
     }
 }
 
@@ -2508,6 +2521,24 @@ OUTSCALE_INC_REGION_DETAILS = {
 Define the extra dictionary for specific resources
 """
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
+    'ebs_instance_block_device': {
+        'attach_time': {
+            'xpath': 'ebs/attachTime',
+            'transform_func': parse_date
+        },
+        'delete': {
+            'xpath': 'ebs/deleteOnTermination',
+            'transform_func': str
+        },
+        'status': {
+            'xpath': 'ebs/status',
+            'transform_func': str
+        },
+        'volume_id': {
+            'xpath': 'ebs/volumeId',
+            'transform_func': str
+        }
+    },
     'ebs_volume': {
         'snapshot_id': {
             'xpath': 'ebs/snapshotId',
@@ -2831,6 +2862,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'start',
             'transform_func': str
         },
+        'end': {
+            'xpath': 'end',
+            'transform_func': str
+        },
         'duration': {
             'xpath': 'duration',
             'transform_func': int
@@ -2942,6 +2977,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'state': {
             'xpath': 'status',
             'transform_func': str
+        },
+        'encrypted': {
+            'xpath': 'encrypted',
+            'transform_func': lambda x: {'true': True, 'false': False}.get(x)
         },
         'attach_time': {
             'xpath': 'attachmentSet/item/attachTime',
@@ -3533,8 +3572,11 @@ class BaseEC2NodeDriver(NodeDriver):
         for instance_type in available_types:
             attributes = INSTANCE_TYPES[instance_type]
             attributes = copy.deepcopy(attributes)
-            price = self._get_size_price(size_id=instance_type)
-            attributes.update({'price': price})
+            try:
+                price = self._get_size_price(size_id=instance_type)
+                attributes['price'] = price
+            except KeyError:
+                attributes['price'] = None  # pricing not available
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
@@ -3829,19 +3871,23 @@ class BaseEC2NodeDriver(NodeDriver):
             if subnet_id:
                 params['SubnetId'] = subnet_id
 
+        # Specify tags at instance creation time
+        tags = {'Name': kwargs['name']}
+        if 'ex_metadata' in kwargs:
+            tags.update(kwargs['ex_metadata'])
+        tagspec_root = 'TagSpecification.1.'
+        params[tagspec_root + 'ResourceType'] = 'instance'
+        tag_nr = 1
+        for k, v in tags.items():
+            tag_root = tagspec_root + 'Tag.%d.' % tag_nr
+            params[tag_root + 'Key'] = k
+            params[tag_root + 'Value'] = v
+            tag_nr += 1
+
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         for node in nodes:
-            tags = {'Name': kwargs['name']}
-            if 'ex_metadata' in kwargs:
-                tags.update(kwargs['ex_metadata'])
-
-            try:
-                self.ex_create_tags(resource=node, tags=tags)
-            except Exception:
-                continue
-
             node.name = kwargs['name']
             node.extra.update({'tags': tags})
 
@@ -3864,7 +3910,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=None, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None):
         """
         Create a new volume.
 
@@ -3930,11 +3976,11 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type == 'io1' and ex_iops:
             params['Iops'] = ex_iops
 
-        if ex_encrypted is not None:
+        if ex_encrypted:
             params['Encrypted'] = 1
 
-        if ex_kms_key_id is not None:
-            params['KmsKeyId'] = ex_kms_key_id
+            if ex_kms_key_id is not None:
+                params['KmsKeyId'] = ex_kms_key_id
 
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,
@@ -6356,8 +6402,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Modify volume parameters.
         A list of valid parameters can be found at https://goo.gl/N0rPEQ
 
-        :param      Volume: Volume instance
-        :type       Volume: :class:`Volume`
+        :param      volume: Volume instance
+        :type       volume: :class:`Volume`
 
         :param      parameters: Dictionary with updated volume parameters
         :type       parameters: ``dict``
@@ -6462,7 +6508,8 @@ class BaseEC2NodeDriver(NodeDriver):
             element, RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
 
         # Add additional properties to our extra dictionary
-        extra['block_device_mapping'] = self._to_device_mappings(element)
+        extra['block_device_mapping'] = self._to_instance_device_mappings(
+            element)
         extra['groups'] = self._get_security_groups(element)
         extra['network_interfaces'] = self._to_interfaces(element)
         extra['product_codes'] = product_codes
@@ -6988,6 +7035,29 @@ class BaseEC2NodeDriver(NodeDriver):
         if mapping['virtual_name'] is None:
             mapping['ebs'] = self._get_extra_dict(
                 element, RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_volume'])
+
+        return mapping
+
+    def _to_instance_device_mappings(self, object):
+        return [self._to_instance_device_mapping(el) for el in object.findall(
+            fixxpath(xpath='blockDeviceMapping/item', namespace=NAMESPACE))
+        ]
+
+    def _to_instance_device_mapping(self, element):
+        """
+        Parse the XML element and return a dictionary of device properties.
+        Additional information can be found at https://goo.gl/OGK88a.
+
+        :rtype:     ``dict``
+        """
+        mapping = {}
+
+        mapping['device_name'] = findattr(element=element,
+                                          xpath='deviceName',
+                                          namespace=NAMESPACE)
+        mapping['ebs'] = self._get_extra_dict(
+            element,
+            RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_instance_block_device'])
 
         return mapping
 

@@ -1,0 +1,59 @@
+{
+   "server" : {
+      "boot_order" : "disk",
+      "core_number" : "1",
+      "firewall" : "off",
+      "hostname" : "localhost",
+      "ip_addresses" : {
+         "ip_address" : [
+            {
+               "access" : "private",
+               "address" : "10.1.3.163",
+               "family" : "IPv4"
+            },
+            {
+               "access" : "public",
+               "address" : "2a04:3540:1000:310:7cae:1dff:fead:3332",
+               "family" : "IPv6"
+            },
+            {
+               "access" : "public",
+               "address" : "94.237.37.216",
+               "family" : "IPv4",
+               "part_of_plan" : "yes"
+            }
+         ]
+      },
+      "license" : 0,
+      "memory_amount" : "1024",
+      "nic_model" : "virtio",
+      "password" : "777gznbm",
+      "plan" : "1xCPU-1GB",
+      "plan_ipv4_bytes" : "0",
+      "plan_ipv6_bytes" : "0",
+      "progress" : "0",
+      "state" : "maintenance",
+      "storage_devices" : {
+         "storage_device" : [
+            {
+               "address" : "virtio:0",
+               "storage" : "018e2c82-1c16-46b9-8b7d-aeaf8d8309a9",
+               "storage_size" : 10,
+               "storage_title" : "Ubuntu Server 16.04 LTS (Xenial Xerus)",
+               "type" : "disk"
+            }
+         ]
+      },
+      "tags" : {
+         "tag" : []
+      },
+      "timezone" : "UTC",
+      "title" : "test_server",
+      "username" : "mlackman",
+      "uuid" : "00814aac-240f-4f08-9139-9697c9ffc0b7",
+      "video_model" : "cirrus",
+      "vnc" : "off",
+      "vnc_password" : "G4FvMjvg",
+      "zone" : "fi-hel1"
+   }
+}

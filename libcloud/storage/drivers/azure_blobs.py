@@ -634,7 +634,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             chunk_hash = base64.b64encode(b(chunk_hash.digest()))
 
             headers['Content-MD5'] = chunk_hash.decode('utf-8')
-            headers['Content-Length'] = content_length
+            headers['Content-Length'] = str(content_length)
 
             if blob_type == 'BlockBlob':
                 # Block id can be any unique string that is base64 encoded
@@ -861,10 +861,10 @@ class AzureBlobsStorageDriver(StorageDriver):
         self._update_metadata(headers, meta_data)
 
         if object_size is not None:
-            headers['Content-Length'] = object_size
+            headers['Content-Length'] = str(object_size)
 
         if blob_type == 'PageBlob':
-            headers['Content-Length'] = 0
+            headers['Content-Length'] = str('0')
             headers['x-ms-blob-content-length'] = object_size
 
         return headers

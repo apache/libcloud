@@ -52,13 +52,12 @@ Provider                              list images get image create image delete 
 `RimuHosting`_                        yes         no        no           no           no        
 `ServerLove`_                         yes         no        no           no           no        
 `skalicloud`_                         yes         no        no           no           no        
-`SoftLayer`_                          yes         no        no           no           no        
+`SoftLayer`_                          yes         yes       no           no           no        
 `vCloud`_                             yes         no        no           no           no        
 `VCL`_                                yes         no        no           no           no        
 `vCloud`_                             yes         no        no           no           no        
 `Voxel VoxCLOUD`_                     yes         no        no           no           no        
 `vps.net`_                            yes         no        no           no           no        
-`VMware vSphere`_                     yes         no        no           no           no        
 `Vultr`_                              yes         no        no           no           no        
 ===================================== =========== ========= ============ ============ ==========
 
@@ -117,5 +116,4 @@ Provider                              list images get image create image delete 
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
-.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com

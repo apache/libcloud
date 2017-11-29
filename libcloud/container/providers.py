@@ -30,6 +30,8 @@ DRIVERS = {
     ('libcloud.container.drivers.kubernetes', 'KubernetesContainerDriver'),
     Provider.RANCHER:
     ('libcloud.container.drivers.rancher', 'RancherContainerDriver'),
+    Provider.GKE:
+    ('libcloud.container.drivers.gke', 'GKEContainerDriver')
 }
 
 

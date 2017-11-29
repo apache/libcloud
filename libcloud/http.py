@@ -144,16 +144,24 @@ class LibcloudBaseConnection(object):
     def _setup_verify(self):
         self.verify = libcloud.security.VERIFY_SSL_CERT
 
-    def _setup_ca_cert(self):
+    def _setup_ca_cert(self, **kwargs):
+        # simulating keyword-only argument in Python 2
+        ca_certs_path = kwargs.get('ca_cert', libcloud.security.CA_CERTS_PATH)
+
         if self.verify is False:
             pass
         else:
-            if isinstance(libcloud.security.CA_CERTS_PATH, list):
-                if len(libcloud.security.CA_CERTS_PATH) > 1:
-                    warnings.warn('Only 1 certificate path is supported')
-                self.ca_cert = libcloud.security.CA_CERTS_PATH[0]
+            if isinstance(ca_certs_path, list):
+                msg = (
+                    'Providing a list of CA trusts is no longer supported '
+                    'since libcloud 2.0. Using the first element in the list. '
+                    'See http://libcloud.readthedocs.io/en/latest/other/'
+                    'changes_in_2_0.html#providing-a-list-of-ca-trusts-is-no-'
+                    'longer-supported')
+                warnings.warn(msg, DeprecationWarning)
+                self.ca_cert = ca_certs_path[0]
             else:
-                self.ca_cert = libcloud.security.CA_CERTS_PATH
+                self.ca_cert = ca_certs_path
 
     def _setup_signing(self, cert_file=None, key_file=None):
         """
@@ -201,10 +209,8 @@ class LibcloudConnection(LibcloudBaseConnection):
     def request(self, method, url, body=None, headers=None, raw=False,
                 stream=False):
         url = urlparse.urljoin(self.host, url)
-        # all headers should be strings
-        for header, value in headers.items():
-            if isinstance(headers[header], int):
-                headers[header] = str(value)
+        headers = self._normalize_headers(headers=headers)
+
         self.response = self.session.request(
             method=method.lower(),
             url=url,
@@ -217,10 +223,8 @@ class LibcloudConnection(LibcloudBaseConnection):
 
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
-        # all headers should be strings
-        for header, value in headers.items():
-            if isinstance(headers[header], int):
-                headers[header] = str(value)
+        headers = self._normalize_headers(headers=headers)
+
         req = requests.Request(method, ''.join([self.host, url]),
                                data=body, headers=headers)
 
@@ -261,6 +265,16 @@ class LibcloudConnection(LibcloudBaseConnection):
     def close(self):  # pragma: no cover
         # return connection back to pool
         self.response.close()
+
+    def _normalize_headers(self, headers):
+        headers = headers or {}
+
+        # all headers should be strings
+        for key, value in headers.items():
+            if isinstance(value, (int, float)):
+                headers[key] = str(value)
+
+        return headers
 
 
 class HttpLibResponseProxy(object):

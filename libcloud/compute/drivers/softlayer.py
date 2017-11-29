@@ -432,6 +432,25 @@ class SoftLayerNodeDriver(NodeDriver):
         ).object
         return [self._to_image(i) for i in result['operatingSystems']]
 
+    def get_image(self, image_id):
+        """
+        Gets an image based on an image_id.
+
+        :param image_id: Image identifier
+        :type image_id: ``str``
+
+        :return: A NodeImage object
+        :rtype: :class:`NodeImage`
+
+        """
+        images = self.list_images()
+        images = [image for image in images if image.id == image_id]
+        if len(images) < 1:
+            raise SoftLayerException('could not find the image with id %s'
+                                     % image_id)
+        image = images[0]
+        return image
+
     def _to_size(self, id, size):
         return NodeSize(
             id=id,

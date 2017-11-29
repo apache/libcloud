@@ -1,12 +1,12 @@
 {
     "id": "snapshots",
     "type": "collection",
-    "href": "/cloudapi/v3/snapshots",
+    "href": "/cloudapi/v4/snapshots",
     "items": [
         {
             "id": "sshot",
             "type": "snapshot",
-            "href": "/cloudapi/v3/snapshots/sshot",
+            "href": "/cloudapi/v4/snapshots/sshot",
             "metadata": {
                 "createdDate": "2016-10-26T11:38:45Z",
                 "createdBy": "test@test.te",

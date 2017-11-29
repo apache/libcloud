@@ -1,7 +1,7 @@
 {
     "id": "img-2",
     "type": "image",
-    "href": "/cloudapi/v3/images/img-2",
+    "href": "/cloudapi/v4/images/img-2",
     "metadata": {
         "createdDate": "2015-10-09T12:06:34Z",
         "createdBy": "test@test.te",
@@ -13,7 +13,7 @@
     "properties": {
         "name": "vivid-server-cloudimg-amd64-disk1.img",
         "description": null,
-        "location": "de/fkb",
+        "location": "us/las",
         "size": 2,
         "cpuHotPlug": false,
         "cpuHotUnplug": false,
@@ -27,6 +27,7 @@
         "discScsiHotUnplug": false,
         "licenceType": "UNKNOWN",
         "imageType": "HDD",
+        "imageAliases": [ ],
         "public": false
     }
 }

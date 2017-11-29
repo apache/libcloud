@@ -108,8 +108,6 @@ class AzureConnection(ConnectionUserAndKey):
 
     responseCls = AzureResponse
     rawResponseCls = AzureRawResponse
-    skip_host = False
-    skip_accept_encoding = False
 
     def add_default_params(self, params):
         return params
@@ -195,6 +193,10 @@ class AzureConnection(ConnectionUserAndKey):
             header = header.lower()  # Just for safety
             if header in headers_copy:
                 special_header_values.append(headers_copy[header])
+            elif header == "content-length" and method not in ("GET", "HEAD"):
+                # Must be '0' unless method is GET or HEAD
+                # https://docs.microsoft.com/en-us/rest/api/storageservices/authentication-for-the-azure-storage-services
+                special_header_values.append('0')
             else:
                 special_header_values.append('')
 

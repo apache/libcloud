@@ -250,6 +250,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
+    def ex_enable_ipv6(self, node):
+        attr = {'type': 'enable_ipv6'}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
     def ex_rename_node(self, node, name):
         attr = {'type': 'rename', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),

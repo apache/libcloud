@@ -154,7 +154,8 @@ class Response(object):
 
         if not self.success():
             raise exception_from_message(code=self.status,
-                                         message=self.parse_error())
+                                         message=self.parse_error(),
+                                         headers=self.headers)
 
         self.object = self.parse_body()
 
@@ -863,6 +864,33 @@ class CertificateConnection(Connection):
                                                     proxy_url=proxy_url)
 
         self.cert_file = cert_file
+
+
+class KeyCertificateConnection(CertificateConnection):
+    """
+    Base connection class which accepts both ``key_file`` and ``cert_file``
+    argument.
+    """
+
+    key_file = None
+
+    def __init__(self, key_file, cert_file, secure=True, host=None, port=None,
+                 url=None, proxy_url=None, timeout=None, backoff=None,
+                 retry_delay=None):
+        """
+        Initialize `cert_file`; set `secure` to an ``int`` based on
+        passed value.
+        """
+        super(KeyCertificateConnection, self).__init__(cert_file,
+                                                       secure=secure,
+                                                       host=host,
+                                                       port=port, url=url,
+                                                       timeout=timeout,
+                                                       backoff=backoff,
+                                                       retry_delay=retry_delay,
+                                                       proxy_url=proxy_url)
+
+        self.key_file = key_file
 
 
 class ConnectionUserAndKey(ConnectionKey):

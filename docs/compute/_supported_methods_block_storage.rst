@@ -7,7 +7,7 @@ Provider                              list volumes create volume destroy volume 
 `Aliyun ECS`_                         yes          yes           yes            yes           yes           yes            yes            
 `PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           no             yes            
 `Azure Virtual machines`_             yes          yes           yes            yes           yes           no             yes            
-`Azure Virtual machines`_             no           no            no             no            no            no             no             
+`Azure Virtual machines`_             yes          yes           yes            yes           yes           yes            yes            
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
 `BSNL`_                               no           no            no             no            no            no             no             
@@ -58,7 +58,6 @@ Provider                              list volumes create volume destroy volume 
 `vCloud`_                             no           no            no             no            no            no             no             
 `Voxel VoxCLOUD`_                     no           no            no             no            no            no             no             
 `vps.net`_                            no           no            no             no            no            no             no             
-`VMware vSphere`_                     no           no            no             no            no            no             no             
 `Vultr`_                              no           no            no             no            no            no             no             
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
@@ -117,5 +116,4 @@ Provider                              list volumes create volume destroy volume 
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
-.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com
