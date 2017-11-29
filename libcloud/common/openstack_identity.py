@@ -1518,7 +1518,8 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                                              driver=self.driver)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _get_project_id(self, token):
         """
@@ -1542,7 +1543,8 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
 
 class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
@@ -1622,7 +1624,8 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _get_tenant_name(self, token):
         """
@@ -1645,7 +1648,8 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _authenticate_2_0_with_body(self, reqbody):
         resp = self.request('/v2.0/tokens', data=reqbody,
