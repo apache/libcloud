@@ -15,7 +15,7 @@
 
 import mock
 import sys
-import unittest
+from libcloud.test import unittest
 
 from libcloud.storage.base import Container, Object
 from libcloud.storage.drivers import tencent_cos
