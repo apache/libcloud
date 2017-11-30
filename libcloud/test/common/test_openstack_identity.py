@@ -729,6 +729,13 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
+    def _v3_auth_projects(self, method, url, body, headers):
+        if method == 'GET':
+            # get user projects
+            body = json.dumps({"projects": [{"id": "project_id"}]})
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
 
 class OpenStackIdentity_2_0_Connection_VOMSMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('openstack_identity/v2')
