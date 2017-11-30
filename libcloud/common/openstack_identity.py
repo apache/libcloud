@@ -1525,11 +1525,22 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
         """
         Get the first project ID accessible with the specified access token
         """
-        path = '/v3/OS-FEDERATION/projects'
+        # Try new path first (from ver 1.1)
+        path = '/v3/auth/projects'
         response = self.request(path,
                                 headers={'Content-Type': 'application/json',
                                          'X-Auth-Token': token},
                                 method='GET')
+
+        if response.status not in [httplib.UNAUTHORIZED, httplib.OK,
+                                   httplib.CREATED]:
+            # In case of error try old one
+            path = '/v3/OS-FEDERATION/projects'
+            response = self.request(path,
+                                    headers={'Content-Type':
+                                             'application/json',
+                                             'X-Auth-Token': token},
+                                    method='GET')
 
         if response.status == httplib.UNAUTHORIZED:
             # Invalid credentials
