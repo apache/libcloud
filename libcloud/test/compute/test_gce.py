@@ -15,6 +15,7 @@
 """
 Tests for Google Compute Engine Driver
 """
+
 import datetime
 import mock
 import sys
@@ -166,6 +167,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_build_network_gce_struct(self):
         network = self.driver.ex_get_network('lcnetwork')
         address = self.driver.ex_get_address('lcaddress')
+        internalip = self.driver.ex_get_address('testaddress')
         subnetwork_name = 'cf-972cf02e6ad49112'
         subnetwork = self.driver.ex_get_subnetwork(subnetwork_name)
         d = self.driver._build_network_gce_struct(network, subnetwork, address)
@@ -173,7 +175,16 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue('subnetwork' in d)
         self.assertTrue('kind' in d and
                         d['kind'] == 'compute#instanceNetworkInterface')
-
+        self.assertEqual(d['accessConfigs'][0]['natIP'], address.address)
+        # test with internal IP
+        d = self.driver._build_network_gce_struct(network, subnetwork, address,
+                                                  internal_ip=internalip)
+        self.assertTrue('network' in d)
+        self.assertTrue('subnetwork' in d)
+        self.assertTrue('kind' in d and
+                        d['kind'] == 'compute#instanceNetworkInterface')
+        self.assertEqual(d['accessConfigs'][0]['natIP'], address.address)
+        self.assertEqual(d['networkIP'], internalip)
         network = self.driver.ex_get_network('default')
         d = self.driver._build_network_gce_struct(network)
         self.assertTrue('network' in d)
@@ -350,11 +361,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         local_plus_deb = self.driver.list_images(
             ['debian-cloud', 'project_name'])
-        self.assertEqual(len(local_images), 23)
-        self.assertEqual(len(all_deprecated_images), 156)
+        self.assertEqual(len(local_images), 24)
+        self.assertEqual(len(all_deprecated_images), 159)
         self.assertEqual(len(debian_images), 2)
-        self.assertEqual(len(local_plus_deb), 3)
-        self.assertEqual(local_images[0].name, 'aws-ubuntu')
+        self.assertEqual(len(local_plus_deb), 4)
+        self.assertEqual(local_images[0].name, 'custom-image')
         self.assertEqual(debian_images[1].name, 'debian-7-wheezy-v20131120')
 
     def test_ex_destroy_instancegroup(self):
@@ -763,9 +774,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_create_image(self):
         volume = self.driver.ex_get_volume('lcdisk')
-        description = 'CoreOS beta 522.3.0'
+        description = 'CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12'
         name = 'coreos'
-        family = 'coreos'
+        family = 'coreos-stable'
+        licenses = ["projects/coreos-cloud/global/licenses/coreos-stable"]
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
         expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         mock_request = mock.Mock()
@@ -773,17 +785,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.driver.connection.async_request = mock_request
 
         image = self.driver.ex_create_image(
-            name, volume, description=description, family='coreos',
-            guest_os_features=guest_os_features)
+            name, volume, description=description, family=family,
+            guest_os_features=guest_os_features, ex_licenses=licenses)
         self.assertTrue(isinstance(image, GCENodeImage))
         self.assertTrue(image.name.startswith(name))
         self.assertEqual(image.extra['description'], description)
         self.assertEqual(image.extra['family'], family)
         self.assertEqual(image.extra['guestOsFeatures'], expected_features)
+        self.assertEqual(image.extra['licenses'][0].name, licenses[0].split("/")[-1])
         expected_data = {'description': description,
                          'family': family,
                          'guestOsFeatures': expected_features,
                          'name': name,
+                         'licenses': licenses,
                          'sourceDisk': volume.extra['selfLink'],
                          'zone': volume.extra['zone'].name}
         mock_request.assert_called_once_with('/global/images',
@@ -792,8 +806,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_copy_image(self):
         name = 'coreos'
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
-        description = 'CoreOS beta 522.3.0'
-        family = 'coreos'
+        description = 'CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12'
+        family = 'coreos-stable'
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
         expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         image = self.driver.ex_copy_image(name, url, description=description,
@@ -1892,6 +1906,21 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         multilabels = {'item1': 'val1', 'item2': 'val2'}
         self.driver.ex_set_node_labels(node, multilabels)
 
+    def test_ex_set_image_labels(self):
+        image = self.driver.ex_get_image('custom-image')
+        # Test basic values
+        simplelabel = {'foo': 'bar'}
+        self.driver.ex_set_image_labels(image, simplelabel)
+        image = self.driver.ex_get_image('custom-image')
+        self.assertTrue('foo' in image.extra['labels'])
+        # Test multiple values
+        multilabels = {'one': '1', 'two': 'two'}
+        self.driver.ex_set_image_labels(image, multilabels)
+        image = self.driver.ex_get_image('custom-image')
+        self.assertEqual(len(image.extra['labels']), 3)
+        self.assertTrue('two' in image.extra['labels'])
+        self.assertTrue('two' in image.extra['labels'])
+
     def test_ex_get_region(self):
         region_name = 'us-central1'
         region = self.driver.ex_get_region(region_name)
@@ -2113,6 +2142,11 @@ class GCEMockHttp(MockHttp):
                                                            body, headers):
         body = self.fixtures.load(
             'zones_us_central1_a_instances_node_name_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_custom_image_setLabels(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'global_custom_image_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _setCommonInstanceMetadata(self, method, url, body, headers):
@@ -2596,6 +2630,12 @@ class GCEMockHttp(MockHttp):
             'operations_operation_zones_us_central1_a_node_name_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_operations_operation_setImageLabels_post(self, method, url,
+                                                         body, headers):
+        body = self.fixtures.load(
+            'global_operations_operation_setImageLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -2768,6 +2808,12 @@ class GCEMockHttp(MockHttp):
             'projects_rhel-cloud_global_licenses_rhel_server.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_coreos_cloud_global_licenses_coreos_stable(self, method, url,
+                                                             body, headers):
+        body = self.fixtures.load(
+            'projects_coreos-cloud_global_licenses_coreos_stable.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _projects_suse_cloud_global_licenses_sles_12(self, method, url, body,
                                                      headers):
         body = self.fixtures.load(
@@ -2889,6 +2935,11 @@ class GCEMockHttp(MockHttp):
         else:
             body = self.fixtures.load(
                 'regions_us-central1_addresses_lcaddress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_addresses_testaddress(self, method, url, body,
+                                                   headers):
+        body = self.fixtures.load('regions_us-central1_addresses_testaddress.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_forwardingRules(self, method, url, body, headers):

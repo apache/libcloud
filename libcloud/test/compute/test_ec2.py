@@ -76,11 +76,12 @@ class BaseEC2Tests(LibcloudTestCase):
         unsupported_regions = list()
 
         for region in VALID_EC2_REGIONS:
-            if region == 'cn-north-1':
-                continue  # reason: SCALRCORE-7105
+            no_pricing = region in ['cn-north-1']
             driver = EC2NodeDriver(*EC2_PARAMS, **{'region': region})
             try:
-                driver.list_sizes()
+                sizes = driver.list_sizes()
+                if no_pricing:
+                    self.assertTrue(all([s.price is None for s in sizes]))
             except:
                 unsupported_regions.append(region)
 
