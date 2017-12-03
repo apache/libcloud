@@ -28,7 +28,10 @@ Compute
   [Mika Lackman, Ilari Mäkelä]
 
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
-  [@zulupro]
+  [Anthony Monthe]
+
+- [EC2] Add AWS EC2 c5 series (GITHUB-1147)
+  [Anthony Monthe]
 
 - [EC2] Update pricing information for EC2 instances.
   [Tomaz Muraus]
