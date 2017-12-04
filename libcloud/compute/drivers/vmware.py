@@ -315,7 +315,3 @@ class VSphereNodeDriver(NodeDriver):
                              size=int(disk['capacity']),
                              driver=self,
                              extra=disk)
-
-
-class VSphere_5_5_NodeDriver(VSphereNodeDriver):
-    name = 'VMware vSphere v5.5'
