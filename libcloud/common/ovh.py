@@ -62,6 +62,7 @@ LOCATIONS = {
     'SBG4': {'id': 'SBG4', 'name': 'Strasbourg 4', 'country': 'FR'},
     'SGP1': {'id': 'SGP1', 'name': 'Singapore 1', 'country': 'SG'},
     'SYD1': {'id': 'SYD1', 'name': 'Sydney 1', 'country': 'AU'},
+    'UK1': {'id': 'UK1', 'name': 'London 1', 'country': 'UK'},
     'VIN1': {'id': 'VIN1', 'name': 'Vint Hill 1', 'country': 'US'},
     'WAW1': {'id': 'WAW1', 'name': 'Warsaw 1', 'country': 'PL'},
 }
