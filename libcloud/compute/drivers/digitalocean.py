@@ -462,7 +462,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
-                      'kernel', 'backup_ids', 'snapshot_ids', 'features']
+                      'kernel', 'backup_ids', 'snapshot_ids', 'features',
+                      'tags']
         if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
         else:
