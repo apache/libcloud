@@ -94,6 +94,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(nodes[0].public_ips, ['104.236.32.182'])
         self.assertEqual(nodes[0].extra['image']['id'], 6918990)
         self.assertEqual(nodes[0].extra['size_slug'], '512mb')
+        self.assertEqual(len(nodes[0].extra['tags']), 2)
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
