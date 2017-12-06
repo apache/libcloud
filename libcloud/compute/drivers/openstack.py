@@ -1292,7 +1292,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         server = api_image.get('server', {})
         updated = api_image.get('updated_at') or api_image['updated']
         created = api_image.get('created_at') or api_image['created']
-        print(api_image)
         min_ram = api_image.get('min_ram')
 
         if min_ram is None:
@@ -1313,6 +1312,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 status=api_image['status'],
                 progress=api_image.get('progress'),
                 metadata=api_image.get('metadata'),
+                os_type=api_image.get('os_type'),
                 serverId=server.get('id'),
                 minDisk=min_disk,
                 minRam=min_ram,
@@ -2519,7 +2519,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
     def get_image(self, image_id):
         """
-        Get a NodeImage using the V2 glance API
+        Get a NodeImage using the V2 Glance API
 
         @inherits: :class:`NodeDriver.get_image`
 
@@ -2530,6 +2530,26 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         return self._to_image(self.connection.request(
             '/v2/images/%s' % (image_id,)).object)
+
+    def list_images(self, location=None, ex_only_active=True):
+        """
+        Lists all active images using the V2 Glance API
+
+        @inherits: :class:`NodeDriver.list_images`
+        """
+        if location is not None:
+            raise NotImplementedError(
+                "location in list_images is not implemented "
+                "in the OpenStack_2_NodeDriver")
+        if not ex_only_active:
+            raise NotImplementedError(
+                "ex_only_active in list_images is not implemented "
+                "in the OpenStack_2_NodeDriver")
+        response = self.connection.request('/v2/images')
+        images = []
+        for image in response.object['images']:
+            images.append(self._to_image(image))
+        return images
 
 
 class OpenStack_1_1_FloatingIpPool(object):
