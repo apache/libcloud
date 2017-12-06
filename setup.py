@@ -41,6 +41,7 @@ PY2_pre_26 = PY2 and sys.version_info < (2, 6)
 PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
 PY3_pre_32 = PY3 and sys.version_info < (3, 2)
+PY3_pre_34 = PY3 and sys.version_info < (3, 4)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
@@ -60,12 +61,16 @@ TEST_REQUIREMENTS = [
     'mock',
     'requests',
     'requests_mock',
-    'pytest',
     'pytest-runner'
 ]
 
 if PY2_pre_279 or PY3_pre_32:
     TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
+
+if PY2_pre_27 or PY3_pre_34:
+    TEST_REQUIREMENTS.append('pytest<3.3.0')
+else:
+    TEST_REQUIREMENTS.append('pytest')
 
 if PY2_pre_27:
     unittest2_required = True
