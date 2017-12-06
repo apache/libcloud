@@ -1600,6 +1600,21 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(image.extra['minRam'], 0)
         self.assertEqual(image.extra['visibility'], "private")
 
+    def test_list_images(self):
+        images = self.driver.list_images()
+        self.assertEqual(len(images), 2, 'Wrong images count')
+
+        image = images[0]
+        self.assertEqual(image.id, 'f24a3c1b-d52a-4116-91da-25b3eee8f55e')
+        self.assertEqual(image.name, 'hypernode')
+        self.assertEqual(image.extra['updated'], '2017-11-28T10:19:49Z')
+        self.assertEqual(image.extra['created'], '2017-09-11T13:00:05Z')
+        self.assertEqual(image.extra['status'], 'active')
+        self.assertEqual(image.extra['os_type'], 'linux')
+        self.assertIsNone(image.extra['serverId'])
+        self.assertEqual(image.extra['minDisk'], 40)
+        self.assertEqual(image.extra['minRam'], 0)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1750,6 +1765,13 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_v2_images_f24a3c1b_d52a_4116_91da_25b3eee8f55e(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('_images_f24a3c1b-d52a-4116-91da-25b3eee8f55e.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_v2.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
