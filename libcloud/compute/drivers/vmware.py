@@ -132,7 +132,7 @@ class VSphereNodeDriver(NodeDriver):
 
     def list_volumes(self, node=None):
         if node:
-            vms = [self.ex_get_vm_for_node(node)]
+            vms = [self.ex_get_vm(node)]
         else:
             vms = self._list_vms()
 
@@ -144,7 +144,7 @@ class VSphereNodeDriver(NodeDriver):
 
         return volumes
 
-    def ex_get_node_by_uuid(self, node_or_uuid):
+    def ex_get_vm(self, node_or_uuid):
         """
         Searches VMs for a given instance_uuid or Node object.
 
@@ -308,10 +308,8 @@ class VSphereNodeDriver(NodeDriver):
             })
         return disks
 
-    def ex_get_vm_for_node(self, node):
-        uuid = node.id
-        vm = self.ex_get_node_by_uuid(uuid=uuid)
-        return vm
+    def ex_get_node_by_uuid(self, uuid):
+        return self._to_node(self.ex_get_vm(uuid))
 
     def _to_volume(self, disk):
         """
