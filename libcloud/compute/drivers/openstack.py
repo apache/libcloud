@@ -15,6 +15,7 @@
 """
 OpenStack driver
 """
+
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.iso8601 import parse_date
 
@@ -70,6 +71,12 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
     # default config for http://devstack.org/
     service_type = 'compute'
     service_name = 'nova'
+    service_region = 'RegionOne'
+
+
+class OpenStackImageConnection(OpenStackBaseConnection):
+    service_type = 'image'
+    service_name = 'glance'
     service_region = 'RegionOne'
 
 
@@ -1283,19 +1290,32 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
     def _to_image(self, api_image):
         server = api_image.get('server', {})
+        updated = api_image.get('updated_at') or api_image['updated']
+        created = api_image.get('created_at') or api_image['created']
+        print(api_image)
+        min_ram = api_image.get('min_ram')
+
+        if min_ram is None:
+            min_ram = api_image.get('minRam')
+        min_disk = api_image.get('min_disk')
+
+        if min_disk is None:
+            min_disk = api_image.get('minDisk')
+
         return NodeImage(
             id=api_image['id'],
             name=api_image['name'],
             driver=self,
             extra=dict(
-                updated=api_image['updated'],
-                created=api_image['created'],
+                visibility=api_image.get('visibility'),
+                updated=updated,
+                created=created,
                 status=api_image['status'],
                 progress=api_image.get('progress'),
                 metadata=api_image.get('metadata'),
                 serverId=server.get('id'),
-                minDisk=api_image.get('minDisk'),
-                minRam=api_image.get('minRam'),
+                minDisk=min_disk,
+                minRam=min_ram,
             )
         )
 
@@ -2446,22 +2466,70 @@ class OpenStack_2_Connection(OpenStackComputeConnection):
         return json.dumps(data)
 
 
+class OpenStack_2_ImageConnection(OpenStackImageConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
 class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     """
     OpenStack node driver.
     """
     connectionCls = OpenStack_2_Connection
+
+    # Previously all image functionality was available through the
+    # compute API. This deprecated proxied API does not offer all
+    # functionality that the Glance Image service API offers.
+    # See https://developer.openstack.org/api-ref/compute/
+    # > These APIs are proxy calls to the Image service. Nova has deprecated all
+    # > the proxy APIs and users should use the native APIs instead. These will fail
+    # > with a 404 starting from microversion 2.36. See: Relevant Image APIs.
+    # For example, managing image visibility and sharing machine images across
+    # tenants can not be done using the proxied image API in the compute endpoint,
+    # but it can be done with the Glance Image API.
+    # See https://developer.openstack.org/api-ref/image/v2/index.html#list-image-members
+    image_connectionCls = OpenStack_2_ImageConnection
+    image_connection = None
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
     _networks_url_prefix = '/os-networks'
 
     def __init__(self, *args, **kwargs):
+        original_connectionCls = self.connectionCls
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
                                                     None))
         if 'ex_force_auth_version' not in kwargs:
             kwargs['ex_force_auth_version'] = '3.x_password'
+
+        # We run the init once to get the Glance V2 API connection
+        # and put that on the object under self.image_connection.
+        self.connectionCls = self.image_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+        self.image_connection = self.connection
+
+        # We run the init again to get the compute API connection
+        # and that's put under self.connection as normal.
+        self.connectionCls = original_connectionCls
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+
+    def get_image(self, image_id):
+        """
+        Get a NodeImage using the V2 glance API
+
+        @inherits: :class:`NodeDriver.get_image`
+
+        :param      image_id: ID of the image which should be used
+        :type       image_id: ``str``
+
+        :rtype: :class:`NodeImage`
+        """
+        return self._to_image(self.connection.request(
+            '/v2/images/%s' % (image_id,)).object)
 
 
 class OpenStack_1_1_FloatingIpPool(object):
