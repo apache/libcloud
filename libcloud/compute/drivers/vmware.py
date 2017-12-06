@@ -19,7 +19,10 @@ VMware vSphere driver using pyvmomi - https://github.com/vmware/pyvmomi
 
 import atexit
 import ssl
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 try:
     from pyVim import connect
@@ -128,11 +131,16 @@ class VSphereNodeDriver(NodeDriver):
         return images
 
     def list_volumes(self, node=None):
-        nodes = [node] if node else self.list_nodes()
-        volumes = []
+        if node:
+            vms = [self.ex_get_vm_for_node(node)]
+        else:
+            vms = self._list_vms()
 
-        for node in nodes:
-            volumes.extend([self._to_volume(disk) for disk in self._get_vm_disks(node)])
+        volumes = []
+        for virtual_machine in vms:
+            volumes.extend([
+                self._to_volume(disk)
+                for disk in self._get_vm_disks(virtual_machine)])
 
         return volumes
 
@@ -144,36 +152,43 @@ class VSphereNodeDriver(NodeDriver):
         """
         if isinstance(node_or_uuid, Node):
             node_or_uuid = node_or_uuid.extra['instance_uuid']
-        vm = self.connection.content.searchIndex.FindByUuid(None, node_or_uuid,
-                                                            True, True)
+        vm = self.connection.client.content.searchIndex.FindByUuid(
+            None, node_or_uuid, True, True)
         if not vm:
             raise Exception("Unable to locate VirtualMachine.")
         return vm
 
     def list_nodes(self, ex_datacenter=None, ex_cluster=None,
                    ex_resource_pool=None):
-        nodes = []
-        content = self.connection.RetrieveContent()
+        vms = self._list_vms(ex_datacenter=ex_datacenter,
+                             ex_cluster=ex_cluster,
+                             ex_resource_pool=ex_resource_pool)
+        return [self._to_node(vm) for vm in vms]
+
+    def _list_vms(self, ex_datacenter=None, ex_cluster=None,
+                  ex_resource_pool=None):
+        vms = []
+        content = self.connection.client.RetrieveContent()
         for child in content.rootFolder.childEntity:
             if not hasattr(child, 'vmFolder'):
                 continue
             if ex_datacenter is not None and child.name != ex_datacenter:
                 continue
 
-            nodes.extend(self._to_nodes(child.vmFolder))
+            vms.extend(self._get_vms(child.vmFolder))
 
-        return nodes
+        return vms
 
-    def _to_nodes(self, folder):
-        nodes = []
+    def _get_vms(self, folder):
+        vms = []
         for child in folder.childEntity:
             if hasattr(child, 'childEntity'):
                 # if it's VM folder
-                nodes.extend(self._to_nodes(child))
+                vms.extend(self._get_vms(child))
             else:
                 # if it's a single VM
-                nodes.append(self._to_node(child))
-        return nodes
+                vms.append(child)
+        return vms
 
     def _to_node(self, virtual_machine):
         summary = virtual_machine.summary
@@ -293,9 +308,9 @@ class VSphereNodeDriver(NodeDriver):
             })
         return disks
 
-    def _get_vm_for_node(self, node):
+    def ex_get_vm_for_node(self, node):
         uuid = node.id
-        vm = self._get_vm_for_uuid(uuid=uuid)
+        vm = self.ex_get_node_by_uuid(uuid=uuid)
         return vm
 
     def _to_volume(self, disk):
