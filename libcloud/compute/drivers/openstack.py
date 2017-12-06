@@ -2551,6 +2551,24 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             images.append(self._to_image(image))
         return images
 
+    def ex_update_image(self, image_id, data):
+        """
+        Patch a NodeImage. Can be used to set visibility
+        :param      image_id: ID of the image which should be used
+        :type       image_id: ``str``
+        :param      data: The data to PATCH, either a dict or a list
+        :type       data: ``dict|list``
+        :rtype: :class:`NodeImage`
+        """
+        response = self.connection.request(
+            '/v2/images/%s' % (image_id,),
+            headers={'Content-type': 'application/'
+                                     'openstack-images-'
+                                     'v2.1-json-patch'},
+            method='PATCH', data=json.dumps(data)
+        )
+        return self._to_image(response.object)
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """

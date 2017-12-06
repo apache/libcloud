@@ -1605,7 +1605,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(image.extra['serverId'], None)
         self.assertEqual(image.extra['minDisk'], 40)
         self.assertEqual(image.extra['minRam'], 0)
-        self.assertEqual(image.extra['visibility'], "private")
+        self.assertEqual(image.extra['visibility'], "shared")
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -1621,6 +1621,20 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertIsNone(image.extra['serverId'])
         self.assertEqual(image.extra['minDisk'], 40)
         self.assertEqual(image.extra['minRam'], 0)
+
+    def test_ex_update_image(self):
+        image_id = 'f24a3c1b-d52a-4116-91da-25b3eee8f55e'
+        data = {
+            'op': 'replace',
+            'path': '/visibility',
+            'value': 'shared'
+        }
+        image = self.driver.ex_update_image(image_id, data)
+        self.assertEqual(image.name, 'hypernode')
+        self.assertEqual(image.extra['serverId'], None)
+        self.assertEqual(image.extra['minDisk'], 40)
+        self.assertEqual(image.extra['minRam'], 0)
+        self.assertEqual(image.extra['visibility'], "shared")
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
@@ -1770,7 +1784,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             raise NotImplementedError()
 
     def _v2_1337_v2_images_f24a3c1b_d52a_4116_91da_25b3eee8f55e(self, method, url, body, headers):
-        if method == "GET":
+        if method == "GET" or method == "PATCH":
             body = self.fixtures.load('_images_f24a3c1b-d52a-4116-91da-25b3eee8f55e.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
