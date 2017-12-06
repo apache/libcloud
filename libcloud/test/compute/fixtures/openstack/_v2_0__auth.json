@@ -79,6 +79,28 @@
             {
                 "endpoints": [
                     {
+                        "region": "RegionOne",
+                        "tenantId": "1337",
+                        "publicURL": "https://test_endpoint.com/v2/1337",
+                        "versionInfo": "https://test_endpoint.com/v2/",
+                        "versionList": "https://test_endpoint.com/",
+                        "versionId": "2"
+                    },
+                    {
+                        "region": "fr1",
+                        "tenantId": "1337",
+                        "publicURL": "https://test_endpoint.com/v2/1337",
+                        "versionInfo": "https://test_endpoint.com/v2/",
+                        "versionList": "https://test_endpoint.com/",
+                        "versionId": "2"
+                    }
+                ],
+                "name": "glance",
+                "type": "image"
+            },
+            {
+                "endpoints": [
+                    {
                         "region": "DFW",
                         "tenantId": "613469",
                         "publicURL": "https://dfw.servers.api.rackspacecloud.com/v2/1337",

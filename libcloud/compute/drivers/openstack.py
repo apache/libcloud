@@ -2528,7 +2528,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: :class:`NodeImage`
         """
-        return self._to_image(self.connection.request(
+        return self._to_image(self.image_connection.request(
             '/v2/images/%s' % (image_id,)).object)
 
     def list_images(self, location=None, ex_only_active=True):
@@ -2545,7 +2545,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             raise NotImplementedError(
                 "ex_only_active in list_images is not implemented "
                 "in the OpenStack_2_NodeDriver")
-        response = self.connection.request('/v2/images')
+        response = self.image_connection.request('/v2/images')
         images = []
         for image in response.object['images']:
             images.append(self._to_image(image))
