@@ -1571,6 +1571,13 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         'ex_force_auth_url': 'https://auth.api.example.com'
     }
 
+    def setUp(self):
+        super(OpenStack_2_Tests, self).setUp()
+        self.driver_klass.image_connectionCls.conn_class = OpenStack_2_0_MockHttp
+        self.driver_klass.image_connectionCls.auth_url = "https://auth.api.example.com"
+        # normally authentication happens lazily, but we force it here
+        self.driver.image_connection._populate_hosts_and_request_paths()
+
     def test_ex_force_auth_token_passed_to_connection(self):
         base_url = 'https://servers.api.rackspacecloud.com/v1.1/slug'
         kwargs = {
