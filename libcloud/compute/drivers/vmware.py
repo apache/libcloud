@@ -272,6 +272,9 @@ class VSphereNodeDriver(NodeDriver):
         return devices
 
     def _get_vm_disks(self, virtual_machine):
+        if not virtual_machine.layoutEx:
+            return []
+
         files = {}
         for file_info in virtual_machine.layoutEx.file:
             files[file_info.key] = {
