@@ -148,7 +148,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         AzureMockHttp.responses = [
             # OK to the DELETE request
             lambda f: (httplib.OK, None, {}, 'OK'),
-            # 404 means node destroyed successfully
+            # 404 means node is gone
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
         ]
         ret = self.driver.destroy_node(node)
@@ -158,18 +158,56 @@ class AzureNodeDriverTests(LibcloudTestCase):
         """
         This simulates the case when destroy_node is being called for the 2nd
         time because some related resource failed to clean up, so the DELETE
-        operation on the node will return 404 (because it was already deleted)
+        operation on the node will return 204 (because it was already deleted)
         but the method should return success.
         """
         def error(e, **kwargs):
             raise e(**kwargs)
         node = self.driver.list_nodes()[0]
         AzureMockHttp.responses = [
-            # 404 (Not Found) to the DELETE request
+            # 204 (No content) to the DELETE request on a deleted/non-existent node
+            lambda f: error(BaseHTTPError, code=204, message='No content'),
+        ]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__retry(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        AzureMockHttp.responses = [
+            # 202 - The delete will happen asynchronously
+            lambda f: error(BaseHTTPError, code=202, message='Deleting'),
+            # 200 means the node is still here - Try 1
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 200 means the node is still here - Try 2
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 200 means the node is still here - Try 3
+            lambda f: (httplib.OK, None, {}, 'OK'),
+            # 404 means node is gone - 4th retry: success!
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
         ]
         ret = self.driver.destroy_node(node)
         self.assertTrue(ret)
+        self.assertEqual(4, time_sleep_mock.call_count)  # Retries
+
+    @mock.patch('time.sleep', return_value=None)
+    def test_destroy_node__destroy_nic_retries(self, time_sleep_mock):
+        def error(e, **kwargs):
+            raise e(**kwargs)
+        node = self.driver.list_nodes()[0]
+        err = BaseHTTPError(code=400, message='[NicInUse] Cannot destroy')
+        with mock.patch.object(self.driver, 'ex_destroy_nic') as m:
+            m.side_effect = [err] * 5 + [True]  # 5 errors before a success
+            ret = self.driver.destroy_node(node)
+            self.assertTrue(ret)
+            self.assertEqual(6, m.call_count)  # 6th call was a success
+
+            m.side_effect = [err] * 10 + [True]  # 10 errors before a success
+            with self.assertRaises(BaseHTTPError):
+                self.driver.destroy_node(node)
+                self.assertEqual(10, m.call_count)  # try 10 times & fail
 
     @mock.patch('time.sleep', return_value=None)
     def test_destroy_node__async(self, time_sleep_mock):
@@ -179,7 +217,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         AzureMockHttp.responses = [
             # 202 - The delete will happen asynchronously
             lambda f: error(BaseHTTPError, code=202, message='Deleting'),
-            # 404 means node destroyed successfully
+            # 404 means node is gone
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
         ]
         ret = self.driver.destroy_node(node)
@@ -193,7 +231,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         AzureMockHttp.responses = [
             # OK to the DELETE request
             lambda f: (httplib.OK, None, {}, 'OK'),
-            # 404 means node destroyed successfully
+            # 404 means node is gone
             lambda f: error(BaseHTTPError, code=404, message='Not found'),
             # 500 - transient error when trying to clean up the NIC
             lambda f: error(BaseHTTPError, code=500, message="Cloud weather"),
@@ -212,7 +250,9 @@ class AzureNodeDriverTests(LibcloudTestCase):
         with self.assertRaises(BaseHTTPError):
             self.driver.destroy_node(node)
 
-    def test_list_nodes(self):
+    @mock.patch('libcloud.compute.drivers.azure_arm.AzureNodeDriver'
+                '._fetch_power_state', return_value=NodeState.UPDATING)
+    def test_list_nodes(self, fps_mock):
         nodes = self.driver.list_nodes()
 
         self.assertEqual(len(nodes), 1)
@@ -221,6 +261,22 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertEqual(nodes[0].state, NodeState.UPDATING)
         self.assertEqual(nodes[0].private_ips, ['10.0.0.1'])
         self.assertEqual(nodes[0].public_ips, [])
+
+        fps_mock.assert_called()
+
+    @mock.patch('libcloud.compute.drivers.azure_arm.AzureNodeDriver'
+                '._fetch_power_state', return_value=NodeState.UPDATING)
+    def test_list_nodes__no_fetch_power_state(self, fps_mock):
+        nodes = self.driver.list_nodes(ex_fetch_power_state=False)
+
+        self.assertEqual(len(nodes), 1)
+
+        self.assertEqual(nodes[0].name, 'test-node-1')
+        self.assertNotEqual(nodes[0].state, NodeState.UPDATING)
+        self.assertEqual(nodes[0].private_ips, ['10.0.0.1'])
+        self.assertEqual(nodes[0].public_ips, [])
+
+        fps_mock.assert_not_called()
 
     def test_create_volume(self):
         location = self.driver.list_locations()[-1]
@@ -479,6 +535,21 @@ class AzureNodeDriverTests(LibcloudTestCase):
                                                     ex_resource_group='000000',
                                                     ex_storage_account='sga1')
             self.assertEqual(vhd_url, 'https://sga1.blob.core.chinacloudapi.cn/vhds/test1-os_0.vhd')
+
+    def test_get_instance_vhd__retries_ten_times(self):
+        with mock.patch.object(self.driver, '_ex_delete_old_vhd') as m:
+            # 10 retries are OK
+            m.side_effect = [False] * 9 + [True]
+            vhd_url = self.driver._get_instance_vhd(name='test1',
+                                                    ex_resource_group='000000',
+                                                    ex_storage_account='sga1')
+            self.assertEqual(vhd_url, 'https://sga1.blob.core.windows.net/vhds/test1-os_9.vhd')
+            # Fail on the 11th
+            m.side_effect = [False] * 10 + [True]
+            with self.assertRaises(LibcloudError):
+                self.driver._get_instance_vhd(name='test1',
+                                              ex_resource_group='000000',
+                                              ex_storage_account='sga1')
 
 
 class AzureMockHttp(MockHttp):

@@ -1942,6 +1942,27 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
+    def ex_set_image_labels(self, image, labels):
+        """
+        Set labels for the specified image.
+
+        :keyword  image: The existing target Image for the request.
+        :type     image: ``NodeImage``
+
+        :keyword  labels: Set (or clear with None) labels for this image.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(image, NodeImage):
+            raise ValueError("Must specify a valid libcloud image object.")
+        current_fp = image.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/global/%s/setLabels' % (image.name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
     def ex_get_serial_output(self, node):
         """
         Fetch the console/serial port output from the node.
@@ -3241,7 +3262,8 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_image(self, name, volume, description=None, family=None,
                         guest_os_features=None, use_existing=True,
-                        wait_for_completion=True):
+                        wait_for_completion=True, ex_licenses=None,
+                        ex_labels=None):
         """
         Create an image from the provided volume.
 
@@ -3265,6 +3287,13 @@ class GCENodeDriver(NodeDriver):
         :keyword  guest_os_features: Features of the guest operating system,
                                      valid for bootable images only.
         :type     guest_os_features: ``list`` of ``str`` or ``None``
+
+        :keyword  ex_licenses: List of strings representing licenses
+                               to be associated with the image.
+        :type     ex_licenses: ``list`` of ``str``
+
+        :keyword  ex_labels: Labels dictionary for image.
+        :type     ex_labels: ``dict`` or ``None``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -3295,6 +3324,14 @@ class GCENodeDriver(NodeDriver):
             image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
+        if ex_licenses:
+            if isinstance(ex_licenses, str):
+                ex_licenses = [ex_licenses]
+            image_data['licenses'] = ex_licenses
+
+        if ex_labels:
+            image_data['labels'] = ex_labels
+
         if guest_os_features:
             image_data['guestOsFeatures'] = []
             if isinstance(guest_os_features, str):
@@ -3718,8 +3755,9 @@ class GCENodeDriver(NodeDriver):
             self, name, size, image, location=None, ex_network='default',
             ex_subnetwork=None, ex_tags=None, ex_metadata=None,
             ex_boot_disk=None, use_existing_disk=True, external_ip='ephemeral',
-            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
-            ex_service_accounts=None, description=None, ex_can_ip_forward=None,
+            internal_ip=None, ex_disk_type='pd-standard',
+            ex_disk_auto_delete=True, ex_service_accounts=None,
+            description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_image_family=None, ex_labels=None):
@@ -3766,6 +3804,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -3902,17 +3943,18 @@ class GCENodeDriver(NodeDriver):
 
         request, node_data = self._create_node_req(
             name, size, image, location, ex_network, ex_tags, ex_metadata,
-            ex_boot_disk, external_ip, ex_disk_type, ex_disk_auto_delete,
-            ex_service_accounts, description, ex_can_ip_forward,
-            ex_disks_gce_struct, ex_nic_gce_struct, ex_on_host_maintenance,
-            ex_automatic_restart, ex_preemptible, ex_subnetwork, ex_labels)
+            ex_boot_disk, external_ip, internal_ip, ex_disk_type,
+            ex_disk_auto_delete, ex_service_accounts, description,
+            ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
+            ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
+            ex_subnetwork, ex_labels)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
     def ex_create_instancetemplate(
             self, name, size, source=None, image=None, disk_type='pd-standard',
             disk_auto_delete=True, network='default', subnetwork=None,
-            can_ip_forward=None, external_ip='ephemeral',
+            can_ip_forward=None, external_ip='ephemeral', internal_ip=None,
             service_accounts=None, on_host_maintenance=None,
             automatic_restart=None, preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None):
@@ -3955,6 +3997,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -4037,7 +4082,7 @@ class GCENodeDriver(NodeDriver):
             disk_type=disk_type, disk_auto_delete=True,
             external_ip=external_ip, network=network, subnetwork=subnetwork,
             can_ip_forward=can_ip_forward, service_accounts=service_accounts,
-            on_host_maintenance=on_host_maintenance,
+            on_host_maintenance=on_host_maintenance, internal_ip=internal_ip,
             automatic_restart=automatic_restart, preemptible=preemptible,
             tags=tags, metadata=metadata, description=description,
             disks_gce_struct=disks_gce_struct, nic_gce_struct=nic_gce_struct,
@@ -4055,9 +4100,10 @@ class GCENodeDriver(NodeDriver):
     def _create_instance_properties(
             self, name, node_size, source=None, image=None,
             disk_type='pd-standard', disk_auto_delete=True, network='default',
-            subnetwork=None, external_ip='ephemeral', can_ip_forward=None,
-            service_accounts=None, on_host_maintenance=None,
-            automatic_restart=None, preemptible=None, tags=None, metadata=None,
+            subnetwork=None, external_ip='ephemeral', internal_ip=None,
+            can_ip_forward=None, service_accounts=None,
+            on_host_maintenance=None, automatic_restart=None,
+            preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
             use_selflinks=True, labels=None):
         """
@@ -4100,6 +4146,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  can_ip_forward: Set to ``True`` to allow this node to
                                   send/receive non-matching src/dst packets.
@@ -4225,7 +4274,8 @@ class GCENodeDriver(NodeDriver):
             instance_properties['networkInterfaces'] = [
                 self._build_network_gce_struct(
                     network=network, subnetwork=subnetwork,
-                    external_ip=external_ip, use_selflinks=True)
+                    external_ip=external_ip, use_selflinks=True,
+                    internal_ip=internal_ip)
             ]
 
         # build scheduling
@@ -4399,7 +4449,8 @@ class GCENodeDriver(NodeDriver):
                 return obj.name
 
     def _build_network_gce_struct(self, network, subnetwork=None,
-                                  external_ip=None, use_selflinks=True):
+                                  external_ip=None, use_selflinks=True,
+                                  internal_ip=None):
         """
         Build network interface dict for use in the GCE API.
 
@@ -4417,6 +4468,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress`
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str``
 
         :return:  network interface dict
         :rtype:   ``dict``
@@ -4440,6 +4494,9 @@ class GCENodeDriver(NodeDriver):
             if hasattr(external_ip, 'address'):
                 access_configs[0]['natIP'] = external_ip.address
             ni['accessConfigs'] = access_configs
+
+        if internal_ip:
+            ni['networkIP'] = internal_ip
 
         return ni
 
@@ -4593,7 +4650,7 @@ class GCENodeDriver(NodeDriver):
             self, base_name, size, image, number, location=None,
             ex_network='default', ex_subnetwork=None, ex_tags=None,
             ex_metadata=None, ignore_errors=True, use_existing_disk=True,
-            poll_interval=2, external_ip='ephemeral',
+            poll_interval=2, external_ip='ephemeral', internal_ip=None,
             ex_disk_type='pd-standard', ex_disk_auto_delete=True,
             ex_service_accounts=None, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
@@ -4654,6 +4711,10 @@ class GCENodeDriver(NodeDriver):
                                be used. (Static addresses are not supported for
                                multiple node creation.)
         :type     external_ip: ``str`` or None
+
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -4779,6 +4840,7 @@ class GCENodeDriver(NodeDriver):
                       'ignore_errors': ignore_errors,
                       'use_existing_disk': use_existing_disk,
                       'external_ip': external_ip,
+                      'internal_ip': internal_ip,
                       'ex_disk_type': ex_disk_type,
                       'ex_disk_auto_delete': ex_disk_auto_delete,
                       'ex_service_accounts': ex_service_accounts,
@@ -7677,8 +7739,9 @@ class GCENodeDriver(NodeDriver):
     def _create_node_req(
             self, name, size, image, location, network=None, tags=None,
             metadata=None, boot_disk=None, external_ip='ephemeral',
-            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
-            ex_service_accounts=None, description=None, ex_can_ip_forward=None,
+            internal_ip=None, ex_disk_type='pd-standard',
+            ex_disk_auto_delete=True, ex_service_accounts=None,
+            description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_subnetwork=None, ex_labels=None):
@@ -7721,6 +7784,9 @@ class GCENodeDriver(NodeDriver):
                                param will be ignored if also using the
                                ex_nic_gce_struct param.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -7822,7 +7888,7 @@ class GCENodeDriver(NodeDriver):
             name, node_size=size, image=image, source=source,
             disk_type=ex_disk_type, disk_auto_delete=ex_disk_auto_delete,
             external_ip=external_ip, network=network, subnetwork=ex_subnetwork,
-            can_ip_forward=ex_can_ip_forward,
+            can_ip_forward=ex_can_ip_forward, internal_ip=internal_ip,
             service_accounts=ex_service_accounts,
             on_host_maintenance=ex_on_host_maintenance,
             automatic_restart=ex_automatic_restart, preemptible=ex_preemptible,
@@ -7922,6 +7988,7 @@ class GCENodeDriver(NodeDriver):
             status['name'], node_attrs['size'], node_attrs['image'],
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
             node_attrs['metadata'], external_ip=node_attrs['external_ip'],
+            internal_ip=node_attrs['internal_ip'],
             ex_service_accounts=node_attrs['ex_service_accounts'],
             description=node_attrs['description'],
             ex_can_ip_forward=node_attrs['ex_can_ip_forward'],
@@ -8348,6 +8415,8 @@ class GCENodeDriver(NodeDriver):
         if 'licenses' in image:
             lic_objs = self._licenses_from_urls(licenses=image['licenses'])
             extra['licenses'] = lic_objs
+        extra['labels'] = image.get('labels', None)
+        extra['labelFingerprint'] = image.get('labelFingerprint', None)
 
         return GCENodeImage(id=image['id'], name=image['name'], driver=self,
                             extra=extra)

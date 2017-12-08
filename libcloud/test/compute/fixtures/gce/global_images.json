@@ -4,12 +4,36 @@
  "id": "projects/project_name/global/images",
  "items": [
   {
-
+    "kind": "compute#image",
+    "id": "7094983038334682865",
+    "creationTimestamp": "2017-10-26T07:58:38.442-07:00",
+    "name": "custom-image",
+    "description": "a custom image",
+    "sourceType": "RAW",
+    "status": "READY",
+    "archiveSizeBytes": "1314375168",
+    "diskSizeGb": "10",
+    "sourceDisk": "projects/project_name/zones/us-central1-b/disks/custom-instance",
+    "sourceDiskId": "3436116182804197834",
+    "family": "custom",
+    "selfLink": "projects/project_name/global/images/custom-image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "labels": {
+      "foo": "bar",
+      "one": "1",
+      "two": "two"
+    },
+    "getResourceId": {},
+    "getDisplayName": {},
+    "getResourceType": {},
+    "getFullResourcePath": {}
+  },
+  {
    "kind": "compute#image",
-   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/images/aws-ubuntu",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/images/custom-image",
    "id": "15632509721401584263",
    "creationTimestamp": "2014-12-09T09:26:27.234-08:00",
-   "name": "aws-ubuntu",
+   "name": "custom-image",
    "sourceType": "RAW",
    "rawDisk": {
     "source": "",

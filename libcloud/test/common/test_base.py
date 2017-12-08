@@ -16,6 +16,7 @@
 import requests
 import unittest
 import sys
+
 try:
     from lxml import etree
 except ImportError:
@@ -26,11 +27,11 @@ import requests_mock
 
 from libcloud.common.base import LazyObject
 from libcloud.common.base import XmlResponse
+from libcloud.common.types import MalformedResponseError
 from libcloud.test import LibcloudTestCase
 
 
 class LazyObjectTest(LibcloudTestCase):
-
     class A(LazyObject):
         def __init__(self, x, y=None):
             self.x = x
@@ -68,9 +69,9 @@ class XmlResponseTest(unittest.TestCase):
             return
         connection = mock.Mock()
         response_text = u'<?xml version="1.0" encoding="UTF-8"?>\n<Response>' \
-            '<Errors><Error><Code>InvalidSnapshot.NotFound</Code><Message>' \
-            'Snapshot does not exist</Message></Error></Errors><RequestID>' \
-            'd65ede94-44d9-40c4-992b-23aafd611797</RequestID></Response>'
+                        '<Errors><Error><Code>InvalidSnapshot.NotFound</Code><Message>' \
+                        'Snapshot does not exist</Message></Error></Errors><RequestID>' \
+                        'd65ede94-44d9-40c4-992b-23aafd611797</RequestID></Response>'
         with requests_mock.Mocker() as m:
             m.get('https://127.0.0.1',
                   text=response_text,
@@ -80,6 +81,22 @@ class XmlResponseTest(unittest.TestCase):
             body = response.parse_body()
             self.assertIsNotNone(body)
             self.assertIsInstance(body, etree._Element)
+
+    def test_parse_error_raises_exception_on_empty_body(self):
+        if etree is None:
+            return
+        connection = mock.Mock()
+        response_text = ''
+        with requests_mock.Mocker() as m:
+            m.get('https://127.0.0.1',
+                  text=response_text,
+                  headers={'content-type': 'application/xml'})
+            response = XmlResponse(requests.get('https://127.0.0.1'),
+                                   connection)
+            response.parse_zero_length_body = True
+
+            with self.assertRaises(MalformedResponseError):
+                response.parse_error()
 
 
 if __name__ == '__main__':
