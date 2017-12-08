@@ -18,6 +18,7 @@ VMware vSphere driver using pyvmomi - https://github.com/vmware/pyvmomi
 """
 
 import atexit
+import ipaddress
 import ssl
 try:
     import urlparse
@@ -54,7 +55,9 @@ class VSphereConnection(ConnectionUserAndKey):
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, url=None, timeout=None, **kwargs):
         if host and url:
-            raise ValueError('host and url arguments are mutually exclusive')
+            raise ValueError('host and url arguments are mutually exclusive.')
+        if not host and not url:
+            raise ValueError('Either host or url argument is required.')
 
         if url:
             host = urlparse.urlparse(url).netloc
@@ -67,13 +70,18 @@ class VSphereConnection(ConnectionUserAndKey):
                                                 host=host, port=port,
                                                 timeout=timeout, **kwargs)
 
-    def connect(self):
+    def connect(self, **kwargs):
+        if 'host' not in kwargs:
+            kwargs['host'] = self.host
+        if 'user' not in kwargs:
+            kwargs['user'] = self.user_id
+        if 'pwd' not in kwargs:
+            kwargs['pwd'] = self.key
+        if 'sslContext' not in kwargs:
+            kwargs['sslContext'] = ssl._create_unverified_context()
+
         try:
-            self.client = connect.SmartConnect(
-                host=self.host,
-                user=self.user_id,
-                pwd=self.key,
-                sslContext=ssl._create_unverified_context())
+            self.client = connect.SmartConnect(**kwargs)
         except Exception as e:
             message = '{}'.format(e)
             if 'incorrect user name' in message:
@@ -106,7 +114,8 @@ class VSphereNodeDriver(NodeDriver):
         self.url = url
         super(VSphereNodeDriver, self).__init__(key=username, secret=password,
                                                 secure=secure, host=host,
-                                                port=port, url=url)
+                                                port=port, url=url,
+                                                timeout=timeout)
 
     def _ex_connection_class_kwargs(self):
         kwargs = {
@@ -155,24 +164,29 @@ class VSphereNodeDriver(NodeDriver):
         vm = self.connection.client.content.searchIndex.FindByUuid(
             None, node_or_uuid, True, True)
         if not vm:
-            raise Exception("Unable to locate VirtualMachine.")
+            raise LibcloudError("Unable to locate VirtualMachine.")
         return vm
 
     def list_nodes(self, ex_datacenter=None, ex_cluster=None,
                    ex_resource_pool=None):
-        vms = self._list_vms(ex_datacenter=ex_datacenter,
-                             ex_cluster=ex_cluster,
-                             ex_resource_pool=ex_resource_pool)
+        if ex_cluster is not None:
+            raise NotImplemented('ex_cluster filter is not implemented yet.')
+        if ex_resource_pool is not None:
+            raise NotImplemented(
+                'ex_resource_pool filter is not implemented yet.')
+
+        vms = self._list_vms(datacenter=ex_datacenter,
+                             cluster=ex_cluster,
+                             resource_pool=ex_resource_pool)
         return [self._to_node(vm) for vm in vms]
 
-    def _list_vms(self, ex_datacenter=None, ex_cluster=None,
-                  ex_resource_pool=None):
+    def _list_vms(self, datacenter=None, cluster=None, resource_pool=None):
         vms = []
         content = self.connection.client.RetrieveContent()
         for child in content.rootFolder.childEntity:
             if not hasattr(child, 'vmFolder'):
                 continue
-            if ex_datacenter is not None and child.name != ex_datacenter:
+            if datacenter is not None and child.name != datacenter:
                 continue
 
             vms.extend(self._get_vms(child.vmFolder))
@@ -218,16 +232,13 @@ class VSphereNodeDriver(NodeDriver):
         public_ips = []
         private_ips = []
         if summary.guest is not None:
-            ip_address = summary.guest.ipAddress
-        if ip_address:
-            try:
-                if is_public_subnet(ip_address):
-                    public_ips.append(ip_address)
+            ip_addr = ipaddress.ip_address(
+                u'{}'.format(summary.guest.ipAddress))
+            if isinstance(ip_addr, ipaddress.IPv4Address):
+                if is_public_subnet(ip_addr):
+                    public_ips.append(ip_addr)
                 else:
-                    private_ips.append(ip_address)
-            except Exception:
-                # IPV6 not supported
-                pass
+                    private_ips.append(ip_addr)
 
         state = self.NODE_STATE_MAP.get(summary.runtime.powerState,
                                         NodeState.UNKNOWN)
@@ -286,6 +297,7 @@ class VSphereNodeDriver(NodeDriver):
                 'type': file_info.type,
                 'unique_size': file_info.uniqueSize}
 
+        vm_devices = self._get_vm_devices(virtual_machine)
         disks = []
         for disk_info in virtual_machine.layoutEx.disk:
             disk_files = []
@@ -299,13 +311,13 @@ class VSphereNodeDriver(NodeDriver):
                         committed += f['size']
                     if f['type'] == 'diskDescriptor':
                         descriptor = f['name']
-            device = self._get_vm_devices(virtual_machine)[disk_info.key]
 
+            device = vm_devices[disk_info.key]
             disks.append({
                 'device': device,
                 'files': disk_files,
                 'capacity': device['capacity_in_kb'],
-                'committed': committed / 1024,
+                'committed': int(committed / 1024),
                 'descriptor': descriptor,
                 'label': device['label'],
             })
@@ -316,15 +328,11 @@ class VSphereNodeDriver(NodeDriver):
 
     def _to_volume(self, disk):
         """
-        Parse the XML element and return a StorageVolume object.
+        Creates StorageVolume object from disk dictionary.
 
-        :param      name: An optional name for the volume. If not provided
-                          then either tag with a key "Name" or volume ID
-                          will be used (which ever is available first in that
-                          order).
-        :type       name: ``str``
+        :param dict disk: dict in format that _get_vm_disks() returns.
 
-        :rtype:     :class:`StorageVolume`
+        :returns StorageVolume: Storage volume object
         """
         return StorageVolume(id=disk['device']['key'],
                              name=disk['label'],
