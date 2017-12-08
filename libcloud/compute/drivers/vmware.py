@@ -235,6 +235,7 @@ class VSphereNodeDriver(NodeDriver):
             ip_addr = ipaddress.ip_address(
                 u'{}'.format(summary.guest.ipAddress))
             if isinstance(ip_addr, ipaddress.IPv4Address):
+                ip_addr = str(ip_addr)
                 if is_public_subnet(ip_addr):
                     public_ips.append(ip_addr)
                 else:
