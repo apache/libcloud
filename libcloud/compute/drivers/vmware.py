@@ -231,7 +231,7 @@ class VSphereNodeDriver(NodeDriver):
 
         public_ips = []
         private_ips = []
-        if summary.guest is not None:
+        if summary.guest is not None and summary.guest.ipAddress is not None:
             ip_addr = ipaddress.ip_address(
                 u'{}'.format(summary.guest.ipAddress))
             if isinstance(ip_addr, ipaddress.IPv4Address):
