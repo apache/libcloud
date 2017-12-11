@@ -35,7 +35,8 @@ class UpcloudPersistResponse(UpcloudResponse):
 
     def parse_body(self):
         import os
-        path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir, 'compute', 'fixtures', 'upcloud'))
+        path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir,
+                               'compute', 'fixtures', 'upcloud'))
         filename = 'api' + self.request.path_url.replace('/', '_').replace('.', '_') + '.json'
         filename = os.path.join(path, filename)
         if not os.path.exists(filename):
@@ -83,6 +84,36 @@ class UpcloudDriverTests(LibcloudTestCase):
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertTrue(len(sizes) >= 1)
+        expected_zones = [
+            {
+                'zone_id': 'de-fra1',
+                'price': 1.488
+            },
+            {
+                'zone_id': 'fi-dev2',
+                'price': 2.232
+            },
+            {
+                'zone_id': 'fi-hel1',
+                'price': 2.232
+            },
+            {
+                'zone_id': 'nl-ams1',
+                'price': 1.488
+            },
+            {
+                'zone_id': 'sg-sin1',
+                'price': 1.488
+            },
+            {
+                'zone_id': 'uk-lon1',
+                'price': 1.488
+            },
+            {
+                'zone_id': 'us-chi1',
+                'price': 1.488
+            }
+        ]
         expected_node_size = NodeSize(id='1xCPU-1GB',
                                       name='1xCPU-1GB',
                                       ram=1024,
@@ -91,7 +122,8 @@ class UpcloudDriverTests(LibcloudTestCase):
                                       price=None,
                                       driver=self.driver,
                                       extra={'core_number': 1,
-                                             'storage_tier': 'maxiops'})
+                                             'storage_tier': 'maxiops',
+                                             'zones': expected_zones})
         self.assert_object(expected_node_size, objects=sizes)
 
     def test_list_images(self):
@@ -101,7 +133,7 @@ class UpcloudDriverTests(LibcloudTestCase):
                                         name='Windows Server 2003 R2 Standard (CD 1)',
                                         driver=self.driver,
                                         extra={'access': 'public',
-                                               'licence': 0,
+                                               'license': 0,
                                                'size': 1,
                                                'state': 'online',
                                                'type': 'cdrom'})
@@ -189,8 +221,15 @@ class UpcloudDriverTests(LibcloudTestCase):
             return expected_data == actual_data
 
     def dicts_equals(self, d1, d2):
-        """Assumes dicts to contain only hashable types"""
-        return set(d1.values()) == set(d2.values())
+        dict_keys_same = set(d1.keys()) == set(d2.keys())
+        if not dict_keys_same:
+            return False
+
+        for key in d1.keys():
+            if d1[key] != d2[key]:
+                return False
+
+        return True
 
 
 class UpcloudMockHttp(MockHttp):
@@ -217,6 +256,10 @@ class UpcloudMockHttp(MockHttp):
 
     def _1_2_storage_template(self, method, url, body, headers):
         body = self.fixtures.load('api_1_2_storage_template.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _1_2_price(self, method, url, body, headers):
+        body = self.fixtures.load('api_1_2_price.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _1_2_server(self, method, url, body, headers):
