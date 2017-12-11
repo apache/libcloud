@@ -110,12 +110,12 @@ class VSphereNodeDriver(NodeDriver):
     }
 
     def __init__(self, username, password, secure=True,
-                 host=None, port=None, url=None, timeout=None):
+                 host=None, port=None, url=None, timeout=None, **kwargs):
         self.url = url
         super(VSphereNodeDriver, self).__init__(key=username, secret=password,
                                                 secure=secure, host=host,
                                                 port=port, url=url,
-                                                timeout=timeout)
+                                                timeout=timeout, **kwargs)
 
     def _ex_connection_class_kwargs(self):
         kwargs = {
