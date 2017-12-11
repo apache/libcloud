@@ -27,6 +27,7 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.upcloud import UpcloudCreateNodeRequestBody
 from libcloud.common.upcloud import UpcloudNodeDestroyer
 from libcloud.common.upcloud import UpcloudNodeOperations
+from libcloud.common.upcloud import PlanPrice
 
 
 class UpcloudResponse(JsonResponse):
@@ -109,10 +110,16 @@ class UpcloudDriver(NodeDriver):
         """
         List available plans
 
+        Note: Node.price will be always None, because the pricing depends,
+        where the Node is hosted. Node.extra['zones'] will contain
+        pricing for different hosting zones.
+
         :rtype: ``list`` of :class:`NodeSize`
         """
+        prices_response = self.connection.request('1.2/price')
         response = self.connection.request('1.2/plan')
-        return self._to_node_sizes(response.object['plans']['plan'])
+        return self._to_node_sizes(response.object['plans']['plan'],
+                                   prices_response.object['prices']['zone'])
 
     def list_images(self):
         """
@@ -263,11 +270,13 @@ class UpcloudDriver(NodeDriver):
         Zone_id format [country]_[city][number], like fi_hel1"""
         return zone_id.split('-')[0].upper()
 
-    def _to_node_sizes(self, plans):
-        return [self._construct_node_size(plan) for plan in plans]
+    def _to_node_sizes(self, plans, prices):
+        plan_price = PlanPrice(prices)
+        return [self._construct_node_size(plan, plan_price) for plan in plans]
 
-    def _construct_node_size(self, plan):
+    def _construct_node_size(self, plan, plan_price):
         extra = self._copy_dict(('core_number', 'storage_tier'), plan)
+        extra['zones'] = plan_price.get_prices_in_zones(plan['name'])
         return NodeSize(id=plan['name'], name=plan['name'],
                         ram=plan['memory_amount'],
                         disk=plan['storage_size'],

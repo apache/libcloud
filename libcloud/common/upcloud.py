@@ -199,6 +199,40 @@ class UpcloudNodeOperations(object):
                                 method='DELETE')
 
 
+class PlanPrice(object):
+    """
+    Helper class to construct plan price in different zones
+
+    :param  zone_prices: List of prices in different zones in UpCloud
+    :type   zone_prices: ```list```
+
+    """
+
+    def __init__(self, zone_prices):
+        self._zone_prices = zone_prices
+
+    def get_prices_in_zones(self, plan_name):
+        """
+        Returns list of prices in different zones,
+        [{'zone_id': 'uk-lon1', 'price': 1.588'},...]
+        If plan is not found in a zone, price is set to None.
+
+        :param  plan_name: Name of the plan
+        :type   plan_name: ```str```
+
+        rtype: ``list``
+        """
+        server_plan_name = 'server_plan_' + plan_name
+
+        prices = []
+
+        for zone_price in self._zone_prices:
+            zone_id = zone_price['name']
+            price = zone_price.get(server_plan_name, {}).get('price')
+            prices.append({'zone_id': zone_id, 'price': price})
+        return prices
+
+
 class _LoginUser(object):
 
     def __init__(self, user_id, auth=None):
