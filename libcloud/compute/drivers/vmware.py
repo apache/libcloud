@@ -71,6 +71,11 @@ class VSphereConnection(ConnectionUserAndKey):
                                                 timeout=timeout, **kwargs)
 
     def connect(self, **kwargs):
+        kwargs.pop('secure')
+        kwargs.pop('timeout')
+        kwargs.pop('proxy_url')
+        kwargs.pop('retry_delay')
+        kwargs.pop('backoff')
         if 'host' not in kwargs:
             kwargs['host'] = self.host
         if 'user' not in kwargs:
