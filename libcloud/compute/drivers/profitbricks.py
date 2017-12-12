@@ -1223,7 +1223,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action='/snapshots',
+            action='snapshots',
             params={'depth': 3},
             method='GET'
         )
