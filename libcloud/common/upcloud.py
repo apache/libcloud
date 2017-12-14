@@ -211,26 +211,28 @@ class PlanPrice(object):
     def __init__(self, zone_prices):
         self._zone_prices = zone_prices
 
-    def get_prices_in_zones(self, plan_name):
+    def get_price(self, plan_name, location=None):
         """
-        Returns list of prices in different zones,
-        [{'zone_id': 'uk-lon1', 'price': 1.588'},...]
-        If plan is not found in a zone, price is set to None.
+        Returns the plan's price in location. If location
+        is not provided returns None
 
         :param  plan_name: Name of the plan
         :type   plan_name: ```str```
 
-        rtype: ``list``
+        :param  location: Location, which price is returned (optional)
+        :type   location: :class:`.NodeLocation`
+
+
+        rtype: ``float``
         """
+        if location is None:
+            return None
         server_plan_name = 'server_plan_' + plan_name
 
-        prices = []
-
         for zone_price in self._zone_prices:
-            zone_id = zone_price['name']
-            price = zone_price.get(server_plan_name, {}).get('price')
-            prices.append({'zone_id': zone_id, 'price': price})
-        return prices
+            if zone_price['name'] == location.id:
+                return zone_price.get(server_plan_name, {}).get('price')
+        return None
 
 
 class _LoginUser(object):

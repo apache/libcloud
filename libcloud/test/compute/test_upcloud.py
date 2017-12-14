@@ -82,48 +82,18 @@ class UpcloudDriverTests(LibcloudTestCase):
         self.assert_object(expected_node_location, objects=locations)
 
     def test_list_sizes(self):
-        sizes = self.driver.list_sizes()
+        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver=self.driver)
+        sizes = self.driver.list_sizes(location)
         self.assertTrue(len(sizes) >= 1)
-        expected_zones = [
-            {
-                'zone_id': 'de-fra1',
-                'price': 1.488
-            },
-            {
-                'zone_id': 'fi-dev2',
-                'price': 2.232
-            },
-            {
-                'zone_id': 'fi-hel1',
-                'price': 2.232
-            },
-            {
-                'zone_id': 'nl-ams1',
-                'price': 1.488
-            },
-            {
-                'zone_id': 'sg-sin1',
-                'price': 1.488
-            },
-            {
-                'zone_id': 'uk-lon1',
-                'price': 1.488
-            },
-            {
-                'zone_id': 'us-chi1',
-                'price': 1.488
-            }
-        ]
         expected_node_size = NodeSize(id='1xCPU-1GB',
                                       name='1xCPU-1GB',
                                       ram=1024,
                                       disk=30,
                                       bandwidth=2048,
-                                      price=None,
+                                      price=2.232,
                                       driver=self.driver,
                                       extra={'core_number': 1,
-                                             'storage_tier': 'maxiops',
-                                             'zones': expected_zones})
+                                             'storage_tier': 'maxiops'})
         self.assert_object(expected_node_size, objects=sizes)
 
     def test_list_images(self):
