@@ -57,6 +57,9 @@ Compute
   (LIBCLOUD-951, LIBCLOUD-953, GITHUB-1123, GITHUB-1125)
   [Mika Lackman]
 
+- [UpCloud] Add pricing information to list_sizes (LIBCLOUD-969, GITHUB-1152)
+  [Mika Lackman]
+
 - [ARM] Delete VHDs more reliably in destroy_node(), raise exception on unhandled errors
   (GITHUB-1120)
   [Lucas Di Pentima]
