@@ -265,27 +265,21 @@ class TestUpcloudNodeDestroyer(unittest.TestCase):
 
 class TestPlanPrice(unittest.TestCase):
 
-    def test_zone_prices(self):
+    def setUp(self):
         prices = [{'name': 'uk-lon1', 'server_plan_1xCPU-1GB': {'amount': 1, 'price': 1.488}},
                   {'name': 'fi-hel1', 'server_plan_1xCPU-1GB': {'amount': 1, 'price': 1.588}}]
-        pp = PlanPrice(prices)
+        self.pp = PlanPrice(prices)
 
-        zone_prices = pp.get_prices_in_zones('1xCPU-1GB')
-
-        self.assertEqual(len(zone_prices), 2)
-        self.assertIn({'zone_id': 'uk-lon1', 'price': 1.488}, zone_prices)
-        self.assertIn({'zone_id': 'fi-hel1', 'price': 1.588}, zone_prices)
+    def test_zone_prices(self):
+        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver=None)
+        self.assertEqual(self.pp.get_price('1xCPU-1GB', location), 1.588)
 
     def test_plan_not_found_in_zone(self):
-        prices = [{'name': 'uk-lon1', 'server_plan_1xCPU-1GB': {'amount': 1, 'price': 1.488}},
-                  {'name': 'fi-hel1', 'server_plan_4xCPU-1GB': {'amount': 1, 'price': 1.588}}]
-        pp = PlanPrice(prices)
+        location = NodeLocation(id='no_such_location', name='', country='', driver=None)
+        self.assertEqual(self.pp.get_price('1xCPU-1GB', location), None)
 
-        zone_prices = pp.get_prices_in_zones('1xCPU-1GB')
-
-        self.assertEqual(len(zone_prices), 2)
-        self.assertIn({'zone_id': 'uk-lon1', 'price': 1.488}, zone_prices)
-        self.assertIn({'zone_id': 'fi-hel1', 'price': None}, zone_prices)
+    def test_no_location_given(self):
+        self.assertEqual(self.pp.get_price('1xCPU-1GB'), None)
 
 
 if __name__ == '__main__':
