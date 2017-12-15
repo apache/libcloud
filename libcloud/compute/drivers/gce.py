@@ -6007,9 +6007,18 @@ class GCENodeDriver(NodeDriver):
 
         return success
 
-    def deploy_node(self, name, size, image, script, location=None,
-                    ex_network='default', ex_tags=None,
-                    ex_service_accounts=None):
+    def deploy_node(
+            self, name, size, image, script, location=None,
+            ex_network='default', ex_subnetwork=None, ex_tags=None,
+            ex_metadata=None, ex_boot_disk=None, use_existing_disk=True,
+            external_ip='ephemeral', internal_ip=None,
+            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
+            ex_service_accounts=None, description=None,
+            ex_can_ip_forward=None, ex_disks_gce_struct=None,
+            ex_nic_gce_struct=None, ex_on_host_maintenance=None,
+            ex_automatic_restart=None, ex_preemptible=None,
+            ex_image_family=None, ex_labels=None):
+
         """
         Create a new node and run a script on start-up.
 
@@ -6032,8 +6041,41 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_network: The network to associate with the node.
         :type     ex_network: ``str`` or :class:`GCENetwork`
 
+        :keyword  ex_subnetwork: The subnetwork to associate with the node.
+        :type     ex_subnetwork: ``str`` or :class:`GCESubnetwork`
+
         :keyword  ex_tags: A list of tags to associate with the node.
         :type     ex_tags: ``list`` of ``str`` or ``None``
+
+        :keyword  ex_metadata: Metadata dictionary for instance.
+        :type     ex_metadata: ``dict`` or ``None``
+
+        :keyword  ex_boot_disk: The boot disk to attach to the instance.
+        :type     ex_boot_disk: :class:`StorageVolume` or ``str`` or ``None``
+
+        :keyword  use_existing_disk: If True and if an existing disk with the
+                                     same name/location is found, use that
+                                     disk instead of creating a new one.
+        :type     use_existing_disk: ``bool``
+
+        :keyword  external_ip: The external IP address to use.  If 'ephemeral'
+                               (default), a new non-static address will be
+                               used.  If 'None', then no external address will
+                               be used.  To use an existing static IP address,
+                               a GCEAddress object should be passed in.
+        :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
+                                for an SSD disk.
+        :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
+
+        :keyword  ex_disk_auto_delete: Indicate that the boot disk should be
+                                       deleted when the Node is deleted. Set to
+                                       True by default.
+        :type     ex_disk_auto_delete: ``bool``
 
         :keyword  ex_service_accounts: Specify a list of serviceAccounts when
                                        creating the instance. The format is a
@@ -6049,6 +6091,62 @@ class GCENodeDriver(NodeDriver):
                                        'gcloud compute'.
         :type     ex_service_accounts: ``list``
 
+        :keyword  description: The description of the node (instance).
+        :type     description: ``str`` or ``None``
+
+        :keyword  ex_can_ip_forward: Set to ``True`` to allow this node to
+                                  send/receive non-matching src/dst packets.
+        :type     ex_can_ip_forward: ``bool`` or ``None``
+
+        :keyword  ex_disks_gce_struct: Support for passing in the GCE-specific
+                                       formatted disks[] structure. No attempt
+                                       is made to ensure proper formatting of
+                                       the disks[] structure. Using this
+                                       structure obviates the need of using
+                                       other disk params like 'ex_boot_disk',
+                                       etc. See the GCE docs for specific
+                                       details.
+        :type     ex_disks_gce_struct: ``list`` or ``None``
+
+        :keyword  ex_nic_gce_struct: Support passing in the GCE-specific
+                                     formatted networkInterfaces[] structure.
+                                     No attempt is made to ensure proper
+                                     formatting of the networkInterfaces[]
+                                     data. Using this structure obviates the
+                                     need of using 'external_ip' and
+                                     'ex_network'.  See the GCE docs for
+                                     details.
+        :type     ex_nic_gce_struct: ``list`` or ``None``
+
+        :keyword  ex_on_host_maintenance: Defines whether node should be
+                                          terminated or migrated when host
+                                          machine goes down. Acceptable values
+                                          are: 'MIGRATE' or 'TERMINATE' (If
+                                          not supplied, value will be reset to
+                                          GCE default value for the instance
+                                          type.)
+        :type     ex_on_host_maintenance: ``str`` or ``None``
+
+        :keyword  ex_automatic_restart: Defines whether the instance should be
+                                        automatically restarted when it is
+                                        terminated by Compute Engine. (If not
+                                        supplied, value will be set to the GCE
+                                        default value for the instance type.)
+        :type     ex_automatic_restart: ``bool`` or ``None``
+
+        :keyword  ex_preemptible: Defines whether the instance is preemptible.
+                                  (If not supplied, the instance will not be
+                                  preemptible)
+        :type     ex_preemptible: ``bool`` or ``None``
+
+        :keyword  ex_image_family: Determine image from an 'Image Family'
+                                   instead of by name. 'image' should be None
+                                   to use this keyword.
+        :type     ex_image_family: ``str`` or ``None``
+
+        :keyword  ex_labels: Labels dictionary for instance.
+        :type     ex_labels: ``dict`` or ``None``
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -6058,9 +6156,25 @@ class GCENodeDriver(NodeDriver):
         metadata = {'items': [{'key': 'startup-script', 'value': script_data}]}
 
         return self.create_node(name, size, image, location=location,
-                                ex_network=ex_network, ex_tags=ex_tags,
-                                ex_metadata=metadata,
-                                ex_service_accounts=ex_service_accounts)
+                                ex_network=ex_network,
+                                ex_subnetwork=ex_subnetwork,
+                                ex_tags=ex_tags, ex_metadata=metadata,
+                                ex_boot_disk=ex_boot_disk,
+                                use_existing_disk=use_existing_disk,
+                                external_ip=external_ip,
+                                internal_ip=internal_ip,
+                                ex_disk_type=ex_disk_type,
+                                ex_disk_auto_delete=ex_disk_auto_delete,
+                                ex_service_accounts=ex_service_accounts,
+                                description=description,
+                                ex_can_ip_forward=ex_can_ip_forward,
+                                ex_disks_gce_struct=ex_disks_gce_struct,
+                                ex_nic_gce_struct=ex_nic_gce_struct,
+                                ex_on_host_maintenance=ex_on_host_maintenance,
+                                ex_automatic_restart=ex_automatic_restart,
+                                ex_preemptible=ex_preemptible,
+                                ex_image_family=ex_image_family,
+                                ex_labels=ex_labels)
 
     def attach_volume(self, node, volume, device=None, ex_mode=None,
                       ex_boot=False, ex_type=None, ex_source=None,
