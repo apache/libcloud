@@ -497,6 +497,66 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'c5.large': {
+        'id': 'c5.large',
+        'name': 'Compute Optimized Large Instance',
+        'ram': GiB(4),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'c5.xlarge': {
+        'id': 'c5.xlarge',
+        'name': 'Compute Optimized Extra Large Instance',
+        'ram': GiB(8),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'c5.2xlarge': {
+        'id': 'c5.2xlarge',
+        'name': 'Compute Optimized Double Extra Large Instance',
+        'ram': GiB(16),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'c5.4xlarge': {
+        'id': 'c5.4xlarge',
+        'name': 'Compute Optimized Quadruple Extra Large Instance',
+        'ram': GiB(32),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'c5.9xlarge': {
+        'id': 'c5.9xlarge',
+        'name': 'Compute Optimized Nonuple Extra Large Instance',
+        'ram': GiB(72),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 36
+        }
+    },
+    'c5.18xlarge': {
+        'id': 'c5.18xlarge',
+        'name': 'Compute Optimized Eighteen Extra Large Instance',
+        'ram': GiB(144),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 72
+        }
+    },
     'cr1.8xlarge': {
         'id': 'cr1.8xlarge',
         'name': 'High Memory Cluster Eight Extra Large',
@@ -922,6 +982,12 @@ REGION_DETAILS = {
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.large',
+            'c5.xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.18xlarge',
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
@@ -1007,6 +1073,12 @@ REGION_DETAILS = {
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.large',
+            'c5.xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.18xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
@@ -1240,6 +1312,12 @@ REGION_DETAILS = {
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.large',
+            'c5.xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.18xlarge',
             'hs1.8xlarge',
             'cc2.8xlarge',
             'i2.xlarge',
