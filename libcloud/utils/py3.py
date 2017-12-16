@@ -37,29 +37,20 @@ except ImportError:
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
-PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
 
 PY2 = False
-PY26 = False
 PY27 = False
 PY3 = False
-PY32 = False
 
 if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
     PY2 = True
-
-if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
-    PY26 = True
 
 if sys.version_info >= (2, 7) and sys.version_info < (2, 8):
     PY27 = True
 
 if sys.version_info >= (3, 0):
     PY3 = True
-
-if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
-    PY32 = True
 
 if PY2_pre_279:
     try:
@@ -197,8 +188,3 @@ else:
     def hexadigits(s):
         # s needs to be a string.
         return [x.encode("hex") for x in s]
-
-if PY27 or PY3:
-    unittest2_required = False
-else:
-    unittest2_required = True

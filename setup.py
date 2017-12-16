@@ -66,12 +66,7 @@ TEST_REQUIREMENTS = [
 if PY2_pre_279:
     TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
 
-if PY2_pre_27:
-    unittest2_required = True
-else:
-    unittest2_required = False
-
-if PY2_pre_26 or PY3_pre_34:
+if PY2_pre_27 or PY3_pre_34:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are ' +
           ', '.join(SUPPORTED_VERSIONS))
