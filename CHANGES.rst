@@ -4,6 +4,11 @@
 Changes in Apach Libcloud in development
 ----------------------------------------
 
+- Drop support for Python 2.6 and Python 3.3
+  They're no longer supported, and the Python ecosystem is starting to
+  drop support: two of our test dependencies no longer support them.
+  [Quentin Pradet]
+
 Common
 ~~~~~~
 
@@ -23,7 +28,10 @@ Compute
   [Mika Lackman, Ilari Mäkelä]
 
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
-  [@zulupro]
+  [Anthony Monthe]
+
+- [EC2] Add AWS EC2 c5 series (GITHUB-1147)
+  [Anthony Monthe]
 
 - [EC2] Update pricing information for EC2 instances.
   [Tomaz Muraus]
@@ -55,6 +63,9 @@ Compute
 
 - [UpCloud] Allow to define hostname and username
   (LIBCLOUD-951, LIBCLOUD-953, GITHUB-1123, GITHUB-1125)
+  [Mika Lackman]
+
+- [UpCloud] Add pricing information to list_sizes (LIBCLOUD-969, GITHUB-1152)
   [Mika Lackman]
 
 - [ARM] Delete VHDs more reliably in destroy_node(), raise exception on unhandled errors

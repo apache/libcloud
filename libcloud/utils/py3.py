@@ -37,27 +37,14 @@ except ImportError:
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
-PY2_pre_25 = PY2 and sys.version_info < (2, 5)
-PY2_pre_26 = PY2 and sys.version_info < (2, 6)
-PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
-PY3_pre_32 = PY3 and sys.version_info < (3, 2)
 
 PY2 = False
-PY25 = False
-PY26 = False
 PY27 = False
 PY3 = False
-PY32 = False
 
 if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
     PY2 = True
-
-if sys.version_info >= (2, 5) and sys.version_info < (2, 6):
-    PY25 = True
-
-if sys.version_info >= (2, 6) and sys.version_info < (2, 7):
-    PY26 = True
 
 if sys.version_info >= (2, 7) and sys.version_info < (2, 8):
     PY27 = True
@@ -65,10 +52,7 @@ if sys.version_info >= (2, 7) and sys.version_info < (2, 8):
 if sys.version_info >= (3, 0):
     PY3 = True
 
-if sys.version_info >= (3, 2) and sys.version_info < (3, 3):
-    PY32 = True
-
-if PY2_pre_279 or PY3_pre_32:
+if PY2_pre_279:
     try:
         from backports.ssl_match_hostname import match_hostname, CertificateError  # NOQA
     except ImportError:
@@ -157,17 +141,10 @@ else:
 
     from __builtin__ import reload  # NOQA
 
-    if PY25:
-        import cgi
+    parse_qs = urlparse.parse_qs
+    parse_qsl = urlparse.parse_qsl
 
-        parse_qs = cgi.parse_qs
-        parse_qsl = cgi.parse_qsl
-    else:
-        parse_qs = urlparse.parse_qs
-        parse_qsl = urlparse.parse_qsl
-
-    if not PY25:
-        from os.path import relpath  # NOQA
+    from os.path import relpath  # NOQA
 
     # Save the real value of unicode because urlquote needs it to tell the
     # difference between a unicode string and a byte string.
@@ -211,27 +188,3 @@ else:
     def hexadigits(s):
         # s needs to be a string.
         return [x.encode("hex") for x in s]
-
-if PY25:
-    import posixpath
-
-    # Taken from http://jimmyg.org/work/code/barenecessities/index.html
-    # (MIT license)
-    # pylint: disable=function-redefined
-    def relpath(path, start=posixpath.curdir):   # NOQA
-        """Return a relative version of a path"""
-        if not path:
-            raise ValueError("no path specified")
-        start_list = posixpath.abspath(start).split(posixpath.sep)
-        path_list = posixpath.abspath(path).split(posixpath.sep)
-        # Work out how much of the filepath is shared by start and path.
-        i = len(posixpath.commonprefix([start_list, path_list]))
-        rel_list = [posixpath.pardir] * (len(start_list) - i) + path_list[i:]
-        if not rel_list:
-            return posixpath.curdir
-        return posixpath.join(*rel_list)
-
-if PY27 or PY3:
-    unittest2_required = False
-else:
-    unittest2_required = True
