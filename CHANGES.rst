@@ -15,6 +15,9 @@ Common
 - Improve warning when CA_CERTS_PATH is incorrectly passed as a list (GITHUB-1118)
   [Quentin Pradet]
 
+- Cleaned up and corrected third-party drivers documentation (GITHUB-1148)
+  [Daniel Hunsaker]
+
 Compute
 ~~~~~~~
 
