@@ -224,6 +224,40 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['67.23.21.33'], ips)
 
+    def test_wait_until_running_without_ip(self):
+        RackspaceMockHttp.type = 'NO_IP'
+
+        try:
+            node2, ips = self.driver.wait_until_running(
+                nodes=[self.node], wait_period=1,
+                timeout=0.5)[0]
+        except LibcloudError:
+            e = sys.exc_info()[1]
+            self.assertTrue(e.value.find('Timed out after 0.5 second') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_wait_until_running_with_only_ipv6(self):
+        RackspaceMockHttp.type = 'IPV6'
+
+        try:
+            node2, ips = self.driver.wait_until_running(
+                nodes=[self.node], wait_period=1,
+                timeout=0.5)[0]
+        except LibcloudError:
+            e = sys.exc_info()[1]
+            self.assertTrue(e.value.find('Timed out after 0.5 second') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_wait_until_running_with_ipv6_ok(self):
+        RackspaceMockHttp.type = 'IPV6'
+        node2, ips = self.driver.wait_until_running(
+            nodes=[self.node], wait_period=1, force_ipv4=False,
+            timeout=0.5)[0]
+        self.assertEqual(self.node.uuid, node2.uuid)
+        self.assertEqual(['2001:DB8::1'], ips)
+
     def test_wait_until_running_running_after_1_second(self):
         RackspaceMockHttp.type = '05_SECOND_DELAY'
         node2, ips = self.driver.wait_until_running(
@@ -496,6 +530,16 @@ class RackspaceMockHttp(MockHttp):
     def _v1_0_slug_servers_detail_MULTIPLE_NODES(self, method, url, body, headers):
         body = self.fixtures.load(
             'v1_slug_servers_detail_deployment_multiple_nodes.xml')
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_IPV6(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_ipv6.xml')
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_servers_detail_NO_IP(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'v1_slug_servers_detail_deployment_no_ip.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
 

@@ -1345,8 +1345,11 @@ class NodeDriver(BaseDriver):
 
             running_nodes = [node for node in matching_nodes
                              if node.state == NodeState.RUNNING]
-            addresses = [filter_addresses(getattr(node, ssh_interface))
-                         for node in running_nodes]
+            addresses = []
+            for node in running_nodes:
+                node_addresses = filter_addresses(getattr(node, ssh_interface))
+                if len(node_addresses) >= 1:
+                    addresses.append(node_addresses)
 
             if len(running_nodes) == len(uuids) == len(addresses):
                 return list(zip(running_nodes, addresses))
