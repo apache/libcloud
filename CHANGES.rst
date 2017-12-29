@@ -109,6 +109,11 @@ Compute
 - [CloudStack] Handle NICs without addresses (GITHUB-1141)
   [Pierre-Yves Ritschard]
 
+- Fix "wait_until_running() method so it also works correctly and doesn't
+  append "None" to the addresses list if node has no IP address.
+  (GITHUB-1156, LIBCLOUD-971)
+  [Tobias Paepke]
+
 Storage
 ~~~~~~~
 
