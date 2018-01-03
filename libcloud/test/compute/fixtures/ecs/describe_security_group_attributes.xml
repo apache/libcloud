@@ -1,26 +1,30 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<DescribeSecurityGroupsResponse>
-	<RequestId>94D38899-626D-434A-891F-7E1F77A81525</RequestId>
-	<TotalCount>4</TotalCount>
-	<PageNumber>1</PageNumber>
-	<PageSize>10</PageSize>
-	<RegionId>cn-hangzhou </RegionId>
-	<SecurityGroups>
-		<SecurityGroup>
-			<SecurityGroupId>sg-F876FF7BA</SecurityGroupId>
-			<Description>Test</Description>
-		</SecurityGroup>
-		<SecurityGroup>
-			<SecurityGroupId>sg-086FFC27A</SecurityGroupId>
-			<Description>test00212</Description>
-		</SecurityGroup>
-		<SecurityGroup>
-			<SecurityGroupId>sg-BA4B7975B</SecurityGroupId>
-			<Description>cn-hangzhou test group</Description>
-		</SecurityGroup>
-		<SecurityGroup>
-			<SecurityGroupId>sg-35F20777C</SecurityGroupId>
-			<Description>cn-hangzhou test group</Description>
-		</SecurityGroup>
-	</SecurityGroups>
-</DescribeSecurityGroupsResponse>
+<DescribeSecurityGroupAttributeResponse>
+	<SecurityGroupId>sg-m5e5vyj2j0atm2gewww4</SecurityGroupId>
+	<InnerAccessPolicy>Accept</InnerAccessPolicy>
+	<SecurityGroupName>sg-m5e5vyj2j0atm2gewww4</SecurityGroupName>
+	<Description>System created security group.</Description>
+	<RegionId>cn-qingdao</RegionId>
+	<RequestId>8A3E0262-EEA1-4961-A403-3D6E69F3539C</RequestId>
+	<Permissions>
+		<Permission>
+			<SourceCidrIp>121.43.18.0/24</SourceCidrIp>
+			<DestCidrIp></DestCidrIp>
+			<Description></Description>
+			<NicType>internet</NicType>
+			<DestGroupName></DestGroupName>
+			<PortRange>-1/-1</PortRange>
+			<DestGroupId></DestGroupId>
+			<Direction>ingress</Direction>
+			<Priority>1</Priority>
+			<IpProtocol>ALL</IpProtocol>
+			<SourceGroupOwnerAccount></SourceGroupOwnerAccount>
+			<Policy>Accept</Policy>
+			<CreateTime>2017-07-08T06:20:39Z</CreateTime>
+			<SourceGroupId></SourceGroupId>
+			<DestGroupOwnerAccount></DestGroupOwnerAccount>
+			<SourceGroupName></SourceGroupName>
+		</Permission>
+	</Permissions>
+	<VpcId></VpcId>
+</DescribeSecurityGroupAttributeResponse>
