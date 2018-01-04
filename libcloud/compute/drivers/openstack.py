@@ -2539,7 +2539,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             self.connection.request('/os-floating-ip-pools').object)
 
     def _to_floating_ips(self, obj):
-        ip_elements = obj['floating_ips']
+        ip_elements = obj['floatingips']
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
@@ -2709,7 +2709,7 @@ class OpenStack_1_1_FloatingIpPool(object):
     def _to_floating_ip(self, obj):
         return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
                                                ip_address=obj['ip'],
-                                               pool=self,
+                                               pool=obj['pool'],
                                                node_id=obj['instance_id'],
                                                driver=self.connection.driver)
 
