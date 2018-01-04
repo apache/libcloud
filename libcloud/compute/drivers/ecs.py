@@ -848,7 +848,7 @@ class ECSDriver(NodeDriver):
 
         resp = self.connection.request(self.path, params)
         return resp.success()
-        
+
     def ex_list_security_groups(self, ex_filters=None):
         """
         List security groups in the current region.
