@@ -292,6 +292,66 @@ INSTANCE_TYPES = {
             'cpu': 64
         }
     },
+    'm5.large': {
+        'id': 'm5.large',
+        'name': 'Large Instance',
+        'ram': GiB(8),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'm5.xlarge': {
+        'id': 'm5.xlarge',
+        'name': 'Extra Large Instance',
+        'ram': GiB(16),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'm5.2xlarge': {
+        'id': 'm5.2xlarge',
+        'name': 'Double Extra Large Instance',
+        'ram': GiB(32),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'm5.4xlarge': {
+        'id': 'm5.4xlarge',
+        'name': 'Quadruple Extra Large Instance',
+        'ram': GiB(64),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'm5.12xlarge': {
+        'id': 'm5.12xlarge',
+        'name': '12 Extra Large Instance',
+        'ram': GiB(192),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 48
+        }
+    },
+    'm5.24xlarge': {
+        'id': 'm5.24xlarge',
+        'name': '24 Extra Large Instance',
+        'ram': GiB(384),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 96
+        }
+    },
     'cg1.4xlarge': {
         'id': 'cg1.4xlarge',
         'name': 'Cluster GPU Quadruple Extra Large Instance',
@@ -969,6 +1029,12 @@ REGION_DETAILS = {
             'm4.4xlarge',
             'm4.10xlarge',
             'm4.16xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge',
@@ -1213,6 +1279,12 @@ REGION_DETAILS = {
             'm4.4xlarge',
             'm4.10xlarge',
             'm4.16xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
@@ -1295,6 +1367,12 @@ REGION_DETAILS = {
             'm4.4xlarge',
             'm4.10xlarge',
             'm4.16xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
