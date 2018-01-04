@@ -788,7 +788,22 @@ local-hostname: %s''' % (name, name)
         error = ''
         # run cmd with sudo prefix in case user is not root
         if self.key != 'root':
-            cmd = 'sudo %s' % cmd
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            ssh.connect(self.host, username=self.key, key_filename=self.secret,
+                        port=self.ssh_port, timeout=None, allow_agent=False,
+                        look_for_keys=False)
+            stdin, stdout, stderr = ssh.exec_command('groups')
+
+            output = stdout.read()
+            ssh.close()
+
+            # If the user belongs to the libvirtd group no sudo is required
+            # otherwise we use sudo and require a passwordless one
+            if 'libvirtd' not in output:
+                cmd = 'sudo %s' % cmd
+
         if self.secret:
             try:
                 ssh = paramiko.SSHClient()
