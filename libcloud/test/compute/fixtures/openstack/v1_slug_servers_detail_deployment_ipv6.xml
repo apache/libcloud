@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<servers xmlns="http://docs.rackspacecloud.com/servers/api/v1.0">
+  <server status="ACTIVE" progress="100" hostId="9dd380940fcbe39cb30255ed4664f1f3" flavorId="1" imageId="11" id="12345" name="racktest">
+    <metadata/>
+    <addresses>
+      <public>
+        <ip addr="2001:DB8::1"/>
+      </public>
+      <private>
+        <ip addr="2001:DB8:1::1"/>
+      </private>
+    </addresses>
+  </server>
+</servers>

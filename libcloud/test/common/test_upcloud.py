@@ -20,6 +20,7 @@ from mock import Mock, call
 from libcloud.common.upcloud import UpcloudCreateNodeRequestBody, UpcloudNodeDestroyer, UpcloudNodeOperations
 from libcloud.common.upcloud import _StorageDevice
 from libcloud.common.upcloud import UpcloudTimeoutException
+from libcloud.common.upcloud import PlanPrice
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey
 from libcloud.test import unittest
 
@@ -260,6 +261,25 @@ class TestUpcloudNodeDestroyer(unittest.TestCase):
 
         self.mock_operations.get_node_state.side_effect = ['maintenance', None]
         self.assertTrue(self.destroyer.destroy_node(1))
+
+
+class TestPlanPrice(unittest.TestCase):
+
+    def setUp(self):
+        prices = [{'name': 'uk-lon1', 'server_plan_1xCPU-1GB': {'amount': 1, 'price': 1.488}},
+                  {'name': 'fi-hel1', 'server_plan_1xCPU-1GB': {'amount': 1, 'price': 1.588}}]
+        self.pp = PlanPrice(prices)
+
+    def test_zone_prices(self):
+        location = NodeLocation(id='fi-hel1', name='Helsinki #1', country='FI', driver=None)
+        self.assertEqual(self.pp.get_price('1xCPU-1GB', location), 1.588)
+
+    def test_plan_not_found_in_zone(self):
+        location = NodeLocation(id='no_such_location', name='', country='', driver=None)
+        self.assertEqual(self.pp.get_price('1xCPU-1GB', location), None)
+
+    def test_no_location_given(self):
+        self.assertEqual(self.pp.get_price('1xCPU-1GB'), None)
 
 
 if __name__ == '__main__':

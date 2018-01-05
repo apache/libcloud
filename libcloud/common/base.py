@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import sys
 import ssl
@@ -23,16 +24,10 @@ import time
 
 from libcloud.utils.py3 import ET
 
-try:
-    import simplejson as json
-except:
-    import json
-
 import requests
 
 import libcloud
 
-from libcloud.utils.py3 import PY25
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
@@ -439,9 +434,7 @@ class Connection(object):
         if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
             kwargs.update({'cert_file': getattr(self, 'cert_file')})
 
-        # Timeout is only supported in Python 2.6 and later
-        # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
-        if self.timeout and not PY25:
+        if self.timeout:
             kwargs.update({'timeout': self.timeout})
 
         if self.proxy_url:
