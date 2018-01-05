@@ -36,6 +36,9 @@ Compute
 - [EC2] Add AWS EC2 c5 series (GITHUB-1147)
   [Anthony Monthe]
 
+- [EC2] Add AWS EC2 M5 sizes (GITHUB-1159)
+  [Anthony Monthe]
+
 - [EC2] Update pricing information for EC2 instances.
   [Tomaz Muraus]
 
