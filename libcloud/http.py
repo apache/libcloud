@@ -322,4 +322,6 @@ class HttpLibResponseProxy(object):
 
     @property
     def body(self):
+        # NOTE: We use property to avoid saving whole response body into RAM
+        # See https://github.com/apache/libcloud/pull/1132 for details
         return self._response.content

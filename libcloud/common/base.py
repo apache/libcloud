@@ -280,6 +280,8 @@ class RawResponse(Response):
 
     @property
     def body(self):
+        # Note: We use property to avoid saving whole response body into RAM
+        # See https://github.com/apache/libcloud/pull/1132 for details
         return self.response.body
 
     @property
