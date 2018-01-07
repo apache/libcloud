@@ -319,3 +319,7 @@ class HttpLibResponseProxy(object):
     def version(self):
         # requests doesn't expose this
         return '11'
+
+    @property
+    def body(self):
+        return self._response.content
