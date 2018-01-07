@@ -126,6 +126,14 @@ Storage
 - [Digital Ocean Spaces] Add support for AMS3 region (GITHUB-1142)
   [Andrew Starr-Bochicchio]
 
+- Fix a bug / regression which resulted in increased memory consumption when
+  using ``download_object`` method. This method would store whole object
+  content in memory even though there was no need for that.
+
+  This regression was introduced in 2.0.0 when we moved to using ``requests``
+  library.
+  (GITHUB-1132)
+  [Quentin Pradet]
 
 Changes in Apache Libcloud 2.2.1
 --------------------------------
