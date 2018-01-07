@@ -63,7 +63,7 @@ the legacy P12 format.
 
 2. Select the existing or newly created project and go to IAM & Admin ->
    Service Accounts -> Create service account to create a new service account.
-   Select "furnish a new private key" to create and download new private key you will
+   Select "Furnish a new private key" to create and download new private key you will
    use to authenticate.
 
    a. If you opt for the new preferred JSON format, download the file and
@@ -101,9 +101,9 @@ the legacy P12 format.
     :width: 500
 
 5. You will also need to have billing information associated and enabled for
-   that project. If billing is not yet enabled for that project, error message
-   similar to the one below will be printed when you first run the code which
-   uses GCE driver:
+   that project. If billing is not yet enabled for that project an error
+   message similar to the one below will be printed when you first run the code
+   which uses GCE driver:
 
 .. sourcecode:: python
 
