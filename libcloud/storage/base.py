@@ -643,9 +643,9 @@ class StorageDriver(BaseDriver):
     def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
         total_len = 0
         if hasattr(stream, '__next__'):
-            data = libcloud.utils.files.exhaust_iterator(iterator=stream)
-            hasher.update(b(data))
-            total_len = len(data)
+            for chunk in libcloud.utils.files.read_in_chunks(iterator=stream):
+                hasher.update(b(chunk))
+                total_len += len(chunk)
             return (hasher.hexdigest(), total_len)
         if not hasattr(stream, '__exit__'):
             for s in stream:
