@@ -142,15 +142,17 @@ class BaseStorageTests(unittest.TestCase):
         # object has when iterator has __next__ method, but instead read and calculate hash in chunks
         size = 100
 
+        self.driver1.connection = Mock()
+
+        # stream has __next__ method and next() method
         mock_read_in_chunks.return_value = 'a' * size
 
         iterator = BodyStream('a' * size)
+        self.assertTrue(hasattr(iterator, '__next__'))
+        self.assertTrue(hasattr(iterator, 'next'))
 
         upload_func = Mock()
         upload_func.return_value = True, '', size
-
-        # strict_mode is disabled, default content type should be used
-        self.driver1.connection = Mock()
 
         self.assertEqual(mock_read_in_chunks.call_count, 0)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
@@ -173,6 +175,37 @@ class BaseStorageTests(unittest.TestCase):
         self.assertEqual(headers['Content-Type'], DEFAULT_CONTENT_TYPE)
 
         self.assertEqual(mock_read_in_chunks.call_count, 1)
+        self.assertEqual(mock_exhaust_iterator.call_count, 0)
+
+        # stream has only has next() method
+        mock_read_in_chunks.return_value = 'b' * size
+
+        iterator = iter([str(v) for v in ['b' * size]])
+
+        self.assertFalse(hasattr(iterator, '__next__'))
+        self.assertTrue(hasattr(iterator, 'next'))
+
+        self.assertEqual(mock_read_in_chunks.call_count, 1)
+        self.assertEqual(mock_exhaust_iterator.call_count, 0)
+
+        result = self.driver1._upload_object(object_name='test',
+                                             content_type=None,
+                                             upload_func=upload_func,
+                                             upload_func_kwargs={},
+                                             request_path='/',
+                                             stream=iterator)
+
+        hasher = hashlib.md5()
+        hasher.update('b' * size)
+        expected_hash = hasher.hexdigest()
+
+        self.assertEqual(result['data_hash'], expected_hash)
+        self.assertEqual(result['bytes_transferred'], size)
+
+        headers = self.driver1.connection.request.call_args[-1]['headers']
+        self.assertEqual(headers['Content-Type'], DEFAULT_CONTENT_TYPE)
+
+        self.assertEqual(mock_read_in_chunks.call_count, 2)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
 
 
