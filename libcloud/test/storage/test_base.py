@@ -165,7 +165,7 @@ class BaseStorageTests(unittest.TestCase):
                                              stream=iterator)
 
         hasher = hashlib.md5()
-        hasher.update('a' * size)
+        hasher.update(b('a') * size)
         expected_hash = hasher.hexdigest()
 
         self.assertEqual(result['data_hash'], expected_hash)
@@ -196,7 +196,7 @@ class BaseStorageTests(unittest.TestCase):
                                              stream=iterator)
 
         hasher = hashlib.md5()
-        hasher.update('b' * size)
+        hasher.update(b('b') * size)
         expected_hash = hasher.hexdigest()
 
         self.assertEqual(result['data_hash'], expected_hash)
