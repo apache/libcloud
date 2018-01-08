@@ -185,7 +185,7 @@ class BaseStorageTests(unittest.TestCase):
 
         if PY2:
             self.assertFalse(hasattr(iterator, '__next__'))
-            self.assertFalse(hasattr(iterator, 'next'))
+            self.assertTrue(hasattr(iterator, 'next'))
         else:
             self.assertTrue(hasattr(iterator, '__next__'))
             self.assertFalse(hasattr(iterator, 'next'))
