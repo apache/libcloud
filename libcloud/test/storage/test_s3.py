@@ -389,14 +389,14 @@ class S3Tests(unittest.TestCase):
         self.mock_response_klass.type = None
         self.driver = self.create_driver()
 
+        self._file_path = os.path.abspath(__file__) + '.temp'
+
     def tearDown(self):
         self._remove_test_file()
 
     def _remove_test_file(self):
-        file_path = os.path.abspath(__file__) + '.temp'
-
         try:
-            os.unlink(file_path)
+            os.unlink(self._file_path)
         except OSError:
             pass
 
@@ -625,7 +625,7 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = os.path.abspath(__file__) + '.temp'
+        destination_path = self._file_path
         result = self.driver.download_object(obj=obj,
                                              destination_path=destination_path,
                                              overwrite_existing=True,
@@ -655,7 +655,7 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = os.path.abspath(__file__) + '.temp'
+        destination_path = self._file_path
         result = self.driver.download_object(obj=obj,
                                              destination_path=destination_path,
                                              overwrite_existing=False,
@@ -669,7 +669,7 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = os.path.abspath(__file__) + '.temp'
+        destination_path = self._file_path
         result = self.driver.download_object(obj=obj,
                                              destination_path=destination_path,
                                              overwrite_existing=False,

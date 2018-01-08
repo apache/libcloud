@@ -320,6 +320,9 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         super(GoogleStorageTests, self).setUp()
         self.driver_type.jsonConnectionCls.conn_class = GoogleStorageJSONMockHttp
 
+    def tearDown(self):
+        self._remove_test_file()
+
     def test_billing_not_enabled(self):
         # TODO
         pass
@@ -516,7 +519,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = os.path.abspath(__file__) + '.temp'
+        destination_path = self._file_path
         result = self.driver.download_object(obj=obj,
                                              destination_path=destination_path,
                                              overwrite_existing=True,
