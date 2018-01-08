@@ -157,7 +157,7 @@ class BaseStorageTests(unittest.TestCase):
         self.assertEqual(mock_read_in_chunks.call_count, 0)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
 
-        result = self.driver1._upload_object(object_name='test',
+        result = self.driver1._upload_object(object_name='test1',
                                              content_type=None,
                                              upload_func=upload_func,
                                              upload_func_kwargs={},
@@ -188,7 +188,7 @@ class BaseStorageTests(unittest.TestCase):
         self.assertEqual(mock_read_in_chunks.call_count, 1)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
 
-        result = self.driver1._upload_object(object_name='test',
+        result = self.driver1._upload_object(object_name='test2',
                                              content_type=None,
                                              upload_func=upload_func,
                                              upload_func_kwargs={},

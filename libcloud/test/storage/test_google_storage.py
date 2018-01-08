@@ -519,7 +519,7 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         destination_path = os.path.abspath(__file__) + '.temp'
         result = self.driver.download_object(obj=obj,
                                              destination_path=destination_path,
-                                             overwrite_existing=False,
+                                             overwrite_existing=True,
                                              delete_on_failure=True)
         self.assertTrue(result)
 
