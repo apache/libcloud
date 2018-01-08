@@ -16,7 +16,6 @@
 import copy
 import json
 import mock
-import os
 import re
 import sys
 import unittest
