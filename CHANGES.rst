@@ -135,6 +135,11 @@ Storage
   (GITHUB-1132)
   [Quentin Pradet]
 
+- Fix a regression with hash computation performance and memory usage on object
+  upload inadvertently introduced in 2.0.0 and make it more efficient.
+  (GITHUB-1135)
+  [Quentin Pradet]
+
 Changes in Apache Libcloud 2.2.1
 --------------------------------
 
