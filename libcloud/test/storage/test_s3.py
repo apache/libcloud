@@ -21,7 +21,8 @@ import sys
 from io import BytesIO
 from hashlib import sha1
 
-import mock
+from mock import Mock
+from mock import PropertyMock
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
@@ -638,15 +639,15 @@ class S3Tests(unittest.TestCase):
         # If content is consumed and response.content attribute accessed execption
         # will be thrown and test will fail
 
-        mock_response = mock.Mock(name='mock response')
+        mock_response = Mock(name='mock response')
         mock_response.headers = {}
         mock_response.status_code = 200
         msg = '"content" attribute was accessed but it shouldn\'t have been'
-        type(mock_response).content = mock.PropertyMock(name='mock content attribute',
-                                                        side_effect=Exception(msg))
+        type(mock_response).content = PropertyMock(name='mock content attribute',
+                                                   side_effect=Exception(msg))
         mock_response.iter_content.return_value = StringIO('a' * 1000)
 
-        self.driver.connection.connection.getresponse = mock.Mock()
+        self.driver.connection.connection.getresponse = Mock()
         self.driver.connection.connection.getresponse.return_value = mock_response
 
         container = Container(name='foo_bar_container', extra={},
