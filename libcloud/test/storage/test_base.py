@@ -24,6 +24,7 @@ from mock import Mock
 
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import PY2
 
 from libcloud.storage.base import StorageDriver
 from libcloud.storage.base import DEFAULT_CONTENT_TYPE
@@ -182,8 +183,15 @@ class BaseStorageTests(unittest.TestCase):
 
         iterator = iter([str(v) for v in ['b' * size]])
 
-        self.assertFalse(hasattr(iterator, '__next__'))
-        self.assertTrue(hasattr(iterator, 'next'))
+        if PY2:
+            self.assertFalse(hasattr(iterator, '__next__'))
+            self.assertFalse(hasattr(iterator, 'next'))
+        else:
+            self.assertTrue(hasattr(iterator, '__next__'))
+            self.assertFalse(hasattr(iterator, 'next'))
+
+        self.assertEqual(mock_read_in_chunks.call_count, 1)
+        self.assertEqual(mock_exhaust_iterator.call_count, 0)
 
         self.assertEqual(mock_read_in_chunks.call_count, 1)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
