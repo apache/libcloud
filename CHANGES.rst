@@ -2,7 +2,7 @@
 =========
 
 Changes in Apache Libcloud in development
-----------------------------------------
+-----------------------------------------
 
 - Drop support for Python 2.6 and Python 3.3
   They're no longer supported, and the Python ecosystem is starting to
