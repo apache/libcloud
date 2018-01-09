@@ -4146,7 +4146,7 @@ class GCENodeDriver(NodeDriver):
             preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
             use_selflinks=True, labels=None, accelerator_type=None,
-            accelerator_count=None):
+            accelerator_count=None, disk_size=None):
         """
         Create the GCE instance properties needed for instance templates.
 
@@ -4273,6 +4273,9 @@ class GCENodeDriver(NodeDriver):
                                      None.
         :type     accelerator_count: ``int`` or ``None``
 
+        :keyword  disk_size: Specify size of the boot disk.
+                             Integer in gigabytes.
+        :type     disk_size: ``int`` or ``None``
 
         :return:  A dictionary formatted for use with the GCE API.
         :rtype:   ``dict``
@@ -4304,7 +4307,8 @@ class GCENodeDriver(NodeDriver):
                 device_name, source=source, disk_type=disk_type, image=image,
                 disk_name=disk_name, usage_type='PERSISTENT',
                 mount_mode='READ_WRITE', auto_delete=disk_auto_delete,
-                is_boot=True, use_selflinks=use_selflinks)]
+                is_boot=True, use_selflinks=use_selflinks,
+                disk_size=disk_size)]
 
         # build network interfaces
         if nic_gce_struct is not None:
@@ -4426,9 +4430,10 @@ class GCENodeDriver(NodeDriver):
         if not isinstance(auto_delete, bool):
             raise ValueError("auto_delete field is not a bool.")
 
-        if disk_size is not None and not disk_size.isdigit():
+        if disk_size is not None \
+                and(not isinstance(disk_size, int)and not disk_size.isdigit()):
             raise ValueError("disk_size must be a digit, '%s' provided." %
-                             (disk_size))
+                             str(disk_size))
 
         mount_modes = ['READ_WRITE', 'READ_ONLY']
         if mount_mode not in mount_modes:
@@ -4715,7 +4720,7 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None,
-            ex_preemptible=None, ex_labels=None):
+            ex_preemptible=None, ex_labels=None, ex_disk_size=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -4858,6 +4863,10 @@ class GCENodeDriver(NodeDriver):
         :param    ex_labels: Label dict for node.
         :type     ex_labels: ``dict``
 
+        :keyword  ex_disk_size: Defines size of the boot disk.
+                                Integer in gigabytes.
+        :type     ex_disk_size: ``int`` or ``None``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
 
@@ -4910,7 +4919,8 @@ class GCENodeDriver(NodeDriver):
                       'ex_on_host_maintenance': ex_on_host_maintenance,
                       'ex_automatic_restart': ex_automatic_restart,
                       'ex_preemptible': ex_preemptible,
-                      'ex_labels': ex_labels}
+                      'ex_labels': ex_labels,
+                      'ex_disk_size': ex_disk_size}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -7825,7 +7835,8 @@ class GCENodeDriver(NodeDriver):
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_subnetwork=None, ex_labels=None,
-            ex_accelerator_type=None, ex_accelerator_count=None):
+            ex_accelerator_type=None, ex_accelerator_count=None,
+            ex_disk_size=None):
         """
         Returns a request and body to create a new node.
 
@@ -7943,6 +7954,10 @@ class GCENodeDriver(NodeDriver):
         :param  ex_subnetwork: The network to associate with the node.
         :type   ex_subnetwork: :class:`GCESubnetwork`
 
+        :keyword  ex_disk_size: Specify the size of boot disk.
+                                Integer in gigabytes.
+        :type     ex_disk_size: ``int`` or ``None``
+
         :param  ex_labels: Label dict for node.
         :type   ex_labels: ``dict`` or ``None``
 
@@ -7986,7 +8001,7 @@ class GCENodeDriver(NodeDriver):
             nic_gce_struct=ex_nic_gce_struct,
             accelerator_type=ex_accelerator_type,
             accelerator_count=ex_accelerator_count,
-            use_selflinks=use_selflinks)
+            use_selflinks=use_selflinks, disk_size=ex_disk_size)
         node_data['name'] = name
 
         request = '/zones/%s/instances' % (location.name)
@@ -8091,7 +8106,8 @@ class GCENodeDriver(NodeDriver):
             ex_automatic_restart=node_attrs['ex_automatic_restart'],
             ex_subnetwork=node_attrs['subnetwork'],
             ex_preemptible=node_attrs['ex_preemptible'],
-            ex_labels=node_attrs['ex_labels']
+            ex_labels=node_attrs['ex_labels'],
+            ex_disk_size=node_attrs['ex_disk_size']
         )
 
         try:
