@@ -1,7 +1,7 @@
 ﻿Changelog
 =========
 
-Changes in Apach Libcloud in development
+Changes in Apache Libcloud in development
 ----------------------------------------
 
 - Drop support for Python 2.6 and Python 3.3
