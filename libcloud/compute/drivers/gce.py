@@ -372,6 +372,25 @@ class GCEDiskType(UuidMixin):
             self.id, self.name, self.zone)
 
 
+class GCEAcceleratorType(UuidMixin):
+    """A GCE AcceleratorType resource."""
+
+    def __init__(self, id, name, zone, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.zone = zone
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        raise ProviderError("Can not destroy an AcceleratorType resource.")
+
+    def __repr__(self):
+        return '<GCEAcceleratorType id="%s" name="%s" zone="%s">' % (
+            self.id, self.name, self.zone)
+
+
 class GCEAddress(UuidMixin):
     """A GCE Static address."""
 
@@ -3760,7 +3779,8 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_image_family=None, ex_labels=None):
+            ex_preemptible=None, ex_image_family=None, ex_labels=None,
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Create a new node and return a node object for the node.
 
@@ -3887,6 +3907,18 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_labels: Labels dictionary for instance.
         :type     ex_labels: ``dict`` or ``None``
 
+        :keyword  ex_accelerator_type: Defines the accelerator to use with this
+                                       node. Must set 'ex_on_host_maintenance'
+                                       to 'TERMINATE'. Must include a count of
+                                       accelerators to use in
+                                       'ex_accelerator_count'.
+        :type     ex_accelerator_type: ``str`` or ``None``
+
+        :keyword  ex_accelerator_count: The number of 'ex_accelerator_type'
+                                        accelerators to attach to the node.
+        :type     ex_accelerator_count: ``int`` or ``None``
+
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -3925,6 +3957,13 @@ class GCENodeDriver(NodeDriver):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
         if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
             ex_boot_disk = self.ex_get_volume(ex_boot_disk, zone=location)
+        if ex_accelerator_type and not hasattr(ex_accelerator_type, 'name'):
+            if ex_accelerator_count is None:
+                raise ValueError("Missing accelerator count. Must specify an "
+                                 "'ex_accelerator_count' when using "
+                                 "'ex_accelerator_type'.")
+            ex_accelerator_type = self.ex_get_accelerator_type(
+                ex_accelerator_type, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -3947,7 +3986,8 @@ class GCENodeDriver(NodeDriver):
             ex_disk_auto_delete, ex_service_accounts, description,
             ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
             ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
-            ex_subnetwork, ex_labels)
+            ex_subnetwork, ex_labels, ex_accelerator_type,
+            ex_accelerator_count)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -4105,7 +4145,8 @@ class GCENodeDriver(NodeDriver):
             on_host_maintenance=None, automatic_restart=None,
             preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
-            use_selflinks=True, labels=None):
+            use_selflinks=True, labels=None, accelerator_type=None,
+            accelerator_count=None):
         """
         Create the GCE instance properties needed for instance templates.
 
@@ -4221,6 +4262,18 @@ class GCENodeDriver(NodeDriver):
         :type     labels: Labels dict for instance
         :type     labels: ``dict`` or ``None``
 
+        :keyword  accelerator_type: Support for passing in the GCE-specifc
+                                    accelerator type to request for the VM.
+        :type     accelerator_type: :class:`GCEAcceleratorType` or ``None``
+
+        :keyword  accelerator_count: Support for passing in the number of
+                                     requested 'accelerator_type' accelerators
+                                     attached to the VM. Will only pay atention
+                                     to this field if 'accelerator_type' is not
+                                     None.
+        :type     accelerator_count: ``int`` or ``None``
+
+
         :return:  A dictionary formatted for use with the GCE API.
         :rtype:   ``dict``
         """
@@ -4288,6 +4341,12 @@ class GCENodeDriver(NodeDriver):
         instance_properties[
             'serviceAccounts'] = self._build_service_accounts_gce_list(
                 service_accounts)
+
+        # build accelerators
+        if accelerator_type is not None:
+            instance_properties['guestAccelerators'] = \
+                self._format_guest_accelerators(accelerator_type,
+                                                accelerator_count)
 
         # include general properties
         if description:
@@ -6780,6 +6839,24 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_disktype(response)
 
+    def ex_get_accelerator_type(self, name, zone=None):
+        """
+        Return an AcceleratorType object based on a name and zone.
+
+        :param  name: The name of the AcceleratorType
+        :type   name: ``str``
+
+        :param  zone: The zone to search for the AcceleratorType in.
+        :type   zone: :class:`GCEZone`
+
+        :return:  An AcceleratorType object for the name
+        :rtype:   :class:`GCEAcceleratorType`
+        """
+        zone = self._set_zone(zone)
+        request = '/zones/%s/acceleratorTypes/%s' % (zone.name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_accelerator_type(response)
+
     def ex_get_address(self, name, region=None):
         """
         Return an Address object based on an address name and optional region.
@@ -7744,7 +7821,8 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_subnetwork=None, ex_labels=None):
+            ex_preemptible=None, ex_subnetwork=None, ex_labels=None,
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Returns a request and body to create a new node.
 
@@ -7865,6 +7943,14 @@ class GCENodeDriver(NodeDriver):
         :param  ex_labels: Label dict for node.
         :type   ex_labels: ``dict`` or ``None``
 
+        :param  ex_accelerator_type: The accelerator to associate with the
+                                     node.
+        :type   ex_accelerator_type: :class:`GCEAcceleratorType` or ``None``
+
+        :param  ex_accelerator_count: The number of accelerators to associate
+                                      with the node.
+        :type   ex_accelerator_count: ``int`` or ``None``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -7894,7 +7980,10 @@ class GCENodeDriver(NodeDriver):
             automatic_restart=ex_automatic_restart, preemptible=ex_preemptible,
             tags=tags, metadata=metadata, labels=ex_labels,
             description=description, disks_gce_struct=ex_disks_gce_struct,
-            nic_gce_struct=ex_nic_gce_struct, use_selflinks=use_selflinks)
+            nic_gce_struct=ex_nic_gce_struct,
+            accelerator_type=ex_accelerator_type,
+            accelerator_count=ex_accelerator_count,
+            use_selflinks=use_selflinks)
         node_data['name'] = name
 
         request = '/zones/%s/instances' % (location.name)
@@ -8130,6 +8219,33 @@ class GCENodeDriver(NodeDriver):
 
         return GCEDiskType(id=type_id, name=disktype['name'], zone=zone,
                            driver=self, extra=extra)
+
+    def _to_accelerator_type(self, accelerator_type):
+        """
+        Return an AcceleratorType object from the JSON-response dictionary.
+
+        :param  accelerator_type: The dictionary describing the
+                                  accelerator_type.
+        :type   accelerator_type: ``dict``
+
+        :return: AcceleratorType object
+        :rtype:  :class:`GCEAcceleratorType`
+        """
+        extra = {}
+
+        zone = self.ex_get_zone(accelerator_type['zone'])
+
+        extra['selfLink'] = accelerator_type.get('selfLink')
+        extra['creationTimestamp'] = accelerator_type.get('creationTimestamp')
+        extra['description'] = accelerator_type.get('description')
+        extra['maximumCardsPerInstance'] = accelerator_type.get(
+            'maximumCardsPerInstance')
+        extra['default_disk_size_gb'] = accelerator_type.get(
+            'defaultDiskSizeGb')
+        type_id = "%s:%s" % (zone.name, accelerator_type['name'])
+
+        return GCEAcceleratorType(id=type_id, name=accelerator_type['name'],
+                                  zone=zone, driver=self, extra=extra)
 
     def _to_address(self, address):
         """
@@ -8885,6 +9001,27 @@ class GCENodeDriver(NodeDriver):
                              zone=zone, target=target,
                              policy=autoscaler['autoscalingPolicy'],
                              driver=self, extra=extra)
+
+    def _format_guest_accelerators(self, accelerator_type, accelerator_count):
+        """
+        Formats a GCE-friendly guestAccelerators request. Accepts an
+        accelerator_type and accelerator_count that is wrapped up into a list
+        of dictionaries for GCE to consume for a node creation request.
+
+        :param  accelerator_type: Accelerator type to request.
+        :type   accelerator_type: :class:`GCEAcceleratorType`
+
+        :param  accelerator_count: Number of accelerators to request.
+        :type   accelerator_count: ``int``
+
+        :return: GCE-friendly guestAccelerators list of dictionaries.
+        :rtype:  ``list``
+        """
+        accelerator_type = self._get_selflink_or_name(
+            obj=accelerator_type, get_selflinks=True,
+            objname='accelerator_type')
+        return [{'acceleratorType': accelerator_type,
+                 'acceleratorCount': accelerator_count}]
 
     def _format_metadata(self, fingerprint, metadata=None):
         """
