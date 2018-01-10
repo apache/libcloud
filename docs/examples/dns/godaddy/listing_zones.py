@@ -6,5 +6,5 @@ driver = cls('customer_id', 'api_key', 'api_secret')
 
 zones = driver.list_zones()
 for zone in zones:
-    print("Domain : %s" % zone.domain)
-    print("Expires: %s" % zone.extra['expires'])
+    print("Domain : {}".format(zone.domain))
+    print("Expires: {}".format(zone.extra['expires']))
