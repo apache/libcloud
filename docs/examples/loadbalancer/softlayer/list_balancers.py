@@ -10,4 +10,4 @@ driver = cls(key=USER_NAME, secret=SECRET_KEY)
 balancers = driver.list_balancers()
 
 for balancer in balancers:
-    print('{0} {1}'.format(balancer, balancer.extra))
+    print('{} {}'.format(balancer, balancer.extra))
