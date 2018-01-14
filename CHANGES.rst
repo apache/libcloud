@@ -18,6 +18,9 @@ Common
 - Cleaned up and corrected third-party drivers documentation (GITHUB-1148)
   [Daniel Hunsaker]
 
+- Modernized a few Python examples (GITHUB-1164)
+  [Batuhan Osman Taşkaya]
+
 Compute
 ~~~~~~~
 
