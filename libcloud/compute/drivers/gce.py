@@ -7073,9 +7073,6 @@ class GCENodeDriver(NodeDriver):
         """
         region_name = None
         if name.startswith('https://'):
-            #parts = self._get_components_from_path(name)
-            #name = parts['name']
-            #region_name = parts['region']
             request = name
         else:
             if isinstance(region, GCERegion):
@@ -7095,7 +7092,6 @@ class GCENodeDriver(NodeDriver):
 
             request = '/regions/%s/subnetworks/%s' % (region_name, name)
 
-        # request = '/regions/%s/subnetworks/%s' % (region_name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_subnetwork(response)
 
