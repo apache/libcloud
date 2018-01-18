@@ -972,13 +972,13 @@ class ECSMockHttp(MockHttp):
         resp_body = self.fixtures.load('delete_security_group_by_id.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
-    def _ModifySecurityGroup(self, method, url, body, headers):
+    def _ModifySecurityGroupAttribute(self, method, url, body, headers):
         params = {'RegionId': self.test.region}
         self.assertUrlContainsQueryParams(url, params)
         resp_body = self.fixtures.load('modify_security_group_by_id.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
-    def _DescribeSecurityGroupAttributes(self, method, url, body, headers):
+    def _DescribeSecurityGroupAttribute(self, method, url, body, headers):
         params = {'RegionId': self.test.region,
                   'NicType': 'internet'}
         self.assertUrlContainsQueryParams(url, params)
