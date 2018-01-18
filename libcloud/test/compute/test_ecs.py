@@ -554,8 +554,8 @@ class ECSDriverTestCase(LibcloudTestCase):
 
     def test_ex_modify_security_group_by_id(self):
         self.sg_id = 'sg-28ou0f3xa'
-        self.sg_name = "name"
-        self.sg_description = "description"
+        self.sg_name = 'name'
+        self.sg_description = 'description'
         result = self.driver.ex_modify_security_group_by_id(
             group_id=self.sg_id, name=self.sg_name, description=self.sg_description)
         self.assertTrue(result)
