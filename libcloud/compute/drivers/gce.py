@@ -7074,7 +7074,7 @@ class GCENodeDriver(NodeDriver):
         region_name = None
         if name.startswith('https://'):
             parts = self._get_components_from_path(name)
-            name = parts['name']
+            #name = parts['name']
             region_name = parts['region']
         else:
             if isinstance(region, GCERegion):
@@ -7092,7 +7092,8 @@ class GCENodeDriver(NodeDriver):
             else:
                 region_name = region.name
 
-        request = '/regions/%s/subnetworks/%s' % (region_name, name)
+        #request = '/regions/%s/subnetworks/%s' % (region_name, name)
+        request = '%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_subnetwork(response)
 
@@ -7106,7 +7107,10 @@ class GCENodeDriver(NodeDriver):
         :return:  A Network object for the network
         :rtype:   :class:`GCENetwork`
         """
-        request = '/global/networks/%s' % (name)
+        if name.startswith('https://'):
+          request = name
+        else:
+          request = '/global/networks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_network(response)
 
