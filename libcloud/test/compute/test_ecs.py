@@ -59,6 +59,7 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.fake_location = NodeLocation(id=self.region, name=self.region,
                                           country=None, driver=self.driver)
         self.fake_instance_id = 'fake_instance_id'
+        self.fake_security_group_id = 'fake_security_group_id'
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -535,29 +536,27 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual('2015-06-26T08:35:30Z', sg.creation_time)
 
     def test_ex_join_security_group(self):
-        self.sg_id = 'sg-28ou0f3xa'
         result = self.driver.ex_join_security_group(self.fake_node,
-                                                    group_id=self.sg_id)
+                                group_id=self.fake_security_group_id)
         self.assertTrue(result)
 
     def test_ex_leave_security_group(self):
-        self.sg_id = 'sg-28ou0f3xa'
         result = self.driver.ex_leave_security_group(self.fake_node,
-                                                     group_id=self.sg_id)
+                                group_id=self.fake_security_group_id)
         self.assertTrue(result)
 
     def test_ex_delete_security_group_by_id(self):
-        self.sg_id = 'sg-28ou0f3xa'
         result = self.driver.ex_delete_security_group_by_id(
-            group_id=self.sg_id)
+                                group_id=self.fake_security_group_id)
         self.assertTrue(result)
 
     def test_ex_modify_security_group_by_id(self):
-        self.sg_id = 'sg-28ou0f3xa'
         self.sg_name = 'name'
         self.sg_description = 'description'
         result = self.driver.ex_modify_security_group_by_id(
-            group_id=self.sg_id, name=self.sg_name, description=self.sg_description)
+            group_id=self.fake_security_group_id,
+            name=self.sg_name,
+            description=self.sg_description)
         self.assertTrue(result)
 
     def test_ex_list_security_groups_with_ex_filters(self):
@@ -568,10 +567,9 @@ class ECSDriverTestCase(LibcloudTestCase):
         self.assertEqual(1, len(sgs))
 
     def test_ex_list_security_group_attributes(self):
-        self.sg_id = 'sg-28ou0f3xa'
         self.sga_nictype = 'internet'
         sgas = self.driver.ex_list_security_group_attributes(
-            group_id=self.sg_id, nic_type=self.sga_nictype)
+            group_id=self.fake_security_group_id, nic_type=self.sga_nictype)
         self.assertEqual(1, len(sgas))
         sga = sgas[0]
         self.assertEqual('ALL', sga.ip_protocol)
@@ -949,14 +947,14 @@ class ECSMockHttp(MockHttp):
 
     def _JoinSecurityGroup(self, method, url, body, headers):
         params = {'InstanceId': self.test.fake_node.id,
-                  'SecurityGroupId': self.test.sg_id}
+                  'SecurityGroupId': self.test.fake_security_group_id}
         self.assertUrlContainsQueryParams(url, params)
         body = self.fixtures.load('join_security_group_by_id.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _LeaveSecurityGroup(self, method, url, body, headers):
         params = {'InstanceId': self.test.fake_node.id,
-                  'SecurityGroupId': self.test.sg_id}
+                  'SecurityGroupId': self.test.fake_security_group_id}
         self.assertUrlContainsQueryParams(url, params)
         body = self.fixtures.load('leave_security_group_by_id.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -977,14 +975,14 @@ class ECSMockHttp(MockHttp):
 
     def _DeleteSecurityGroup(self, method, url, body, headers):
         params = {'RegionId': self.test.region,
-                  'SecurityGroupId': self.test.sg_id}
+                  'SecurityGroupId': self.test.fake_security_group_id}
         self.assertUrlContainsQueryParams(url, params)
         resp_body = self.fixtures.load('delete_security_group_by_id.xml')
         return (httplib.OK, resp_body, {}, httplib.responses[httplib.OK])
 
     def _ModifySecurityGroupAttribute(self, method, url, body, headers):
         params = {'RegionId': self.test.region,
-                  'SecurityGroupId': self.test.sg_id,
+                  'SecurityGroupId': self.test.fake_security_group_id,
                   'SecurityGroupName': self.test.sg_name,
                   'Description': self.test.sg_description}
         self.assertUrlContainsQueryParams(url, params)
@@ -993,7 +991,7 @@ class ECSMockHttp(MockHttp):
 
     def _DescribeSecurityGroupAttribute(self, method, url, body, headers):
         params = {'RegionId': self.test.region,
-                  'SecurityGroupId': self.test.sg_id,
+                  'SecurityGroupId': self.test.fake_security_group_id,
                   'NicType': self.test.sga_nictype}
         self.assertUrlContainsQueryParams(url, params)
         resp_body = self.fixtures.load('describe_security_group_attributes.xml')
