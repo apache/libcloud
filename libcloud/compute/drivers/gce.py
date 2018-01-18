@@ -7086,7 +7086,8 @@ class GCENodeDriver(NodeDriver):
             if not region_name:
                 region = self._set_region(region)
                 if not region:
-                    raise ValueError("Could not determine region for subnetwork.")
+                    raise ValueError(
+                        "Could not determine region for subnetwork.")
                 else:
                     region_name = region.name
 
@@ -7106,9 +7107,9 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCENetwork`
         """
         if name.startswith('https://'):
-          request = name
+            request = name
         else:
-          request = '/global/networks/%s' % (name)
+            request = '/global/networks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_network(response)
 
