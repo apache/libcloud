@@ -7100,7 +7100,7 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Network object based on a network name.
 
-        :param  name: The name of the network
+        :param  name: The name or URL of the network
         :type   name: ``str``
 
         :return:  A Network object for the network
