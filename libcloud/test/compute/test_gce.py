@@ -1754,7 +1754,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(network.extra['description'], 'A custom network')
         # do the same but this time with URL
         url = 'https://www.googleapis.com/compute/v1/projects/project_name/global/networks/lcnetwork'
-        network = self.driver.ex_get_network(network_name)
+        network = self.driver.ex_get_network(url)
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, '10.11.0.0/16')
         self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
