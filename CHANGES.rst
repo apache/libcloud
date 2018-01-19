@@ -123,6 +123,9 @@ Compute
 - [ECS Aliyun] Support modify_security_group_attributes (GITHUB-1157)
   [Zhang Yiming]
 
+- [GCE] Allow for use of shared network (VPC) and subnetwork (GITHUB-1165)
+  [Boris Chazalet]
+
 Storage
 ~~~~~~~
 
