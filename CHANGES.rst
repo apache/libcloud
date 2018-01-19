@@ -120,6 +120,9 @@ Compute
   (GITHUB-1156, LIBCLOUD-971)
   [Tobias Paepke]
 
+- [ECS Aliyun] Support modify_security_group_attributes (GITHUB-1157)
+  [Zhang Yiming]
+
 Storage
 ~~~~~~~
 
