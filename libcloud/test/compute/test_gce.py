@@ -556,6 +556,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         # fetch by region object
         subnetwork = self.driver.ex_get_subnetwork(name, region)
         self.assertEqual(subnetwork.name, name)
+        # do the same but this time by resource URL
+        url = 'https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112'
+        # fetch by no region
+        subnetwork = self.driver.ex_get_subnetwork(url)
+        self.assertEqual(subnetwork.name, name)
+        self.assertEqual(subnetwork.region.name, region_name)
 
     def test_ex_list_networks(self):
         networks = self.driver.ex_list_networks()
@@ -1741,6 +1747,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_get_network(self):
         network_name = 'lcnetwork'
+        network = self.driver.ex_get_network(network_name)
+        self.assertEqual(network.name, network_name)
+        self.assertEqual(network.cidr, '10.11.0.0/16')
+        self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
+        self.assertEqual(network.extra['description'], 'A custom network')
+        # do the same but this time with URL
+        url = 'https://www.googleapis.com/compute/v1/projects/project_name/global/networks/lcnetwork'
         network = self.driver.ex_get_network(network_name)
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, '10.11.0.0/16')
