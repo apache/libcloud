@@ -562,6 +562,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         subnetwork = self.driver.ex_get_subnetwork(url)
         self.assertEqual(subnetwork.name, name)
         self.assertEqual(subnetwork.region.name, region_name)
+        # test with a subnetwork that is under a different project
+        url_other = 'https://www.googleapis.com/compute/v1/projects/other_name/regions/us-central1/subnetworks/cf-972cf02e6ad49114'
+        subnetwork = self.driver.ex_get_subnetwork(url_other)
+        self.assertEqual(subnetwork.name, "cf-972cf02e6ad49114")
 
     def test_ex_list_networks(self):
         networks = self.driver.ex_list_networks()
@@ -1759,6 +1763,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(network.cidr, '10.11.0.0/16')
         self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
         self.assertEqual(network.extra['description'], 'A custom network')
+        # do the same but with a network under a different project
+        url_other = 'https://www.googleapis.com/compute/v1/projects/other_name/global/networks/lcnetwork'
+        network = self.driver.ex_get_network(url_other)
+        self.assertEqual(network.name, network_name)
+        self.assertEqual(network.cidr, '10.11.0.0/16')
+        self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
+        self.assertEqual(network.extra['description'], 'A custom network')
 
     def test_ex_get_node(self):
         node_name = 'node-name'
@@ -2575,6 +2586,24 @@ class GCEMockHttp(MockHttp):
                                                              body, headers):
         body = self.fixtures.load(
             'regions_us-central1_subnetworks_cf_972cf02e6ad49112.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_regions_us_central1(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_regions_us-central1.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_global_networks_lcnetwork(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_global_networks_lcnetwork.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_global_networks_cf(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_global_networks_cf.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_regions_us_central1_subnetworks_cf_972cf02e6ad49114(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'projects_other_name_regions_us-central1_subnetworks_cf_972cf02e6ad49114.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_lcaddress_delete(
