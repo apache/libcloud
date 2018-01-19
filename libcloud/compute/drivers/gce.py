@@ -7073,9 +7073,7 @@ class GCENodeDriver(NodeDriver):
         """
         region_name = None
         if name.startswith('https://'):
-            parts = self._get_components_from_path(name)
-            name = parts['name']
-            region_name = parts['region']
+            request = name
         else:
             if isinstance(region, GCERegion):
                 region_name = region.name
@@ -7085,14 +7083,16 @@ class GCENodeDriver(NodeDriver):
                 else:
                     region_name = region
 
-        if not region_name:
-            region = self._set_region(region)
-            if not region:
-                raise ValueError("Could not determine region for subnetwork.")
-            else:
-                region_name = region.name
+            if not region_name:
+                region = self._set_region(region)
+                if not region:
+                    raise ValueError(
+                        "Could not determine region for subnetwork.")
+                else:
+                    region_name = region.name
 
-        request = '/regions/%s/subnetworks/%s' % (region_name, name)
+            request = '/regions/%s/subnetworks/%s' % (region_name, name)
+
         response = self.connection.request(request, method='GET').object
         return self._to_subnetwork(response)
 
@@ -7100,13 +7100,16 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Network object based on a network name.
 
-        :param  name: The name of the network
+        :param  name: The name or URL of the network
         :type   name: ``str``
 
         :return:  A Network object for the network
         :rtype:   :class:`GCENetwork`
         """
-        request = '/global/networks/%s' % (name)
+        if name.startswith('https://'):
+            request = name
+        else:
+            request = '/global/networks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_network(response)
 
