@@ -126,6 +126,9 @@ Compute
 - [GCE] Allow for use of shared network (VPC) and subnetwork (GITHUB-1165)
   [Boris Chazalet]
 
+- [GCE] Add support for accelerators (LIBCLOUD-963, GITHUB-1163)
+  [Michael Johnson]
+
 Storage
 ~~~~~~~
 
