@@ -129,6 +129,10 @@ Compute
 - [GCE] Add support for accelerators (LIBCLOUD-963, GITHUB-1163)
   [Michael Johnson]
 
+- [Digital Ocean] Add support for tags in list_nodes()
+  (LIBCLOUD-967, GITHUB-1149)
+  [Mike Fischer]
+
 Storage
 ~~~~~~~
 
