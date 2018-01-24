@@ -32,6 +32,7 @@ import atexit
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node
+from libcloud.compute.base import NodeImage, NodeLocation
 from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
 
@@ -106,23 +107,144 @@ class VSphereNodeDriver(NodeDriver):
         """
         Lists locations
         """
-        return []
+        #datacenters = [dc for dc in
+        #    content.viewManager.CreateContainerView(
+        #        content.rootFolder,
+        #        [vim.Datacenter],
+        #        recursive=True
+        #    ).view
+        #]
 
-    def list_sizes(self):
+        # TODO: Clusters should be selectable as locations drs is enabled
+        # check property cluster.configuration.drsConfig.enabled
+        
+        #clusters = [dc for dc in
+        #    content.viewManager.CreateContainerView(
+        #        content.rootFolder,
+        #        [vim.ClusterComputeResource, vim.HostSystem],
+        #        recursive=True
+        #    ).view
+        #]
+
+        locations = []
+        content = self.connection.RetrieveContent()
+        hosts = content.viewManager.CreateContainerView(
+            content.rootFolder,
+            [vim.HostSystem],
+            recursive=True
+        ).view
+
+        for host in hosts:
+            locations.append(self._to_location(host))
+
+        return locations
+
+
+    def _to_location(self, data):
+        extra = {
+            "state": data.runtime.connectionState,
+            "type": data.config.product.fullName,
+            "vendor": data.hardware.systemInfo.vendor,
+            "model": data.hardware.systemInfo.model,
+            "ram": data.hardware.memorySize,
+            "cpu": {
+                "packages": data.hardware.cpuInfo.numCpuPackages,
+                "cores": data.hardware.cpuInfo.numCpuCores,
+                "threads": data.hardware.cpuInfo.numCpuThreads,
+            },
+            "uptime": data.summary.quickStats.uptime
+        }
+
+        return NodeLocation(id=data.name, name=data.name, country=None,
+                            extra=extra, driver=self)
+
+    def ex_list_networks(self):
+        """
+        List networks
+        """
+        content = self.connection.RetrieveContent()
+        networks = content.viewManager.CreateContainerView(
+            content.rootFolder,
+            [vim.Network],
+            recursive=True
+        ).view
+
+        return [self._to_network(network) for network in networks]
+
+    def _to_network(self, data):
+        summary = data.summary
+        extra = {
+            'hosts': [h.name for h in data.host],
+            'ip_pool_name': summary.ipPoolName,
+            'ip_pool_id': summary.ipPoolId,
+            'accessible': summary.accessible
+        }
+        return VSphereNetwork(id=data.name, name=data.name, extra=extra)
+
+    def list_sizes(self, location=None):
         """
         Lists sizes
         """
         return []
 
-    def list_images(self):
+    def list_images(self, location=None):
         """
-        Lists images
+        Lists VM templates as images
         """
-        return []
+
+        images = []
+        content = self.connection.RetrieveContent()
+        vms = content.viewManager.CreateContainerView(
+            content.rootFolder,
+            [vim.VirtualMachine],
+            recursive=True
+        ).view
+
+        for vm in vms:
+            if vm.config.template:
+                images.append(self._to_image(vm))
+
+        return images
+
+    def _to_image(self, data):
+        summary = data.summary
+        name = summary.config.name
+        uuid = summary.config.instanceUuid
+        memory = summary.config.memorySizeMB
+        cpus = summary.config.numCpu
+        operating_system = summary.config.guestFullName
+        os_type = 'unix'
+        if 'Microsoft' in str(operating_system):
+            os_type = 'windows'
+        annotation = summary.config.annotation
+        extra = {
+            "path": summary.config.vmPathName,
+            "operating_system": operating_system,
+            "os_type": os_type,
+            "memory_MB": memory,
+            "cpus": cpus,
+            "overallStatus": str(summary.overallStatus),
+            "metadata": {}
+        }
+
+        boot_time = summary.runtime.bootTime
+        if boot_time:
+            extra['boot_time'] = boot_time.isoformat()
+        if annotation:
+            extra['annotation'] = annotation
+
+
+        for custom_field in data.customValue:
+            key_id = custom_field.key
+            key = self.find_custom_field_key(key_id)
+            extra["metadata"][key] = custom_field.value
+
+        return NodeImage(id=uuid, name=name, driver=self,
+                         extra=extra)
 
     def list_nodes(self):
         """
-        Lists nodes
+        Lists nodes, excluding templates
         """
         nodes = []
         content = self.connection.RetrieveContent()
@@ -145,6 +267,8 @@ class VSphereNodeDriver(NodeDriver):
     def _to_nodes(self, vm_list):
         nodes = []
         for virtual_machine in vm_list:
+            if virtual_machine.config.template:
+                continue # Do not include templates in node list
             if hasattr(virtual_machine, 'childEntity'):
                 # If this is a group it will have children.
                 # If it does, recurse into them and then return
@@ -178,7 +302,7 @@ class VSphereNodeDriver(NodeDriver):
         if summary.guest is not None:
             ip_addresses.append(summary.guest.ipAddress)
 
-        overallStatus = str(summary.overallStatus)
+        overall_status = str(summary.overallStatus)
         public_ips = []
         private_ips = []
 
@@ -188,7 +312,7 @@ class VSphereNodeDriver(NodeDriver):
             "os_type": os_type,
             "memory_MB": memory,
             "cpus": cpus,
-            "overallStatus": overallStatus,
+            "overallStatus": overall_status,
             "metadata": {}
         }
 
@@ -285,3 +409,19 @@ class VSphereNodeDriver(NodeDriver):
             if k.key == key_id:
                 return k.name
         return None
+
+class VSphereNetwork(object):
+    """
+    Represents information about a VPC (Virtual Private Cloud) network
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, id, name, extra=None):
+        self.id = id
+        self.name = name
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<VSphereNetwork: id=%s, name=%s')
+                % (self.id, self.name))
