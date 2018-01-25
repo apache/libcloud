@@ -125,6 +125,9 @@ install_requires = ['requests']
 if PY2_pre_279:
     install_requires.append('backports.ssl_match_hostname')
 
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
+
 setup(
     name='apache-libcloud',
     version=read_version_string(),
@@ -141,7 +144,7 @@ setup(
     package_data={'libcloud': get_data_files('libcloud', parent='libcloud')},
     license='Apache License (2.0)',
     url='http://libcloud.apache.org/',
-    setup_requires=['pytest-runner'],
+    setup_requires=pytest_runner,
     tests_require=TEST_REQUIREMENTS,
     cmdclass={
         'apidocs': ApiDocsCommand,
@@ -164,5 +167,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy']
-    )
+        'Programming Language :: Python :: Implementation :: PyPy'
+    ]
+)
