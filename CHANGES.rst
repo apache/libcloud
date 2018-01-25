@@ -133,6 +133,9 @@ Compute
   (LIBCLOUD-967, GITHUB-1149)
   [Mike Fischer]
 
+- [CloudStack] Add change size and restore (LIBCLOUD-975, GITHUB-1166)
+  [Mauro Murari]
+
 Storage
 ~~~~~~~
 
