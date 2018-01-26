@@ -155,6 +155,18 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.ex_hard_reboot(node)
         self.assertTrue(result)
 
+    def test_ex_rebuild_node_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'REBUILD'
+        result = self.driver.ex_rebuild_node(node)
+        self.assertTrue(result)
+
+    def test_ex_resize_node_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'RESIZE'
+        result = self.driver.ex_resize_node(node, '2gb')
+        self.assertTrue(result)
+
     def test_destroy_node_success(self):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'DESTROY'
@@ -360,6 +372,18 @@ class DigitalOceanMockHttp(MockHttp):
                                                 body, headers):
         # ex_hard_reboot
         body = self.fixtures.load('ex_hard_reboot.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_droplets_3164444_actions_REBUILD(self, method, url,
+                                             body, headers):
+        # ex_rebuild_node
+        body = self.fixtures.load('ex_rebuild_node.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_droplets_3164444_actions_RESIZE(self, method, url,
+                                            body, headers):
+        # ex_resize_node
+        body = self.fixtures.load('ex_resize_node.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
 
     def _v2_account_keys(self, method, url, body, headers):
