@@ -149,6 +149,9 @@ Storage
 - [Digital Ocean Spaces] Add support for AMS3 region (GITHUB-1142)
   [Andrew Starr-Bochicchio]
 
+- [Digital Ocean Spaces] Add support for SGP1 region (GITHUB-1168)
+  [Andrew Starr-Bochicchio]
+
 - Fix a bug / regression which resulted in increased memory consumption when
   using ``download_object`` method. This method would store whole object
   content in memory even though there was no need for that.
