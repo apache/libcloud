@@ -9,6 +9,9 @@ Changes in Apache Libcloud in development
   drop support: two of our test dependencies no longer support them.
   [Quentin Pradet]
 
+- Made pytest-runner optional (GITHUB-1167)
+  [Vlad Glagolev]
+
 Common
 ~~~~~~
 
