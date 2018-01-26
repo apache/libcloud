@@ -281,12 +281,34 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         return res.status == httplib.CREATED
 
     def ex_rebuild_node(self, node):
+        """
+        Destroy and rebuild the node using its base image.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
         attr = {'type': 'rebuild', 'image': node.extra['image']['id']}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
     def ex_resize_node(self, node, size_slug):
+        """
+        Resize the node to a different machine size.  Note that some resize
+        operations are reversible, and others are irreversible.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :param size_slug: Name for the new size
+        :type node: ``str``
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
         attr = {'type': 'resize', 'size': size_slug}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
                                       data=json.dumps(attr), method='POST')
