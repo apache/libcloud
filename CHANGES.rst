@@ -125,6 +125,9 @@ Compute
 - [ProfitBricks] Update driver and add support for the new API v4. (GITHUB-1103)
   [Nurfet Becirevic]
 
+- [ProfitBricks] Fix list_snapshots() method (GITHUB-1153)
+  [Chad Phillips]
+
 - [UpCloud] New driver for UpCloud (LIBCLOUD-938, GITHUB-1102)
   [Mika Lackman, Ilari Mäkelä]
 
