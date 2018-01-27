@@ -280,6 +280,40 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
+    def ex_rebuild_node(self, node):
+        """
+        Destroy and rebuild the node using its base image.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
+        attr = {'type': 'rebuild', 'image': node.extra['image']['id']}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
+    def ex_resize_node(self, node, size):
+        """
+        Resize the node to a different machine size.  Note that some resize
+        operations are reversible, and others are irreversible.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :param size: New size for this machine
+        :type node: :class:`NodeSize`
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
+        attr = {'type': 'resize', 'size': size.name}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
     def create_key_pair(self, name, public_key=''):
         """
         Create a new SSH key.
