@@ -163,8 +163,9 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
 
     def test_ex_resize_node_success(self):
         node = self.driver.list_nodes()[0]
+        size = self.driver.list_sizes()[0]
         DigitalOceanMockHttp.type = 'RESIZE'
-        result = self.driver.ex_resize_node(node, '2gb')
+        result = self.driver.ex_resize_node(node, size)
         self.assertTrue(result)
 
     def test_destroy_node_success(self):
