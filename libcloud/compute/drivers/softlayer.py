@@ -619,6 +619,7 @@ class SoftLayerNodeDriver(NodeDriver):
             price=size['totalMinimumHourlyFee'],
             ram=None,
             disk=None,
+            extra={'cpus': size['cpus']},
             bandwidth=None,
             driver=self.connection.driver,
         )
