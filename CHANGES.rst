@@ -75,6 +75,10 @@ Compute
   (LIBCLOUD-967, GITHUB-1149)
   [Mike Fischer]
 
+- [Digital Ocean] Add rebuild and resize commands
+  (LIBCLOUD-977, GITHUB-1169)
+  [Adam Wight]
+
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
   [Anthony Monthe]
 
