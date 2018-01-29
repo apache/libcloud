@@ -242,6 +242,7 @@ class SoftLayerNodeDriver(NodeDriver):
             'password': password,
             'datacenter': host.get('datacenter', {}).get('longName', None),
             'image': image,
+            'size': host.get('typeId'),
             'hourlyRecurringFee': hourlyRecurringFee,
             'recurringFee': recurringFee,
             'recurringMonths': recurringMonths,
@@ -607,6 +608,7 @@ class SoftLayerNodeDriver(NodeDriver):
             name=size['name'],
             ram=size['ram'],
             disk=size['disk'],
+            extra={'cpus': size['cpus']},
             bandwidth=size.get('bandwidth'),
             price=None,
             driver=self.connection.driver,
@@ -619,7 +621,6 @@ class SoftLayerNodeDriver(NodeDriver):
             price=size['totalMinimumHourlyFee'],
             ram=None,
             disk=None,
-            extra={'cpus': size['cpus']},
             bandwidth=None,
             driver=self.connection.driver,
         )
@@ -627,6 +628,7 @@ class SoftLayerNodeDriver(NodeDriver):
     def list_sizes(self, location=None):
         bm_sizes = self.connection.request('SoftLayer_Hardware',
                                            'getCreateObjectOptions').object
+        # no cpus -- default to 1??
         bm_sizes = [self._to_bare_metal_size(size['preset'])
                     for size in bm_sizes['fixedConfigurationPresets']]
         cloud_sizes = [self._to_size(id, s) for id, s in SL_TEMPLATES.items()]
