@@ -66,6 +66,7 @@ class ClearCenterConnection(ConnectionKey):
         """
 
         headers['Authorization'] = 'Bearer %s' % (self.key)
+        headers['Content-Type'] = 'application/json'
         return headers
 
     # def add_default_params(self, params):
