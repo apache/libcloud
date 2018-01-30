@@ -21,7 +21,9 @@ class ClearCenterNodeDriver(NodeDriver):
     name = 'ClearCenter'
     website = 'https://www.clearcenter.com/'
 
-    def __init__(self, key=None, host='', verify=True):
+    def __init__(self, key=None,
+                 host='https://api.clearsdn.com/api/v5/devices',
+                 verify=True):
         """
         :param key: apikey
         :param url: api endpoint
