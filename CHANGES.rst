@@ -24,6 +24,10 @@ Common
 - Modernized a few Python examples (GITHUB-1164)
   [Batuhan Osman Taşkaya]
 
+- [OpenStack] Authentify with updated Identity API
+  (LIBCLOUD-965, GITHUB-1145)
+  [Miguel Caballer]
+
 Compute
 ~~~~~~~
 
