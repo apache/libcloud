@@ -134,6 +134,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                 cls = OpenStack_1_0_NodeDriver
             elif api_version == '1.1':
                 cls = OpenStack_1_1_NodeDriver
+            elif api_version in ['2.0', '2.1', '2.2']:
+                cls = OpenStack_2_NodeDriver
             else:
                 raise NotImplementedError(
                     "No OpenStackNodeDriver found for API version %s" %
@@ -1017,7 +1019,7 @@ class OpenStack_1_1_Response(OpenStackResponse):
         super(OpenStack_1_1_Response, self).__init__(*args, **kwargs)
 
 
-class OpenStackNovaNetwork(object):
+class OpenStackNetwork(object):
     """
     A Virtual Network.
     """
@@ -1033,62 +1035,6 @@ class OpenStackNovaNetwork(object):
         return '<OpenStackNetwork id="%s" name="%s" cidr="%s">' % (self.id,
                                                                    self.name,
                                                                    self.cidr,)
-
-class OpenStackNetwork(object):
-    """
-    An instance of a neutron network
-    """
-
-    def __init__(self, id, name, status=None, subnets=[], router_external=False, extra={}):
-        self.id = id
-        self.name = name
-        self.status = status
-        self.subnets = subnets
-        self.router_external = router_external
-        self.extra = extra
-
-    def __repr__(self):
-        return '<OpenStackNetwork id=%s name=%s>' % (self.id, self.name)
-
-
-class OpenStackSubnet(object):
-    """
-    An instance of a neutro subnet
-    """
-
-    def __init__(self, id, name, network_id, enable_dhcp=False, dns_nameservers=[], allocation_pools=[],
-                 gateway_ip=None, cidr=None, ip_version=4, extra={}):
-        self.id = id
-        self.name = name
-        self.network_id = network_id
-        self.enable_dhcp = enable_dhcp
-        self.dns_nameservers = dns_nameservers
-        self.allocation_pools = allocation_pools
-        self.gateway_ip = gateway_ip
-        self.cidr = cidr
-        self.ip_version = ip_version
-        self.extra = extra
-
-    def __repr__(self):
-        return '<OpenStackSubnet id=%s name=%s cidr=%s>' % (self.id, self.name, self.cidr)
-
-
-class OpenStackRouter(object):
-    """
-    An instance of a port
-    """
-
-    def __init__(self, id, name, status="ACTIVE", external_gateway_info={}, admin_state_up=False, extra={}):
-        self.id = id
-        self.name = name
-        self.status = status
-        self.external_gateway_info = external_gateway_info
-        self.external_gateway = bool(external_gateway_info)
-        self.admin_state_up = admin_state_up
-        self.extra = {}
-
-    def __repr__(self):
-        return '<OpenStackRouter id=%s name=%s external_gateway=%s>' % (self.id, self.name, self.external_gateway)
 
 
 class OpenStackSecurityGroup(object):
@@ -1244,47 +1190,6 @@ class OpenStack_1_1_Connection(OpenStackComputeConnection):
         return json.dumps(data)
 
 
-def _neutron_endpoint(func):
-    """
-    This is a hack. To change the endpoint to neutron and back to
-    compute/nova.
-    """
-
-    def neutron_connection(self):
-        if self.type == Provider.OPENSTACK:
-            self.connection.service_name = "neutron"
-            self.connection.service_type = "network"
-            self.connection.get_service_catalog()
-        elif self.type == Provider.HPCLOUD:
-            self.connection._ex_force_service_region = self.region
-            self.connection._ex_force_service_type = "network"
-            self.connection._ex_force_service_name = None
-
-    def restore_connection(self):
-        if self.type == Provider.OPENSTACK:
-            self.connection.service_name = "nova"
-            self.connection.service_type = "compute"
-            self.connection.get_service_catalog()
-        elif self.type == Provider.HPCLOUD:
-            self.connection._ex_force_service_region = ""
-            self.connection._ex_force_service_type = ""
-            self.connection._ex_force_service_name = ""
-
-
-    from functools import wraps
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        neutron_connection(args[0])
-        try:
-            re = func(*args, **kwargs)
-        finally:
-            restore_connection(args[0])
-        return re
-
-    return wrapper
-
-
 class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     """
     OpenStack node driver.
@@ -1294,8 +1199,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
     features = {"create_node": ["generates_password"]}
     _networks_url_prefix = '/os-networks'
-    _neutron_networks_url_prefix = "/v2.0/networks"
-    _neutron_subnets_url_prefix = "/v2.0/subnets"
 
     def __init__(self, *args, **kwargs):
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
@@ -1675,104 +1578,27 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         updates = {'name': potential_data['name']}
         return self._update_node(node, **updates)
 
-    def ex_rename_node(self, node, name):
-        return self.ex_update_node(node, name=name)
-
-    def _to_nova_networks(self, obj):
+    def _to_networks(self, obj):
         networks = obj['networks']
-        return [self._to_nova_network(network) for network in networks]
+        return [self._to_network(network) for network in networks]
 
-    def _to_nova_network(self, obj):
-        return OpenStackNovaNetwork(id=obj['id'],
+    def _to_network(self, obj):
+        return OpenStackNetwork(id=obj['id'],
                                 name=obj['label'],
                                 cidr=obj.get('cidr', None),
                                 driver=self)
 
-    def _to_networks(self, obj_networks):
-        networks = obj_networks['networks']
-        return [self._to_network(network) for network in networks]
-
-    def _to_network(self, obj):
-        return OpenStackNetwork(id=obj.pop('id'), name=obj.pop('name'),
-                                status=obj.pop('status'),
-                                subnets=obj.pop('subnets', []),
-                                router_external=obj.pop(
-                                    "router:external", False),
-                                extra=obj)
-
-    def _to_subnets(self, obj_subnets):
-        subnets = obj_subnets['subnets']
-        return [self._to_subnet(subnet) for subnet in subnets]
-
-    def _to_subnet(self, obj):
-        return OpenStackSubnet(id=obj.pop('id'), name=obj.pop('name'),
-                               network_id=obj.pop('network_id'),
-                               enable_dhcp=obj.pop('enable_dhcp', False),
-                               dns_nameservers=obj.pop('dns_nameservers', []),
-                               allocation_pools=obj.pop(
-                                   'allocation_pools', []),
-                               gateway_ip=obj.pop('gateway_ip', ''),
-                               cidr=obj.pop('cidr', ''),
-                               ip_version=obj.pop('ip_version', 4), extra=obj)
-
-    def _to_routers(self, obj_routers):
-        routers = obj_routers['routers']
-        return [self._to_router(router) for router in routers]
-
-    def _to_router(self, obj):
-        return OpenStackRouter(id=obj.pop('id'), name=obj.pop('name'),
-                               status=obj.pop('status'),
-                               external_gateway_info=obj.pop(
-                                   'external_gateway_info', {}),
-                               admin_state_up=obj.pop('admin_state_up', False),
-                               extra=obj)
-
-    def ex_list_nova_networks(self):
+    def ex_list_networks(self):
         """
         Get a list of Networks that are available.
 
         :rtype: ``list`` of :class:`OpenStackNetwork`
         """
+        import ipdb; ipdb.set_trace()
         response = self.connection.request(self._networks_url_prefix).object
-        return self._to_nova_networks(response)
+        return self._to_networks(response)
 
-    @_neutron_endpoint
-    def ex_list_networks(self):
-        """
-        Get a list of Networks
-
-        :rtype: ``list`` of `OpenStackNeutronNetwork`
-        """
-
-        networks = self.connection.request(
-            self._neutron_networks_url_prefix).object
-        # subnets = self.connection.request(
-        # self._neutron_subnets_url_prefix).object
-
-        return self._to_networks(networks)
-
-    @_neutron_endpoint
-    def ex_list_subnets(self, filters=None):
-        """
-        Get a list of Subnets
-        :return:
-        """
-        params = filters or {}
-
-        subnets = self.connection.request(self._neutron_subnets_url_prefix,
-                                          params=params).object
-        return self._to_subnets(subnets)
-
-    @_neutron_endpoint
-    def ex_list_routers(self):
-        """
-        List routers
-        """
-        routers = self.connection.request('/v2.0/routers', method='GET').object
-
-        return self._to_routers(routers)
-
-    def ex_create_nova_network(self, name, cidr):
+    def ex_create_network(self, name, cidr):
         """
         Create a new Network
 
@@ -1789,85 +1615,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                            method='POST', data=data).object
         return self._to_network(response['network'])
 
-    @_neutron_endpoint
-    def ex_create_network(self, name, admin_state_up=True, shared=False):
-        """
-        Create a new neutron Network
-
-        :param name: Name of the network which should be used
-        :type name: ``str``
-
-        :param admin_state_up: The administrative state of the network
-        :type admin_state_up: ``bool``
-
-        :param shared: Admin-only. Indicates whether this network is shared across all tenants.
-        :type shared: ``bool``
-
-        :param tenant_id: The ID of the tenant that owns the network.
-        :type tenant_id: ``str``
-
-        :return: :class:`OpenStackNeutronNetwork`
-        """
-
-        #
-
-        data = {
-            'network': {
-                'name': name,
-                'admin_state_up': admin_state_up,
-                'shared': shared,
-            }
-        }
-
-        response = self.connection.request(self._neutron_networks_url_prefix,
-                                           method='POST', data=data).object
-
-        return self._to_network(response['network'])
-
-    @_neutron_endpoint
-    def ex_delete_network(self, network_id):
-        """
-        Delete neutron network
-        """
-        response = self.connection.request(self._neutron_networks_url_prefix +
-                                           "/%s" % network_id, method='DELETE').object
-
-        return response
-
-    @_neutron_endpoint
-    def ex_create_subnet(self, name, network_id, cidr, allocation_pools=[], gateway_ip=None,
-                         ip_version="4", enable_dhcp=True):
-
-        data = {
-            'subnet': {
-                'name': name,
-                'network_id': network_id,
-                'ip_version': ip_version,
-                'cidr': cidr,
-                'gateway_ip': gateway_ip,
-                'allocation_pools': allocation_pools,
-                'enable_dhcp': enable_dhcp
-            }
-        }
-
-        response = self.connection.request(self._neutron_subnets_url_prefix,
-                                           method='POST', data=data).object
-
-        subnet = response['subnet']
-        return self._to_subnet(subnet)
-
-    @_neutron_endpoint
-    def ex_delete_subnet(self, subnet_id):
-        """
-        Delete neutron subnet
-        """
-
-        response = self.connection.request(self._neutron_subnets_url_prefix +
-                                           "/%s" % subnet_id, method='DELETE').object
-
-        return response
-
-    def ex_delete_nova_network(self, network):
+    def ex_delete_network(self, network):
         """
         Get a list of NodeNetorks that are available.
 
@@ -2539,19 +2287,16 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             self.connection.request('/os-floating-ip-pools').object)
 
     def _to_floating_ips(self, obj):
-        ip_elements = obj['floatingips']
+        ip_elements = obj['floating_ips']
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        return OpenStack_1_1_FloatingIpAddress(id=obj.pop('id'),
-                                               floating_ip_address=obj.pop('floating_ip_address'),
-                                               floating_network_id=obj.pop('floating_network_id'),
-                                               fixed_ip_address=obj.pop('fixed_ip_address', ''),
-                                               status=obj.pop('status', False),
-                                               port_id=obj.pop('port_id', None),
-                                               extra=obj)
+        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
+                                               ip_address=obj['ip'],
+                                               pool=None,
+                                               node_id=obj['instance_id'],
+                                               driver=self)
 
-    @_neutron_endpoint
     def ex_list_floating_ips(self):
         """
         List floating IPs
@@ -2559,18 +2304,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
         """
         return self._to_floating_ips(
-            self.connection.request('/v2.0/floatingips').object)
-
-
-    @_neutron_endpoint
-    def ex_list_ports(self):
-        """
-        List ports
-        """
-        resp = self.connection.request('/v2.0/ports', method='GET').object
-
-        return resp['ports']
-
+            self.connection.request('/os-floating-ips').object)
 
     def ex_get_floating_ip(self, ip):
         """
@@ -2582,26 +2316,34 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
         floating_ips = self.ex_list_floating_ips()
-        ip_obj = [x for x in floating_ips if x.ip_address == ip]
+        ip_obj, = [x for x in floating_ips if x.ip_address == ip]
         return ip_obj
 
-    @_neutron_endpoint
-    def ex_create_floating_ip(self, floating_network_id, port_id=None):
-        data = {
-            "floatingip":
-                {
-                    "port_id": port_id,
-                    "floating_network_id": floating_network_id
-                }
-        }
+    def ex_create_floating_ip(self, ip_pool=None):
+        """
+        Create new floating IP. The ip_pool attribute is optional only if your
+        infrastructure has only one IP pool available.
 
-        resp = self.connection.request('/v2.0/floatingips', method='POST',
-                                       data=data).object
+        :param      ip_pool: name of the floating IP pool
+        :type       ip_pool: ``str``
 
-        return self._to_floating_ip(resp['floatingip'])
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        data = {'pool': ip_pool} if ip_pool is not None else {}
+        resp = self.connection.request('/os-floating-ips',
+                                       method='POST',
+                                       data=data)
 
-    @_neutron_endpoint
-    def ex_delete_floating_ip(self, floating_ip_id):
+        data = resp.object['floating_ip']
+        id = data['id']
+        ip_address = data['ip']
+        return OpenStack_1_1_FloatingIpAddress(id=id,
+                                               ip_address=ip_address,
+                                               pool=None,
+                                               node_id=None,
+                                               driver=self)
+
+    def ex_delete_floating_ip(self, ip):
         """
         Delete specified floating IP
 
@@ -2610,37 +2352,49 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request(
-            '/v2.0/floatingips/%s' % floating_ip_id, method='DELETE')
+        resp = self.connection.request('/os-floating-ips/%s' % ip.id,
+                                       method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
-    @_neutron_endpoint
-    def ex_associate_floating_ip_to_node(self, floating_ip_id, port_id):
+    def ex_attach_floating_ip_to_node(self, node, ip):
+        """
+        Attach the floating IP to the node
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to attach
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        address = ip.ip_address if hasattr(ip, 'ip_address') else ip
         data = {
-            "floatingip":
-                {
-                "port_id": port_id
-                }
+            'addFloatingIp': {'address': address}
         }
-        resp = self.connection.request('/v2.0/floatingips/%s' % floating_ip_id,
-                                       method='PUT',
-                                       data=data).object
+        resp = self.connection.request('/servers/%s/action' % node.id,
+                                       method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
 
-        return self._to_floating_ip(resp['floatingip'])
+    def ex_detach_floating_ip_from_node(self, node, ip):
+        """
+        Detach the floating IP from the node
 
-    @_neutron_endpoint
-    def ex_disassociate_floating_ip_from_node(self, floating_ip_id):
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to remove
+        :type       ip: ``str`` or :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        address = ip.ip_address if hasattr(ip, 'ip_address') else ip
         data = {
-            "floatingip":
-                {
-                "port_id": None
-                }
+            'removeFloatingIp': {'address': address}
         }
-        resp = self.connection.request('/v2.0/floatingips/%s' % floating_ip_id,
-                                       method='PUT',
-                                       data=data).object
-
-        return self._to_floating_ip(resp['floatingip'])
+        resp = self.connection.request('/servers/%s/action' % node.id,
+                                       method='POST', data=data)
+        return resp.status == httplib.ACCEPTED
 
     def ex_get_metadata_for_node(self, node):
         """
@@ -2684,6 +2438,33 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return resp.status == httplib.ACCEPTED
 
 
+class OpenStack_2_Connection(OpenStackComputeConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
+class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
+    """
+    OpenStack node driver.
+    """
+    connectionCls = OpenStack_2_Connection
+    type = Provider.OPENSTACK
+
+    features = {"create_node": ["generates_password"]}
+    _networks_url_prefix = '/os-network'
+
+    def __init__(self, *args, **kwargs):
+        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
+                                                    None))
+        if 'ex_force_auth_version' not in kwargs:
+            kwargs['ex_force_auth_version'] = '3.x_password'
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+
+
 class OpenStack_1_1_FloatingIpPool(object):
     """
     Floating IP Pool info.
@@ -2709,7 +2490,7 @@ class OpenStack_1_1_FloatingIpPool(object):
     def _to_floating_ip(self, obj):
         return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
                                                ip_address=obj['ip'],
-                                               pool=obj['pool'],
+                                               pool=self,
                                                node_id=obj['instance_id'],
                                                driver=self.connection.driver)
 
@@ -2765,17 +2546,25 @@ class OpenStack_1_1_FloatingIpAddress(object):
     Floating IP info.
     """
 
-    def __init__(self, id, floating_ip_address, floating_network_id, fixed_ip_address="", status=False, port_id=None,
-                 extra={}):
+    def __init__(self, id, ip_address, pool, node_id=None, driver=None):
         self.id = str(id)
-        self.floating_ip_address = floating_ip_address
-        self.floating_network_id = floating_network_id
-        self.fixed_ip_address = fixed_ip_address
-        self.status = status
-        self.port_id = port_id
-        self.extra = extra
+        self.ip_address = ip_address
+        self.pool = pool
+        self.node_id = node_id
+        self.driver = driver
+
+    def delete(self):
+        """
+        Delete this floating IP
+
+        :rtype: ``bool``
+        """
+        if self.pool is not None:
+            return self.pool.delete_floating_ip(self)
+        elif self.driver is not None:
+            return self.driver.ex_delete_floating_ip(self)
 
     def __repr__(self):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
-                ' attached_to_ip=%s>'
-                % (self.id, self.floating_ip_address, self.fixed_ip_address))
+                ' pool=%s, driver=%s>'
+                % (self.id, self.ip_address, self.pool, self.driver))
