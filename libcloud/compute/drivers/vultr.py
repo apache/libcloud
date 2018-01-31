@@ -304,12 +304,7 @@ class VultrNodeDriver(NodeDriver):
         extra_keys = ['os', 'kvm_url', 'date_created',
                       'pending_charges', 'cost_per_month', 'location',
                       'vcpu_count', 'disk', 'allowed_bandwidth_gb', 'ram',
-<<<<<<< Updated upstream
-                      'default_password']
-=======
                       'default_password', 'VPSPLANID', 'DCID']
->>>>>>> Stashed changes
-
         extra = {}
         for key in extra_keys:
             if key in data:
