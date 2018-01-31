@@ -506,7 +506,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         for key in extra_keys:
             if key in data:
                 extra[key] = data[key]
-        extra['region'] = data.get('region', {}).get('name')
+        extra['region'] = data.get('region', {}).get('slug')
         node = Node(id=data['id'], name=data['name'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
                     created_at=created, driver=self, extra=extra)
