@@ -22,16 +22,17 @@ class ClearCenterNodeDriver(NodeDriver):
     website = 'https://www.clearcenter.com/'
 
     def __init__(self, key=None,
-                 host='https://api.clearsdn.com/api/v5/devices',
+                 uri='https://api.clearsdn.com',
                  verify=True):
         """
         :param key: apikey
         :param url: api endpoint
         """
 
-        if not key or not host:
-            raise Exception("Key and url not specified")
+        if not key:
+            raise Exception("Api Key not specified")
 
+        host = uri
         secure = False if host.startswith('http://') else True
         port = 80 if host.startswith('http://') else 443
 
@@ -45,7 +46,7 @@ class ClearCenterNodeDriver(NodeDriver):
         self.connectionCls.host = host
         super(ClearCenterNodeDriver, self).__init__(
                                               key=key,
-                                              url=host,
+                                              uri=uri,
                                               secure=secure)
 
         self.connection.secure = secure
@@ -59,8 +60,8 @@ class ClearCenterNodeDriver(NodeDriver):
             so.connect((host, int(port)))
             so.close()
         except:
-            raise Exception("Make sure clearcenter host is accessible and port "
-                            "%s is open" % port)
+            raise Exception("Make sure clearcenter host <%s> is accessible and port "
+                            "%s is open" % (host, port))
         # do not verify SSL certificate
         if not verify:
             self.connection.connection.ca_cert = False
