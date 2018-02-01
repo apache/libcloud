@@ -279,7 +279,7 @@ class PacketNodeDriver(NodeDriver):
             size = self._to_size(data['plan'])
             extra['plan'] = data['plan'].get('name')
         if 'facility' in data:
-            extra['facility'] = data['facility'].get('name')
+            extra['facility'] = data['facility'].get('code')
 
         for key in extra_keys:
             if key in data:
