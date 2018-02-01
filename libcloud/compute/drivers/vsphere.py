@@ -512,11 +512,6 @@ class VSphereNodeDriver(NodeDriver):
         # disk_spec.device.controllerKey = controller.key
         # devices.append(disk_spec)
 
-        if size.disk:
-            for dev in template.config.hardware.device:
-                if isinstance(dev, vim.vm.device.VirtualDisk):
-                    dev.capacityInKB = int(size.disk) * 1024 * 1024
-
         vmconf = vim.vm.ConfigSpec(
             numCPUs=int(size.extra.get('cpu', 1)),
             memoryMB=long(size.ram),
@@ -564,10 +559,15 @@ class VSphereNodeDriver(NodeDriver):
         )
 
         result = self.wait_for_task(task)
+
+        if task.info.state == 'error':
+            raise Exception(task.info.error.reason)
+
         node = self._to_node(result)
 
         if network:
             self.ex_connect_network(result, network)
+
         return node
 
     def ex_connect_network(self, vm, network_name):
