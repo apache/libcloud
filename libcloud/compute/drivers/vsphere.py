@@ -20,6 +20,8 @@ Code inspired by https://github.com/vmware/pyvmomi-community-samples
 Author: Markos Gogoulos -  mgogoulos@mist.io
 """
 
+import time
+
 try:
     from pyVim import connect
     from pyVmomi import vim
@@ -31,7 +33,7 @@ import atexit
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import Node
+from libcloud.compute.base import Node, NodeSize
 from libcloud.compute.base import NodeImage, NodeLocation
 from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
@@ -115,9 +117,9 @@ class VSphereNodeDriver(NodeDriver):
         #    ).view
         #]
 
-        # TODO: Clusters should be selectable as locations drs is enabled
+        # TODO: Clusters should be selectable as locations if drs is enabled
         # check property cluster.configuration.drsConfig.enabled
-        
+
         #clusters = [dc for dc in
         #    content.viewManager.CreateContainerView(
         #        content.rootFolder,
@@ -138,7 +140,6 @@ class VSphereNodeDriver(NodeDriver):
             locations.append(self._to_location(host))
 
         return locations
-
 
     def _to_location(self, data):
         extra = {
@@ -181,9 +182,9 @@ class VSphereNodeDriver(NodeDriver):
         }
         return VSphereNetwork(id=data.name, name=data.name, extra=extra)
 
-    def list_sizes(self, location=None):
+    def list_sizes(self):
         """
-        Lists sizes
+        Returns sizes
         """
         return []
 
@@ -345,7 +346,7 @@ class VSphereNodeDriver(NodeDriver):
     def reboot_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.RebootGuest()
         except:
@@ -355,7 +356,7 @@ class VSphereNodeDriver(NodeDriver):
     def destroy_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.PowerOff()
         except:
@@ -369,7 +370,7 @@ class VSphereNodeDriver(NodeDriver):
     def ex_stop_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.PowerOff()
         except:
@@ -379,18 +380,18 @@ class VSphereNodeDriver(NodeDriver):
     def ex_start_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.PowerOn()
         except:
             pass
         return True
 
-    def find_by_uuid(self, node):
+    def find_by_uuid(self, node_uuid):
         """Searches VMs for a given uuid
         returns pyVmomi.VmomiSupport.vim.VirtualMachine
         """
-        vm = self.connection.content.searchIndex.FindByUuid(None, node.id,
+        vm = self.connection.content.searchIndex.FindByUuid(None, node_uuid,
                                                             True, True)
         if not vm:
             raise Exception("Unable to locate VirtualMachine.")
@@ -409,6 +410,191 @@ class VSphereNodeDriver(NodeDriver):
             if k.key == key_id:
                 return k.name
         return None
+
+    def get_obj(self, vimtype, name):
+        """
+        Return an object by name, if name is None the
+        first found object is returned
+        """
+        obj = None
+        content = self.connection.RetrieveContent()
+        container = content.viewManager.CreateContainerView(
+            content.rootFolder, vimtype, True)
+        for c in container.view:
+            if name:
+                if c.name == name:
+                    obj = c
+                    break
+            else:
+                obj = c
+                break
+
+        return obj
+
+    def wait_for_task(self, task, timeout=1800, interval=10):
+        """ wait for a vCenter task to finish """
+        start_time = time.time()
+        task_done = False
+        while not task_done:
+            if (time.time() - start_time >= timeout):
+                raise Exception('Timeout while waiting '
+                                'for import task Id %s'
+                                % task.info.id)
+            if task.info.state == 'success':
+                return task.info.result
+
+            if task.info.state == 'error':
+                print "there was an error"
+                task_done = True
+            time.sleep(interval)
+
+    def create_node(self, **kwargs):
+        """
+        Creates and returns node.
+
+        :keyword    ex_network: Name of a "Network" to connect the VM to ",
+        :type       ex_network: ``str``
+
+        """
+        name = kwargs['name']
+        image = kwargs['image']
+        size = kwargs['size']
+        network = kwargs.get('ex_network')
+
+        template = self.find_by_uuid(image.id)
+
+        datacenter = self.get_obj([vim.Datacenter], kwargs.get('datacenter'))
+
+        if kwargs.get('folder'):
+            folder = self.get_obj([vim.Folder], kwargs.get('folder'))
+        else:
+            folder = datacenter.vmFolder
+
+        cluster = self.get_obj([vim.ClusterComputeResource], kwargs.get('cluster'))
+
+        if kwargs.get('resource_pool'):
+            resource_pool = self.get_obj([vim.ResourcePool], kwargs.get('resource_pool'))
+        else:
+            resource_pool = cluster.resourcePool
+
+        if kwargs.get('datastore'):
+            datastore = self.get_obj([vim.Datastore], kwargs.get('datastore'))
+        else:
+            datastore = self.get_obj([vim.Datastore], template.datastore[0].info.name)
+
+        devices = []
+
+        if network:
+            nicspec = vim.vm.device.VirtualDeviceSpec()
+            nicspec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+            nicspec.device = vim.vm.device.VirtualVmxnet3()
+            nicspec.device.wakeOnLanEnabled = True
+            nicspec.device.deviceInfo = vim.Description()
+            nicspec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+            nicspec.device.backing.network = self.get_obj([vim.Network], network)
+            nicspec.device.backing.deviceName = network
+            nicspec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            nicspec.device.connectable.startConnected = True
+            nicspec.device.connectable.allowGuestControl = True
+            devices.append(nicspec)
+
+        # new_disk_kb = int(size.disk) * 1024 * 1024
+        # disk_spec = vim.vm.device.VirtualDeviceSpec()
+        # disk_spec.fileOperation = "create"
+        # disk_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+        # disk_spec.device = vim.vm.device.VirtualDisk()
+        # disk_spec.device.backing = \
+        #     vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+        # if size.extra.get('disk_type') == 'thin':
+        #     disk_spec.device.backing.thinProvisioned = True
+        # disk_spec.device.backing.diskMode = 'persistent'
+        # disk_spec.device.capacityInKB = new_disk_kb
+        # disk_spec.device.controllerKey = controller.key
+        # devices.append(disk_spec)
+
+        if size.disk:
+            for dev in template.config.hardware.device:
+                if isinstance(dev, vim.vm.device.VirtualDisk):
+                    dev.capacityInKB = int(size.disk) * 1024 * 1024
+
+        vmconf = vim.vm.ConfigSpec(
+            numCPUs=int(size.extra.get('cpu', 1)),
+            memoryMB=long(size.ram),
+            deviceChange=devices
+        )
+
+        if kwargs.get('datastore_cluster'):
+            podsel = vim.storageDrs.PodSelectionSpec()
+            pod = self.get_obj([vim.StoragePod], kwargs.get('datastore_cluster'))
+            podsel.storagePod = pod
+            storagespec = vim.storageDrs.StoragePlacementSpec()
+            storagespec.podSelectionSpec = podsel
+            storagespec.type = 'create'
+            storagespec.folder = folder
+            storagespec.resourcePool = resource_pool
+            storagespec.configSpec = vmconf
+
+            try:
+                content = self.connection.RetrieveContent()
+                rec = content.storageResourceManager.RecommendDatastores(
+                    storageSpec=storagespec)
+                rec_action = rec.recommendations[0].action[0]
+                real_datastore_name = rec_action.destination.name
+            except:
+                real_datastore_name = template.datastore[0].info.name
+
+            datastore = self.get_obj([vim.Datastore], real_datastore_name)
+
+        clonespec = vim.vm.CloneSpec(config=vmconf)
+        relospec = vim.vm.RelocateSpec()
+        relospec.datastore = datastore
+        relospec.pool = resource_pool
+        if 'location' in kwargs:
+            location = kwargs.get('location')
+            host = self.get_obj([vim.HostSystem], location.name)
+            if host:
+                relospec.host = host
+        clonespec.location = relospec
+        clonespec.powerOn = True
+
+        task = template.Clone(
+            folder=folder,
+            name=name,
+            spec=clonespec
+        )
+
+        result = self.wait_for_task(task)
+        node = self._to_node(result)
+
+        if network:
+            self.ex_connect_network(result, network)
+        return node
+
+    def ex_connect_network(self, vm, network_name):
+        spec = vim.vm.ConfigSpec()
+
+        # add Switch here
+        dev_changes = []
+        network_spec = vim.vm.device.VirtualDeviceSpec()
+        network_spec.fileOperation = "create"
+        network_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+        network_spec.device = vim.vm.device.VirtualVmxnet3()
+
+        network_spec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+
+        network_spec.device.backing.useAutoDetect = False
+        network_spec.device.backing.network = self.get_obj([vim.Network], network_name)
+
+        network_spec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        network_spec.device.connectable.startConnected = True
+        network_spec.device.connectable.connected = True
+
+        dev_changes.append(network_spec)
+
+        spec.deviceChange = dev_changes
+        output = vm.ReconfigVM_Task(spec=spec)
+        print output.info
+
 
 class VSphereNetwork(object):
     """
