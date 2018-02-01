@@ -240,7 +240,7 @@ class SoftLayerNodeDriver(NodeDriver):
             'hostname': host['hostname'],
             'fullyQualifiedDomainName': host['fullyQualifiedDomainName'],
             'password': password,
-            'datacenter': host.get('datacenter', {}).get('longName', None),
+            'datacenter': host.get('datacenter', {}).get('name', None),
             'image': image,
             'hourlyRecurringFee': hourlyRecurringFee,
             'recurringFee': recurringFee,
