@@ -855,17 +855,54 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.extra['guestOsFeatures'], expected_features)
 
     def test_ex_create_firewall(self):
-        firewall_name = 'lcfirewall'
+        name = 'lcfirewall'
         priority = 900
+        description = "Libcloud Test Firewall"
         allowed = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
-        source_tags = ['libcloud']
+        source_service_accounts = ['lcsource@gserviceaccount.com']
         target_tags = ['libcloud']
-        firewall = self.driver.ex_create_firewall(firewall_name, allowed,
-                                                  priority=priority,
-                                                  target_tags=target_tags,
-                                                  source_tags=source_tags)
+        network = 'default'
+        firewall = self.driver.ex_create_firewall(
+                            name, allowed, description=description,
+                            network=network, priority=priority,
+                            target_tags=target_tags,
+                            source_service_accounts=source_service_accounts)
         self.assertTrue(isinstance(firewall, GCEFirewall))
-        self.assertEqual(firewall.name, firewall_name)
+        self.assertEqual(firewall.name, name)
+
+    def test_ex_create_firewall_egress(self):
+        name = 'lcfirewall-egress'
+        priority = 900
+        direction = 'EGRESS'
+        description = "Libcloud Egress Firewall"
+        allowed = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
+        target_service_accounts = ['lctarget@gserviceaccount.com']
+        target_ranges = ['8.8.8.8/32']
+        network = 'default'
+        firewall = self.driver.ex_create_firewall(
+                            name, allowed,
+                            description=description, network=network,
+                            priority=priority, direction=direction,
+                            target_ranges=target_ranges,
+                            target_service_accounts=target_service_accounts)
+        self.assertTrue(isinstance(firewall, GCEFirewall))
+        self.assertEqual(firewall.name, name)
+
+    def test_ex_create_firewall_deny(self):
+        name = 'lcfirewall-deny'
+        priority = 900
+        denied = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
+        description = "Libcloud Deny Firewall"
+        source_ranges = ['10.240.100.0/24']
+        source_tags = ['libcloud']
+        network = 'default'
+        firewall = self.driver.ex_create_firewall(
+                             name, denied=denied,
+                             description=description, network=network,
+                             priority=priority, source_tags=source_tags,
+                             source_ranges=source_ranges)
+        self.assertTrue(isinstance(firewall, GCEFirewall))
+        self.assertEqual(firewall.name, name)
 
     def test_ex_create_forwarding_rule(self):
         fwr_name = 'lcforwardingrule'
@@ -1447,7 +1484,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         firewall_name = 'lcfirewall'
         firewall = self.driver.ex_get_firewall(firewall_name)
         firewall.source_ranges = ['10.0.0.0/16']
-        firewall.target_service_accounts = ['libcloud@apache.com']
+        firewall.description = "LCFirewall-2"
         firewall2 = self.driver.ex_update_firewall(firewall)
         self.assertTrue(isinstance(firewall2, GCEFirewall))
 
@@ -1713,7 +1750,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         firewall = self.driver.ex_get_firewall(firewall_name)
         self.assertEqual(firewall.name, firewall_name)
         self.assertEqual(firewall.network.name, 'default')
-        self.assertEqual(firewall.source_tags, ['libcloud'])
+        self.assertEqual(firewall.target_tags, ['libcloud'])
 
     def test_ex_get_forwarding_rule(self):
         fwr_name = 'lcforwardingrule'
@@ -2356,6 +2393,14 @@ class GCEMockHttp(MockHttp):
             body = self.fixtures.load('global_firewalls_lcfirewall_put.json')
         else:
             body = self.fixtures.load('global_firewalls_lcfirewall.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_firewalls_lcfirewall_egress(self, method, url, body, headers):
+        body = self.fixtures.load('global_firewalls_lcfirewall-egress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_firewalls_lcfirewall_deny(self, method, url, body, headers):
+        body = self.fixtures.load('global_firewalls_lcfirewall-deny.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _global_images(self, method, url, body, headers):
