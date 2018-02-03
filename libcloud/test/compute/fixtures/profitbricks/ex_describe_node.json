@@ -1,0 +1,111 @@
+{
+    "id": "srv-1",
+    "type": "server",
+    "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1",
+    "metadata": {
+        "createdDate": "2016-10-18T07:28:05Z",
+        "createdBy": "test@test.test",
+        "etag": "e7cf186125f51f3d9511754a40dcd12c",
+        "lastModifiedDate": "2016-10-18T07:28:05Z",
+        "lastModifiedBy": "test@test.test",
+        "state": "AVAILABLE"
+    },
+    "properties": {
+        "name": "libcloud Test",
+        "cores": 1,
+        "ram": 1024,
+        "availabilityZone": "ZONE_1",
+        "vmState": "RUNNING",
+        "bootCdrom": null,
+        "bootVolume": {
+            "id": "bvol-1",
+            "type": "volume",
+            "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1",
+            "metadata": {
+                "createdDate": "2016-10-18T07:20:41Z",
+                "createdBy": "test@test.test",
+                "etag": "33f6b8d506e7ad756e8554b915f29c61",
+                "lastModifiedDate": "2016-10-18T07:20:41Z",
+                "lastModifiedBy": "test@test.test",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "libcloud Test",
+                "type": "HDD",
+                "size": 2,
+                "image": "bvol-img",
+                "imagePassword": null,
+                "bus": "VIRTIO",
+                "licenceType": "LINUX",
+                "cpuHotPlug": true,
+                "cpuHotUnplug": false,
+                "ramHotPlug": true,
+                "ramHotUnplug": false,
+                "nicHotPlug": true,
+                "nicHotUnplug": true,
+                "discVirtioHotPlug": true,
+                "discVirtioHotUnplug": true,
+                "discScsiHotPlug": false,
+                "discScsiHotUnplug": false,
+                "deviceNumber": 1
+            }
+        },
+        "cpuFamily": "AMD_OPTERON"
+    },
+    "entities": {
+        "cdroms": {
+            "id": "srv-1/cdroms",
+            "type": "collection",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/cdroms",
+            "items": []
+        },
+        "volumes": {
+            "id": "srv-1/volumes",
+            "type": "collection",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/volumes",
+            "items": [
+                {
+                    "id": "bvol-1",
+                    "type": "volume",
+                    "href": "/cloudapi/v4/datacenters/dc-1/volumes/bvol-1",
+                    "metadata": {
+                        "createdDate": "2016-10-18T07:20:41Z",
+                        "createdBy": "test@test.test",
+                        "etag": "33f6b8d506e7ad756e8554b915f29c61",
+                        "lastModifiedDate": "2016-10-18T07:20:41Z",
+                        "lastModifiedBy": "test@test.test",
+                        "state": "AVAILABLE"
+                    },
+                    "properties": {
+                        "name": "libcloud Test",
+                        "type": "HDD",
+                        "size": 2,
+                        "availabilityZone": "AUTO",
+                        "image": "bvol-img",
+                        "imagePassword": null,
+                        "sshKeys": null,
+                        "bus": "VIRTIO",
+                        "licenceType": "LINUX",
+                        "cpuHotPlug": true,
+                        "cpuHotUnplug": false,
+                        "ramHotPlug": true,
+                        "ramHotUnplug": false,
+                        "nicHotPlug": true,
+                        "nicHotUnplug": true,
+                        "discVirtioHotPlug": true,
+                        "discVirtioHotUnplug": true,
+                        "discScsiHotPlug": false,
+                        "discScsiHotUnplug": false,
+                        "deviceNumber": 1
+                    }
+                }
+            ]
+        },
+        "nics": {
+            "id": "srv-1/nics",
+            "type": "collection",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/srv-1/nics",
+            "items": []
+        }
+    }
+}

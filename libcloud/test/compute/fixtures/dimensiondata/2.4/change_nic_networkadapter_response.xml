@@ -1,0 +1,7 @@
+<response requestId="na/2014-04-14T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e"
+xmlns="urn:didata.com:api:cloud:types">
+  <operation>CHANGE_NETWORK_ADAPTER</operation>
+  <responseCode>IN_PROGRESS</responseCode>
+  <message>Request to Change Network Adapter for NIC with Id has been
+accepted and is being processed.</message>
+</response>

@@ -25,11 +25,7 @@ try:
 except ImportError:
     import json
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
@@ -134,6 +130,7 @@ class AWSGenericResponse(AWSBaseResponse):
 
 
 class AWSTokenConnection(ConnectionUserAndKey):
+
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, url=None, timeout=None, proxy_url=None,
                  token=None, retry_delay=None, backoff=None):
@@ -322,9 +319,11 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
     def _get_payload_hash(self, method, data=None):
         if method in ('POST', 'PUT'):
             if data:
+                if hasattr(data, 'next') or hasattr(data, '__next__'):
+                    # File upload; don't try to read the entire payload
+                    return UNSIGNED_PAYLOAD
                 return _hash(data)
             else:
-                # When upload file, we can't know payload here even if given
                 return UNSIGNED_PAYLOAD
         else:
             return _hash('')

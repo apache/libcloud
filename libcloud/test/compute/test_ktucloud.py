@@ -27,7 +27,7 @@ except ImportError:
 
 from libcloud.compute.drivers.ktucloud import KTUCloudNodeDriver
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
@@ -35,8 +35,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        KTUCloudNodeDriver.connectionCls.conn_classes = \
-            (None, KTUCloudStackMockHttp)
+        KTUCloudNodeDriver.connectionCls.conn_class = KTUCloudStackMockHttp
         self.driver = KTUCloudNodeDriver('apikey', 'secret',
                                          path='/test/path',
                                          host='api.dummy.com')
@@ -91,7 +90,7 @@ class KTUCloudNodeDriverTest(unittest.TestCase, TestCaseMixin):
         self.assertTrue(check)
 
 
-class KTUCloudStackMockHttp(MockHttpTestCase):
+class KTUCloudStackMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('ktucloud')
     fixture_tag = 'default'
 
@@ -120,12 +119,12 @@ class KTUCloudStackMockHttp(MockHttpTestCase):
         else:
             fixture = command + '_' + self.fixture_tag + '.json'
             body, obj = self._load_fixture(fixture)
-            return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _cmd_queryAsyncJobResult(self, jobid):
         fixture = 'queryAsyncJobResult' + '_' + str(jobid) + '.json'
         body, obj = self._load_fixture(fixture)
-        return (httplib.OK, body, obj, httplib.responses[httplib.OK])
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

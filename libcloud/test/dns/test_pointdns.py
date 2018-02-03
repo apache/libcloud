@@ -30,8 +30,7 @@ from libcloud.test.secrets import DNS_PARAMS_POINTDNS
 
 class PointDNSTests(unittest.TestCase):
     def setUp(self):
-        PointDNSDriver.connectionCls.conn_classes = (
-            None, PointDNSMockHttp)
+        PointDNSDriver.connectionCls.conn_class = PointDNSMockHttp
         PointDNSMockHttp.type = None
         self.driver = PointDNSDriver(*DNS_PARAMS_POINTDNS)
 

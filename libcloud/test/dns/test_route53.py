@@ -28,8 +28,7 @@ from libcloud.test.secrets import DNS_PARAMS_ROUTE53
 
 class Route53Tests(unittest.TestCase):
     def setUp(self):
-        Route53DNSDriver.connectionCls.conn_classes = (
-            Route53MockHttp, Route53MockHttp)
+        Route53DNSDriver.connectionCls.conn_class = Route53MockHttp
         Route53MockHttp.type = None
         self.driver = Route53DNSDriver(*DNS_PARAMS_ROUTE53)
 
@@ -168,6 +167,81 @@ class Route53Tests(unittest.TestCase):
         self.assertEqual(record.zone, zone)
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '127.0.0.1')
+
+    def test_create_TXT_record(self):
+        """
+        Check that TXT records are created in quotes
+        """
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.TXT, data='test'
+        )
+        self.assertEqual(record.id, 'TXT:')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.TXT)
+        self.assertEqual(record.data, '"test"')
+
+    def test_create_TXT_record_quoted(self):
+        """
+        Check that TXT values already quoted are not changed
+        """
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.TXT, data='"test"'
+        )
+        self.assertEqual(record.id, 'TXT:')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.TXT)
+        self.assertEqual(record.data, '"test"')
+
+    def test_create_SPF_record(self):
+        """
+        Check that SPF records are created in quotes
+        """
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.SPF, data='test'
+        )
+        self.assertEqual(record.id, 'SPF:')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.SPF)
+        self.assertEqual(record.data, '"test"')
+
+    def test_create_SPF_record_quoted(self):
+        """
+        Check that SPF values already quoted are not changed
+        """
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.SPF, data='"test"'
+        )
+        self.assertEqual(record.id, 'SPF:')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.SPF)
+        self.assertEqual(record.data, '"test"')
+
+    def test_create_TXT_record_escaped(self):
+        """
+        Check that TXT record with quotes inside are escaped correctly
+        """
+        zone = self.driver.list_zones()[0]
+        record = self.driver.create_record(
+            name='', zone=zone,
+            type=RecordType.TXT, data='test "with"'
+        )
+        self.assertEqual(record.id, 'TXT:')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.zone, zone)
+        self.assertEqual(record.type, RecordType.TXT)
+        self.assertEqual(record.data, '"test \"with\""')
 
     def test_create_multi_value_record(self):
         zone = self.driver.list_zones()[0]

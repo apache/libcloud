@@ -250,6 +250,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
+    def ex_enable_ipv6(self, node):
+        attr = {'type': 'enable_ipv6'}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
     def ex_rename_node(self, node, name):
         attr = {'type': 'rename', 'name': name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
@@ -270,6 +276,40 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
     def ex_power_on_node(self, node):
         attr = {'type': 'power_on'}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
+    def ex_rebuild_node(self, node):
+        """
+        Destroy and rebuild the node using its base image.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
+        attr = {'type': 'rebuild', 'image': node.extra['image']['id']}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
+    def ex_resize_node(self, node, size):
+        """
+        Resize the node to a different machine size.  Note that some resize
+        operations are reversible, and others are irreversible.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :param size: New size for this machine
+        :type node: :class:`NodeSize`
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
+        attr = {'type': 'resize', 'size': size.name}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
@@ -456,7 +496,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
-                      'kernel', 'backup_ids', 'snapshot_ids', 'features']
+                      'kernel', 'backup_ids', 'snapshot_ids', 'features',
+                      'tags']
         if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
         else:
@@ -509,7 +550,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
     def _to_size(self, data):
         extra = {'vcpus': data['vcpus'],
-                 'regions': data['regions']}
+                 'regions': data['regions'],
+                 'price_monthly': data['price_monthly']}
         return NodeSize(id=data['slug'], name=data['slug'], ram=data['memory'],
                         disk=data['disk'], bandwidth=data['transfer'],
                         price=data['price_hourly'], driver=self, extra=extra)

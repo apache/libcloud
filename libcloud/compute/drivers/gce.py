@@ -69,9 +69,10 @@ class GCEConnection(GoogleBaseConnection):
     """
     Connection class for the GCE driver.
 
-    GCEConnection extends :class:`google.GoogleBaseConnection` for 2 reasons:
+    GCEConnection extends :class:`google.GoogleBaseConnection` for 3 reasons:
       1. modify request_path for GCE URI.
       2. Implement gce_params functionality described below.
+      3. Add request_aggregated_items method for making aggregated API calls.
 
     If the parameter gce_params is set to a dict prior to calling request(),
     the URL parameters will be updated to include those key/values FOR A
@@ -129,6 +130,80 @@ class GCEConnection(GoogleBaseConnection):
             self.gce_params = None
 
         return response
+
+    def request_aggregated_items(self, api_name):
+        """
+        Perform request(s) to obtain all results from 'api_name'.
+
+        This method will make requests to the aggregated 'api_name' until
+        all results are received.  It will then, through a helper function,
+        combine all results and return a single 'items' dictionary.
+
+        :param    api_name: Name of API to call. Consult API docs
+                  for valid names.
+        :type     api_name: ``str``
+
+        :return:  dict in the format of the API response.
+                  format: { 'items': {'key': {api_name: []}} }
+                  ex: { 'items': {'zones/us-central1-a': {disks: []}} }
+        :rtype:   ``dict``
+        """
+        request_path = "/aggregated/%s" % api_name
+        api_responses = []
+
+        params = {'maxResults': 500}
+        more_results = True
+        while more_results:
+            self.gce_params = params
+            response = self.request(request_path, method='GET').object
+            if 'items' in response:
+                api_responses.append(response)
+            more_results = 'pageToken' in params
+        return self._merge_response_items(api_name, api_responses)
+
+    def _merge_response_items(self, list_name, response_list):
+        """
+        Take a list of API responses ("item"-portion only) and combine them.
+
+        Helper function to combine multiple aggegrated responses into a single
+        dictionary that resembles an API response.
+
+        Note: keys that don't have a 'list_name" key (including warnings)
+        are omitted.
+
+        :param   list_name: Name of list in dict.  Practically, this is
+                          the name of the API called (e.g. 'disks').
+        :type    list_name: ``str``
+
+        :param   response_list: list of API responses (e.g. resp['items']).
+                                Each entry in the list is the result of a
+                                single API call.  Expected format is:
+                                [ { items: {
+                                             key1: { api_name:[]},
+                                             key2: { api_name:[]}
+                                           }}, ... ]
+        :type    response_list: ``dict``
+
+        :return: dict in the format of:
+                 { items: {key: {api_name:[]}, key2: {api_name:[]}} }
+                 ex: { items: {
+                         'us-east1-a': {'disks': []},
+                         'us-east1-b': {'disks': []}
+                         }}
+        :rtype:  ``dict``
+        """
+        merged_items = {}
+        for resp in response_list:
+            if 'items' in resp:
+                # example k would be a zone or region name
+                # example v would be { "disks" : [], "otherkey" : "..." }
+                for k, v in resp['items'].items():
+                    if list_name in v:
+                        merged_items.setdefault(k, {}).setdefault(
+                            list_name, [])
+                        # Combine the list with the existing list.
+                        merged_items[k][list_name] += v[list_name]
+        return {'items': merged_items}
 
 
 class GCEList(object):
@@ -250,13 +325,19 @@ class GCELicense(UuidMixin, LazyObject):
         # connection thread-safe? Saving, modifying, and restoring
         # driver.connection.request_path is really hacky and thread-unsafe.
         saved_request_path = self.driver.connection.request_path
-        new_request_path = saved_request_path.replace(self.driver.project,
-                                                      self.project)
-        self.driver.connection.request_path = new_request_path
+        try:
+            new_request_path = saved_request_path.replace(self.driver.project,
+                                                          self.project)
+            self.driver.connection.request_path = new_request_path
 
-        request = '/global/licenses/%s' % self.name
-        response = self.driver.connection.request(request, method='GET').object
-        self.driver.connection.request_path = saved_request_path
+            request = '/global/licenses/%s' % self.name
+            response = self.driver.connection.request(request,
+                                                      method='GET').object
+        except:
+            raise
+        finally:
+            # Restore the connection request_path
+            self.driver.connection.request_path = saved_request_path
 
         self.extra = {
             'selfLink': response.get('selfLink'),
@@ -288,6 +369,25 @@ class GCEDiskType(UuidMixin):
 
     def __repr__(self):
         return '<GCEDiskType id="%s" name="%s" zone="%s">' % (
+            self.id, self.name, self.zone)
+
+
+class GCEAcceleratorType(UuidMixin):
+    """A GCE AcceleratorType resource."""
+
+    def __init__(self, id, name, zone, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.zone = zone
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        raise ProviderError("Can not destroy an AcceleratorType resource.")
+
+    def __repr__(self):
+        return '<GCEAcceleratorType id="%s" name="%s" zone="%s">' % (
             self.id, self.name, self.zone)
 
 
@@ -1206,7 +1306,7 @@ class GCEInstanceGroupManager(UuidMixin):
         :type   id: ``str``
 
         :param  name: The name of this Instance Group.
-        :type   size: ``str``
+        :type   name: ``str``
 
         :param  zone: Zone in witch the Instance Group belongs
         :type   zone: :class: ``GCEZone``
@@ -1289,6 +1389,25 @@ class GCEInstanceGroupManager(UuidMixin):
         """
         return self.driver.ex_instancegroupmanager_recreate_instances(
             manager=self)
+
+    def delete_instances(self, node_list):
+        """
+        Removes one or more instances from the specified instance group,
+        and delete those instances.
+
+        Scopes needed - one of the following:
+        * https://www.googleapis.com/auth/cloud-platform
+        * https://www.googleapis.com/auth/compute
+
+        :param  node_list: List of nodes to delete.
+        :type   node_list: ``list`` of :class:`Node` or ``list`` of
+                           :class:`GCENode`
+
+        :return:  Return True if successful.
+        :rtype: ``bool``
+        """
+        return self.driver.ex_instancegroupmanager_delete_instances(
+            manager=self, node_list=node_list)
 
     def resize(self, size):
         """
@@ -1645,7 +1764,6 @@ class GCENodeDriver(NodeDriver):
     }
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
-    GUEST_OS_FEATURES = ['VIRTIO_SCSI_MULTIQUEUE', 'WINDOWS']
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None, **kwargs):
@@ -1718,6 +1836,10 @@ class GCENodeDriver(NodeDriver):
         else:
             self.region = None
 
+        # Volume details are looked up in this name-zone dict.
+        # It is populated if the volume name is not found or the dict is empty.
+        self._ex_volume_dict = {}
+
     def ex_add_access_config(self, node, name, nic, nat_ip=None,
                              config_type=None):
         """
@@ -1769,7 +1891,7 @@ class GCENodeDriver(NodeDriver):
         :type     node: ``Node``
 
         :keyword  name: Name of the access config.
-        :type     node: ``str``
+        :type     name: ``str``
 
         :keyword  nic: Name of the network interface.
         :type     nic: ``str``
@@ -1813,6 +1935,50 @@ class GCENodeDriver(NodeDriver):
             current_fp = 'absent'
         body = self._format_metadata(current_fp, metadata)
         request = '/zones/%s/instances/%s/setMetadata' % (zone_name, node_name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
+    def ex_set_node_labels(self, node, labels):
+        """
+        Set labels for the specified node.
+
+        :keyword  node: The existing target Node (instance) for the request.
+        :type     node: ``Node``
+
+        :keyword  labels: Set (or clear with None) labels for this node.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(node, Node):
+            raise ValueError("Must specify a valid libcloud node object.")
+        node_name = node.name
+        zone_name = node.extra['zone'].name
+        current_fp = node.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/zones/%s/instances/%s/setLabels' % (zone_name, node_name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
+    def ex_set_image_labels(self, image, labels):
+        """
+        Set labels for the specified image.
+
+        :keyword  image: The existing target Image for the request.
+        :type     image: ``NodeImage``
+
+        :keyword  labels: Set (or clear with None) labels for this image.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+        if not isinstance(image, NodeImage):
+            raise ValueError("Must specify a valid libcloud image object.")
+        current_fp = image.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/global/%s/setLabels' % (image.name)
         self.connection.async_request(request, method='POST', data=body)
         return True
 
@@ -2277,13 +2443,18 @@ class GCENodeDriver(NodeDriver):
                          for n in response.get('items', [])]
         return list_networks
 
-    def list_nodes(self, ex_zone=None):
+    def list_nodes(self, ex_zone=None, ex_use_disk_cache=True):
         """
         Return a list of nodes in the current zone or all zones.
 
         :keyword  ex_zone:  Optional zone name or 'all'
         :type     ex_zone:  ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or ``None``
+
+        :keyword  ex_use_disk_cache:  Disk information for each node will
+                                   retrieved from a dictionary rather
+                                   than making a distinct API call for it.
+        :type     ex_use_disk_cache: ``bool``
 
         :return:  List of Node objects
         :rtype:   ``list`` of :class:`Node`
@@ -2294,16 +2465,20 @@ class GCENodeDriver(NodeDriver):
             request = '/aggregated/instances'
         else:
             request = '/zones/%s/instances' % (zone.name)
-
         response = self.connection.request(request, method='GET').object
 
         if 'items' in response:
             # The aggregated response returns a dict for each zone
             if zone is None:
+                # Create volume cache now for fast lookups of disk info.
+                self._ex_populate_volume_dict()
                 for v in response['items'].values():
                     for i in v.get('instances', []):
                         try:
-                            list_nodes.append(self._to_node(i))
+                            list_nodes.append(
+                                self._to_node(i,
+                                              use_disk_cache=ex_use_disk_cache)
+                            )
                         # If a GCE node has been deleted between
                         #   - is was listed by `request('.../instances', 'GET')
                         #   - it is converted by `self._to_node(i)`
@@ -2316,7 +2491,9 @@ class GCENodeDriver(NodeDriver):
             else:
                 for i in response['items']:
                     try:
-                        list_nodes.append(self._to_node(i))
+                        list_nodes.append(
+                            self._to_node(i, use_disk_cache=ex_use_disk_cache)
+                        )
                     # If a GCE node has been deleted between
                     #   - is was listed by `request('.../instances', 'GET')
                     #   - it is converted by `self._to_node(i)`
@@ -2326,6 +2503,8 @@ class GCENodeDriver(NodeDriver):
                     # other nodes.
                     except ResourceNotFoundError:
                         pass
+        # Clear the volume cache as lookups are complete.
+        self._ex_volume_dict = {}
         return list_nodes
 
     def ex_list_regions(self):
@@ -3010,7 +3189,8 @@ class GCENodeDriver(NodeDriver):
     def ex_create_forwarding_rule(self, name, target=None, region=None,
                                   protocol='tcp', port_range=None,
                                   address=None, description=None,
-                                  global_rule=False, targetpool=None):
+                                  global_rule=False, targetpool=None,
+                                  lb_scheme=None):
         """
         Create a forwarding rule.
 
@@ -3052,6 +3232,10 @@ class GCENodeDriver(NodeDriver):
                               Use target instead.
         :type     targetpool: ``str`` or :class:`GCETargetPool`
 
+        :keyword  lb_scheme: Load balancing scheme, can be 'EXTERNAL' or
+                             'INTERNAL'. Defaults to 'EXTERNAL'.
+        :type     lb_scheme: ``str`` or ``None``
+
         :return:  Forwarding Rule object
         :rtype:   :class:`GCEForwardingRule`
         """
@@ -3082,6 +3266,9 @@ class GCENodeDriver(NodeDriver):
         if description:
             forwarding_rule_data['description'] = description
 
+        if lb_scheme:
+            forwarding_rule_data['loadBalancingScheme'] = lb_scheme
+
         if global_rule:
             request = '/global/forwardingRules'
         else:
@@ -3094,7 +3281,8 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_image(self, name, volume, description=None, family=None,
                         guest_os_features=None, use_existing=True,
-                        wait_for_completion=True):
+                        wait_for_completion=True, ex_licenses=None,
+                        ex_labels=None):
         """
         Create an image from the provided volume.
 
@@ -3115,11 +3303,16 @@ class GCENodeDriver(NodeDriver):
                           is set with that family name.
         :type     family: ``str``
 
-        :keywork  guest_os_features: Features of the guest operating system,
-                                     valid for bootable images only. Possible
-                                     values include \'VIRTIO_SCSI_MULTIQUEUE\'
-                                     and \'WINDOWS\' if specified.
+        :keyword  guest_os_features: Features of the guest operating system,
+                                     valid for bootable images only.
         :type     guest_os_features: ``list`` of ``str`` or ``None``
+
+        :keyword  ex_licenses: List of strings representing licenses
+                               to be associated with the image.
+        :type     ex_licenses: ``list`` of ``str``
+
+        :keyword  ex_labels: Labels dictionary for image.
+        :type     ex_labels: ``dict`` or ``None``
 
         :keyword  use_existing: If True and an image with the given name
                                 already exists, return an object for that
@@ -3150,14 +3343,20 @@ class GCENodeDriver(NodeDriver):
             image_data['rawDisk'] = {'source': volume, 'containerType': 'TAR'}
         else:
             raise ValueError('Source must be instance of StorageVolume or URI')
+        if ex_licenses:
+            if isinstance(ex_licenses, str):
+                ex_licenses = [ex_licenses]
+            image_data['licenses'] = ex_licenses
+
+        if ex_labels:
+            image_data['labels'] = ex_labels
+
         if guest_os_features:
             image_data['guestOsFeatures'] = []
+            if isinstance(guest_os_features, str):
+                guest_os_features = [guest_os_features]
             for feature in guest_os_features:
-                if feature in self.GUEST_OS_FEATURES:
-                    image_data['guestOsFeatures'].append({'type': feature})
-                else:
-                    raise ValueError('Features must be one of %s' %
-                                     ','.join(self.GUEST_OS_FEATURES))
+                image_data['guestOsFeatures'].append({'type': feature})
         request = '/global/images'
 
         try:
@@ -3184,7 +3383,7 @@ class GCENodeDriver(NodeDriver):
         :type   name: ``str``
 
         :param  url: The URL to the image. The URL can start with `gs://`
-        :param  url: ``str``
+        :type url: ``str``
 
         :param  description: The description of the image
         :type   description: ``str``
@@ -3216,12 +3415,10 @@ class GCENodeDriver(NodeDriver):
 
         if guest_os_features:
             image_data['guestOsFeatures'] = []
+            if isinstance(guest_os_features, str):
+                guest_os_features = [guest_os_features]
             for feature in guest_os_features:
-                if feature in self.GUEST_OS_FEATURES:
-                    image_data['guestOsFeatures'].append({'type': feature})
-                else:
-                    raise ValueError('Features must be one of %s' %
-                                     ','.join(self.GUEST_OS_FEATURES))
+                image_data['guestOsFeatures'].append({'type': feature})
 
         request = '/global/images'
         self.connection.async_request(request, method='POST', data=image_data)
@@ -3362,7 +3559,8 @@ class GCENodeDriver(NodeDriver):
         :type   priority: ``int``
 
         :param  network: The network the route belongs to. Can be either the
-                         full URL of the network or a libcloud object.
+                         full URL of the network, the name of the network  or
+                         a libcloud object.
         :type   network: ``str`` or ``GCENetwork``
 
         :param  tags: List of instance-tags for routing, empty for all nodes
@@ -3576,11 +3774,13 @@ class GCENodeDriver(NodeDriver):
             self, name, size, image, location=None, ex_network='default',
             ex_subnetwork=None, ex_tags=None, ex_metadata=None,
             ex_boot_disk=None, use_existing_disk=True, external_ip='ephemeral',
-            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
-            ex_service_accounts=None, description=None, ex_can_ip_forward=None,
+            internal_ip=None, ex_disk_type='pd-standard',
+            ex_disk_auto_delete=True, ex_service_accounts=None,
+            description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_image_family=None):
+            ex_preemptible=None, ex_image_family=None, ex_labels=None,
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Create a new node and return a node object for the node.
 
@@ -3624,6 +3824,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -3701,6 +3904,21 @@ class GCENodeDriver(NodeDriver):
                                    to use this keyword.
         :type     ex_image_family: ``str`` or ``None``
 
+        :keyword  ex_labels: Labels dictionary for instance.
+        :type     ex_labels: ``dict`` or ``None``
+
+        :keyword  ex_accelerator_type: Defines the accelerator to use with this
+                                       node. Must set 'ex_on_host_maintenance'
+                                       to 'TERMINATE'. Must include a count of
+                                       accelerators to use in
+                                       'ex_accelerator_count'.
+        :type     ex_accelerator_type: ``str`` or ``None``
+
+        :keyword  ex_accelerator_count: The number of 'ex_accelerator_type'
+                                        accelerators to attach to the node.
+        :type     ex_accelerator_count: ``int`` or ``None``
+
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -3726,12 +3944,11 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
-        if ex_subnetwork:
-            if not hasattr(ex_subnetwork, 'name'):
-                ex_subnetwork = \
-                    self.ex_get_subnetwork(ex_subnetwork,
-                                           region=self._get_region_from_zone(
-                                               location))
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
+            ex_subnetwork = \
+                self.ex_get_subnetwork(ex_subnetwork,
+                                       region=self._get_region_from_zone(
+                                           location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -3740,6 +3957,13 @@ class GCENodeDriver(NodeDriver):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
         if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
             ex_boot_disk = self.ex_get_volume(ex_boot_disk, zone=location)
+        if ex_accelerator_type and not hasattr(ex_accelerator_type, 'name'):
+            if ex_accelerator_count is None:
+                raise ValueError("Missing accelerator count. Must specify an "
+                                 "'ex_accelerator_count' when using "
+                                 "'ex_accelerator_type'.")
+            ex_accelerator_type = self.ex_get_accelerator_type(
+                ex_accelerator_type, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -3758,17 +3982,19 @@ class GCENodeDriver(NodeDriver):
 
         request, node_data = self._create_node_req(
             name, size, image, location, ex_network, ex_tags, ex_metadata,
-            ex_boot_disk, external_ip, ex_disk_type, ex_disk_auto_delete,
-            ex_service_accounts, description, ex_can_ip_forward,
-            ex_disks_gce_struct, ex_nic_gce_struct, ex_on_host_maintenance,
-            ex_automatic_restart, ex_preemptible, ex_subnetwork)
+            ex_boot_disk, external_ip, internal_ip, ex_disk_type,
+            ex_disk_auto_delete, ex_service_accounts, description,
+            ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
+            ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
+            ex_subnetwork, ex_labels, ex_accelerator_type,
+            ex_accelerator_count)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
     def ex_create_instancetemplate(
             self, name, size, source=None, image=None, disk_type='pd-standard',
             disk_auto_delete=True, network='default', subnetwork=None,
-            can_ip_forward=None, external_ip='ephemeral',
+            can_ip_forward=None, external_ip='ephemeral', internal_ip=None,
             service_accounts=None, on_host_maintenance=None,
             automatic_restart=None, preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None):
@@ -3811,6 +4037,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -3890,10 +4119,10 @@ class GCENodeDriver(NodeDriver):
 
         properties = self._create_instance_properties(
             name, node_size=size, source=source, image=image,
-            disk_type='pd-standard', disk_auto_delete=True,
+            disk_type=disk_type, disk_auto_delete=True,
             external_ip=external_ip, network=network, subnetwork=subnetwork,
             can_ip_forward=can_ip_forward, service_accounts=service_accounts,
-            on_host_maintenance=on_host_maintenance,
+            on_host_maintenance=on_host_maintenance, internal_ip=internal_ip,
             automatic_restart=automatic_restart, preemptible=preemptible,
             tags=tags, metadata=metadata, description=description,
             disks_gce_struct=disks_gce_struct, nic_gce_struct=nic_gce_struct,
@@ -3911,11 +4140,13 @@ class GCENodeDriver(NodeDriver):
     def _create_instance_properties(
             self, name, node_size, source=None, image=None,
             disk_type='pd-standard', disk_auto_delete=True, network='default',
-            subnetwork=None, external_ip='ephemeral', can_ip_forward=None,
-            service_accounts=None, on_host_maintenance=None,
-            automatic_restart=None, preemptible=None, tags=None, metadata=None,
+            subnetwork=None, external_ip='ephemeral', internal_ip=None,
+            can_ip_forward=None, service_accounts=None,
+            on_host_maintenance=None, automatic_restart=None,
+            preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
-            use_selflinks=True):
+            use_selflinks=True, labels=None, accelerator_type=None,
+            accelerator_count=None):
         """
         Create the GCE instance properties needed for instance templates.
 
@@ -3956,6 +4187,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress` or ``str`` or ``None``
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  can_ip_forward: Set to ``True`` to allow this node to
                                   send/receive non-matching src/dst packets.
@@ -4025,6 +4259,21 @@ class GCENodeDriver(NodeDriver):
                                   details.
         :type     nic_gce_struct: ``list`` or ``None``
 
+        :type     labels: Labels dict for instance
+        :type     labels: ``dict`` or ``None``
+
+        :keyword  accelerator_type: Support for passing in the GCE-specifc
+                                    accelerator type to request for the VM.
+        :type     accelerator_type: :class:`GCEAcceleratorType` or ``None``
+
+        :keyword  accelerator_count: Support for passing in the number of
+                                     requested 'accelerator_type' accelerators
+                                     attached to the VM. Will only pay atention
+                                     to this field if 'accelerator_type' is not
+                                     None.
+        :type     accelerator_count: ``int`` or ``None``
+
+
         :return:  A dictionary formatted for use with the GCE API.
         :rtype:   ``dict``
         """
@@ -4078,7 +4327,8 @@ class GCENodeDriver(NodeDriver):
             instance_properties['networkInterfaces'] = [
                 self._build_network_gce_struct(
                     network=network, subnetwork=subnetwork,
-                    external_ip=external_ip, use_selflinks=True)
+                    external_ip=external_ip, use_selflinks=True,
+                    internal_ip=internal_ip)
             ]
 
         # build scheduling
@@ -4092,6 +4342,12 @@ class GCENodeDriver(NodeDriver):
             'serviceAccounts'] = self._build_service_accounts_gce_list(
                 service_accounts)
 
+        # build accelerators
+        if accelerator_type is not None:
+            instance_properties['guestAccelerators'] = \
+                self._format_guest_accelerators(accelerator_type,
+                                                accelerator_count)
+
         # include general properties
         if description:
             instance_properties['description'] = str(description)
@@ -4100,6 +4356,8 @@ class GCENodeDriver(NodeDriver):
         if metadata:
             instance_properties['metadata'] = self._format_metadata(
                 fingerprint='na', metadata=metadata)
+        if labels:
+            instance_properties['labels'] = labels
         if can_ip_forward:
             instance_properties['canIpForward'] = True
 
@@ -4250,7 +4508,8 @@ class GCENodeDriver(NodeDriver):
                 return obj.name
 
     def _build_network_gce_struct(self, network, subnetwork=None,
-                                  external_ip=None, use_selflinks=True):
+                                  external_ip=None, use_selflinks=True,
+                                  internal_ip=None):
         """
         Build network interface dict for use in the GCE API.
 
@@ -4268,6 +4527,9 @@ class GCENodeDriver(NodeDriver):
                                be used.  To use an existing static IP address,
                                a GCEAddress object should be passed in.
         :type     external_ip: :class:`GCEAddress`
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str``
 
         :return:  network interface dict
         :rtype:   ``dict``
@@ -4291,6 +4553,9 @@ class GCENodeDriver(NodeDriver):
             if hasattr(external_ip, 'address'):
                 access_configs[0]['natIP'] = external_ip.address
             ni['accessConfigs'] = access_configs
+
+        if internal_ip:
+            ni['networkIP'] = internal_ip
 
         return ni
 
@@ -4325,6 +4590,8 @@ class GCENodeDriver(NodeDriver):
         sa = {}
         if 'email' not in service_account:
             sa['email'] = default_email
+        else:
+            sa['email'] = service_account['email']
 
         if 'scopes' not in service_account:
             sa['scopes'] = [self.AUTH_URL + default_scope]
@@ -4419,7 +4686,7 @@ class GCENodeDriver(NodeDriver):
             maint_opts = ['MIGRATE', 'TERMINATE']
             if isinstance(on_host_maintenance,
                           str) and on_host_maintenance in maint_opts:
-                if preemptible is True and on_host_maintenance is 'MIGRATE':
+                if preemptible is True and on_host_maintenance == 'MIGRATE':
                     raise ValueError(("host maintenance cannot be 'MIGRATE' "
                                       "if instance is preemptible."))
                 scheduling['onHostMaintenance'] = on_host_maintenance
@@ -4440,14 +4707,15 @@ class GCENodeDriver(NodeDriver):
 
     def ex_create_multiple_nodes(
             self, base_name, size, image, number, location=None,
-            ex_network='default', ex_tags=None, ex_metadata=None,
-            ignore_errors=True, use_existing_disk=True, poll_interval=2,
-            external_ip='ephemeral', ex_disk_type='pd-standard',
-            ex_disk_auto_delete=True, ex_service_accounts=None,
-            timeout=DEFAULT_TASK_COMPLETION_TIMEOUT, description=None,
-            ex_can_ip_forward=None, ex_disks_gce_struct=None,
+            ex_network='default', ex_subnetwork=None, ex_tags=None,
+            ex_metadata=None, ignore_errors=True, use_existing_disk=True,
+            poll_interval=2, external_ip='ephemeral', internal_ip=None,
+            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
+            ex_service_accounts=None, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
+            description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
-            ex_automatic_restart=None, ex_image_family=None):
+            ex_automatic_restart=None, ex_image_family=None,
+            ex_preemptible=None, ex_labels=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -4503,6 +4771,10 @@ class GCENodeDriver(NodeDriver):
                                multiple node creation.)
         :type     external_ip: ``str`` or None
 
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
+
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
         :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
@@ -4534,8 +4806,13 @@ class GCENodeDriver(NodeDriver):
         :type     description: ``str`` or ``None``
 
         :keyword  ex_can_ip_forward: Set to ``True`` to allow this node to
-                                  send/receive non-matching src/dst packets.
+                                     send/receive non-matching src/dst packets.
         :type     ex_can_ip_forward: ``bool`` or ``None``
+
+        :keyword  ex_preemptible: Defines whether the instance is preemptible.
+                                  (If not supplied, the instance will
+                                  not be preemptible)
+        :type     ex_preemptible: ``bool`` or ``None``
 
         :keyword  ex_disks_gce_struct: Support for passing in the GCE-specific
                                        formatted disks[] structure. No attempt
@@ -4578,8 +4855,12 @@ class GCENodeDriver(NodeDriver):
                                    to use this keyword.
         :type     ex_image_family: ``str`` or ``None``
 
+        :param    ex_labels: Label dict for node.
+        :type     ex_labels: ``dict``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
+
         """
         if image and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'image' and "
@@ -4596,6 +4877,11 @@ class GCENodeDriver(NodeDriver):
             size = self.ex_get_size(size, location)
         if not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
+        if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
+            ex_subnetwork = \
+                self.ex_get_subnetwork(ex_subnetwork,
+                                       region=self._get_region_from_zone(
+                                           location))
         if ex_image_family:
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
@@ -4607,11 +4893,13 @@ class GCENodeDriver(NodeDriver):
                       'image': image,
                       'location': location,
                       'network': ex_network,
+                      'subnetwork': ex_subnetwork,
                       'tags': ex_tags,
                       'metadata': ex_metadata,
                       'ignore_errors': ignore_errors,
                       'use_existing_disk': use_existing_disk,
                       'external_ip': external_ip,
+                      'internal_ip': internal_ip,
                       'ex_disk_type': ex_disk_type,
                       'ex_disk_auto_delete': ex_disk_auto_delete,
                       'ex_service_accounts': ex_service_accounts,
@@ -4620,7 +4908,9 @@ class GCENodeDriver(NodeDriver):
                       'ex_disks_gce_struct': ex_disks_gce_struct,
                       'ex_nic_gce_struct': ex_nic_gce_struct,
                       'ex_on_host_maintenance': ex_on_host_maintenance,
-                      'ex_automatic_restart': ex_automatic_restart}
+                      'ex_automatic_restart': ex_automatic_restart,
+                      'ex_preemptible': ex_preemptible,
+                      'ex_labels': ex_labels}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -5404,7 +5694,7 @@ class GCENodeDriver(NodeDriver):
         :param  instancegroup:  The Instance Group where from which you
                                 want to generate a list of included
                                 instances.
-        :type   instancegroup: :class:``GCEInstanceGroup``
+        :type   instancegroup: :class:`GCEInstanceGroup`
 
         :return:  List of :class:`GCENode` objects.
         :rtype: ``list`` of :class:`GCENode` objects.
@@ -5617,6 +5907,37 @@ class GCENodeDriver(NodeDriver):
                                 data=request_data).object
 
         return self.ex_instancegroupmanager_list_managed_instances(manager)
+
+    def ex_instancegroupmanager_delete_instances(self, manager,
+                                                 node_list):
+        """
+        Remove instances from GCEInstanceGroupManager and destroy
+        the instance
+
+        Scopes needed - one of the following:
+        * https://www.googleapis.com/auth/cloud-platform
+        * https://www.googleapis.com/auth/compute
+
+        :param  manager:  Required. The name of the managed instance group. The
+                       name must be 1-63 characters long, and comply with
+                       RFC1035.
+        :type   manager: ``str`` or :class: `GCEInstanceGroupManager`
+
+        :param  node_list:  list of Node objects to delete.
+        :type   node_list: ``list`` of :class:`Node`
+
+        :return:  True if successful
+        :rtype: ``bool``
+        """
+
+        request = "/zones/%s/instanceGroupManagers/%s/deleteInstances" % (
+            manager.zone.name, manager.name)
+        request_data = {'instances': [x.extra['selfLink']
+                                      for x in node_list]}
+        self.connection.request(request, method='POST',
+                                data=request_data).object
+
+        return True
 
     def ex_instancegroupmanager_resize(self, manager, size):
         """
@@ -6488,8 +6809,8 @@ class GCENodeDriver(NodeDriver):
         """
         Return a License object for specified project and name.
 
-        :param  name: The project to reference when looking up the license.
-        :type   name: ``str``
+        :param  project: The project to reference when looking up the license.
+        :type   project: ``str``
 
         :param  name: The name of the License
         :type   name: ``str``
@@ -6517,6 +6838,24 @@ class GCENodeDriver(NodeDriver):
         request = '/zones/%s/diskTypes/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
         return self._to_disktype(response)
+
+    def ex_get_accelerator_type(self, name, zone=None):
+        """
+        Return an AcceleratorType object based on a name and zone.
+
+        :param  name: The name of the AcceleratorType
+        :type   name: ``str``
+
+        :param  zone: The zone to search for the AcceleratorType in.
+        :type   zone: :class:`GCEZone`
+
+        :return:  An AcceleratorType object for the name
+        :rtype:   :class:`GCEAcceleratorType`
+        """
+        zone = self._set_zone(zone)
+        request = '/zones/%s/acceleratorTypes/%s' % (zone.name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_accelerator_type(response)
 
     def ex_get_address(self, name, region=None):
         """
@@ -6623,7 +6962,7 @@ class GCENodeDriver(NodeDriver):
 
         :param  ex_project_list: The name of the project to list for images.
                                  Examples include: 'debian-cloud'.
-        :type   ex_project_List: ``str``, ``list`` of ``str``, or ``None``
+        :type   ex_project_list: ``str`` or ``list`` of ``str`` or ``None``
 
         :param  ex_standard_projects: If true, check in standard projects if
                                       the image is not found.
@@ -6756,8 +7095,8 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name, URL or object of the subnetwork
         :type   name: ``str`` or :class:`GCESubnetwork`
 
-        :param  name: The region object, name, or URL of the subnetwork
-        :type   name: ``str`` or :class:`GCERegion` or ``None``
+        :keyword region: The region object, name, or URL of the subnetwork
+        :type   region: ``str`` or :class:`GCERegion` or ``None``
 
         :return:  True if successful
         :rtype:   ``bool``
@@ -6788,12 +7127,12 @@ class GCENodeDriver(NodeDriver):
         if not region_name:
             region = self._set_region(region)
             if not region:
-                raise ("Could not determine region for subnetwork.")
+                raise ValueError("Could not determine region for subnetwork.")
             else:
                 region_name = region.name
 
         request = '/regions/%s/subnetworks/%s' % (region_name, subnet_name)
-        self.connection.request(request, method='DELETE').object
+        self.connection.async_request(request, method='DELETE').object
         return True
 
     def ex_get_subnetwork(self, name, region=None):
@@ -6803,17 +7142,15 @@ class GCENodeDriver(NodeDriver):
         :param  name: The name or URL of the subnetwork
         :type   name: ``str``
 
-        :param  name: The region of the subnetwork
-        :type   name: ``str`` or :class:`GCERegion` or ``None``
+        :keyword region: The region of the subnetwork
+        :type   region: ``str`` or :class:`GCERegion` or ``None``
 
         :return:  A Subnetwork object
         :rtype:   :class:`GCESubnetwork`
         """
         region_name = None
         if name.startswith('https://'):
-            parts = self._get_components_from_path(name)
-            name = parts['name']
-            region_name = parts['region']
+            request = name
         else:
             if isinstance(region, GCERegion):
                 region_name = region.name
@@ -6823,14 +7160,16 @@ class GCENodeDriver(NodeDriver):
                 else:
                     region_name = region
 
-        if not region_name:
-            region = self._set_region(region)
-            if not region:
-                raise ("Could not determine region for subnetwork.")
-            else:
-                region_name = region.name
+            if not region_name:
+                region = self._set_region(region)
+                if not region:
+                    raise ValueError(
+                        "Could not determine region for subnetwork.")
+                else:
+                    region_name = region.name
 
-        request = '/regions/%s/subnetworks/%s' % (region_name, name)
+            request = '/regions/%s/subnetworks/%s' % (region_name, name)
+
         response = self.connection.request(request, method='GET').object
         return self._to_subnetwork(response)
 
@@ -6838,13 +7177,16 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Network object based on a network name.
 
-        :param  name: The name of the network
+        :param  name: The name or URL of the network
         :type   name: ``str``
 
         :return:  A Network object for the network
         :rtype:   :class:`GCENetwork`
         """
-        request = '/global/networks/%s' % (name)
+        if name.startswith('https://'):
+            request = name
+        else:
+            request = '/global/networks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_network(response)
 
@@ -6914,26 +7256,42 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_snapshot(response)
 
-    def ex_get_volume(self, name, zone=None):
+    def ex_get_volume(self, name, zone=None, use_cache=False):
         """
         Return a Volume object based on a volume name and optional zone.
 
-        :param  name: The name of the volume
-        :type   name: ``str``
+        To improve performance, we request all disks and allow the user
+        to consult the cache dictionary rather than making an API call.
+
+        :param    name: The name of the volume
+        :type     name: ``str``
 
         :keyword  zone: The zone to search for the volume in (set to 'all' to
                         search all zones)
         :type     zone: ``str`` or :class:`GCEZone` or :class:`NodeLocation`
                         or ``None``
 
+        :keyword  use_cache: Search for the volume in the existing cache of
+                             volumes.  If True, we omit the API call and search
+                             self.volumes_dict.  If False, a call to
+                             disks/aggregatedList is made prior to searching
+                             self._ex_volume_dict.
+        :type     use_cache: ``bool``
+
         :return:  A StorageVolume object for the volume
         :rtype:   :class:`StorageVolume`
         """
-        zone = self._set_zone(zone) or self._find_zone_or_region(
-            name, 'disks', res_name='Volume')
-        request = '/zones/%s/disks/%s' % (zone.name, name)
-        response = self.connection.request(request, method='GET').object
-        return self._to_storage_volume(response)
+        if not self._ex_volume_dict or use_cache is False:
+            # Make the API call and build volume dictionary
+            self._ex_populate_volume_dict()
+
+        try:
+            # if zone is of class GCEZone or NodeLocation, get name instead
+            zone = zone.name
+        except AttributeError:
+            pass
+
+        return self._ex_lookup_volume(name, zone)
 
     def ex_get_region(self, name):
         """
@@ -7186,6 +7544,85 @@ class GCENodeDriver(NodeDriver):
                 'scopes': self.scopes,
                 'credential_file': self.credential_file}
 
+    def _build_volume_dict(self, zone_dict):
+        """
+        Build a dictionary in [name][zone]=disk format.
+
+        :param  zone_dict: dict in the format of:
+                 { items: {key: {api_name:[], key2: api_name:[]}} }
+        :type   zone_dict: ``dict``
+
+        :return:  dict of volumes, organized by name, then zone  Format:
+                  { 'disk_name':
+                   {'zone_name1': disk_info, 'zone_name2': disk_info} }
+        :rtype: ``dict``
+        """
+        name_zone_dict = {}
+        for k, v in zone_dict.items():
+            zone_name = k.replace('zones/', '')
+            disks = v.get('disks', [])
+            for disk in disks:
+                n = disk['name']
+                name_zone_dict.setdefault(n, {})
+                name_zone_dict[n].update({zone_name: disk})
+        return name_zone_dict
+
+    def _ex_lookup_volume(self, volume_name, zone=None):
+        """
+        Look up volume by name and zone in volume dict.
+
+        If zone isn't specified or equals 'all', we return the volume
+        for the first zone, as determined alphabetically.
+
+        :param    volume_name: The name of the volume.
+        :type     volume_name: ``str``
+
+        :keyword  zone: The zone to search for the volume in (set to 'all' to
+                        search all zones)
+        :type     zone: ``str`` or ``None``
+
+        :return:  A StorageVolume object for the volume.
+        :rtype:   :class:`StorageVolume` or raise ``ResourceNotFoundError``.
+        """
+        if volume_name not in self._ex_volume_dict:
+            # Possibly added through another thread/process, so re-populate
+            # _volume_dict and try again.  If still not found, raise exception.
+            self._ex_populate_volume_dict()
+            if volume_name not in self._ex_volume_dict:
+                raise ResourceNotFoundError(
+                    'Volume name: \'%s\' not found. Zone: %s' % (
+                        volume_name, zone), None, None)
+        # Disk names are not unique across zones, so if zone is None or
+        # 'all', we return the first one we find for that disk name.  For
+        # consistency, we sort by keys and set the zone to the first key.
+        if zone is None or zone == 'all':
+            zone = sorted(self._ex_volume_dict[volume_name])[0]
+
+        volume = self._ex_volume_dict[volume_name].get(zone, None)
+        if not volume:
+            raise ResourceNotFoundError(
+                'Volume \'%s\' not found for zone %s.' % (volume_name,
+                                                          zone), None, None)
+        return self._to_storage_volume(volume)
+
+    def _ex_populate_volume_dict(self):
+        """
+        Fetch the volume information using disks/aggregatedList
+        and store it in _ex_volume_dict.
+
+        return:  ``None``
+        """
+        # fill the volume dict by making an aggegatedList call to disks.
+        aggregated_items = self.connection.request_aggregated_items(
+            "disks")
+
+        # _ex_volume_dict is in the format of:
+        # { 'disk_name' : { 'zone1': disk, 'zone2': disk, ... }}
+        self._ex_volume_dict = self._build_volume_dict(
+            aggregated_items['items'])
+
+        return None
+
     def _catch_error(self, ignore_errors=False):
         """
         Catch an exception and raise it unless asked to ignore it.
@@ -7326,16 +7763,18 @@ class GCENodeDriver(NodeDriver):
                   if no matching image is found.
         :rtype:   :class:`GCENodeImage` or ``None``
         """
-        project_images = self.list_images(ex_project=project,
-                                          ex_include_deprecated=True)
+        project_images_list = self.ex_list(
+            self.list_images, ex_project=project, ex_include_deprecated=True)
         partial_match = []
-        for image in project_images:
-            if image.name == partial_name:
-                return image
-            if image.name.startswith(partial_name):
-                ts = timestamp_to_datetime(image.extra['creationTimestamp'])
-                if not partial_match or partial_match[0] < ts:
-                    partial_match = [ts, image]
+        for page in project_images_list.page():
+            for image in page:
+                if image.name == partial_name:
+                    return image
+                if image.name.startswith(partial_name):
+                    ts = timestamp_to_datetime(
+                        image.extra['creationTimestamp'])
+                    if not partial_match or partial_match[0] < ts:
+                        partial_match = [ts, image]
 
         if partial_match:
             return partial_match[1]
@@ -7380,11 +7819,13 @@ class GCENodeDriver(NodeDriver):
     def _create_node_req(
             self, name, size, image, location, network=None, tags=None,
             metadata=None, boot_disk=None, external_ip='ephemeral',
-            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
-            ex_service_accounts=None, description=None, ex_can_ip_forward=None,
+            internal_ip=None, ex_disk_type='pd-standard',
+            ex_disk_auto_delete=True, ex_service_accounts=None,
+            description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_subnetwork=None):
+            ex_preemptible=None, ex_subnetwork=None, ex_labels=None,
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Returns a request and body to create a new node.
 
@@ -7424,6 +7865,9 @@ class GCENodeDriver(NodeDriver):
                                param will be ignored if also using the
                                ex_nic_gce_struct param.
         :type     external_ip: :class:`GCEAddress` or ``str`` or None
+
+        :keyword  internal_ip: The private IP address to use.
+        :type     internal_ip: :class:`GCEAddress` or ``str`` or ``None``
 
         :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
@@ -7499,6 +7943,17 @@ class GCENodeDriver(NodeDriver):
         :param  ex_subnetwork: The network to associate with the node.
         :type   ex_subnetwork: :class:`GCESubnetwork`
 
+        :param  ex_labels: Label dict for node.
+        :type   ex_labels: ``dict`` or ``None``
+
+        :param  ex_accelerator_type: The accelerator to associate with the
+                                     node.
+        :type   ex_accelerator_type: :class:`GCEAcceleratorType` or ``None``
+
+        :param  ex_accelerator_count: The number of accelerators to associate
+                                      with the node.
+        :type   ex_accelerator_count: ``int`` or ``None``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -7522,13 +7977,16 @@ class GCENodeDriver(NodeDriver):
             name, node_size=size, image=image, source=source,
             disk_type=ex_disk_type, disk_auto_delete=ex_disk_auto_delete,
             external_ip=external_ip, network=network, subnetwork=ex_subnetwork,
-            can_ip_forward=ex_can_ip_forward,
+            can_ip_forward=ex_can_ip_forward, internal_ip=internal_ip,
             service_accounts=ex_service_accounts,
             on_host_maintenance=ex_on_host_maintenance,
             automatic_restart=ex_automatic_restart, preemptible=ex_preemptible,
-            tags=tags, metadata=metadata, description=description,
-            disks_gce_struct=ex_disks_gce_struct,
-            nic_gce_struct=ex_nic_gce_struct, use_selflinks=use_selflinks)
+            tags=tags, metadata=metadata, labels=ex_labels,
+            description=description, disks_gce_struct=ex_disks_gce_struct,
+            nic_gce_struct=ex_nic_gce_struct,
+            accelerator_type=ex_accelerator_type,
+            accelerator_count=ex_accelerator_count,
+            use_selflinks=use_selflinks)
         node_data['name'] = name
 
         request = '/zones/%s/instances' % (location.name)
@@ -7622,13 +8080,19 @@ class GCENodeDriver(NodeDriver):
             status['name'], node_attrs['size'], node_attrs['image'],
             node_attrs['location'], node_attrs['network'], node_attrs['tags'],
             node_attrs['metadata'], external_ip=node_attrs['external_ip'],
+            internal_ip=node_attrs['internal_ip'],
             ex_service_accounts=node_attrs['ex_service_accounts'],
             description=node_attrs['description'],
             ex_can_ip_forward=node_attrs['ex_can_ip_forward'],
+            ex_disk_auto_delete=node_attrs['ex_disk_auto_delete'],
             ex_disks_gce_struct=node_attrs['ex_disks_gce_struct'],
             ex_nic_gce_struct=node_attrs['ex_nic_gce_struct'],
             ex_on_host_maintenance=node_attrs['ex_on_host_maintenance'],
-            ex_automatic_restart=node_attrs['ex_automatic_restart'])
+            ex_automatic_restart=node_attrs['ex_automatic_restart'],
+            ex_subnetwork=node_attrs['subnetwork'],
+            ex_preemptible=node_attrs['ex_preemptible'],
+            ex_labels=node_attrs['ex_labels']
+        )
 
         try:
             node_res = self.connection.request(request, method='POST',
@@ -7661,8 +8125,6 @@ class GCENodeDriver(NodeDriver):
             error = e.value
             code = e.code
             response = {'status': 'DONE'}
-        except ResourceNotFoundError:
-            return
         if response['status'] == 'DONE':
             status['node_response'] = None
             if error:
@@ -7760,6 +8222,33 @@ class GCENodeDriver(NodeDriver):
 
         return GCEDiskType(id=type_id, name=disktype['name'], zone=zone,
                            driver=self, extra=extra)
+
+    def _to_accelerator_type(self, accelerator_type):
+        """
+        Return an AcceleratorType object from the JSON-response dictionary.
+
+        :param  accelerator_type: The dictionary describing the
+                                  accelerator_type.
+        :type   accelerator_type: ``dict``
+
+        :return: AcceleratorType object
+        :rtype:  :class:`GCEAcceleratorType`
+        """
+        extra = {}
+
+        zone = self.ex_get_zone(accelerator_type['zone'])
+
+        extra['selfLink'] = accelerator_type.get('selfLink')
+        extra['creationTimestamp'] = accelerator_type.get('creationTimestamp')
+        extra['description'] = accelerator_type.get('description')
+        extra['maximumCardsPerInstance'] = accelerator_type.get(
+            'maximumCardsPerInstance')
+        extra['default_disk_size_gb'] = accelerator_type.get(
+            'defaultDiskSizeGb')
+        type_id = "%s:%s" % (zone.name, accelerator_type['name'])
+
+        return GCEAcceleratorType(id=type_id, name=accelerator_type['name'],
+                                  zone=zone, driver=self, extra=extra)
 
     def _to_address(self, address):
         """
@@ -8045,6 +8534,8 @@ class GCENodeDriver(NodeDriver):
         if 'licenses' in image:
             lic_objs = self._licenses_from_urls(licenses=image['licenses'])
             extra['licenses'] = lic_objs
+        extra['labels'] = image.get('labels', None)
+        extra['labelFingerprint'] = image.get('labelFingerprint', None)
 
         return GCENodeImage(id=image['id'], name=image['name'], driver=self,
                             extra=extra)
@@ -8063,15 +8554,18 @@ class GCENodeDriver(NodeDriver):
                             country=location['name'].split('-')[0],
                             driver=self)
 
-    def _to_node(self, node):
+    def _to_node(self, node, use_disk_cache=False):
         """
         Return a Node object from the JSON-response dictionary.
 
-        :param  node: The dictionary describing the node.
-        :type   node: ``dict``
+        :param    node: The dictionary describing the node.
+        :type     node: ``dict``
 
-        :return: Node object
-        :rtype: :class:`Node`
+        :keyword  use_disk_cache: If true, ex_get_volume call will use cache.
+        :type     use_disk_cache: ``bool``
+
+        :return:  Node object
+        :rtype:   :class:`Node`
         """
         public_ips = []
         private_ips = []
@@ -8098,11 +8592,14 @@ class GCENodeDriver(NodeDriver):
         extra['serviceAccounts'] = node.get('serviceAccounts', [])
         extra['scheduling'] = node.get('scheduling', {})
         extra['boot_disk'] = None
+        extra['labels'] = node.get('labels')
+        extra['labelFingerprint'] = node.get('labelFingerprint')
 
         for disk in extra['disks']:
             if disk.get('boot') and disk.get('type') == 'PERSISTENT':
                 bd = self._get_components_from_path(disk['source'])
-                extra['boot_disk'] = self.ex_get_volume(bd['name'], bd['zone'])
+                extra['boot_disk'] = self.ex_get_volume(
+                    bd['name'], bd['zone'], use_cache=use_disk_cache)
 
         if 'items' in node['tags']:
             tags = node['tags']['items']
@@ -8507,6 +9004,27 @@ class GCENodeDriver(NodeDriver):
                              zone=zone, target=target,
                              policy=autoscaler['autoscalingPolicy'],
                              driver=self, extra=extra)
+
+    def _format_guest_accelerators(self, accelerator_type, accelerator_count):
+        """
+        Formats a GCE-friendly guestAccelerators request. Accepts an
+        accelerator_type and accelerator_count that is wrapped up into a list
+        of dictionaries for GCE to consume for a node creation request.
+
+        :param  accelerator_type: Accelerator type to request.
+        :type   accelerator_type: :class:`GCEAcceleratorType`
+
+        :param  accelerator_count: Number of accelerators to request.
+        :type   accelerator_count: ``int``
+
+        :return: GCE-friendly guestAccelerators list of dictionaries.
+        :rtype:  ``list``
+        """
+        accelerator_type = self._get_selflink_or_name(
+            obj=accelerator_type, get_selflinks=True,
+            objname='accelerator_type')
+        return [{'acceleratorType': accelerator_type,
+                 'acceleratorCount': accelerator_count}]
 
     def _format_metadata(self, fingerprint, metadata=None):
         """

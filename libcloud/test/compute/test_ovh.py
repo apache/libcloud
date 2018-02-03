@@ -130,8 +130,7 @@ class OvhMockHttp(BaseOvhMockHttp):
 @patch('libcloud.common.ovh.OvhConnection._timedelta', 42)
 class OvhTests(unittest.TestCase):
     def setUp(self):
-        OvhNodeDriver.connectionCls.conn_classes = (
-            OvhMockHttp, OvhMockHttp)
+        OvhNodeDriver.connectionCls.conn_class = OvhMockHttp
         OvhMockHttp.type = None
         self.driver = OvhNodeDriver(*OVH_PARAMS)
 

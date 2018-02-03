@@ -25,11 +25,7 @@ __docformat__ = 'epytext'
 from base64 import b64encode
 import hashlib
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import next
 from libcloud.utils.py3 import b

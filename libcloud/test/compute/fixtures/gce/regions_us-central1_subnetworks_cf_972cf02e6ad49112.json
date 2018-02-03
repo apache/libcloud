@@ -1,4 +1,5 @@
 {
+ "status": "DONE",
  "kind": "compute#subnetwork",
  "id": "4297043163355844284",
  "creationTimestamp": "2016-03-25T05:34:27.209-07:00",

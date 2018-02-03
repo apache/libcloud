@@ -24,11 +24,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 from libcloud.utils.xml import fixxpath
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
@@ -197,6 +193,10 @@ class AzureConnection(ConnectionUserAndKey):
             header = header.lower()  # Just for safety
             if header in headers_copy:
                 special_header_values.append(headers_copy[header])
+            elif header == "content-length" and method not in ("GET", "HEAD"):
+                # Must be '0' unless method is GET or HEAD
+                # https://docs.microsoft.com/en-us/rest/api/storageservices/authentication-for-the-azure-storage-services
+                special_header_values.append('0')
             else:
                 special_header_values.append('')
 

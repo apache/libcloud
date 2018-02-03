@@ -19,12 +19,7 @@ import base64
 import os
 import binascii
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
-from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
@@ -42,9 +37,6 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-
-if PY3:
-    from io import FileIO as file
 
 # Desired number of items in each response inside a paginated request
 RESPONSES_PER_REQUEST = 100
@@ -642,7 +634,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             chunk_hash = base64.b64encode(b(chunk_hash.digest()))
 
             headers['Content-MD5'] = chunk_hash.decode('utf-8')
-            headers['Content-Length'] = content_length
+            headers['Content-Length'] = str(content_length)
 
             if blob_type == 'BlockBlob':
                 # Block id can be any unique string that is base64 encoded
@@ -764,38 +756,19 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         self._check_values(ex_blob_type, file_size)
 
-        with file(file_path, 'rb') as file_handle:
-            iterator = iter(file_handle)
-
-            # If size is greater than 64MB or type is Page, upload in chunks
-            if ex_blob_type == 'PageBlob' or file_size > AZURE_BLOCK_MAX_SIZE:
-                # For chunked upload of block blobs, the initial size must
-                # be 0.
-                if ex_blob_type == 'BlockBlob':
-                    object_size = None
-
-                object_path = self._get_object_path(container, object_name)
-
-                upload_func = self._upload_in_chunks
-                upload_func_kwargs = {'iterator': iterator,
-                                      'object_path': object_path,
-                                      'blob_type': ex_blob_type,
-                                      'lease': None}
-            else:
-                upload_func = self._stream_data
-                upload_func_kwargs = {'iterator': iterator,
-                                      'chunked': False,
-                                      'calculate_hash': verify_hash}
-
-            return self._put_object(container=container,
-                                    object_name=object_name,
-                                    object_size=object_size,
-                                    upload_func=upload_func,
-                                    upload_func_kwargs=upload_func_kwargs,
-                                    file_path=file_path, extra=extra,
-                                    verify_hash=verify_hash,
-                                    blob_type=ex_blob_type,
-                                    use_lease=ex_use_lease)
+        # If size is greater than 64MB or type is Page, upload in chunks
+        if ex_blob_type == 'PageBlob' or file_size > AZURE_BLOCK_MAX_SIZE:
+            # For chunked upload of block blobs, the initial size must
+            # be 0.
+            if ex_blob_type == 'BlockBlob':
+                object_size = None
+        return self._put_object(container=container,
+                                object_name=object_name,
+                                object_size=object_size,
+                                file_path=file_path, extra=extra,
+                                verify_hash=verify_hash,
+                                blob_type=ex_blob_type,
+                                use_lease=ex_use_lease)
 
     def upload_object_via_stream(self, iterator, container, object_name,
                                  verify_hash=False, extra=None,
@@ -820,22 +793,13 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         self._check_values(ex_blob_type, ex_page_blob_size)
 
-        object_path = self._get_object_path(container, object_name)
-
-        upload_func = self._upload_in_chunks
-        upload_func_kwargs = {'iterator': iterator,
-                              'object_path': object_path,
-                              'blob_type': ex_blob_type,
-                              'lease': None}
-
         return self._put_object(container=container,
                                 object_name=object_name,
                                 object_size=ex_page_blob_size,
-                                upload_func=upload_func,
-                                upload_func_kwargs=upload_func_kwargs,
                                 extra=extra, verify_hash=verify_hash,
                                 blob_type=ex_blob_type,
-                                use_lease=ex_use_lease)
+                                use_lease=ex_use_lease,
+                                stream=iterator)
 
     def delete_object(self, obj):
         """
@@ -897,17 +861,18 @@ class AzureBlobsStorageDriver(StorageDriver):
         self._update_metadata(headers, meta_data)
 
         if object_size is not None:
-            headers['Content-Length'] = object_size
+            headers['Content-Length'] = str(object_size)
 
         if blob_type == 'PageBlob':
-            headers['Content-Length'] = 0
+            headers['Content-Length'] = str('0')
             headers['x-ms-blob-content-length'] = object_size
 
         return headers
 
-    def _put_object(self, container, object_name, object_size, upload_func,
-                    upload_func_kwargs, file_path=None, extra=None,
-                    verify_hash=True, blob_type=None, use_lease=False):
+    def _put_object(self, container, object_name, object_size,
+                    file_path=None, extra=None,
+                    verify_hash=True, blob_type=None, use_lease=False,
+                    stream=None):
         """
         Control function that does the real job of uploading data to a blob
         """
@@ -922,23 +887,17 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         # Get a lease if required and do the operations
         with AzureBlobLease(self, object_path, use_lease) as lease:
-            if 'lease' in upload_func_kwargs:
-                upload_func_kwargs['lease'] = lease
-
             lease.update_headers(headers)
 
-            iterator = iter('')
             result_dict = self._upload_object(object_name, content_type,
-                                              upload_func, upload_func_kwargs,
                                               object_path, headers=headers,
                                               file_path=file_path,
-                                              iterator=iterator)
+                                              stream=stream)
 
             response = result_dict['response']
             bytes_transferred = result_dict['bytes_transferred']
             data_hash = result_dict['data_hash']
             headers = response.headers
-            response = response.response
 
         if response.status != httplib.CREATED:
             raise LibcloudError(

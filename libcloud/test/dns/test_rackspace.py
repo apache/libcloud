@@ -51,8 +51,7 @@ class RackspaceUSTests(unittest.TestCase):
     region = 'us'
 
     def setUp(self):
-        self.klass.connectionCls.conn_classes = (
-            None, RackspaceMockHttp)
+        self.klass.connectionCls.conn_class = RackspaceMockHttp
         RackspaceMockHttp.type = None
 
         driver_kwargs = {'region': self.region}

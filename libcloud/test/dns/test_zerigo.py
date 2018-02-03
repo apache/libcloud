@@ -29,8 +29,7 @@ from libcloud.test.secrets import DNS_PARAMS_ZERIGO
 
 class ZerigoTests(unittest.TestCase):
     def setUp(self):
-        ZerigoDNSDriver.connectionCls.conn_classes = (
-            None, ZerigoMockHttp)
+        ZerigoDNSDriver.connectionCls.conn_class = ZerigoMockHttp
         ZerigoMockHttp.type = None
         self.driver = ZerigoDNSDriver(*DNS_PARAMS_ZERIGO)
 
@@ -271,7 +270,7 @@ class ZerigoMockHttp(MockHttp):
 
     def _api_1_1_zones_xml(self, method, url, body, headers):
         body = self.fixtures.load('list_zones.xml')
-        return (httplib.OK, body, {'x-query-count': 1},
+        return (httplib.OK, body, {'x-query-count': '1'},
                 httplib.responses[httplib.OK])
 
     def _api_1_1_zones_xml_NO_RESULTS(self, method, url, body, headers):
@@ -280,13 +279,13 @@ class ZerigoMockHttp(MockHttp):
 
     def _api_1_1_zones_12345678_hosts_xml(self, method, url, body, headers):
         body = self.fixtures.load('list_records.xml')
-        return (httplib.OK, body, {'x-query-count': 1},
+        return (httplib.OK, body, {'x-query-count': '1'},
                 httplib.responses[httplib.OK])
 
     def _api_1_1_zones_12345678_hosts_xml_NO_RESULTS(self, method, url, body,
                                                      headers):
         body = self.fixtures.load('list_records_no_results.xml')
-        return (httplib.OK, body, {'x-query-count': 0},
+        return (httplib.OK, body, {'x-query-count': '0'},
                 httplib.responses[httplib.OK])
 
     def _api_1_1_zones_12345678_hosts_xml_ZONE_DOES_NOT_EXIST(self, method,

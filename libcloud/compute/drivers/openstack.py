@@ -23,11 +23,6 @@ try:
 except ImportError:
     import json
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 import warnings
 import base64
 
@@ -50,6 +45,7 @@ from libcloud.compute.types import NodeState, StorageVolumeState, Provider, \
     VolumeSnapshotState
 from libcloud.pricing import get_size_price
 from libcloud.utils.xml import findall
+from libcloud.utils.py3 import ET
 
 __all__ = [
     'OpenStack_1_0_Response',
@@ -138,6 +134,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                 cls = OpenStack_1_0_NodeDriver
             elif api_version == '1.1':
                 cls = OpenStack_1_1_NodeDriver
+            elif api_version in ['2.0', '2.1', '2.2']:
+                cls = OpenStack_2_NodeDriver
             else:
                 raise NotImplementedError(
                     "No OpenStackNodeDriver found for API version %s" %
@@ -2437,6 +2435,33 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         uri = '/servers/{node_id}/action'.format(node_id=node.id)
         resp = self.connection.request(uri, method='POST', data={action: None})
         return resp.status == httplib.ACCEPTED
+
+
+class OpenStack_2_Connection(OpenStackComputeConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
+class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
+    """
+    OpenStack node driver.
+    """
+    connectionCls = OpenStack_2_Connection
+    type = Provider.OPENSTACK
+
+    features = {"create_node": ["generates_password"]}
+    _networks_url_prefix = '/os-networks'
+
+    def __init__(self, *args, **kwargs):
+        self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
+                                                    None))
+        if 'ex_force_auth_version' not in kwargs:
+            kwargs['ex_force_auth_version'] = '3.x_password'
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
 
 
 class OpenStack_1_1_FloatingIpPool(object):

@@ -34,8 +34,7 @@ class GandiTests(unittest.TestCase):
     node_name = 'test2'
 
     def setUp(self):
-        GandiNodeDriver.connectionCls.conn_classes = (
-            GandiMockHttp, GandiMockHttp)
+        GandiNodeDriver.connectionCls.conn_class = GandiMockHttp
         GandiMockHttp.type = None
         self.driver = GandiNodeDriver(*GANDI_PARAMS)
 
@@ -187,8 +186,7 @@ class GandiRatingTests(unittest.TestCase):
     node_name = 'test2'
 
     def setUp(self):
-        GandiNodeDriver.connectionCls.conn_classes = (
-            GandiMockRatingHttp, GandiMockRatingHttp)
+        GandiNodeDriver.connectionCls.conn_class = GandiMockRatingHttp
         GandiMockRatingHttp.type = None
         self.driver = GandiNodeDriver(*GANDI_PARAMS)
 

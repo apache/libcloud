@@ -66,9 +66,11 @@ class Provider(Type):
     :cvar ABIQUO: Abiquo driver
     :cvar ALIYUN_ECS: Aliyun ECS driver.
     :cvar AURORACOMPUTE: Aurora Compute driver.
-    :cvar AZURE: Azure driver.
+    :cvar AZURE: Azure (classic) driver.
+    :cvar AZURE_ARM: Azure Resource Manager (modern) driver.
     :cvar BLUEBOX: Bluebox
     :cvar CLOUDSIGMA: CloudSigma
+    :cvar CLOUDSCALE: cloudscale.ch
     :cvar CLOUDSTACK: CloudStack
     :cvar DIMENSIONDATA: Dimension Data Cloud
     :cvar EC2: Amazon AWS.
@@ -96,11 +98,14 @@ class Provider(Type):
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     :cvar RIMUHOSTING: RimuHosting.com
     :cvar TERREMARK: Terremark
+    :cvar UPCLOUD: UpCloud
     :cvar VCL: VCL driver
     :cvar VCLOUD: vmware vCloud
     :cvar VPSNET: VPS.net
     :cvar VULTR: vultr driver.
     """
+    AZURE = 'azure'
+    AZURE_ARM = 'azure_arm'
     DUMMY = 'dummy'
     ABIQUO = 'abiquo'
     ALIYUN_ECS = 'aliyun_ecs'
@@ -112,6 +117,7 @@ class Provider(Type):
     CISCOCCS = 'ciscoccs'
     CLOUDFRAMES = 'cloudframes'
     CLOUDSIGMA = 'cloudsigma'
+    CLOUDSCALE = 'cloudscale'
     CLOUDSTACK = 'cloudstack'
     CLOUDWATT = 'cloudwatt'
     DIGITAL_OCEAN = 'digitalocean'
@@ -139,6 +145,7 @@ class Provider(Type):
     NIMBUS = 'nimbus'
     NINEFOLD = 'ninefold'
     NTTA = 'ntta'
+    ONEANDONE = 'oneandone'
     OPENNEBULA = 'opennebula'
     OPENSTACK = 'openstack'
     OPSOURCE = 'opsource'
@@ -155,6 +162,7 @@ class Provider(Type):
     SKALICLOUD = 'skalicloud'
     SOFTLAYER = 'softlayer'
     TERREMARK = 'terremark'
+    UPCLOUD = 'upcloud'
     VCL = 'vcl'
     VCLOUD = 'vcloud'
     VOXEL = 'voxel'
@@ -176,8 +184,10 @@ class Provider(Type):
     RACKSPACE_NOVA_ORD = 'rackspace_nova_ord'
 
     EC2_US_EAST = 'ec2_us_east'
+    EC2_US_EAST_OHIO = 'ec2_us_east_ohio'
     EC2_EU = 'ec2_eu_west'  # deprecated name
     EC2_EU_WEST = 'ec2_eu_west'
+    EC2_EU_WEST2 = 'ec2_eu_west_london'
     EC2_US_WEST = 'ec2_us_west'
     EC2_AP_SOUTHEAST = 'ec2_ap_southeast'
     EC2_AP_NORTHEAST = 'ec2_ap_northeast'
@@ -186,6 +196,7 @@ class Provider(Type):
     EC2_US_WEST_OREGON = 'ec2_us_west_oregon'
     EC2_SA_EAST = 'ec2_sa_east'
     EC2_AP_SOUTHEAST2 = 'ec2_ap_southeast_2'
+    EC2_CA_CENTRAL1 = 'ec2_ca_central_1'
 
     ELASTICHOSTS_UK1 = 'elastichosts_uk1'
     ELASTICHOSTS_UK2 = 'elastichosts_uk2'
@@ -218,8 +229,10 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
 
     # AWS
     Provider.EC2_US_EAST: Provider.EC2,
+    Provider.EC2_US_EAST_OHIO: Provider.EC2,
     Provider.EC2_EU: Provider.EC2,
     Provider.EC2_EU_WEST: Provider.EC2,
+    Provider.EC2_EU_WEST2: Provider.EC2,
     Provider.EC2_US_WEST: Provider.EC2,
     Provider.EC2_AP_SOUTHEAST: Provider.EC2,
     Provider.EC2_AP_SOUTHEAST2: Provider.EC2,
@@ -229,6 +242,7 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_US_WEST_OREGON: Provider.EC2,
     Provider.EC2_SA_EAST: Provider.EC2,
     Provider.EC2_AP_SOUTHEAST: Provider.EC2,
+    Provider.EC2_CA_CENTRAL1: Provider.EC2,
 
     # ElasticHosts
     Provider.ELASTICHOSTS_UK1: Provider.ELASTICHOSTS,
@@ -273,6 +287,8 @@ class NodeState(Type):
     PAUSED = 'paused'
     RECONFIGURING = 'reconfiguring'
     MIGRATING = 'migrating'
+    NORMAL = 'normal'
+    UPDATING = 'updating'
 
 
 class StorageVolumeState(Type):
@@ -289,6 +305,7 @@ class StorageVolumeState(Type):
     ATTACHING = 'attaching'
     UNKNOWN = 'unknown'
     MIGRATING = 'migrating'
+    UPDATING = 'updating'
 
 
 class VolumeSnapshotState(Type):
@@ -301,6 +318,7 @@ class VolumeSnapshotState(Type):
     DELETING = 'deleting'
     RESTORING = 'restoring'
     UNKNOWN = 'unknown'
+    UPDATING = 'updating'
 
 
 class Architecture(object):

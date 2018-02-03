@@ -1,0 +1,20 @@
+{
+    "id": "dc-1",
+    "type": "datacenter",
+    "href": "/cloudapi/v4/datacenters/dc-1",
+    "metadata": {
+        "createdDate": "2016-10-18T17:20:56Z",
+        "createdBy": "test@test.te",
+        "etag": "c2d3d4d9bbdc0fff7d3c5c3864a68a46",
+        "lastModifiedDate": "2016-10-18T17:20:56Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "BUSY"
+    },
+    "properties": {
+        "name": "libcloud Test",
+        "description": "libcloud test datacenter",
+        "location": "us/las",
+        "version": null,
+        "features": []
+    }
+}

@@ -29,9 +29,8 @@ from libcloud.test.secrets import ECP_PARAMS
 class ECPTests(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        ECPNodeDriver.connectionCls.conn_classes = (None,
-                                                    ECPMockHttp)
-        self.driver = ECPNodeDriver(*ECP_PARAMS)
+        ECPNodeDriver.connectionCls.conn_class = ECPMockHttp
+        self.driver = ECPNodeDriver(*ECP_PARAMS, host='dummy')
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()

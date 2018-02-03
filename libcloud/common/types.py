@@ -100,6 +100,17 @@ class InvalidCredsError(ProviderError):
 InvalidCredsException = InvalidCredsError
 
 
+class ServiceUnavailableError(ProviderError):
+    """Exception used when a provider returns 503 Service Unavailable."""
+
+    def __init__(self, value='Service unavailable at provider', driver=None):
+        super(ServiceUnavailableError, self).__init__(
+            value,
+            http_code=httplib.SERVICE_UNAVAILABLE,
+            driver=driver
+        )
+
+
 class LazyList(object):
 
     def __init__(self, get_more, value_dict=None):

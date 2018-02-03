@@ -17,7 +17,7 @@ import unittest
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.digitalocean import DigitalOceanBaseDriver
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import FileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 from libcloud.utils.py3 import httplib
@@ -26,8 +26,8 @@ from libcloud.utils.py3 import httplib
 class DigitalOceanTests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanBaseDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanMockHttp)
+        DigitalOceanBaseDriver.connectionCls.conn_class = \
+            DigitalOceanMockHttp
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanBaseDriver(*DIGITALOCEAN_v2_PARAMS)
 
@@ -60,7 +60,7 @@ class DigitalOceanTests(LibcloudTestCase):
         self.assertEqual(actions[0]['status'], 'completed')
 
 
-class DigitalOceanMockHttp(MockHttpTestCase):
+class DigitalOceanMockHttp(MockHttp):
     fixtures = FileFixtures('common', 'digitalocean')
 
     response = {
@@ -96,8 +96,8 @@ class DigitalOceanMockHttp(MockHttpTestCase):
 
     def _v2_actions_page_1(self, method, url, body, headers):
         body = self.fixtures.load('_v2_actions_page_1.json')
-        return (self.response[None], body, {},
-                httplib.responses[self.response[None]])
+        return (httplib.OK, body, {},
+                httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':

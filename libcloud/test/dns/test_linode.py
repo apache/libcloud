@@ -29,8 +29,7 @@ from libcloud.test.secrets import DNS_PARAMS_LINODE
 
 class LinodeTests(unittest.TestCase):
     def setUp(self):
-        LinodeDNSDriver.connectionCls.conn_classes = (
-            None, LinodeMockHttp)
+        LinodeDNSDriver.connectionCls.conn_class = LinodeMockHttp
         LinodeMockHttp.use_param = 'api_action'
         LinodeMockHttp.type = None
         self.driver = LinodeDNSDriver(*DNS_PARAMS_LINODE)
@@ -68,6 +67,14 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(arecord.data, '127.0.0.1')
         self.assertHasKeys(arecord.extra, ['protocol', 'ttl_sec', 'port',
                                            'weight'])
+
+        srvrecord = records[1]
+        self.assertEquals(srvrecord.id, '3585141')
+        self.assertEquals(srvrecord.name, '_minecraft._udp')
+        self.assertEquals(srvrecord.type, RecordType.SRV)
+        self.assertEquals(srvrecord.data, 'mc.linode.com')
+        self.assertHasKeys(srvrecord.extra, ['protocol', 'ttl_sec', 'port',
+                                             'priority', 'weight'])
 
     def test_list_records_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]

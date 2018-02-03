@@ -1,0 +1,22 @@
+[
+  {
+    "dns_zone": {
+      "id": 1,
+      "name": "example.com",
+      "user_id": 123,
+      "created_at": "2017-03-24T16:07:05.000+05:30",
+      "updated_at": "2017-03-24T16:07:05.000+05:30",
+      "cdn_reference": 12345678
+    }
+  },
+  {
+    "dns_zone": {
+      "id": 2,
+      "name": "example.net",
+      "user_id": 124,
+      "created_at": "2017-03-24T16:07:05.000+05:30",
+      "updated_at": "2017-03-24T16:07:05.000+05:30",
+      "cdn_reference": 12345679
+    }
+  }
+]

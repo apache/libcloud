@@ -30,7 +30,7 @@ from libcloud.common.digitalocean import DigitalOcean_v1_Error
 from libcloud.compute.base import NodeImage
 from libcloud.compute.drivers.digitalocean import DigitalOceanNodeDriver
 
-from libcloud.test import LibcloudTestCase, MockHttpTestCase
+from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import DIGITALOCEAN_v1_PARAMS
 from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
@@ -40,8 +40,8 @@ from libcloud.test.secrets import DIGITALOCEAN_v2_PARAMS
 class DigitalOcean_v2_Tests(LibcloudTestCase):
 
     def setUp(self):
-        DigitalOceanNodeDriver.connectionCls.conn_classes = \
-            (None, DigitalOceanMockHttp)
+        DigitalOceanNodeDriver.connectionCls.conn_class = \
+            DigitalOceanMockHttp
         DigitalOceanMockHttp.type = None
         self.driver = DigitalOceanNodeDriver(*DIGITALOCEAN_v2_PARAMS)
 
@@ -94,6 +94,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(nodes[0].public_ips, ['104.236.32.182'])
         self.assertEqual(nodes[0].extra['image']['id'], 6918990)
         self.assertEqual(nodes[0].extra['size_slug'], '512mb')
+        self.assertEqual(len(nodes[0].extra['tags']), 2)
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
@@ -154,6 +155,19 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.ex_hard_reboot(node)
         self.assertTrue(result)
 
+    def test_ex_rebuild_node_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'REBUILD'
+        result = self.driver.ex_rebuild_node(node)
+        self.assertTrue(result)
+
+    def test_ex_resize_node_success(self):
+        node = self.driver.list_nodes()[0]
+        size = self.driver.list_sizes()[0]
+        DigitalOceanMockHttp.type = 'RESIZE'
+        result = self.driver.ex_resize_node(node, size)
+        self.assertTrue(result)
+
     def test_destroy_node_success(self):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'DESTROY'
@@ -164,6 +178,12 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'KERNELCHANGE'
         result = self.driver.ex_change_kernel(node, 7515)
+        self.assertTrue(result)
+
+    def test_ex_enable_ipv6_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'ENABLEIPV6'
+        result = self.driver.ex_enable_ipv6(node)
         self.assertTrue(result)
 
     def test_ex_rename_node_success(self):
@@ -273,7 +293,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertTrue(result)
 
 
-class DigitalOceanMockHttp(MockHttpTestCase):
+class DigitalOceanMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('digitalocean_v2')
 
     def _v2_regions(self, method, url, body, headers):
@@ -312,6 +332,11 @@ class DigitalOceanMockHttp(MockHttpTestCase):
         body = self.fixtures.load('ex_change_kernel.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
+    def _v2_droplets_3164444_actions_ENABLEIPV6(self, method, url, body, headers):
+        # enable_ipv6
+        body = self.fixtures.load('ex_enable_ipv6.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
     def _v2_droplets_3164444_actions_RENAME(self, method, url, body, headers):
         # rename_node
         body = self.fixtures.load('ex_rename_node.json')
@@ -348,6 +373,18 @@ class DigitalOceanMockHttp(MockHttpTestCase):
                                                 body, headers):
         # ex_hard_reboot
         body = self.fixtures.load('ex_hard_reboot.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_droplets_3164444_actions_REBUILD(self, method, url,
+                                             body, headers):
+        # ex_rebuild_node
+        body = self.fixtures.load('ex_rebuild_node.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_droplets_3164444_actions_RESIZE(self, method, url,
+                                            body, headers):
+        # ex_resize_node
+        body = self.fixtures.load('ex_resize_node.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
 
     def _v2_account_keys(self, method, url, body, headers):

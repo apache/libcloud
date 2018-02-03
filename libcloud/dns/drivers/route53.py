@@ -26,11 +26,7 @@ from libcloud.utils.py3 import httplib
 
 from hashlib import sha1
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, urlencode
 
 from libcloud.utils.xml import findtext, findall, fixxpath
@@ -38,7 +34,7 @@ from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.common.types import LibcloudError
-from libcloud.common.aws import AWSGenericResponse
+from libcloud.common.aws import AWSGenericResponse, AWSTokenConnection
 from libcloud.common.base import ConnectionUserAndKey
 
 
@@ -67,7 +63,7 @@ class Route53DNSResponse(AWSGenericResponse):
     }
 
 
-class Route53Connection(ConnectionUserAndKey):
+class BaseRoute53Connection(ConnectionUserAndKey):
     host = API_HOST
     responseCls = Route53DNSResponse
 
@@ -96,6 +92,10 @@ class Route53Connection(ConnectionUserAndKey):
         return b64_hmac.decode('utf-8')
 
 
+class Route53Connection(AWSTokenConnection, BaseRoute53Connection):
+    pass
+
+
 class Route53DNSDriver(DNSDriver):
     type = Provider.ROUTE53
     name = 'Route53 DNS'
@@ -114,6 +114,10 @@ class Route53DNSDriver(DNSDriver):
         RecordType.SRV: 'SRV',
         RecordType.TXT: 'TXT',
     }
+
+    def __init__(self, *args, **kwargs):
+        self.token = kwargs.pop('token', None)
+        super(Route53DNSDriver, self).__init__(*args, **kwargs)
 
     def iterate_zones(self):
         return self._get_more('zones')
@@ -184,6 +188,8 @@ class Route53DNSDriver(DNSDriver):
         return response.status in [httplib.OK]
 
     def create_record(self, name, zone, type, data, extra=None):
+        if type in (RecordType.TXT, RecordType.SPF):
+            data = self._quote_data(data)
         extra = extra or {}
         batch = [('CREATE', name, type, data, extra)]
         self._post_changeset(zone, batch)
@@ -546,3 +552,13 @@ class Route53DNSDriver(DNSDriver):
             return items, last_key, exhausted
         else:
             return [], None, True
+
+    def _ex_connection_class_kwargs(self):
+        kwargs = super(Route53DNSDriver, self)._ex_connection_class_kwargs()
+        kwargs['token'] = self.token
+        return kwargs
+
+    def _quote_data(self, data):
+        if data[0] == '"' and data[-1] == '"':
+            return data
+        return '"{0}"'.format(data.replace('"', '\"'))

@@ -25,8 +25,7 @@ from libcloud.test import MockHttp
 class DockerUtilitiesTestCase(unittest.TestCase):
 
     def setUp(self):
-        HubClient.connectionCls.conn_classes = (
-            DockerMockHttp, DockerMockHttp)
+        HubClient.connectionCls.conn_class = DockerMockHttp
         DockerMockHttp.type = None
         DockerMockHttp.use_param = 'a'
         self.driver = HubClient()

@@ -477,7 +477,6 @@ class ECSDriver(NodeDriver):
     Used for Aliyun ECS service.
 
     TODO:
-    Create public IP address
     Get guest OS root password
     Adjust internet bandwidth settings
     Manage security groups and rules
@@ -675,9 +674,9 @@ class ECSDriver(NodeDriver):
 
         if ex_io_optimized is not None:
             optimized = ex_io_optimized
-            if not isinstance(optimized, bool):
-                optimized = str(optimized).lower() == 'true'
-            params['IoOptimized'] = 'true' if optimized else 'false'
+            if isinstance(optimized, bool):
+                optimized = 'optimized' if optimized else 'none'
+            params['IoOptimized'] = optimized
 
         if ex_system_disk:
             system_disk = self._get_system_disk(ex_system_disk)
@@ -821,6 +820,35 @@ class ECSDriver(NodeDriver):
         resp = self.connection.request(self.path, params)
         return resp.success()
 
+    def ex_modify_security_group_by_id(
+            self,
+            group_id=None,
+            name=None,
+            description=None):
+        """
+        Modify a new security group.
+        :keyword group_id: id of the security group
+        :type group_id: ``str``
+        :keyword name: new name of the security group
+        :type name: ``unicode``
+        :keyword description: new description of the security group
+        :type description: ``unicode``
+        """
+
+        params = {'Action': 'ModifySecurityGroupAttribute',
+                  'RegionId': self.region}
+        if not group_id:
+            raise AttributeError('group_id is required')
+        params["SecurityGroupId"] = group_id
+
+        if name:
+            params["SecurityGroupName"] = name
+        if description:
+            params["Description"] = description
+
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
     def ex_list_security_groups(self, ex_filters=None):
         """
         List security groups in the current region.
@@ -852,7 +880,7 @@ class ECSDriver(NodeDriver):
         List security group attributes in the current region.
 
         :keyword group_id: security group id.
-        :type ex_filters: ``str``
+        :type group_id: ``str``
 
         :keyword nic_type: internet|intranet.
         :type nic_type: ``str``
@@ -872,6 +900,62 @@ class ECSDriver(NodeDriver):
         sga_elements = findall(resp_object, 'Permissions/Permission',
                                namespace=self.namespace)
         return [self._to_security_group_attribute(el) for el in sga_elements]
+
+    def ex_join_security_group(self, node, group_id=None):
+        """
+        Join a node into security group.
+
+        :param node: The node to join security group
+        :type node: :class:`Node`
+
+        :param group_id: security group id.
+        :type group_id: ``str``
+
+
+        :return: join operation result.
+        :rtype: ``bool``
+        """
+        if group_id is None:
+            raise AttributeError('group_id is required')
+
+        if node.state != NodeState.RUNNING and \
+           node.state != NodeState.STOPPED:
+            raise LibcloudError('The node state with id % s need\
+                                be running or stopped .' % node.id)
+
+        params = {'Action': 'JoinSecurityGroup',
+                  'InstanceId': node.id,
+                  'SecurityGroupId': group_id}
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+    def ex_leave_security_group(self, node, group_id=None):
+        """
+        Leave a node from security group.
+
+        :param node: The node to leave security group
+        :type node: :class:`Node`
+
+        :param group_id: security group id.
+        :type group_id: ``str``
+
+
+        :return: leave operation result.
+        :rtype: ``bool``
+        """
+        if group_id is None:
+            raise AttributeError('group_id is required')
+
+        if node.state != NodeState.RUNNING and \
+           node.state != NodeState.STOPPED:
+            raise LibcloudError('The node state with id % s need\
+                                be running or stopped .' % node.id)
+
+        params = {'Action': 'LeaveSecurityGroup',
+                  'InstanceId': node.id,
+                  'SecurityGroupId': group_id}
+        resp = self.connection.request(self.path, params)
+        return resp.success()
 
     def ex_list_zones(self, region_id=None):
         """
@@ -893,7 +977,6 @@ class ECSDriver(NodeDriver):
                                 namespace=self.namespace)
         zones = [self._to_zone(el) for el in zone_elements]
         return zones
-
     ##
     # Volume and snapshot management methods
     ##
@@ -1273,6 +1356,23 @@ class ECSDriver(NodeDriver):
         image_id = findtext(resp.object, 'ImageId', namespace=self.namespace)
         return self.get_image(image_id=image_id)
 
+    def create_public_ip(self, instance_id):
+            """
+            Create public ip.
+
+            :keyword instance_id: instance id for allocating public ip.
+            :type    instance_id: ``str``
+
+            :return public ip
+            :rtype ``str``
+            """
+            params = {'Action': 'AllocatePublicIpAddress',
+                      'InstanceId': instance_id}
+
+            resp = self.connection.request(self.path, params=params)
+            return findtext(resp.object, 'IpAddress',
+                            namespace=self.namespace)
+
     def _to_nodes(self, object):
         """
         Convert response to Node object list
@@ -1367,6 +1467,9 @@ class ECSDriver(NodeDriver):
                     raise AttributeError('ex_internet_max_bandwidth_out is '
                                          'mandatory for PayByTraffic internet'
                                          ' charge type.')
+            elif ex_internet_max_bandwidth_out:
+                params['InternetMaxBandwidthOut'] = \
+                    ex_internet_max_bandwidth_out
 
         if ex_internet_max_bandwidth_in:
             params['InternetMaxBandwidthIn'] = \

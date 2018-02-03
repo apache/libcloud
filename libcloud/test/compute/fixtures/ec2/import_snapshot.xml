@@ -1,0 +1,16 @@
+<ImportSnapshotResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
+    <requestId>0d490bf6-19cf-4456-9c71-31d097faf46d</requestId>
+    <importTaskId>import-snap-fgsddbhv</importTaskId>
+        <snapshotTaskDetail>
+        <format>RAW</format>
+        <progress>3</progress>
+        <diskImageSize>0.0</diskImageSize>
+        <statusMessage>pending</statusMessage>
+        <userBucket>
+            <s3Bucket>dummy-bucket</s3Bucket>
+            <s3Key>dummy-key</s3Key>
+        </userBucket>
+        <status>active</status>
+    </snapshotTaskDetail>
+</ImportSnapshotResponse>
+

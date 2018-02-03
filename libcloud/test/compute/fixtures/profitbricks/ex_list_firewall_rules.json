@@ -1,0 +1,79 @@
+{
+    "id": "nic-2/firewallrules",
+    "type": "collection",
+    "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules",
+    "items": [
+        {
+            "id": "fwr-1",
+            "type": "firewall-rule",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules/fwr-1",
+            "metadata": {
+                "createdDate": "2016-10-19T11:08:10Z",
+                "createdBy": "test@test.te",
+                "etag": "b91a2e082a7422dafb79d84a07fb2a28",
+                "lastModifiedDate": "2016-10-19T11:19:04Z",
+                "lastModifiedBy": "test@test.te",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "Test updated firewall rule",
+                "protocol": "TCP",
+                "sourceMac": null,
+                "sourceIp": null,
+                "targetIp": null,
+                "icmpCode": null,
+                "icmpType": null,
+                "portRangeStart": 80,
+                "portRangeEnd": 80
+            }
+        },
+        {
+            "id": "fw2",
+            "type": "firewall-rule",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules/fw2",
+            "metadata": {
+                "createdDate": "2016-10-19T09:55:10Z",
+                "createdBy": "test@test.te",
+                "etag": "00bb5b86562db1ed19ca38697e485160",
+                "lastModifiedDate": "2016-10-19T09:55:10Z",
+                "lastModifiedBy": "test@test.te",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "HTTPs (SSL)",
+                "protocol": "TCP",
+                "sourceMac": null,
+                "sourceIp": null,
+                "targetIp": null,
+                "icmpCode": null,
+                "icmpType": null,
+                "portRangeStart": 443,
+                "portRangeEnd": 443
+            }
+        },
+        {
+            "id": "6238b1e2-c706-4dc9-80a9-307fa0bd4287",
+            "type": "firewall-rule",
+            "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules/6238b1e2-c706-4dc9-80a9-307fa0bd4287",
+            "metadata": {
+                "createdDate": "2016-10-19T09:55:10Z",
+                "createdBy": "test@test.te",
+                "etag": "00bb5b86562db1ed19ca38697e485160",
+                "lastModifiedDate": "2016-10-19T09:55:10Z",
+                "lastModifiedBy": "test@test.te",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "HTTP Webserver",
+                "protocol": "TCP",
+                "sourceMac": null,
+                "sourceIp": null,
+                "targetIp": null,
+                "icmpCode": null,
+                "icmpType": null,
+                "portRangeStart": 80,
+                "portRangeEnd": 80
+            }
+        }
+    ]
+}

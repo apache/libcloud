@@ -48,6 +48,7 @@ class Provider(object):
     :cvar S3: Amazon S3 US
     :cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
     :cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
+    :cvar S3_AP_SOUTHEAST2_HOST: Amazon S3 Asia South East 2 (Sydney)
     :cvar S3_CN_NORTH: Amazon S3 CN North (Beijing)
     :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
     :cvar S3_US_WEST: Amazon S3 US West (Northern California)
@@ -61,6 +62,7 @@ class Provider(object):
     AZURE_BLOBS = 'azure_blobs'
     BACKBLAZE_B2 = 'backblaze_b2'
     CLOUDFILES = 'cloudfiles'
+    DIGITALOCEAN_SPACES = 'digitalocean_spaces'
     GOOGLE_STORAGE = 'google_storage'
     KTUCLOUD = 'ktucloud'
     LOCAL = 'local'
@@ -71,12 +73,19 @@ class Provider(object):
     S3_AP_NORTHEAST = 's3_ap_northeast'
     S3_AP_NORTHEAST1 = 's3_ap_northeast_1'
     S3_AP_NORTHEAST2 = 's3_ap_northeast_2'
+    S3_AP_SOUTH = 's3_ap_south'
     S3_AP_SOUTHEAST = 's3_ap_southeast'
+    S3_AP_SOUTHEAST2 = 's3_ap_southeast2'
+    S3_CA_CENTRAL = 's3_ca_central'
     S3_CN_NORTH = 's3_cn_north'
     S3_EU_WEST = 's3_eu_west'
+    S3_EU_WEST2 = 's3_eu_west_2'
+    S3_EU_CENTRAL = 's3_eu_central'
     S3_SA_EAST = 's3_sa_east'
+    S3_US_EAST2 = 's3_us_east_2'
     S3_US_WEST = 's3_us_west'
     S3_US_WEST_OREGON = 's3_us_west_oregon'
+    S3_US_GOV_WEST = 's3_us_gov_west'
     S3_RGW = 's3_rgw'
     S3_RGW_OUTSCALE = 's3_rgw_outscale'
 

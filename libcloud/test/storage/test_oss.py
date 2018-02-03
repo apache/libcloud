@@ -24,18 +24,11 @@ try:
 except ImportError:
     from unittest import mock
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
-from libcloud.utils.py3 import PY3
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import Container, Object
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerError
@@ -47,8 +40,7 @@ from libcloud.storage.drivers.oss import OSSConnection
 from libcloud.storage.drivers.oss import OSSStorageDriver
 from libcloud.storage.drivers.oss import CHUNK_SIZE
 from libcloud.storage.drivers.dummy import DummyIterator
-from libcloud.test import StorageMockHttp, MockRawResponse  # pylint: disable-msg=E0611
-from libcloud.test import MockHttpTestCase  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp, generate_random_data, make_response  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_OSS_PARAMS
 
@@ -85,7 +77,7 @@ class ObjectTestCase(unittest.TestCase):
         self.assertTrue(obj.__repr__() is not None)
 
 
-class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
+class OSSMockHttp(MockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('oss')
     base_headers = {}
@@ -234,66 +226,12 @@ class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_object(self, method, url, body, headers):
+    def _foo_bar_object_delete(self, method, url, body, headers):
         # test_delete_object
         return (httplib.NO_CONTENT,
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-
-    def _foo_test_stream_data_multipart(self, method, url, body, headers):
-        headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
-        TEST_UPLOAD_ID = '0004B9894A22E5B1888A1E29F8236E2D'
-
-        query_string = urlparse.urlsplit(url).query
-        query = parse_qs(query_string)
-
-        if not query.get('uploadId', False):
-            self.fail('Request doesnt contain uploadId query parameter')
-
-        upload_id = query['uploadId'][0]
-        if upload_id != TEST_UPLOAD_ID:
-            self.fail('first uploadId doesnt match')
-
-        if method == 'PUT':
-            # PUT is used for uploading the part. part number is mandatory
-            if not query.get('partNumber', False):
-                self.fail('Request is missing partNumber query parameter')
-
-            body = ''
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
-
-        elif method == 'DELETE':
-            # DELETE is done for aborting the upload
-            body = ''
-            return (httplib.NO_CONTENT,
-                    body,
-                    headers,
-                    httplib.responses[httplib.NO_CONTENT])
-
-        else:
-            commit = ET.fromstring(body)
-            count = 0
-
-            for part in commit.findall('Part'):
-                count += 1
-                part_no = part.find('PartNumber').text
-                etag = part.find('ETag').text
-
-                self.assertEqual(part_no, str(count))
-                self.assertEqual(etag, headers['etag'])
-
-            # Make sure that manifest contains at least one part
-            self.assertTrue(count >= 1)
-
-            body = self.fixtures.load('complete_multipart_upload.xml')
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
 
     def _list_multipart(self, method, url, body, headers):
         query_string = urlparse.urlsplit(url).query
@@ -309,30 +247,9 @@ class OSSMockHttp(StorageMockHttp, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-
-class OSSMockRawResponse(MockRawResponse, MockHttpTestCase):
-
-    fixtures = StorageFileFixtures('oss')
-
-    def parse_body(self):
-        if len(self.body) == 0 and not self.parse_zero_length_body:
-            return self.body
-
-        try:
-            if PY3:
-                parser = ET.XMLParser(encoding='utf-8')
-                body = ET.XML(self.body.encode('utf-8'), parser=parser)
-            else:
-                body = ET.XML(self.body)
-        except:
-            raise MalformedResponseError("Failed to parse XML",
-                                         body=self.body,
-                                         driver=self.connection.driver)
-        return body
-
     def _foo_bar_object(self, method, url, body, headers):
         # test_download_object_success
-        body = self._generate_random_data(1000)
+        body = generate_random_data(1000)
         return (httplib.OK,
                 body,
                 headers,
@@ -346,43 +263,8 @@ class OSSMockRawResponse(MockRawResponse, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_object_not_found(self, method, url, body, headers):
-        # test_upload_object_not_found
-        return (httplib.NOT_FOUND,
-                body,
-                headers,
-                httplib.responses[httplib.NOT_FOUND])
-
-    def _foo_test_upload_invalid_hash1(self, method, url, body, headers):
-        body = ''
+    def _foo_test_stream_data_multipart(self, method, url, body, headers):
         headers = {}
-        headers['etag'] = '"foobar"'
-        # test_upload_object_invalid_hash1
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_test_upload(self, method, url, body, headers):
-        # test_upload_object_success
-        body = ''
-        headers = {'etag': '"0CC175B9C0F1B6A831C399E269772661"'}
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_test_upload_acl(self, method, url, body, headers):
-        # test_upload_object_with_acl
-        body = ''
-        headers = {'etag': '"0CC175B9C0F1B6A831C399E269772661"'}
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_test_stream_data(self, method, url, body, headers):
-        # test_upload_object_via_stream
         body = ''
         headers = {'etag': '"0cc175b9c0f1b6a831c399e269772661"'}
         return (httplib.OK,
@@ -390,42 +272,20 @@ class OSSMockRawResponse(MockRawResponse, MockHttpTestCase):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_test_stream_data_multipart(self, method, url, body, headers):
-        headers = {}
-        # POST is done for initiating multipart upload
-        if method == 'POST':
-            body = self.fixtures.load('initiate_multipart_upload.xml')
-            return (httplib.OK,
-                    body,
-                    headers,
-                    httplib.responses[httplib.OK])
-        else:
-            body = ''
-            return (httplib.BAD_REQUEST,
-                    body,
-                    headers,
-                    httplib.responses[httplib.BAD_REQUEST])
-
 
 class OSSStorageDriverTestCase(unittest.TestCase):
     driver_type = OSSStorageDriver
     driver_args = STORAGE_OSS_PARAMS
     mock_response_klass = OSSMockHttp
-    mock_raw_response_klass = OSSMockRawResponse
 
     @classmethod
     def create_driver(self):
         return self.driver_type(*self.driver_args)
 
     def setUp(self):
-        self.driver_type.connectionCls.conn_classes = (
-            None, self.mock_response_klass)
-        self.driver_type.connectionCls.rawResponseCls = \
-            self.mock_raw_response_klass
+        self.driver_type.connectionCls.conn_class = self.mock_response_klass
         self.mock_response_klass.type = None
         self.mock_response_klass.test = self
-        self.mock_raw_response_klass.type = None
-        self.mock_raw_response_klass.test = self
         self.driver = self.create_driver()
 
     def tearDown(self):
@@ -609,7 +469,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.assertTrue(result)
 
     def test_download_object_invalid_file_size(self):
-        self.mock_raw_response_klass.type = 'invalid_size'
+        self.mock_response_klass.type = 'invalid_size'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -623,7 +483,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.assertFalse(result)
 
     def test_download_object_not_found(self):
-        self.mock_raw_response_klass.type = 'not_found'
+        self.mock_response_klass.type = 'not_found'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -650,76 +510,85 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         self.assertTrue(hasattr(stream, '__iter__'))
 
     def test_upload_object_invalid_hash1(self):
-        def upload_file(self, response, file_path, chunked=False,
-                        calculate_hash=True):
-            return True, 'hash343hhash89h932439jsaa89', 1000
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': make_response(200, headers={'etag': '2345'}),
+                    'bytes_transferred': 1000,
+                    'data_hash': 'hash343hhash89h932439jsaa89'}
 
-        self.mock_raw_response_klass.type = 'invalid_hash1'
+        self.mock_response_klass.type = 'INVALID_HASH1'
 
-        old_func = self.driver_type._upload_file
+        old_func = self.driver_type._upload_object
+        self.driver_type._upload_object = upload_file
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_upload'
         try:
-            self.driver_type._upload_file = upload_file
-            file_path = os.path.abspath(__file__)
-            container = Container(name='foo_bar_container', extra={},
-                                  driver=self.driver)
-            object_name = 'foo_test_upload'
-            self.assertRaises(ObjectHashMismatchError,
-                              self.driver.upload_object,
-                              file_path=file_path,
-                              container=container,
-                              object_name=object_name,
-                              verify_hash=True)
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name,
+                                      verify_hash=True)
+        except ObjectHashMismatchError:
+            pass
+        else:
+            self.fail(
+                'Invalid hash was returned but an exception was not thrown')
         finally:
-            self.driver_type._upload_file = old_func
+            self.driver_type._upload_object = old_func
 
     def test_upload_object_success(self):
-        def upload_file(self, response, file_path, chunked=False,
-                        calculate_hash=True):
-            return True, '0cc175b9c0f1b6a831c399e269772661', 1000
-
-        old_func = self.driver_type._upload_file
-        try:
-            self.driver_type._upload_file = upload_file
-            file_path = os.path.abspath(__file__)
-            container = Container(name='foo_bar_container', extra={},
-                                  driver=self.driver)
-            object_name = 'foo_test_upload'
-            extra = {'meta_data': {'some-value': 'foobar'}}
-            obj = self.driver.upload_object(file_path=file_path,
-                                            container=container,
-                                            object_name=object_name,
-                                            extra=extra,
-                                            verify_hash=True)
-            self.assertEqual(obj.name, 'foo_test_upload')
-            self.assertEqual(obj.size, 1000)
-            self.assertTrue('some-value' in obj.meta_data)
-        finally:
-            self.driver_type._upload_file = old_func
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': make_response(200,
+                                              headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
+        self.mock_response_klass.type = None
+        old_func = self.driver_type._upload_object
+        self.driver_type._upload_object = upload_file
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_upload'
+        extra = {'meta_data': {'some-value': 'foobar'}}
+        obj = self.driver.upload_object(file_path=file_path,
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=True)
+        self.assertEqual(obj.name, 'foo_test_upload')
+        self.assertEqual(obj.size, 1000)
+        self.assertTrue('some-value' in obj.meta_data)
+        self.driver_type._upload_object = old_func
 
     def test_upload_object_with_acl(self):
-        def upload_file(self, response, file_path, chunked=False,
-                        calculate_hash=True):
-            return True, '0cc175b9c0f1b6a831c399e269772661', 1000
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            return {'response': make_response(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+                    'bytes_transferred': 1000,
+                    'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
-        old_func = self.driver_type._upload_file
-        try:
-            self.driver_type._upload_file = upload_file
-            self.mock_raw_response_klass.type = 'acl'
-            file_path = os.path.abspath(__file__)
-            container = Container(name='foo_bar_container', extra={},
-                                  driver=self.driver)
-            object_name = 'foo_test_upload'
-            extra = {'acl': 'public-read'}
-            obj = self.driver.upload_object(file_path=file_path,
-                                            container=container,
-                                            object_name=object_name,
-                                            extra=extra,
-                                            verify_hash=True)
-            self.assertEqual(obj.name, 'foo_test_upload')
-            self.assertEqual(obj.size, 1000)
-            self.assertEqual(obj.extra['acl'], 'public-read')
-        finally:
-            self.driver_type._upload_file = old_func
+        self.mock_response_klass.type = None
+        old_func = self.driver_type._upload_object
+        self.driver_type._upload_object = upload_file
+
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_upload'
+        extra = {'acl': 'public-read'}
+        obj = self.driver.upload_object(file_path=file_path,
+                                        container=container,
+                                        object_name=object_name,
+                                        extra=extra,
+                                        verify_hash=True)
+        self.assertEqual(obj.name, 'foo_test_upload')
+        self.assertEqual(obj.size, 1000)
+        self.assertEqual(obj.extra['acl'], 'public-read')
+        self.driver_type._upload_object = old_func
 
     def test_upload_object_with_invalid_acl(self):
         file_path = os.path.abspath(__file__)
@@ -737,10 +606,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_empty_object_via_stream(self):
         if self.driver.supports_multipart_upload:
-            self.mock_raw_response_klass.type = 'multipart'
             self.mock_response_klass.type = 'multipart'
         else:
-            self.mock_raw_response_klass.type = None
             self.mock_response_klass.type = None
 
         container = Container(name='foo_bar_container', extra={},
@@ -758,10 +625,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_small_object_via_stream(self):
         if self.driver.supports_multipart_upload:
-            self.mock_raw_response_klass.type = 'multipart'
             self.mock_response_klass.type = 'multipart'
         else:
-            self.mock_raw_response_klass.type = None
             self.mock_response_klass.type = None
 
         container = Container(name='foo_bar_container', extra={},
@@ -779,10 +644,8 @@ class OSSStorageDriverTestCase(unittest.TestCase):
 
     def test_upload_big_object_via_stream(self):
         if self.driver.supports_multipart_upload:
-            self.mock_raw_response_klass.type = 'multipart'
             self.mock_response_klass.type = 'multipart'
         else:
-            self.mock_raw_response_klass.type = None
             self.mock_response_klass.type = None
 
         container = Container(name='foo_bar_container', extra={},
@@ -803,7 +666,6 @@ class OSSStorageDriverTestCase(unittest.TestCase):
         if not self.driver.supports_multipart_upload:
             return
 
-        self.mock_raw_response_klass.type = 'MULTIPART'
         self.mock_response_klass.type = 'MULTIPART'
 
         def _faulty_iterator():
@@ -868,6 +730,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
                           obj=obj)
 
     def test_delete_object_success(self):
+        self.mock_response_klass.type = 'delete'
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object', size=1234, hash=None, extra=None,

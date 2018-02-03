@@ -33,7 +33,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 class PacketTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
-        PacketNodeDriver.connectionCls.conn_classes = (None, PacketMockHttp)
+        PacketNodeDriver.connectionCls.conn_class = PacketMockHttp
         self.driver = PacketNodeDriver('foo')
 
     def test_list_nodes(self):

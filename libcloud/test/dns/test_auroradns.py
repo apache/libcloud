@@ -23,7 +23,7 @@ from libcloud.dns.types import ZoneAlreadyExistsError
 from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.base import Zone
 from libcloud.test import LibcloudTestCase
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test import unittest
 from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_AURORADNS
@@ -33,8 +33,7 @@ from libcloud.utils.py3 import httplib
 class AuroraDNSDriverTests(LibcloudTestCase):
 
     def setUp(self):
-        AuroraDNSDriver.connectionCls.conn_classes = (None,
-                                                      AuroraDNSDriverMockHttp)
+        AuroraDNSDriver.connectionCls.conn_class = AuroraDNSDriverMockHttp
         AuroraDNSDriverMockHttp.type = None
         self.driver = AuroraDNSDriver(*DNS_PARAMS_AURORADNS)
 
@@ -249,7 +248,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.assertEqual(check.type, AuroraDNSHealthCheckType.HTTP)
 
 
-class AuroraDNSDriverMockHttp(MockHttpTestCase):
+class AuroraDNSDriverMockHttp(MockHttp):
     fixtures = DNSFileFixtures('auroradns')
 
     def _zones(self, method, url, body, headers):

@@ -1,0 +1,7 @@
+{
+  "id": "663D21E232530D79E4E584104C400EE4",
+  "protocol": "TCP",
+  "port": 22,
+  "alert_if": "RESPONDING",
+  "email_notifications": true
+}

@@ -1,0 +1,216 @@
+{
+    "id": "dc-2/loadbalancers",
+    "type": "collection",
+    "href": "/cloudapi/v4/datacenters/dc-2/loadbalancers",
+    "items": [
+        {
+            "id": "bal-1",
+            "type": "loadbalancer",
+            "href": "/cloudapi/v4/datacenters/dc-2/loadbalancers/bal-1",
+            "metadata": {
+                "createdDate": "2016-10-26T13:02:33Z",
+                "createdBy": "test@test.te",
+                "etag": "71e8df57a58615b9e15400ede4138b41",
+                "lastModifiedDate": "2016-10-26T13:02:33Z",
+                "lastModifiedBy": "test@test.te",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "Test One",
+                "ip": "111.112.113.114",
+                "dhcp": true
+            },
+            "entities": {
+                "balancednics": {
+                    "id": "bal-1/balancednics",
+                    "type": "collection",
+                    "href": "/cloudapi/v4/datacenters/dc-2/loadbalancers/bal-1/balancednics",
+                    "items": [
+                        {
+                            "id": "68e3bd55-55a1-4fa0-8903-8c3cf23ee30a",
+                            "type": "nic",
+                            "href": "/cloudapi/v4/datacenters/dc-2/servers/92445f57-5378-4a5b-8b53-f0f36fb8e6ad/nics/68e3bd55-55a1-4fa0-8903-8c3cf23ee30a",
+                            "metadata": {
+                                "createdDate": "2016-10-26T13:02:33Z",
+                                "createdBy": "test@test.te",
+                                "etag": "20e915cf08106b7576f6b25b5c0a2bd6",
+                                "lastModifiedDate": "2016-10-26T13:02:33Z",
+                                "lastModifiedBy": "test@test.te",
+                                "state": "AVAILABLE"
+                            },
+                            "properties": {
+                                "name": null,
+                                "mac": "02:01:33:58:8d:e1",
+                                "ips": [
+                                    "162.254.25.6"
+                                ],
+                                "dhcp": true,
+                                "lan": 3,
+                                "firewallActive": false,
+                                "nat": false
+                            },
+                            "entities": {
+                                "firewallrules": {
+                                    "id": "68e3bd55-55a1-4fa0-8903-8c3cf23ee30a/firewallrules",
+                                    "type": "collection",
+                                    "href": "/cloudapi/v4/datacenters/dc-2/servers/92445f57-5378-4a5b-8b53-f0f36fb8e6ad/nics/68e3bd55-55a1-4fa0-8903-8c3cf23ee30a/firewallrules"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "24d24a20-1161-4870-8b49-434622a18875",
+            "type": "loadbalancer",
+            "href": "/cloudapi/v4/datacenters/dc-2/loadbalancers/24d24a20-1161-4870-8b49-434622a18875",
+            "metadata": {
+                "createdDate": "2016-10-26T13:02:33Z",
+                "createdBy": "test@test.te",
+                "etag": "71e8df57a58615b9e15400ede4138b41",
+                "lastModifiedDate": "2016-10-26T13:02:33Z",
+                "lastModifiedBy": "test@test.te",
+                "state": "AVAILABLE"
+            },
+            "properties": {
+                "name": "Test Two",
+                "ip": "162.254.25.225",
+                "dhcp": true
+            },
+            "entities": {
+                "balancednics": {
+                    "id": "24d24a20-1161-4870-8b49-434622a18875/balancednics",
+                    "type": "collection",
+                    "href": "/cloudapi/v4/datacenters/dc-2/loadbalancers/24d24a20-1161-4870-8b49-434622a18875/balancednics",
+                    "items": [
+                        {
+                            "id": "0485e083-3461-447a-8c5a-392be3c76473",
+                            "type": "nic",
+                            "href": "/cloudapi/v4/datacenters/dc-2/servers/7571b2d9-312a-45be-8d68-58c269c3911c/nics/0485e083-3461-447a-8c5a-392be3c76473",
+                            "metadata": {
+                                "createdDate": "2016-10-25T08:49:48Z",
+                                "createdBy": "test@test.te",
+                                "etag": "20e915cf08106b7576f6b25b5c0a2bd6",
+                                "lastModifiedDate": "2016-10-26T13:02:33Z",
+                                "lastModifiedBy": "test@test.te",
+                                "state": "AVAILABLE"
+                            },
+                            "properties": {
+                                "name": null,
+                                "mac": "02:01:6f:92:d0:63",
+                                "ips": [
+                                    "162.254.25.225"
+                                ],
+                                "dhcp": true,
+                                "lan": 5,
+                                "firewallActive": false,
+                                "nat": false
+                            },
+                            "entities": {
+                                "firewallrules": {
+                                    "id": "0485e083-3461-447a-8c5a-392be3c76473/firewallrules",
+                                    "type": "collection",
+                                    "href": "/cloudapi/v4/datacenters/dc-2/servers/7571b2d9-312a-45be-8d68-58c269c3911c/nics/0485e083-3461-447a-8c5a-392be3c76473/firewallrules"
+                                }
+                            }
+                        },
+                        {
+                            "id": "2e9c54f4-85c0-4d10-8369-cf5e3a6e7b68",
+                            "type": "nic",
+                            "href": "/cloudapi/v4/datacenters/dc-2/servers/ff3b523c-21bd-453d-80a3-c2bcdae1f509/nics/2e9c54f4-85c0-4d10-8369-cf5e3a6e7b68",
+                            "metadata": {
+                                "createdDate": "2016-10-25T14:01:03Z",
+                                "createdBy": "test@test.te",
+                                "etag": "20e915cf08106b7576f6b25b5c0a2bd6",
+                                "lastModifiedDate": "2016-10-26T13:02:33Z",
+                                "lastModifiedBy": "test@test.te",
+                                "state": "AVAILABLE"
+                            },
+                            "properties": {
+                                "name": null,
+                                "mac": "02:01:ce:53:f1:1a",
+                                "ips": [
+                                    "162.254.25.225"
+                                ],
+                                "dhcp": true,
+                                "lan": 5,
+                                "firewallActive": false,
+                                "nat": false
+                            },
+                            "entities": {
+                                "firewallrules": {
+                                    "id": "2e9c54f4-85c0-4d10-8369-cf5e3a6e7b68/firewallrules",
+                                    "type": "collection",
+                                    "href": "/cloudapi/v4/datacenters/dc-2/servers/ff3b523c-21bd-453d-80a3-c2bcdae1f509/nics/2e9c54f4-85c0-4d10-8369-cf5e3a6e7b68/firewallrules"
+                                }
+                            }
+                        },
+                        {
+                            "id": "707d7aa4-8311-4a61-82a4-a80333e9ecc2",
+                            "type": "nic",
+                            "href": "/cloudapi/v4/datacenters/dc-2/servers/2e77a9cc-2338-43e6-84bf-e4c2ff9be265/nics/707d7aa4-8311-4a61-82a4-a80333e9ecc2",
+                            "metadata": {
+                                "createdDate": "2016-10-25T15:36:06Z",
+                                "createdBy": "test@test.te",
+                                "etag": "20e915cf08106b7576f6b25b5c0a2bd6",
+                                "lastModifiedDate": "2016-10-26T13:02:33Z",
+                                "lastModifiedBy": "test@test.te",
+                                "state": "AVAILABLE"
+                            },
+                            "properties": {
+                                "name": null,
+                                "mac": "02:01:8b:77:cd:b6",
+                                "ips": [
+                                    "162.254.25.225"
+                                ],
+                                "dhcp": true,
+                                "lan": 5,
+                                "firewallActive": false,
+                                "nat": false
+                            },
+                            "entities": {
+                                "firewallrules": {
+                                    "id": "707d7aa4-8311-4a61-82a4-a80333e9ecc2/firewallrules",
+                                    "type": "collection",
+                                    "href": "/cloudapi/v4/datacenters/dc-2/servers/2e77a9cc-2338-43e6-84bf-e4c2ff9be265/nics/707d7aa4-8311-4a61-82a4-a80333e9ecc2/firewallrules"
+                                }
+                            }
+                        },
+                        {
+                            "id": "710f6842-440d-4fdc-878e-0c329037d4a9",
+                            "type": "nic",
+                            "href": "/cloudapi/v4/datacenters/dc-2/servers/fc0f7e86-a7de-4cee-84b5-409cc8b89ad2/nics/710f6842-440d-4fdc-878e-0c329037d4a9",
+                            "metadata": {
+                                "createdDate": "2016-10-25T14:01:03Z",
+                                "createdBy": "test@test.te",
+                                "etag": "20e915cf08106b7576f6b25b5c0a2bd6",
+                                "lastModifiedDate": "2016-10-26T13:02:33Z",
+                                "lastModifiedBy": "test@test.te",
+                                "state": "AVAILABLE"
+                            },
+                            "properties": {
+                                "name": null,
+                                "mac": "02:01:00:65:da:a9",
+                                "ips": [
+                                    "162.254.25.225"
+                                ],
+                                "dhcp": true,
+                                "lan": 5,
+                                "firewallActive": false,
+                                "nat": false
+                            },
+                            "entities": {
+                                "firewallrules": {
+                                    "id": "710f6842-440d-4fdc-878e-0c329037d4a9/firewallrules",
+                                    "type": "collection",
+                                    "href": "/cloudapi/v4/datacenters/dc-2/servers/fc0f7e86-a7de-4cee-84b5-409cc8b89ad2/nics/710f6842-440d-4fdc-878e-0c329037d4a9/firewallrules"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

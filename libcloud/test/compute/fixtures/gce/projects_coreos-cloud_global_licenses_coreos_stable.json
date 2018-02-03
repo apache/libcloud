@@ -1,0 +1,6 @@
+{
+ "kind": "compute#license",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/coreos-cloud/global/licenses/coreos-stable",
+ "name": "coreos-stable",
+ "chargesUseFee": true
+}

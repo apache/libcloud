@@ -1,0 +1,12 @@
+{
+    "id": "us/las",
+    "type": "location",
+    "href": "/cloudapi/v4/locations/us/las",
+    "properties": {
+        "name": "lasvegas",
+        "features": [
+            "SSD",
+            "MULTIPLE_CPU"
+        ]
+    }
+}

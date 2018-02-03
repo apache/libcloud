@@ -1,0 +1,35 @@
+{
+    "id" : "vol-2",
+    "type" : "volume",
+    "href" : "/cloudapi/v4/datacenters/dc-1/volumes/vol-2",
+    "metadata" : {
+        "createdDate" : "2016-10-17T13:13:36Z",
+        "createdBy" : "test@test.te",
+        "etag" : "c1800ce349033f9cd2c095ea1ea4976a",
+        "lastModifiedDate" : "2016-10-17T13:47:52Z",
+        "lastModifiedBy" : "test@test.te",
+        "state" : "BUSY"
+    },
+    "properties" : {
+        "name": "libcloud Test",
+        "type": "HDD",
+        "size": 2,
+        "availabilityZone": "ZONE_3",
+        "image": "bvol-img",
+        "imagePassword": null,
+        "sshKeys": null,
+        "bus": "VIRTIO",
+        "licenceType": "LINUX",
+        "cpuHotPlug": true,
+        "cpuHotUnplug": false,
+        "ramHotPlug": true,
+        "ramHotUnplug": false,
+        "nicHotPlug": true,
+        "nicHotUnplug": true,
+        "discVirtioHotPlug": true,
+        "discVirtioHotUnplug": true,
+        "discScsiHotPlug": false,
+        "discScsiHotUnplug": false,
+        "deviceNumber": 3
+    }
+}

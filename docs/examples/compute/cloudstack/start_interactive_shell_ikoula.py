@@ -1,5 +1,6 @@
 import os
 
+# pylint: disable=import-error
 from IPython.terminal.embed import InteractiveShellEmbed
 
 from libcloud.compute.types import Provider

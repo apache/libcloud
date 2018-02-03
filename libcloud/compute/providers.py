@@ -30,6 +30,8 @@ __all__ = [
 DRIVERS = {
     Provider.AZURE:
     ('libcloud.compute.drivers.azure', 'AzureNodeDriver'),
+    Provider.AZURE_ARM:
+    ('libcloud.compute.drivers.azure_arm', 'AzureNodeDriver'),
     Provider.DUMMY:
     ('libcloud.compute.drivers.dummy', 'DummyNodeDriver'),
     Provider.EC2:
@@ -139,6 +141,12 @@ DRIVERS = {
     ('libcloud.compute.drivers.ntta', 'NTTAmericaNodeDriver'),
     Provider.ALIYUN_ECS:
     ('libcloud.compute.drivers.ecs', 'ECSDriver'),
+    Provider.CLOUDSCALE:
+    ('libcloud.compute.drivers.cloudscale', 'CloudscaleNodeDriver'),
+    Provider.ONEANDONE:
+    ('libcloud.compute.drivers.oneandone', 'OneAndOneNodeDriver'),
+    Provider.UPCLOUD:
+    ('libcloud.compute.drivers.upcloud', 'UpcloudDriver'),
 }
 
 

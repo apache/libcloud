@@ -7,13 +7,15 @@ Provider                              list volumes create volume destroy volume 
 `Aliyun ECS`_                         yes          yes           yes            yes           yes           yes            yes            
 `PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           no             yes            
 `Azure Virtual machines`_             yes          yes           yes            yes           yes           no             yes            
+`Azure Virtual machines`_             yes          yes           yes            yes           yes           yes            yes            
 `Bluebox Blocks`_                     no           no            no             no            no            no             no             
 `Brightbox`_                          no           no            no             no            no            no             no             
 `BSNL`_                               no           no            no             no            no            no             no             
+`Cloudscale`_                         no           no            no             no            no            no             no             
 `CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
 `CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
 `Cloudwatt`_                          yes          yes           yes            yes           yes           yes            yes            
-`DigitalOcean`_                       yes          yes           yes            yes           yes           no             no             
+`DigitalOcean`_                       yes          yes           yes            yes           yes           yes            yes            
 `DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
 `Enomaly Elastic Computing Platform`_ no           no            no             no            no            no             no             
@@ -37,13 +39,14 @@ Provider                              list volumes create volume destroy volume 
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
 `NTTAmerica`_                         no           no            no             no            no            no             no             
 `OnApp`_                              no           no            no             no            no            no             no             
+`1and1`_                              no           no            no             no            no            no             no             
 `OpenNebula (v3.8)`_                  yes          yes           yes            yes           yes           no             no             
 `OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Outscale INC`_                       yes          yes           yes            yes           yes           yes            yes            
 `Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
-`Ovh`_                                yes          yes           yes            yes           yes           no             no             
+`Ovh`_                                yes          yes           yes            yes           yes           yes            yes            
 `Packet`_                             no           no            no             no            no            no             no             
-`ProfitBricks`_                       yes          yes           yes            yes           yes           no             no             
+`ProfitBricks`_                       yes          yes           yes            yes           yes           no             yes            
 `Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            yes            
 `Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
 `RimuHosting`_                        no           no            no             no            no            no             no             
@@ -55,7 +58,6 @@ Provider                              list volumes create volume destroy volume 
 `vCloud`_                             no           no            no             no            no            no             no             
 `Voxel VoxCLOUD`_                     no           no            no             no            no            no             no             
 `vps.net`_                            no           no            no             no            no            no             no             
-`VMware vSphere`_                     no           no            no             no            no            no             no             
 `Vultr`_                              no           no            no             no            no            no             no             
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
@@ -63,9 +65,11 @@ Provider                              list volumes create volume destroy volume 
 .. _`Aliyun ECS`: https://www.aliyun.com/product/ecs
 .. _`PCextreme AuroraCompute`: https://www.pcextreme.com/aurora/compute
 .. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
+.. _`Azure Virtual machines`: http://azure.microsoft.com/en-us/services/virtual-machines/
 .. _`Bluebox Blocks`: http://bluebox.net
 .. _`Brightbox`: http://www.brightbox.co.uk/
 .. _`BSNL`: http://www.bsnlcloud.com/
+.. _`Cloudscale`: https://www.cloudscale.ch
 .. _`CloudSigma (API v2.0)`: http://www.cloudsigma.com/
 .. _`CloudStack`: http://cloudstack.org/
 .. _`Cloudwatt`: https://www.cloudwatt.com/
@@ -93,6 +97,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`Nimbus`: http://www.nimbusproject.org/
 .. _`NTTAmerica`: http://www.nttamerica.com/
 .. _`OnApp`: http://onapp.com/
+.. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
 .. _`Outscale INC`: http://www.outscale.com
@@ -111,5 +116,4 @@ Provider                              list volumes create volume destroy volume 
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
-.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com

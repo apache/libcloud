@@ -22,6 +22,6 @@ VERSION=`python setup.py --version`
 cd dist
 
 echo "Uploading packages"
-ls *$VERSION*.tar.bz2 *$VERSION*.tar.gz *$VERSION*.zip *$VERSION*.whl *$VERSION*.asc
+ls *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc
 
-twine upload *$VERSION*.tar.bz2 *$VERSION*.tar.gz *$VERSION*.zip *$VERSION*.whl *$VERSION*.asc
+twine upload *$VERSION*.tar.gz *$VERSION*.whl *$VERSION*.tar.gz.asc

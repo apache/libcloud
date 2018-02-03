@@ -34,10 +34,7 @@ from libcloud.test.secrets import GRIDSPOT_PARAMS
 class GridspotTest(unittest.TestCase, TestCaseMixin):
 
     def setUp(self):
-        GridspotNodeDriver.connectionCls.conn_classes = (
-            None,
-            GridspotMockHttp
-        )
+        GridspotNodeDriver.connectionCls.conn_class = GridspotMockHttp
         GridspotMockHttp.type = None
         self.driver = GridspotNodeDriver(*GRIDSPOT_PARAMS)
 

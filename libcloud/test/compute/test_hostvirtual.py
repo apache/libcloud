@@ -28,8 +28,7 @@ from libcloud.test.secrets import HOSTVIRTUAL_PARAMS
 class HostVirtualTest(unittest.TestCase):
 
     def setUp(self):
-        HostVirtualNodeDriver.connectionCls.conn_classes = (
-            None, HostVirtualMockHttp)
+        HostVirtualNodeDriver.connectionCls.conn_class = HostVirtualMockHttp
         self.driver = HostVirtualNodeDriver(*HOSTVIRTUAL_PARAMS)
 
     def test_list_nodes(self):
@@ -65,7 +64,7 @@ class HostVirtualTest(unittest.TestCase):
         self.assertEqual(locations[0].id, '3')
         self.assertEqual(locations[0].name, 'SJC - San Jose, CA')
         self.assertEqual(locations[1].id, '13')
-        self.assertEqual(locations[1].name, 'IAD2- Reston, VA')
+        self.assertEqual(locations[1].name, 'IAD - Reston, VA')
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]

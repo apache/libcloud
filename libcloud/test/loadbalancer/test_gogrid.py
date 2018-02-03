@@ -25,15 +25,14 @@ from libcloud.compute.drivers.dummy import DummyNodeDriver
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.gogrid import GoGridLBDriver
 
-from libcloud.test import MockHttpTestCase
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import LoadBalancerFileFixtures
 
 
 class GoGridTests(unittest.TestCase):
 
     def setUp(self):
-        GoGridLBDriver.connectionCls.conn_classes = (None,
-                                                     GoGridLBMockHttp)
+        GoGridLBDriver.connectionCls.conn_class = GoGridLBMockHttp
         GoGridLBMockHttp.type = None
         self.driver = GoGridLBDriver('user', 'key')
 
@@ -155,7 +154,7 @@ class GoGridTests(unittest.TestCase):
         self.assertTrue(ret2)
 
 
-class GoGridLBMockHttp(MockHttpTestCase):
+class GoGridLBMockHttp(MockHttp, unittest.TestCase):
     fixtures = LoadBalancerFileFixtures('gogrid')
 
     def _api_grid_loadbalancer_list(self, method, url, body, headers):

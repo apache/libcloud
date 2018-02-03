@@ -30,8 +30,7 @@ from libcloud.test.secrets import VCL_PARAMS
 class VCLTests(unittest.TestCase):
 
     def setUp(self):
-        VCL.connectionCls.conn_classes = (
-            VCLMockHttp, VCLMockHttp)
+        VCL.connectionCls.conn_class = VCLMockHttp
         VCLMockHttp.type = None
         self.driver = VCL(*VCL_PARAMS)
 

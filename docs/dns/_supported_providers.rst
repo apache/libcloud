@@ -18,9 +18,10 @@ Provider            Documentation                             Provider Constant 
 `Luadns`_           :doc:`Click </dns/drivers/luadns>`        LUADNS            single region driver :mod:`libcloud.dns.drivers.luadns`       :class:`LuadnsDNSDriver`      
 `NFSN DNS`_         :doc:`Click </dns/drivers/nfsn>`          NFSN              single region driver :mod:`libcloud.dns.drivers.nfsn`         :class:`NFSNDNSDriver`        
 `NS1 DNS`_                                                    NSONE             single region driver :mod:`libcloud.dns.drivers.nsone`        :class:`NsOneDNSDriver`       
+`OnApp`_            :doc:`Click </dns/drivers/onapp>`         ONAPP             single region driver :mod:`libcloud.dns.drivers.onapp`        :class:`OnAppDNSDriver`       
 `Point DNS`_        :doc:`Click </dns/drivers/pointdns>`      POINTDNS          single region driver :mod:`libcloud.dns.drivers.pointdns`     :class:`PointDNSDriver`       
 `PowerDNS`_         :doc:`Click </dns/drivers/powerdns>`      POWERDNS          single region driver :mod:`libcloud.dns.drivers.powerdns`     :class:`PowerDNSDriver`       
-`Rackspace DNS`_                                              RACKSPACE         us, uk               :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
+`Rackspace DNS`_                                              RACKSPACE         uk, us               :mod:`libcloud.dns.drivers.rackspace`    :class:`RackspaceDNSDriver`   
 `Route53 DNS`_                                                ROUTE53           single region driver :mod:`libcloud.dns.drivers.route53`      :class:`Route53DNSDriver`     
 `Softlayer DNS`_                                              SOFTLAYER         single region driver :mod:`libcloud.dns.drivers.softlayer`    :class:`SoftLayerDNSDriver`   
 `Vultr DNS`_        :doc:`Click </dns/drivers/vultr>`         VULTR             single region driver :mod:`libcloud.dns.drivers.vultr`        :class:`VultrDNSDriver`       
@@ -44,6 +45,7 @@ Provider            Documentation                             Provider Constant 
 .. _`Luadns`: https://www.luadns.com
 .. _`NFSN DNS`: https://www.nearlyfreespeech.net
 .. _`NS1 DNS`: https://ns1.com
+.. _`OnApp`: http://onapp.com/
 .. _`Point DNS`: https://pointhq.com/
 .. _`PowerDNS`: https://www.powerdns.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/

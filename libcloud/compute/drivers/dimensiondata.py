@@ -16,11 +16,8 @@
 Dimension Data Driver
 """
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
+from libcloud.common.dimensiondata import LooseVersion
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
@@ -56,15 +53,26 @@ from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
+import sys
 
 # Node state map is a dictionary with the keys as tuples
 # These tuples represent:
 # (<state_of_node_from_didata>, <is node started?>, <action happening>)
 NODE_STATE_MAP = {
-    ('NORMAL', 'true', None):
-        NodeState.RUNNING,
     ('NORMAL', 'false', None):
         NodeState.STOPPED,
+    ('PENDING_CHANGE', 'false', None):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'false', 'CHANGE_NETWORK_ADAPTER'):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'true', 'CHANGE_NETWORK_ADAPTER'):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'false', 'EXCHANGE_NIC_VLANS'):
+        NodeState.PENDING,
+    ('PENDING_CHANGE', 'true', 'EXCHANGE_NIC_VLANS'):
+        NodeState.PENDING,
+    ('NORMAL', 'true', None):
+        NodeState.RUNNING,
     ('PENDING_CHANGE', 'true', 'START_SERVER'):
         NodeState.STARTING,
     ('PENDING_ADD', 'true', 'DEPLOY_SERVER'):
@@ -95,6 +103,7 @@ OBJECT_TO_TAGGING_ASSET_TYPE_MAP = {
 class DimensionDataNodeDriver(NodeDriver):
     """
     DimensionData node driver.
+    Default api_version is used unless specified.
     """
 
     selected_region = None
@@ -114,6 +123,9 @@ class DimensionDataNodeDriver(NodeDriver):
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
+        if api_version is not None:
+            self.api_version = api_version
+
         super(DimensionDataNodeDriver, self).__init__(key=key, secret=secret,
                                                       secure=secure, host=host,
                                                       port=port,
@@ -129,6 +141,7 @@ class DimensionDataNodeDriver(NodeDriver):
         kwargs = super(DimensionDataNodeDriver,
                        self)._ex_connection_class_kwargs()
         kwargs['region'] = self.selected_region
+        kwargs['api_version'] = self.api_version
         return kwargs
 
     def _create_node_mcp1(self, name, image, auth, ex_description,
@@ -365,7 +378,6 @@ class DimensionDataNodeDriver(NodeDriver):
         >>> #                           ex_primary_nic_network_adapter='E1000',
         >>> #                           ex_is_started=False)
         >>>
-        >>> pprint(node)
 
         :keyword    name:   (required) String with a name for this new node
         :type       name:   ``str``
@@ -475,6 +487,10 @@ class DimensionDataNodeDriver(NodeDriver):
             raise ValueError('You can only supply either '
                              'ex_network_domain '
                              'for MCP2 or ex_network for legacy MCP1')
+
+        # Set ex_is_started to False by default if none bool data type provided
+        if not isinstance(ex_is_started, bool):
+            ex_is_started = True
 
         # Handle MCP1 legacy
         if 'ex_network' in kwargs:
@@ -783,7 +799,7 @@ class DimensionDataNodeDriver(NodeDriver):
 
         Note:  Currently only returns the default 'base OS images'
                provided by DimensionData. Customer images (snapshots)
-               are not yet supported.
+               use ex_list_customer_images
 
         :keyword ex_location: Filters the node list to nodes that are
                               located in this location
@@ -863,6 +879,109 @@ class DimensionDataNodeDriver(NodeDriver):
             self.connection
             .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
+
+    def import_image(self, ovf_package_name, name,
+                     cluster_id=None, datacenter_id=None, description=None,
+                     is_guest_os_customization=None,
+                     tagkey_name_value_dictionaries=None):
+        """
+        Import image
+
+        :param ovf_package_name: Image OVF package name
+        :type  ovf_package_name: ``str``
+
+        :param name: Image name
+        :type  name: ``str``
+
+        :param cluster_id: Provide either cluster_id or datacenter_id
+        :type  cluster_id: ``str``
+
+        :param datacenter_id: Provide either cluster_id or datacenter_id
+        :type  datacenter_id: ``str``
+
+        :param description: Optional. Description of image
+        :type  description: ``str``
+
+        :param is_guest_os_customization: Optional. true for NGOC image
+        :type  is_guest_os_customization: ``bool``
+
+        :param tagkey_name_value_dictionaries: Optional tagkey name value dict
+        :type  tagkey_name_value_dictionaries: dictionaries
+
+        :return: Return true if successful
+        :rtype:  ``bool``
+        """
+
+        # Unsupported for version lower than 2.4
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
+            raise Exception("import image is feature is NOT supported in  "
+                            "api version earlier than 2.4")
+        elif cluster_id is None and datacenter_id is None:
+            raise ValueError("Either cluster_id or datacenter_id must be "
+                             "provided")
+        elif cluster_id is not None and datacenter_id is not None:
+            raise ValueError("Cannot accept both cluster_id and "
+                             "datacenter_id. Please provide either one")
+        else:
+            import_image_elem = ET.Element(
+                'urn:importImage',
+                {
+                    'xmlns:urn': TYPES_URN,
+                })
+
+            ET.SubElement(
+                import_image_elem,
+                'urn:ovfPackage'
+            ).text = ovf_package_name
+
+            ET.SubElement(
+                import_image_elem,
+                'urn:name'
+            ).text = name
+
+            if description is not None:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:description'
+                ).text = description
+
+            if cluster_id is not None:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:clusterId'
+                ).text = cluster_id
+            else:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:datacenterId'
+                ).text = datacenter_id
+
+            if is_guest_os_customization is not None:
+                ET.SubElement(
+                    import_image_elem,
+                    'urn:guestOsCustomization'
+                ).text = is_guest_os_customization
+
+            if len(tagkey_name_value_dictionaries) > 0:
+                for k, v in tagkey_name_value_dictionaries.items():
+                    tag_elem = ET.SubElement(
+                        import_image_elem,
+                        'urn:tag')
+                    ET.SubElement(tag_elem,
+                                  'urn:tagKeyName').text = k
+
+                    if v is not None:
+                        ET.SubElement(tag_elem,
+                                      'urn:value').text = v
+
+        response = self.connection.request_with_orgId_api_2(
+            'image/importImage',
+            method='POST',
+            data=ET.tostring(import_image_elem)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_list_nodes_paginated(self, name=None, location=None,
                                 ipv6=None, ipv4=None, vlan=None,
@@ -2403,7 +2522,10 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_clone_node_to_image(self, node, image_name, image_description=None):
+    def ex_clone_node_to_image(self, node, image_name,
+                               image_description=None,
+                               cluster_id=None, is_guest_Os_Customization=None,
+                               tag_key_id=None, tag_value=None):
         """
         Clone a server into a customer image.
 
@@ -2420,10 +2542,55 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         if image_description is None:
             image_description = ''
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s?clone=%s&desc=%s' %
-            (node.id, image_name, image_description)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
+
+        node_id = self._node_to_node_id(node)
+
+        # Version 2.3 and lower
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
+            response = self.connection.request_with_orgId_api_1(
+                'server/%s?clone=%s&desc=%s' %
+                (node_id, image_name, image_description)).object
+
+        # Version 2.4 and higher
+        else:
+            clone_server_elem = ET.Element('cloneServer',
+                                           {'id': node_id,
+                                            'xmlns': TYPES_URN})
+
+            ET.SubElement(clone_server_elem, 'imageName').text = image_name
+
+            if image_description is not None:
+                ET.SubElement(clone_server_elem, 'description').text = \
+                    image_description
+
+            if cluster_id is not None:
+                ET.SubElement(clone_server_elem, 'clusterId').text = \
+                    cluster_id
+
+            if is_guest_Os_Customization is not None:
+                ET.SubElement(clone_server_elem, 'guestOsCustomization')\
+                    .text = is_guest_Os_Customization
+
+            if tag_key_id is not None:
+                tag_elem = ET.SubElement(clone_server_elem, 'tagById')
+                ET.SubElement(tag_elem, 'tagKeyId').text = tag_key_id
+
+                if tag_value is not None:
+                    ET.SubElement(tag_elem, 'value').text = tag_value
+
+            response = self.connection.request_with_orgId_api_2(
+                'server/cloneServer',
+                method='POST',
+                data=ET.tostring(clone_server_elem)).object
+
+        # Version 2.3 and lower
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
+            response_code = findtext(response, 'result', GENERAL_NS)
+        else:
+            response_code = findtext(response, 'responseCode', TYPES_URN)
+
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_clean_failed_deployment(self, node):
@@ -3573,6 +3740,363 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
+    def ex_exchange_nic_vlans(self, nic_id_1, nic_id_2):
+        """
+        Exchange NIC Vlans
+
+        :param    nic_id_1:  Nic ID 1
+        :type     nic_id_1: :``str``
+
+        :param    nic_id_2:  Nic ID 2
+        :type     nic_id_2: :``str``
+
+        :rtype: ``bool``
+        """
+
+        exchange_elem = ET.Element(
+            'urn:exchangeNicVlans',
+            {
+                'xmlns:urn': TYPES_URN,
+            })
+
+        ET.SubElement(exchange_elem, 'urn:nicId1').text = nic_id_1
+        ET.SubElement(exchange_elem, 'urn:nicId2').text = nic_id_2
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/exchangeNicVlans',
+            method='POST',
+            data=ET.tostring(exchange_elem)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_change_nic_network_adapter(self, nic_id, network_adapter_name):
+        """
+        Change network adapter of a NIC on a cloud server
+
+        :param    nic_id:  Nic ID
+        :type     nic_id: :``str``
+
+        :param    network_adapter_name:  Network adapter name
+        :type     network_adapter_name: :``str``
+
+        :rtype: ``bool``
+        """
+
+        change_elem = ET.Element(
+            'changeNetworkAdapter',
+            {
+                'nicId': nic_id,
+                'xmlns': TYPES_URN
+            })
+
+        ET.SubElement(change_elem, 'networkAdapter').text = \
+            network_adapter_name
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/changeNetworkAdapter',
+            method='POST',
+            data=ET.tostring(change_elem)).object
+
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_create_node_uncustomized(self,
+                                    name,
+                                    image,
+                                    ex_network_domain,
+                                    ex_is_started=True,
+                                    ex_description=None,
+                                    ex_cluster_id=None,
+                                    ex_cpu_specification=None,
+                                    ex_memory_gb=None,
+                                    ex_primary_nic_private_ipv4=None,
+                                    ex_primary_nic_vlan=None,
+                                    ex_primary_nic_network_adapter=None,
+                                    ex_additional_nics=None,
+                                    ex_disks=None,
+                                    ex_tagid_value_pairs=None,
+                                    ex_tagname_value_pairs=None
+                                    ):
+
+        """
+        This MCP 2.0 only function deploys a new Cloud Server from a
+        CloudControl compatible Server Image, which does not utilize
+        VMware Guest OS Customization process.
+
+        Create Node in MCP2 Data Center
+
+        :keyword    name:   (required) String with a name for this new node
+        :type       name:   ``str``
+
+        :keyword    image:  (UUID of the Server Image being used as the target
+                            for the new Server deployment. The source Server
+                            Image (OS Image or Customer Image) must have
+                            osCustomization set to true. See Get/List OS
+                            Image(s) and Get/List Customer Image(s).
+        :type       image:  :class:`NodeImage` or ``str``
+
+
+        :keyword    ex_network_domain:  (required) Network Domain or Network
+                                        Domain ID to create the node
+        :type       ex_network_domain: :class:`DimensionDataNetworkDomain`
+                                        or ``str``
+
+        :keyword    ex_description:  (optional) description for this node
+        :type       ex_description:  ``str``
+
+        :keyword    ex_cluster_id:  (optional) For multiple cluster
+        environments, it is possible to set a destination cluster for the new
+        Customer Image. Note that performance of this function is optimal when
+        either the Server cluster and destination are the same or when shared
+        data storage is in place for the multiple clusters.
+        :type       ex_cluster_id:  ``str``
+
+
+        :keyword    ex_primary_nic_private_ipv4:  Provide private IPv4. Ignore
+                                                  if ex_primary_nic_vlan is
+                                                  provided. Use one or the
+                                                  other. Not both.
+        :type       ex_primary_nic_private_ipv4: :``str``
+
+        :keyword    ex_primary_nic_vlan:  Provide VLAN for the node if
+                                          ex_primary_nic_private_ipv4 NOT
+                                          provided. One or the other. Not both.
+        :type       ex_primary_nic_vlan: :class: DimensionDataVlan or ``str``
+
+        :keyword    ex_primary_nic_network_adapter: (Optional) Default value
+                                                    for the Operating System
+                                                    will be used if leave
+                                                    empty. Example: "E1000".
+        :type       ex_primary_nic_network_adapter: :``str``
+
+        :keyword    ex_additional_nics: (optional) List
+                                        :class:'DimensionDataNic' or None
+        :type       ex_additional_nics: ``list`` of :class:'DimensionDataNic'
+                                        or ``str``
+
+        :keyword    ex_memory_gb:  (optional) The amount of memory in GB for
+                                   the server Can be used to override the
+                                   memory value inherited from the source
+                                   Server Image.
+        :type       ex_memory_gb: ``int``
+
+        :keyword    ex_cpu_specification: (optional) The spec of CPU to deploy
+        :type       ex_cpu_specification:
+                        :class:`DimensionDataServerCpuSpecification`
+
+        :keyword    ex_is_started: (required) Start server after creation.
+                                   Default is set to true.
+        :type       ex_is_started:  ``bool``
+
+        :keyword    ex_disks: (optional) Dimensiondata disks. Optional disk
+                            elements can be used to define the disk speed
+                            that each disk on the Server; inherited from the
+                            source Server Image will be deployed to. It is
+                            not necessary to include a diskelement for every
+                            disk; only those that you wish to set a disk
+                            speed value for. Note that scsiId 7 cannot be
+                            used.Up to 13 disks can be present in addition to
+                            the required OS disk on SCSI ID 0. Refer to
+                            https://docs.mcp-services.net/x/UwIu for disk
+
+        :type       ex_disks: List or tuple of :class:'DimensionDataServerDisk`
+
+        :keyword    ex_tagid_value_pairs:
+                            (Optional) up to 10 tag elements may be provided.
+                            A combination of tagById and tag name cannot be
+                            supplied in the same request.
+                            Note: ex_tagid_value_pairs and
+                            ex_tagname_value_pairs is
+                            mutually exclusive. Use one or other.
+
+        :type       ex_tagname_value_pairs: ``dict``.  Value can be None.
+
+        :keyword    ex_tagname_value_pairs:
+                            (Optional) up to 10 tag elements may be provided.
+                            A combination of tagById and tag name cannot be
+                            supplied in the same request.
+                            Note: ex_tagid_value_pairs and
+                            ex_tagname_value_pairs is
+                            mutually exclusive. Use one or other.
+
+        :type       ex_tagname_value_pairs: ``dict```.
+
+        :return: The newly created :class:`Node`.
+        :rtype: :class:`Node`
+        """
+
+        # Unsupported for version lower than 2.4
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
+            raise Exception("This feature is NOT supported in  "
+                            "earlier api version of 2.4")
+
+        # Default start to true if input is invalid
+        if not isinstance(ex_is_started, bool):
+            ex_is_started = True
+            print("Warning: ex_is_started input value is invalid. Default"
+                  "to True")
+
+        server_uncustomized_elm = ET.Element('deployUncustomizedServer',
+                                             {'xmlns': TYPES_URN})
+        ET.SubElement(server_uncustomized_elm, "name").text = name
+        ET.SubElement(server_uncustomized_elm, "description").text = \
+            ex_description
+        image_id = self._image_to_image_id(image)
+        ET.SubElement(server_uncustomized_elm, "imageId").text = image_id
+
+        if ex_cluster_id:
+            dns_elm = ET.SubElement(server_uncustomized_elm, "primaryDns")
+            dns_elm.text = ex_cluster_id
+
+        if ex_is_started is not None:
+            ET.SubElement(server_uncustomized_elm, "start").text = str(
+                ex_is_started).lower()
+
+        if ex_cpu_specification is not None:
+            cpu = ET.SubElement(server_uncustomized_elm, "cpu")
+            cpu.set('speed', ex_cpu_specification.performance)
+            cpu.set('count', str(ex_cpu_specification.cpu_count))
+            cpu.set('coresPerSocket',
+                    str(ex_cpu_specification.cores_per_socket))
+
+        if ex_memory_gb is not None:
+            ET.SubElement(server_uncustomized_elm, "memoryGb").text = \
+                str(ex_memory_gb)
+
+        if (ex_primary_nic_private_ipv4 is None and
+                ex_primary_nic_vlan is None):
+            raise ValueError("Missing argument. Either "
+                             "ex_primary_nic_private_ipv4 or "
+                             "ex_primary_nic_vlan "
+                             "must be specified.")
+
+        if (ex_primary_nic_private_ipv4 is not None and
+                ex_primary_nic_vlan is not None):
+            raise ValueError("Either ex_primary_nic_private_ipv4 or "
+                             "ex_primary_nic_vlan "
+                             "be specified. Not both.")
+
+        network_elm = ET.SubElement(server_uncustomized_elm, "networkInfo")
+
+        net_domain_id = self._network_domain_to_network_domain_id(
+            ex_network_domain)
+        network_elm.set('networkDomainId', net_domain_id)
+
+        pri_nic = ET.SubElement(network_elm, 'primaryNic')
+
+        if ex_primary_nic_private_ipv4 is not None:
+            ET.SubElement(pri_nic,
+                          'privateIpv4').text = ex_primary_nic_private_ipv4
+
+        if ex_primary_nic_vlan is not None:
+            vlan_id = self._vlan_to_vlan_id(ex_primary_nic_vlan)
+            ET.SubElement(pri_nic, 'vlanId').text = vlan_id
+
+        if ex_primary_nic_network_adapter is not None:
+            ET.SubElement(pri_nic,
+                          "networkAdapter").text = \
+                ex_primary_nic_network_adapter
+
+        if isinstance(ex_additional_nics, (list, tuple)):
+            for nic in ex_additional_nics:
+                additional_nic = ET.SubElement(network_elm,
+                                               'additionalNic')
+
+                if (nic.private_ip_v4 is None and
+                        nic.vlan is None):
+                    raise ValueError("Either a vlan or private_ip_v4 "
+                                     "must be specified for each "
+                                     "additional nic.")
+
+                if (nic.private_ip_v4 is not None and
+                        nic.vlan is not None):
+                    raise ValueError("Either a vlan or private_ip_v4 "
+                                     "must be specified for each "
+                                     "additional nic. Not both.")
+
+                if nic.private_ip_v4 is not None:
+                    ET.SubElement(additional_nic,
+                                  'privateIpv4').text = nic.private_ip_v4
+
+                if nic.vlan is not None:
+                    vlan_id = self._vlan_to_vlan_id(nic.vlan)
+                    ET.SubElement(additional_nic, 'vlanId').text = vlan_id
+
+                if nic.network_adapter_name is not None:
+                    ET.SubElement(additional_nic,
+                                  "networkAdapter").text = \
+                        nic.network_adapter_name
+        elif ex_additional_nics is not None:
+            raise TypeError(
+                "ex_additional_NICs must be None or tuple/list")
+
+        if isinstance(ex_disks, (list, tuple)):
+            for disk in ex_disks:
+                disk_elm = ET.SubElement(server_uncustomized_elm, 'disk')
+                disk_elm.set('scsiId', disk.scsi_id)
+                disk_elm.set('speed', disk.speed)
+        elif ex_disks is not None:
+            raise TypeError("ex_disks must be None or tuple/list")
+
+        # tagid and tagname value pair should not co-exists
+        if ex_tagid_value_pairs is not None and ex_tagname_value_pairs is \
+                not None:
+            raise ValueError("ex_tagid_value_pairs and ex_tagname_value_pairs"
+                             "is mutually exclusive. Use one or the other.")
+
+        # Tag by ID
+        if ex_tagid_value_pairs is not None:
+            if not isinstance(ex_tagid_value_pairs, dict):
+                raise ValueError(
+                    "ex_tagid_value_pairs must be a dictionary."
+                )
+
+            if sys.version_info[0] < 3:
+                tagid_items = ex_tagid_value_pairs.iteritems()
+            else:
+                tagid_items = ex_tagid_value_pairs.items()
+
+            for k, v in tagid_items:
+                tag_elem = ET.SubElement(server_uncustomized_elm, 'tagById')
+                ET.SubElement(tag_elem, 'tagKeyId').text = k
+
+                if v is not None:
+                    ET.SubElement(tag_elem, 'value').text = v
+
+        if ex_tagname_value_pairs is not None:
+            if not isinstance(ex_tagname_value_pairs, dict):
+                raise ValueError(
+                    "ex_tagname_value_pairs must be a dictionary"
+                )
+
+            if sys.version_info[0] < 3:
+                tags_items = ex_tagname_value_pairs.iteritems()
+            else:
+                tags_items = ex_tagname_value_pairs.items()
+
+            for k, v in tags_items:
+                tag_name_elem = ET.SubElement(server_uncustomized_elm, 'tag')
+                ET.SubElement(tag_name_elem, 'tagKeyName').text = k
+
+                if v is not None:
+                    ET.SubElement(tag_name_elem, 'value').text = v
+
+        response = self.connection.request_with_orgId_api_2(
+            'server/deployUncustomizedServer',
+            method='POST',
+            data=ET.tostring(server_uncustomized_elm)).object
+
+        node_id = None
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'serverId':
+                node_id = info.get('value')
+
+        new_node = self.ex_get_node_by_id(node_id)
+
+        return new_node
+
     def _format_csv(self, http_response):
         text = http_response.read()
         lines = str.splitlines(ensure_string(text))
@@ -3586,8 +4110,9 @@ class DimensionDataNodeDriver(NodeDriver):
         raise TypeError("Asset type %s cannot be tagged" % objecttype.__name__)
 
     def _list_nodes_single_page(self, params={}):
-        return self.connection.request_with_orgId_api_2(
+        nodes = self.connection.request_with_orgId_api_2(
             'server/server', params=params).object
+        return nodes
 
     def _to_tags(self, object):
         tags = []
@@ -3647,8 +4172,15 @@ class DimensionDataNodeDriver(NodeDriver):
             locations = self.list_locations(location_id)
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
+
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
-        os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
+
+        if LooseVersion(self.connection.active_api_version) > LooseVersion(
+                '2.3'):
+            os_el = element.find(fixxpath('guest/operatingSystem', TYPES_URN))
+        else:
+            os_el = element.find(fixxpath('operatingSystem', TYPES_URN))
+
         if element.tag.endswith('customerImage'):
             is_customer_image = True
         else:
@@ -3897,10 +4429,22 @@ class DimensionDataNodeDriver(NodeDriver):
             performance=element.get('speed'))
 
     def _to_vmware_tools(self, element):
+        status = None
+        if hasattr(element, 'runningStatus'):
+            status = element.get('runningStatus')
+
+        version_status = None
+        if hasattr(element, 'version_status'):
+            version_status = element.get('version_status')
+
+        api_version = None
+        if hasattr(element, 'apiVersion'):
+            api_version = element.get('apiVersion')
+
         return DimensionDataServerVMWareTools(
-            status=element.get('runningStatus'),
-            version_status=element.get('versionStatus'),
-            api_version=element.get('apiVersion'))
+            status=status,
+            version_status=version_status,
+            api_version=api_version)
 
     def _to_disks(self, object):
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
@@ -3930,8 +4474,25 @@ class DimensionDataNodeDriver(NodeDriver):
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
         disks = self._to_disks(element)
-        vmware_tools = self._to_vmware_tools(
-            element.find(fixxpath('vmwareTools', TYPES_URN)))
+
+        # Vmware Tools
+
+        # Version 2.3 or earlier
+        if LooseVersion(self.connection.active_api_version) < LooseVersion(
+                '2.4'):
+            vmware_tools = self._to_vmware_tools(
+                element.find(fixxpath('vmwareTools', TYPES_URN)))
+            operation_system = element.find(fixxpath(
+                'operatingSystem', TYPES_URN))
+        # Version 2.4 or later
+        else:
+            vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
+            if vmtools_elm is not None:
+                vmware_tools = self._to_vmware_tools(vmtools_elm)
+
+            operation_system = element.find(fixxpath(
+                'guest/operatingSystem', TYPES_URN))
+
         extra = {
             'description': findtext(element, 'description', TYPES_URN),
             'sourceImageId': findtext(element, 'sourceImageId', TYPES_URN),
@@ -3947,15 +4508,9 @@ class DimensionDataNodeDriver(NodeDriver):
                 element,
                 'memoryGb',
                 TYPES_URN)) * 1024,
-            'OS_id': element.find(fixxpath(
-                'operatingSystem',
-                TYPES_URN)).get('id'),
-            'OS_type': element.find(fixxpath(
-                'operatingSystem',
-                TYPES_URN)).get('family'),
-            'OS_displayName': element.find(fixxpath(
-                'operatingSystem',
-                TYPES_URN)).get('displayName'),
+            'OS_id': operation_system.get('id'),
+            'OS_type': operation_system.get('family'),
+            'OS_displayName': operation_system.get('displayName'),
             'status': status,
             'disks': disks,
             'vmWareTools': vmware_tools

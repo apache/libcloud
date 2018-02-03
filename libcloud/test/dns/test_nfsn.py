@@ -29,7 +29,7 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 class NFSNTestCase(LibcloudTestCase):
 
     def setUp(self):
-        NFSNDNSDriver.connectionCls.conn_classes = (None, NFSNMockHttp)
+        NFSNDNSDriver.connectionCls.conn_class = NFSNMockHttp
         NFSNMockHttp.type = None
         self.driver = NFSNDNSDriver('testid', 'testsecret')
 

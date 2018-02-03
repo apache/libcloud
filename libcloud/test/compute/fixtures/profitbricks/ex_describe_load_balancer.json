@@ -1,0 +1,25 @@
+{
+    "id": "bal-1",
+    "type": "loadbalancer",
+    "href": "/cloudapi/v4/datacenters/dc-2/loadbalancers/bal-1",
+    "metadata": {
+        "createdDate": "2016-10-26T13:02:33Z",
+        "createdBy": "test@test.te",
+        "etag": "71e8df57a58615b9e15400ede4138b41",
+        "lastModifiedDate": "2016-10-26T13:02:33Z",
+        "lastModifiedBy": "test@test.te",
+        "state": "AVAILABLE"
+    },
+    "properties": {
+        "name": "libcloud Test",
+        "ip": "111.112.113.114",
+        "dhcp": true
+    },
+    "entities": {
+        "balancednics": {
+            "id": "bal-1/balancednics",
+            "type": "collection",
+            "href": "/cloudapi/v4/datacenters/dc-2/loadbalancers/bal-1/balancednics"
+        }
+    }
+}
