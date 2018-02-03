@@ -534,7 +534,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                              extra=extra)
 
     def _to_location(self, data):
-        extra = data.get('features', [])
+        extra = {'features': data.get('features', [])}
         return NodeLocation(id=data['slug'], name=data['name'], country=None,
                             extra=extra, driver=self)
 
