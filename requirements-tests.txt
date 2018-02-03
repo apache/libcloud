@@ -7,4 +7,4 @@ codecov
 coverage<4.0
 requests
 requests_mock
-pytest
+pytest>=3.4,<3.5

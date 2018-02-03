@@ -33,14 +33,17 @@ from libcloud.test import unittest
 
 class TestUtils(unittest.TestCase):
     def test_init_once_and_debug_mode(self):
+        if have_paramiko:
+            paramiko_logger = paramiko.util.logging.getLogger()
+            paramiko_logger.setLevel(logging.NOTSET)
+
         # Debug mode is disabled
         _init_once()
 
         self.assertEqual(LoggingConnection.log, None)
 
         if have_paramiko:
-            logger = paramiko.util.logging.getLogger()
-            paramiko_log_level = logger.getEffectiveLevel()
+            paramiko_log_level = paramiko_logger.getEffectiveLevel()
             self.assertEqual(paramiko_log_level, logging.NOTSET)
 
         # Enable debug mode
@@ -50,8 +53,7 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(LoggingConnection.log is not None)
 
         if have_paramiko:
-            logger = paramiko.util.logging.getLogger()
-            paramiko_log_level = logger.getEffectiveLevel()
+            paramiko_log_level = paramiko_logger.getEffectiveLevel()
             self.assertEqual(paramiko_log_level, logging.DEBUG)
 
     def test_factory(self):
