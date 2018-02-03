@@ -211,10 +211,10 @@ class PowerDNSDriver(DNSDriver):
                                     method='PATCH')
         except BaseHTTPError:
             e = sys.exc_info()[1]
-            if e.code == httplib.UNPROCESSABLE_ENTITY and \
-                e.message.startswith('Could not find domain'):
-                    raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                                value=e.message)
+            if e.code == httplib.UNPROCESSABLE_ENTITY and\
+               e.message.startswith('Could not find domain'):
+                raise ZoneDoesNotExistError(zone_id = zone.id, driver = self,
+                                            value = e.message)
             raise e
         return Record(id=None, name=name, data=data,
                       type=type, zone=zone, driver=self, ttl=extra['ttl'])
@@ -264,8 +264,8 @@ class PowerDNSDriver(DNSDriver):
         except BaseHTTPError:
             e = sys.exc_info()[1]
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
-                e.message.startswith("Domain '%s' already exists" % domain):
-                    raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
+               e.message.startswith("Domain '%s' already exists" % domain):
+                raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
                                                  value=e.message)
             raise e
         return Zone(id=zone_id, domain=domain, type=None, ttl=None,
@@ -373,8 +373,8 @@ class PowerDNSDriver(DNSDriver):
         except BaseHTTPError:
             e = sys.exc_info()[1]
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
-                e.message.startswith('Could not find domain'):
-                    raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
+               e.message.startswith('Could not find domain'):
+                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                                 value=e.message)
             raise e
         return self._to_records(response, zone)
@@ -446,8 +446,8 @@ class PowerDNSDriver(DNSDriver):
         except BaseHTTPError:
             e = sys.exc_info()[1]
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
-                e.message.startswith('Could not find domain'):
-                    raise ZoneDoesNotExistError(zone_id=record.zone.id,
+               e.message.startswith('Could not find domain'):
+                raise ZoneDoesNotExistError(zone_id=record.zone.id,
                                                 driver=self, value=e.message)
             raise e
         return Record(id=None, name=name, data=data, type=type,
