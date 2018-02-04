@@ -266,7 +266,7 @@ class PowerDNSDriver(DNSDriver):
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith("Domain '%s' already exists" % domain):
                 raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
-                                                 value=e.message)
+                                             value=e.message)
             raise e
         return Zone(id=zone_id, domain=domain, type=None, ttl=None,
                     driver=self, extra=extra)
@@ -375,7 +375,7 @@ class PowerDNSDriver(DNSDriver):
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                                value=e.message)
+                                            value=e.message)
             raise e
         return self._to_records(response, zone)
 
@@ -448,7 +448,7 @@ class PowerDNSDriver(DNSDriver):
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=record.zone.id,
-                                                driver=self, value=e.message)
+                                            driver=self, value=e.message)
             raise e
         return Record(id=None, name=name, data=data, type=type,
                       zone=record.zone, driver=self, ttl=extra['ttl'])
