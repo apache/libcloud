@@ -20,6 +20,8 @@ Code inspired by https://github.com/vmware/pyvmomi-community-samples
 Author: Markos Gogoulos -  mgogoulos@mist.io
 """
 
+import time
+
 try:
     from pyVim import connect
     from pyVmomi import vim
@@ -31,7 +33,8 @@ import atexit
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.base import NodeDriver
-from libcloud.compute.base import Node
+from libcloud.compute.base import Node, NodeSize
+from libcloud.compute.base import NodeImage, NodeLocation
 from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
 
@@ -106,23 +109,143 @@ class VSphereNodeDriver(NodeDriver):
         """
         Lists locations
         """
-        return []
+        #datacenters = [dc for dc in
+        #    content.viewManager.CreateContainerView(
+        #        content.rootFolder,
+        #        [vim.Datacenter],
+        #        recursive=True
+        #    ).view
+        #]
+
+        # TODO: Clusters should be selectable as locations if drs is enabled
+        # check property cluster.configuration.drsConfig.enabled
+
+        #clusters = [dc for dc in
+        #    content.viewManager.CreateContainerView(
+        #        content.rootFolder,
+        #        [vim.ClusterComputeResource, vim.HostSystem],
+        #        recursive=True
+        #    ).view
+        #]
+
+        locations = []
+        content = self.connection.RetrieveContent()
+        hosts = content.viewManager.CreateContainerView(
+            content.rootFolder,
+            [vim.HostSystem],
+            recursive=True
+        ).view
+
+        for host in hosts:
+            locations.append(self._to_location(host))
+
+        return locations
+
+    def _to_location(self, data):
+        extra = {
+            "state": data.runtime.connectionState,
+            "type": data.config.product.fullName,
+            "vendor": data.hardware.systemInfo.vendor,
+            "model": data.hardware.systemInfo.model,
+            "ram": data.hardware.memorySize,
+            "cpu": {
+                "packages": data.hardware.cpuInfo.numCpuPackages,
+                "cores": data.hardware.cpuInfo.numCpuCores,
+                "threads": data.hardware.cpuInfo.numCpuThreads,
+            },
+            "uptime": data.summary.quickStats.uptime
+        }
+
+        return NodeLocation(id=data.name, name=data.name, country=None,
+                            extra=extra, driver=self)
+
+    def ex_list_networks(self):
+        """
+        List networks
+        """
+        content = self.connection.RetrieveContent()
+        networks = content.viewManager.CreateContainerView(
+            content.rootFolder,
+            [vim.Network],
+            recursive=True
+        ).view
+
+        return [self._to_network(network) for network in networks]
+
+    def _to_network(self, data):
+        summary = data.summary
+        extra = {
+            'hosts': [h.name for h in data.host],
+            'ip_pool_name': summary.ipPoolName,
+            'ip_pool_id': summary.ipPoolId,
+            'accessible': summary.accessible
+        }
+        return VSphereNetwork(id=data.name, name=data.name, extra=extra)
 
     def list_sizes(self):
         """
-        Lists sizes
+        Returns sizes
         """
         return []
 
-    def list_images(self):
+    def list_images(self, location=None):
         """
-        Lists images
+        Lists VM templates as images
         """
-        return []
+
+        images = []
+        content = self.connection.RetrieveContent()
+        vms = content.viewManager.CreateContainerView(
+            content.rootFolder,
+            [vim.VirtualMachine],
+            recursive=True
+        ).view
+
+        for vm in vms:
+            if vm.config.template:
+                images.append(self._to_image(vm))
+
+        return images
+
+    def _to_image(self, data):
+        summary = data.summary
+        name = summary.config.name
+        uuid = summary.config.instanceUuid
+        memory = summary.config.memorySizeMB
+        cpus = summary.config.numCpu
+        operating_system = summary.config.guestFullName
+        os_type = 'unix'
+        if 'Microsoft' in str(operating_system):
+            os_type = 'windows'
+        annotation = summary.config.annotation
+        extra = {
+            "path": summary.config.vmPathName,
+            "operating_system": operating_system,
+            "os_type": os_type,
+            "memory_MB": memory,
+            "cpus": cpus,
+            "overallStatus": str(summary.overallStatus),
+            "metadata": {}
+        }
+
+        boot_time = summary.runtime.bootTime
+        if boot_time:
+            extra['boot_time'] = boot_time.isoformat()
+        if annotation:
+            extra['annotation'] = annotation
+
+
+        for custom_field in data.customValue:
+            key_id = custom_field.key
+            key = self.find_custom_field_key(key_id)
+            extra["metadata"][key] = custom_field.value
+
+        return NodeImage(id=uuid, name=name, driver=self,
+                         extra=extra)
 
     def list_nodes(self):
         """
-        Lists nodes
+        Lists nodes, excluding templates
         """
         nodes = []
         content = self.connection.RetrieveContent()
@@ -145,6 +268,8 @@ class VSphereNodeDriver(NodeDriver):
     def _to_nodes(self, vm_list):
         nodes = []
         for virtual_machine in vm_list:
+            if virtual_machine.config.template:
+                continue # Do not include templates in node list
             if hasattr(virtual_machine, 'childEntity'):
                 # If this is a group it will have children.
                 # If it does, recurse into them and then return
@@ -178,7 +303,7 @@ class VSphereNodeDriver(NodeDriver):
         if summary.guest is not None:
             ip_addresses.append(summary.guest.ipAddress)
 
-        overallStatus = str(summary.overallStatus)
+        overall_status = str(summary.overallStatus)
         public_ips = []
         private_ips = []
 
@@ -188,7 +313,7 @@ class VSphereNodeDriver(NodeDriver):
             "os_type": os_type,
             "memory_MB": memory,
             "cpus": cpus,
-            "overallStatus": overallStatus,
+            "overallStatus": overall_status,
             "metadata": {}
         }
 
@@ -221,7 +346,7 @@ class VSphereNodeDriver(NodeDriver):
     def reboot_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.RebootGuest()
         except:
@@ -231,7 +356,7 @@ class VSphereNodeDriver(NodeDriver):
     def destroy_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.PowerOff()
         except:
@@ -245,7 +370,7 @@ class VSphereNodeDriver(NodeDriver):
     def ex_stop_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.PowerOff()
         except:
@@ -255,18 +380,18 @@ class VSphereNodeDriver(NodeDriver):
     def ex_start_node(self, node):
         """
         """
-        vm = self.find_by_uuid(node)
+        vm = self.find_by_uuid(node.id)
         try:
             vm.PowerOn()
         except:
             pass
         return True
 
-    def find_by_uuid(self, node):
+    def find_by_uuid(self, node_uuid):
         """Searches VMs for a given uuid
         returns pyVmomi.VmomiSupport.vim.VirtualMachine
         """
-        vm = self.connection.content.searchIndex.FindByUuid(None, node.id,
+        vm = self.connection.content.searchIndex.FindByUuid(None, node_uuid,
                                                             True, True)
         if not vm:
             raise Exception("Unable to locate VirtualMachine.")
@@ -285,3 +410,204 @@ class VSphereNodeDriver(NodeDriver):
             if k.key == key_id:
                 return k.name
         return None
+
+    def get_obj(self, vimtype, name):
+        """
+        Return an object by name, if name is None the
+        first found object is returned
+        """
+        obj = None
+        content = self.connection.RetrieveContent()
+        container = content.viewManager.CreateContainerView(
+            content.rootFolder, vimtype, True)
+        for c in container.view:
+            if name:
+                if c.name == name:
+                    obj = c
+                    break
+            else:
+                obj = c
+                break
+
+        return obj
+
+    def wait_for_task(self, task, timeout=1800, interval=10):
+        """ wait for a vCenter task to finish """
+        start_time = time.time()
+        task_done = False
+        while not task_done:
+            if (time.time() - start_time >= timeout):
+                raise Exception('Timeout while waiting '
+                                'for import task Id %s'
+                                % task.info.id)
+            if task.info.state == 'success':
+                return task.info.result
+
+            if task.info.state == 'error':
+                print "there was an error"
+                task_done = True
+            time.sleep(interval)
+
+    def create_node(self, **kwargs):
+        """
+        Creates and returns node.
+
+        :keyword    ex_network: Name of a "Network" to connect the VM to ",
+        :type       ex_network: ``str``
+
+        """
+        name = kwargs['name']
+        image = kwargs['image']
+        size = kwargs['size']
+        network = kwargs.get('ex_network')
+
+        template = self.find_by_uuid(image.id)
+
+        datacenter = self.get_obj([vim.Datacenter], kwargs.get('datacenter'))
+
+        if kwargs.get('folder'):
+            folder = self.get_obj([vim.Folder], kwargs.get('folder'))
+        else:
+            folder = datacenter.vmFolder
+
+        cluster = self.get_obj([vim.ClusterComputeResource], kwargs.get('cluster'))
+
+        if kwargs.get('resource_pool'):
+            resource_pool = self.get_obj([vim.ResourcePool], kwargs.get('resource_pool'))
+        else:
+            resource_pool = cluster.resourcePool
+
+        if kwargs.get('datastore'):
+            datastore = self.get_obj([vim.Datastore], kwargs.get('datastore'))
+        else:
+            datastore = self.get_obj([vim.Datastore], template.datastore[0].info.name)
+
+        devices = []
+
+        if network:
+            nicspec = vim.vm.device.VirtualDeviceSpec()
+            nicspec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+            nicspec.device = vim.vm.device.VirtualVmxnet3()
+            nicspec.device.wakeOnLanEnabled = True
+            nicspec.device.deviceInfo = vim.Description()
+            nicspec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+            nicspec.device.backing.network = self.get_obj([vim.Network], network)
+            nicspec.device.backing.deviceName = network
+            nicspec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            nicspec.device.connectable.startConnected = True
+            nicspec.device.connectable.allowGuestControl = True
+            devices.append(nicspec)
+
+        # new_disk_kb = int(size.disk) * 1024 * 1024
+        # disk_spec = vim.vm.device.VirtualDeviceSpec()
+        # disk_spec.fileOperation = "create"
+        # disk_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+        # disk_spec.device = vim.vm.device.VirtualDisk()
+        # disk_spec.device.backing = \
+        #     vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+        # if size.extra.get('disk_type') == 'thin':
+        #     disk_spec.device.backing.thinProvisioned = True
+        # disk_spec.device.backing.diskMode = 'persistent'
+        # disk_spec.device.capacityInKB = new_disk_kb
+        # disk_spec.device.controllerKey = controller.key
+        # devices.append(disk_spec)
+
+        vmconf = vim.vm.ConfigSpec(
+            numCPUs=int(size.extra.get('cpu', 1)),
+            memoryMB=long(size.ram),
+            deviceChange=devices
+        )
+
+        if kwargs.get('datastore_cluster'):
+            podsel = vim.storageDrs.PodSelectionSpec()
+            pod = self.get_obj([vim.StoragePod], kwargs.get('datastore_cluster'))
+            podsel.storagePod = pod
+            storagespec = vim.storageDrs.StoragePlacementSpec()
+            storagespec.podSelectionSpec = podsel
+            storagespec.type = 'create'
+            storagespec.folder = folder
+            storagespec.resourcePool = resource_pool
+            storagespec.configSpec = vmconf
+
+            try:
+                content = self.connection.RetrieveContent()
+                rec = content.storageResourceManager.RecommendDatastores(
+                    storageSpec=storagespec)
+                rec_action = rec.recommendations[0].action[0]
+                real_datastore_name = rec_action.destination.name
+            except:
+                real_datastore_name = template.datastore[0].info.name
+
+            datastore = self.get_obj([vim.Datastore], real_datastore_name)
+
+        clonespec = vim.vm.CloneSpec(config=vmconf)
+        relospec = vim.vm.RelocateSpec()
+        relospec.datastore = datastore
+        relospec.pool = resource_pool
+        if 'location' in kwargs:
+            location = kwargs.get('location')
+            host = self.get_obj([vim.HostSystem], location.name)
+            if host:
+                relospec.host = host
+        clonespec.location = relospec
+        clonespec.powerOn = True
+
+        task = template.Clone(
+            folder=folder,
+            name=name,
+            spec=clonespec
+        )
+
+        result = self.wait_for_task(task)
+
+        if task.info.state == 'error':
+            raise Exception(task.info.error.reason)
+
+        node = self._to_node(result)
+
+        if network:
+            self.ex_connect_network(result, network)
+
+        return node
+
+    def ex_connect_network(self, vm, network_name):
+        spec = vim.vm.ConfigSpec()
+
+        # add Switch here
+        dev_changes = []
+        network_spec = vim.vm.device.VirtualDeviceSpec()
+        network_spec.fileOperation = "create"
+        network_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
+        network_spec.device = vim.vm.device.VirtualVmxnet3()
+
+        network_spec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+
+        network_spec.device.backing.useAutoDetect = False
+        network_spec.device.backing.network = self.get_obj([vim.Network], network_name)
+
+        network_spec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        network_spec.device.connectable.startConnected = True
+        network_spec.device.connectable.connected = True
+
+        dev_changes.append(network_spec)
+
+        spec.deviceChange = dev_changes
+        output = vm.ReconfigVM_Task(spec=spec)
+        print output.info
+
+
+class VSphereNetwork(object):
+    """
+    Represents information about a VPC (Virtual Private Cloud) network
+
+    Note: This class is EC2 specific.
+    """
+
+    def __init__(self, id, name, extra=None):
+        self.id = id
+        self.name = name
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<VSphereNetwork: id=%s, name=%s')
+                % (self.id, self.name))
