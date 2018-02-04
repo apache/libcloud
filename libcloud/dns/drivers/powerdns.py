@@ -211,7 +211,7 @@ class PowerDNSDriver(DNSDriver):
                                     method='PATCH')
         except BaseHTTPError:
             e = sys.exc_info()[1]
-            if e.code == httplib.UNPROCESSABLE_ENTITY and\
+            if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id = zone.id, driver = self,
                                             value = e.message)
