@@ -101,7 +101,10 @@ class PowerDNSTestCase(LibcloudTestCase):
                                            name='newrecord.example.com',
                                            type=RecordType.A,
                                            data='127.0.0.1',
-                                           extra={'ttl': 300})
+                                           extra={'ttl': 300},
+                                           comment = {'content': 'content',
+                                                      'account': 'account',
+                                                      'modified_at': '15'})
         self.assertEqual(record.id, None)
         self.assertEqual(record.name, 'newrecord.example.com')
         self.assertEqual(record.data, '127.0.0.1')

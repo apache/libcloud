@@ -63,9 +63,11 @@ class Zone(object):
     def list_records(self):
         return self.driver.list_records(zone=self)
 
-    def create_record(self, name, type, data, extra=None):
+    def create_record(self, name, type, data, disabled=False,
+                      comment=None, extra=None):
         return self.driver.create_record(name=name, zone=self, type=type,
-                                         data=data, extra=extra)
+                                         data=data, disabled=disabled,
+                                         comment=comment, extra=extra)
 
     def update(self, domain=None, type=None, ttl=None, extra=None):
         return self.driver.update_zone(zone=self, domain=domain, type=type,
@@ -307,7 +309,7 @@ class DNSDriver(BaseDriver):
         raise NotImplementedError(
             'update_zone not implemented for this driver')
 
-    def create_record(self, name, zone, type, data, extra=None):
+    def create_record(self, name, zone, type, data, disabled=None, comment=None, extra=None):
         """
         Create a new record.
 
@@ -325,7 +327,13 @@ class DNSDriver(BaseDriver):
 
         :param data: Data for the record (depends on the record type).
         :type  data: ``str``
+        
+        :param disabled: Flag to enable/disable the record
+        :type  disabled: ``Boolean``. Default False
 
+        :param comment: comment to attach to the record
+        :type  comment: ``dict``
+        
         :param extra: Extra attributes (driver specific). (optional)
         :type extra: ``dict``
 
