@@ -261,8 +261,35 @@ class VSphereNodeDriver(NodeDriver):
                 vm_folder = datacenter.vmFolder
                 vm_list = vm_folder.childEntity
                 nodes.extend(self._to_nodes(vm_list))
+
+        nodemap = {}
         for node in nodes:
             node.extra['vSphere version'] = content.about.version
+            nodemap[node.id] = node
+
+        # Get VM deployment events to extract creation dates & images
+        filter_spec = vim.event.EventFilterSpec(
+            eventTypeId=['VmBeingDeployedEvent']
+        )
+        deploy_events = content.eventManager.QueryEvent(filter_spec)
+        for event in deploy_events:
+            try:
+                uuid = event.vm.vm.config.instanceUuid
+            except Exception:
+                continue
+            if uuid in nodemap:
+                node = nodemap[uuid]
+                try:  # Get source template as image
+                    source_template_vm = event.srcTemplate.vm
+                    image_id = source_template_vm.config.instanceUuid
+                    node.extra['image_id'] = image_id
+                except AttributeError:
+                    pass
+                try:  # Get creation date
+                    node.created_at = event.createdTime
+                except AttributeError:
+                    pass
+
         return nodes
 
     def _to_nodes(self, vm_list):
@@ -289,7 +316,12 @@ class VSphereNodeDriver(NodeDriver):
         path = summary.config.vmPathName
         memory = summary.config.memorySizeMB
         cpus = summary.config.numCpu
+        disk = summary.storage.committed/(1024*1024*1024)
+        size = "%dvCPU, %dMB RAM, %dGB disk" % (cpus, memory, disk)
+
         operating_system = summary.config.guestFullName
+        host = summary.runtime.host
+
         # mist.io needs this metadata
         os_type = 'unix'
         if 'Microsoft' in str(operating_system):
@@ -308,11 +340,13 @@ class VSphereNodeDriver(NodeDriver):
         private_ips = []
 
         extra = {
+            "host": host.name,
             "path": path,
             "operating_system": operating_system,
             "os_type": os_type,
             "memory_MB": memory,
             "cpus": cpus,
+            "disk": disk,
             "overallStatus": overall_status,
             "metadata": {}
         }
@@ -337,7 +371,7 @@ class VSphereNodeDriver(NodeDriver):
             key = self.find_custom_field_key(key_id)
             extra["metadata"][key] = custom_field.value
 
-        node = Node(id=uuid, name=name, state=status,
+        node = Node(id=uuid, name=name, state=status, size=size,
                     public_ips=public_ips, private_ips=private_ips,
                     driver=self, extra=extra)
         node._uuid = uuid
@@ -595,6 +629,36 @@ class VSphereNodeDriver(NodeDriver):
         output = vm.ReconfigVM_Task(spec=spec)
         print output.info
 
+    def ex_open_console(self, vm_uuid):
+        import OpenSSL
+        import ssl
+        content = self.connection.RetrieveContent()
+        serverGuid = content.about.instanceUuid
+        search_index = content.searchIndex
+        vm = search_index.FindByUuid(None, vm_uuid, True, True)
+        vcenter_data = content.setting
+        vm_moid = vm._moId
+        vcenter_settings = vcenter_data.setting
+        console_port = '9443'
+
+        for item in vcenter_settings:
+            key = getattr(item, 'key')
+            if key == 'VirtualCenter.FQDN':
+                vcenter_fqdn = getattr(item, 'value')
+
+        session_manager = content.sessionManager
+        session = session_manager.AcquireCloneTicket()
+        vc_cert = ssl.get_server_certificate((vcenter_fqdn, 443))
+        vc_pem = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                                 vc_cert)
+        vc_fingerprint = vc_pem.digest('sha1')
+
+        uri = "https://%s:%s/vsphere-client/webconsole.html?vmId=%s"\
+              "&vmName=%s&serverGuid=%s&host=%s:443&sessionTicket=%s"\
+              "&thumbprint=%s" % (vcenter_fqdn, console_port, str(vm_moid),
+                                  vm.name, serverGuid, vcenter_fqdn, session,
+                                  vc_fingerprint)
+        return uri
 
 class VSphereNetwork(object):
     """
