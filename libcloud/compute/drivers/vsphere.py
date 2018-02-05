@@ -21,6 +21,7 @@ Author: Markos Gogoulos -  mgogoulos@mist.io
 """
 
 import time
+import logging
 
 try:
     from pyVim import connect
@@ -38,11 +39,14 @@ from libcloud.compute.base import NodeImage, NodeLocation
 from libcloud.compute.types import NodeState, Provider
 from libcloud.utils.networking import is_public_subnet
 
+logger = logging.getLogger('libcloud.compute.drivers.vsphere')
+
 
 class VSphereNodeDriver(NodeDriver):
     name = 'VMware vSphere'
     website = 'http://www.vmware.com/products/vsphere/'
     type = Provider.VSPHERE
+    host = ''
 
     NODE_STATE_MAP = {
         'poweredOn': NodeState.RUNNING,
@@ -58,6 +62,7 @@ class VSphereNodeDriver(NodeDriver):
             self.connection = connect.SmartConnect(host=host, user=username,
                                                    pwd=password)
             atexit.register(connect.Disconnect, self.connection)
+            self.host = host
         except Exception as exc:
             error_message = str(exc).lower()
             if 'incorrect user name' in error_message:
@@ -284,11 +289,11 @@ class VSphereNodeDriver(NodeDriver):
                     image_id = source_template_vm.config.instanceUuid
                     node.extra['image_id'] = image_id
                 except AttributeError:
-                    pass
+                    logger.error('Cannot get instanceUuid from source template')
                 try:  # Get creation date
                     node.created_at = event.createdTime
                 except AttributeError:
-                    pass
+                    logger.error('Cannot get creation date from VM deploy event')
 
         return nodes
 
@@ -629,22 +634,23 @@ class VSphereNodeDriver(NodeDriver):
         output = vm.ReconfigVM_Task(spec=spec)
         print output.info
 
-    def ex_open_console(self, vm_uuid):
+    def ex_open_console(self, vm_uuid, console_port = '9443'):
         import OpenSSL
         import ssl
         content = self.connection.RetrieveContent()
-        serverGuid = content.about.instanceUuid
+        server_guid = content.about.instanceUuid
         search_index = content.searchIndex
         vm = search_index.FindByUuid(None, vm_uuid, True, True)
         vcenter_data = content.setting
         vm_moid = vm._moId
         vcenter_settings = vcenter_data.setting
-        console_port = '9443'
+        vcenter_fqdn = self.host
 
         for item in vcenter_settings:
             key = getattr(item, 'key')
             if key == 'VirtualCenter.FQDN':
                 vcenter_fqdn = getattr(item, 'value')
+
 
         session_manager = content.sessionManager
         session = session_manager.AcquireCloneTicket()
@@ -656,7 +662,7 @@ class VSphereNodeDriver(NodeDriver):
         uri = "https://%s:%s/vsphere-client/webconsole.html?vmId=%s"\
               "&vmName=%s&serverGuid=%s&host=%s:443&sessionTicket=%s"\
               "&thumbprint=%s" % (vcenter_fqdn, console_port, str(vm_moid),
-                                  vm.name, serverGuid, vcenter_fqdn, session,
+                                  vm.name, server_guid, vcenter_fqdn, session,
                                   vc_fingerprint)
         return uri
 
