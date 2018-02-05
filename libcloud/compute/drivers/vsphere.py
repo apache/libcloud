@@ -46,7 +46,6 @@ class VSphereNodeDriver(NodeDriver):
     name = 'VMware vSphere'
     website = 'http://www.vmware.com/products/vsphere/'
     type = Provider.VSPHERE
-    host = ''
 
     NODE_STATE_MAP = {
         'poweredOn': NodeState.RUNNING,
@@ -58,11 +57,11 @@ class VSphereNodeDriver(NodeDriver):
         """Initialize a connection by providing a hostname,
         username and password
         """
+        self.host = host
         try:
             self.connection = connect.SmartConnect(host=host, user=username,
                                                    pwd=password)
             atexit.register(connect.Disconnect, self.connection)
-            self.host = host
         except Exception as exc:
             error_message = str(exc).lower()
             if 'incorrect user name' in error_message:
