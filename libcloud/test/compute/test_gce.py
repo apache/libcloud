@@ -863,10 +863,9 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         target_tags = ['libcloud']
         network = 'default'
         firewall = self.driver.ex_create_firewall(
-                            name, allowed, description=description,
-                            network=network, priority=priority,
-                            target_tags=target_tags,
-                            source_service_accounts=source_service_accounts)
+            name, allowed, description=description,
+            network=network, priority=priority, target_tags=target_tags,
+            source_service_accounts=source_service_accounts)
         self.assertTrue(isinstance(firewall, GCEFirewall))
         self.assertEqual(firewall.name, name)
 
@@ -880,11 +879,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         target_ranges = ['8.8.8.8/32']
         network = 'default'
         firewall = self.driver.ex_create_firewall(
-                            name, allowed,
-                            description=description, network=network,
-                            priority=priority, direction=direction,
-                            target_ranges=target_ranges,
-                            target_service_accounts=target_service_accounts)
+            name, allowed,
+            description=description, network=network,
+            priority=priority, direction=direction,
+            target_ranges=target_ranges,
+            target_service_accounts=target_service_accounts)
         self.assertTrue(isinstance(firewall, GCEFirewall))
         self.assertEqual(firewall.name, name)
 
@@ -897,10 +896,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         source_tags = ['libcloud']
         network = 'default'
         firewall = self.driver.ex_create_firewall(
-                             name, denied=denied,
-                             description=description, network=network,
-                             priority=priority, source_tags=source_tags,
-                             source_ranges=source_ranges)
+            name, denied=denied,
+            description=description, network=network,
+            priority=priority, source_tags=source_tags,
+            source_ranges=source_ranges)
         self.assertTrue(isinstance(firewall, GCEFirewall))
         self.assertEqual(firewall.name, name)
 
