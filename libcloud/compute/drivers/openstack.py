@@ -2267,20 +2267,16 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 ip = value['addr']
                 is_public_ip = False
 
-                try:
-                    is_public_ip = is_public_subnet(ip)
-                except Exception as e:
-                    # IPv6
-                    # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating'
-                    # for public and 'fixed' for private
-                    explicit_ip_type = value.get('OS-EXT-IPS:type', None)
+                # Openstack sets 'OS-EXT-IPS:type' to 'floating'
+                # for public and 'fixed' for private
+                explicit_ip_type = value.get('OS-EXT-IPS:type', None)
 
-                    if label in public_networks_labels:
-                        is_public_ip = True
-                    elif explicit_ip_type == 'floating':
-                        is_public_ip = True
-                    elif explicit_ip_type == 'fixed':
-                        is_public_ip = False
+                if label in public_networks_labels:
+                    is_public_ip = True
+                elif explicit_ip_type == 'floating':
+                    is_public_ip = True
+                elif explicit_ip_type == 'fixed':
+                    is_public_ip = False
 
                 if is_public_ip:
                     public_ips.append(ip)
