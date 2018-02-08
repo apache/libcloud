@@ -1756,36 +1756,72 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         return self._to_routers(routers)
 
-    def ex_create_network(self, name, cidr):
+    @_neutron_endpoint
+    def ex_create_network(self, name, admin_state_up=True, shared=False):
         """
-        Create a new Network
+        Create a new neutron Network
 
-        :param name: Name of network which should be used
+        :param name: Name of the network which should be used
         :type name: ``str``
 
-        :param cidr: cidr of network which should be used
-        :type cidr: ``str``
+        :param admin_state_up: The administrative state of the network
+        :type admin_state_up: ``bool``
 
-        :rtype: :class:`OpenStackNetwork`
+        :param shared: Admin-only. Indicates whether this network is shared across all tenants.
+        :type shared: ``bool``
+
+        :param tenant_id: The ID of the tenant that owns the network.
+        :type tenant_id: ``str``
+
+        :return: :class:`OpenStackNeutronNetwork`
         """
-        data = {'network': {'cidr': cidr, 'label': name}}
+        data = {
+            'network': {
+                'name': name,
+                'admin_state_up': admin_state_up,
+                'shared': shared,
+            }
+        }
+
         response = self.connection.request(self._networks_url_prefix,
                                            method='POST', data=data).object
-        return self._to_network(response['network'])
 
-    def ex_delete_network(self, network):
+        return self._to_neutron_network(response['network'])
+
+
+    @_neutron_endpoint
+    def ex_delete_network(self, network_id):
         """
-        Get a list of NodeNetorks that are available.
-
-        :param network: Network which should be used
-        :type network: :class:`OpenStackNetwork`
-
-        :rtype: ``bool``
+        Delete neutron network
         """
-        resp = self.connection.request('%s/%s' % (self._networks_url_prefix,
-                                                  network.id),
-                                       method='DELETE')
-        return resp.status == httplib.ACCEPTED
+        response = self.connection.request(self._networks_url_prefix +
+                                           "/%s" % network_id, method='DELETE').object
+
+        return response
+
+
+    @_neutron_endpoint
+    def ex_create_subnet(self, name, network_id, cidr, allocation_pools=[], gateway_ip=None,
+                         ip_version="4", enable_dhcp=True):
+
+        data = {
+            'subnet': {
+                'name': name,
+                'network_id': network_id,
+                'ip_version': ip_version,
+                'cidr': cidr,
+                'gateway_ip': gateway_ip,
+                'allocation_pools': allocation_pools,
+                'enable_dhcp': enable_dhcp
+            }
+        }
+
+        response = self.connection.request(self._subnets_url_prefix,
+                                           method='POST', data=data).object
+
+        subnet = response['subnet']
+        return self._to_subnet(subnet)
+
 
     def ex_get_console_output(self, node, length=None):
         """
