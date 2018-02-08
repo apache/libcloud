@@ -2480,16 +2480,20 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             self.connection.request('/os-floating-ip-pools').object)
 
     def _to_floating_ips(self, obj):
-        ip_elements = obj['floating_ips']
+        ip_elements = obj['floatingips']
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
-                                               ip_address=obj['ip'],
-                                               pool=None,
-                                               node_id=obj['instance_id'],
-                                               driver=self)
+        return OpenStack_1_1_FloatingIpAddress(id=obj.pop('id'),
+                                               floating_ip_address=obj.pop('floating_ip_address'),
+                                               floating_network_id=obj.pop('floating_network_id'),
+                                               fixed_ip_address=obj.pop('fixed_ip_address', ''),
+                                               status=obj.pop('status', False),
+                                               port_id=obj.pop('port_id', None),
+                                               extra=obj)
 
+
+    @_neutron_endpoint
     def ex_list_floating_ips(self):
         """
         List floating IPs
@@ -2497,7 +2501,16 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
         """
         return self._to_floating_ips(
-            self.connection.request('/os-floating-ips').object)
+            self.connection.request('/v2.0/floatingips').object)
+
+    @_neutron_endpoint
+    def ex_list_ports(self):
+        """
+        List ports
+        """
+        resp = self.connection.request('/v2.0/ports', method='GET').object
+
+        return resp['ports']
 
     def ex_get_floating_ip(self, ip):
         """
@@ -2512,31 +2525,23 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         ip_obj, = [x for x in floating_ips if x.ip_address == ip]
         return ip_obj
 
-    def ex_create_floating_ip(self, ip_pool=None):
-        """
-        Create new floating IP. The ip_pool attribute is optional only if your
-        infrastructure has only one IP pool available.
+    @_neutron_endpoint
+    def ex_create_floating_ip(self, floating_network_id, port_id=None):
+        data = {
+            "floatingip":
+                {
+                    "port_id": port_id,
+                    "floating_network_id": floating_network_id
+                }
+        }
 
-        :param      ip_pool: name of the floating IP pool
-        :type       ip_pool: ``str``
+        resp = self.connection.request('/v2.0/floatingips', method='POST',
+                                       data=data).object
 
-        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
-        """
-        data = {'pool': ip_pool} if ip_pool is not None else {}
-        resp = self.connection.request('/os-floating-ips',
-                                       method='POST',
-                                       data=data)
+        return self._to_floating_ip(resp['floatingip'])
 
-        data = resp.object['floating_ip']
-        id = data['id']
-        ip_address = data['ip']
-        return OpenStack_1_1_FloatingIpAddress(id=id,
-                                               ip_address=ip_address,
-                                               pool=None,
-                                               node_id=None,
-                                               driver=self)
-
-    def ex_delete_floating_ip(self, ip):
+    @_neutron_endpoint
+    def ex_delete_floating_ip(self, floating_ip_id):
         """
         Delete specified floating IP
 
@@ -2545,8 +2550,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/os-floating-ips/%s' % ip.id,
-                                       method='DELETE')
+        resp = self.connection.request(
+            '/v2.0/floatingips/%s' % floating_ip_id, method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_attach_floating_ip_to_node(self, node, ip):
@@ -2588,6 +2593,34 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request('/servers/%s/action' % node.id,
                                        method='POST', data=data)
         return resp.status == httplib.ACCEPTED
+
+    @_neutron_endpoint
+    def ex_associate_floating_ip_to_node(self, floating_ip_id, port_id):
+        data = {
+            "floatingip":
+                {
+                "port_id": port_id
+                }
+        }
+        resp = self.connection.request('/v2.0/floatingips/%s' % floating_ip_id,
+                                       method='PUT',
+                                       data=data).object
+
+        return self._to_floating_ip(resp['floatingip'])
+
+    @_neutron_endpoint
+    def ex_disassociate_floating_ip_from_node(self, floating_ip_id):
+        data = {
+            "floatingip":
+                {
+                "port_id": None
+                }
+        }
+        resp = self.connection.request('/v2.0/floatingips/%s' % floating_ip_id,
+                                       method='PUT',
+                                       data=data).object
+
+        return self._to_floating_ip(resp['floatingip'])
 
     def ex_get_metadata_for_node(self, node):
         """
@@ -2681,11 +2714,14 @@ class OpenStack_1_1_FloatingIpPool(object):
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
-                                               ip_address=obj['ip'],
-                                               pool=self,
-                                               node_id=obj['instance_id'],
-                                               driver=self.connection.driver)
+        return OpenStack_1_1_FloatingIpAddress(id=obj.pop('id'),
+                                               floating_ip_address=obj.pop('floating_ip_address'),
+                                               floating_network_id=obj.pop('floating_network_id'),
+                                               fixed_ip_address=obj.pop('fixed_ip_address', ''),
+                                               status=obj.pop('status', False),
+                                               port_id=obj.pop('port_id', None),
+                                               extra=obj)
+
 
     def get_floating_ip(self, ip):
         """
@@ -2734,30 +2770,23 @@ class OpenStack_1_1_FloatingIpPool(object):
         return ('<OpenStack_1_1_FloatingIpPool: name=%s>' % self.name)
 
 
+
 class OpenStack_1_1_FloatingIpAddress(object):
     """
     Floating IP info.
     """
 
-    def __init__(self, id, ip_address, pool, node_id=None, driver=None):
+    def __init__(self, id, floating_ip_address, floating_network_id, fixed_ip_address="", status=False, port_id=None,
+                 extra={}):
         self.id = str(id)
-        self.ip_address = ip_address
-        self.pool = pool
-        self.node_id = node_id
-        self.driver = driver
-
-    def delete(self):
-        """
-        Delete this floating IP
-
-        :rtype: ``bool``
-        """
-        if self.pool is not None:
-            return self.pool.delete_floating_ip(self)
-        elif self.driver is not None:
-            return self.driver.ex_delete_floating_ip(self)
+        self.floating_ip_address = floating_ip_address
+        self.floating_network_id = floating_network_id
+        self.fixed_ip_address = fixed_ip_address
+        self.status = status
+        self.port_id = port_id
+        self.extra = extra
 
     def __repr__(self):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
-                ' pool=%s, driver=%s>'
-                % (self.id, self.ip_address, self.pool, self.driver))
+                ' attached_to_ip=%s>'
+                % (self.id, self.floating_ip_address, self.fixed_ip_address))
