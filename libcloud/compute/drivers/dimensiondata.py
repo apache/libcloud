@@ -4181,7 +4181,7 @@ class DimensionDataNodeDriver(NodeDriver):
         if locations is None:
             locations = self.list_locations(location_id)
 
-        location = [match_location for match_location in locations if match_location.id == location_id][0]
+        location = [loc for loc in locations if loc.id == location_id][0]
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
 
         if LooseVersion(self.connection.active_api_version) > LooseVersion(
