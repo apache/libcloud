@@ -1822,6 +1822,16 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         subnet = response['subnet']
         return self._to_subnet(subnet)
 
+    @_neutron_endpoint
+    def ex_delete_subnet(self, subnet_id):
+        """
+        Delete neutron subnet
+        """
+
+        response = self.connection.request(self._subnets_url_prefix +
+                                           "/%s" % subnet_id, method='DELETE').object
+
+        return response
 
     def ex_get_console_output(self, node, length=None):
         """
