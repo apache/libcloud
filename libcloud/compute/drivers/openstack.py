@@ -281,7 +281,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
         @inherits: :class:`NodeDriver.list_images`
 
-        :param ex_only_active: True if list only active
+        :param ex_only_active: True if list only active (optional)
         :type ex_only_active: ``bool``
 
         """
@@ -2537,6 +2537,16 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         Lists all active images using the V2 Glance API
 
         @inherits: :class:`NodeDriver.list_images`
+
+        :param location: Which data center to list the images in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+
+        :type location: :class:`.NodeLocation`
+        :param ex_only_active: True if list only active (optional)
+
+        :type ex_only_active: ``bool``
+
         """
         if location is not None:
             raise NotImplementedError(
