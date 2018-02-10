@@ -2486,13 +2486,17 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     # compute API. This deprecated proxied API does not offer all
     # functionality that the Glance Image service API offers.
     # See https://developer.openstack.org/api-ref/compute/
-    # > These APIs are proxy calls to the Image service. Nova has deprecated all
-    # > the proxy APIs and users should use the native APIs instead. These will fail
-    # > with a 404 starting from microversion 2.36. See: Relevant Image APIs.
-    # For example, managing image visibility and sharing machine images across
-    # tenants can not be done using the proxied image API in the compute endpoint,
-    # but it can be done with the Glance Image API.
-    # See https://developer.openstack.org/api-ref/image/v2/index.html#list-image-members
+    #
+    # > These APIs are proxy calls to the Image service. Nova has deprecated
+    # > all the proxy APIs and users should use the native APIs instead. These
+    # > will fail with a 404 starting from microversion 2.36. See: Relevant
+    # > Image APIs.
+    #
+    # For example, managing image visibility and sharing machine
+    # images across tenants can not be done using the proxied image API in the
+    # compute endpoint, but it can be done with the Glance Image API.
+    # See https://developer.openstack.org/api-ref/
+    # image/v2/index.html#list-image-members
     image_connectionCls = OpenStack_2_ImageConnection
     image_connection = None
     type = Provider.OPENSTACK
