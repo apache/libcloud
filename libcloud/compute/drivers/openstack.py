@@ -2522,7 +2522,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         Get a NodeImage using the V2 Glance API
 
-        @inherits: :class:`NodeDriver.get_image`
+        @inherits: :class:`OpenStack_1_1_NodeDriver.get_image`
 
         :param      image_id: ID of the image which should be used
         :type       image_id: ``str``
