@@ -2570,12 +2570,17 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         Patch a NodeImage. Can be used to set visibility
         :param      image_id: ID of the image which should be used
+
         :type       image_id: ``str``
         :param      data: The data to PATCH, either a dict or a list
+        for example: [
+          {'op': 'replace', 'path': '/visibility', 'value': 'shared'}
+        ]
+
         :type       data: ``dict|list``
         :rtype: :class:`NodeImage`
         """
-        response = self.connection.request(
+        response = self.image_connection.request(
             '/v2/images/%s' % (image_id,),
             headers={'Content-type': 'application/'
                                      'openstack-images-'
