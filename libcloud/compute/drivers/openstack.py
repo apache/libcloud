@@ -1296,6 +1296,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         if min_ram is None:
             min_ram = api_image.get('minRam')
+
         min_disk = api_image.get('min_disk')
 
         if min_disk is None:
