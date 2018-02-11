@@ -38,7 +38,7 @@ from libcloud.common.base import LibcloudConnection
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
     LibcloudError
 from libcloud.compute.types import Provider, KeyPairDoesNotExistError, StorageVolumeState, \
-    VolumeSnapshotState
+    VolumeSnapshotState, NodeImageMemberState
 from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import (
     OpenStack_1_0_NodeDriver,
@@ -1636,6 +1636,34 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(image.extra['minRam'], 0)
         self.assertEqual(image.extra['visibility'], "shared")
 
+    def test_ex_list_image_members(self):
+        image_id = 'd9a9cd9a-278a-444c-90a6-d24b8c688a63'
+        image_member_id = '016926dff12345e8b10329f24c99745b'
+        image_members = self.driver.ex_list_image_members(image_id)
+        self.assertEqual(len(image_members), 30, 'Wrong image member count')
+
+        image_member = image_members[0]
+        self.assertEqual(image_member.id, image_member_id)
+        self.assertEqual(image_member.image_id, image_id)
+        self.assertEqual(image_member.state, NodeImageMemberState.ACCEPTED)
+        self.assertEqual(image_member.created, '2017-01-12T12:31:50Z')
+        self.assertEqual(image_member.extra['updated'], '2017-01-12T12:31:54Z')
+        self.assertEqual(image_member.extra['schema'], '/v2/schemas/member')
+
+    def test_ex_get_image_member(self):
+        image_id = 'd9a9cd9a-278a-444c-90a6-d24b8c688a63'
+        image_member_id = '016926dff12345e8b10329f24c99745b'
+        image_member = self.driver.ex_get_image_member(
+            image_id, image_member_id
+        )
+
+        self.assertEqual(image_member.id, image_member_id)
+        self.assertEqual(image_member.image_id, image_id)
+        self.assertEqual(image_member.state, NodeImageMemberState.ACCEPTED)
+        self.assertEqual(image_member.created, '2017-01-12T12:31:50Z')
+        self.assertEqual(image_member.extra['updated'], '2017-01-12T12:31:54Z')
+        self.assertEqual(image_member.extra['schema'], '/v2/schemas/member')
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -1786,6 +1814,22 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_v2_images_f24a3c1b_d52a_4116_91da_25b3eee8f55e(self, method, url, body, headers):
         if method == "GET" or method == "PATCH":
             body = self.fixtures.load('_images_f24a3c1b-d52a-4116-91da-25b3eee8f55e.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members_016926dff12345e8b10329f24c99745b(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load(
+                '_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members_016926dff12345e8b10329f24c99745b.json'
+            )
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
