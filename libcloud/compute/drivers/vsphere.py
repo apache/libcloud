@@ -599,7 +599,11 @@ class VSphereNodeDriver(NodeDriver):
         result = self.wait_for_task(task)
 
         if task.info.state == 'error':
-            raise Exception(task.info.error.reason)
+            try:
+                reason = task.info.error.reason
+            except:
+                reason = str(task.info.error)
+            raise Exception(reason)
 
         node = self._to_node(result)
 
