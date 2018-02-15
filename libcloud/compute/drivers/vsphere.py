@@ -299,8 +299,6 @@ class VSphereNodeDriver(NodeDriver):
     def _to_nodes(self, vm_list):
         nodes = []
         for virtual_machine in vm_list:
-            if virtual_machine.config and virtual_machine.config.template:
-                continue # Do not include templates in node list
             if hasattr(virtual_machine, 'childEntity'):
                 # If this is a group it will have children.
                 # If it does, recurse into them and then return
@@ -311,6 +309,10 @@ class VSphereNodeDriver(NodeDriver):
                 # a common usecase, so ignore that)
                 nodes.extend(self._to_nodes(virtual_machine.vm))
             else:
+                if not hasattr(virtual_machine, 'config') or \
+                    (virtual_machine.config and \
+                     virtual_machine.config.template):
+                    continue # Do not include templates in node list
                 nodes.append(self._to_node(virtual_machine))
         return nodes
 
@@ -511,20 +513,32 @@ class VSphereNodeDriver(NodeDriver):
 
         template = self.find_by_uuid(image.id)
 
-        datacenter = self.get_obj([vim.Datacenter], kwargs.get('datacenter'))
+        cluster_name = kwargs.get('cluster') or kwargs.get('location')
+        cluster = self.get_obj([vim.ClusterComputeResource], cluster_name)
+        if not cluster:  # Get the first available cluster
+            cluster = self.get_obj([vim.ClusterComputeResource], '')
+
+        datacenter = None
+        if not kwargs.get('datacenter'):  # Get datacenter from cluster
+            parent = cluster.parent
+            while parent:
+                if isinstance(parent, vim.Datacenter):
+                    datacenter = parent
+                    break
+                parent = parent.parent
+
+        if kwargs.get('datacenter') or datacenter is None:
+            datacenter = self.get_obj([vim.Datacenter],
+                                      kwargs.get('datacenter'))
 
         if kwargs.get('folder'):
             folder = self.get_obj([vim.Folder], kwargs.get('folder'))
         else:
             folder = datacenter.vmFolder
 
-        cluster_name = kwargs.get('cluster') or kwargs.get('location')
-        cluster = self.get_obj([vim.ClusterComputeResource], cluster_name)
-        if not cluster:  # Get the first available cluster
-            cluster = self.get_obj([vim.ClusterComputeResource], '')
-
         if kwargs.get('resource_pool'):
-            resource_pool = self.get_obj([vim.ResourcePool], kwargs.get('resource_pool'))
+            resource_pool = self.get_obj([vim.ResourcePool],
+                                         kwargs.get('resource_pool'))
         else:
             resource_pool = cluster.resourcePool
 
