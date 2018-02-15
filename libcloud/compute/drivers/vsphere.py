@@ -113,52 +113,52 @@ class VSphereNodeDriver(NodeDriver):
         """
         Lists locations
         """
-        #datacenters = [dc for dc in
-        #    content.viewManager.CreateContainerView(
-        #        content.rootFolder,
-        #        [vim.Datacenter],
-        #        recursive=True
-        #    ).view
-        #]
-
-        # TODO: Clusters should be selectable as locations if drs is enabled
-        # check property cluster.configuration.drsConfig.enabled
-
-        #clusters = [dc for dc in
-        #    content.viewManager.CreateContainerView(
-        #        content.rootFolder,
-        #        [vim.ClusterComputeResource, vim.HostSystem],
-        #        recursive=True
-        #    ).view
-        #]
-
-        locations = []
         content = self.connection.RetrieveContent()
-        hosts = content.viewManager.CreateContainerView(
-            content.rootFolder,
-            [vim.HostSystem],
-            recursive=True
-        ).view
 
-        for host in hosts:
-            locations.append(self._to_location(host))
+        potential_locations = [dc for dc in
+            content.viewManager.CreateContainerView(
+                content.rootFolder,
+                [vim.ClusterComputeResource, vim.HostSystem],
+                recursive=True
+            ).view
+        ]
+
+        # Add hosts and clusters with DRS enabled
+        locations = []
+        for location in potential_locations:
+            if isinstance(location, vim.HostSystem):
+                locations.append(self._to_location(location))
+            elif isinstance(location, vim.ClusterComputeResource):
+                if location.configuration.drsConfig.enabled:
+                    locations.append(self._to_location(location))
 
         return locations
 
     def _to_location(self, data):
-        extra = {
-            "state": data.runtime.connectionState,
-            "type": data.config.product.fullName,
-            "vendor": data.hardware.systemInfo.vendor,
-            "model": data.hardware.systemInfo.model,
-            "ram": data.hardware.memorySize,
-            "cpu": {
-                "packages": data.hardware.cpuInfo.numCpuPackages,
-                "cores": data.hardware.cpuInfo.numCpuCores,
-                "threads": data.hardware.cpuInfo.numCpuThreads,
-            },
-            "uptime": data.summary.quickStats.uptime
-        }
+        try:
+            if isinstance(data, vim.HostSystem):
+                extra = {
+                    "state": data.runtime.connectionState,
+                    "type": data.config.product.fullName,
+                    "vendor": data.hardware.systemInfo.vendor,
+                    "model": data.hardware.systemInfo.model,
+                    "ram": data.hardware.memorySize,
+                    "cpu": {
+                        "packages": data.hardware.cpuInfo.numCpuPackages,
+                        "cores": data.hardware.cpuInfo.numCpuCores,
+                        "threads": data.hardware.cpuInfo.numCpuThreads,
+                    },
+                    "uptime": data.summary.quickStats.uptime,
+                    "parent": str(data.parent)
+                }
+            elif isinstance(data, vim.ClusterComputeResource):
+                extra = {
+                    'hosts': len(data.host),
+                    'parent': str(data.parent)
+                }
+        except AttributeError as exc:
+            logger.error('Cannot convert location %s: %r' % (data.name, exc))
+            extra = {}
 
         return NodeLocation(id=data.name, name=data.name, country=None,
                             extra=extra, driver=self)
@@ -299,8 +299,6 @@ class VSphereNodeDriver(NodeDriver):
     def _to_nodes(self, vm_list):
         nodes = []
         for virtual_machine in vm_list:
-            if virtual_machine.config.template:
-                continue # Do not include templates in node list
             if hasattr(virtual_machine, 'childEntity'):
                 # If this is a group it will have children.
                 # If it does, recurse into them and then return
@@ -311,6 +309,10 @@ class VSphereNodeDriver(NodeDriver):
                 # a common usecase, so ignore that)
                 nodes.extend(self._to_nodes(virtual_machine.vm))
             else:
+                if not hasattr(virtual_machine, 'config') or \
+                    (virtual_machine.config and \
+                     virtual_machine.config.template):
+                    continue # Do not include templates in node list
                 nodes.append(self._to_node(virtual_machine))
         return nodes
 
@@ -320,8 +322,14 @@ class VSphereNodeDriver(NodeDriver):
         path = summary.config.vmPathName
         memory = summary.config.memorySizeMB
         cpus = summary.config.numCpu
-        disk = summary.storage.committed/(1024*1024*1024)
-        size = "%dvCPU, %dMB RAM, %dGB disk" % (cpus, memory, disk)
+        size = disk = ''
+        if cpus:
+            size = "%dvCPU" % cpus
+            if memory:
+                size += ", %dMB RAM" % memory
+            if summary.storage:
+                disk = summary.storage.committed/(1024*1024*1024)
+                size += ", %dGB disk" % disk
 
         operating_system = summary.config.guestFullName
         host = summary.runtime.host
@@ -344,16 +352,20 @@ class VSphereNodeDriver(NodeDriver):
         private_ips = []
 
         extra = {
-            "host": host.name,
             "path": path,
             "operating_system": operating_system,
             "os_type": os_type,
             "memory_MB": memory,
             "cpus": cpus,
-            "disk": disk,
             "overallStatus": overall_status,
             "metadata": {}
         }
+
+        if disk:
+            extra['disk'] = disk
+
+        if host and hasattr(host, 'name'):
+            extra['host'] = host.name
 
         if boot_time:
             extra['boot_time'] = boot_time.isoformat()
@@ -501,17 +513,32 @@ class VSphereNodeDriver(NodeDriver):
 
         template = self.find_by_uuid(image.id)
 
-        datacenter = self.get_obj([vim.Datacenter], kwargs.get('datacenter'))
+        cluster_name = kwargs.get('cluster') or kwargs.get('location')
+        cluster = self.get_obj([vim.ClusterComputeResource], cluster_name)
+        if not cluster:  # Get the first available cluster
+            cluster = self.get_obj([vim.ClusterComputeResource], '')
+
+        datacenter = None
+        if not kwargs.get('datacenter'):  # Get datacenter from cluster
+            parent = cluster.parent
+            while parent:
+                if isinstance(parent, vim.Datacenter):
+                    datacenter = parent
+                    break
+                parent = parent.parent
+
+        if kwargs.get('datacenter') or datacenter is None:
+            datacenter = self.get_obj([vim.Datacenter],
+                                      kwargs.get('datacenter'))
 
         if kwargs.get('folder'):
             folder = self.get_obj([vim.Folder], kwargs.get('folder'))
         else:
             folder = datacenter.vmFolder
 
-        cluster = self.get_obj([vim.ClusterComputeResource], kwargs.get('cluster'))
-
         if kwargs.get('resource_pool'):
-            resource_pool = self.get_obj([vim.ResourcePool], kwargs.get('resource_pool'))
+            resource_pool = self.get_obj([vim.ResourcePool],
+                                         kwargs.get('resource_pool'))
         else:
             resource_pool = cluster.resourcePool
 
