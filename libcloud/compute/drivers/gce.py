@@ -7576,12 +7576,14 @@ class GCENodeDriver(NodeDriver):
         glob = False
         components = path.split('/')
         name = components[-1]
-        if components[-4] == 'regions':
-            region = components[-3]
-        elif components[-4] == 'zones':
-            zone = components[-3]
-        elif components[-3] == 'global':
-            glob = True
+
+        if len(components) >= 4:
+            if components[-4] == 'regions':
+                region = components[-3]
+            elif components[-4] == 'zones':
+                zone = components[-3]
+            elif components[-3] == 'global':
+                glob = True
 
         return {'name': name, 'region': region, 'zone': zone, 'global': glob}
 
