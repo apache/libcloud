@@ -868,6 +868,12 @@ XML_CONF_TEMPLATE = '''
       <source %s='%s'/>
       <model type='virtio'/>
     </interface>
+    <console type='pty'>
+      <target type='serial'/>
+    </console>
+    <console type='pty'>
+      <target type='virtio'/>
+    </console>
     <input type='mouse' bus='ps2'/>
     <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1'/>
     <video>
