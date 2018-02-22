@@ -496,7 +496,8 @@ class LibvirtNodeDriver(NodeDriver):
 
     def create_node(self, name, disk_size=4, ram=512,
                     cpu=1, image=None, disk_path=None, create_from_existing=None,
-                    os_type='linux', networks=[], cloud_init=None, public_key=None):
+                    os_type='linux', networks=[], cloud_init=None, public_key=None,
+                    env_vars={}):
         """
         Creates a VM
 
@@ -640,7 +641,10 @@ local-hostname: %s''' % (name, name)
             net_type = 'bridge'
             net_name = network
 
-        conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, disk_path, image_conf, net_type, net_type, net_name)
+        init_env = ""
+        for env_var in env_vars:
+            init_env += "<initenv name='%s'>%s</initenv>\n" % (env_var, env_vars[env_var])
+        conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, init_env, disk_path, image_conf, net_type, net_type, net_name)
 
         self.connection.defineXML(conf)
 
@@ -850,6 +854,7 @@ XML_CONF_TEMPLATE = '''
    <type arch='x86_64'>hvm</type>
     <boot dev='hd'/>
     <boot dev='cdrom'/>
+    %s
   </os>
  <features>
     <acpi/>
