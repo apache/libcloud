@@ -2977,6 +2977,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'vpc_id': {
             'xpath': 'vpcId',
             'transform_func': str
+        },
+        'default': {
+            'xpath': 'defaultForAz',
+            'transform_func': str
         }
     },
     'volume': {
