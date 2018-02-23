@@ -735,6 +735,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(address, GCEAddress))
         self.assertEqual(address.name, address_name)
 
+    def test_ex_create_address_internal(self):
+        address_name = 'lcaddressinternal'
+        address = self.driver.ex_create_address(address_name,
+                                                region='us-central1',
+                                                address='10.128.0.12',
+                                                address_type='INTERNAL',
+                                                subnetwork='subnet-1')
+        print address
+        self.assertTrue(isinstance(address, GCEAddress))
+        self.assertEqual(address.name, address_name)
+        self.assertEqual(address.address, '10.128.0.12')
+        self.assertEqual(address.addressType, 'INTERNAL')
+
     def test_ex_create_backend(self):
         # Note: this is an internal object, no API call is made
         # and no fixture is needed specifically for GCEBackend, however
@@ -3009,6 +3022,16 @@ class GCEMockHttp(MockHttp):
     def _regions_us_central1_addresses_testaddress(self, method, url, body,
                                                    headers):
         body = self.fixtures.load('regions_us-central1_addresses_testaddress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_subnetworks_subnet_1(self, method, url, body,
+                                                  headers):
+        body = self.fixtures.load('regions_us-central1_subnetworks_subnet_1.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_addresses_lcaddressinternal(self, method, url, body,
+                                                         headers):
+        body = self.fixtures.load('regions_us-central1_addresses_lcaddressinternal.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_forwardingRules(self, method, url, body, headers):
