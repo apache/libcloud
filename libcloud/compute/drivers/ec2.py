@@ -4716,7 +4716,10 @@ class BaseEC2NodeDriver(NodeDriver):
                              namespace=NAMESPACE):
             name = findtext(element=group, xpath='groupName',
                             namespace=NAMESPACE)
-            groups.append(name)
+            id = findtext(element=group, xpath='groupId',
+                            namespace=NAMESPACE)
+            group = {'name': name, 'id': id}
+            groups.append(group)
 
         return groups
 
