@@ -2820,7 +2820,8 @@ class GCENodeDriver(NodeDriver):
         return list_zones
 
     def ex_create_address(self, name, region=None, address=None,
-                          description=None):
+                          description=None, address_type='EXTERNAL',
+                          subnetwork=None):
         """
         Create a static address in a region, or a global address.
 
@@ -2837,6 +2838,19 @@ class GCENodeDriver(NodeDriver):
 
         :keyword  description: Optional descriptive comment.
         :type     description: ``str`` or ``None``
+
+        :keyword  address_type: Optional The type of address to reserve,
+                                either INTERNAL or EXTERNAL. If unspecified,
+                                defaults to EXTERNAL.
+        :type     description: ``str``
+
+        :keyword  subnetwork: Optional The URL of the subnetwork in which to
+                              reserve the address. If an IP address is
+                              specified, it must be within the subnetwork's
+                              IP range. This field can only be used with
+                              INTERNAL type with GCE_ENDPOINT/DNS_RESOLVER
+                              purposes.
+        :type     description: ``str``
 
         :return:  Static Address object
         :rtype:   :class:`GCEAddress`
