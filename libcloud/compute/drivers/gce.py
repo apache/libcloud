@@ -2856,11 +2856,11 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCEAddress`
         """
         region = region or self.region
-        if region != 'global' and not hasattr(region, 'name'):
-            region = self.ex_get_region(region)
-        elif region is None:
+        if region is None:
             raise ValueError('REGION_NOT_SPECIFIED',
                              'Region must be provided for an address')
+        if region != 'global' and not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
         address_data = {'name': name}
         if address:
             address_data['address'] = address
