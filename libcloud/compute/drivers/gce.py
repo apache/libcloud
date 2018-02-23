@@ -2866,6 +2866,20 @@ class GCENodeDriver(NodeDriver):
             address_data['address'] = address
         if description:
             address_data['description'] = description
+        if address_type:
+            if address_type not in ['EXTERNAL', 'INTERNAL']:
+                raise ValueError('ADDRESS_TYPE_WRONG',
+                                 'Address type must be either EXTERNAL or \
+                                 INTERNAL')
+            else:
+                address_data['addressType'] = address_type
+        if subnetwork and address_type != 'INTERNAL':
+            raise ValueError('INVALID_ARGUMENT_COMBINATION',
+                             'Address type must be internal if subnetwork \
+                             provided')
+        if subnetwork and not hasattr(subnetwork, 'name'):
+            subnetwork = \
+                self.ex_get_subnetwork(subnetwork, region)
         if region == 'global':
             request = '/global/addresses'
         else:
