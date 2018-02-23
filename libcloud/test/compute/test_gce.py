@@ -742,11 +742,9 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                                                 address='10.128.0.12',
                                                 address_type='INTERNAL',
                                                 subnetwork='subnet-1')
-        print address
         self.assertTrue(isinstance(address, GCEAddress))
         self.assertEqual(address.name, address_name)
         self.assertEqual(address.address, '10.128.0.12')
-        self.assertEqual(address.addressType, 'INTERNAL')
 
     def test_ex_create_backend(self):
         # Note: this is an internal object, no API call is made
