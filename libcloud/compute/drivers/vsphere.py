@@ -53,14 +53,15 @@ class VSphereNodeDriver(NodeDriver):
         'suspended': NodeState.SUSPENDED,
     }
 
-    def __init__(self, host, username, password):
+    def __init__(self, host, username, password, port=443):
         """Initialize a connection by providing a hostname,
         username and password
         """
         self.host = host
         try:
-            self.connection = connect.SmartConnect(host=host, user=username,
-                                                   pwd=password)
+            self.connection = connect.SmartConnect(
+                host=host, port=port, user=username, pwd=password
+            )
             atexit.register(connect.Disconnect, self.connection)
         except Exception as exc:
             error_message = str(exc).lower()
@@ -138,8 +139,9 @@ class VSphereNodeDriver(NodeDriver):
         try:
             if isinstance(data, vim.HostSystem):
                 extra = {
+                    "type": "host",
                     "state": data.runtime.connectionState,
-                    "type": data.config.product.fullName,
+                    "hypervisor": data.config.product.fullName,
                     "vendor": data.hardware.systemInfo.vendor,
                     "model": data.hardware.systemInfo.model,
                     "ram": data.hardware.memorySize,
@@ -153,7 +155,10 @@ class VSphereNodeDriver(NodeDriver):
                 }
             elif isinstance(data, vim.ClusterComputeResource):
                 extra = {
-                    'hosts': len(data.host),
+                    "type": "cluster",
+                    "overallStatus": data.overallStatus,
+                    "drs": data.configuration.drsConfig.enabled,
+                    'hosts': [host.name for host in data.host],
                     'parent': str(data.parent)
                 }
         except AttributeError as exc:
@@ -364,8 +369,14 @@ class VSphereNodeDriver(NodeDriver):
         if disk:
             extra['disk'] = disk
 
-        if host and hasattr(host, 'name'):
+        if host:
             extra['host'] = host.name
+            parent = host.parent
+            while parent:
+                if isinstance(parent, vim.ClusterComputeResource):
+                    extra['cluster'] = parent.name
+                    break
+                parent = parent.parent
 
         if boot_time:
             extra['boot_time'] = boot_time.isoformat()
