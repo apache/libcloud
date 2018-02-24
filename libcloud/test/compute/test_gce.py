@@ -746,6 +746,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(address.name, address_name)
         self.assertEqual(address.address, '10.128.0.12')
 
+        self.assertRaises(ValueError,
+                          self.driver.ex_create_address,
+                          address_name, address_type='WRONG')
+        self.assertRaises(ValueError,
+                          self.driver.ex_create_address,
+                          address_name, address_type='EXTERNAL',
+                          subnetwork='subnet-1')
+
     def test_ex_create_backend(self):
         # Note: this is an internal object, no API call is made
         # and no fixture is needed specifically for GCEBackend, however
