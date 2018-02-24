@@ -455,7 +455,8 @@ class LinodeNodeDriver(NodeDriver):
         for obj in data:
             n = NodeSize(id=obj["PLANID"], name=obj["LABEL"], ram=obj["RAM"],
                          disk=(obj["DISK"] * 1024), bandwidth=obj["XFER"],
-                         price=obj["PRICE"], driver=self.connection.driver)
+                         price=obj["PRICE"], driver=self.connection.driver,
+                         extra={'cpus': obj["CORES"]})
             sizes.append(n)
         return sizes
 

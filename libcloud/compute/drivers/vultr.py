@@ -300,7 +300,7 @@ class VultrNodeDriver(NodeDriver):
             public_ips = [data['main_ip']]
         else:
             public_ips = []
-
+            
         extra_keys = ['os', 'kvm_url', 'date_created',
                       'pending_charges', 'cost_per_month', 'location',
                       'vcpu_count', 'disk', 'allowed_bandwidth_gb', 'ram',

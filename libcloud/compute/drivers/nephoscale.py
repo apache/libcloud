@@ -235,6 +235,7 @@ class NephoscaleNodeDriver(NodeDriver):
                             name=name,
                             ram=value.get('ram'),
                             disk=value.get('storage'),
+                            extra={'cpus': value.get('vcpus')},
                             bandwidth=None,
                             price=self._get_size_price(size_id=str(value_id)),
                             driver=self)

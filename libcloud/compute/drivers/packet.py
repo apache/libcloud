@@ -300,10 +300,11 @@ class PacketNodeDriver(NodeDriver):
                             driver=self)
 
     def _to_size(self, data):
-        extra = {'description': data['description'], 'line': data['line']}
+        cpus = data['specs']['cpus'][0].get('count')
+        extra = {'description': data['description'], 'line': data['line'],
+                 'cpus': cpus}
 
         ram = data['specs']['memory']['total']
-        cpus = data['specs']['cpus'][0].get('count')
         disk = 0
         for disks in data['specs']['drives']:
             disk_size = disks['size'].replace('GB', '')
