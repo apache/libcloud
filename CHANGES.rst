@@ -83,6 +83,9 @@ Compute
   (LIBCLOUD-977, GITHUB-1169)
   [Adam Wight]
 
+- [Dimension Data] Fix IndexError in list_images (GITHUB-1171)
+  [Adam Friedman]
+
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
   [Anthony Monthe]
 
