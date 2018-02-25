@@ -102,6 +102,9 @@ Compute
 - [EC2] Fix EBS volume encryption (GITHUB-1008)
   [Sergey Babak]
 
+- [EC2] Add AWS eu-west-3 (Paris) region (GITHUB-1175)
+  [Anthony Monthe]
+
 - [ECS Aliyun] Support modify_security_group_attributes (GITHUB-1157)
   [Zhang Yiming]
 
