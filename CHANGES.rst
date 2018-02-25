@@ -136,6 +136,9 @@ Compute
 - [GCE] Extend ex_create_address to allow internal ip creation (GITHUB-1174)
   [Jeremy Solarz]
 
+- [GCE] Expand GCE Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
+  [maxlip]
+
 - [ProfitBricks] Update driver and add support for the new API v4. (GITHUB-1103)
   [Nurfet Becirevic]
 
