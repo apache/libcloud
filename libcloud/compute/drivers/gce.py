@@ -8431,7 +8431,7 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Firewall object from the JSON-response dictionary.
 
-        :param  firewall: The dictionary deFscribing the firewall.
+        :param  firewall: The dictionary describing the firewall.
         :type   firewall: ``dict``
 
         :return: Firewall object
