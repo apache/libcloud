@@ -130,6 +130,9 @@ Compute
 - [GCE] Add support for accelerators (LIBCLOUD-963, GITHUB-1163)
   [Michael Johnson]
 
+- [GCE] Extend ex_create_address to allow internal ip creation (GITHUB-1174)
+  [Jeremy Solarz]
+
 - [ProfitBricks] Update driver and add support for the new API v4. (GITHUB-1103)
   [Nurfet Becirevic]
 
