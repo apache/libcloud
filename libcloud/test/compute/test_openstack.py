@@ -46,8 +46,8 @@ from libcloud.compute.drivers.openstack import (
     OpenStackSecurityGroupRule, OpenStack_1_1_FloatingIpPool,
     OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair,
     OpenStack_1_0_Connection,
-    OpenStackNodeDriver
-)
+    OpenStackNodeDriver,
+    OpenStack_2_NodeDriver)
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
@@ -1153,6 +1153,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(image.extra['serverId'], None)
         self.assertEqual(image.extra['minDisk'], "5")
         self.assertEqual(image.extra['minRam'], "256")
+        self.assertEqual(image.extra['visibility'], None)
 
     def test_delete_image(self):
         image = NodeImage(
@@ -1562,6 +1563,80 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
 
 
+class OpenStack_2_Tests(OpenStack_1_1_Tests):
+    driver_klass = OpenStack_2_NodeDriver
+    driver_type = OpenStack_2_NodeDriver
+    driver_kwargs = {
+        'ex_force_auth_version': '2.0',
+        'ex_force_auth_url': 'https://auth.api.example.com'
+    }
+
+    def setUp(self):
+        super(OpenStack_2_Tests, self).setUp()
+        self.driver_klass.image_connectionCls.conn_class = OpenStack_2_0_MockHttp
+        self.driver_klass.image_connectionCls.auth_url = "https://auth.api.example.com"
+        # normally authentication happens lazily, but we force it here
+        self.driver.image_connection._populate_hosts_and_request_paths()
+
+    def test_ex_force_auth_token_passed_to_connection(self):
+        base_url = 'https://servers.api.rackspacecloud.com/v1.1/slug'
+        kwargs = {
+            'ex_force_auth_version': '2.0',
+            'ex_force_auth_token': 'preset-auth-token',
+            'ex_force_auth_url': 'https://auth.api.example.com',
+            'ex_force_base_url': base_url
+        }
+
+        driver = self.driver_type(*self.driver_args, **kwargs)
+        driver.list_nodes()
+
+        self.assertEqual(kwargs['ex_force_auth_token'],
+                         driver.connection.auth_token)
+        self.assertEqual('servers.api.rackspacecloud.com',
+                         driver.connection.host)
+        self.assertEqual('/v1.1/slug', driver.connection.request_path)
+        self.assertEqual(443, driver.connection.port)
+
+    def test_get_image(self):
+        image_id = 'f24a3c1b-d52a-4116-91da-25b3eee8f55e'
+        image = self.driver.get_image(image_id)
+        self.assertEqual(image.id, image_id)
+        self.assertEqual(image.name, 'hypernode')
+        self.assertEqual(image.extra['serverId'], None)
+        self.assertEqual(image.extra['minDisk'], 40)
+        self.assertEqual(image.extra['minRam'], 0)
+        self.assertEqual(image.extra['visibility'], "shared")
+
+    def test_list_images(self):
+        images = self.driver.list_images()
+        self.assertEqual(len(images), 2, 'Wrong images count')
+
+        image = images[0]
+        self.assertEqual(image.id, 'f24a3c1b-d52a-4116-91da-25b3eee8f55e')
+        self.assertEqual(image.name, 'hypernode')
+        self.assertEqual(image.extra['updated'], '2017-11-28T10:19:49Z')
+        self.assertEqual(image.extra['created'], '2017-09-11T13:00:05Z')
+        self.assertEqual(image.extra['status'], 'active')
+        self.assertEqual(image.extra['os_type'], 'linux')
+        self.assertIsNone(image.extra['serverId'])
+        self.assertEqual(image.extra['minDisk'], 40)
+        self.assertEqual(image.extra['minRam'], 0)
+
+    def test_ex_update_image(self):
+        image_id = 'f24a3c1b-d52a-4116-91da-25b3eee8f55e'
+        data = {
+            'op': 'replace',
+            'path': '/visibility',
+            'value': 'shared'
+        }
+        image = self.driver.ex_update_image(image_id, data)
+        self.assertEqual(image.name, 'hypernode')
+        self.assertEqual(image.extra['serverId'], None)
+        self.assertEqual(image.extra['minDisk'], 40)
+        self.assertEqual(image.extra['minRam'], 0)
+        self.assertEqual(image.extra['visibility'], "shared")
+
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
     should_list_volumes = True
@@ -1708,6 +1783,20 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
+    def _v2_1337_v2_images_f24a3c1b_d52a_4116_91da_25b3eee8f55e(self, method, url, body, headers):
+        if method == "GET" or method == "PATCH":
+            body = self.fixtures.load('_images_f24a3c1b-d52a-4116-91da-25b3eee8f55e.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
     def _v1_1_slug_images_26365521_8c62_11f9_2c33_283d153ecc3a(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
@@ -1718,6 +1807,14 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == "GET":
             body = self.fixtures.load(
                 '_images_4949f9ee_2421_4c81_8b49_13119446008b.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images_4949f9ee_2421_4c81_8b49_13119446008b(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load(
+                '_images_f24a3c1b-d52a-4116-91da-25b3eee8f55d.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()

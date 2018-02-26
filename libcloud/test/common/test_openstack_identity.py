@@ -525,7 +525,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog,
                                           auth_version='2.0')
         entries = catalog.get_entries()
-        self.assertEqual(len(entries), 6)
+        self.assertEqual(len(entries), 7)
 
         entry = [e for e in entries if e.service_name == 'cloudServers'][0]
         self.assertEqual(entry.service_type, 'compute')
@@ -591,7 +591,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog,
                                           auth_version='2.0')
         service_types = catalog.get_service_types()
-        self.assertEqual(service_types, ['compute', 'object-store',
+        self.assertEqual(service_types, ['compute', 'image', 'object-store',
                                          'rax:object-cdn'])
 
         service_types = catalog.get_service_types(region='ORD')
@@ -610,6 +610,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
                                          'cloudServers',
                                          'cloudServersOpenStack',
                                          'cloudServersPreprod',
+                                         'glance',
                                          'nova'])
 
         service_names = catalog.get_service_names(service_type='compute')
