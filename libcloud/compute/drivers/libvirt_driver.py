@@ -645,7 +645,7 @@ local-hostname: %s''' % (name, name)
         if env_vars:
             for env_var in env_vars:
                 init_env += "<initenv name='%s'>%s</initenv>\n" % (env_var, env_vars[env_var])
-            conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, init_env, disk_path, image_conf, net_type, net_type, net_name)
+        conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, init_env, disk_path, image_conf, net_type, net_type, net_name)
 
         self.connection.defineXML(conf)
 
