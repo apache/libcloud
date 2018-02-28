@@ -7477,6 +7477,10 @@ class GCENodeDriver(NodeDriver):
 
         return {'name': name, 'region': region, 'zone': zone, 'global': glob}
 
+    def get_sizeId_from_machineType(self, url):
+        response = self.connection.request(url, method='GET').object
+        return response.get('id')
+
     def _get_object_by_kind(self, url):
         """
         Fetch a resource and return its object representation by mapping its
@@ -8386,7 +8390,7 @@ class GCENodeDriver(NodeDriver):
                 src_image = extra['boot_disk'].extra['sourceImage']
                 image = self._get_components_from_path(src_image)['name']
             extra['image'] = image
-        size = self._get_components_from_path(node['machineType'])['name']
+        size = self.get_sizeId_from_machineType(node['machineType'])
 
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
