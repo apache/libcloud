@@ -7477,9 +7477,8 @@ class GCENodeDriver(NodeDriver):
 
         return {'name': name, 'region': region, 'zone': zone, 'global': glob}
 
-    def get_sizeId_from_machineType(self, url):
-        response = self.connection.request(url, method='GET').object
-        return response.get('id')
+    def get_size_metadata_from_node(self, url):
+        return self.connection.request(url, method='GET').object
 
     def _get_object_by_kind(self, url):
         """
@@ -8390,7 +8389,7 @@ class GCENodeDriver(NodeDriver):
                 src_image = extra['boot_disk'].extra['sourceImage']
                 image = self._get_components_from_path(src_image)['name']
             extra['image'] = image
-        size = self.get_sizeId_from_machineType(node['machineType'])
+        size = self.get_size_metadata_from_node(node['machineType'])['id']
 
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
