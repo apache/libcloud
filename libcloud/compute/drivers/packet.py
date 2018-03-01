@@ -277,7 +277,7 @@ class PacketNodeDriver(NodeDriver):
 
         if 'plan' in data and data['plan'] is not None:
             size = self._to_size(data['plan'])
-            extra['plan'] = data['plan'].get('name')
+            extra['plan'] = data['plan'].get('slug')
         if 'facility' in data:
             extra['facility'] = data['facility'].get('code')
 
