@@ -321,6 +321,15 @@ class VolumeSnapshotState(Type):
     UPDATING = 'updating'
 
 
+class NodeImageMemberState(Type):
+    """
+    Standard states of VolumeSnapshots
+    """
+    ACCEPTED = 'accepted'
+    PENDING = 'pending'
+    REJECTED = 'rejected'
+
+
 class Architecture(object):
     """
     Image and size architectures.

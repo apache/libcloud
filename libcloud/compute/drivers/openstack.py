@@ -38,7 +38,7 @@ from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.openstack import OpenStackException
 from libcloud.common.openstack import OpenStackResponse
 from libcloud.utils.networking import is_public_subnet
-from libcloud.compute.base import NodeSize, NodeImage
+from libcloud.compute.base import NodeSize, NodeImage, NodeImageMember
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
@@ -1320,6 +1320,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             )
         )
 
+    def _to_image_member(self, api_image_member):
+        created = api_image_member['created_at']
+        updated = api_image_member.get('updated_at')
+        return NodeImageMember(
+            id=api_image_member['member_id'],
+            image_id=api_image_member['image_id'],
+            state=api_image_member['status'],
+            created=created,
+            driver=self,
+            extra=dict(
+                schema=api_image_member.get('schema'),
+                updated=updated,
+            )
+        )
+
     def _to_nodes(self, obj):
         servers = obj['servers']
         return [self._to_node(server) for server in servers]
@@ -2545,12 +2560,10 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param location: Which data center to list the images in. If
                                empty, undefined behavior will be selected.
                                (optional)
-
         :type location: :class:`.NodeLocation`
+
         :param ex_only_active: True if list only active (optional)
-
         :type ex_only_active: ``bool``
-
         """
         if location is not None:
             raise NotImplementedError(
@@ -2569,15 +2582,16 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     def ex_update_image(self, image_id, data):
         """
         Patch a NodeImage. Can be used to set visibility
-        :param      image_id: ID of the image which should be used
 
+        :param      image_id: ID of the image which should be used
         :type       image_id: ``str``
+
         :param      data: The data to PATCH, either a dict or a list
         for example: [
           {'op': 'replace', 'path': '/visibility', 'value': 'shared'}
         ]
-
         :type       data: ``dict|list``
+
         :rtype: :class:`NodeImage`
         """
         response = self.image_connection.request(
@@ -2588,6 +2602,43 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             method='PATCH', data=json.dumps(data)
         )
         return self._to_image(response.object)
+
+    def ex_list_image_members(self, image_id):
+        """
+        List all members of an image. See
+        https://developer.openstack.org/api-ref/image/v2/index.html#sharing
+
+        :param      image_id: ID of the image of which the members should
+        be listed
+        :type       image_id: ``str``
+
+        :rtype: ``list`` of :class:`NodeImageMember`
+        """
+        response = self.image_connection.request(
+            '/v2/images/%s/members' % (image_id,)
+        )
+        image_members = []
+        for image_member in response.object['members']:
+            image_members.append(self._to_image_member(image_member))
+        return image_members
+
+    def ex_get_image_member(self, image_id, member_id):
+        """
+        Get a member of an image by id
+
+        :param      image_id: ID of the image of which the member should
+        be listed
+        :type       image_id: ``str``
+
+        :param      member_id: ID of the member to list
+        :type       image_id: ``str``
+
+        :rtype: ``list`` of :class:`NodeImageMember`
+        """
+        response = self.image_connection.request(
+            '/v2/images/%s/members/%s' % (image_id, member_id)
+        )
+        return self._to_image_member(response.object)
 
 
 class OpenStack_1_1_FloatingIpPool(object):
