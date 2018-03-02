@@ -19,6 +19,8 @@ Compute
 - [GCE] Extend ex_create_address to allow internal ip creation (GITHUB-1174)
   [Jeremy Solarz]
 
+- [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
+
 Changes in Apache Libcloud 2.3.0
 --------------------------------
 
