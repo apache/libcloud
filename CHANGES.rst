@@ -22,6 +22,9 @@ Compute
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
+- [OpenStack v2] Allow listing image members (GITHUB-1172)
+  [Rick van de Loo]
+
 Changes in Apache Libcloud 2.3.0
 --------------------------------
 
