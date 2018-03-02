@@ -1,6 +1,24 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [Dimension Data] Fix IndexError in list_images (GITHUB-1171)
+  [Adam Friedman]
+
+- [EC2] Add AWS eu-west-3 (Paris) region (GITHUB-1175)
+  [Anthony Monthe]
+
+- [GCE] Expand GCE Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
+  [maxlip]
+
+- [GCE] Extend ex_create_address to allow internal ip creation (GITHUB-1174)
+  [Jeremy Solarz]
+
 Changes in Apache Libcloud 2.3.0
 --------------------------------
 
@@ -83,9 +101,6 @@ Compute
   (LIBCLOUD-977, GITHUB-1169)
   [Adam Wight]
 
-- [Dimension Data] Fix IndexError in list_images (GITHUB-1171)
-  [Adam Friedman]
-
 - [EC2] Add new x1.16xlarge and x1e.32xlarge instance type. (GITHUB-1101)
   [Anthony Monthe]
 
@@ -104,9 +119,6 @@ Compute
 
 - [EC2] Fix EBS volume encryption (GITHUB-1008)
   [Sergey Babak]
-
-- [EC2] Add AWS eu-west-3 (Paris) region (GITHUB-1175)
-  [Anthony Monthe]
 
 - [ECS Aliyun] Support modify_security_group_attributes (GITHUB-1157)
   [Zhang Yiming]
@@ -135,12 +147,6 @@ Compute
 
 - [GCE] Add support for accelerators (LIBCLOUD-963, GITHUB-1163)
   [Michael Johnson]
-
-- [GCE] Extend ex_create_address to allow internal ip creation (GITHUB-1174)
-  [Jeremy Solarz]
-
-- [GCE] Expand GCE Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
-  [maxlip]
 
 - [ProfitBricks] Update driver and add support for the new API v4. (GITHUB-1103)
   [Nurfet Becirevic]
