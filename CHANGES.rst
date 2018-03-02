@@ -20,6 +20,7 @@ Compute
   [Jeremy Solarz]
 
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
+  [Rick van de Loo]
 
 Changes in Apache Libcloud 2.3.0
 --------------------------------
