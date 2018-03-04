@@ -2631,9 +2631,11 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         Note that this is not an idempotent operation. If this action is
         attempted using a tenant that is already in the image members
         group the API will throw a Conflict (409).
-        See https://developer.openstack.org/api-ref/image/v2/index.html#create-image-member
+        See the 'create-image-member' section on
+        https://developer.openstack.org/api-ref/image/v2/index.html
 
-        :param str image_id: The ID of the image to share with the specified tenant
+        :param str image_id: The ID of the image to share with the specified
+        tenant
         :param str member_id: The ID of the project / tenant (the image member)
         Note that this is the Keystone project ID and not the project name,
         so something like e2151b1fe02d4a8a2d1f5fc331522c0a
@@ -2669,6 +2671,28 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         response = self.image_connection.request(
             '/v2/images/%s/members/%s' % (image_id, member_id)
+        )
+        return self._to_image_member(response.object)
+
+    def ex_accept_image_member(self, image_id, member_id):
+        """
+        Accept a pending image as a member.
+
+        This call is idempotent unlike ex_create_image_member,
+        you can accept the same image many times.
+
+        :param      image_id: ID of the image to accept
+        :type       image_id: ``str``
+
+        :param      project: ID of the project to accept the image as
+        :type       image_id: ``str``
+
+        :rtype: ``bool``
+        """
+        data = {'status': 'accepted'}
+        response = self.image_connection.request(
+            '/v2/images/%s/members/%s' % (image_id, member_id),
+            method='PUT', data=json.dumps(data)
         )
         return self._to_image_member(response.object)
 
