@@ -511,6 +511,19 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                        data=json.dumps(attr), method='POST')
         return self._to_floating_ip(resp.object['floating_ip'])
 
+    def ex_delete_floating_ip(self, ip):
+        """
+        Delete specified floating IP
+
+        :param      ip: floating IP to remove
+        :type       ip: :class:`DigitalOcean_v2_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('/v2/floating_ips/{}'.format(ip.id),
+                                       method='DELETE')
+        return resp.status == httplib.NO_CONTENT
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
