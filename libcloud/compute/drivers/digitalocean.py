@@ -534,6 +534,21 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             self._paginated_request('/v2/floating_ips', 'floating_ips')
         )
 
+    def ex_get_floating_ip(self, ip):
+        """
+        Get specified floating IP
+
+        :param      ip: floating IP to get
+        :type       ip: ``str``
+
+        :rtype: :class:`DigitalOcean_v2_FloatingIpAddress`
+        """
+        floating_ips = self.ex_list_floating_ips()
+        matching_ips = [x for x in floating_ips if x.ip_address == ip]
+        if not matching_ips:
+            raise ValueError('Floating ip %s not found' % ip)
+        return matching_ips[0]
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',

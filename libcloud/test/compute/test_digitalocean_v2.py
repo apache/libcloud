@@ -328,10 +328,18 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(len(floating_ips), 2, 'Wrong floating IPs count')
 
         floating_ip = floating_ips[0]
-        self.assertEqual(floating_ip.id, '177.166.135.205')
-        self.assertEqual(floating_ip.ip_address, '177.166.135.205')
+        self.assertEqual(floating_ip.id, '133.166.122.204')
+        self.assertEqual(floating_ip.ip_address, '133.166.122.204')
         self.assertEqual(floating_ip.extra['region']['slug'], 'ams3')
-        self.assertIsNone(floating_ip.node_id)
+        self.assertEqual(84155775, floating_ip.node_id)
+
+    def test_get_floating_ip(self):
+        floating_ip = self.driver.ex_get_floating_ip('133.166.122.204')
+
+        self.assertEqual(floating_ip.id, '133.166.122.204')
+        self.assertEqual(floating_ip.ip_address, '133.166.122.204')
+        self.assertEqual(floating_ip.extra['region']['slug'], 'ams3')
+        self.assertEqual(84155775, floating_ip.node_id)
 
 
 class DigitalOceanMockHttp(MockHttp):
