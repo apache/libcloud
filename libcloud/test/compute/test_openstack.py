@@ -2008,8 +2008,6 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-
     def _v1_1_slug_os_networks(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_os_networks.json')
@@ -2032,16 +2030,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-
     def _v1_1_slug_servers_12063_action(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('_servers_unpause.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
-
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v1_1_slug_servers_12086_action(self, method, url, body, headers):
         if method == 'POST':
