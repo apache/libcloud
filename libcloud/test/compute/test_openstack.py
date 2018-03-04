@@ -1650,6 +1650,20 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(image_member.extra['updated'], '2017-01-12T12:31:54Z')
         self.assertEqual(image_member.extra['schema'], '/v2/schemas/member')
 
+    def test_ex_create_image_member(self):
+        image_id = '9af1a54e-a1b2-4df8-b747-4bec97abc799'
+        image_member_id = 'e2151b1fe02d4a8a2d1f5fc331522c0a'
+        image_member = self.driver.ex_create_image_member(
+            image_id, image_member_id
+        )
+
+        self.assertEqual(image_member.id, image_member_id)
+        self.assertEqual(image_member.image_id, image_id)
+        self.assertEqual(image_member.state, NodeImageMemberState.PENDING)
+        self.assertEqual(image_member.created, '2018-03-02T14:19:38Z')
+        self.assertEqual(image_member.extra['updated'], '2018-03-02T14:19:38Z')
+        self.assertEqual(image_member.extra['schema'], '/v2/schemas/member')
+
     def test_ex_get_image_member(self):
         image_id = 'd9a9cd9a-278a-444c-90a6-d24b8c688a63'
         image_member_id = '016926dff12345e8b10329f24c99745b'
@@ -1821,6 +1835,13 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_v2_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('_images_d9a9cd9a_278a_444c_90a6_d24b8c688a63_members.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images_9af1a54e_a1b2_4df8_b747_4bec97abc799_members(self, method, url, body, headers):
+        if method == "POST":
+            body = self.fixtures.load('_images_9af1a54e_a1b2_4df8_b747_4bec97abc799_members.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
