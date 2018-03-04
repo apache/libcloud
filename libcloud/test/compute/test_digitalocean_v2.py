@@ -292,6 +292,21 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.delete_volume_snapshot(snapshot)
         self.assertTrue(result)
 
+    def test_ex_create_floating_ip(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        floating_ip = self.driver.ex_create_floating_ip(nyc1)
+
+        # Note that this is the ID. There is no real ID for a floating IP at
+        # DigitalOcean, but the IP is unique so we can use that instead.
+        self.assertEqual(floating_ip.id, '167.138.123.111')
+        self.assertEqual(floating_ip.ip_address, '167.138.123.111')
+        self.assertEqual(floating_ip.extra['region']['slug'], 'nyc1')
+        # The newly created floating IP reserved to a region is not
+        # associated with any droplet. See the DigitalOcean API docs
+        # how to create a floating IP that is associated with an instance
+        # from the start. This API call creates an unattached IP.
+        self.assertIsNone(floating_ip.node_id)
+
 
 class DigitalOceanMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -451,6 +466,13 @@ class DigitalOceanMockHttp(MockHttp):
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, None, {},
                 httplib.responses[httplib.NO_CONTENT])
+
+    def _v2_floating_ips(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('create_floating_ip.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
 
 
 if __name__ == '__main__':
