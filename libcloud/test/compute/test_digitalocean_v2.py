@@ -307,6 +307,21 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         # from the start. This API call creates an unattached IP.
         self.assertIsNone(floating_ip.node_id)
 
+    def test_ex_delete_floating_ip(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        floating_ip = self.driver.ex_create_floating_ip(nyc1)
+        ret = self.driver.ex_delete_floating_ip(floating_ip)
+
+        # The API returns 204 NO CONTENT if all is well.
+        self.assertTrue(ret)
+
+    def test_floating_ip_can_be_deleted_by_calling_delete_on_floating_ip_object(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        floating_ip = self.driver.ex_create_floating_ip(nyc1)
+        ret = floating_ip.delete()
+
+        self.assertTrue(ret)
+
 
 class DigitalOceanMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -471,6 +486,13 @@ class DigitalOceanMockHttp(MockHttp):
         if method == 'POST':
             body = self.fixtures.load('create_floating_ip.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_floating_ips_167_138_123_111(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
 
