@@ -524,6 +524,16 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                        method='DELETE')
         return resp.status == httplib.NO_CONTENT
 
+    def ex_list_floating_ips(self):
+        """
+        List floating IPs
+
+        :rtype: ``list`` of :class:`DigitalOcean_v2_FloatingIpAddress`
+        """
+        return self._to_floating_ips(
+            self._paginated_request('/v2/floating_ips', 'floating_ips')
+        )
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',

@@ -322,6 +322,17 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
 
         self.assertTrue(ret)
 
+    def test_list_floating_ips(self):
+        floating_ips = self.driver.ex_list_floating_ips()
+
+        self.assertEqual(len(floating_ips), 2, 'Wrong floating IPs count')
+
+        floating_ip = floating_ips[0]
+        self.assertEqual(floating_ip.id, '177.166.135.205')
+        self.assertEqual(floating_ip.ip_address, '177.166.135.205')
+        self.assertEqual(floating_ip.extra['region']['slug'], 'ams3')
+        self.assertIsNone(floating_ip.node_id)
+
 
 class DigitalOceanMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -485,6 +496,9 @@ class DigitalOceanMockHttp(MockHttp):
     def _v2_floating_ips(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('create_floating_ip.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        elif method == 'GET':
+            body = self.fixtures.load('list_floating_ips.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
