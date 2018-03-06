@@ -2977,6 +2977,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'vpc_id': {
             'xpath': 'vpcId',
             'transform_func': str
+        },
+        'default': {
+            'xpath': 'defaultForAz',
+            'transform_func': str
         }
     },
     'volume': {
@@ -4712,7 +4716,10 @@ class BaseEC2NodeDriver(NodeDriver):
                              namespace=NAMESPACE):
             name = findtext(element=group, xpath='groupName',
                             namespace=NAMESPACE)
-            groups.append(name)
+            id = findtext(element=group, xpath='groupId',
+                            namespace=NAMESPACE)
+            group = {'name': name, 'id': id}
+            groups.append(group)
 
         return groups
 
