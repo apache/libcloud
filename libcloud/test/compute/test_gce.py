@@ -461,6 +461,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(mig.size, size)
         self.assertEqual(mig.zone.name, zone)
 
+    def test_ex_create_instancegroupmanager_shared_network(self):
+        name = 'myinstancegroup'
+        zone = 'us-central1-a'
+        size = 4
+        template_name = 'my-instance-template-shared-network'
+        template = self.driver.ex_get_instancetemplate(template_name)
+        mig = self.driver.ex_create_instancegroupmanager(
+            name, zone, template, size, base_instance_name='base-foo')
+
+        self.assertEqual(mig.name, name)
+        self.assertEqual(mig.size, size)
+        self.assertEqual(mig.zone.name, zone)
+
     def test_ex_create_instancetemplate(self):
         name = 'my-instance-template1'
         actual = self.driver.ex_create_instancetemplate(
@@ -3546,6 +3559,12 @@ class GCEMockHttp(MockHttp):
                                                         body, headers):
         body = self.fixtures.load(
             'global_instanceTemplates_my_instance_template1.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_instanceTemplates_my_instance_template_shared_network(self, method, url,
+                                                        body, headers):
+        body = self.fixtures.load(
+            'global_instanceTemplates_my_instance_template_shared_network.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _aggregated_autoscalers(self, method, url, body, headers):
