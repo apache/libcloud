@@ -9025,13 +9025,11 @@ class GCENodeDriver(NodeDriver):
         # does not contain instances.
         network = instancegroup.get('network', None)
         if network:
-            obj_name = self._get_components_from_path(network)['name']
-            network = self.ex_get_network(obj_name)
+            network = self.ex_get_network(network)
 
         subnetwork = instancegroup.get('subnetwork', None)
         if subnetwork:
-            parts = self._get_components_from_path(subnetwork)
-            subnetwork = self.ex_get_subnetwork(parts['name'], parts['region'])
+            subnetwork = self.ex_get_subnetwork(subnetwork)
 
         return GCEInstanceGroup(
             id=instancegroup['id'], name=instancegroup['name'], zone=zone,

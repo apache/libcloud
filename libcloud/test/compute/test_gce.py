@@ -461,6 +461,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(mig.size, size)
         self.assertEqual(mig.zone.name, zone)
 
+    def test_ex_create_instancegroupmanager_shared_network(self):
+        name = 'myinstancegroup-shared-network'
+        zone = 'us-central1-a'
+        size = 4
+        template_name = 'my-instance-template-shared-network'
+        template = self.driver.ex_get_instancetemplate(template_name)
+        mig = self.driver.ex_create_instancegroupmanager(
+            name, zone, template, size, base_instance_name='base-foo')
+
+        self.assertEqual(mig.name, name)
+        self.assertEqual(mig.size, size)
+        self.assertEqual(mig.zone.name, zone)
+
     def test_ex_create_instancetemplate(self):
         name = 'my-instance-template1'
         actual = self.driver.ex_create_instancetemplate(
@@ -2694,10 +2707,20 @@ class GCEMockHttp(MockHttp):
         body = self.fixtures.load('projects_other_name_global_networks_cf.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_other_name_global_networks_shared_network_for_mig(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_global_networks_shared_network_for_mig.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _projects_other_name_regions_us_central1_subnetworks_cf_972cf02e6ad49114(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'projects_other_name_regions_us-central1_subnetworks_cf_972cf02e6ad49114.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_regions_us_central1_subnetworks_shared_subnetwork_for_mig(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'projects_other_name_regions_us-central1_subnetworks_shared_subnetwork_for_mig.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_lcaddress_delete(
@@ -3484,10 +3507,22 @@ class GCEMockHttp(MockHttp):
             'zones_us-east1-b_instanceGroup_myinstancegroup.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_instanceGroups_myinstancegroup_shared_network(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_instanceGroup_myinstancegroup_shared_network.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_instanceGroupManagers_myinstancegroup(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'zones_us-central1-a_instanceGroupManagers_myinstancegroup.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroupManagers_myinstancegroup_shared_network(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_instanceGroupManagers_myinstancegroup_shared_network.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_b_instanceGroupManagers_myinstancegroup(
@@ -3546,6 +3581,12 @@ class GCEMockHttp(MockHttp):
                                                         body, headers):
         body = self.fixtures.load(
             'global_instanceTemplates_my_instance_template1.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_instanceTemplates_my_instance_template_shared_network(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'global_instanceTemplates_my_instance_template_shared_network.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _aggregated_autoscalers(self, method, url, body, headers):
