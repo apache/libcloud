@@ -25,6 +25,9 @@ Compute
 - [OpenStack v2] Allow listing image members (GITHUB-1172)
   [Rick van de Loo]
 
+- [OpenStack v2] Allow creating and accepting image members (GITHUB-1176)
+  [Rick van de Loo]
+
 Changes in Apache Libcloud 2.3.0
 --------------------------------
 
