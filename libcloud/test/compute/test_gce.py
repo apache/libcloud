@@ -3561,8 +3561,8 @@ class GCEMockHttp(MockHttp):
             'global_instanceTemplates_my_instance_template1.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_instanceTemplates_my_instance_template_shared_network(self, method, url,
-                                                        body, headers):
+    def _global_instanceTemplates_my_instance_template_shared_network(
+            self, method, url, body, headers):
         body = self.fixtures.load(
             'global_instanceTemplates_my_instance_template_shared_network.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
