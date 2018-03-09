@@ -35,8 +35,8 @@
                         "type": "ONE_TO_ONE_NAT"
                     }
                 ],
-                "network": "https://www.googleapis.com/compute/v1/projects/other_name/global/networks/cf",
-                "subnetwork": "https://www.googleapis.com/compute/v1/projects/other_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112"
+                "network": "https://www.googleapis.com/compute/v1/projects/other_name/global/networks/shared_network_for_mig",
+                "subnetwork": "https://www.googleapis.com/compute/v1/projects/other_name/regions/us-central1/subnetworks/shared_subnetwork_for_mig"
             }
         ],
         "scheduling": {

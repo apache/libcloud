@@ -1,0 +1,14 @@
+{
+
+    "kind": "compute#instanceGroup",
+    "id": "1968709502073089770",
+    "creationTimestamp": "2016-08-11T16:53:42.413-07:00",
+    "zone": "https://content.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+    "name": "myinstancegroup_shared_network",
+    "description": "This instance group is controlled by Instance Group Manager 'myinstancegroup'. To modify instances in this group, use the Instance Group Manager API: https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers",
+    "network": "https://www.googleapis.com/compute/v1/projects/other_name/global/networks/shared_network_for_mig",
+    "subnetwork": "https://www.googleapis.com/compute/v1/projects/other_name/regions/us-central1/subnetworks/shared_subnetwork_for_mig",
+    "fingerprint": "42WmSpB8rSM=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/instanceGroups/myinstancegroup_shared_network",
+    "size": 4
+}
