@@ -22,6 +22,9 @@ Compute
 - [GCE] Extend ex_create_address to allow internal ip creation (GITHUB-1174)
   [Jeremy Solarz]
 
+- [GCE] Allow shared VPC in managed instance group creation (GITHUB-1179)
+  [Boris Chazalet]
+
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
