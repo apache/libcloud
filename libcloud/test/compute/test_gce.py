@@ -522,14 +522,20 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         network = self.driver.ex_get_network(network_name)
         region_name = 'us-central1'
         region = self.driver.ex_get_region(region_name)
+        description = 'LCTestSubnet'
+        privateipgoogleaccess = True
+        secondaryipranges = [{"rangeName": "secondary", "ipCidrRange": "192.168.168.0/24"}]
         # test by network/region name
-        subnet = self.driver.ex_create_subnetwork(name, cidr, network_name,
-                                                  region_name)
+        subnet = self.driver.ex_create_subnetwork(
+            name, cidr, network_name, region_name, description=description,
+            privateipgoogleaccess=privateipgoogleaccess, secondaryipranges=secondaryipranges)
         self.assertTrue(isinstance(subnet, GCESubnetwork))
         self.assertTrue(isinstance(subnet.region, GCERegion))
         self.assertTrue(isinstance(subnet.network, GCENetwork))
         self.assertEqual(subnet.name, name)
         self.assertEqual(subnet.cidr, cidr)
+        self.assertEqual(subnet.extra['privateIpGoogleAccess'], privateipgoogleaccess)
+        self.assertEqual(subnet.extra['secondaryIpRanges'], secondaryipranges)
         # test by network/region object
         subnet = self.driver.ex_create_subnetwork(name, cidr, network, region)
         self.assertTrue(isinstance(subnet, GCESubnetwork))
@@ -537,6 +543,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(subnet.network, GCENetwork))
         self.assertEqual(subnet.name, name)
         self.assertEqual(subnet.cidr, cidr)
+        self.assertEqual(subnet.extra['privateIpGoogleAccess'], privateipgoogleaccess)
+        self.assertEqual(subnet.extra['secondaryIpRanges'], secondaryipranges)
 
     def test_ex_destroy_subnetwork(self):
         name = 'cf-972cf02e6ad49112'
@@ -983,10 +991,18 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_create_network(self):
         network_name = 'lcnetwork'
         cidr = '10.11.0.0/16'
-        network = self.driver.ex_create_network(network_name, cidr)
+        routing_mode = 'REGIONAL'
+        network = self.driver.ex_create_network(network_name, cidr, routing_mode='regional')
         self.assertTrue(isinstance(network, GCENetwork))
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, cidr)
+
+        # Test using more options
+        network = self.driver.ex_create_network(network_name, cidr,
+                                                description=description,
+                                                routing_mode=routing_mode)
+        self.assertEqual(network.extra['description'], description)
+        self.assertEqual(network.extra['routingConfig']['routingMode'], routing_mode)
 
     def test_ex_create_network_bad_options(self):
         network_name = 'lcnetwork'
@@ -997,6 +1013,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           network_name, cidr, mode='foobar')
         self.assertRaises(ValueError, self.driver.ex_create_network,
                           network_name, None, mode='legacy')
+        self.assertRaises(ValueError, self.driver.ex_create_network,
+                          network_name, cidr, routing_mode='universal')
 
     def test_ex_set_machine_type_notstopped(self):
         # get running node, change machine type
