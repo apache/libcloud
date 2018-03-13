@@ -1007,6 +1007,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           network_name, cidr, mode='foobar')
         self.assertRaises(ValueError, self.driver.ex_create_network,
                           network_name, None, mode='legacy')
+        self.assertRaises(ValueError, self.driver.ex_create_network,
+                          network_name, cidr, routing_mode='universal')
 
     def test_ex_set_machine_type_notstopped(self):
         # get running node, change machine type
