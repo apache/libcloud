@@ -3748,7 +3748,8 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_sslcertificate(name)
 
     def ex_create_subnetwork(self, name, cidr=None, network=None, region=None,
-                             description=None):
+                             description=None, privateipgoogleaccess=None,
+                             secondaryipranges=None):
         """
         Create a subnetwork.
 
@@ -3766,6 +3767,17 @@ class GCENodeDriver(NodeDriver):
 
         :param  description: Custom description for the network.
         :type   description: ``str`` or ``None``
+
+        :param  privateipgoogleaccess: Allow access to Google services without
+                                       assigned external IP addresses.
+        :type   privateipgoogleaccess: ``bool` or ``None``
+
+        :param  secondaryipranges: List of dicts of secondary or "alias" IP
+                                   ranges for this subnetwork in
+                                   [{"rangeName": "second1",
+                                   "ipCidrRange": "192.168.168.0/24"},
+                                   {k:v, k:v}] format.
+        :type   secondaryipranges: ``list`` of ``dict`` or ``None``
 
         :return:  Subnetwork object
         :rtype:   :class:`GCESubnetwork`
@@ -3803,6 +3815,8 @@ class GCENodeDriver(NodeDriver):
         subnet_data['ipCidrRange'] = cidr
         subnet_data['network'] = network_url
         subnet_data['region'] = region_url
+        subnet_data['privateIpGoogleAccess'] = privateipgoogleaccess
+        subnet_data['secondaryIpRanges'] = secondaryipranges
         region_name = region_url.split('/')[-1]
 
         request = '/regions/%s/subnetworks' % (region_name)
@@ -3810,7 +3824,8 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_subnetwork(name, region_name)
 
-    def ex_create_network(self, name, cidr, description=None, mode="legacy"):
+    def ex_create_network(self, name, cidr, description=None,
+                          mode="legacy", routing_mode=None):
         """
         Create a network. In November 2015, Google introduced Subnetworks and
         suggests using networks with 'auto' generated subnetworks. See, the
@@ -3831,6 +3846,11 @@ class GCENodeDriver(NodeDriver):
         :param  mode: Create a 'auto', 'custom', or 'legacy' network.
         :type   mode: ``str``
 
+        :param  routing_mode: Create network with 'Global' or 'Regional'
+                              routing mode for BGP advertisements.
+                              Defaults to 'Regional'
+        :type   routing_mode: ``str`` or ``None``
+
         :return:  Network object
         :rtype:   :class:`GCENetwork`
         """
@@ -3843,14 +3863,22 @@ class GCENodeDriver(NodeDriver):
         if cidr and mode in ['auto', 'custom']:
             raise ValueError("Can only specify IPv4Range with 'legacy' mode.")
 
-        request = '/global/networks'
-
         if mode == 'legacy':
             if not cidr:
                 raise ValueError("Must specify IPv4Range with 'legacy' mode.")
             network_data['IPv4Range'] = cidr
         else:
             network_data['autoCreateSubnetworks'] = (mode.lower() == 'auto')
+
+        if routing_mode.lower() not in ['regional', 'global']:
+            raise ValueError("Invalid Routing Mode: '%s'. Must be 'REGIONAL', "
+                             "or 'GLOBAL'." % routing_mode)
+        else:
+            network_data['routingConfig'] = {
+                'routingMode': routing_mode.upper()
+            }
+
+        request = '/global/networks'
 
         self.connection.async_request(request, method='POST',
                                       data=network_data)
@@ -8532,6 +8560,9 @@ class GCENodeDriver(NodeDriver):
         extra['network'] = subnetwork.get('network')
         extra['region'] = subnetwork.get('region')
         extra['selfLink'] = subnetwork.get('selfLink')
+        extra['privateIpGoogleAccess'] = \
+            subnetwork.get('privateIpGoogleAccess')
+        extra['secondaryIpRanges'] = subnetwork.get('secondaryIpRanges')
         network = self._get_object_by_kind(subnetwork.get('network'))
         region = self._get_object_by_kind(subnetwork.get('region'))
 
@@ -8561,6 +8592,7 @@ class GCENodeDriver(NodeDriver):
         # 'auto' or 'custom'
         extra['autoCreateSubnetworks'] = network.get('autoCreateSubnetworks')
         extra['subnetworks'] = network.get('subnetworks')
+        extra['routingConfig'] = network.get('routingConfig')
 
         # match Cloud SDK 'gcloud'
         if 'autoCreateSubnetworks' in network:
