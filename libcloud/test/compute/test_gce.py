@@ -1107,13 +1107,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
         node = self.driver.create_node(node_name, size, image=None,
-                                       ex_image_family='coreos')
+                                       ex_image_family='coreos-stable')
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
 
         image = self.driver.ex_get_image('debian-7')
         self.assertRaises(ValueError, self.driver.create_node, node_name, size,
-                          image, ex_image_family='coreos')
+                          image, ex_image_family='coreos-stable')
 
     def test_create_node_req_with_serviceaccounts(self):
         image = self.driver.ex_get_image('debian-7')
@@ -1277,7 +1277,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         size = self.driver.ex_get_size('n1-standard-1')
         number = 2
         nodes = self.driver.ex_create_multiple_nodes(
-            base_name, size, image, number, ex_image_family='coreos')
+            base_name, size, image, number, ex_image_family='coreos-stable')
         self.assertEqual(len(nodes), 2)
         self.assertTrue(isinstance(nodes[0], Node))
         self.assertTrue(isinstance(nodes[1], Node))
@@ -1287,7 +1287,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         image = self.driver.ex_get_image('debian-7')
         self.assertRaises(ValueError, self.driver.ex_create_multiple_nodes,
                           base_name, size, image, number,
-                          ex_image_family='coreos')
+                          ex_image_family='coreos-stable')
 
     def test_ex_create_targethttpproxy(self):
         proxy_name = 'web-proxy'
@@ -1344,13 +1344,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         volume_name = 'lcdisk'
         size = 10
         volume = self.driver.create_volume(size, volume_name,
-                                           ex_image_family='coreos')
+                                           ex_image_family='coreos-stable')
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
 
         image = self.driver.ex_get_image('debian-7')
         self.assertRaises(ValueError, self.driver.create_volume, size,
-                          volume_name, image=image, ex_image_family='coreos')
+                          volume_name, image=image,
+                          ex_image_family='coreos-stable')
 
     def test_create_volume_location(self):
         volume_name = 'lcdisk'
@@ -1708,7 +1709,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           ex_standard_projects=False)
 
     def test_ex_get_image_from_family(self):
-        family = 'coreos'
+        family = 'coreos-beta'
         description = 'CoreOS beta 522.3.0'
         image = self.driver.ex_get_image_from_family(family)
         self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
@@ -1716,7 +1717,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.extra['family'], family)
 
         url = ('https://www.googleapis.com/compute/v1/projects/coreos-cloud/'
-               'global/images/family/coreos')
+               'global/images/family/coreos-beta')
         image = self.driver.ex_get_image_from_family(url)
         self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
         self.assertEqual(image.extra['description'], description)
