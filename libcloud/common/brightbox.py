@@ -62,7 +62,7 @@ class BrightboxConnection(ConnectionUserAndKey):
     def _fetch_oauth_token(self):
         body = json.dumps({'client_id': self.user_id, 'grant_type': 'none'})
 
-        authorization = 'Basic ' + str(base64.encodestring(b('%s:%s' %
+        authorization = 'Basic ' + str(base64.encodebytes(b('%s:%s' %
                                        (self.user_id, self.key)))).rstrip()
 
         self.connect()

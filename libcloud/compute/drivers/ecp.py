@@ -86,7 +86,7 @@ class ECPConnection(ConnectionUserAndKey):
         # Authentication
         username = self.user_id
         password = self.key
-        base64string = base64.encodestring(
+        base64string = base64.encodebytes(
             b('%s:%s' % (username, password)))[:-1]
         authheader = "Basic %s" % base64string
         headers['Authorization'] = authheader
