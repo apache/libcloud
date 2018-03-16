@@ -3777,7 +3777,6 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'size': 'size',
                 'cpuHotPlug': 'cpu_hot_plug',
                 'cpuHotUnplug': 'cpu_hot_unplug',
-                'deviceNumber': 'device_number',
                 'discScsiHotPlug': 'disc_scsi_hot_plug',
                 'discScsiHotUnplug': 'disc_scsi_hot_unplug',
                 'discVirtioHotPlug': 'disc_virtio_hot_plug',

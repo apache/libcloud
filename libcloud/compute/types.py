@@ -241,7 +241,6 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_AP_NORTHEAST2: Provider.EC2,
     Provider.EC2_US_WEST_OREGON: Provider.EC2,
     Provider.EC2_SA_EAST: Provider.EC2,
-    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
     Provider.EC2_CA_CENTRAL1: Provider.EC2,
 
     # ElasticHosts
