@@ -111,8 +111,7 @@ class GoGridTests(unittest.TestCase):
         members1 = self.driver.balancer_list_members(balancer=balancer)
         members2 = balancer.list_members()
 
-        expected_members = set(['10.0.0.78:80', '10.0.0.77:80',
-                                '10.0.0.76:80'])
+        expected_members = {'10.0.0.78:80', '10.0.0.77:80', '10.0.0.76:80'}
 
         self.assertEqual(len(members1), 3)
         self.assertEqual(len(members2), 3)
