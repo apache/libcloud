@@ -25,6 +25,10 @@ Compute
 - [GCE] Allow shared VPC in managed instance group creation (GITHUB-1179)
   [Boris Chazalet]
 
+- [GCE] Support disk_size parameter for boot disk when creating instance
+  (LIBCLOUD-973, GITHUB-1162)
+  [Rahul Paigavan]
+
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
