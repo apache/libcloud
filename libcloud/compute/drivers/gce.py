@@ -4517,8 +4517,8 @@ class GCENodeDriver(NodeDriver):
         if not isinstance(auto_delete, bool):
             raise ValueError("auto_delete field is not a bool.")
 
-        if disk_size is not None \
-                and(not isinstance(disk_size, int)and not disk_size.isdigit()):
+        if (disk_size is not None and
+                not (isinstance(disk_size, int) or disk_size.isdigit())):
             raise ValueError("disk_size must be a digit, '%s' provided." %
                              str(disk_size))
 
