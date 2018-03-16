@@ -43,10 +43,10 @@ PY2 = False
 PY27 = False
 PY3 = False
 
-if sys.version_info >= (2, 0) and sys.version_info < (3, 0):
+if (2, 0) <= sys.version_info < (3, 0):
     PY2 = True
 
-if sys.version_info >= (2, 7) and sys.version_info < (2, 8):
+if (2, 7) <= sys.version_info < (2, 8):
     PY27 = True
 
 if sys.version_info >= (3, 0):

@@ -63,7 +63,7 @@ class CloudFilesResponse(Response):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299 or i in self.valid_response_codes
+        return 200 <= i <= 299 or i in self.valid_response_codes
 
     def parse_body(self):
         if not self.body:
