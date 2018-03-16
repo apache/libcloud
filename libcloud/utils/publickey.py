@@ -44,7 +44,7 @@ def get_pubkey_openssh_fingerprint(pubkey):
         raise RuntimeError('pycrypto is not available')
     k = importKey(pubkey)
     pubkey = k.exportKey('OpenSSH')[7:]
-    decoded = base64.decodestring(pubkey)
+    decoded = base64.decodebytes(pubkey)
     return _to_md5_fingerprint(decoded)
 
 
