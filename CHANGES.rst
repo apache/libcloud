@@ -4,6 +4,10 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+- Cleanup various Python files
+  (GITHUB-1182, GITHUB-1183, GITHUB-1185, GITHUB-1186, GITHUB-1187, GITHUB-1188)
+  [Rémy Léone]
+
 Compute
 ~~~~~~~
 
