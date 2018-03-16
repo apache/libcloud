@@ -135,7 +135,7 @@ class HostVirtualNodeDriver(NodeDriver):
         >>> from libcloud.compute.base import NodeAuthSSHKey
         >>> key = open('/home/user/.ssh/id_rsa.pub').read()
         >>> auth = NodeAuthSSHKey(pubkey=key)
-        >>> from libcloud.compute.providers import get_driver;
+        >>> from libcloud.compute.providers import get_driver
         >>> driver = get_driver('hostvirtual')
         >>> conn = driver('API_KEY')
         >>> image = conn.list_images()[1]
