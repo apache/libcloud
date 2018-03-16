@@ -89,11 +89,8 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_ex_get_ratecard(self):
         ratecard = self.driver.ex_get_ratecard('0026P')
         self.assertEqual(set(ratecard.keys()),
-                         set(['Currency',
-                              'Locale',
-                              'IsTaxIncluded',
-                              'OfferTerms',
-                              'Meters']))
+                         {'Currency', 'Locale', 'IsTaxIncluded',
+                          'OfferTerms', 'Meters'})
 
     def test_create_node(self):
         location = NodeLocation('any_location', '', '', self.driver)
@@ -391,7 +388,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         data_disks = node.extra['properties']['storageProfile']['dataDisks']
         luns = [disk['lun'] for disk in data_disks]
         self.assertTrue(len(data_disks), len(volumes))
-        self.assertTrue(set(luns), set([0, 1, 15]))
+        self.assertTrue(set(luns), {0, 1, 15})
 
     def test_detach_volume(self):
         volumes = self.driver.list_volumes()
