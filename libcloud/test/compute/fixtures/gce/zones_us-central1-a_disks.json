@@ -19,7 +19,6 @@
       "id": "0265567475385851075",
       "kind": "compute#disk",
       "name": "node-name",
-      "description": "I'm a happy little disk",
       "type": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/diskTypes/pd-standard",
       "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/disks/node-name",
       "sizeGb": "10",
