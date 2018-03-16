@@ -1769,6 +1769,7 @@ class GCENodeDriver(NodeDriver):
         "suse-cloud": ["sles", "suse"],
         "ubuntu-os-cloud": ["ubuntu"],
         "windows-cloud": ["windows"],
+        "cos-cloud": ["cos"],
     }
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
