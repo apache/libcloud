@@ -361,8 +361,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         local_plus_deb = self.driver.list_images(
             ['debian-cloud', 'project_name'])
-        self.assertEqual(len(local_images), 24)
-        self.assertEqual(len(all_deprecated_images), 159)
+        self.assertEqual(len(local_images), 19)
+        self.assertEqual(len(all_deprecated_images), 147)
         self.assertEqual(len(debian_images), 2)
         self.assertEqual(len(local_plus_deb), 4)
         self.assertEqual(local_images[0].name, 'custom-image')
@@ -2304,7 +2304,12 @@ class GCEMockHttp(MockHttp):
             'global_images_debian_7_wheezy_v20131014_deprecate.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_images_family_coreos(self, method, url, body, headers):
+    def _global_images_family_coreos_beta(self, method, url, body, headers):
+        body = self.fixtures.load('global_images_family_notfound.json')
+        return (httplib.NOT_FOUND, body, self.json_hdr,
+                httplib.responses[httplib.NOT_FOUND])
+
+    def _global_images_family_coreos_stable(self, method, url, body, headers):
         body = self.fixtures.load('global_images_family_notfound.json')
         return (httplib.NOT_FOUND, body, self.json_hdr,
                 httplib.responses[httplib.NOT_FOUND])
@@ -2829,29 +2834,27 @@ class GCEMockHttp(MockHttp):
         body = self.fixtures.load('projects_rhel-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_gce_nvme_global_images(self, method, url, body, header):
-        body = self.fixtures.load('projects_gce-nvme_global_images.json')
-        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
-
     def _projects_coreos_cloud_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_coreos-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_coreos_cloud_global_images_family_coreos(self, method, url,
-                                                           body, header):
+    def _projects_coreos_cloud_global_images_family_coreos_beta(self, method,
+                                                                url, body,
+                                                                header):
         body = self.fixtures.load(
-            'projects_coreos-cloud_global_images_family_coreos.json')
+            'projects_coreos-cloud_global_images_family_coreos_beta.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_coreos_cloud_global_images_family_coreos_stable(self, method,
+                                                                  url, body,
+                                                                  header):
+        body = self.fixtures.load(
+            'projects_coreos-cloud_global_images_family_coreos_stable.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_opensuse_cloud_global_images(self, method, url, body,
                                                header):
         body = self.fixtures.load('projects_opensuse-cloud_global_images.json')
-        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
-
-    def _projects_google_containers_global_images(self, method, url, body,
-                                                  header):
-        body = self.fixtures.load(
-            'projects_google-containers_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_ubuntu_os_cloud_global_images(self, method, url, body,

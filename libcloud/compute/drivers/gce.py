@@ -1736,6 +1736,7 @@ class GCENodeDriver(NodeDriver):
         "cos-cloud": ["cos-beta", "cos-dev", "cos-stable"],
         "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
         "debian-cloud": ["debian-8", "debian-9"],
+        "opensuse-cloud": ["opensuse-leap"],
         "rhel-cloud": ["rhel-6", "rhel-7"],
         "suse-cloud": ["sles-11", "sles-12"],
         "suse-byos-cloud": [
