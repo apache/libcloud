@@ -29,7 +29,7 @@ except ImportError:
 
 class BrightboxResponse(JsonResponse):
     def success(self):
-        return self.status >= httplib.OK and self.status < httplib.BAD_REQUEST
+        return httplib.OK <= self.status < httplib.BAD_REQUEST
 
     def parse_body(self):
         if self.headers['content-type'].split(';')[0] == 'application/json':

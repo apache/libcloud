@@ -34,7 +34,7 @@ class PowerDNSResponse(JsonResponse):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299
+        return 200 <= i <= 299
 
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:

@@ -113,7 +113,7 @@ class CloudSigma_1_0_Response(Response):
         if self.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
 
-        return self.status >= 200 and self.status <= 299
+        return 200 <= self.status <= 299
 
     def parse_body(self):
         if not self.body:

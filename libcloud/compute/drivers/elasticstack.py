@@ -118,7 +118,7 @@ class ElasticStackResponse(JsonResponse):
         if self.status == 401:
             raise InvalidCredsError()
 
-        return self.status >= 200 and self.status <= 299
+        return 200 <= self.status <= 299
 
     def parse_error(self):
         error_header = self.headers.get('x-elastic-error', '')
