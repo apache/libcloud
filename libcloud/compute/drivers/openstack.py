@@ -2599,7 +2599,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             headers={'Content-type': 'application/'
                                      'openstack-images-'
                                      'v2.1-json-patch'},
-            method='PATCH', data=json.dumps(data)
+            method='PATCH', data=data
         )
         return self._to_image(response.object)
 
@@ -2652,7 +2652,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         data = {'member': member_id}
         response = self.image_connection.request(
             '/v2/images/%s/members' % image_id,
-            method='POST', data=json.dumps(data)
+            method='POST', data=data
         )
         return self._to_image_member(response.object)
 
@@ -2692,7 +2692,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         data = {'status': 'accepted'}
         response = self.image_connection.request(
             '/v2/images/%s/members/%s' % (image_id, member_id),
-            method='PUT', data=json.dumps(data)
+            method='PUT', data=data
         )
         return self._to_image_member(response.object)
 
