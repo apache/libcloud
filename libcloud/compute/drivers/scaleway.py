@@ -19,7 +19,7 @@ Scaleway Driver
 import copy
 try:
     import simplejson as json
-except:
+except ImportError:
     import json
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
@@ -599,7 +599,7 @@ class ScalewayNodeDriver(NodeDriver):
         return self._save_keys(keys)
 
     def _get_user_id(self):
-        response = self.connection.request('/tokens/%s' % (self.secret),
+        response = self.connection.request('/tokens/%s' % self.secret,
                                            region='account')
         return response.object['token']['user_id']
 
