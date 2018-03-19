@@ -341,6 +341,22 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(floating_ip.extra['region']['slug'], 'ams3')
         self.assertEqual(84155775, floating_ip.node_id)
 
+    def test_ex_attach_floating_ip_to_node(self):
+        node = self.driver.list_nodes()[0]
+        floating_ip = self.driver.ex_get_floating_ip('133.166.122.204')
+
+        ret = self.driver.ex_attach_floating_ip_to_node(node, floating_ip)
+
+        self.assertTrue(ret)
+
+    def test_ex_detach_floating_ip_from_node(self):
+        node = self.driver.list_nodes()[0]
+        floating_ip = self.driver.ex_get_floating_ip('154.138.103.175')
+
+        ret = self.driver.ex_detach_floating_ip_from_node(node, floating_ip)
+
+        self.assertTrue(ret)
+
 
 class DigitalOceanMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -515,6 +531,20 @@ class DigitalOceanMockHttp(MockHttp):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+        else:
+            raise NotImplementedError()
+
+    def _v2_floating_ips_133_166_122_204_actions(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('attach_floating_ip.json')
+            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+        else:
+            raise NotImplementedError()
+
+    def _v2_floating_ips_154_138_103_175_actions(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('detach_floating_ip.json')
+            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
         else:
             raise NotImplementedError()
 

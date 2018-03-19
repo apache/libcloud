@@ -549,6 +549,54 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             raise ValueError('Floating ip %s not found' % ip)
         return matching_ips[0]
 
+    def ex_attach_floating_ip_to_node(self, node, ip):
+        """
+        Attach the floating IP to the node
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to attach
+        :type       ip: ``str`` or :class:`DigitalOcean_v2_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        data = {
+            'type': 'assign',
+            'droplet_id': node.id
+        }
+        resp = self.connection.request(
+            '/v2/floating_ips/%s/actions' % ip.ip_address,
+            data=json.dumps(data), method='POST'
+        )
+        return resp.status == httplib.CREATED
+
+    def ex_detach_floating_ip_from_node(self, node, ip):
+        """
+        Detach a floating IP from the given node
+
+        Note: the 'node' object is not used in this method but it is added
+        to the signature of ex_detach_floating_ip_from_node anyway so it
+        conforms to the interface of the method of the same name for other
+        drivers like for example OpenStack.
+
+        :param      node: Node from which the IP should be detached
+        :type       node: :class:`Node`
+
+        :param      ip: Floating IP to detach
+        :type       ip: :class:`DigitalOcean_v2_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        data = {
+            'type': 'unassign'
+        }
+        resp = self.connection.request(
+            '/v2/floating_ips/%s/actions' % ip.ip_address,
+            data=json.dumps(data), method='POST'
+        )
+        return resp.status == httplib.CREATED
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
