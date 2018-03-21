@@ -361,8 +361,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         local_plus_deb = self.driver.list_images(
             ['debian-cloud', 'project_name'])
-        self.assertEqual(len(local_images), 19)
-        self.assertEqual(len(all_deprecated_images), 147)
+        self.assertEqual(len(local_images), 50)
+        self.assertEqual(len(all_deprecated_images), 178)
         self.assertEqual(len(debian_images), 2)
         self.assertEqual(len(local_plus_deb), 4)
         self.assertEqual(local_images[0].name, 'custom-image')
@@ -2830,6 +2830,10 @@ class GCEMockHttp(MockHttp):
         body = self.fixtures.load('projects_windows-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_windows_sql_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_windows-sql-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _projects_rhel_cloud_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_rhel-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -2852,6 +2856,10 @@ class GCEMockHttp(MockHttp):
             'projects_coreos-cloud_global_images_family_coreos_stable.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_cos_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_cos-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _projects_opensuse_cloud_global_images(self, method, url, body,
                                                header):
         body = self.fixtures.load('projects_opensuse-cloud_global_images.json')
@@ -2869,6 +2877,14 @@ class GCEMockHttp(MockHttp):
 
     def _projects_suse_cloud_global_images(self, method, url, body, headers):
         body = self.fixtures.load('projects_suse-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_suse_byos_cloud_global_images(self, method, url, body, headers):
+        body = self.fixtures.load('projects_suse-byos-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_suse_sap_cloud_global_images(self, method, url, body, headers):
+        body = self.fixtures.load('projects_suse-sap-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_debian_cloud_global_images(self, method, url, body, headers):
