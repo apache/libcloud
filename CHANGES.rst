@@ -14,6 +14,9 @@ Compute
 - [Digital Ocean] Support floating IPs (GITHUB-1177)
   [Rick van de Loo]
 
+- [Digital Ocean] Support attach/detach for floating IPs (GITHUB-1191)
+  [Rick van de Loo]
+
 - [Dimension Data] Fix IndexError in list_images (GITHUB-1171)
   [Adam Friedman]
 
