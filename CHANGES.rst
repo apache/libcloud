@@ -36,6 +36,9 @@ Compute
   (LIBCLOUD-973, GITHUB-1162)
   [Rahul Paigavan]
 
+- [GCE] Update public image projects list (LIBCLOUD-961, GITHUB-1143)
+  [Sean Marlow]
+
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
