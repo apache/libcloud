@@ -2329,7 +2329,7 @@ class GCENodeDriver(NodeDriver):
                      for a in response.get('items', [])]
         return list_data
 
-    def ex_list_subnetworks(self, region=None):
+    def ex_list_subnetworks(self, region=None, filter_expression=None):
         """
         Return the list of subnetworks.
 
@@ -2346,8 +2346,12 @@ class GCENodeDriver(NodeDriver):
         else:
             request = '/regions/%s/subnetworks' % (region.name)
 
+        params = {}
+        if filter_expression:
+            params['filter'] = filter_expression
         list_subnetworks = []
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
 
         if 'items' in response:
             if region is None:
