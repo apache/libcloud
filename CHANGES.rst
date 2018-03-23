@@ -51,6 +51,12 @@ Compute
 - [OpenStack v2] Fix image members methods (GITHUB-1190)
   [Rick van de Loo]
 
+Storage
+~~~~~~~
+
+- [Azure Blob storage] Allow filtering lists by prefix (LIBCLOUD-986, GITHUB-1193)
+  [Joshua Hawkinson]
+
 Changes in Apache Libcloud 2.3.0
 --------------------------------
 
