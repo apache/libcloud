@@ -1004,7 +1004,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         network = self.driver.ex_create_network(network_name, cidr,
                                                 description=description,
                                                 routing_mode=routing_mode)
-        self.assertEqual(network.description, description)
+        self.assertEqual(network.extra['description'], description)
         self.assertEqual(network.extra['routingConfig']['routingMode'], routing_mode)
 
     def test_ex_create_network_bad_options(self):
