@@ -3775,8 +3775,7 @@ class GCENodeDriver(NodeDriver):
         :param  secondaryipranges: List of dicts of secondary or "alias" IP
                                    ranges for this subnetwork in
                                    [{"rangeName": "second1",
-                                   "ipCidrRange": "192.168.168.0/24"},
-                                   {k:v, k:v}] format.
+                                   "ipCidrRange": "192.168.168.0/24"} format.
         :type   secondaryipranges: ``list`` of ``dict`` or ``None``
 
         :return:  Subnetwork object
@@ -3870,13 +3869,14 @@ class GCENodeDriver(NodeDriver):
         else:
             network_data['autoCreateSubnetworks'] = (mode.lower() == 'auto')
 
-        if routing_mode.lower() not in ['regional', 'global']:
-            raise ValueError("Invalid Routing Mode: '%s'. Must be 'REGIONAL', "
-                             "or 'GLOBAL'." % routing_mode)
-        else:
-            network_data['routingConfig'] = {
-                'routingMode': routing_mode.upper()
-            }
+        if routing_mode:
+            if routing_mode.upper() not in ['REGIONAL', 'GLOBAL']:
+                raise ValueError("Invalid Routing Mode: '%s'. Must be "
+                                 "'REGIONAL' or 'GLOBAL'." % routing_mode)
+            else:
+                network_data['routingConfig'] = {
+                    'routingMode': routing_mode.upper()
+                }
 
         request = '/global/networks'
 

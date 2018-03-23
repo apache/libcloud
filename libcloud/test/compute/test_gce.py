@@ -991,11 +991,20 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_create_network(self):
         network_name = 'lcnetwork'
         cidr = '10.11.0.0/16'
+        description = 'A custom network'
         routing_mode = 'REGIONAL'
-        network = self.driver.ex_create_network(network_name, cidr, routing_mode='regional')
+
+        # Test defaults
+        network = self.driver.ex_create_network(network_name, cidr)
         self.assertTrue(isinstance(network, GCENetwork))
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, cidr)
+
+        # Test using more options
+        network = self.driver.ex_create_network(network_name, cidr,
+                                                description=description,
+                                                routing_mode=routing_mode)
+        self.assertEqual(network.description, description)
         self.assertEqual(network.extra['routingConfig']['routingMode'], routing_mode)
 
     def test_ex_create_network_bad_options(self):
