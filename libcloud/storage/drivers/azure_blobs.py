@@ -385,11 +385,13 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         @inherits: :class:`StorageDriver.iterate_container_objects`
         """
-        params = {'prefix': ex_prefix,
-                  'restype': 'container',
+        params = {'restype': 'container',
                   'comp': 'list',
                   'maxresults': RESPONSES_PER_REQUEST,
                   'include': 'metadata'}
+
+        if ex_prefix:
+            params['prefix'] = ex_prefix
 
         container_path = self._get_container_path(container)
 
