@@ -1,0 +1,48 @@
+{
+ "kind": "compute#imageList",
+ "id": "projects/suse-sap-cloud/global/images",
+ "items": [
+  {
+    "archiveSizeBytes": "10610274240",
+    "creationTimestamp": "2018-02-14T11:36:42.181-08:00",
+    "description": "SUSE, SUSE Linux Enterprise Server 12 SP2 For SAP, x86_64, built on 2018-02-14",
+    "diskSizeGb": "10",
+    "family": "sles-12-sp2-sap",
+    "id": "1678965261537456422",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-sap-cloud/global/licenses/sles-sap-12"
+    ],
+    "name": "sles-12-sp2-sap-v20180214",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-sap-cloud/global/images/sles-12-sp2-sap-v20180214",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "10651082880",
+    "creationTimestamp": "2018-02-14T09:25:13.871-08:00",
+    "description": "SUSE, SUSE Linux Enterprise Server 12 SP3 For SAP, x86_64, built on 2018-02-14",
+    "diskSizeGb": "10",
+    "family": "sles-12-sp3-sap",
+    "id": "1354274246585077270",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-sap-cloud/global/licenses/sles-sap-12"
+    ],
+    "name": "sles-12-sp3-sap-v20180214",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-sap-cloud/global/images/sles-12-sp3-sap-v20180214",
+    "sourceType": "RAW",
+    "status": "READY"
+  }
+ ]
+}

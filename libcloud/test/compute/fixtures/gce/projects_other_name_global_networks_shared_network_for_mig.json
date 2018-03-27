@@ -1,0 +1,11 @@
+{
+ "kind": "compute#network",
+ "id": "5125152985904090796",
+ "creationTimestamp": "2016-03-25T05:34:15.077-07:00",
+ "name": "shared_network_for_mig",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/other_name/global/networks/shared_network_for_mig",
+ "autoCreateSubnetworks": true,
+ "subnetworks": [
+  "https://www.googleapis.com/compute/v1/projects/other_name/regions/us-central1/subnetworks/shared_subnetwork_for_mig"
+ ]
+}

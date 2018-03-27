@@ -21,7 +21,7 @@
 #
 # Script which builds a testing docker image and container,
 # install the necessary packages: pypy, pip, python versions
-# 2.6, 2.7, 3.2, 3.3, 3.4 (corresponding dev packages as well)
+# 2.7, 3.3, 3.4, 3.5 and 3.6 (corresponding dev packages as well)
 # and run the tox tests within the container.
 # The script has to be run from libcloud root.
 

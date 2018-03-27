@@ -18,6 +18,7 @@ libcloud provides a unified interface to the cloud computing resources.
 
 :var __version__: Current version of libcloud
 """
+import logging
 import os
 import codecs
 
@@ -37,7 +38,7 @@ __all__ = [
     'enable_debug'
 ]
 
-__version__ = '2.2.2dev'
+__version__ = '2.3.0'
 
 
 def enable_debug(fo):
@@ -78,6 +79,7 @@ def _init_once():
         enable_debug(fo)
 
         if have_paramiko:
-            paramiko.common.logging.basicConfig(level=paramiko.common.DEBUG)
+            paramiko_logger = paramiko.util.logging.getLogger()
+            paramiko_logger.setLevel(logging.DEBUG)
 
 _init_once()

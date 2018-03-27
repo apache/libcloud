@@ -45,9 +45,9 @@ class ProfitBricksTests(unittest.TestCase):
 
     def test_list_images(self):
 
-        '''
+        """
         Fetch all images and then fetch with filters
-        '''
+        """
         all_images = self.driver.list_images()
         hdd_images = self.driver.list_images('HDD')
         cdd_images = self.driver.list_images('CDROM')
@@ -617,9 +617,9 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertIn('Resource does not exist', cm.exception.message.value)
 
     def _verify_snapshot(self, snapshot):
-        '''
+        """
         Standard properties
-        '''
+        """
         self.assertEqual(
             snapshot.id,
             'sshot'
@@ -3463,9 +3463,9 @@ class ProfitBricksTests(unittest.TestCase):
         self.assertIn('Resource does not exist', cm.exception.message.value)
 
     def _verify_load_balancer(self, load_balancer):
-        '''
+        """
         Standard properties
-        '''
+        """
         self.assertEqual(
             load_balancer.id,
             'bal-1'

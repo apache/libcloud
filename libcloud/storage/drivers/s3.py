@@ -89,7 +89,7 @@ class S3Response(AWSBaseResponse):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299 or i in self.valid_response_codes
+        return 200 <= i <= 299 or i in self.valid_response_codes
 
     def parse_error(self):
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:

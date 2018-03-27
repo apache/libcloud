@@ -94,6 +94,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(nodes[0].public_ips, ['104.236.32.182'])
         self.assertEqual(nodes[0].extra['image']['id'], 6918990)
         self.assertEqual(nodes[0].extra['size_slug'], '512mb')
+        self.assertEqual(len(nodes[0].extra['tags']), 2)
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
@@ -152,6 +153,19 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         node = self.driver.list_nodes()[0]
         DigitalOceanMockHttp.type = 'POWERCYCLE'
         result = self.driver.ex_hard_reboot(node)
+        self.assertTrue(result)
+
+    def test_ex_rebuild_node_success(self):
+        node = self.driver.list_nodes()[0]
+        DigitalOceanMockHttp.type = 'REBUILD'
+        result = self.driver.ex_rebuild_node(node)
+        self.assertTrue(result)
+
+    def test_ex_resize_node_success(self):
+        node = self.driver.list_nodes()[0]
+        size = self.driver.list_sizes()[0]
+        DigitalOceanMockHttp.type = 'RESIZE'
+        result = self.driver.ex_resize_node(node, size)
         self.assertTrue(result)
 
     def test_destroy_node_success(self):
@@ -278,6 +292,71 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.delete_volume_snapshot(snapshot)
         self.assertTrue(result)
 
+    def test_ex_create_floating_ip(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        floating_ip = self.driver.ex_create_floating_ip(nyc1)
+
+        # Note that this is the ID. There is no real ID for a floating IP at
+        # DigitalOcean, but the IP is unique so we can use that instead.
+        self.assertEqual(floating_ip.id, '167.138.123.111')
+        self.assertEqual(floating_ip.ip_address, '167.138.123.111')
+        self.assertEqual(floating_ip.extra['region']['slug'], 'nyc1')
+        # The newly created floating IP reserved to a region is not
+        # associated with any droplet. See the DigitalOcean API docs
+        # how to create a floating IP that is associated with an instance
+        # from the start. This API call creates an unattached IP.
+        self.assertIsNone(floating_ip.node_id)
+
+    def test_ex_delete_floating_ip(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        floating_ip = self.driver.ex_create_floating_ip(nyc1)
+        ret = self.driver.ex_delete_floating_ip(floating_ip)
+
+        # The API returns 204 NO CONTENT if all is well.
+        self.assertTrue(ret)
+
+    def test_floating_ip_can_be_deleted_by_calling_delete_on_floating_ip_object(self):
+        nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
+        floating_ip = self.driver.ex_create_floating_ip(nyc1)
+        ret = floating_ip.delete()
+
+        self.assertTrue(ret)
+
+    def test_list_floating_ips(self):
+        floating_ips = self.driver.ex_list_floating_ips()
+
+        self.assertEqual(len(floating_ips), 2, 'Wrong floating IPs count')
+
+        floating_ip = floating_ips[0]
+        self.assertEqual(floating_ip.id, '133.166.122.204')
+        self.assertEqual(floating_ip.ip_address, '133.166.122.204')
+        self.assertEqual(floating_ip.extra['region']['slug'], 'ams3')
+        self.assertEqual(84155775, floating_ip.node_id)
+
+    def test_get_floating_ip(self):
+        floating_ip = self.driver.ex_get_floating_ip('133.166.122.204')
+
+        self.assertEqual(floating_ip.id, '133.166.122.204')
+        self.assertEqual(floating_ip.ip_address, '133.166.122.204')
+        self.assertEqual(floating_ip.extra['region']['slug'], 'ams3')
+        self.assertEqual(84155775, floating_ip.node_id)
+
+    def test_ex_attach_floating_ip_to_node(self):
+        node = self.driver.list_nodes()[0]
+        floating_ip = self.driver.ex_get_floating_ip('133.166.122.204')
+
+        ret = self.driver.ex_attach_floating_ip_to_node(node, floating_ip)
+
+        self.assertTrue(ret)
+
+    def test_ex_detach_floating_ip_from_node(self):
+        node = self.driver.list_nodes()[0]
+        floating_ip = self.driver.ex_get_floating_ip('154.138.103.175')
+
+        ret = self.driver.ex_detach_floating_ip_from_node(node, floating_ip)
+
+        self.assertTrue(ret)
+
 
 class DigitalOceanMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('digitalocean_v2')
@@ -361,6 +440,18 @@ class DigitalOceanMockHttp(MockHttp):
         body = self.fixtures.load('ex_hard_reboot.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
 
+    def _v2_droplets_3164444_actions_REBUILD(self, method, url,
+                                             body, headers):
+        # ex_rebuild_node
+        body = self.fixtures.load('ex_rebuild_node.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_droplets_3164444_actions_RESIZE(self, method, url,
+                                            body, headers):
+        # ex_resize_node
+        body = self.fixtures.load('ex_resize_node.json')
+        return (httplib.CREATED, body, {}, httplib.responses[httplib.OK])
+
     def _v2_account_keys(self, method, url, body, headers):
         body = self.fixtures.load('list_key_pairs.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -425,6 +516,37 @@ class DigitalOceanMockHttp(MockHttp):
             self, method, url, body, headers):
         return (httplib.NO_CONTENT, None, {},
                 httplib.responses[httplib.NO_CONTENT])
+
+    def _v2_floating_ips(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('create_floating_ip.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        elif method == 'GET':
+            body = self.fixtures.load('list_floating_ips.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_floating_ips_167_138_123_111(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+        else:
+            raise NotImplementedError()
+
+    def _v2_floating_ips_133_166_122_204_actions(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('attach_floating_ip.json')
+            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+        else:
+            raise NotImplementedError()
+
+    def _v2_floating_ips_154_138_103_175_actions(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('detach_floating_ip.json')
+            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+        else:
+            raise NotImplementedError()
 
 
 if __name__ == '__main__':

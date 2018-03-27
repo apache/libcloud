@@ -1,0 +1,10 @@
+{
+  "kind": "compute#acceleratorType",
+  "description": "NVIDIA Tesla K80",
+  "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+  "maximumCardsPerInstance": 8,
+  "name": "nvidia-tesla-k80",
+  "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/acceleratorTypes/nvidia-tesla-k80",
+  "id": "10002"
+}

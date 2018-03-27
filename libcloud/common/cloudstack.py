@@ -162,12 +162,15 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
         if (command == 'revokesecuritygroupingress' and
                 'revokesecuritygroupingressresponse' not in result.object):
             command = command
+        elif (command == 'restorevirtualmachine' and
+                'restorevmresponse' in result.object):
+            command = "restorevmresponse"
         else:
             command = command + 'response'
 
         if command not in result.object:
             raise MalformedResponseError(
-                "Unknown response format",
+                "Unknown response format {}".format(command),
                 body=result.body,
                 driver=self.driver)
         result = result.object[command]

@@ -53,9 +53,18 @@ To set up Service Account authentication, you will need to download the
 corresponding private key file in either the new JSON (preferred) format, or
 the legacy P12 format.
 
-1. Follow the instructions at
-   https://developers.google.com/console/help/new/#serviceaccounts
-   to create and download the private key.
+1. Go to Google Cloud Console (https://console.cloud.google.com/) and create a
+   new project (https://console.cloud.google.com/projectcreate) or re-use an
+   existing one.
+
+.. figure:: /_static/images/misc/gce/create_service_account.png
+    :align: center
+    :width: 500
+
+2. Select the existing or newly created project and go to IAM & Admin ->
+   Service Accounts -> Create service account to create a new service account.
+   Select "Furnish a new private key" to create and download new private key you will
+   use to authenticate.
 
    a. If you opt for the new preferred JSON format, download the file and
       save it to a secure location.
@@ -68,10 +77,40 @@ the legacy P12 format.
 
       Move the .pem file to a safe location
 
-2. You will need the Service Account's "Email Address" and the path to the
+
+.. figure:: /_static/images/misc/gce/iam_and_roles.png
+    :align: center
+    :width: 500
+
+.. figure:: /_static/images/misc/gce/create_service_account.png
+    :align: center
+    :width: 500
+
+3. You will need the Service Account's "Email Address" and the path to the
    key file for authentication.
-3. You will also need your "Project ID" (a string, not a numerical value) that
+
+.. figure:: /_static/images/misc/gce/view_service_accounts.png
+    :align: center
+    :width: 500
+
+4. You will also need your "Project ID" (a string, not a numerical value) that
    can be found by clicking on the "Overview" link on the left sidebar.
+
+.. figure:: /_static/images/misc/gce/project_dashboard.png
+    :align: center
+    :width: 500
+
+5. You will also need to have billing information associated and enabled for
+   that project. If billing is not yet enabled for that project an error
+   message similar to the one below will be printed when you first run the code
+   which uses GCE driver:
+
+.. sourcecode:: python
+
+    libcloud.common.google.GoogleBaseError: {u'domain': u'usageLimits', u'message': u'Access Not Configured. Compute Engine API has not been used in project 1029894677594 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=1029894677594 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.', u'reason': u'accessNotConfigured', u'extendedHelp': u'https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=YYYYYYYY'}
+
+You can simply follow the link in the error message to configure and enable
+billing.
 
 Installed Application
 ~~~~~~~~~~~~~~~~~~~~~

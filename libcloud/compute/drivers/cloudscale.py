@@ -86,25 +86,25 @@ class CloudscaleNodeDriver(NodeDriver):
         super(CloudscaleNodeDriver, self).__init__(key, **kwargs)
 
     def list_nodes(self):
-        '''
+        """
         List all your existing compute nodes.
-        '''
+        """
         return self._list_resources('/v1/servers', self._to_node)
 
     def list_sizes(self):
-        '''
+        """
         Lists all available sizes. On cloudscale these are known as flavors.
-        '''
+        """
         return self._list_resources('/v1/flavors', self._to_size)
 
     def list_images(self):
-        '''
+        """
         List all images.
 
         Images are identified by slugs on cloudscale.ch. This means that minor
         version upgrades (e.g. Ubuntu 16.04.1 to Ubuntu 16.04.2) will be
         possible within the same id ``ubuntu-16.04``.
-        '''
+        """
         return self._list_resources('/v1/images', self._to_image)
 
     def create_node(self, name, size, image, location=None, ex_create_attr={}):
@@ -145,42 +145,42 @@ class CloudscaleNodeDriver(NodeDriver):
         return self._to_node(result.object)
 
     def reboot_node(self, node):
-        '''
+        """
         Reboot a node. It's also possible to use ``node.reboot()``.
-        '''
+        """
         return self._action(node, 'reboot')
 
     def ex_start_node(self, node):
-        '''
+        """
         Start a node. This is only possible if the node is stopped.
-        '''
+        """
         return self._action(node, 'start')
 
     def ex_stop_node(self, node):
-        '''
+        """
         Stop a specific node. Similar to ``shutdown -h now``. This is only
         possible if the node is running.
-        '''
+        """
         return self._action(node, 'stop')
 
     def ex_node_by_uuid(self, uuid):
-        '''
+        """
         :param str ex_user_data: A valid uuid that references your exisiting
             cloudscale.ch server.
         :type       ex_user_data:  ``str``
 
         :return: The server node you asked for.
         :rtype: :class:`Node`
-        '''
+        """
         res = self.connection.request(self._get_server_url(uuid))
         return self._to_node(res.object)
 
     def destroy_node(self, node):
-        '''
+        """
         Delete a node. It's also possible to use ``node.destroy()``.
         This will irreversibly delete the cloudscale.ch server and all its
         volumes. So please be cautious.
-        '''
+        """
         res = self.connection.request(
             self._get_server_url(node.id),
             method='DELETE'

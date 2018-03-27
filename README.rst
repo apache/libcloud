@@ -7,11 +7,11 @@ Apache Libcloud - a unified interface for the cloud
 .. image:: https://img.shields.io/pypi/v/apache-libcloud.svg
     :target: https://pypi.python.org/pypi/apache-libcloud/
 
-.. image:: https://img.shields.io/pypi/dm/apache-libcloud.svg
-        :target: https://pypi.python.org/pypi/apache-libcloud/
-
 .. image:: https://img.shields.io/travis/apache/libcloud/trunk.svg
         :target: http://travis-ci.org/apache/libcloud
+
+.. image:: https://img.shields.io/codecov/c/github/apache/libcloud/trunk.svg
+        :target: https://codecov.io/github/apache/libcloud?branch=trunk
 
 .. image:: https://img.shields.io/pypi/pyversions/apache-libcloud.svg
         :target: https://pypi.python.org/pypi/apache-libcloud/
@@ -22,14 +22,8 @@ Apache Libcloud - a unified interface for the cloud
 .. image:: https://img.shields.io/github/license/apache/libcloud.svg
         :target: https://github.com/apache/libcloud/blob/trunk/LICENSE
 
-.. image:: https://img.shields.io/irc/%23libcloud.png
-        :target: http://webchat.freenode.net/?channels=libcloud
-
 .. image:: https://bestpractices.coreinfrastructure.org/projects/152/badge
         :target: https://bestpractices.coreinfrastructure.org/projects/152
-
-.. image:: https://img.shields.io/codecov/c/github/apache/libcloud/trunk.svg
-        :target: https://codecov.io/github/apache/libcloud?branch=trunk
 
 Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources

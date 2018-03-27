@@ -372,6 +372,25 @@ class GCEDiskType(UuidMixin):
             self.id, self.name, self.zone)
 
 
+class GCEAcceleratorType(UuidMixin):
+    """A GCE AcceleratorType resource."""
+
+    def __init__(self, id, name, zone, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.zone = zone
+        self.driver = driver
+        self.extra = extra
+        UuidMixin.__init__(self)
+
+    def destroy(self):
+        raise ProviderError("Can not destroy an AcceleratorType resource.")
+
+    def __repr__(self):
+        return '<GCEAcceleratorType id="%s" name="%s" zone="%s">' % (
+            self.id, self.name, self.zone)
+
+
 class GCEAddress(UuidMixin):
     """A GCE Static address."""
 
@@ -569,15 +588,23 @@ class GCEHealthCheck(UuidMixin):
 class GCEFirewall(UuidMixin):
     """A GCE Firewall rule class."""
 
-    def __init__(self, id, name, allowed, network, source_ranges, source_tags,
-                 target_tags, driver, extra=None):
+    def __init__(self, id, name, allowed, denied, direction, network,
+                 source_ranges, source_tags, priority,
+                 source_service_accounts, target_service_accounts,
+                 target_tags, target_ranges, driver, extra=None):
         self.id = str(id)
         self.name = name
         self.network = network
         self.allowed = allowed
+        self.denied = denied
+        self.direction = direction
+        self.priority = priority
         self.source_ranges = source_ranges
         self.source_tags = source_tags
+        self.source_service_accounts = source_service_accounts
         self.target_tags = target_tags
+        self.target_service_accounts = target_service_accounts
+        self.target_ranges = target_ranges
         self.driver = driver
         self.extra = extra
         UuidMixin.__init__(self)
@@ -1732,16 +1759,38 @@ class GCENodeDriver(NodeDriver):
     }
 
     IMAGE_PROJECTS = {
-        "centos-cloud": ["centos"],
-        "coreos-cloud": ["coreos"],
-        "debian-cloud": ["debian", "backports"],
-        "gce-nvme": ["nvme-backports"],
-        "google-containers": ["container-vm"],
-        "opensuse-cloud": ["opensuse"],
-        "rhel-cloud": ["rhel"],
-        "suse-cloud": ["sles", "suse"],
-        "ubuntu-os-cloud": ["ubuntu"],
-        "windows-cloud": ["windows"],
+        "centos-cloud": ["centos-6", "centos-7"],
+        "cos-cloud": ["cos-beta", "cos-dev", "cos-stable"],
+        "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
+        "debian-cloud": ["debian-8", "debian-9"],
+        "opensuse-cloud": ["opensuse-leap"],
+        "rhel-cloud": ["rhel-6", "rhel-7"],
+        "suse-cloud": ["sles-11", "sles-12"],
+        "suse-byos-cloud": [
+            "sles-11-byos", "sles-12-byos",
+            "sles-12-sp2-sap-byos", "sles-12-sp3-sap-byos",
+            "suse-manager-proxy-byos", "suse-manager-server-byos"
+        ],
+        "suse-sap-cloud": ["sles-12-sp2-sap", "sles-12-sp3-sap"],
+        "ubuntu-os-cloud": [
+            "ubuntu-1404-lts", "ubuntu-1604-lts", "ubuntu-1710"
+        ],
+        "windows-cloud": [
+            "windows-1709-core-for-containers", "windows-1709-core",
+            "windows-2008-r2", "windows-2012-r2-core", "windows-2012-r2",
+            "windows-2016-core", "windows-2016"
+        ],
+        "windows-sql-cloud": [
+            "sql-ent-2012-win-2012-r2", "sql-std-2012-win-2012-r2",
+            "sql-web-2012-win-2012-r2", "sql-ent-2014-win-2012-r2",
+            "sql-ent-2014-win-2016", "sql-std-2014-win-2012-r2",
+            "sql-web-2014-win-2012-r2", "sql-ent-2016-win-2012-r2",
+            "sql-ent-2016-win-2016", "sql-std-2016-win-2012-r2",
+            "sql-std-2016-win-2016", "sql-web-2016-win-2012-r2",
+            "sql-web-2016-win-2016", "sql-ent-2017-win-2016",
+            "sql-exp-2017-win-2012-r2", "sql-exp-2017-win-2016",
+            "sql-std-2017-win-2016", "sql-web-2017-win-2016"
+        ],
     }
 
     BACKEND_SERVICE_PROTOCOLS = ['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL']
@@ -2801,7 +2850,8 @@ class GCENodeDriver(NodeDriver):
         return list_zones
 
     def ex_create_address(self, name, region=None, address=None,
-                          description=None):
+                          description=None, address_type='EXTERNAL',
+                          subnetwork=None):
         """
         Create a static address in a region, or a global address.
 
@@ -2819,20 +2869,47 @@ class GCENodeDriver(NodeDriver):
         :keyword  description: Optional descriptive comment.
         :type     description: ``str`` or ``None``
 
+        :keyword  address_type: Optional The type of address to reserve,
+                                either INTERNAL or EXTERNAL. If unspecified,
+                                defaults to EXTERNAL.
+        :type     description: ``str``
+
+        :keyword  subnetwork: Optional The URL of the subnetwork in which to
+                              reserve the address. If an IP address is
+                              specified, it must be within the subnetwork's
+                              IP range. This field can only be used with
+                              INTERNAL type with GCE_ENDPOINT/DNS_RESOLVER
+                              purposes.
+        :type     description: ``str``
+
         :return:  Static Address object
         :rtype:   :class:`GCEAddress`
         """
         region = region or self.region
-        if region != 'global' and not hasattr(region, 'name'):
-            region = self.ex_get_region(region)
-        elif region is None:
+        if region is None:
             raise ValueError('REGION_NOT_SPECIFIED',
                              'Region must be provided for an address')
+        if region != 'global' and not hasattr(region, 'name'):
+            region = self.ex_get_region(region)
         address_data = {'name': name}
         if address:
             address_data['address'] = address
         if description:
             address_data['description'] = description
+        if address_type:
+            if address_type not in ['EXTERNAL', 'INTERNAL']:
+                raise ValueError('ADDRESS_TYPE_WRONG',
+                                 'Address type must be either EXTERNAL or \
+                                 INTERNAL')
+            else:
+                address_data['addressType'] = address_type
+        if subnetwork and address_type != 'INTERNAL':
+            raise ValueError('INVALID_ARGUMENT_COMBINATION',
+                             'Address type must be internal if subnetwork \
+                             provided')
+        if subnetwork and not hasattr(subnetwork, 'name'):
+            subnetwork = \
+                self.ex_get_subnetwork(subnetwork, region)
         if region == 'global':
             request = '/global/addresses'
         else:
@@ -3096,14 +3173,22 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=hc_data)
         return self.ex_get_healthcheck(name)
 
-    def ex_create_firewall(self, name, allowed, network='default',
+    def ex_create_firewall(self, name, allowed=None, denied=None,
+                           network='default', target_ranges=None,
+                           direction='INGRESS', priority=1000,
+                           source_service_accounts=None,
+                           target_service_accounts=None,
                            source_ranges=None, source_tags=None,
-                           target_tags=None):
+                           target_tags=None, description=None):
         """
-        Create a firewall on a network.
+        Create a firewall rule on a network.
+        Rules can be for Ingress or Egress, and they may Allow or
+        Deny traffic. They are also applied in order based on action
+        (Deny, Allow) and Priority. Rules can be applied using various Source
+        and Target filters.
 
-        Firewall rules should be supplied in the "allowed" field.  This is a
-        list of dictionaries formated like so ("ports" is optional)::
+        Firewall rules should be supplied in the "allowed" or "denied" field.
+        This is a list of dictionaries formatted like so ("ports" is optional):
 
             [{"IPProtocol": "<protocol string or number>",
               "ports": "<port_numbers or ranges>"}]
@@ -3115,14 +3200,31 @@ class GCENodeDriver(NodeDriver):
               "ports": ["8080"]},
              {"IPProtocol": "udp"}]
 
+        Note that valid inputs vary by direction (INGRESS vs EGRESS), action
+        (allow/deny), and source/target filters (tag vs range etc).
+
         See `Firewall Reference <https://developers.google.com/compute/docs/
         reference/latest/firewalls/insert>`_ for more information.
 
         :param  name: Name of the firewall to be created
         :type   name: ``str``
 
-        :param  allowed: List of dictionaries with rules
+        :param  description: Optional description of the rule.
+        :type   description: ``str``
+
+        :param  direction: Direction of the FW rule - "INGRESS" or "EGRESS"
+                           Defaults to 'INGRESS'.
+        :type   direction: ``str``
+
+        :param  priority: Priority integer of the rule -
+                          lower is applied first. Defaults to 1000
+        :type   priority: ``int``
+
+        :param  allowed: List of dictionaries with rules for type INGRESS
         :type   allowed: ``list`` of ``dict``
+
+        :param  denied: List of dictionaries with rules for type EGRESS
+        :type   denied: ``list`` of ``dict``
 
         :keyword  network: The network that the firewall applies to.
         :type     network: ``str`` or :class:`GCENetwork`
@@ -3132,6 +3234,10 @@ class GCENodeDriver(NodeDriver):
                                  ['0.0.0.0/0']
         :type     source_ranges: ``list`` of ``str``
 
+        :keyword  source_service_accounts: A list of source service accounts
+                                        the rules apply to.
+        :type     source_service_accounts: ``list`` of ``str``
+
         :keyword  source_tags: A list of source instance tags the rules apply
                                to.
         :type     source_tags: ``list`` of ``str``
@@ -3139,6 +3245,15 @@ class GCENodeDriver(NodeDriver):
         :keyword  target_tags: A list of target instance tags the rules apply
                                to.
         :type     target_tags: ``list`` of ``str``
+
+        :keyword  target_service_accounts: A list of target service accounts
+                                        the rules apply to.
+        :type     target_service_accounts: ``list`` of ``str``
+
+        :keyword  target_ranges: A list of IP ranges in CIDR format that the
+                                EGRESS type rule should apply to. Defaults
+                                to ['0.0.0.0/0']
+        :type     target_ranges: ``list`` of ``str``
 
         :return:  Firewall object
         :rtype:   :class:`GCEFirewall`
@@ -3150,16 +3265,29 @@ class GCENodeDriver(NodeDriver):
             nw = network
 
         firewall_data['name'] = name
-        firewall_data['allowed'] = allowed
+        firewall_data['direction'] = direction
+        firewall_data['priority'] = priority
+        firewall_data['description'] = description
+        if direction == 'INGRESS':
+            firewall_data['allowed'] = allowed
+        elif direction == 'EGRESS':
+            firewall_data['denied'] = denied
         firewall_data['network'] = nw.extra['selfLink']
-        if source_ranges is None and source_tags is None:
+        if source_ranges is None and source_tags is None \
+                and source_service_accounts is None:
             source_ranges = ['0.0.0.0/0']
         if source_ranges is not None:
             firewall_data['sourceRanges'] = source_ranges
         if source_tags is not None:
             firewall_data['sourceTags'] = source_tags
+        if source_service_accounts is not None:
+            firewall_data['sourceServiceAccounts'] = source_service_accounts
         if target_tags is not None:
             firewall_data['targetTags'] = target_tags
+        if target_service_accounts is not None:
+            firewall_data['targetServiceAccounts'] = target_service_accounts
+        if target_ranges is not None:
+            firewall_data['destinationRanges'] = target_ranges
 
         request = '/global/firewalls'
 
@@ -3760,7 +3888,8 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_image_family=None, ex_labels=None):
+            ex_preemptible=None, ex_image_family=None, ex_labels=None,
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Create a new node and return a node object for the node.
 
@@ -3887,6 +4016,18 @@ class GCENodeDriver(NodeDriver):
         :keyword  ex_labels: Labels dictionary for instance.
         :type     ex_labels: ``dict`` or ``None``
 
+        :keyword  ex_accelerator_type: Defines the accelerator to use with this
+                                       node. Must set 'ex_on_host_maintenance'
+                                       to 'TERMINATE'. Must include a count of
+                                       accelerators to use in
+                                       'ex_accelerator_count'.
+        :type     ex_accelerator_type: ``str`` or ``None``
+
+        :keyword  ex_accelerator_count: The number of 'ex_accelerator_type'
+                                        accelerators to attach to the node.
+        :type     ex_accelerator_count: ``int`` or ``None``
+
+
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
@@ -3925,6 +4066,13 @@ class GCENodeDriver(NodeDriver):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
         if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
             ex_boot_disk = self.ex_get_volume(ex_boot_disk, zone=location)
+        if ex_accelerator_type and not hasattr(ex_accelerator_type, 'name'):
+            if ex_accelerator_count is None:
+                raise ValueError("Missing accelerator count. Must specify an "
+                                 "'ex_accelerator_count' when using "
+                                 "'ex_accelerator_type'.")
+            ex_accelerator_type = self.ex_get_accelerator_type(
+                ex_accelerator_type, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
         if not ex_disks_gce_struct and not ex_boot_disk:
@@ -3947,7 +4095,8 @@ class GCENodeDriver(NodeDriver):
             ex_disk_auto_delete, ex_service_accounts, description,
             ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
             ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
-            ex_subnetwork, ex_labels)
+            ex_subnetwork, ex_labels, ex_accelerator_type,
+            ex_accelerator_count)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -4105,7 +4254,8 @@ class GCENodeDriver(NodeDriver):
             on_host_maintenance=None, automatic_restart=None,
             preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
-            use_selflinks=True, labels=None):
+            use_selflinks=True, labels=None, accelerator_type=None,
+            accelerator_count=None, disk_size=None):
         """
         Create the GCE instance properties needed for instance templates.
 
@@ -4221,6 +4371,21 @@ class GCENodeDriver(NodeDriver):
         :type     labels: Labels dict for instance
         :type     labels: ``dict`` or ``None``
 
+        :keyword  accelerator_type: Support for passing in the GCE-specifc
+                                    accelerator type to request for the VM.
+        :type     accelerator_type: :class:`GCEAcceleratorType` or ``None``
+
+        :keyword  accelerator_count: Support for passing in the number of
+                                     requested 'accelerator_type' accelerators
+                                     attached to the VM. Will only pay atention
+                                     to this field if 'accelerator_type' is not
+                                     None.
+        :type     accelerator_count: ``int`` or ``None``
+
+        :keyword  disk_size: Specify size of the boot disk.
+                             Integer in gigabytes.
+        :type     disk_size: ``int`` or ``None``
+
         :return:  A dictionary formatted for use with the GCE API.
         :rtype:   ``dict``
         """
@@ -4251,7 +4416,8 @@ class GCENodeDriver(NodeDriver):
                 device_name, source=source, disk_type=disk_type, image=image,
                 disk_name=disk_name, usage_type='PERSISTENT',
                 mount_mode='READ_WRITE', auto_delete=disk_auto_delete,
-                is_boot=True, use_selflinks=use_selflinks)]
+                is_boot=True, use_selflinks=use_selflinks,
+                disk_size=disk_size)]
 
         # build network interfaces
         if nic_gce_struct is not None:
@@ -4288,6 +4454,12 @@ class GCENodeDriver(NodeDriver):
         instance_properties[
             'serviceAccounts'] = self._build_service_accounts_gce_list(
                 service_accounts)
+
+        # build accelerators
+        if accelerator_type is not None:
+            instance_properties['guestAccelerators'] = \
+                self._format_guest_accelerators(accelerator_type,
+                                                accelerator_count)
 
         # include general properties
         if description:
@@ -4367,9 +4539,10 @@ class GCENodeDriver(NodeDriver):
         if not isinstance(auto_delete, bool):
             raise ValueError("auto_delete field is not a bool.")
 
-        if disk_size is not None and not disk_size.isdigit():
+        if (disk_size is not None and
+                not (isinstance(disk_size, int) or disk_size.isdigit())):
             raise ValueError("disk_size must be a digit, '%s' provided." %
-                             (disk_size))
+                             str(disk_size))
 
         mount_modes = ['READ_WRITE', 'READ_ONLY']
         if mount_mode not in mount_modes:
@@ -4656,7 +4829,7 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None,
-            ex_preemptible=None, ex_labels=None):
+            ex_preemptible=None, ex_labels=None, ex_disk_size=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -4799,6 +4972,10 @@ class GCENodeDriver(NodeDriver):
         :param    ex_labels: Label dict for node.
         :type     ex_labels: ``dict``
 
+        :keyword  ex_disk_size: Defines size of the boot disk.
+                                Integer in gigabytes.
+        :type     ex_disk_size: ``int`` or ``None``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
 
@@ -4851,7 +5028,8 @@ class GCENodeDriver(NodeDriver):
                       'ex_on_host_maintenance': ex_on_host_maintenance,
                       'ex_automatic_restart': ex_automatic_restart,
                       'ex_preemptible': ex_preemptible,
-                      'ex_labels': ex_labels}
+                      'ex_labels': ex_labels,
+                      'ex_disk_size': ex_disk_size}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -5279,13 +5457,23 @@ class GCENodeDriver(NodeDriver):
         firewall_data = {}
         firewall_data['name'] = firewall.name
         firewall_data['allowed'] = firewall.allowed
+        firewall_data['denied'] = firewall.denied
+        # Priority updates not yet exposed via API
         firewall_data['network'] = firewall.network.extra['selfLink']
         if firewall.source_ranges:
             firewall_data['sourceRanges'] = firewall.source_ranges
         if firewall.source_tags:
             firewall_data['sourceTags'] = firewall.source_tags
+        if firewall.source_service_accounts:
+            firewall_data['sourceServiceAccounts'] = \
+                firewall.source_service_accounts
         if firewall.target_tags:
             firewall_data['targetTags'] = firewall.target_tags
+        if firewall.target_service_accounts:
+            firewall_data['targetServiceAccounts'] = \
+                firewall.target_service_accounts
+        if firewall.target_ranges:
+            firewall_data['destinationRanges'] = firewall.target_ranges
         if firewall.extra['description']:
             firewall_data['description'] = firewall.extra['description']
 
@@ -6780,6 +6968,24 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request, method='GET').object
         return self._to_disktype(response)
 
+    def ex_get_accelerator_type(self, name, zone=None):
+        """
+        Return an AcceleratorType object based on a name and zone.
+
+        :param  name: The name of the AcceleratorType
+        :type   name: ``str``
+
+        :param  zone: The zone to search for the AcceleratorType in.
+        :type   zone: :class:`GCEZone`
+
+        :return:  An AcceleratorType object for the name
+        :rtype:   :class:`GCEAcceleratorType`
+        """
+        zone = self._set_zone(zone)
+        request = '/zones/%s/acceleratorTypes/%s' % (zone.name, name)
+        response = self.connection.request(request, method='GET').object
+        return self._to_accelerator_type(response)
+
     def ex_get_address(self, name, region=None):
         """
         Return an Address object based on an address name and optional region.
@@ -7073,9 +7279,7 @@ class GCENodeDriver(NodeDriver):
         """
         region_name = None
         if name.startswith('https://'):
-            parts = self._get_components_from_path(name)
-            name = parts['name']
-            region_name = parts['region']
+            request = name
         else:
             if isinstance(region, GCERegion):
                 region_name = region.name
@@ -7085,14 +7289,16 @@ class GCENodeDriver(NodeDriver):
                 else:
                     region_name = region
 
-        if not region_name:
-            region = self._set_region(region)
-            if not region:
-                raise ValueError("Could not determine region for subnetwork.")
-            else:
-                region_name = region.name
+            if not region_name:
+                region = self._set_region(region)
+                if not region:
+                    raise ValueError(
+                        "Could not determine region for subnetwork.")
+                else:
+                    region_name = region.name
 
-        request = '/regions/%s/subnetworks/%s' % (region_name, name)
+            request = '/regions/%s/subnetworks/%s' % (region_name, name)
+
         response = self.connection.request(request, method='GET').object
         return self._to_subnetwork(response)
 
@@ -7100,13 +7306,16 @@ class GCENodeDriver(NodeDriver):
         """
         Return a Network object based on a network name.
 
-        :param  name: The name of the network
+        :param  name: The name or URL of the network
         :type   name: ``str``
 
         :return:  A Network object for the network
         :rtype:   :class:`GCENetwork`
         """
-        request = '/global/networks/%s' % (name)
+        if name.startswith('https://'):
+            request = name
+        else:
+            request = '/global/networks/%s' % (name)
         response = self.connection.request(request, method='GET').object
         return self._to_network(response)
 
@@ -7744,7 +7953,9 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_subnetwork=None, ex_labels=None):
+            ex_preemptible=None, ex_subnetwork=None, ex_labels=None,
+            ex_accelerator_type=None, ex_accelerator_count=None,
+            ex_disk_size=None):
         """
         Returns a request and body to create a new node.
 
@@ -7862,8 +8073,20 @@ class GCENodeDriver(NodeDriver):
         :param  ex_subnetwork: The network to associate with the node.
         :type   ex_subnetwork: :class:`GCESubnetwork`
 
+        :keyword  ex_disk_size: Specify the size of boot disk.
+                                Integer in gigabytes.
+        :type     ex_disk_size: ``int`` or ``None``
+
         :param  ex_labels: Label dict for node.
         :type   ex_labels: ``dict`` or ``None``
+
+        :param  ex_accelerator_type: The accelerator to associate with the
+                                     node.
+        :type   ex_accelerator_type: :class:`GCEAcceleratorType` or ``None``
+
+        :param  ex_accelerator_count: The number of accelerators to associate
+                                      with the node.
+        :type   ex_accelerator_count: ``int`` or ``None``
 
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
@@ -7894,7 +8117,10 @@ class GCENodeDriver(NodeDriver):
             automatic_restart=ex_automatic_restart, preemptible=ex_preemptible,
             tags=tags, metadata=metadata, labels=ex_labels,
             description=description, disks_gce_struct=ex_disks_gce_struct,
-            nic_gce_struct=ex_nic_gce_struct, use_selflinks=use_selflinks)
+            nic_gce_struct=ex_nic_gce_struct,
+            accelerator_type=ex_accelerator_type,
+            accelerator_count=ex_accelerator_count,
+            use_selflinks=use_selflinks, disk_size=ex_disk_size)
         node_data['name'] = name
 
         request = '/zones/%s/instances' % (location.name)
@@ -7999,7 +8225,8 @@ class GCENodeDriver(NodeDriver):
             ex_automatic_restart=node_attrs['ex_automatic_restart'],
             ex_subnetwork=node_attrs['subnetwork'],
             ex_preemptible=node_attrs['ex_preemptible'],
-            ex_labels=node_attrs['ex_labels']
+            ex_labels=node_attrs['ex_labels'],
+            ex_disk_size=node_attrs['ex_disk_size']
         )
 
         try:
@@ -8131,6 +8358,33 @@ class GCENodeDriver(NodeDriver):
         return GCEDiskType(id=type_id, name=disktype['name'], zone=zone,
                            driver=self, extra=extra)
 
+    def _to_accelerator_type(self, accelerator_type):
+        """
+        Return an AcceleratorType object from the JSON-response dictionary.
+
+        :param  accelerator_type: The dictionary describing the
+                                  accelerator_type.
+        :type   accelerator_type: ``dict``
+
+        :return: AcceleratorType object
+        :rtype:  :class:`GCEAcceleratorType`
+        """
+        extra = {}
+
+        zone = self.ex_get_zone(accelerator_type['zone'])
+
+        extra['selfLink'] = accelerator_type.get('selfLink')
+        extra['creationTimestamp'] = accelerator_type.get('creationTimestamp')
+        extra['description'] = accelerator_type.get('description')
+        extra['maximumCardsPerInstance'] = accelerator_type.get(
+            'maximumCardsPerInstance')
+        extra['default_disk_size_gb'] = accelerator_type.get(
+            'defaultDiskSizeGb')
+        type_id = "%s:%s" % (zone.name, accelerator_type['name'])
+
+        return GCEAcceleratorType(id=type_id, name=accelerator_type['name'],
+                                  zone=zone, driver=self, extra=extra)
+
     def _to_address(self, address):
         """
         Return an Address object from the JSON-response dictionary.
@@ -8229,15 +8483,26 @@ class GCENodeDriver(NodeDriver):
             'network'])['name']
 
         network = self.ex_get_network(extra['network_name'])
+
+        allowed = firewall.get('allowed')
+        denied = firewall.get('denied')
+        priority = firewall.get('priority')
+        direction = firewall.get('direction')
         source_ranges = firewall.get('sourceRanges')
         source_tags = firewall.get('sourceTags')
+        source_service_accounts = firewall.get('sourceServiceAccounts')
         target_tags = firewall.get('targetTags')
+        target_service_accounts = firewall.get('targetServiceAccounts')
+        target_ranges = firewall.get('targetRanges')
 
         return GCEFirewall(id=firewall['id'], name=firewall['name'],
-                           allowed=firewall.get('allowed'), network=network,
-                           source_ranges=source_ranges,
+                           allowed=allowed, denied=denied,
+                           network=network, target_ranges=target_ranges,
+                           source_ranges=source_ranges, priority=priority,
                            source_tags=source_tags, target_tags=target_tags,
-                           driver=self, extra=extra)
+                           source_service_accounts=source_service_accounts,
+                           target_service_accounts=target_service_accounts,
+                           direction=direction, driver=self, extra=extra)
 
     def _to_forwarding_rule(self, forwarding_rule):
         """
@@ -8798,13 +9063,11 @@ class GCENodeDriver(NodeDriver):
         # does not contain instances.
         network = instancegroup.get('network', None)
         if network:
-            obj_name = self._get_components_from_path(network)['name']
-            network = self.ex_get_network(obj_name)
+            network = self.ex_get_network(network)
 
         subnetwork = instancegroup.get('subnetwork', None)
         if subnetwork:
-            parts = self._get_components_from_path(subnetwork)
-            subnetwork = self.ex_get_subnetwork(parts['name'], parts['region'])
+            subnetwork = self.ex_get_subnetwork(subnetwork)
 
         return GCEInstanceGroup(
             id=instancegroup['id'], name=instancegroup['name'], zone=zone,
@@ -8885,6 +9148,27 @@ class GCENodeDriver(NodeDriver):
                              zone=zone, target=target,
                              policy=autoscaler['autoscalingPolicy'],
                              driver=self, extra=extra)
+
+    def _format_guest_accelerators(self, accelerator_type, accelerator_count):
+        """
+        Formats a GCE-friendly guestAccelerators request. Accepts an
+        accelerator_type and accelerator_count that is wrapped up into a list
+        of dictionaries for GCE to consume for a node creation request.
+
+        :param  accelerator_type: Accelerator type to request.
+        :type   accelerator_type: :class:`GCEAcceleratorType`
+
+        :param  accelerator_count: Number of accelerators to request.
+        :type   accelerator_count: ``int``
+
+        :return: GCE-friendly guestAccelerators list of dictionaries.
+        :rtype:  ``list``
+        """
+        accelerator_type = self._get_selflink_or_name(
+            obj=accelerator_type, get_selflinks=True,
+            objname='accelerator_type')
+        return [{'acceleratorType': accelerator_type,
+                 'acceleratorCount': accelerator_count}]
 
     def _format_metadata(self, fingerprint, metadata=None):
         """

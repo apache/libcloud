@@ -19,7 +19,7 @@ from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
 
 class KTUCloudNodeDriver(CloudStackNodeDriver):
-    "Driver for KTUCloud Compute platform."
+    """Driver for KTUCloud Compute platform."""
 
     EMPTY_DISKOFFERINGID = '0'
     type = Provider.KTUCLOUD

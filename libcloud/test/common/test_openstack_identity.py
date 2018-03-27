@@ -424,6 +424,30 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         self.assertTrue(result)
 
 
+class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTests(
+        unittest.TestCase):
+    def setUp(self):
+        mock_cls = OpenStackIdentity_3_0_federation_projects_MockHttp
+        mock_cls.type = None
+        OpenStackIdentity_3_0_Connection_OIDC_access_token.conn_class = mock_cls
+
+        self.auth_instance = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
+                                                                                user_id='idp',
+                                                                                key='token',
+                                                                                tenant_name='oidc',
+                                                                                domain_name='test_domain')
+        self.auth_instance.auth_token = 'mock'
+
+    def test_authenticate(self):
+        auth = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
+                                                                  user_id='idp',
+                                                                  key='token',
+                                                                  token_scope='project',
+                                                                  tenant_name="oidc",
+                                                                  domain_name='test_domain')
+        auth.authenticate()
+
+
 class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
         unittest.TestCase):
     def setUp(self):
@@ -501,7 +525,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog,
                                           auth_version='2.0')
         entries = catalog.get_entries()
-        self.assertEqual(len(entries), 6)
+        self.assertEqual(len(entries), 7)
 
         entry = [e for e in entries if e.service_name == 'cloudServers'][0]
         self.assertEqual(entry.service_type, 'compute')
@@ -567,7 +591,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog,
                                           auth_version='2.0')
         service_types = catalog.get_service_types()
-        self.assertEqual(service_types, ['compute', 'object-store',
+        self.assertEqual(service_types, ['compute', 'image', 'object-store',
                                          'rax:object-cdn'])
 
         service_types = catalog.get_service_types(region='ORD')
@@ -586,6 +610,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
                                          'cloudServers',
                                          'cloudServersOpenStack',
                                          'cloudServersPreprod',
+                                         'glance',
                                          'nova'])
 
         service_names = catalog.get_service_names(service_type='compute')
@@ -728,6 +753,29 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             body = json.dumps({"projects": [{"id": "project_id"}]})
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
+
+    def _v3_auth_projects(self, method, url, body, headers):
+        if method == 'GET':
+            # get user projects
+            body = json.dumps({"projects": [{"id": "project_id"}]})
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+
+class OpenStackIdentity_3_0_federation_projects_MockHttp(OpenStackIdentity_3_0_MockHttp):
+    fixtures = ComputeFileFixtures('openstack_identity/v3')
+    json_content_headers = {'content-type': 'application/json; charset=UTF-8'}
+
+    def _v3_OS_FEDERATION_projects(self, method, url, body, headers):
+        if method == 'GET':
+            # get user projects
+            body = json.dumps({"projects": [{"id": "project_id"}]})
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v3_auth_projects(self, method, url, body, headers):
+        return (httplib.INTERNAL_SERVER_ERROR, body, self.json_content_headers,
+                httplib.responses[httplib.INTERNAL_SERVER_ERROR])
 
 
 class OpenStackIdentity_2_0_Connection_VOMSMockHttp(MockHttp):

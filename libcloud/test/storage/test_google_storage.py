@@ -24,10 +24,13 @@ from io import BytesIO
 
 import email.utils
 import pytest
+from mock import Mock
+from mock import PropertyMock
 
 from libcloud.common.google import GoogleAuthType
 from libcloud.common.types import InvalidCredsError
 from libcloud.storage.base import Container
+from libcloud.storage.base import Object
 from libcloud.storage.drivers import google_storage
 from libcloud.test import StorageMockHttp
 from libcloud.test.common.test_google import GoogleTestCase
@@ -35,6 +38,7 @@ from libcloud.test.file_fixtures import StorageFileFixtures
 from libcloud.test.secrets import STORAGE_GOOGLE_STORAGE_PARAMS
 from libcloud.test.storage.test_s3 import S3Tests, S3MockHttp
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import StringIO
 
 CONN_CLS = google_storage.GoogleStorageConnection
 JSON_CONN_CLS = google_storage.GoogleStorageJSONConnection
@@ -315,6 +319,9 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         super(GoogleStorageTests, self).setUp()
         self.driver_type.jsonConnectionCls.conn_class = GoogleStorageJSONMockHttp
 
+    def tearDown(self):
+        self._remove_test_file()
+
     def test_billing_not_enabled(self):
         # TODO
         pass
@@ -487,6 +494,36 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
         with pytest.raises(InvalidCredsError):
             self.driver.upload_object_via_stream(
                 BytesIO(b' '), container, 'path')
+
+    def test_download_object_data_is_not_buffered_in_memory(self):
+        # Test case which verifies that response.body attribute is not accessed
+        # and as such, whole body response is not buffered into RAM
+
+        # If content is consumed and response.content attribute accessed execption
+        # will be thrown and test will fail
+
+        mock_response = Mock(name='mock response')
+        mock_response.headers = {}
+        mock_response.status_code = 200
+        msg = '"content" attribute was accessed but it shouldn\'t have been'
+        type(mock_response).content = PropertyMock(name='mock content attribute',
+                                                   side_effect=Exception(msg))
+        mock_response.iter_content.return_value = StringIO('a' * 1000)
+
+        self.driver.connection.connection.getresponse = Mock()
+        self.driver.connection.connection.getresponse.return_value = mock_response
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = self._file_path
+        result = self.driver.download_object(obj=obj,
+                                             destination_path=destination_path,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
 
 
 if __name__ == '__main__':

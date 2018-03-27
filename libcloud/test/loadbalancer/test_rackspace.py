@@ -675,7 +675,7 @@ class RackspaceLBTests(unittest.TestCase):
         self.assertEqual(default_error_page, error_page_content)
 
     def test_balancer_list_members(self):
-        expected = set(['10.1.0.10:80', '10.1.0.11:80', '10.1.0.9:8080'])
+        expected = {'10.1.0.10:80', '10.1.0.11:80', '10.1.0.9:8080'}
         balancer = self.driver.get_balancer(balancer_id='8290')
         members = balancer.list_members()
 
