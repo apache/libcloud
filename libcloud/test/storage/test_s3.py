@@ -21,6 +21,7 @@ import sys
 from io import BytesIO
 from hashlib import sha1
 
+import mock
 from mock import Mock
 from mock import PropertyMock
 
