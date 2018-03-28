@@ -24,8 +24,6 @@ from hashlib import sha1
 from mock import Mock
 from mock import PropertyMock
 
-import libcloud.utils.files
-
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
@@ -908,12 +906,6 @@ class S3Tests(unittest.TestCase):
         self.assertEqual(obj.size, CHUNK_SIZE * 3)
 
     def test_upload_object_via_stream_guess_file_mime_type(self):
-        def dummy_content_type(name):
-            return 'application/zip', None
-
-        old_func = libcloud.utils.files.guess_file_mime_type
-        libcloud.utils.files.guess_file_mime_type = dummy_content_type
-
         if self.driver.supports_s3_multipart_upload:
             self.mock_response_klass.type = 'MULTIPART'
         else:
@@ -923,12 +915,14 @@ class S3Tests(unittest.TestCase):
                               driver=self.driver)
         object_name = 'foo_test_stream_data'
         iterator = BytesIO(b('234'))
-        try:
+
+        with mock.patch('libcloud.utils.files.guess_file_mime_type') as mock_guess_file_mime_type:
+            mock_guess_file_mime_type.return_value = ('application/zip', None)
+
             self.driver.upload_object_via_stream(container=container,
                                                  object_name=object_name,
                                                  iterator=iterator)
-        finally:
-            libcloud.utils.files.guess_file_mime_type = old_func
+            mock_guess_file_mime_type.assert_called_with(object_name)
 
     def test_upload_object_via_stream_abort(self):
         if not self.driver.supports_s3_multipart_upload:
