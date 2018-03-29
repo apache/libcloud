@@ -917,7 +917,7 @@ class S3Tests(unittest.TestCase):
         object_name = 'foo_test_stream_data'
         iterator = BytesIO(b('234'))
 
-        with mock.patch('libcloud.utils.files.guess_file_mime_type') as mock_guess_file_mime_type:
+        with mock.patch('libcloud.utils.files.guess_file_mime_type', autospec=True) as mock_guess_file_mime_type:
             mock_guess_file_mime_type.return_value = ('application/zip', None)
 
             self.driver.upload_object_via_stream(container=container,
