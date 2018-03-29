@@ -21,6 +21,7 @@ import sys
 from io import BytesIO
 from hashlib import sha1
 
+import mock
 from mock import Mock
 from mock import PropertyMock
 
@@ -904,6 +905,25 @@ class S3Tests(unittest.TestCase):
 
         self.assertEqual(obj.name, object_name)
         self.assertEqual(obj.size, CHUNK_SIZE * 3)
+
+    def test_upload_object_via_stream_guess_file_mime_type(self):
+        if self.driver.supports_s3_multipart_upload:
+            self.mock_response_klass.type = 'MULTIPART'
+        else:
+            self.mock_response_klass.type = None
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_stream_data'
+        iterator = BytesIO(b('234'))
+
+        with mock.patch('libcloud.utils.files.guess_file_mime_type', autospec=True) as mock_guess_file_mime_type:
+            mock_guess_file_mime_type.return_value = ('application/zip', None)
+
+            self.driver.upload_object_via_stream(container=container,
+                                                 object_name=object_name,
+                                                 iterator=iterator)
+            mock_guess_file_mime_type.assert_called_with(object_name)
 
     def test_upload_object_via_stream_abort(self):
         if not self.driver.supports_s3_multipart_upload:
