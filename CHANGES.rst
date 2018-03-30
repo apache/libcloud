@@ -57,6 +57,9 @@ Storage
 - [Azure Blob storage] Allow filtering lists by prefix (LIBCLOUD-986, GITHUB-1193)
   [Joshua Hawkinson]
 
+- [S3] Guess s3 upload content type (LIBCLOUD-958, GITHUB-1195)
+  [Iuri de Silvio]
+
 Changes in Apache Libcloud 2.3.0
 --------------------------------
 
