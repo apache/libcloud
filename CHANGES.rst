@@ -23,7 +23,10 @@ Compute
 - [EC2] Add AWS eu-west-3 (Paris) region (GITHUB-1175)
   [Anthony Monthe]
 
-- [GCE] Expand GCE Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
+- [GCE] Expand Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
+  [maxlip]
+
+- [GCE] Expand network and subnetwork options coverage (LIBCLOUD-985, GITHUB-1181)
   [maxlip]
 
 - [GCE] Extend ex_create_address to allow internal ip creation (GITHUB-1174)
