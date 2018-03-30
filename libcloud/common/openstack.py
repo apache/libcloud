@@ -389,7 +389,8 @@ class OpenStackResponse(Response):
             context = self.connection.context
             driver = self.connection.driver
             key_pair_name = context.get('key_pair_name', None)
-            if len(values) > 0 and values[0].get('code') == 404 and key_pair_name:
+            if len(values) > 0 and hasattr(values[0], 'get') and \
+                values[0].get('code') == 404 and key_pair_name:
                 raise KeyPairDoesNotExistError(name=key_pair_name,
                                                driver=driver)
             elif len(values) > 0 and 'message' in values[0]:
