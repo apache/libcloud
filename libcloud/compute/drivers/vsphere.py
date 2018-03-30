@@ -645,8 +645,8 @@ class VSphereNodeDriver(NodeDriver):
 
         node = self._to_node(result)
 
-        if network:
-            self.ex_connect_network(result, network)
+        # if network:
+        #     self.ex_connect_network(result, network)
 
         return node
 
