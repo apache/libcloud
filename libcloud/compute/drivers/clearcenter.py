@@ -101,6 +101,13 @@ class ClearCenterNodeDriver(NodeDriver):
         extra['created_timestamp'] = data['created'][0]
         extra['monthly_cost_estimate'] = data['monthly_cost_estimate']['total']
 
+        if data['subscription']:
+            extra['subscription_label'] = data['subscription']['label']
+            extra['subscription_value'] = data['subscription']['state']['value']
+            extra['subscription_created'] = data['subscription']['created'][0]
+            extra['subscription_expires'] = data['subscription']['expire'][0]
+
+
         return extra
 
     def list_nodes(self):
