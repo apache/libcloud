@@ -67,9 +67,9 @@ class ClearCenterNodeDriver(NodeDriver):
             self.connection.connection.ca_cert = False
 
     def _to_node(self, data):
-        id = data[0]
-        name = data[1]
-        address = data[2]
+        id = data['id']
+        name = data['name']
+        address = data['host'].get('ip_v4', '')
         private_ips = []
         public_ips = []
 
@@ -82,15 +82,8 @@ class ClearCenterNodeDriver(NodeDriver):
             # IPV6 not supported
             pass
 
-        extra = self._get_extra_dict(data[3:])
-        if extra.get('state') == 'Active':
-            state = NodeState.RUNNING
-        elif extra.get('state') == 'Pending':
-            state = NodeState.PENDING
-        elif extra.get('state') == 'Deleted':
-            state = NodeState.TERMINATED
-        else:
-            state = NodeState.ERROR
+        extra = self._get_extra_dict(data)
+        state = NodeState.RUNNING
 
         return Node(id, name,
                     state,
@@ -102,13 +95,18 @@ class ClearCenterNodeDriver(NodeDriver):
     @staticmethod
     def _get_extra_dict(data):
         extra = {}
-        extra['user_id'] = data[0][0]
-        extra['user_name'] = data[0][1]
-        extra['software_id'] = data[1][0]
-        extra['software_name'] = data[1][1]
-        extra['state'] = data[2][1]
-        extra['created_timestamp'] = data[4][0]
-        extra['modified_timestamp'] = data[5][0]
+        extra['hostname'] = data['host'].get('hostname', '')
+        extra['software_id'] = data['software'].get('id', '')
+        extra['software_name'] = data['software'].get('release', '') + " " + data['software'].get('versionn', '')
+        extra['created_timestamp'] = data['created'][0]
+        extra['monthly_cost_estimate'] = data['monthly_cost_estimate']['total']
+
+        if data['subscription']:
+            extra['subscription_label'] = data['subscription']['label']
+            extra['subscription_value'] = data['subscription']['state']['value']
+            extra['subscription_created'] = data['subscription']['created'][0]
+            extra['subscription_expires'] = data['subscription']['expire'][0]
+
 
         return extra
 
@@ -118,7 +116,7 @@ class ClearCenterNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`ClearCenterNode`
         """
-        response = self.connection.request("/api/v5/devices?limit=500")
+        response = self.connection.request("/api/v5/glass?limit=500")
         nodes = [self._to_node(device)
                  for device in response.object['data']]
         return nodes
