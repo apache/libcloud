@@ -8390,7 +8390,8 @@ class GCENodeDriver(NodeDriver):
                 src_image = extra['boot_disk'].extra['sourceImage']
                 image = self._get_components_from_path(src_image)['name']
             extra['image'] = image
-        size = self._get_components_from_path(node['machineType'])['name']
+        size = self.connection.request(node['machineType'],
+                                       method='GET').object['id']
 
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
