@@ -45,6 +45,9 @@ Compute
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
+- [OpenStack] Fix spelling in ex_files description (GITHUB-1197)
+  [Ken Dreyer]
+
 - [OpenStack v2] Allow listing image members (GITHUB-1172)
   [Rick van de Loo]
 

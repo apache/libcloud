@@ -1239,7 +1239,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :type       ex_metadata: ``dict``
 
         :keyword    ex_files:   File Path => File contents to create on
-                                the no  de
+                                the node
         :type       ex_files:   ``dict``
 
 
@@ -1455,7 +1455,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :type       ex_metadata: ``dict``
 
         :keyword    ex_files:   File Path => File contents to create on
-                                the no  de
+                                the node
         :type       ex_files:   ``dict``
 
         :keyword    ex_keyname:  Name of existing public key to inject into
