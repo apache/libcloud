@@ -232,6 +232,12 @@ class Route53Tests(unittest.TestCase):
         status = self.driver.delete_record(record=record)
         self.assertTrue(status)
 
+    def test_delete_multi_value_record(self):
+        zone = self.driver.list_zones()[0]
+        record = self.driver.list_records(zone=zone)[3]
+        status = self.driver.delete_record(record=record)
+        self.assertTrue(status)
+
     def test_delete_record_does_not_exist(self):
         zone = self.driver.list_zones()[0]
         record = self.driver.list_records(zone=zone)[0]
