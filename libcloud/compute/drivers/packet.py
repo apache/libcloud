@@ -230,7 +230,7 @@ class PacketNodeDriver(NodeDriver):
         for disks in data['specs']['drives']:
             disk += disks['count'] * int(disks['size'].replace('GB', ''))
 
-        price = data['pricing']['hourly']
+        price = data['pricing']['hour']
 
         return NodeSize(id=data['slug'], name=data['name'], ram=ram, disk=disk,
                         bandwidth=0, price=price, extra=extra, driver=self)
