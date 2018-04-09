@@ -998,6 +998,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(network.cidr, cidr)
 
         # Test using more options
+        description = 'A custom network'
         network = self.driver.ex_create_network(network_name, cidr,
                                                 description=description,
                                                 routing_mode=routing_mode)

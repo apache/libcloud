@@ -24,7 +24,7 @@ from hashlib import sha1
 import mock
 from mock import Mock
 from mock import PropertyMock
-import libcloud.utils.files
+import libcloud.utils.files  # NOQA: F401
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
@@ -918,7 +918,9 @@ class S3Tests(unittest.TestCase):
         object_name = 'foo_test_stream_data'
         iterator = BytesIO(b('234'))
 
-        with mock.patch('libcloud.utils.files.guess_file_mime_type', autospec=True) as mock_guess_file_mime_type:
+        with mock.patch(
+                'libcloud.utils.files.guess_file_mime_type',
+                autospec=True) as mock_guess_file_mime_type:
             mock_guess_file_mime_type.return_value = ('application/zip', None)
 
             self.driver.upload_object_via_stream(container=container,
