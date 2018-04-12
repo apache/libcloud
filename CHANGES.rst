@@ -57,6 +57,12 @@ Compute
 - [OpenStack v2] Fix image members methods (GITHUB-1190)
   [Rick van de Loo]
 
+DNS
+~~~
+
+- [Google Cloud DNS] Document driver instantiation (GITHUB-1198)
+  [Gareth McFarlane]
+
 Storage
 ~~~~~~~
 
