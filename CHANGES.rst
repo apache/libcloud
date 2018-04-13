@@ -11,6 +11,9 @@ Changes in Apache Libcloud in development
 Compute
 ~~~~~~~
 
+- [ARM] Support OS disk size definition on node creation (GITHUB-1196)
+  [Vojta Bartoš]
+
 - [Digital Ocean] Support floating IPs (GITHUB-1177)
   [Rick van de Loo]
 
