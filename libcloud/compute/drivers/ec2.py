@@ -24,11 +24,7 @@ import copy
 import warnings
 import time
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, basestring, ensure_string
 
 from libcloud.utils.xml import fixxpath, findtext, findattr, findall
@@ -296,6 +292,66 @@ INSTANCE_TYPES = {
             'cpu': 64
         }
     },
+    'm5.large': {
+        'id': 'm5.large',
+        'name': 'Large Instance',
+        'ram': GiB(8),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'm5.xlarge': {
+        'id': 'm5.xlarge',
+        'name': 'Extra Large Instance',
+        'ram': GiB(16),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'm5.2xlarge': {
+        'id': 'm5.2xlarge',
+        'name': 'Double Extra Large Instance',
+        'ram': GiB(32),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'm5.4xlarge': {
+        'id': 'm5.4xlarge',
+        'name': 'Quadruple Extra Large Instance',
+        'ram': GiB(64),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'm5.12xlarge': {
+        'id': 'm5.12xlarge',
+        'name': '12 Extra Large Instance',
+        'ram': GiB(192),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 48
+        }
+    },
+    'm5.24xlarge': {
+        'id': 'm5.24xlarge',
+        'name': '24 Extra Large Instance',
+        'ram': GiB(384),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 96
+        }
+    },
     'cg1.4xlarge': {
         'id': 'cg1.4xlarge',
         'name': 'Cluster GPU Quadruple Extra Large Instance',
@@ -324,6 +380,42 @@ INSTANCE_TYPES = {
         'bandwidth': None,
         'extra': {
             'cpu': 32
+        }
+    },
+    'g3.4xlarge': {
+        'id': 'g3.4xlarge',
+        'name': 'Cluster GPU G3 Four Extra Large Instance',
+        'ram': GiB(122),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16,
+            'gpu': 1,
+            'gpu_ram': GiB(8)
+        }
+    },
+    'g3.8xlarge': {
+        'id': 'g3.8xlarge',
+        'name': 'Cluster GPU G3 Eight Extra Large Instance',
+        'ram': GiB(244),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32,
+            'gpu': 2,
+            'gpu_ram': GiB(16)
+        }
+    },
+    'g3.16xlarge': {
+        'id': 'g3.16xlarge',
+        'name': 'Cluster GPU G3 16 Extra Large Instance',
+        'ram': GiB(488),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64,
+            'gpu': 4,
+            'gpu_ram': GiB(32)
         }
     },
     'p2.xlarge': {
@@ -465,6 +557,66 @@ INSTANCE_TYPES = {
             'cpu': 32
         }
     },
+    'c5.large': {
+        'id': 'c5.large',
+        'name': 'Compute Optimized Large Instance',
+        'ram': GiB(4),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'c5.xlarge': {
+        'id': 'c5.xlarge',
+        'name': 'Compute Optimized Extra Large Instance',
+        'ram': GiB(8),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'c5.2xlarge': {
+        'id': 'c5.2xlarge',
+        'name': 'Compute Optimized Double Extra Large Instance',
+        'ram': GiB(16),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'c5.4xlarge': {
+        'id': 'c5.4xlarge',
+        'name': 'Compute Optimized Quadruple Extra Large Instance',
+        'ram': GiB(32),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'c5.9xlarge': {
+        'id': 'c5.9xlarge',
+        'name': 'Compute Optimized Nonuple Extra Large Instance',
+        'ram': GiB(72),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 36
+        }
+    },
+    'c5.18xlarge': {
+        'id': 'c5.18xlarge',
+        'name': 'Compute Optimized Eighteen Extra Large Instance',
+        'ram': GiB(144),
+        'disk': 0,  # EBS only
+        'bandwidth': None,
+        'extra': {
+            'cpu': 72
+        }
+    },
     'cr1.8xlarge': {
         'id': 'cr1.8xlarge',
         'name': 'High Memory Cluster Eight Extra Large',
@@ -534,6 +686,66 @@ INSTANCE_TYPES = {
         'bandwidth': None,
         'extra': {
             'cpu': 32
+        }
+    },
+    'i3.large': {
+        'id': 'i3.large',
+        'name': 'High I/O Instances',
+        'ram': GiB(15.25),
+        'disk': 1 * 475,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 2
+        }
+    },
+    'i3.xlarge': {
+        'id': 'i3.xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(30.5),
+        'disk': 1 * 950,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 4
+        }
+    },
+    'i3.2xlarge': {
+        'id': 'i3.2xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(61),
+        'disk': 1 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 8
+        }
+    },
+    'i3.4xlarge': {
+        'id': 'i3.4xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(122),
+        'disk': 2 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 16
+        }
+    },
+    'i3.8xlarge': {
+        'id': 'i3.8xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(244),
+        'disk': 4 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 32
+        }
+    },
+    'i3.16xlarge': {
+        'id': 'i3.16xlarge',
+        'name': 'High I/O Instances',
+        'ram': GiB(488),
+        'disk': 8 * 1900,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
         }
     },
     'd2.xlarge': {
@@ -758,6 +970,26 @@ INSTANCE_TYPES = {
             'cpu': 8
         }
     },
+    'x1.16xlarge': {
+        'id': 'x1.16xlarge',
+        'name': 'Memory Optimized Sixteen Extra Large instance',
+        'ram': GiB(976),
+        'disk': 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 64
+        }
+    },
+    'x1e.32xlarge': {
+        'id': 'x1e.32xlarge',
+        'name': 'Memory Optimized ThirtyTwo E Extra Large instance',
+        'ram': GiB(3904),
+        'disk': 2 * 1920,  # GB
+        'bandwidth': None,
+        'extra': {
+            'cpu': 128
+        }
+    },
     'x1.32xlarge': {
         'id': 'x1.32xlarge',
         'name': 'Memory Optimized ThirtyTwo Extra Large instance',
@@ -797,6 +1029,12 @@ REGION_DETAILS = {
             'm4.4xlarge',
             'm4.10xlarge',
             'm4.16xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge',
@@ -810,15 +1048,30 @@ REGION_DETAILS = {
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.large',
+            'c5.xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.18xlarge',
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -839,7 +1092,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Northern California) Region
@@ -871,6 +1126,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -881,10 +1139,22 @@ REGION_DETAILS = {
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.large',
+            'c5.xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.18xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -944,12 +1214,21 @@ REGION_DETAILS = {
             'cg1.4xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'cr1.8xlarge',
             'hs1.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -970,7 +1249,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # US West (Oregon) Region
@@ -998,10 +1279,19 @@ REGION_DETAILS = {
             'm4.4xlarge',
             'm4.10xlarge',
             'm4.16xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'p2.xlarge',
             'p2.8xlarge',
             'p2.16xlarge',
@@ -1021,6 +1311,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1041,7 +1337,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Ireland) Region
@@ -1069,10 +1367,19 @@ REGION_DETAILS = {
             'm4.4xlarge',
             'm4.10xlarge',
             'm4.16xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
             'c1.medium',
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1083,12 +1390,24 @@ REGION_DETAILS = {
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.large',
+            'c5.xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.18xlarge',
             'hs1.8xlarge',
             'cc2.8xlarge',
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1109,7 +1428,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (London) Region
@@ -1159,6 +1480,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1173,7 +1500,54 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
+        ]
+    },
+    # EU (Paris) Region
+    'eu-west-3': {
+        'endpoint': 'ec2.eu-west-3.amazonaws.com',
+        'api_name': 'ec2_eu_west_paris',
+        'country': 'France',
+        'signature_version': '4',
+        'instance_types': [
+            'c5.large',
+            'c5.xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.18xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
+            't2.nano',
+            't2.micro',
+            't2.small',
+            't2.medium',
+            't2.large',
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # EU (Frankfurt) Region
@@ -1207,6 +1581,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1226,7 +1606,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Mumbai, India) Region
@@ -1267,6 +1649,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1315,6 +1703,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1330,7 +1724,9 @@ REGION_DETAILS = {
             'r4.4xlarge',
             'r4.8xlarge',
             'r4.16xlarge',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Tokyo) Region
@@ -1377,6 +1773,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1397,7 +1799,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Asia Pacific (Seoul) Region
@@ -1422,6 +1826,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1442,7 +1852,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # South America (Sao Paulo) Region
@@ -1527,6 +1939,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1546,7 +1964,9 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
     # Canada (Central) Region
@@ -1596,6 +2016,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'd2.xlarge',
             'd2.2xlarge',
             'd2.4xlarge',
@@ -1610,9 +2036,12 @@ REGION_DETAILS = {
             't2.small',
             't2.medium',
             't2.large',
-            'x1.32xlarge'
+            'x1.16xlarge',
+            'x1.32xlarge',
+            'x1e.32xlarge',
         ]
     },
+    # GovCloud Region
     'us-gov-west-1': {
         'endpoint': 'ec2.us-gov-west-1.amazonaws.com',
         'api_name': 'ec2_us_govwest',
@@ -1641,6 +2070,9 @@ REGION_DETAILS = {
             'c1.xlarge',
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3.16xlarge',
             'c3.large',
             'c3.xlarge',
             'c3.2xlarge',
@@ -1657,6 +2089,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
@@ -1729,6 +2167,12 @@ REGION_DETAILS = {
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+            'i3.large',
+            'i3.xlarge',
+            'i3.2xlarge',
+            'i3.4xlarge',
+            'i3.8xlarge',
+            'i3.16xlarge',
         ]
     },
     'nimbus': {
@@ -2128,90 +2572,6 @@ OUTSCALE_SAS_REGION_DETAILS = {
             'cr1.8xlarge',
             'os1.8xlarge'
         ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'p2.xlarge',
-            'p2.8xlarge',
-            'p2.16xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
     }
 }
 
@@ -2362,6 +2722,24 @@ OUTSCALE_INC_REGION_DETAILS = {
 Define the extra dictionary for specific resources
 """
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
+    'ebs_instance_block_device': {
+        'attach_time': {
+            'xpath': 'ebs/attachTime',
+            'transform_func': parse_date
+        },
+        'delete': {
+            'xpath': 'ebs/deleteOnTermination',
+            'transform_func': str
+        },
+        'status': {
+            'xpath': 'ebs/status',
+            'transform_func': str
+        },
+        'volume_id': {
+            'xpath': 'ebs/volumeId',
+            'transform_func': str
+        }
+    },
     'ebs_volume': {
         'snapshot_id': {
             'xpath': 'ebs/snapshotId',
@@ -2685,6 +3063,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'start',
             'transform_func': str
         },
+        'end': {
+            'xpath': 'end',
+            'transform_func': str
+        },
         'duration': {
             'xpath': 'duration',
             'transform_func': int
@@ -2796,6 +3178,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'state': {
             'xpath': 'status',
             'transform_func': str
+        },
+        'encrypted': {
+            'xpath': 'encrypted',
+            'transform_func': lambda x: {'true': True, 'false': False}.get(x)
         },
         'attach_time': {
             'xpath': 'attachmentSet/item/attachTime',
@@ -3387,8 +3773,11 @@ class BaseEC2NodeDriver(NodeDriver):
         for instance_type in available_types:
             attributes = INSTANCE_TYPES[instance_type]
             attributes = copy.deepcopy(attributes)
-            price = self._get_size_price(size_id=instance_type)
-            attributes.update({'price': price})
+            try:
+                price = self._get_size_price(size_id=instance_type)
+                attributes['price'] = price
+            except KeyError:
+                attributes['price'] = None  # pricing not available
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
@@ -3683,19 +4072,23 @@ class BaseEC2NodeDriver(NodeDriver):
             if subnet_id:
                 params['SubnetId'] = subnet_id
 
+        # Specify tags at instance creation time
+        tags = {'Name': kwargs['name']}
+        if 'ex_metadata' in kwargs:
+            tags.update(kwargs['ex_metadata'])
+        tagspec_root = 'TagSpecification.1.'
+        params[tagspec_root + 'ResourceType'] = 'instance'
+        tag_nr = 1
+        for k, v in tags.items():
+            tag_root = tagspec_root + 'Tag.%d.' % tag_nr
+            params[tag_root + 'Key'] = k
+            params[tag_root + 'Value'] = v
+            tag_nr += 1
+
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         for node in nodes:
-            tags = {'Name': kwargs['name']}
-            if 'ex_metadata' in kwargs:
-                tags.update(kwargs['ex_metadata'])
-
-            try:
-                self.ex_create_tags(resource=node, tags=tags)
-            except Exception:
-                continue
-
             node.name = kwargs['name']
             node.extra.update({'tags': tags})
 
@@ -3718,7 +4111,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=None, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None):
         """
         Create a new volume.
 
@@ -3784,11 +4177,11 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type == 'io1' and ex_iops:
             params['Iops'] = ex_iops
 
-        if ex_encrypted is not None:
+        if ex_encrypted:
             params['Encrypted'] = 1
 
-        if ex_kms_key_id is not None:
-            params['KmsKeyId'] = ex_kms_key_id
+            if ex_kms_key_id is not None:
+                params['KmsKeyId'] = ex_kms_key_id
 
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,
@@ -6210,8 +6603,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Modify volume parameters.
         A list of valid parameters can be found at https://goo.gl/N0rPEQ
 
-        :param      Volume: Volume instance
-        :type       Volume: :class:`Volume`
+        :param      volume: Volume instance
+        :type       volume: :class:`Volume`
 
         :param      parameters: Dictionary with updated volume parameters
         :type       parameters: ``dict``
@@ -6316,7 +6709,8 @@ class BaseEC2NodeDriver(NodeDriver):
             element, RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
 
         # Add additional properties to our extra dictionary
-        extra['block_device_mapping'] = self._to_device_mappings(element)
+        extra['block_device_mapping'] = self._to_instance_device_mappings(
+            element)
         extra['groups'] = self._get_security_groups(element)
         extra['network_interfaces'] = self._to_interfaces(element)
         extra['product_codes'] = product_codes
@@ -6845,6 +7239,29 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return mapping
 
+    def _to_instance_device_mappings(self, object):
+        return [self._to_instance_device_mapping(el) for el in object.findall(
+            fixxpath(xpath='blockDeviceMapping/item', namespace=NAMESPACE))
+        ]
+
+    def _to_instance_device_mapping(self, element):
+        """
+        Parse the XML element and return a dictionary of device properties.
+        Additional information can be found at https://goo.gl/OGK88a.
+
+        :rtype:     ``dict``
+        """
+        mapping = {}
+
+        mapping['device_name'] = findattr(element=element,
+                                          xpath='deviceName',
+                                          namespace=NAMESPACE)
+        mapping['ebs'] = self._get_extra_dict(
+            element,
+            RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_instance_block_device'])
+
+        return mapping
+
     def _to_internet_gateways(self, object, xpath):
         return [self._to_internet_gateway(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -7148,6 +7565,8 @@ class BaseEC2NodeDriver(NodeDriver):
         for idx, v in enumerate(billing_products):
             idx += 1  # We want 1-based indexes
             params['BillingProduct.%d' % (idx)] = str(v)
+
+        return params
 
     def _get_disk_container_params(self, disk_container):
         """

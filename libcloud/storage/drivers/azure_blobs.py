@@ -19,11 +19,7 @@ import base64
 import os
 import binascii
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
@@ -385,7 +381,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             if not params['marker']:
                 break
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, ex_prefix=None):
         """
         @inherits: :class:`StorageDriver.iterate_container_objects`
         """
@@ -393,6 +389,9 @@ class AzureBlobsStorageDriver(StorageDriver):
                   'comp': 'list',
                   'maxresults': RESPONSES_PER_REQUEST,
                   'include': 'metadata'}
+
+        if ex_prefix:
+            params['prefix'] = ex_prefix
 
         container_path = self._get_container_path(container)
 
@@ -419,6 +418,22 @@ class AzureBlobsStorageDriver(StorageDriver):
             params['marker'] = body.findtext('NextMarker')
             if not params['marker']:
                 break
+
+    def list_container_objects(self, container, ex_prefix=None):
+        """
+        Return a list of objects for the given container.
+
+        :param container: Container instance.
+        :type container: :class:`Container`
+
+        :param ex_prefix: Only return objects starting with ex_prefix
+        :type ex_prefix: ``str``
+
+        :return: A list of Object instances.
+        :rtype: ``list`` of :class:`Object`
+        """
+        return list(self.iterate_container_objects(container,
+                                                   ex_prefix=ex_prefix))
 
     def get_container(self, container_name):
         """
@@ -638,7 +653,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             chunk_hash = base64.b64encode(b(chunk_hash.digest()))
 
             headers['Content-MD5'] = chunk_hash.decode('utf-8')
-            headers['Content-Length'] = content_length
+            headers['Content-Length'] = str(content_length)
 
             if blob_type == 'BlockBlob':
                 # Block id can be any unique string that is base64 encoded
@@ -865,10 +880,10 @@ class AzureBlobsStorageDriver(StorageDriver):
         self._update_metadata(headers, meta_data)
 
         if object_size is not None:
-            headers['Content-Length'] = object_size
+            headers['Content-Length'] = str(object_size)
 
         if blob_type == 'PageBlob':
-            headers['Content-Length'] = 0
+            headers['Content-Length'] = str('0')
             headers['x-ms-blob-content-length'] = object_size
 
         return headers

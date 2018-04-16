@@ -51,7 +51,7 @@ def wrap_non_libcloud_exceptions(func):
             if fault and getattr(fault, 'string', None):
                 message = fault.string
             else:
-                message = e.message
+                message = str(e)
 
             raise LibcloudError(value=message, driver=driver)
     return decorated_function

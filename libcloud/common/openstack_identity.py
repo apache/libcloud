@@ -1060,6 +1060,12 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
             body = 'code: %s body:%s' % (response.status, response.body)
+        elif response.status == 300:
+            # ambiguous version request
+            raise LibcloudError(
+                'Auth request returned ambiguous version error, try'
+                'using the version specific URL to connect,'
+                ' e.g. identity/v3/auth/tokens')
         else:
             body = 'code: %s body:%s' % (response.status, response.body)
             raise MalformedResponseError('Malformed response', body=body,
@@ -1512,17 +1518,29 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                                              driver=self.driver)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _get_project_id(self, token):
         """
         Get the first project ID accessible with the specified access token
         """
-        path = '/v3/OS-FEDERATION/projects'
+        # Try new path first (from ver 1.1)
+        path = '/v3/auth/projects'
         response = self.request(path,
                                 headers={'Content-Type': 'application/json',
                                          'X-Auth-Token': token},
                                 method='GET')
+
+        if response.status not in [httplib.UNAUTHORIZED, httplib.OK,
+                                   httplib.CREATED]:
+            # In case of error try old one
+            path = '/v3/OS-FEDERATION/projects'
+            response = self.request(path,
+                                    headers={'Content-Type':
+                                             'application/json',
+                                             'X-Auth-Token': token},
+                                    method='GET')
 
         if response.status == httplib.UNAUTHORIZED:
             # Invalid credentials
@@ -1536,7 +1554,8 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
 
 class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
@@ -1616,7 +1635,8 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _get_tenant_name(self, token):
         """
@@ -1639,7 +1659,8 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _authenticate_2_0_with_body(self, reqbody):
         resp = self.request('/v2.0/tokens', data=reqbody,

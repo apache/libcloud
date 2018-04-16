@@ -15,6 +15,7 @@
 """
 Tests for Google Compute Engine Driver
 """
+
 import datetime
 import mock
 import sys
@@ -89,6 +90,26 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         region2 = self.driver._get_region_from_zone(zone2)
         self.assertEqual(region2.name, expected_region2)
 
+    def test_get_volume(self):
+        volume_name = 'lcdisk'
+        volume = self.driver.ex_get_volume(volume_name)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location(self):
+        volume_name = 'lcdisk'
+        location = self.driver.zone
+        volume = self.driver.ex_get_volume(volume_name, zone=location)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
+    def test_get_volume_location_name(self):
+        volume_name = 'lcdisk'
+        location = self.driver.zone
+        volume = self.driver.ex_get_volume(volume_name, zone=location.name)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
+
     def test_find_zone_or_region(self):
         zone1 = self.driver._find_zone_or_region('libcloud-demo-np-node',
                                                  'instances')
@@ -146,6 +167,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_build_network_gce_struct(self):
         network = self.driver.ex_get_network('lcnetwork')
         address = self.driver.ex_get_address('lcaddress')
+        internalip = self.driver.ex_get_address('testaddress')
         subnetwork_name = 'cf-972cf02e6ad49112'
         subnetwork = self.driver.ex_get_subnetwork(subnetwork_name)
         d = self.driver._build_network_gce_struct(network, subnetwork, address)
@@ -153,7 +175,16 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue('subnetwork' in d)
         self.assertTrue('kind' in d and
                         d['kind'] == 'compute#instanceNetworkInterface')
-
+        self.assertEqual(d['accessConfigs'][0]['natIP'], address.address)
+        # test with internal IP
+        d = self.driver._build_network_gce_struct(network, subnetwork, address,
+                                                  internal_ip=internalip)
+        self.assertTrue('network' in d)
+        self.assertTrue('subnetwork' in d)
+        self.assertTrue('kind' in d and
+                        d['kind'] == 'compute#instanceNetworkInterface')
+        self.assertEqual(d['accessConfigs'][0]['natIP'], address.address)
+        self.assertEqual(d['networkIP'], internalip)
         network = self.driver.ex_get_network('default')
         d = self.driver._build_network_gce_struct(network)
         self.assertTrue('network' in d)
@@ -192,6 +223,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         input = {'scopes': ['compute-ro']}
         actual = self.driver._build_service_account_gce_struct(input)
         self.assertTrue('email' in actual)
+        self.assertTrue('scopes' in actual)
+
+        input = {'scopes': ['compute-ro'], 'email': 'test@test.com'}
+        actual = self.driver._build_service_account_gce_struct(input)
+        self.assertTrue('email' in actual)
+        self.assertEqual(actual['email'], 'test@test.com')
         self.assertTrue('scopes' in actual)
 
     def test_build_service_account_gce_list(self):
@@ -324,11 +361,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         debian_images = self.driver.list_images(ex_project='debian-cloud')
         local_plus_deb = self.driver.list_images(
             ['debian-cloud', 'project_name'])
-        self.assertEqual(len(local_images), 23)
-        self.assertEqual(len(all_deprecated_images), 156)
+        self.assertEqual(len(local_images), 50)
+        self.assertEqual(len(all_deprecated_images), 178)
         self.assertEqual(len(debian_images), 2)
-        self.assertEqual(len(local_plus_deb), 3)
-        self.assertEqual(local_images[0].name, 'aws-ubuntu')
+        self.assertEqual(len(local_plus_deb), 4)
+        self.assertEqual(local_images[0].name, 'custom-image')
         self.assertEqual(debian_images[1].name, 'debian-7-wheezy-v20131120')
 
     def test_ex_destroy_instancegroup(self):
@@ -424,6 +461,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(mig.size, size)
         self.assertEqual(mig.zone.name, zone)
 
+    def test_ex_create_instancegroupmanager_shared_network(self):
+        name = 'myinstancegroup-shared-network'
+        zone = 'us-central1-a'
+        size = 4
+        template_name = 'my-instance-template-shared-network'
+        template = self.driver.ex_get_instancetemplate(template_name)
+        mig = self.driver.ex_create_instancegroupmanager(
+            name, zone, template, size, base_instance_name='base-foo')
+
+        self.assertEqual(mig.name, name)
+        self.assertEqual(mig.size, size)
+        self.assertEqual(mig.zone.name, zone)
+
     def test_ex_create_instancetemplate(self):
         name = 'my-instance-template1'
         actual = self.driver.ex_create_instancetemplate(
@@ -472,14 +522,20 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         network = self.driver.ex_get_network(network_name)
         region_name = 'us-central1'
         region = self.driver.ex_get_region(region_name)
+        description = 'LCTestSubnet'
+        privateipgoogleaccess = True
+        secondaryipranges = [{"rangeName": "secondary", "ipCidrRange": "192.168.168.0/24"}]
         # test by network/region name
-        subnet = self.driver.ex_create_subnetwork(name, cidr, network_name,
-                                                  region_name)
+        subnet = self.driver.ex_create_subnetwork(
+            name, cidr, network_name, region_name, description=description,
+            privateipgoogleaccess=privateipgoogleaccess, secondaryipranges=secondaryipranges)
         self.assertTrue(isinstance(subnet, GCESubnetwork))
         self.assertTrue(isinstance(subnet.region, GCERegion))
         self.assertTrue(isinstance(subnet.network, GCENetwork))
         self.assertEqual(subnet.name, name)
         self.assertEqual(subnet.cidr, cidr)
+        self.assertEqual(subnet.extra['privateIpGoogleAccess'], privateipgoogleaccess)
+        self.assertEqual(subnet.extra['secondaryIpRanges'], secondaryipranges)
         # test by network/region object
         subnet = self.driver.ex_create_subnetwork(name, cidr, network, region)
         self.assertTrue(isinstance(subnet, GCESubnetwork))
@@ -487,6 +543,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(subnet.network, GCENetwork))
         self.assertEqual(subnet.name, name)
         self.assertEqual(subnet.cidr, cidr)
+        self.assertEqual(subnet.extra['privateIpGoogleAccess'], privateipgoogleaccess)
+        self.assertEqual(subnet.extra['secondaryIpRanges'], secondaryipranges)
 
     def test_ex_destroy_subnetwork(self):
         name = 'cf-972cf02e6ad49112'
@@ -506,6 +564,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(hasattr(ssl, 'certificate'))
         self.assertTrue(len(ssl.certificate))
 
+    def test_ex_get_accelerator_type(self):
+        name = 'nvidia-tesla-k80'
+        zone = self.driver.ex_get_zone('us-central1-a')
+        accelerator_type = self.driver.ex_get_accelerator_type(name, zone)
+        self.assertEqual(accelerator_type.name, name)
+        self.assertEqual(accelerator_type.zone, zone)
+
     def test_ex_get_subnetwork(self):
         name = 'cf-972cf02e6ad49112'
         region_name = 'us-central1'
@@ -519,6 +584,16 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         # fetch by region object
         subnetwork = self.driver.ex_get_subnetwork(name, region)
         self.assertEqual(subnetwork.name, name)
+        # do the same but this time by resource URL
+        url = 'https://www.googleapis.com/compute/v1/projects/project_name/regions/us-central1/subnetworks/cf-972cf02e6ad49112'
+        # fetch by no region
+        subnetwork = self.driver.ex_get_subnetwork(url)
+        self.assertEqual(subnetwork.name, name)
+        self.assertEqual(subnetwork.region.name, region_name)
+        # test with a subnetwork that is under a different project
+        url_other = 'https://www.googleapis.com/compute/v1/projects/other_name/regions/us-central1/subnetworks/cf-972cf02e6ad49114'
+        subnetwork = self.driver.ex_get_subnetwork(url_other)
+        self.assertEqual(subnetwork.name, "cf-972cf02e6ad49114")
 
     def test_ex_list_networks(self):
         networks = self.driver.ex_list_networks()
@@ -681,6 +756,25 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(address, GCEAddress))
         self.assertEqual(address.name, address_name)
 
+    def test_ex_create_address_internal(self):
+        address_name = 'lcaddressinternal'
+        address = self.driver.ex_create_address(address_name,
+                                                region='us-central1',
+                                                address='10.128.0.12',
+                                                address_type='INTERNAL',
+                                                subnetwork='subnet-1')
+        self.assertTrue(isinstance(address, GCEAddress))
+        self.assertEqual(address.name, address_name)
+        self.assertEqual(address.address, '10.128.0.12')
+
+        self.assertRaises(ValueError,
+                          self.driver.ex_create_address,
+                          address_name, address_type='WRONG')
+        self.assertRaises(ValueError,
+                          self.driver.ex_create_address,
+                          address_name, address_type='EXTERNAL',
+                          subnetwork='subnet-1')
+
     def test_ex_create_backend(self):
         # Note: this is an internal object, no API call is made
         # and no fixture is needed specifically for GCEBackend, however
@@ -737,9 +831,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
 
     def test_ex_create_image(self):
         volume = self.driver.ex_get_volume('lcdisk')
-        description = 'CoreOS beta 522.3.0'
+        description = 'CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12'
         name = 'coreos'
-        family = 'coreos'
+        family = 'coreos-stable'
+        licenses = ["projects/coreos-cloud/global/licenses/coreos-stable"]
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
         expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         mock_request = mock.Mock()
@@ -747,17 +842,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.driver.connection.async_request = mock_request
 
         image = self.driver.ex_create_image(
-            name, volume, description=description, family='coreos',
-            guest_os_features=guest_os_features)
+            name, volume, description=description, family=family,
+            guest_os_features=guest_os_features, ex_licenses=licenses)
         self.assertTrue(isinstance(image, GCENodeImage))
         self.assertTrue(image.name.startswith(name))
         self.assertEqual(image.extra['description'], description)
         self.assertEqual(image.extra['family'], family)
         self.assertEqual(image.extra['guestOsFeatures'], expected_features)
+        self.assertEqual(image.extra['licenses'][0].name, licenses[0].split("/")[-1])
         expected_data = {'description': description,
                          'family': family,
                          'guestOsFeatures': expected_features,
                          'name': name,
+                         'licenses': licenses,
                          'sourceDisk': volume.extra['selfLink'],
                          'zone': volume.extra['zone'].name}
         mock_request.assert_called_once_with('/global/images',
@@ -766,8 +863,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_copy_image(self):
         name = 'coreos'
         url = 'gs://storage.core-os.net/coreos/amd64-generic/247.0.0/coreos_production_gce.tar.gz'
-        description = 'CoreOS beta 522.3.0'
-        family = 'coreos'
+        description = 'CoreOS, CoreOS stable, 1520.6.0, amd64-usr published on 2017-10-12'
+        family = 'coreos-stable'
         guest_os_features = ['VIRTIO_SCSI_MULTIQUEUE']
         expected_features = [{'type': 'VIRTIO_SCSI_MULTIQUEUE'}]
         image = self.driver.ex_copy_image(name, url, description=description,
@@ -779,13 +876,53 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.extra['guestOsFeatures'], expected_features)
 
     def test_ex_create_firewall(self):
-        firewall_name = 'lcfirewall'
+        name = 'lcfirewall'
+        priority = 900
+        description = "Libcloud Test Firewall"
         allowed = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
-        source_tags = ['libcloud']
-        firewall = self.driver.ex_create_firewall(firewall_name, allowed,
-                                                  source_tags=source_tags)
+        source_service_accounts = ['lcsource@gserviceaccount.com']
+        target_tags = ['libcloud']
+        network = 'default'
+        firewall = self.driver.ex_create_firewall(
+            name, allowed, description=description,
+            network=network, priority=priority, target_tags=target_tags,
+            source_service_accounts=source_service_accounts)
         self.assertTrue(isinstance(firewall, GCEFirewall))
-        self.assertEqual(firewall.name, firewall_name)
+        self.assertEqual(firewall.name, name)
+
+    def test_ex_create_firewall_egress(self):
+        name = 'lcfirewall-egress'
+        priority = 900
+        direction = 'EGRESS'
+        description = "Libcloud Egress Firewall"
+        allowed = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
+        target_service_accounts = ['lctarget@gserviceaccount.com']
+        target_ranges = ['8.8.8.8/32']
+        network = 'default'
+        firewall = self.driver.ex_create_firewall(
+            name, allowed,
+            description=description, network=network,
+            priority=priority, direction=direction,
+            target_ranges=target_ranges,
+            target_service_accounts=target_service_accounts)
+        self.assertTrue(isinstance(firewall, GCEFirewall))
+        self.assertEqual(firewall.name, name)
+
+    def test_ex_create_firewall_deny(self):
+        name = 'lcfirewall-deny'
+        priority = 900
+        denied = [{'IPProtocol': 'tcp', 'ports': ['4567']}]
+        description = "Libcloud Deny Firewall"
+        source_ranges = ['10.240.100.0/24']
+        source_tags = ['libcloud']
+        network = 'default'
+        firewall = self.driver.ex_create_firewall(
+            name, denied=denied,
+            description=description, network=network,
+            priority=priority, source_tags=source_tags,
+            source_ranges=source_ranges)
+        self.assertTrue(isinstance(firewall, GCEFirewall))
+        self.assertEqual(firewall.name, name)
 
     def test_ex_create_forwarding_rule(self):
         fwr_name = 'lcforwardingrule'
@@ -854,10 +991,19 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_create_network(self):
         network_name = 'lcnetwork'
         cidr = '10.11.0.0/16'
-        network = self.driver.ex_create_network(network_name, cidr)
+        routing_mode = 'REGIONAL'
+        network = self.driver.ex_create_network(network_name, cidr, routing_mode='regional')
         self.assertTrue(isinstance(network, GCENetwork))
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, cidr)
+
+        # Test using more options
+        description = 'A custom network'
+        network = self.driver.ex_create_network(network_name, cidr,
+                                                description=description,
+                                                routing_mode=routing_mode)
+        self.assertEqual(network.extra['description'], description)
+        self.assertEqual(network.extra['routingConfig']['routingMode'], routing_mode)
 
     def test_ex_create_network_bad_options(self):
         network_name = 'lcnetwork'
@@ -868,6 +1014,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           network_name, cidr, mode='foobar')
         self.assertRaises(ValueError, self.driver.ex_create_network,
                           network_name, None, mode='legacy')
+        self.assertRaises(ValueError, self.driver.ex_create_network,
+                          network_name, cidr, routing_mode='universal')
 
     def test_ex_set_machine_type_notstopped(self):
         # get running node, change machine type
@@ -1067,13 +1215,13 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
         node = self.driver.create_node(node_name, size, image=None,
-                                       ex_image_family='coreos')
+                                       ex_image_family='coreos-stable')
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
 
         image = self.driver.ex_get_image('debian-7')
         self.assertRaises(ValueError, self.driver.create_node, node_name, size,
-                          image, ex_image_family='coreos')
+                          image, ex_image_family='coreos-stable')
 
     def test_create_node_req_with_serviceaccounts(self):
         image = self.driver.ex_get_image('debian-7')
@@ -1196,6 +1344,34 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(data['metadata']['items'][0]['key'], 'k0')
         self.assertEqual(data['metadata']['items'][0]['value'], 'v0')
 
+    def test_create_node_with_accelerator(self):
+        node_name = 'node-name'
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+        zone = self.driver.ex_get_zone('us-central1-a')
+        request, data = self.driver._create_node_req(
+            node_name, size, image, zone,
+            ex_accelerator_type='nvidia-tesla-k80', ex_accelerator_count=3)
+        self.assertTrue('guestAccelerators' in data)
+        self.assertEqual(len(data['guestAccelerators']), 1)
+        self.assertTrue('nvidia-tesla-k80' in data['guestAccelerators'][0]['acceleratorType'])
+        self.assertEqual(data['guestAccelerators'][0]['acceleratorCount'], 3)
+
+    def test_create_node_with_labels(self):
+        node_name = 'node-name'
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+        zone = self.driver.ex_get_zone('us-central1-a')
+
+        # labels is a dict
+        labels = {'label1': 'v1', 'label2': 'v2'}
+        request, data = self.driver._create_node_req(node_name, size, image,
+                                                     zone, ex_labels=labels)
+        self.assertTrue(data['labels'] is not None)
+        self.assertEqual(len(data['labels']), 2)
+        self.assertEqual(data['labels']['label1'], 'v1')
+        self.assertEqual(data['labels']['label2'], 'v2')
+
     def test_create_node_existing(self):
         node_name = 'libcloud-demo-europe-np-node'
         image = self.driver.ex_get_image('debian-7')
@@ -1208,13 +1384,16 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         image = self.driver.ex_get_image('debian-7')
         size = self.driver.ex_get_size('n1-standard-1')
         number = 2
+        disk_size = "25"
         nodes = self.driver.ex_create_multiple_nodes(base_name, size, image,
-                                                     number)
+                                                     number, ex_disk_size=disk_size)
         self.assertEqual(len(nodes), 2)
         self.assertTrue(isinstance(nodes[0], Node))
         self.assertTrue(isinstance(nodes[1], Node))
         self.assertEqual(nodes[0].name, '%s-000' % base_name)
         self.assertEqual(nodes[1].name, '%s-001' % base_name)
+        self.assertEqual(nodes[0].extra['boot_disk'].size, disk_size)
+        self.assertEqual(nodes[1].extra['boot_disk'].size, disk_size)
 
     def test_ex_create_multiple_nodes_image_family(self):
         base_name = 'lcnode'
@@ -1222,7 +1401,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         size = self.driver.ex_get_size('n1-standard-1')
         number = 2
         nodes = self.driver.ex_create_multiple_nodes(
-            base_name, size, image, number, ex_image_family='coreos')
+            base_name, size, image, number, ex_image_family='coreos-stable')
         self.assertEqual(len(nodes), 2)
         self.assertTrue(isinstance(nodes[0], Node))
         self.assertTrue(isinstance(nodes[1], Node))
@@ -1232,7 +1411,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         image = self.driver.ex_get_image('debian-7')
         self.assertRaises(ValueError, self.driver.ex_create_multiple_nodes,
                           base_name, size, image, number,
-                          ex_image_family='coreos')
+                          ex_image_family='coreos-stable')
 
     def test_ex_create_targethttpproxy(self):
         proxy_name = 'web-proxy'
@@ -1289,13 +1468,22 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         volume_name = 'lcdisk'
         size = 10
         volume = self.driver.create_volume(size, volume_name,
-                                           ex_image_family='coreos')
+                                           ex_image_family='coreos-stable')
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
 
         image = self.driver.ex_get_image('debian-7')
         self.assertRaises(ValueError, self.driver.create_volume, size,
-                          volume_name, image=image, ex_image_family='coreos')
+                          volume_name, image=image,
+                          ex_image_family='coreos-stable')
+
+    def test_create_volume_location(self):
+        volume_name = 'lcdisk'
+        size = 10
+        zone = self.driver.zone
+        volume = self.driver.create_volume(size, volume_name, location=zone)
+        self.assertTrue(isinstance(volume, StorageVolume))
+        self.assertEqual(volume.name, volume_name)
 
     def test_ex_create_volume_snapshot(self):
         snapshot_name = 'lcsnapshot'
@@ -1331,7 +1519,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         firewall_name = 'lcfirewall'
         firewall = self.driver.ex_get_firewall(firewall_name)
         firewall.source_ranges = ['10.0.0.0/16']
-        firewall.source_tags = ['libcloud', 'test']
+        firewall.description = "LCFirewall-2"
         firewall2 = self.driver.ex_update_firewall(firewall)
         self.assertTrue(isinstance(firewall2, GCEFirewall))
 
@@ -1597,7 +1785,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         firewall = self.driver.ex_get_firewall(firewall_name)
         self.assertEqual(firewall.name, firewall_name)
         self.assertEqual(firewall.network.name, 'default')
-        self.assertEqual(firewall.source_tags, ['libcloud'])
+        self.assertEqual(firewall.target_tags, ['libcloud'])
 
     def test_ex_get_forwarding_rule(self):
         fwr_name = 'lcforwardingrule'
@@ -1645,7 +1833,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           ex_standard_projects=False)
 
     def test_ex_get_image_from_family(self):
-        family = 'coreos'
+        family = 'coreos-beta'
         description = 'CoreOS beta 522.3.0'
         image = self.driver.ex_get_image_from_family(family)
         self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
@@ -1653,7 +1841,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(image.extra['family'], family)
 
         url = ('https://www.googleapis.com/compute/v1/projects/coreos-cloud/'
-               'global/images/family/coreos')
+               'global/images/family/coreos-beta')
         image = self.driver.ex_get_image_from_family(url)
         self.assertEqual(image.name, 'coreos-beta-522-3-0-v20141226')
         self.assertEqual(image.extra['description'], description)
@@ -1679,6 +1867,20 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_ex_get_network(self):
         network_name = 'lcnetwork'
         network = self.driver.ex_get_network(network_name)
+        self.assertEqual(network.name, network_name)
+        self.assertEqual(network.cidr, '10.11.0.0/16')
+        self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
+        self.assertEqual(network.extra['description'], 'A custom network')
+        # do the same but this time with URL
+        url = 'https://www.googleapis.com/compute/v1/projects/project_name/global/networks/lcnetwork'
+        network = self.driver.ex_get_network(url)
+        self.assertEqual(network.name, network_name)
+        self.assertEqual(network.cidr, '10.11.0.0/16')
+        self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
+        self.assertEqual(network.extra['description'], 'A custom network')
+        # do the same but with a network under a different project
+        url_other = 'https://www.googleapis.com/compute/v1/projects/other_name/global/networks/lcnetwork'
+        network = self.driver.ex_get_network(url_other)
         self.assertEqual(network.name, network_name)
         self.assertEqual(network.cidr, '10.11.0.0/16')
         self.assertEqual(network.extra['gatewayIPv4'], '10.11.0.1')
@@ -1833,6 +2035,30 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                               'value': 'v1'}, {'key': 'gcedict2',
                                                'value': 'v2'}]}
         self.driver.ex_set_node_metadata(node, gcedict)
+
+    def test_ex_set_node_labels(self):
+        node = self.driver.ex_get_node('node-name', 'us-central1-a')
+        # Test basic values
+        simplelabel = {'key': 'value'}
+        self.driver.ex_set_node_labels(node, simplelabel)
+        # Test multiple values
+        multilabels = {'item1': 'val1', 'item2': 'val2'}
+        self.driver.ex_set_node_labels(node, multilabels)
+
+    def test_ex_set_image_labels(self):
+        image = self.driver.ex_get_image('custom-image')
+        # Test basic values
+        simplelabel = {'foo': 'bar'}
+        self.driver.ex_set_image_labels(image, simplelabel)
+        image = self.driver.ex_get_image('custom-image')
+        self.assertTrue('foo' in image.extra['labels'])
+        # Test multiple values
+        multilabels = {'one': '1', 'two': 'two'}
+        self.driver.ex_set_image_labels(image, multilabels)
+        image = self.driver.ex_get_image('custom-image')
+        self.assertEqual(len(image.extra['labels']), 3)
+        self.assertTrue('two' in image.extra['labels'])
+        self.assertTrue('two' in image.extra['labels'])
 
     def test_ex_get_region(self):
         region_name = 'us-central1'
@@ -2045,10 +2271,28 @@ class GCEMockHttp(MockHttp):
             'zones_us_central1_a_instances_node_name_stop.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_acceleratorTypes_nvidia_tesla_k80(self, method,
+                                                               url, body,
+                                                               headers):
+        body = self.fixtures.load(
+            'zones_us_central1_a_acceleratorTypes_nvidia_tesla_k80.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_instances_node_name_setMetadata(self, method, url,
                                                              body, headers):
         body = self.fixtures.load(
             'zones_us_central1_a_instances_node_name_setMetadata_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instances_node_name_setLabels(self, method, url,
+                                                           body, headers):
+        body = self.fixtures.load(
+            'zones_us_central1_a_instances_node_name_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_custom_image_setLabels(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'global_custom_image_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _setCommonInstanceMetadata(self, method, url, body, headers):
@@ -2186,6 +2430,14 @@ class GCEMockHttp(MockHttp):
             body = self.fixtures.load('global_firewalls_lcfirewall.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _global_firewalls_lcfirewall_egress(self, method, url, body, headers):
+        body = self.fixtures.load('global_firewalls_lcfirewall-egress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_firewalls_lcfirewall_deny(self, method, url, body, headers):
+        body = self.fixtures.load('global_firewalls_lcfirewall-deny.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _global_images(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('global_images_post.json')
@@ -2205,7 +2457,12 @@ class GCEMockHttp(MockHttp):
             'global_images_debian_7_wheezy_v20131014_deprecate.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_images_family_coreos(self, method, url, body, headers):
+    def _global_images_family_coreos_beta(self, method, url, body, headers):
+        body = self.fixtures.load('global_images_family_notfound.json')
+        return (httplib.NOT_FOUND, body, self.json_hdr,
+                httplib.responses[httplib.NOT_FOUND])
+
+    def _global_images_family_coreos_stable(self, method, url, body, headers):
         body = self.fixtures.load('global_images_family_notfound.json')
         return (httplib.NOT_FOUND, body, self.json_hdr,
                 httplib.responses[httplib.NOT_FOUND])
@@ -2466,6 +2723,34 @@ class GCEMockHttp(MockHttp):
             'regions_us-central1_subnetworks_cf_972cf02e6ad49112.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_other_name_regions_us_central1(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_regions_us-central1.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_global_networks_lcnetwork(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_global_networks_lcnetwork.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_global_networks_cf(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_global_networks_cf.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_global_networks_shared_network_for_mig(self, method, url, body, headers):
+        body = self.fixtures.load('projects_other_name_global_networks_shared_network_for_mig.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_regions_us_central1_subnetworks_cf_972cf02e6ad49114(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'projects_other_name_regions_us-central1_subnetworks_cf_972cf02e6ad49114.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_other_name_regions_us_central1_subnetworks_shared_subnetwork_for_mig(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'projects_other_name_regions_us-central1_subnetworks_shared_subnetwork_for_mig.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _regions_us_central1_operations_operation_regions_us_central1_addresses_lcaddress_delete(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -2524,6 +2809,18 @@ class GCEMockHttp(MockHttp):
             self, method, url, body, headers):
         body = self.fixtures.load(
             'operations_operation_zones_us_central1_a_node_name_setMetadata_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_operations_operation_setLabels_post(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us_central1_a_node_name_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_operations_operation_setImageLabels_post(self, method, url,
+                                                         body, headers):
+        body = self.fixtures.load(
+            'global_operations_operation_setImageLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_targetInstances_post(
@@ -2698,6 +2995,12 @@ class GCEMockHttp(MockHttp):
             'projects_rhel-cloud_global_licenses_rhel_server.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _projects_coreos_cloud_global_licenses_coreos_stable(self, method, url,
+                                                             body, headers):
+        body = self.fixtures.load(
+            'projects_coreos-cloud_global_licenses_coreos_stable.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _projects_suse_cloud_global_licenses_sles_12(self, method, url, body,
                                                      headers):
         body = self.fixtures.load(
@@ -2708,33 +3011,39 @@ class GCEMockHttp(MockHttp):
         body = self.fixtures.load('projects_windows-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_rhel_cloud_global_images(self, method, url, body, header):
-        body = self.fixtures.load('projects_rhel-cloud_global_images.json')
+    def _projects_windows_sql_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_windows-sql-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_gce_nvme_global_images(self, method, url, body, header):
-        body = self.fixtures.load('projects_gce-nvme_global_images.json')
+    def _projects_rhel_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_rhel-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_coreos_cloud_global_images(self, method, url, body, header):
         body = self.fixtures.load('projects_coreos-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _projects_coreos_cloud_global_images_family_coreos(self, method, url,
-                                                           body, header):
+    def _projects_coreos_cloud_global_images_family_coreos_beta(self, method,
+                                                                url, body,
+                                                                header):
         body = self.fixtures.load(
-            'projects_coreos-cloud_global_images_family_coreos.json')
+            'projects_coreos-cloud_global_images_family_coreos_beta.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_coreos_cloud_global_images_family_coreos_stable(self, method,
+                                                                  url, body,
+                                                                  header):
+        body = self.fixtures.load(
+            'projects_coreos-cloud_global_images_family_coreos_stable.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_cos_cloud_global_images(self, method, url, body, header):
+        body = self.fixtures.load('projects_cos-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_opensuse_cloud_global_images(self, method, url, body,
                                                header):
         body = self.fixtures.load('projects_opensuse-cloud_global_images.json')
-        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
-
-    def _projects_google_containers_global_images(self, method, url, body,
-                                                  header):
-        body = self.fixtures.load(
-            'projects_google-containers_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_ubuntu_os_cloud_global_images(self, method, url, body,
@@ -2749,6 +3058,14 @@ class GCEMockHttp(MockHttp):
 
     def _projects_suse_cloud_global_images(self, method, url, body, headers):
         body = self.fixtures.load('projects_suse-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_suse_byos_cloud_global_images(self, method, url, body, headers):
+        body = self.fixtures.load('projects_suse-byos-cloud_global_images.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _projects_suse_sap_cloud_global_images(self, method, url, body, headers):
+        body = self.fixtures.load('projects_suse-sap-cloud_global_images.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _projects_debian_cloud_global_images(self, method, url, body, headers):
@@ -2819,6 +3136,21 @@ class GCEMockHttp(MockHttp):
         else:
             body = self.fixtures.load(
                 'regions_us-central1_addresses_lcaddress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_addresses_testaddress(self, method, url, body,
+                                                   headers):
+        body = self.fixtures.load('regions_us-central1_addresses_testaddress.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_subnetworks_subnet_1(self, method, url, body,
+                                                  headers):
+        body = self.fixtures.load('regions_us-central1_subnetworks_subnet_1.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _regions_us_central1_addresses_lcaddressinternal(self, method, url, body,
+                                                         headers):
+        body = self.fixtures.load('regions_us-central1_addresses_lcaddressinternal.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _regions_us_central1_forwardingRules(self, method, url, body, headers):
@@ -3217,10 +3549,22 @@ class GCEMockHttp(MockHttp):
             'zones_us-east1-b_instanceGroup_myinstancegroup.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_instanceGroups_myinstancegroup_shared_network(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_instanceGroup_myinstancegroup_shared_network.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_instanceGroupManagers_myinstancegroup(
             self, method, url, body, headers):
         body = self.fixtures.load(
             'zones_us-central1-a_instanceGroupManagers_myinstancegroup.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroupManagers_myinstancegroup_shared_network(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_instanceGroupManagers_myinstancegroup_shared_network.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_b_instanceGroupManagers_myinstancegroup(
@@ -3279,6 +3623,12 @@ class GCEMockHttp(MockHttp):
                                                         body, headers):
         body = self.fixtures.load(
             'global_instanceTemplates_my_instance_template1.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _global_instanceTemplates_my_instance_template_shared_network(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'global_instanceTemplates_my_instance_template_shared_network.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _aggregated_autoscalers(self, method, url, body, headers):

@@ -26,11 +26,7 @@ from libcloud.utils.py3 import httplib
 
 from hashlib import sha1
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, urlencode
 
 from libcloud.utils.xml import findtext, findall, fixxpath
@@ -192,6 +188,8 @@ class Route53DNSDriver(DNSDriver):
         return response.status in [httplib.OK]
 
     def create_record(self, name, zone, type, data, extra=None):
+        if type in (RecordType.TXT, RecordType.SPF):
+            data = self._quote_data(data)
         extra = extra or {}
         batch = [('CREATE', name, type, data, extra)]
         self._post_changeset(zone, batch)
@@ -559,3 +557,8 @@ class Route53DNSDriver(DNSDriver):
         kwargs = super(Route53DNSDriver, self)._ex_connection_class_kwargs()
         kwargs['token'] = self.token
         return kwargs
+
+    def _quote_data(self, data):
+        if data[0] == '"' and data[-1] == '"':
+            return data
+        return '"{0}"'.format(data.replace('"', '\"'))

@@ -13,14 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
 import sys
 from libcloud.utils.py3 import httplib
-
+from libcloud.utils.py3 import ET
 from libcloud.common.dimensiondata import DimensionDataAPIException
 from libcloud.common.types import InvalidCredsError
 from libcloud.backup.base import BackupTargetJob

@@ -1,0 +1,90 @@
+{
+ "kind": "compute#imageList",
+ "id": "projects/cos-cloud/global/images",
+ "items": [
+  {
+    "archiveSizeBytes": "2781566400",
+    "creationTimestamp": "2018-03-16T11:58:21.963-07:00",
+    "description": "Google, Container-Optimized OS, 65-10323.55.0 beta, Kernel: ChromiumOS-4.4.111 Kubernetes: 1.8.7 Docker: 17.03.2",
+    "diskSizeGb": "10",
+    "family": "cos-beta",
+    "id": "7977998760666049826",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/licenses/cos"
+    ],
+    "name": "cos-beta-65-10323-55-0",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-beta-65-10323-55-0",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "2904964800",
+    "creationTimestamp": "2018-03-16T11:46:19.959-07:00",
+    "description": "Google, Container-Optimized OS, 66-10452.13.0 dev, Kernel: ChromiumOS-4.14.22 Kubernetes: 1.9.3 Docker: 17.03.2",
+    "diskSizeGb": "10",
+    "family": "cos-dev",
+    "id": "5462067189945314836",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/licenses/cos"
+    ],
+    "name": "cos-dev-66-10452-13-0",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-dev-66-10452-13-0",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "2862244800",
+    "creationTimestamp": "2018-01-19T10:59:30.098-08:00",
+    "description": "Google, Container-Optimized OS, 63-10032.88.0 stable, Kernel: ChromiumOS-4.4.86 Kubernetes: 1.7.8 Docker: 17.03.2",
+    "diskSizeGb": "10",
+    "family": "cos-stable",
+    "id": "9037695461801066238",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/licenses/cos"
+    ],
+    "name": "cos-stable-63-10032-88-0",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-63-10032-88-0",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "2776416960",
+    "creationTimestamp": "2018-02-02T15:15:12.894-08:00",
+    "description": "Google, Container-Optimized OS, 64-10176.62.0 stable, Kernel: ChromiumOS-4.4.96 Kubernetes: 1.8.7 Docker: 17.03.2",
+    "diskSizeGb": "10",
+    "family": "cos-stable",
+    "id": "5241841702474960879",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/licenses/cos"
+    ],
+    "name": "cos-stable-64-10176-62-0",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-64-10176-62-0",
+    "sourceType": "RAW",
+    "status": "READY"
+  }
+ ]
+}

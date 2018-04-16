@@ -10,23 +10,32 @@ platform, Amazon Web Services (AWS).
     :width: 300
     :target: https://aws.amazon.com/ec2/
 
-It allows users to rent virtual servers in more than 9 regions such as:
+It allows users to rent virtual servers in more than 15 regions such as:
 
 * US East (Northern Virginia) Region
 * US East (Ohio) Region
 * US West (Oregon) Region
 * US West (Northern California) Region
+* GovCloud (US) Region
+* Canada (Central) Region
 * EU West (Ireland) Region
+* EU West (London) Region
 * EU Central (Frankfurt) Region
 * Asia Pacific (Singapore) Region
 * Asia Pacific (Sydney) Region
 * Asia Pacific (Tokyo) Region
+* Asia Pacific (Seoul) Region
+* Asia Pacific (Mumbai) Region
+* China (Beijing) Region
 * South America (Sao Paulo) Region
+
+Note that pricing information is not available for China (Beijing)
+region.
 
 Using temporary security credentials
 ------------------------------------
 
-Since Libcloud 0.14.0 above, all the Amazon drivers support using temporary
+Since Libcloud 0.14.0, all the Amazon drivers support using temporary
 security credentials.
 
 Temporary credentials can be used by passing ``token`` argument to the driver

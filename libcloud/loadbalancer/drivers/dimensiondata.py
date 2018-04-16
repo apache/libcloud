@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from lxml import etree as ET
-except ImportError:
-    from xml.etree import ElementTree as ET
-
+from libcloud.utils.py3 import ET
 from libcloud.common.dimensiondata import DimensionDataConnection
 from libcloud.common.dimensiondata import DimensionDataPool
 from libcloud.common.dimensiondata import DimensionDataPoolMember
@@ -633,7 +629,7 @@ class DimensionDataLBDriver(Driver):
         :return: Instance of the listener
         :rtype: ``DimensionDataVirtualListener``
         """
-        if port is 80 or 443:
+        if (port == 80) or (port == 443):
             listener_type = 'PERFORMANCE_LAYER_4'
         else:
             listener_type = 'STANDARD'

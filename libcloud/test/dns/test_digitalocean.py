@@ -116,16 +116,6 @@ class DigitalOceanDNSMockHttp(MockHttp):
         return (self.response_map[self.type], body, {},
                 httplib.responses[self.response_map[self.type]])
 
-    def _v2_domains_EMPTY(self, method, url, body, headers):
-        body = self.fixtures.load('_v2_domains_EMPTY.json')
-        return (self.response_map[self.type], body, {},
-                httplib.responses[self.response_map[self.type]])
-
-    def _v2_domains_UNAUTHORIZED(self, method, url, body, headers):
-        body = self.fixtures.load('_v2_domains_UNAUTHORIZED.json')
-        return (self.response_map[self.type], body, {},
-                httplib.responses[self.response_map[self.type]])
-
     def _v2_domains_testdomain(self, method, url, body, headers):
         body = self.fixtures.load('_v2_domains_testdomain.json')
         return (self.response_map[self.type], body, {},
@@ -151,34 +141,6 @@ class DigitalOceanDNSMockHttp(MockHttp):
         return (self.response_map[self.type], body, {},
                 httplib.responses[self.response_map[self.type]])
 
-    def _v2_domains_testdomain_records_1234560(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            '_v2_domains_testdomain_records_1234560.json')
-        return (self.response_map[self.type], body, {},
-                httplib.responses[self.response_map[self.type]])
-
-    def _v2_domains_testdomain_records_1234561(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            '_v2_domains_testdomain_records_1234561.json')
-        return (self.response_map[self.type], body, {},
-                httplib.responses[self.response_map[self.type]])
-
-    def _v2_domains_testdomain_records_1234562(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            '_v2_domains_testdomain_records_1234562.json')
-        return (self.response_map[self.type], body, {},
-                httplib.responses[self.response_map[self.type]])
-
-    def _v2_domains_testdomain_records_1234563(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            '_v2_domains_testdomain_records_1234563.json')
-        return (self.response_map[self.type], body, {},
-                httplib.responses[self.response_map[self.type]])
-
     def _v2_domains_testdomain_records_1234564(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -189,13 +151,6 @@ class DigitalOceanDNSMockHttp(MockHttp):
     def _v2_domains_testdomain_records_1234564_DELETE(
             self, method, url, body, headers):
         self.type = 'DELETE'
-        return (self.response_map[self.type], body, {},
-                httplib.responses[self.response_map[self.type]])
-
-    def _v2_domains_testdomain_records_1234564_NOT_FOUND(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            '_v2_domains_testdomain_records_1234564_NOT_FOUND.json')
         return (self.response_map[self.type], body, {},
                 httplib.responses[self.response_map[self.type]])
 

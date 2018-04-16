@@ -19,8 +19,12 @@ import time
 
 from hashlib import sha1
 
+import libcloud.utils.py3
 try:
-    from lxml.etree import Element, SubElement
+    if libcloud.utils.py3.DEFAULT_LXML:
+        from lxml.etree import Element, SubElement
+    else:
+        from xml.etree.ElementTree import Element, SubElement
 except ImportError:
     from xml.etree.ElementTree import Element, SubElement
 
@@ -85,7 +89,7 @@ class S3Response(AWSBaseResponse):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299 or i in self.valid_response_codes
+        return 200 <= i <= 299 or i in self.valid_response_codes
 
     def parse_error(self):
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
@@ -801,10 +805,6 @@ class BaseS3StorageDriver(StorageDriver):
         if query_args:
             request_path = '?'.join((request_path, query_args))
 
-        # TODO: Let the underlying exceptions bubble up and capture the SIGPIPE
-        # here.
-        # SIGPIPE is thrown if the provided container does not exist or the
-        # user does not have correct permission
         result_dict = self._upload_object(
             object_name=object_name, content_type=content_type,
             request_path=request_path, request_method=method,
@@ -868,6 +868,10 @@ class BaseS3StorageDriver(StorageDriver):
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
         acl = extra.get('acl', None)
+
+        if not content_type:
+            content_type, _ = libcloud.utils.files.guess_file_mime_type(
+                object_name)
 
         if content_type:
             headers['Content-Type'] = content_type

@@ -8,12 +8,18 @@
     }
   ],
   "creationTimestamp": "2013-06-26T10:04:43.773-07:00",
+  "description": "Libcloud Test Firewall",
+  "direction": "INGRESS",
   "id": "0565629596395414121",
   "kind": "compute#firewall",
   "name": "lcfirewall",
   "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+  "priority": 900,
   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/firewalls/lcfirewall",
-  "sourceTags": [
+  "sourceServiceAccounts": [
+    "lcsource@gserviceaccount.com"
+  ],
+  "targetTags": [
     "libcloud"
   ]
 }

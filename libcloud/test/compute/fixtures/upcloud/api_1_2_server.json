@@ -1,0 +1,22 @@
+{
+   "servers" : {
+      "server" : [
+         {
+            "core_number" : "1",
+            "hostname" : "localhost",
+            "license" : 0,
+            "memory_amount" : "1024",
+            "plan" : "1xCPU-1GB",
+            "plan_ipv4_bytes" : "12267",
+            "plan_ipv6_bytes" : "4644",
+            "state" : "started",
+            "tags" : {
+               "tag" : []
+            },
+            "title" : "test_server",
+            "uuid" : "00f8c525-7e62-4108-8115-3958df5b43dc",
+            "zone" : "fi-hel1"
+         }
+      ]
+   }
+}

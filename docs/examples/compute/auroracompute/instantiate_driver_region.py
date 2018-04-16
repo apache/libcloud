@@ -5,5 +5,5 @@ from libcloud.compute.drivers.auroracompute import AuroraComputeRegion
 apikey = 'mykey'
 secretkey = 'mysecret'
 
-Driver = get_driver(Provider.AURORACOMPUTE, region=AuroraComputeRegion.MIA)
-conn = Driver(key=apikey, secret=secretkey)
+Driver = get_driver(Provider.AURORACOMPUTE)
+conn = Driver(key=apikey, secret=secretkey, region=AuroraComputeRegion.MIA)

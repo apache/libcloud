@@ -1,0 +1,13 @@
+{
+  "action": {
+    "id": 36804954,
+    "status": "in-progress",
+    "type": "enable_ipv6",
+    "started_at": "2014-11-14T16:34:24Z",
+    "completed_at": null,
+    "resource_id": 3164450,
+    "resource_type": "droplet",
+    "region": "ams2",
+    "region_slug": "ams2"
+  }
+}
