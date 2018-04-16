@@ -40,19 +40,33 @@ class Provider(object):
     :cvar DUMMY: Example provider
     :cvar ALIYUN_OSS: Aliyun OSS storage driver
     :cvar AURORAOBJECTS: AuroraObjects storage driver
+    :cvar AZURE_BLOBS: Azure Blob Storage driver
+    :cvar BACKBLAZE_B2: Backblaze B2 Cloud Storage driver
     :cvar CLOUDFILES: CloudFiles
+    :cvar DIGITALOCEAN_SPACES: Digital Ocean Spaces driver
     :cvar GOOGLE_STORAGE Google Storage
+    :cvar KTUCLOUD: KT UCloud Storage driver
     :cvar LOCAL: Local storage driver
     :cvar NIMBUS: Nimbus.io driver
     :cvar NINEFOLD: Ninefold
+    :cvar OPENSTACK_SWIFT: OpenStack Swift driver
     :cvar S3: Amazon S3 US
-    :cvar S3_AP_NORTHEAST_HOST: Amazon S3 Asia South East (Tokyo)
-    :cvar S3_AP_SOUTHEAST_HOST: Amazon S3 Asia South East (Singapore)
-    :cvar S3_AP_SOUTHEAST2_HOST: Amazon S3 Asia South East 2 (Sydney)
+    :cvar S3_AP_NORTHEAST: Amazon S3 Asia North East (Tokyo)
+    :cvar S3_AP_NORTHEAST1: Amazon S3 Asia North East (Tokyo)
+    :cvar S3_AP_NORTHEAST2: Amazon S3 Asia North East (Seoul)
+    :cvar S3_AP_SOUTH: Amazon S3 Asia South (Mumbai)
+    :cvar S3_AP_SOUTHEAST: Amazon S3 Asia South East (Singapore)
+    :cvar S3_AP_SOUTHEAST2: Amazon S3 Asia South East 2 (Sydney)
+    :cvar S3_CA_CENTRAL: Amazon S3 Canada (Central)
     :cvar S3_CN_NORTH: Amazon S3 CN North (Beijing)
     :cvar S3_EU_WEST: Amazon S3 EU West (Ireland)
+    :cvar S3_EU_WEST2: Amazon S3 EU West 2 (London)
+    :cvar S3_EU_CENTRAL: Amazon S3 EU Central (Frankfurt)
+    :cvar S3_SA_EAST: Amazon S3 South America East (Sao Paulo)
+    :cvar S3_US_EAST2: Amazon S3 US East 2 (Ohio)
     :cvar S3_US_WEST: Amazon S3 US West (Northern California)
     :cvar S3_US_WEST_OREGON: Amazon S3 US West 2 (Oregon)
+    :cvar S3_US_GOV_WEST: Amazon S3 GovCloud (US)
     :cvar S3_RGW: S3 RGW
     :cvar S3_RGW_OUTSCALE: OUTSCALE S3 RGW
     """
