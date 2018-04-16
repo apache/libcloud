@@ -301,7 +301,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         for meta in metadata.getchildren():
             meta_data[meta.tag] = meta.text
 
-        return Object(name=name, size=size, hash=etag, meta_data=meta_data,
+        return Object(name=name, size=size, hash=extra['md5_hash'], meta_data=meta_data,
                       extra=extra, container=container, driver=self)
 
     def _response_to_object(self, object_name, container, response):
@@ -353,7 +353,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                 key = key.split('x-ms-meta-')[1]
                 meta_data[key] = value
 
-        return Object(name=object_name, size=size, hash=etag, extra=extra,
+        return Object(name=object_name, size=size, hash=extra['md5_hash'], extra=extra,
                       meta_data=meta_data, container=container, driver=self)
 
     def iterate_containers(self):
@@ -939,7 +939,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                 object_name=object_name, driver=self)
 
         return Object(name=object_name, size=bytes_transferred,
-                      hash=headers['etag'], extra=None,
+                      hash=server_hash, extra=None,
                       meta_data=meta_data, container=container,
                       driver=self)
 

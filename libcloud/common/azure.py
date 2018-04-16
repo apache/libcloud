@@ -32,7 +32,7 @@ from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
 
 # Azure API version
-API_VERSION = '2012-02-12'
+API_VERSION = '2014-02-14'
 
 # The time format for headers in Azure requests
 AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
