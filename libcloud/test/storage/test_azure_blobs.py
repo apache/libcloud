@@ -160,6 +160,7 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
         headers = {}
 
         headers['etag'] = '0x8CFB877BB56A6FB'
+        headers['content-md5'] = '1B2M2Y8AsgTpgAmY7PhCfg=='
         headers['last-modified'] = 'Fri, 04 Jan 2013 09:48:06 GMT'
         headers['content-length'] = '12345'
         headers['content-type'] = 'application/zip'
@@ -437,7 +438,7 @@ class AzureBlobsTests(unittest.TestCase):
 
         obj = objects[1]
         self.assertEqual(obj.name, 'object2.txt')
-        self.assertEqual(obj.hash, '0x8CFB90F1BA8CD8F')
+        self.assertEqual(obj.hash, 'b6d81b360a5672d80c27430f39153e2c')
         self.assertEqual(obj.size, 1048576)
         self.assertEqual(obj.container.name, 'test_container')
         self.assertTrue('meta1' in obj.meta_data)
@@ -459,7 +460,7 @@ class AzureBlobsTests(unittest.TestCase):
 
         obj = objects[1]
         self.assertEqual(obj.name, 'object2.txt')
-        self.assertEqual(obj.hash, '0x8CFB90F1BA8CD8F')
+        self.assertEqual(obj.hash, 'b6d81b360a5672d80c27430f39153e2c')
         self.assertEqual(obj.size, 1048576)
         self.assertEqual(obj.container.name, 'test_container')
         self.assertTrue('meta1' in obj.meta_data)
@@ -513,7 +514,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(obj.name, 'test')
         self.assertEqual(obj.container.name, 'test_container200')
         self.assertEqual(obj.size, 12345)
-        self.assertEqual(obj.hash, '0x8CFB877BB56A6FB')
+        self.assertEqual(obj.hash, 'd41d8cd98f00b204e9800998ecf8427e')
         self.assertEqual(obj.extra['last_modified'],
                          'Fri, 04 Jan 2013 09:48:06 GMT')
         self.assertEqual(obj.extra['content_type'], 'application/zip')
