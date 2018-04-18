@@ -8317,9 +8317,11 @@ class GCENodeDriver(NodeDriver):
         :return: Location object
         :rtype: :class:`NodeLocation`
         """
+        extra = {}
+        extra['region'] = location.get('region').split('/')[-1]
         return NodeLocation(id=location['id'], name=location['name'],
                             country=location['name'].split('-')[0],
-                            driver=self)
+                            extra=extra, driver=self)
 
     def _to_node(self, node, use_disk_cache=False):
         """
