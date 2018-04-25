@@ -566,11 +566,21 @@ class VSphereNodeDriver(NodeDriver):
             nicspec.device = vim.vm.device.VirtualVmxnet3()
             nicspec.device.wakeOnLanEnabled = True
             nicspec.device.deviceInfo = vim.Description()
-            nicspec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-            nicspec.device.backing.network = self.get_obj([vim.Network], network)
-            nicspec.device.backing.deviceName = network
+
+            portgroup = self.get_obj([vim.dvs.DistributedVirtualPortgroup], network)
+            if portgroup:
+                dvs_port_connection = vim.dvs.PortConnection()
+                dvs_port_connection.portgroupKey = portgroup.key
+                dvs_port_connection.switchUuid = portgroup.config.distributedVirtualSwitch.uuid
+                nicspec.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+                nicspec.device.backing.port = dvs_port_connection
+            else:
+                nicspec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+                nicspec.device.backing.network = self.get_obj([vim.Network], network)
+                nicspec.device.backing.deviceName = network
             nicspec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
             nicspec.device.connectable.startConnected = True
+            nicspec.device.connectable.connected = True
             nicspec.device.connectable.allowGuestControl = True
             devices.append(nicspec)
 
@@ -656,7 +666,7 @@ class VSphereNodeDriver(NodeDriver):
         # add Switch here
         dev_changes = []
         network_spec = vim.vm.device.VirtualDeviceSpec()
-        network_spec.fileOperation = "create"
+        # network_spec.fileOperation = "create"
         network_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
         network_spec.device = vim.vm.device.VirtualVmxnet3()
 
@@ -668,6 +678,7 @@ class VSphereNodeDriver(NodeDriver):
         network_spec.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
         network_spec.device.connectable.startConnected = True
         network_spec.device.connectable.connected = True
+        network_spec.device.connectable.allowGuestControl = True
 
         dev_changes.append(network_spec)
 
