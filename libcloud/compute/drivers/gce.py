@@ -7885,8 +7885,7 @@ class GCENodeDriver(NodeDriver):
             rz = 'zone'
         rz_name = None
         res_name = res_name or res_type
-        request = '/aggregated/%s' % (res_type)
-        res_list = self.connection.request(request).object
+        res_list = self.connection.request_aggregated_items(res_type)
         for k, v in res_list['items'].items():
             for res in v.get(res_type, []):
                 if res['name'] == name:
