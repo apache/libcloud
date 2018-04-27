@@ -153,7 +153,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             user_id, key, secure=secure, timeout=timeout,
             retry_delay=retry_delay, backoff=backoff, proxy_url=proxy_url)
 
-        self.auth_url = ex_auth_url
+        if ex_auth_url:
+            self.auth_url = ex_auth_url
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version
 
