@@ -4134,7 +4134,8 @@ class GCENodeDriver(NodeDriver):
             can_ip_forward=None, external_ip='ephemeral', internal_ip=None,
             service_accounts=None, on_host_maintenance=None,
             automatic_restart=None, preemptible=None, tags=None, metadata=None,
-            description=None, disks_gce_struct=None, nic_gce_struct=None):
+            description=None, disks_gce_struct=None, nic_gce_struct=None,
+            accelerator_type=None, accelerator_count=None):
         """
         Creates an instance template in the specified project using the data
         that is included in the request. If you are creating a new template to
@@ -4249,6 +4250,17 @@ class GCENodeDriver(NodeDriver):
                                   preemptible)
         :type     preemptible: ``bool`` or ``None``
 
+        :keyword  accelerator_type: Defines the accelerator to use with this
+                                    node. Must set 'ex_on_host_maintenance'
+                                    to 'TERMINATE'. Must include a count of
+                                    accelerators to use in
+                                    'ex_accelerator_count'.
+        :type     accelerator_type: ``str`` or ``None``
+
+        :keyword  accelerator_count: The number of 'ex_accelerator_type'
+                                     accelerators to attach to the node.
+        :type     accelerator_count: ``int`` or ``None``
+
         :return:  An Instance Template object.
         :rtype:   :class:`GCEInstanceTemplate`
         """
@@ -4263,7 +4275,8 @@ class GCENodeDriver(NodeDriver):
             automatic_restart=automatic_restart, preemptible=preemptible,
             tags=tags, metadata=metadata, description=description,
             disks_gce_struct=disks_gce_struct, nic_gce_struct=nic_gce_struct,
-            use_selflinks=False)
+            use_selflinks=False, accelerator_type=accelerator_type,
+            accelerator_count=accelerator_count)
 
         request_data = {'name': name,
                         'description': description,
@@ -4857,7 +4870,8 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None,
-            ex_preemptible=None, ex_labels=None, ex_disk_size=None):
+            ex_preemptible=None, ex_labels=None, ex_disk_size=None,
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -5004,7 +5018,18 @@ class GCENodeDriver(NodeDriver):
                                 Integer in gigabytes.
         :type     ex_disk_size: ``int`` or ``None``
 
+        :keyword  ex_accelerator_type: Defines the accelerator to use with this
+                                       node. Must set 'ex_on_host_maintenance'
+                                       to 'TERMINATE'. Must include a count of
+                                       accelerators to use in
+                                       'ex_accelerator_count'.
+        :type     ex_accelerator_type: ``str`` or ``None``
+
+        :keyword  ex_accelerator_count: The number of 'ex_accelerator_type'
+                                        accelerators to attach to the node.
+        :type     ex_accelerator_count: ``int`` or ``None``
         :return:  A list of Node objects for the new nodes.
+
         :rtype:   ``list`` of :class:`Node`
 
         """
@@ -5057,7 +5082,9 @@ class GCENodeDriver(NodeDriver):
                       'ex_automatic_restart': ex_automatic_restart,
                       'ex_preemptible': ex_preemptible,
                       'ex_labels': ex_labels,
-                      'ex_disk_size': ex_disk_size}
+                      'ex_disk_size': ex_disk_size,
+                      'ex_accelerator_type': ex_accelerator_type,
+                      'ex_accelerator_count': ex_accelerator_count}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -7981,9 +8008,9 @@ class GCENodeDriver(NodeDriver):
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
-            ex_preemptible=None, ex_subnetwork=None, ex_labels=None,
-            ex_accelerator_type=None, ex_accelerator_count=None,
-            ex_disk_size=None):
+            ex_preemptible=None, ex_subnetwork=None,
+            ex_disk_size=None, ex_labels=None,
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Returns a request and body to create a new node.
 
@@ -8146,9 +8173,9 @@ class GCENodeDriver(NodeDriver):
             tags=tags, metadata=metadata, labels=ex_labels,
             description=description, disks_gce_struct=ex_disks_gce_struct,
             nic_gce_struct=ex_nic_gce_struct,
+            use_selflinks=use_selflinks, disk_size=ex_disk_size,
             accelerator_type=ex_accelerator_type,
-            accelerator_count=ex_accelerator_count,
-            use_selflinks=use_selflinks, disk_size=ex_disk_size)
+            accelerator_count=ex_accelerator_count)
         node_data['name'] = name
 
         request = '/zones/%s/instances' % (location.name)
@@ -8254,7 +8281,9 @@ class GCENodeDriver(NodeDriver):
             ex_subnetwork=node_attrs['subnetwork'],
             ex_preemptible=node_attrs['ex_preemptible'],
             ex_labels=node_attrs['ex_labels'],
-            ex_disk_size=node_attrs['ex_disk_size']
+            ex_disk_size=node_attrs['ex_disk_size'],
+            ex_accelerator_type=node_attrs['ex_accelerator_type'],
+            ex_accelerator_count=node_attrs['ex_accelerator_count'],
         )
 
         try:
