@@ -125,6 +125,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
     def list_volumes(self):
         data = self._paginated_request('/v2/volumes', 'volumes')
+        if data is None:
+            return []
         return list(map(self._to_volume, data))
 
     def create_node(self, name, size, image, location, ex_create_attr=None,
