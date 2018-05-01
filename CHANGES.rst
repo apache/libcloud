@@ -69,6 +69,9 @@ DNS
 Storage
 ~~~~~~~
 
+- Update docstring for storage provider class (GITHUB-1201)
+  [Clemens Wolff]
+
 - [Azure Blob storage] Allow filtering lists by prefix (LIBCLOUD-986, GITHUB-1193)
   [Joshua Hawkinson]
 
