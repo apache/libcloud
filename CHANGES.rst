@@ -45,6 +45,9 @@ Compute
 - [GCE] Update public image projects list (LIBCLOUD-961, GITHUB-1143)
   [Sean Marlow]
 
+- [GCE] Fix _find_zone_or_region for >500 instances (GITHUB-1203)
+  [Léo Ferlin-Sutton]
+
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
