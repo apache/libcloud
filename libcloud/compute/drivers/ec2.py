@@ -3930,6 +3930,14 @@ class BaseEC2NodeDriver(NodeDriver):
         :keyword    ex_subnet: The subnet to launch the instance into.
         :type       ex_subnet: :class:`.EC2Subnet`
 
+        :keyword    ex_spot_market: If true, ask for a Spot Instance instead
+                                    of requesting On-Demand.
+        :type       ex_spot_market: ``bool``
+
+        :keyword    ex_spot_price: Maximum price to pay for the spot instance. If
+                                   not specified, the on-demand price will be used.
+        :type       ex_spot_price: ``float``
+
         :keyword    ex_placement_group: The name of the placement group to
                                         launch the instance into.
         :type       ex_placement_group: ``str``
@@ -3959,6 +3967,13 @@ class BaseEC2NodeDriver(NodeDriver):
             'MaxCount': str(kwargs.get('ex_maxcount', '1')),
             'InstanceType': size.id
         }
+
+        # Spot instances support
+        if kwargs.get("ex_spot_market", False):
+            params["InstanceMarketOptions.MarketType"] = "spot"
+            if kwargs.get("ex_spot_price", False):
+                params["InstanceMarketOptions.SpotOptions.MaxPrice"] = \
+                str(kwargs.get("ex_spot_price"))
 
         if kwargs.get("ex_terminate_on_shutdown", False):
             params["InstanceInitiatedShutdownBehavior"] = "terminate"
