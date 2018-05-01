@@ -1143,6 +1143,21 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('pending', subnet.state)
         self.assertEqual('vpc-532135d1', subnet.extra['vpc_id'])
 
+    def test_ex_modify_subnet_attribute(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        resp = self.driver.ex_modify_subnet_attribute(subnet,
+                                                      'auto_public_ip',
+                                                      True)
+        self.assertTrue(resp)
+        resp = self.driver.ex_modify_subnet_attribute(subnet,
+                                                      'auto_ipv6',
+                                                      False)
+        self.assertTrue(resp)
+        resp = self.driver.ex_modify_subnet_attribute(subnet,
+                                                      'invalid',
+                                                      True)
+        self.assertFalse(resp)
+
     def test_ex_delete_subnet(self):
         subnet = self.driver.ex_list_subnets()[0]
         resp = self.driver.ex_delete_subnet(subnet=subnet)
@@ -1633,6 +1648,10 @@ class EC2MockHttp(MockHttp):
 
     def _CreateSubnet(self, method, url, body, headers):
         body = self.fixtures.load('create_subnet.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifySubnetAttribute(self, method, url, body, headers):
+        body = self.fixtures.load('modify_subnet_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeleteSubnet(self, method, url, body, headers):

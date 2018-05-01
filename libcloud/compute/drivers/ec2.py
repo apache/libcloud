@@ -2796,6 +2796,41 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return subnet
 
+    def ex_modify_subnet_attribute(self, subnet, attribute='auto_public_ip',
+                                   value=False):
+        """
+        Modifies a subnet attribute.
+        You can only modify one attribute at a time.
+
+        :param      subnet: The subnet to delete
+        :type       subnet: :class:`.EC2NetworkSubnet`
+
+        :param      attribute: The attribute to set on the subnet; one of:
+                               ``'auto_public_ip'``: Automatically allocate a
+                               public IP address when a server is created
+                               ``'auto_ipv6'``: Automatically assign an IPv6
+                               address when a server is created
+        :type       attribute: ``str``
+
+        :param      value: The value to set the subnet attribute to
+                           (defaults to ``False``)
+        :type       value: ``bool``
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'ModifySubnetAttribute', 'SubnetId': subnet.id}
+
+        if attribute == 'auto_public_ip':
+            params['MapPublicIpOnLaunch.Value'] = value
+        elif attribute == 'auto_ipv6':
+            params['AssignIpv6AddressOnCreation.Value'] = value
+        else:
+            return False
+
+        res = self.connection.request(self.path, params=params).object
+
+        return self._get_boolean(res)
+
     def ex_delete_subnet(self, subnet):
         """
         Deletes a VPC subnet.
