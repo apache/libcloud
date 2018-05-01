@@ -3934,8 +3934,9 @@ class BaseEC2NodeDriver(NodeDriver):
                                     of requesting On-Demand.
         :type       ex_spot_market: ``bool``
 
-        :keyword    ex_spot_price: Maximum price to pay for the spot instance. If
-                                   not specified, the on-demand price will be used.
+        :keyword    ex_spot_price: Maximum price to pay for the spot instance.
+                                   If not specified, the on-demand price will
+                                   be used.
         :type       ex_spot_price: ``float``
 
         :keyword    ex_placement_group: The name of the placement group to
@@ -3972,8 +3973,8 @@ class BaseEC2NodeDriver(NodeDriver):
         if kwargs.get("ex_spot_market", False):
             params["InstanceMarketOptions.MarketType"] = "spot"
             if kwargs.get("ex_spot_price", False):
-                params["InstanceMarketOptions.SpotOptions.MaxPrice"] = \
-                str(kwargs.get("ex_spot_price"))
+                params["InstanceMarketOptions.SpotOptions.MaxPrice"] =\
+                    str(kwargs.get("ex_spot_price"))
 
         if kwargs.get("ex_terminate_on_shutdown", False):
             params["InstanceInitiatedShutdownBehavior"] = "terminate"
