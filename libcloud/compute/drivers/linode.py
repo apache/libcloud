@@ -681,6 +681,7 @@ class LinodeNodeDriver(NodeDriver):
                                   state=self.LINODE_STATES[o["STATUS"]],
                                   driver=self.connection.driver)
             n.extra = copy(o)
+            n.extra["PLANID"] = self._linode_plan_ids.get(o.get("TOTALRAM"))
             batch.append({"api_action": "linode.ip.list", "LinodeID": lid})
 
         # Avoid batch limitation
