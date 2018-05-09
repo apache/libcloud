@@ -469,34 +469,64 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
     """Authentication class for "Service Account" authentication."""
     def __init__(self, user_id, key, *args, **kwargs):
         """
-        Check to see if cryptography is available, and convert key file path
-        into a key string if the key is in a file.
+        Check to see if cryptography is available, and convert PEM key file into
+        a key string, or extract the key from JSON object, string or file.
 
         :param  user_id: Email address to be used for Service Account
                 authentication.
         :type   user_id: ``str``
 
-        :param  key: The RSA Key or path to file containing the key.
-        :type   key: ``str``
+        :param  key: The path to a PEM/JSON file containing the private RSA
+        key, or a str/dict containing the PEM/JSON.
+        :type   key: ``str`` or ``dict``
+
         """
         if SHA256 is None:
             raise GoogleAuthError('cryptography library required for '
                                   'Service Account Authentication.')
-        # Check to see if 'key' is a file and read the file if it is.
-        if key.find("PRIVATE KEY---") == -1:
-            # key is a file
-            keypath = os.path.expanduser(key)
-            is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
-            if not is_file_path:
-                raise ValueError("Missing (or not readable) key "
-                                 "file: '%s'" % key)
-            with open(keypath, 'r') as f:
-                contents = f.read()
-            try:
-                key = json.loads(contents)
-                key = key['private_key']
-            except ValueError:
-                key = contents
+
+        if type(key) is dict:
+            # if it's a dict, assume it's containing the JSON
+            key_content = key
+            key = None
+        else:
+            key_path = os.path.expanduser(key)
+            if os.path.exists(key_path) and os.path.isfile(key_path):
+                try:
+                    with open(key_path, 'r') as f:
+                        key_content = f.read()
+                    except IOError:
+                        raise GoogleAuthError("Missing (or unreadable) key "
+                                      "file: '%s'" % key)
+            else:
+                # assume it's a PEM str or serialized JSON str
+                key_content = key
+                key = None
+
+        try:
+            key_content = json.loads(key_content)
+            # check if serialized JSON given
+        except TypeError:
+            # already a dict
+            pass
+        except ValueError:
+            # it's been a PEM string all along
+            pass
+        finally:
+            if 'private_key' in key_content:
+                key = key_content['private_key']
+            else:
+                key = key_content
+
+        try:
+            # check if the key is actually a PEM encoded private key
+            serialization.load_pem_private_key(
+                b(key),
+                password=None,
+                backend=default_backend()
+            )
+        except ValueError:
+            raise GoogleAuthError("Provided key value is no PEM encoded private key")
 
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs)

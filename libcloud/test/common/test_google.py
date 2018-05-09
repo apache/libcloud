@@ -48,16 +48,22 @@ except ImportError:
 
 
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
-PEM_KEY = os.path.join(SCRIPT_PATH, 'fixtures', 'google', 'pkey.pem')
-JSON_KEY = os.path.join(SCRIPT_PATH, 'fixtures', 'google', 'pkey.json')
-with open(JSON_KEY, 'r') as f:
-    KEY_STR = json.loads(f.read())['private_key']
+PEM_KEY_FILE = os.path.join(SCRIPT_PATH, 'fixtures', 'google', 'pkey.pem')
+JSON_KEY_FILE = os.path.join(SCRIPT_PATH, 'fixtures', 'google', 'pkey.json')
+with open(JSON_KEY_FILE, 'r') as f:
+    PEM_KEY_STR = json.loads(f.read())['private_key']
+with open(JSON_KEY_FILE, 'r') as f:
+    JSON_KEY_STR = f.read()
+    JSON_KEY = json.loads(JSON_KEY_STR)
 
 
-GCE_PARAMS = ('email@developer.gserviceaccount.com', 'key')
-GCE_PARAMS_PEM_KEY = ('email@developer.gserviceaccount.com', PEM_KEY)
-GCE_PARAMS_JSON_KEY = ('email@developer.gserviceaccount.com', JSON_KEY)
-GCE_PARAMS_KEY = ('email@developer.gserviceaccount.com', KEY_STR)
+GCE_USERID_EMAIL = 'email@developer.gserviceaccount.com'
+GCE_PARAMS = (GCE_USERID_EMAIL, 'key')
+GCE_PARAMS_PEM_KEY_FILE = (GCE_USERID_EMAIL, PEM_KEY_FILE)
+GCE_PARAMS_PEM_KEY = (GCE_USERID_EMAIL, PEM_KEY_STR)
+GCE_PARAMS_JSON_KEY_FILE = (GCE_USERID_EMAIL, JSON_KEY_FILE)
+GCE_PARAMS_JSON_KEY = (GCE_USERID_EMAIL, JSON_KEY)
+GCE_PARAMS_JSON_KEY_STR = (GCE_USERID_EMAIL, JSON_KEY_STR)
 GCE_PARAMS_IA = ('client_id', 'client_secret')
 GCE_PARAMS_GCE = ('foo', 'bar')
 GCS_S3_PARAMS_20 = ('GOOG0123456789ABCXYZ',  # GOOG + 16 alphanumeric chars
@@ -291,6 +297,14 @@ class GoogleOAuth2CredentialTest(GoogleTestCase):
 
         if SHA256:
             kwargs['auth_type'] = GoogleAuthType.SA
+            cred1 = GoogleOAuth2Credential(*GCE_PARAMS_PEM_KEY_FILE, **kwargs)
+            self.assertTrue(isinstance(cred1.oauth2_conn,
+                                       GoogleServiceAcctAuthConnection))
+
+            cred1 = GoogleOAuth2Credential(*GCE_PARAMS_JSON_KEY_FILE, **kwargs)
+            self.assertTrue(isinstance(cred1.oauth2_conn,
+                                       GoogleServiceAcctAuthConnection))
+
             cred1 = GoogleOAuth2Credential(*GCE_PARAMS_PEM_KEY, **kwargs)
             self.assertTrue(isinstance(cred1.oauth2_conn,
                                        GoogleServiceAcctAuthConnection))
@@ -299,7 +313,7 @@ class GoogleOAuth2CredentialTest(GoogleTestCase):
             self.assertTrue(isinstance(cred1.oauth2_conn,
                                        GoogleServiceAcctAuthConnection))
 
-            cred1 = GoogleOAuth2Credential(*GCE_PARAMS_KEY, **kwargs)
+            cred1 = GoogleOAuth2Credential(*GCE_PARAMS_JSON_KEY_STR, **kwargs)
             self.assertTrue(isinstance(cred1.oauth2_conn,
                                        GoogleServiceAcctAuthConnection))
 
