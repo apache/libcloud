@@ -39,6 +39,17 @@
 <name>id</name>
 <value><int>637366</int></value>
 </member>
+<member>
+<name>params</name>
+<value>
+<struct>
+<member>
+<name>vlan_id</name>
+<value><int>8352</int></value>
+</member>
+</struct>
+</value>
+</member>
 </struct></value>
 </param>
 </params>

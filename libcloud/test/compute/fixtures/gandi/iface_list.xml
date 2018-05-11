@@ -1,99 +1,362 @@
-<?xml version='1.0' encoding='UTF-8'?>
 <methodResponse>
-<params>
-<param>
-<value><array><data>
-<value><struct>
-<member>
-<name>date_updated</name>
-<value><dateTime.iso8601>20110120T14:58:44</dateTime.iso8601></value>
-</member>
-<member>
-<name>vm_id</name>
-<value><int>250133</int></value>
-</member>
-<member>
-<name>bandwidth</name>
-<value><double>5120.0</double></value>
-</member>
-<member>
-<name>datacenter_id</name>
-<value><int>1</int></value>
-</member>
-<member>
-<name>state</name>
-<value><string>used</string></value>
-</member>
-<member>
-<name>num</name>
-<value><int>0</int></value>
-</member>
-<member>
-<name>ips_id</name>
-<value><array><data>
-<value><int>9256</int></value>
-<value><int>9294</int></value>
-</data></array></value>
-</member>
-<member>
-<name>date_created</name>
-<value><dateTime.iso8601>20110120T14:57:55</dateTime.iso8601></value>
-</member>
-<member>
-<name>type</name>
-<value><string>public</string></value>
-</member>
-<member>
-<name>id</name>
-<value><int>7857</int></value>
-</member>
-</struct></value>
-<value><struct>
-<member>
-<name>date_updated</name>
-<value><dateTime.iso8601>20110324T17:14:16</dateTime.iso8601></value>
-</member>
-<member>
-<name>vm_id</name>
-<value><int>250288</int></value>
-</member>
-<member>
-<name>bandwidth</name>
-<value><double>5192.0</double></value>
-</member>
-<member>
-<name>datacenter_id</name>
-<value><int>1</int></value>
-</member>
-<member>
-<name>state</name>
-<value><string>used</string></value>
-</member>
-<member>
-<name>num</name>
-<value><int>0</int></value>
-</member>
-<member>
-<name>ips_id</name>
-<value><array><data>
-<value><int>9298</int></value>
-<value><int>9508</int></value>
-</data></array></value>
-</member>
-<member>
-<name>date_created</name>
-<value><dateTime.iso8601>20110324T17:14:06</dateTime.iso8601></value>
-</member>
-<member>
-<name>type</name>
-<value><string>public</string></value>
-</member>
-<member>
-<name>id</name>
-<value><int>8019</int></value>
-</member>
-</struct></value>
-</data></array></value>
-</param>
-</params>
+	<params>
+		<param>
+			<value>
+				<array>
+					<data>
+						<value>
+							<struct>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T16:16:46</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>vm_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>vlan</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>bandwidth</name>
+									<value>
+										<double>1024.0</double>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>free</string>
+									</value>
+								</member>
+								<member>
+									<name>num</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>ips_id</name>
+									<value>
+										<array>
+											<data>
+												<value>
+													<int>573630</int>
+												</value>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T16:16:45</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>public</string>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>434670</int>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T16:17:37</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>vm_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>vlan</name>
+									<value>
+										<struct>
+											<member>
+												<name>entity_id</name>
+												<value>
+													<string>bd418e60-5aa0-11e8-84b2-00163ea0592c</string>
+												</value>
+											</member>
+											<member>
+												<name>name</name>
+												<value>
+													<string>test_vlan</string>
+												</value>
+											</member>
+											<member>
+												<name>id</name>
+												<value>
+													<int>8352</int>
+												</value>
+											</member>
+										</struct>
+									</value>
+								</member>
+								<member>
+									<name>bandwidth</name>
+									<value>
+										<double>204800.0</double>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>free</string>
+									</value>
+								</member>
+								<member>
+									<name>num</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>ips_id</name>
+									<value>
+										<array>
+											<data>
+												<value>
+													<int>573633</int>
+												</value>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T16:17:35</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>434673</int>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T16:34:01</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>vm_id</name>
+									<value>
+										<int>352680</int>
+									</value>
+								</member>
+								<member>
+									<name>vlan</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>bandwidth</name>
+									<value>
+										<double>102400.0</double>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>used</string>
+									</value>
+								</member>
+								<member>
+									<name>num</name>
+									<value>
+										<int>0</int>
+									</value>
+								</member>
+								<member>
+									<name>ips_id</name>
+									<value>
+										<array>
+											<data>
+												<value>
+													<int>573657</int>
+												</value>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T16:34:01</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>public</string>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>434688</int>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T16:38:26</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>vm_id</name>
+									<value>
+										<int>352686</int>
+									</value>
+								</member>
+								<member>
+									<name>vlan</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>bandwidth</name>
+									<value>
+										<double>102400.0</double>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>used</string>
+									</value>
+								</member>
+								<member>
+									<name>num</name>
+									<value>
+										<int>0</int>
+									</value>
+								</member>
+								<member>
+									<name>ips_id</name>
+									<value>
+										<array>
+											<data>
+												<value>
+													<int>573663</int>
+												</value>
+												<value>
+													<int>573666</int>
+												</value>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T16:38:20</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>public</string>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>434694</int>
+									</value>
+								</member>
+							</struct>
+						</value>
+					</data>
+				</array>
+			</value>
+		</param>
+	</params>
 </methodResponse>
