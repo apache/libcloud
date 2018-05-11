@@ -892,7 +892,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                                  # XXX: needs hardcode
                                  vcpus=vcpus,
                                  bandwidth=None,
-                                 extra=el.get('extra_specs')
+                                 extra=el.get('extra_specs'),
                                  # Hardcoded
                                  price=self._get_size_price(el.get('id')),
                                  driver=self.connection.driver)
