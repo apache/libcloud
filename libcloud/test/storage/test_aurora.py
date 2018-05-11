@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import unittest
 
 from libcloud.storage.drivers.auroraobjects import AuroraObjectsStorageDriver
@@ -23,6 +24,12 @@ class AuroraObjectsTests(S3Tests, unittest.TestCase):
     driver_type = AuroraObjectsStorageDriver
 
     def setUp(self):
+        super(AuroraObjectsTests, self).setUp()
+
         AuroraObjectsStorageDriver.connectionCls.conn_class = S3MockHttp
         S3MockHttp.type = None
         self.driver = self.create_driver()
+
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())

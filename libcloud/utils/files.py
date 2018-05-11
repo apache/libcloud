@@ -83,7 +83,7 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False,
             if empty and yield_empty:
                 yield b('')
 
-            raise StopIteration
+            return
 
         if fill_size:
             if empty or len(data) >= chunk_size:

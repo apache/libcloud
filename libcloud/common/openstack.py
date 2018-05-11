@@ -345,7 +345,7 @@ class OpenStackResponse(Response):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299
+        return 200 <= i <= 299
 
     def has_content_type(self, content_type):
         content_type_value = self.headers.get('content-type') or ''

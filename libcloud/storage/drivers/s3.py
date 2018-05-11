@@ -89,7 +89,7 @@ class S3Response(AWSBaseResponse):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299 or i in self.valid_response_codes
+        return 200 <= i <= 299 or i in self.valid_response_codes
 
     def parse_error(self):
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
@@ -868,6 +868,10 @@ class BaseS3StorageDriver(StorageDriver):
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
         acl = extra.get('acl', None)
+
+        if not content_type:
+            content_type, _ = libcloud.utils.files.guess_file_mime_type(
+                object_name)
 
         if content_type:
             headers['Content-Type'] = content_type

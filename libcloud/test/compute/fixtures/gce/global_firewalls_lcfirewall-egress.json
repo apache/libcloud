@@ -1,0 +1,25 @@
+{
+  "allowed": [
+    {
+      "IPProtocol": "tcp",
+      "ports": [
+        "4567"
+      ]
+    }
+  ],
+  "creationTimestamp": "2013-06-26T10:05:43.773-07:00",
+  "description": "Libcloud Egress Firewall",
+  "direction": "EGRESS",
+  "id": "0565629596395414122",
+  "kind": "compute#firewall",
+  "name": "lcfirewall-egress",
+  "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+  "priority": 900,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/firewalls/lcfirewall-egress",
+  "targetServiceAccounts": [
+    "lctarget@gserviceaccount.com"
+  ],
+  "destinationRanges": [
+    "8.8.8.8/32"
+  ]
+}

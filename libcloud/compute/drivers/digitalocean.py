@@ -280,6 +280,40 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
 
+    def ex_rebuild_node(self, node):
+        """
+        Destroy and rebuild the node using its base image.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
+        attr = {'type': 'rebuild', 'image': node.extra['image']['id']}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
+    def ex_resize_node(self, node, size):
+        """
+        Resize the node to a different machine size.  Note that some resize
+        operations are reversible, and others are irreversible.
+
+        :param node: Node to rebuild
+        :type node: :class:`Node`
+
+        :param size: New size for this machine
+        :type node: :class:`NodeSize`
+
+        :return True if the operation began successfully
+        :rtype ``bool``
+        """
+        attr = {'type': 'resize', 'size': size.name}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
     def create_key_pair(self, name, public_key=''):
         """
         Create a new SSH key.
@@ -459,10 +493,115 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
+    def ex_create_floating_ip(self, location):
+        """
+        Create new floating IP reserved to a region.
+
+        The newly created floating IP will not be associated to a Droplet.
+
+        See https://developers.digitalocean.com/documentation/v2/#floating-ips
+
+        :param location: Which data center to create the floating IP in.
+        :type location: :class:`.NodeLocation`
+
+        :rtype: :class:`DigitalOcean_v2_FloatingIpAddress`
+        """
+        attr = {'region': location.id}
+        resp = self.connection.request('/v2/floating_ips',
+                                       data=json.dumps(attr), method='POST')
+        return self._to_floating_ip(resp.object['floating_ip'])
+
+    def ex_delete_floating_ip(self, ip):
+        """
+        Delete specified floating IP
+
+        :param      ip: floating IP to remove
+        :type       ip: :class:`DigitalOcean_v2_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('/v2/floating_ips/{}'.format(ip.id),
+                                       method='DELETE')
+        return resp.status == httplib.NO_CONTENT
+
+    def ex_list_floating_ips(self):
+        """
+        List floating IPs
+
+        :rtype: ``list`` of :class:`DigitalOcean_v2_FloatingIpAddress`
+        """
+        return self._to_floating_ips(
+            self._paginated_request('/v2/floating_ips', 'floating_ips')
+        )
+
+    def ex_get_floating_ip(self, ip):
+        """
+        Get specified floating IP
+
+        :param      ip: floating IP to get
+        :type       ip: ``str``
+
+        :rtype: :class:`DigitalOcean_v2_FloatingIpAddress`
+        """
+        floating_ips = self.ex_list_floating_ips()
+        matching_ips = [x for x in floating_ips if x.ip_address == ip]
+        if not matching_ips:
+            raise ValueError('Floating ip %s not found' % ip)
+        return matching_ips[0]
+
+    def ex_attach_floating_ip_to_node(self, node, ip):
+        """
+        Attach the floating IP to the node
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      ip: floating IP to attach
+        :type       ip: ``str`` or :class:`DigitalOcean_v2_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        data = {
+            'type': 'assign',
+            'droplet_id': node.id
+        }
+        resp = self.connection.request(
+            '/v2/floating_ips/%s/actions' % ip.ip_address,
+            data=json.dumps(data), method='POST'
+        )
+        return resp.status == httplib.CREATED
+
+    def ex_detach_floating_ip_from_node(self, node, ip):
+        """
+        Detach a floating IP from the given node
+
+        Note: the 'node' object is not used in this method but it is added
+        to the signature of ex_detach_floating_ip_from_node anyway so it
+        conforms to the interface of the method of the same name for other
+        drivers like for example OpenStack.
+
+        :param      node: Node from which the IP should be detached
+        :type       node: :class:`Node`
+
+        :param      ip: Floating IP to detach
+        :type       ip: :class:`DigitalOcean_v2_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        data = {
+            'type': 'unassign'
+        }
+        resp = self.connection.request(
+            '/v2/floating_ips/%s/actions' % ip.ip_address,
+            data=json.dumps(data), method='POST'
+        )
+        return resp.status == httplib.CREATED
+
     def _to_node(self, data):
         extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
                       'size_slug', 'locked', 'created_at', 'networks',
-                      'kernel', 'backup_ids', 'snapshot_ids', 'features']
+                      'kernel', 'backup_ids', 'snapshot_ids', 'features',
+                      'tags']
         if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
         else:
@@ -538,3 +677,44 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         return VolumeSnapshot(id=data['id'], name=data['name'],
                               size=data['size_gigabytes'],
                               driver=self, extra=extra)
+
+    def _to_floating_ips(self, obj):
+        return [self._to_floating_ip(ip) for ip in obj]
+
+    def _to_floating_ip(self, obj):
+        return DigitalOcean_v2_FloatingIpAddress(
+            # There is no ID, but the IP is unique so we can use that
+            id=obj['ip'],
+            ip_address=obj['ip'],
+            node_id=obj['droplet']['id'] if obj['droplet'] else None,
+            extra={
+                'region': obj['region'],
+            },
+            driver=self
+        )
+
+
+class DigitalOcean_v2_FloatingIpAddress(object):
+    """
+    Floating IP info.
+    """
+
+    def __init__(self, id, ip_address, node_id=None, extra=None, driver=None):
+        self.id = str(id)
+        self.ip_address = ip_address
+        self.extra = extra
+        self.node_id = node_id
+        self.driver = driver
+
+    def delete(self):
+        """
+        Delete this floating IP
+
+        :rtype: ``bool``
+        """
+        return self.driver.ex_delete_floating_ip(self)
+
+    def __repr__(self):
+        return ('<DigitalOcean_v2_FloatingIpAddress: id=%s, ip_addr=%s,'
+                ' driver=%s>'
+                % (self.id, self.ip_address, self.driver))

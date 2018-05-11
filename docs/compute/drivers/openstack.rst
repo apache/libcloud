@@ -247,15 +247,22 @@ are supported by two different subclasses of the OpenStackNodeDriver. The
 default is the 1.1 API. The 1.0 API is supported to be able to connect to
 OpenStack instances which do not yet support the version 1.1 API.
 
-Compute 1.1 API version (current)
+Compute 2.0 API version (current)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: libcloud.compute.drivers.openstack.OpenStack_2_NodeDriver
+    :members:
+    :inherited-members:
+
+Compute 1.1 API version (old installations)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: libcloud.compute.drivers.openstack.OpenStack_1_1_NodeDriver
     :members:
     :inherited-members:
 
-Compute 1.0 API version (old installations)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Compute 1.0 API version (older installations)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: libcloud.compute.drivers.openstack.OpenStack_1_0_NodeDriver
     :members:

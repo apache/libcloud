@@ -17,7 +17,6 @@
         "bootCdrom" : null,
         "availabilityZone": "ZONE_1",
         "vmState": "RUNNING",
-        "bootCdrom": null,
         "bootVolume": {
             "id": "bvol-1",
             "type": "volume",

@@ -15,6 +15,7 @@
 """
 OpenStack driver
 """
+
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.iso8601 import parse_date
 
@@ -37,7 +38,7 @@ from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.openstack import OpenStackException
 from libcloud.common.openstack import OpenStackResponse
 from libcloud.utils.networking import is_public_subnet
-from libcloud.compute.base import NodeSize, NodeImage
+from libcloud.compute.base import NodeSize, NodeImage, NodeImageMember
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
@@ -70,6 +71,12 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
     # default config for http://devstack.org/
     service_type = 'compute'
     service_name = 'nova'
+    service_region = 'RegionOne'
+
+
+class OpenStackImageConnection(OpenStackBaseConnection):
+    service_type = 'image'
+    service_name = 'glance'
     service_region = 'RegionOne'
 
 
@@ -274,7 +281,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
         @inherits: :class:`NodeDriver.list_images`
 
-        :param ex_only_active: True if list only active
+        :param ex_only_active: True if list only active (optional)
         :type ex_only_active: ``bool``
 
         """
@@ -1232,7 +1239,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :type       ex_metadata: ``dict``
 
         :keyword    ex_files:   File Path => File contents to create on
-                                the no  de
+                                the node
         :type       ex_files:   ``dict``
 
 
@@ -1283,19 +1290,48 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
     def _to_image(self, api_image):
         server = api_image.get('server', {})
+        updated = api_image.get('updated_at') or api_image['updated']
+        created = api_image.get('created_at') or api_image['created']
+        min_ram = api_image.get('min_ram')
+
+        if min_ram is None:
+            min_ram = api_image.get('minRam')
+
+        min_disk = api_image.get('min_disk')
+
+        if min_disk is None:
+            min_disk = api_image.get('minDisk')
+
         return NodeImage(
             id=api_image['id'],
             name=api_image['name'],
             driver=self,
             extra=dict(
-                updated=api_image['updated'],
-                created=api_image['created'],
+                visibility=api_image.get('visibility'),
+                updated=updated,
+                created=created,
                 status=api_image['status'],
                 progress=api_image.get('progress'),
                 metadata=api_image.get('metadata'),
+                os_type=api_image.get('os_type'),
                 serverId=server.get('id'),
-                minDisk=api_image.get('minDisk'),
-                minRam=api_image.get('minRam'),
+                minDisk=min_disk,
+                minRam=min_ram,
+            )
+        )
+
+    def _to_image_member(self, api_image_member):
+        created = api_image_member['created_at']
+        updated = api_image_member.get('updated_at')
+        return NodeImageMember(
+            id=api_image_member['member_id'],
+            image_id=api_image_member['image_id'],
+            state=api_image_member['status'],
+            created=created,
+            driver=self,
+            extra=dict(
+                schema=api_image_member.get('schema'),
+                updated=updated,
             )
         )
 
@@ -1419,7 +1455,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :type       ex_metadata: ``dict``
 
         :keyword    ex_files:   File Path => File contents to create on
-                                the no  de
+                                the node
         :type       ex_files:   ``dict``
 
         :keyword    ex_keyname:  Name of existing public key to inject into
@@ -2446,22 +2482,219 @@ class OpenStack_2_Connection(OpenStackComputeConnection):
         return json.dumps(data)
 
 
+class OpenStack_2_ImageConnection(OpenStackImageConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
 class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     """
     OpenStack node driver.
     """
     connectionCls = OpenStack_2_Connection
+
+    # Previously all image functionality was available through the
+    # compute API. This deprecated proxied API does not offer all
+    # functionality that the Glance Image service API offers.
+    # See https://developer.openstack.org/api-ref/compute/
+    #
+    # > These APIs are proxy calls to the Image service. Nova has deprecated
+    # > all the proxy APIs and users should use the native APIs instead. These
+    # > will fail with a 404 starting from microversion 2.36. See: Relevant
+    # > Image APIs.
+    #
+    # For example, managing image visibility and sharing machine
+    # images across tenants can not be done using the proxied image API in the
+    # compute endpoint, but it can be done with the Glance Image API.
+    # See https://developer.openstack.org/api-ref/
+    # image/v2/index.html#list-image-members
+    image_connectionCls = OpenStack_2_ImageConnection
+    image_connection = None
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
     _networks_url_prefix = '/os-networks'
 
     def __init__(self, *args, **kwargs):
+        original_connectionCls = self.connectionCls
         self._ex_force_api_version = str(kwargs.pop('ex_force_api_version',
                                                     None))
         if 'ex_force_auth_version' not in kwargs:
             kwargs['ex_force_auth_version'] = '3.x_password'
+
+        # We run the init once to get the Glance V2 API connection
+        # and put that on the object under self.image_connection.
+        self.connectionCls = self.image_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+        self.image_connection = self.connection
+
+        # We run the init again to get the compute API connection
+        # and that's put under self.connection as normal.
+        self.connectionCls = original_connectionCls
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+
+    def get_image(self, image_id):
+        """
+        Get a NodeImage using the V2 Glance API
+
+        @inherits: :class:`OpenStack_1_1_NodeDriver.get_image`
+
+        :param      image_id: ID of the image which should be used
+        :type       image_id: ``str``
+
+        :rtype: :class:`NodeImage`
+        """
+        return self._to_image(self.image_connection.request(
+            '/v2/images/%s' % (image_id,)).object)
+
+    def list_images(self, location=None, ex_only_active=True):
+        """
+        Lists all active images using the V2 Glance API
+
+        @inherits: :class:`NodeDriver.list_images`
+
+        :param location: Which data center to list the images in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+
+        :param ex_only_active: True if list only active (optional)
+        :type ex_only_active: ``bool``
+        """
+        if location is not None:
+            raise NotImplementedError(
+                "location in list_images is not implemented "
+                "in the OpenStack_2_NodeDriver")
+        if not ex_only_active:
+            raise NotImplementedError(
+                "ex_only_active in list_images is not implemented "
+                "in the OpenStack_2_NodeDriver")
+        response = self.image_connection.request('/v2/images')
+        images = []
+        for image in response.object['images']:
+            images.append(self._to_image(image))
+        return images
+
+    def ex_update_image(self, image_id, data):
+        """
+        Patch a NodeImage. Can be used to set visibility
+
+        :param      image_id: ID of the image which should be used
+        :type       image_id: ``str``
+
+        :param      data: The data to PATCH, either a dict or a list
+        for example: [
+          {'op': 'replace', 'path': '/visibility', 'value': 'shared'}
+        ]
+        :type       data: ``dict|list``
+
+        :rtype: :class:`NodeImage`
+        """
+        response = self.image_connection.request(
+            '/v2/images/%s' % (image_id,),
+            headers={'Content-type': 'application/'
+                                     'openstack-images-'
+                                     'v2.1-json-patch'},
+            method='PATCH', data=data
+        )
+        return self._to_image(response.object)
+
+    def ex_list_image_members(self, image_id):
+        """
+        List all members of an image. See
+        https://developer.openstack.org/api-ref/image/v2/index.html#sharing
+
+        :param      image_id: ID of the image of which the members should
+        be listed
+        :type       image_id: ``str``
+
+        :rtype: ``list`` of :class:`NodeImageMember`
+        """
+        response = self.image_connection.request(
+            '/v2/images/%s/members' % (image_id,)
+        )
+        image_members = []
+        for image_member in response.object['members']:
+            image_members.append(self._to_image_member(image_member))
+        return image_members
+
+    def ex_create_image_member(self, image_id, member_id):
+        """
+        Give a project access to an image.
+
+        The image should have visibility status 'shared'.
+
+        Note that this is not an idempotent operation. If this action is
+        attempted using a tenant that is already in the image members
+        group the API will throw a Conflict (409).
+        See the 'create-image-member' section on
+        https://developer.openstack.org/api-ref/image/v2/index.html
+
+        :param str image_id: The ID of the image to share with the specified
+        tenant
+        :param str member_id: The ID of the project / tenant (the image member)
+        Note that this is the Keystone project ID and not the project name,
+        so something like e2151b1fe02d4a8a2d1f5fc331522c0a
+        :return None:
+
+        :param      image_id: ID of the image to share
+        :type       image_id: ``str``
+
+        :param      project: ID of the project to give access to the image
+        :type       image_id: ``str``
+
+        :rtype: ``list`` of :class:`NodeImageMember`
+        """
+        data = {'member': member_id}
+        response = self.image_connection.request(
+            '/v2/images/%s/members' % image_id,
+            method='POST', data=data
+        )
+        return self._to_image_member(response.object)
+
+    def ex_get_image_member(self, image_id, member_id):
+        """
+        Get a member of an image by id
+
+        :param      image_id: ID of the image of which the member should
+        be listed
+        :type       image_id: ``str``
+
+        :param      member_id: ID of the member to list
+        :type       image_id: ``str``
+
+        :rtype: ``list`` of :class:`NodeImageMember`
+        """
+        response = self.image_connection.request(
+            '/v2/images/%s/members/%s' % (image_id, member_id)
+        )
+        return self._to_image_member(response.object)
+
+    def ex_accept_image_member(self, image_id, member_id):
+        """
+        Accept a pending image as a member.
+
+        This call is idempotent unlike ex_create_image_member,
+        you can accept the same image many times.
+
+        :param      image_id: ID of the image to accept
+        :type       image_id: ``str``
+
+        :param      project: ID of the project to accept the image as
+        :type       image_id: ``str``
+
+        :rtype: ``bool``
+        """
+        data = {'status': 'accepted'}
+        response = self.image_connection.request(
+            '/v2/images/%s/members/%s' % (image_id, member_id),
+            method='PUT', data=data
+        )
+        return self._to_image_member(response.object)
 
 
 class OpenStack_1_1_FloatingIpPool(object):

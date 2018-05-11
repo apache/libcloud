@@ -25,7 +25,7 @@ try:
 except ImportError:
     import json
 
-from libcloud.compute.base import NodeLocation
+from libcloud.compute.base import NodeLocation, NodeSize, NodeImage
 from libcloud.common.types import ProviderError
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, \
     CloudStackAffinityGroupType
@@ -1275,6 +1275,22 @@ class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
             cls('key', 'secret', url='https://api.exoscale.ch/compute')
         except Exception:
             self.fail('url provided but driver raised an exception')
+
+    def test_restore(self):
+        template = NodeImage("aaa-bbb-ccc-ddd", "fake-img", None)
+
+        node = self.driver.list_nodes()[0]
+        res = node.ex_restore(template=template)
+
+        self.assertEqual(res, template.id)
+
+    def test_change_offerings(self):
+        offering = NodeSize("eee-fff-ggg-hhh", "fake-size", 1, 4, 5, 0.1, None)
+
+        node = self.driver.list_nodes()[0]
+        res = node.ex_change_node_size(offering=offering)
+
+        self.assertEqual(res, offering.id)
 
 
 class CloudStackMockHttp(MockHttp, unittest.TestCase):

@@ -241,7 +241,7 @@ class TestUpcloudNodeDestroyer(unittest.TestCase):
         self.mock_operations.destroy_node.assert_called_once_with(1)
 
     def test_reuse(self):
-        "Verify that internal flag self.destroyer._stop_node is handled properly"
+        """Verify that internal flag self.destroyer._stop_node is handled properly"""
         self.mock_operations.get_node_state.side_effect = ['started', 'stopped', 'started', 'stopped']
         self.assertTrue(self.destroyer.destroy_node(1))
         self.assertTrue(self.destroyer.destroy_node(1))
@@ -255,7 +255,7 @@ class TestUpcloudNodeDestroyer(unittest.TestCase):
         self.assertRaises(UpcloudTimeoutException, self.destroyer.destroy_node, 1)
 
     def test_timeout_reuse(self):
-        "Verify sleep count is handled properly"
+        """Verify sleep count is handled properly"""
         self.mock_operations.get_node_state.side_effect = ['maintenance'] * 50
         self.assertRaises(UpcloudTimeoutException, self.destroyer.destroy_node, 1)
 

@@ -486,6 +486,18 @@ class CloudStackNode(Node):
         """
         return self.driver.ex_delete_port_forwarding_rule(node=self, rule=rule)
 
+    def ex_restore(self, template=None):
+        """
+        Restore virtual machine
+        """
+        return self.driver.ex_restore(node=self, template=template)
+
+    def ex_change_node_size(self, offering):
+        """
+        Change virtual machine offering/size
+        """
+        return self.driver.ex_change_node_size(node=self, offering=offering)
+
     def ex_start(self):
         """
         Starts a stopped virtual machine.
@@ -1692,6 +1704,47 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                             params={'id': node.id},
                             method='GET')
         return True
+
+    def ex_restore(self, node, template=None):
+        """
+        Restore virtual machine
+
+        :param node: Node to restore
+        :type node: :class:`CloudStackNode`
+
+        :param template: Optional new template
+        :type  template: :class:`NodeImage`
+
+        :rtype ``str``
+        """
+        params = {'virtualmachineid': node.id}
+        if template:
+            params['templateid'] = template.id
+
+        res = self._async_request(command='restoreVirtualMachine',
+                                  params=params,
+                                  method='GET')
+        return res['virtualmachine']['templateid']
+
+    def ex_change_node_size(self, node, offering):
+        """
+        Change offering/size of a virtual machine
+
+        :param node: Node to change size
+        :type node: :class:`CloudStackNode`
+
+        :param offering: The new offering
+        :type  offering: :class:`NodeSize`
+
+        :rtype ``str``
+        """
+        res = self._async_request(command='scaleVirtualMachine',
+                                  params={
+                                      'id': node.id,
+                                      'serviceofferingid': offering.id
+                                  },
+                                  method='GET')
+        return res['virtualmachine']['serviceofferingid']
 
     def ex_start(self, node):
         """

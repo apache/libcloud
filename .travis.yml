@@ -16,7 +16,7 @@ addons:
   apt:
     packages:
       - graphviz
-      - libvirt-bin
+      - libvirt-dev
 
 matrix:
   fast_finish: true
@@ -42,7 +42,7 @@ matrix:
           packages:
             - graphviz
             - gcc
-            - libvirt-bin
+            - libvirt-dev
       # Trigger ReadTheDocs build on docs builder
       after_success:
         - ./contrib/trigger_rtd_build.py 8284

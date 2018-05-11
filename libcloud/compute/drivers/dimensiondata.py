@@ -4161,8 +4161,18 @@ class DimensionDataNodeDriver(NodeDriver):
         images = []
         locations = self.list_locations()
 
+        # The CloudControl API will return all images
+        # in the current geographic region (even ones in
+        # datacenters the user's organisation does not have access to)
+        #
+        # We therefore need to filter out those images (since we can't
+        # get a NodeLocation for them)
+        location_ids = set(location.id for location in locations)
+
         for element in object.findall(fixxpath(el_name, TYPES_URN)):
-            images.append(self._to_image(element, locations))
+            location_id = element.get('datacenterId')
+            if location_id in location_ids:
+                images.append(self._to_image(element, locations))
 
         return images
 
@@ -4170,9 +4180,8 @@ class DimensionDataNodeDriver(NodeDriver):
         location_id = element.get('datacenterId')
         if locations is None:
             locations = self.list_locations(location_id)
-        location = list(filter(lambda x: x.id == location_id,
-                               locations))[0]
 
+        location = [loc for loc in locations if loc.id == location_id][0]
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
 
         if LooseVersion(self.connection.active_api_version) > LooseVersion(

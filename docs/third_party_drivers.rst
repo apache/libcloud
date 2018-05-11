@@ -14,30 +14,30 @@ guarantee the quality of those drivers.
 Compute
 -------
 
-+-------------------+---------------------------------+--------------------------------------+
-| Provider          | PyPi package                    | Source code                          |
-+===================+=================================+======================================+
-| `StratusLab`_     |                                 | `StratusLab/libcloud-drivers`_       |
-+-------------------+---------------------------------+--------------------------------------+
-| `Snooze`_         | `stratuslab-libcloud-drivers`_  | `snooze-libcloud`_                   |
-+-------------------+---------------------------------+--------------------------------------+
++----------------+---------------------------------+---------------------------------+
+| Provider       | PyPi package                    | Source code                     |
++================+=================================+=================================+
+| `StratusLab`_  | `stratuslab-libcloud-drivers`_  | `StratusLab/libcloud-drivers`_  |
++----------------+---------------------------------+---------------------------------+
+| `Snooze`_      |                                 | `msimonin/snooze-libcloud`_     |
++----------------+---------------------------------+---------------------------------+
 
 DNS
 ----
 
-+-------------------+--------------------------+--------------------------------------+
-| Provider          | PyPi package             | Source code                          |
-+===================+==========================+======================================+
-| `DNSMadeEasy`_    | `libcloud-dnsmadeeasy`_  | `moses-palmer/libcloud-dnsmadeeasy`_ |
-+-------------------+--------------------------+--------------------------------------+
++-----------------+--------------------------+---------------------------------------+
+| Provider        | PyPi package             | Source code                           |
++=================+==========================+=======================================+
+| `DNSMadeEasy`_  | `libcloud-dnsmadeeasy`_  | `moses-palmer/libcloud-dnsmadeeasy`_  |
++-----------------+--------------------------+---------------------------------------+
 
 .. _`StratusLab`: http://stratuslab.eu/
-.. _`Snooze`: http://snooze.inria.fr
-.. _`snooze-libcloud`: https://github.com/msimonin/snooze-libcloud
-
 .. _`stratuslab-libcloud-drivers`: https://pypi.python.org/pypi/stratuslab-libcloud-drivers
 .. _`StratusLab/libcloud-drivers`: https://github.com/StratusLab/libcloud-drivers
 
+.. _`Snooze`: http://snooze.inria.fr
+.. _`msimonin/snooze-libcloud`: https://github.com/msimonin/snooze-libcloud
+
 .. _`DNSMadeEasy`: http://www.dnsmadeeasy.com/
-.. _`libcloud-dnsmadeeasy`: https://pypi.python.org/pypi/libcloud-dnsmadeeasy/1.0
+.. _`libcloud-dnsmadeeasy`: https://pypi.python.org/pypi/libcloud-dnsmadeeasy
 .. _`moses-palmer/libcloud-dnsmadeeasy`: https://github.com/moses-palmer/libcloud-dnsmadeeasy

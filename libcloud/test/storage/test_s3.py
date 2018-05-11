@@ -19,13 +19,18 @@ import os
 import sys
 
 from io import BytesIO
-
 from hashlib import sha1
+
+import mock
+from mock import Mock
+from mock import PropertyMock
+import libcloud.utils.files  # NOQA: F401
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
+from libcloud.utils.py3 import StringIO
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
@@ -323,6 +328,14 @@ class S3MockHttp(MockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
+    def _foo_bar_container_foo_bar_object_NO_BUFFER(self, method, url, body, headers):
+        # test_download_object_data_is_not_buffered_in_memory
+        body = generate_random_data(1000)
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
     def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url,
                                                          body, headers):
         body = ''
@@ -378,14 +391,14 @@ class S3Tests(unittest.TestCase):
         self.mock_response_klass.type = None
         self.driver = self.create_driver()
 
+        self._file_path = os.path.abspath(__file__) + '.temp'
+
     def tearDown(self):
         self._remove_test_file()
 
     def _remove_test_file(self):
-        file_path = os.path.abspath(__file__) + '.temp'
-
         try:
-            os.unlink(file_path)
+            os.unlink(self._file_path)
         except OSError:
             pass
 
@@ -614,7 +627,37 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = os.path.abspath(__file__) + '.temp'
+        destination_path = self._file_path
+        result = self.driver.download_object(obj=obj,
+                                             destination_path=destination_path,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+    def test_download_object_data_is_not_buffered_in_memory(self):
+        # Test case which verifies that response.body attribute is not accessed
+        # and as such, whole body response is not buffered into RAM
+
+        # If content is consumed and response.content attribute accessed execption
+        # will be thrown and test will fail
+
+        mock_response = Mock(name='mock response')
+        mock_response.headers = {}
+        mock_response.status_code = 200
+        msg = '"content" attribute was accessed but it shouldn\'t have been'
+        type(mock_response).content = PropertyMock(name='mock content attribute',
+                                                   side_effect=Exception(msg))
+        mock_response.iter_content.return_value = StringIO('a' * 1000)
+
+        self.driver.connection.connection.getresponse = Mock()
+        self.driver.connection.connection.getresponse.return_value = mock_response
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = self._file_path
         result = self.driver.download_object(obj=obj,
                                              destination_path=destination_path,
                                              overwrite_existing=False,
@@ -628,7 +671,7 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = os.path.abspath(__file__) + '.temp'
+        destination_path = self._file_path
         result = self.driver.download_object(obj=obj,
                                              destination_path=destination_path,
                                              overwrite_existing=False,
@@ -863,6 +906,27 @@ class S3Tests(unittest.TestCase):
 
         self.assertEqual(obj.name, object_name)
         self.assertEqual(obj.size, CHUNK_SIZE * 3)
+
+    def test_upload_object_via_stream_guess_file_mime_type(self):
+        if self.driver.supports_s3_multipart_upload:
+            self.mock_response_klass.type = 'MULTIPART'
+        else:
+            self.mock_response_klass.type = None
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_stream_data'
+        iterator = BytesIO(b('234'))
+
+        with mock.patch(
+                'libcloud.utils.files.guess_file_mime_type',
+                autospec=True) as mock_guess_file_mime_type:
+            mock_guess_file_mime_type.return_value = ('application/zip', None)
+
+            self.driver.upload_object_via_stream(container=container,
+                                                 object_name=object_name,
+                                                 iterator=iterator)
+            mock_guess_file_mime_type.assert_called_with(object_name)
 
     def test_upload_object_via_stream_abort(self):
         if not self.driver.supports_s3_multipart_upload:

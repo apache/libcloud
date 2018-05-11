@@ -45,7 +45,7 @@ class AliyunXmlResponse(XmlResponse):
     namespace = None
 
     def success(self):
-        return self.status >= 200 and self.status < 300
+        return 200 <= self.status < 300
 
     def parse_body(self):
         """

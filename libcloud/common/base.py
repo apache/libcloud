@@ -274,10 +274,15 @@ class RawResponse(Response):
         if not self._response:
             response = self.connection.connection.getresponse()
             self._response = HttpLibResponseProxy(response)
-            self.body = response.content
             if not self.success():
                 self.parse_error()
         return self._response
+
+    @property
+    def body(self):
+        # Note: We use property to avoid saving whole response body into RAM
+        # See https://github.com/apache/libcloud/pull/1132 for details
+        return self.response.body
 
     @property
     def reason(self):
@@ -581,6 +586,7 @@ class Connection(object):
                     url=url,
                     body=data,
                     headers=headers,
+                    raw=raw,
                     stream=stream)
             else:
                 if retry_enabled:

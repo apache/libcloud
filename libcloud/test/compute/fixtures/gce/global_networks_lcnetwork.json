@@ -6,5 +6,8 @@
   "id": "16211908079305042870",
   "kind": "compute#network",
   "name": "lcnetwork",
+  "routingConfig": {
+    "routingMode": "REGIONAL"
+  },
   "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/lcnetwork"
 }

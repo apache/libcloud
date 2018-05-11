@@ -1,0 +1,150 @@
+{
+ "kind": "compute#imageList",
+ "id": "projects/suse-byos-cloud/global/images",
+ "items": [
+  {
+    "archiveSizeBytes": "4903362048",
+    "creationTimestamp": "2018-01-04T15:38:28.707-08:00",
+    "description": "SUSE, SUSE Linux Enterprise Server 11 SP4 BYOS configuration, x86_64, built on 2018-01-04",
+    "diskSizeGb": "10",
+    "family": "sles-11-byos",
+    "id": "2387143735879336987",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "name": "sles-11-sp4-byos-v20180104",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/images/sles-11-sp4-byos-v20180104",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "3656075520",
+    "creationTimestamp": "2017-05-15T13:07:01.943-07:00",
+    "description": "SUSE, SUSE Linux Enterprise Server 12 SP2, x86_64, built on 2017-05-15",
+    "diskSizeGb": "10",
+    "family": "sles-12-byos",
+    "id": "3705265501102388362",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/licenses/sles-12-byos"
+    ],
+    "name": "sles-12-sp2-byos-v20170515",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/images/sles-12-sp2-byos-v20170515",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "10602881280",
+    "creationTimestamp": "2018-02-14T12:21:27.529-08:00",
+    "description": "SUSE, SUSE Linux Enterprise Server 12 SP2 For SAP BYOS configuration, x86_64, built on 2018-02-14",
+    "diskSizeGb": "10",
+    "family": "sles-12-sp2-sap-byos",
+    "id": "6191777507858523304",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/licenses/sles-sap-12-byos"
+    ],
+    "name": "sles-12-sp2-sap-byos-v20180214",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/images/sles-12-sp2-sap-byos-v20180214",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "6914937600",
+    "creationTimestamp": "2018-02-14T09:40:30.237-08:00",
+    "description": "SUSE, SUSE Linux Enterprise Server 12 SP3, x86_64, built on 2018-02-14",
+    "diskSizeGb": "10",
+    "family": "sles-12-byos",
+    "id": "1750160000940624482",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/licenses/sles-12-byos"
+    ],
+    "name": "sles-12-sp3-byos-v20180214",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/images/sles-12-sp3-byos-v20180214",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "10740059520",
+    "creationTimestamp": "2018-02-14T10:20:54.913-08:00",
+    "description": "SUSE, SUSE Linux Enterprise Server 12 SP3 For SAP BYOS configuration, x86_64, built on 2018-02-14",
+    "diskSizeGb": "10",
+    "family": "sles-12-sp3-sap-byos",
+    "id": "2521622434670035177",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/licenses/sles-sap-12-byos"
+    ],
+    "name": "sles-12-sp3-sap-byos-v20180214",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/images/sles-12-sp3-sap-byos-v20180214",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "8562081600",
+    "creationTimestamp": "2018-02-14T13:03:08.443-08:00",
+    "description": "SUSE, SUSE Manager 3.1 Proxy BYOS, x86_64 built on 2018-02-14, Based on SLES 12 SP2",
+    "diskSizeGb": "10",
+    "family": "suse-manager-proxy-byos",
+    "id": "3455542315608251107",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/licenses/suma-proxy-byos"
+    ],
+    "name": "suse-manager-3-1-proxy-byos-v20180214",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/images/suse-manager-3-1-proxy-byos-v20180214",
+    "sourceType": "RAW",
+    "status": "READY"
+  },
+  {
+    "archiveSizeBytes": "15142568640",
+    "creationTimestamp": "2018-02-14T12:42:11.295-08:00",
+    "description": "SUSE, SUSE Manager 3.1 Server BYOS, x86_64 built on 2018-02-14, Based on SLES 12 SP2",
+    "diskSizeGb": "10",
+    "family": "suse-manager-server-byos",
+    "id": "5720192942026072525",
+    "kind": "compute#image",
+    "labelFingerprint": "42WmSpB8rSM=",
+    "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/licenses/suma-server-byos"
+    ],
+    "name": "suse-manager-3-1-server-byos-v20180214",
+    "rawDisk": {
+      "containerType": "TAR",
+      "source": ""
+    },
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/suse-byos-cloud/global/images/suse-manager-3-1-server-byos-v20180214",
+    "sourceType": "RAW",
+    "status": "READY"
+  }
+ ]
+}

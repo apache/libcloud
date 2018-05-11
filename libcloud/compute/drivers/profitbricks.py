@@ -104,11 +104,11 @@ class ProfitBricksConnection(ConnectionUserAndKey):
         return headers
 
     def encode_data(self, data):
-        '''
+        """
         If a string is passed in, just return it
         or else if a dict is passed in, encode it
         as a json string.
-        '''
+        """
         if type(data) is str:
             return data
 
@@ -121,13 +121,13 @@ class ProfitBricksConnection(ConnectionUserAndKey):
     def request(self, action, params=None, data=None, headers=None,
                 method='GET', raw=False, with_full_url=False):
 
-        '''
+        """
         Some requests will use the href attribute directly.
         If this is not the case, then we should formulate the
         url based on the action specified.
         If we are using a full url, we need to remove the
         host and protocol components.
-        '''
+        """
         if not with_full_url or with_full_url is False:
             action = self.api_prefix + action.lstrip('/')
         else:
@@ -1223,7 +1223,7 @@ class ProfitBricksNodeDriver(NodeDriver):
         """
 
         response = self.connection.request(
-            action='/snapshots',
+            action='snapshots',
             params={'depth': 3},
             method='GET'
         )
@@ -3777,7 +3777,6 @@ class ProfitBricksNodeDriver(NodeDriver):
                 'size': 'size',
                 'cpuHotPlug': 'cpu_hot_plug',
                 'cpuHotUnplug': 'cpu_hot_unplug',
-                'deviceNumber': 'device_number',
                 'discScsiHotPlug': 'disc_scsi_hot_plug',
                 'discScsiHotUnplug': 'disc_scsi_hot_unplug',
                 'discVirtioHotPlug': 'disc_virtio_hot_plug',
