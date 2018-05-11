@@ -193,3 +193,21 @@ class Disk(BaseObject):
         return (
             ('<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>')
             % (self.id, self.name, self.state, self.size, self.driver.name))
+
+class Vlan(BaseObject):
+    """
+    Gandi vlan component
+    """
+    def __init__(self, id, state, name, driver, subnet, gateway, extra=None):
+        super(Vlan, self).__init__(id, state, driver)
+        self.name = name
+        self.subnet = subnet
+        self.gateway = gateway
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (
+            ('<Vlan: id=%s, name=%s, state=%s, subnet=%s, driver=%s, '
+             'gateway=%s ...>')
+            % (self.id, self.name, self.state, self.subnet, self.driver.name,
+               self.gateway))

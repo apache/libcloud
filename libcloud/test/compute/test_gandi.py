@@ -31,7 +31,11 @@ from libcloud.test.common.test_gandi import BaseGandiMockHttp
 
 class GandiTests(unittest.TestCase):
 
-    node_name = 'test2'
+    node_name = 'node-test'
+    disk_name = 'libcloud'
+    farm_name = 'default'
+    vlan_name = 'test_vlan'
+    key_name = 'zen'
 
     def setUp(self):
         GandiNodeDriver.connectionCls.conn_class = GandiMockHttp
@@ -66,7 +70,7 @@ class GandiTests(unittest.TestCase):
 
     def test_destroy_node_halted(self):
         nodes = self.driver.list_nodes()
-        test_node = list(filter(lambda x: x.state == NodeState.TERMINATED,
+        test_node = list(filter(lambda x: x.state == NodeState.STOPPED,
                                 nodes))[0]
         self.assertTrue(self.driver.destroy_node(test_node))
 
@@ -80,6 +84,7 @@ class GandiTests(unittest.TestCase):
         login = 'libcloud'
         passwd = ''.join(random.choice(string.ascii_letters)
                          for i in range(10))
+        farm = self.farm_name
 
         # Get france datacenter
         loc = list(filter(lambda x: 'france' in x.country.lower(),
@@ -88,21 +93,23 @@ class GandiTests(unittest.TestCase):
         # Get a debian image
         images = self.driver.list_images(loc)
         images = [x for x in images if x.name.lower().startswith('debian')]
-        img = list(filter(lambda x: '5' in x.name, images))[0]
+        img = list(filter(lambda x: '8' in x.name, images))[0]
 
         # Get a configuration size
         size = self.driver.list_sizes()[0]
         node = self.driver.create_node(name=self.node_name, login=login,
                                        password=passwd, image=img,
-                                       location=loc, size=size)
+                                       location=loc, size=size, farm=farm)
         self.assertEqual(node.name, self.node_name)
+        self.assertEqual(node.extra['farm'], self.farm_name)
+        self.assertEqual(node.extra['datacenter_id'], int(loc.id))
 
     def test_create_volume(self):
         loc = list(filter(lambda x: 'france' in x.country.lower(),
                           self.driver.list_locations()))[0]
         volume = self.driver.create_volume(
-            size=1024, name='libcloud', location=loc)
-        self.assertEqual(volume.name, 'libcloud')
+            size=1024, name=self.disk_name, location=loc)
+        self.assertEqual(volume.name, self.disk_name)
         self.assertEqual(volume.size, 1024)
 
     def test_list_volumes(self):
@@ -111,7 +118,7 @@ class GandiTests(unittest.TestCase):
 
     def test_destroy_volume(self):
         volumes = self.driver.list_volumes()
-        test_vol = list(filter(lambda x: x.name == 'test_disk',
+        test_vol = list(filter(lambda x: x.name == self.disk_name,
                                volumes))[0]
         self.assertTrue(self.driver.destroy_volume(test_vol))
 
@@ -126,6 +133,26 @@ class GandiTests(unittest.TestCase):
         nodes = self.driver.list_nodes()
         res = self.driver.detach_volume(nodes[0], disks[0])
         self.assertTrue(res)
+
+    def test_ex_create_vlan(self):
+        dc = list(filter(lambda x: 'france' in x.country.lower(),
+                          self.driver.list_locations()))[0]
+        vlan = self.driver.ex_create_vlan(name=self.vlan_name, location=dc)
+        self.assertEqual(vlan.name, self.vlan_name)
+
+    def test_ex_list_vlans(self):
+        vlans = self.driver.ex_list_vlans()
+        self.assertTrue(len(vlans) > 0)
+
+    def test_ex_get_vlan(self):
+        vlan = self.driver.ex_get_vlan(8352)
+        self.assertTrue(vlan.name, self.vlan_name)
+
+    def text_ex_delete_vlan(self):
+        vlans = self.driver.ex_list_vlans()
+        test_vlan = list(filter(lambda x: x.name == self.vlan_name,
+                               vlans))[0]
+        self.assertTrue(self.driver.ex_delete_vlan(test_vlan))
 
     def test_ex_list_interfaces(self):
         ifaces = self.driver.ex_list_interfaces()
@@ -147,7 +174,7 @@ class GandiTests(unittest.TestCase):
         disks = self.driver.list_volumes()
         self.assertTrue(self.driver.ex_snapshot_disk(disks[2]))
         self.assertRaises(GandiException,
-                          self.driver.ex_snapshot_disk, disks[0])
+                          self.driver.ex_snapshot_disk, disks[6])
 
     def test_ex_update_disk(self):
         disks = self.driver.list_volumes()
@@ -158,32 +185,32 @@ class GandiTests(unittest.TestCase):
         self.assertTrue(len(keys) > 0)
 
     def test_get_key_pair(self):
-        key = self.driver.get_key_pair(10)
-        self.assertEqual(key.name, 'testkey')
+        key = self.driver.get_key_pair(1)
+        self.assertEqual(key.name, self.key_name)
 
     def test_import_key_pair_from_string(self):
-        key = self.driver.import_key_pair_from_string('testkey', '12345')
-        self.assertEqual(key.name, 'testkey')
-        self.assertEqual(key.extra['id'], 10)
+        key = self.driver.import_key_pair_from_string(self.key_name, '12345')
+        self.assertEqual(key.name, self.key_name)
+        self.assertEqual(key.extra['id'], 1)
 
     def test_delete_key_pair(self):
-        response = self.driver.delete_key_pair(10)
+        response = self.driver.delete_key_pair(1)
         self.assertTrue(response)
 
     def test_ex_get_node(self):
-        node = self.driver.ex_get_node(34951)
-        self.assertEqual(node.name, "test2")
+        node = self.driver.ex_get_node(352698)
+        self.assertEqual(node.name, self.node_name)
 
     def test_ex_get_volume(self):
-        volume = self.driver.ex_get_volume(1263)
-        self.assertEqual(volume.name, "libcloud")
+        volume = self.driver.ex_get_volume(24668274)
+        self.assertEqual(volume.name, self.disk_name)
 
 
 class GandiRatingTests(unittest.TestCase):
 
     """Tests where rating model is involved"""
 
-    node_name = 'test2'
+    node_name = 'node-test'
 
     def setUp(self):
         GandiNodeDriver.connectionCls.conn_class = GandiMockRatingHttp
@@ -206,7 +233,7 @@ class GandiRatingTests(unittest.TestCase):
         # Get a debian image
         images = self.driver.list_images(loc)
         images = [x for x in images if x.name.lower().startswith('debian')]
-        img = list(filter(lambda x: '5' in x.name, images))[0]
+        img = list(filter(lambda x: '8' in x.name, images))[0]
 
         # Get a configuration size
         size = self.driver.list_sizes()[0]
@@ -214,7 +241,6 @@ class GandiRatingTests(unittest.TestCase):
                                        password=passwd, image=img,
                                        location=loc, size=size)
         self.assertEqual(node.name, self.node_name)
-
 
 class GandiMockHttp(BaseGandiMockHttp):
 
@@ -324,6 +350,22 @@ class GandiMockHttp(BaseGandiMockHttp):
         body = self.fixtures.load('ssh_delete.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _xmlrpc__hosting_vlan_create(self, method, url, body, headers):
+        body = self.fixtures.load('vlan_create.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_vlan_delete(self, method, url, body, headers):
+        body = self.fixtures.load('vlan_delete.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_vlan_info(self, method, url, body, headers):
+        body = self.fixtures.load('vlan_info.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _xmlrpc__hosting_vlan_list(self, method, url, body, headers):
+        body = self.fixtures.load('vlan_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 class GandiMockRatingHttp(BaseGandiMockHttp):
 
@@ -356,6 +398,9 @@ class GandiMockRatingHttp(BaseGandiMockHttp):
         body = self.fixtures.load('account_info_rating.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _xmlrpc__hosting_vlan_list(self, method, url, body, headers):
+        body = self.fixtures.load('vlan_list.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

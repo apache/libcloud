@@ -19,7 +19,7 @@ import sys
 from datetime import datetime
 
 from libcloud.common.gandi import BaseGandiDriver, GandiException,\
-    NetworkInterface, IPAddress, Disk
+    NetworkInterface, IPAddress, Disk, Vlan
 from libcloud.compute.base import KeyPair
 from libcloud.compute.base import StorageVolume
 from libcloud.compute.types import NodeState, Provider
@@ -29,8 +29,8 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 
 NODE_STATE_MAP = {
     'running': NodeState.RUNNING,
-    'halted': NodeState.TERMINATED,
-    'paused': NodeState.TERMINATED,
+    'halted': NodeState.STOPPED,
+    'paused': NodeState.PAUSED,
     'locked': NodeState.TERMINATED,
     'being_created': NodeState.PENDING,
     'invalid': NodeState.UNKNOWN,
@@ -47,7 +47,7 @@ INSTANCE_TYPES = {
         'cpu': 1,
         'memory': 256,
         'disk': 3,
-        'bandwidth': 10240,
+        'bandwidth': 102400,
     },
     'medium': {
         'id': 'medium',
@@ -55,7 +55,7 @@ INSTANCE_TYPES = {
         'cpu': 1,
         'memory': 1024,
         'disk': 20,
-        'bandwidth': 10240,
+        'bandwidth': 102400,
     },
     'large': {
         'id': 'large',
@@ -63,7 +63,7 @@ INSTANCE_TYPES = {
         'cpu': 2,
         'memory': 2048,
         'disk': 50,
-        'bandwidth': 10240,
+        'bandwidth': 102400,
     },
     'x-large': {
         'id': 'x-large',
@@ -71,7 +71,7 @@ INSTANCE_TYPES = {
         'cpu': 4,
         'memory': 4096,
         'disk': 100,
-        'bandwidth': 10240,
+        'bandwidth': 102400,
     },
 }
 
@@ -95,54 +95,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         super(BaseGandiDriver, self).__init__(*args, **kwargs)
 
-    def _resource_info(self, type, id):
-        try:
-            obj = self.connection.request('hosting.%s.info' % type, int(id))
-            return obj.object
-        except Exception:
-            e = sys.exc_info()[1]
-            raise GandiException(1003, e)
-
-    def _node_info(self, id):
-        return self._resource_info('vm', id)
-
-    def _volume_info(self, id):
-        return self._resource_info('disk', id)
-
-    # Generic methods for driver
-    def _to_node(self, vm):
-        return Node(
-            id=vm['id'],
-            name=vm['hostname'],
-            state=NODE_STATE_MAP.get(
-                vm['state'],
-                NodeState.UNKNOWN
-            ),
-            public_ips=vm.get('ips', []),
-            private_ips=[],
-            driver=self,
-            extra={
-                'ai_active': vm.get('ai_active'),
-                'datacenter_id': vm.get('datacenter_id'),
-                'description': vm.get('description')
-            }
-        )
-
-    def _to_nodes(self, vms):
-        return [self._to_node(v) for v in vms]
-
-    def _to_volume(self, disk):
-        extra = {'can_snapshot': disk['can_snapshot']}
-        return StorageVolume(
-            id=disk['id'],
-            name=disk['name'],
-            size=int(disk['size']),
-            driver=self,
-            extra=extra)
-
-    def _to_volumes(self, disks):
-        return [self._to_volume(d) for d in disks]
-
     def list_nodes(self):
         """
         Return a list of nodes in the current zone or all zones.
@@ -153,12 +105,14 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         vms = self.connection.request('hosting.vm.list').object
         ips = self.connection.request('hosting.ip.list').object
         for vm in vms:
-            vm['ips'] = []
+            vm['private_ips'] = []
+            vm['public_ips'] = []
             for ip in ips:
-                if vm['ifaces_id'][0] == ip['iface_id']:
-                    ip = ip.get('ip', None)
-                    if ip:
-                        vm['ips'].append(ip)
+                if ip.get('vm_id') == vm.get('id'):
+                    if ip.get('type') == 'public':
+                        vm['public_ips'].append(ip.get('ip',None))
+                    else:
+                        vm['private_ips'].append(ip.get('ip',None))
 
         nodes = self._to_nodes(vms)
         return nodes
@@ -175,12 +129,15 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         vm = self.connection.request('hosting.vm.info', int(node_id)).object
         ips = self.connection.request('hosting.ip.list').object
-        vm['ips'] = []
+        vm['private_ips'] = []
+        vm['public_ips'] = []
         for ip in ips:
-            if vm['ifaces_id'][0] == ip['iface_id']:
-                ip = ip.get('ip', None)
-                if ip:
-                    vm['ips'].append(ip)
+            if ip.get('vm_id') == int(node_id):
+                if ip.get('type') == 'public':
+                    vm['public_ips'].append(ip.get('ip',None))
+                else:
+                    vm['private_ips'].append(ip.get('ip',None))
+
         node = self._to_node(vm)
         return node
 
@@ -201,25 +158,72 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             return True
         return False
 
-    def destroy_node(self, node):
+    def destroy_node(self, node, cascade=False):
         """
         Destroy a node.
 
         :param  node: Node object to destroy
         :type   node: :class:`Node`
 
+        :param  cascade: Deletes the node's disks and ifaces if set to true
+        :type   cascade: ``bool``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
         vm = self._node_info(node.id)
+
         if vm['state'] == 'running':
             # Send vm_stop and wait for accomplish
             op_stop = self.connection.request('hosting.vm.stop', int(node.id))
             if not self._wait_operation(op_stop.object['id']):
                 raise GandiException(1010, 'vm.stop failed')
-            # Delete
+
+        # Get interfaces and ips associated with the node
+        ifaces = vm.get('ifaces')
+        ifaces_objects = []
+
+        disks = vm.get('disks')
+        # disks_objects = []
+
+        if len(ifaces) > 0:
+            for iface in ifaces:
+                ips = iface.get('ips')
+
+                if iface['type'] == 'public':
+                    # public ips are auto deleted when wm is deleted ??
+                    ifaces_objects.append(self._to_iface(iface))
+                    for address in ips:
+                        if address['ip'] not in node.public_ips:
+                            node.public_ips.append(address['ip'])
+
+                elif iface['type'] == 'private':
+                    # get iface object if iface type is private
+                    ifaces_objects.append(self._to_iface(iface))
+
+                    for address in ips:
+                        node.private_ips.append(address['ip'])
+
+        # Delete the node
         op = self.connection.request('hosting.vm.delete', int(node.id))
         if self._wait_operation(op.object['id']):
+
+            # Delete private interfaces if cascade requested and needed
+            # first interface is always deleted at vm suppression.
+            if cascade and len(ifaces_objects) > 1:
+                for iface in ifaces_objects[1:]:
+                    op = self.connection.request('hosting.iface.delete',
+                                                 int(iface.id))
+                    if self._wait_operation(op.object['id']):
+                        continue
+
+            if cascade and len(disks) > 1:
+                for disk in disks:
+                    if not disk['is_boot_disk']:
+                        op = self.connection.request('hosting.disk.delete',
+                                                     int(disk['id']))
+                        if self._wait_operation(op.object['id']):
+                            continue
             return True
         return False
 
@@ -256,11 +260,17 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :keyword    password: password for user that'll be created (required)
         :type       password: ``str``
 
+        :keyword    interfaces: list of interfaces to attach to the vm
+        :type       interfaces: ``dict``
+
         :keyword    inet_family: version of ip to use, default 4 (optional)
         :type       inet_family: ``int``
 
         :keyword    keypairs: IDs of keypairs or Keypairs object
         :type       keypairs: list of ``int`` or :class:`.KeyPair`
+
+        :keyword    farm: Name of the farm this node belongs to (optional)
+        :type       farm: ``str``
 
         :rtype: :class:`Node`
         """
@@ -295,7 +305,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         disk_spec = {
             'datacenter_id': dc_id,
-            'name': 'disk_%s' % kwargs['name']
+            'name': 'disk_%s' % kwargs['name'],
+            'size': int(size.disk) * 1024
         }
 
         vm_spec = {
@@ -307,26 +318,120 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             'ip_version': kwargs.get('inet_family', 4),
         }
 
+        ifaces = kwargs.get('interfaces', {})
+        public_interfaces = ifaces.get('publics', None)
+        private_interfaces = ifaces.get('privates', None)
+        vlans = self.ex_list_vlans()
+        only_private = False
+
+        if ifaces != {}:
+            if public_interfaces:
+                if len(public_interfaces) > 0:
+                    public_ipv4 = public_interfaces[0].get('ipv4', None)
+                    if public_ipv4:
+                        def_iface_version = kwargs.get('inet_family', 4)
+                    else:
+                        def_iface_version = kwargs.get('inet_family', 6)
+
+                    public_interfaces.pop(0)
+
+                    vm_def_iface_options = {'ip_version': def_iface_version}
+                    vm_spec.update(vm_def_iface_options)
+
+            elif private_interfaces:
+                # no public interfaces by default
+                if len(private_interfaces) > 0:
+                    vlan_name = private_interfaces[0].get('vlan')
+                    ipv4 = private_interfaces[0].get('ipv4', None)
+
+                    if vlan_name:
+                        vlan = self._get_by_name(vlan_name, vlans)
+                        iface = self.ex_create_interface(location=location,
+                                                     vlan=vlan,
+                                                     ip_address=ipv4)
+
+                        vm_spec.update({'iface_id': int(iface.id)})
+                        private_interfaces.pop(0)
+                        only_private = True
+
+            else:
+                raise GandiException(
+                    1021, "'interfaces' not empty but no 'publics' or \
+                           'privates' defined")
+        else:
+            # default one ipv6 public interfaces
+            def_iface_version = kwargs.get('inet_family', 4)
+            vm_def_iface_options = {'ip_version': def_iface_version}
+            vm_spec.update(vm_def_iface_options)
+
+        if kwargs.get('farm'):
+            vm_spec.update({
+                'farm': kwargs['farm'],
+            })
+
         if kwargs.get('login') and kwargs.get('password'):
             vm_spec.update({
                 'login': kwargs['login'],
                 'password': kwargs['password'],  # TODO : use NodeAuthPassword
             })
+
         if keypair_ids:
             vm_spec['keys'] = keypair_ids
 
         # Call create_from helper api. Return 3 operations : disk_create,
         # iface_create,vm_create
-        (op_disk, op_iface, op_vm) = self.connection.request(
-            'hosting.vm.create_from',
-            vm_spec, disk_spec, src_disk_id
-        ).object
+        if only_private:
+            (op_disk, op_vm) = self.connection.request(
+                'hosting.vm.create_from',
+                vm_spec, disk_spec, src_disk_id
+            ).object
+        else:
+            (op_disk, op_iface, op_vm) = self.connection.request(
+                'hosting.vm.create_from',
+                vm_spec, disk_spec, src_disk_id
+            ).object
 
         # We wait for vm_create to finish
         if self._wait_operation(op_vm['id']):
             # after successful operation, get ip information
             # thru first interface
             node = self._node_info(op_vm['vm_id'])
+
+            # create and attach optional interfaces
+            if public_interfaces:
+                for iface in public_interfaces:
+                    ipv4_address = iface.get('ipv4', None)
+
+                    if ipv4_address:
+                        ip_version = 4
+                    else:
+                        ip_version = 6
+
+                    iface = self.ex_create_interface(location=location,
+                                                 ip_version=ip_version)
+                    if iface:
+                        self.ex_node_attach_interface(node=self._to_node(node),
+                                                      iface=iface)
+
+            if private_interfaces:
+                for iface in private_interfaces:
+                    ip_address = iface.get('ipv4', None)
+                    ip_version = 4
+
+                    if ip_address and ip_address == 'auto':
+                        ip_address = None
+
+                    vlan = self._get_by_name(iface.get('vlan', None),
+                                             vlans)
+
+                    iface = self.ex_create_interface(location=location,
+                                                 ip_version=ip_version,
+                                                 ip_address=ip_address,
+                                                 vlan=vlan)
+                    if iface:
+                        self.ex_node_attach_interface(node=self._to_node(node),
+                                                      iface=iface)
+
             ifaces = node.get('ifaces')
             if len(ifaces) > 0:
                 ips = ifaces[0].get('ips')
@@ -336,13 +441,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         return None
 
-    def _to_image(self, img):
-        return NodeImage(
-            id=img['disk_id'],
-            name=img['label'],
-            driver=self.connection.driver
-        )
-
     def list_images(self, location=None):
         """
         Return a list of image objects.
@@ -350,8 +448,8 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :keyword    location: Which data center to filter a images in.
         :type       location: :class:`NodeLocation`
 
-        :return:  List of GCENodeImage objects
-        :rtype:   ``list`` of :class:`GCENodeImage`
+        :return:    List of NodeImage objects
+        :rtype:     ``list`` of :class:`NodeImage`
         """
         try:
             if location:
@@ -363,28 +461,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         except Exception:
             e = sys.exc_info()[1]
             raise GandiException(1011, e)
-
-    def _to_size(self, id, size):
-        return NodeSize(
-            id=id,
-            name='%s cores' % id,
-            ram=size['memory'],
-            disk=size['disk'],
-            bandwidth=size['bandwidth'],
-            price=(self._get_size_price(size_id='1') * id),
-            driver=self.connection.driver,
-        )
-
-    def _instance_type_to_size(self, instance):
-        return NodeSize(
-            id=instance['id'],
-            name=instance['name'],
-            ram=instance['memory'],
-            disk=instance['disk'],
-            bandwidth=instance['bandwidth'],
-            price=self._get_size_price(size_id=instance['id']),
-            driver=self.connection.driver,
-        )
 
     def list_instance_type(self, location=None):
         return [self._instance_type_to_size(instance)
@@ -401,44 +477,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :rtype:   ``list`` of :class:`NodeSize`
         """
         account = self.connection.request('hosting.account.info').object
-        if account.get('rating_enabled'):
-            # This account use new rating model
-            return self.list_instance_type(location)
-        # Look for available shares, and return a list of share_definition
-        available_res = account['resources']['available']
-
-        if available_res['shares'] == 0:
-            return None
-        else:
-            share_def = account['share_definition']
-            available_cores = available_res['cores']
-            # 0.75 core given when creating a server
-            max_core = int(available_cores + 0.75)
-            shares = []
-            if available_res['servers'] < 1:
-                # No server quota, no way
-                return shares
-            for i in range(1, max_core + 1):
-                share = {id: i}
-                share_is_available = True
-                for k in ['memory', 'disk', 'bandwidth']:
-                    if share_def[k] * i > available_res[k]:
-                        # We run out for at least one resource inside
-                        share_is_available = False
-                    else:
-                        share[k] = share_def[k] * i
-                if share_is_available:
-                    nb_core = i
-                    shares.append(self._to_size(nb_core, share))
-            return shares
-
-    def _to_loc(self, loc):
-        return NodeLocation(
-            id=loc['id'],
-            name=loc['dc_code'],
-            country=loc['country'],
-            driver=self
-        )
+        return self.list_instance_type(location)
 
     def list_locations(self):
         """
@@ -450,14 +489,17 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         res = self.connection.request('hosting.datacenter.list')
         return [self._to_loc(l) for l in res.object]
 
-    def list_volumes(self):
+    def list_volumes(self, location=None):
         """
         Return a list of volumes.
 
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
-        res = self.connection.request('hosting.disk.list', {})
+        filtering = {}
+        if location:
+            filtering = {'datacenter_id': int(location.id)}
+        res = self.connection.request('hosting.disk.list', filtering)
         return self._to_volumes(res.object)
 
     def ex_get_volume(self, volume_id):
@@ -494,9 +536,13 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         disk_param = {
             'name': name,
-            'size': int(size),
-            'datacenter_id': int(location.id)
+            'size': int(size) * 1024,
+            'datacenter_id': 4
         }
+
+        if location:
+            disk_param.update({'datacenter_id': int(location.id)})
+
         if snapshot:
             op = self.connection.request('hosting.disk.create_from',
                                          disk_param, int(snapshot.id))
@@ -562,36 +608,37 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             return True
         return False
 
-    def _to_iface(self, iface):
-        ips = []
-        for ip in iface.get('ips', []):
-            new_ip = IPAddress(
-                ip['id'],
-                NODE_STATE_MAP.get(
-                    ip['state'],
-                    NodeState.UNKNOWN
-                ),
-                ip['ip'],
-                self.connection.driver,
-                version=ip.get('version'),
-                extra={'reverse': ip['reverse']}
-            )
-            ips.append(new_ip)
-        return NetworkInterface(
-            iface['id'],
-            NODE_STATE_MAP.get(
-                iface['state'],
-                NodeState.UNKNOWN
-            ),
-            mac_address=None,
-            driver=self.connection.driver,
-            ips=ips,
-            node_id=iface.get('vm_id'),
-            extra={'bandwidth': iface['bandwidth']},
-        )
+    def ex_create_interface(self, location,
+        ip_version=4, ip_address=None, vlan=None, bandwidth=102400.0):
+        """
+        Specific method to create a network interface
 
-    def _to_ifaces(self, ifaces):
-        return [self._to_iface(i) for i in ifaces]
+        :rtype: :class:`GandiNetworkInterface`
+        """
+
+        iface_param = {
+            'datacenter_id': int(location.id),
+            'bandwidth': bandwidth,
+        }
+
+        if vlan is not None:
+            iface_param.update({
+                'vlan': int(vlan.id),
+                })
+            if ip_address is not None:
+                iface_param.update({
+                    'ip': ip_address
+                    })
+        else:
+            iface_param.update({
+                'ip_version': int(ip_version)
+                })
+
+        op = self.connection.request('hosting.iface.create', iface_param)
+        if self._wait_operation(op.object['id']):
+            iface = self._iface_info(op.object['iface_id'])
+            return self._to_iface(iface)
+        return None
 
     def ex_list_interfaces(self):
         """
@@ -606,22 +653,54 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 filter(lambda i: i['iface_id'] == iface['id'], ips))
         return self._to_ifaces(ifaces)
 
-    def _to_disk(self, element):
-        disk = Disk(
-            id=element['id'],
-            state=NODE_STATE_MAP.get(
-                element['state'],
-                NodeState.UNKNOWN
-            ),
-            name=element['name'],
-            driver=self.connection.driver,
-            size=element['size'],
-            extra={'can_snapshot': element['can_snapshot']}
-        )
-        return disk
+    def ex_get_interface(self, iface_id):
+        """
+        Specific method to get a network interface's info
 
-    def _to_disks(self, elements):
-        return [self._to_disk(el) for el in elements]
+        :param  iface_id: The ID of the interface
+        :type   ifac_id: ``int``
+
+        :return:  An GandiNetworkInterface object for the interface
+        :rtype:   :class:`GandiNetworkInterface`
+        """
+        res = self.connection.request('hosting.iface.info', iface_id)
+        return self._to_iface(res.object)
+
+    def ex_node_attach_interface(self, node, iface):
+        """
+        Specific method to attach an interface to a node
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :param      iface: Network interface which should be used
+        :type       iface: :class:`GandiNetworkInterface`
+
+        :rtype: ``bool``
+        """
+        op = self.connection.request('hosting.vm.iface_attach',
+                                     int(node.id), int(iface.id))
+        if self._wait_operation(op.object['id']):
+            return True
+        return False
+
+    def ex_node_detach_interface(self, node, iface):
+        """
+        Specific method to detach an interface from a node
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :param      iface: Network interface which should be used
+        :type       iface: :class:`GandiNetworkInterface`
+
+        :rtype: ``bool``
+        """
+        op = self.connection.request('hosting.vm.iface_detach',
+                                     int(node.id), int(iface.id))
+        if self._wait_operation(op.object['id']):
+            return True
+        return False
 
     def ex_list_disks(self):
         """
@@ -664,42 +743,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         op = self.connection.request('hosting.vm.disk_detach',
                                      int(node.id), int(disk.id))
-        if self._wait_operation(op.object['id']):
-            return True
-        return False
-
-    def ex_node_attach_interface(self, node, iface):
-        """
-        Specific method to attach an interface to a node
-
-        :param      node: Node which should be used
-        :type       node: :class:`Node`
-
-        :param      iface: Network interface which should be used
-        :type       iface: :class:`GandiNetworkInterface`
-
-        :rtype: ``bool``
-        """
-        op = self.connection.request('hosting.vm.iface_attach',
-                                     int(node.id), int(iface.id))
-        if self._wait_operation(op.object['id']):
-            return True
-        return False
-
-    def ex_node_detach_interface(self, node, iface):
-        """
-        Specific method to detach an interface from a node
-
-        :param      node: Node which should be used
-        :type       node: :class:`Node`
-
-        :param      iface: Network interface which should be used
-        :type       iface: :class:`GandiNetworkInterface`
-
-        :rtype: ``bool``
-        """
-        op = self.connection.request('hosting.vm.iface_detach',
-                                     int(node.id), int(iface.id))
         if self._wait_operation(op.object['id']):
             return True
         return False
@@ -747,7 +790,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         params = {}
         if new_size:
-            params.update({'size': new_size})
+            params.update({'size': new_size * 1024})
         if new_name:
             params.update({'name': new_name})
         op = self.connection.request('hosting.disk.update',
@@ -756,17 +799,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         if self._wait_operation(op.object['id']):
             return True
         return False
-
-    def _to_key_pair(self, data):
-        key_pair = KeyPair(name=data['name'],
-                           fingerprint=data['fingerprint'],
-                           public_key=data.get('value', None),
-                           private_key=data.get('privatekey', None),
-                           driver=self, extra={'id': data['id']})
-        return key_pair
-
-    def _to_key_pairs(self, data):
-        return [self._to_key_pair(k) for k in data]
 
     def list_key_pairs(self):
         """
@@ -822,3 +854,243 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             else key_pair.extra['id']
         success = self.connection.request('hosting.ssh.delete', key_id).object
         return success
+
+    def ex_create_vlan(self, name, location, subnet=None, gateway=None):
+        """
+        Create a new vlan.
+
+        :rtype: :class:`Vlan`
+        """
+        vlan_params = { 'datacenter_id': int(location.id), 'name': name }
+
+        if subnet is not None:
+            vlan_params.update({
+                'subnet': subnet,
+            })
+
+        if gateway is not None:
+            vlan_params.update({
+                'gateway': gateway,
+            })
+
+        op = self.connection.request('hosting.vlan.create', vlan_params)
+        if self._wait_operation(op.object['id']):
+            op = self.connection.request('operation.info',
+                    int(op.object['id']))
+            vlan = self._vlan_info(op.object['params']['vlan_id'])
+            return self._to_vlan(vlan)
+        return None
+
+    def ex_list_vlans(self):
+        """
+        List all existing vlans
+
+        :rtype: ``list`` of :class:`Vlan`
+        """
+        res = self.connection.request('hosting.vlan.list', {})
+        return self._to_vlans(res.object)
+
+    def ex_get_vlan(self, vlan_id):
+        """
+        Return a Vlan object based on a vlan ID.
+
+        :param  vlan_id: The ID of the vlan
+        :type   vlan_id: ``int``
+
+        :return:  A Vlan object for the volume
+        :rtype:   :class:`Vlan`
+        """
+        res = self.connection.request('hosting.vlan.info', int(vlan_id))
+        return self._to_vlan(res.object)
+
+    def ex_delete_vlan(self, vlan):
+        """
+        Delete an existing vlan
+
+        :return: True or False based on success of Vlan deletion
+        :rtype: ``bool``
+        """
+        op = self.connection.request('hosting.vlan.delete', int(vlan.id))
+        if self._wait_operation(op.object['id']):
+            return True
+        return False
+
+    def _resource_info(self, type, id):
+        try:
+            obj = self.connection.request('hosting.%s.info' % type, int(id))
+            return obj.object
+        except Exception:
+            e = sys.exc_info()[1]
+            raise GandiException(1003, e)
+
+    def _node_info(self, id):
+        return self._resource_info('vm', id)
+
+    def _volume_info(self, id):
+        return self._resource_info('disk', id)
+
+    def _vlan_info(self, id):
+        return self._resource_info('vlan', id)
+
+    def _iface_info(self, id):
+        return self._resource_info('iface', id)
+
+    # Generic methods for driver
+    def _to_node(self, vm):
+        return Node(
+            id=vm['id'],
+            name=vm['hostname'],
+            state=NODE_STATE_MAP.get(
+                vm['state'],
+                NodeState.UNKNOWN
+            ),
+            public_ips=vm.get('public_ips', []),
+            private_ips=vm.get('private_ips', []),
+            driver=self,
+            extra={
+                'ai_active': vm.get('ai_active'),
+                'datacenter_id': vm.get('datacenter_id'),
+                'description': vm.get('description'),
+                'farm': vm.get('farm'),
+                'memory': vm.get('memory'),
+                'ifaces': vm.get('ifaces_id', []),
+                'disks': vm.get('disks_id', []),
+                'cores': vm.get('cores')
+            }
+        )
+
+    def _to_nodes(self, vms):
+        return [self._to_node(v) for v in vms]
+
+    def _to_image(self, img):
+        return NodeImage(
+            id=img['disk_id'],
+            name=img['label'],
+            driver=self.connection.driver
+        )
+
+    def _to_size(self, id, size):
+        return NodeSize(
+            id=id,
+            name='%s cores' % id,
+            ram=size['memory'],
+            disk=size['disk'],
+            bandwidth=size['bandwidth'],
+            price=(self._get_size_price(size_id='1') * id),
+            driver=self.connection.driver,
+        )
+
+    def _instance_type_to_size(self, instance):
+        return NodeSize(
+            id=instance['id'],
+            name=instance['name'],
+            ram=instance['memory'],
+            disk=instance['disk'],
+            bandwidth=instance['bandwidth'],
+            price=self._get_size_price(size_id=instance['id']),
+            driver=self.connection.driver,
+        )
+
+    def _to_loc(self, loc):
+        return NodeLocation(
+            id=loc['id'],
+            name=loc['dc_code'],
+            country=loc['country'],
+            driver=self
+        )
+
+    def _to_volume(self, disk):
+        extra = {'can_snapshot': disk['can_snapshot']}
+        return StorageVolume(
+            id=disk['id'],
+            name=disk['name'],
+            size=int(disk['size']),
+            driver=self,
+            extra=extra)
+
+    def _to_volumes(self, disks):
+        return [self._to_volume(d) for d in disks]
+
+    def _to_iface(self, iface):
+        ips = []
+        for ip in iface.get('ips', []):
+            new_ip = IPAddress(
+                ip['id'],
+                NODE_STATE_MAP.get(
+                    ip['state'],
+                    NodeState.UNKNOWN
+                ),
+                ip['ip'],
+                self.connection.driver,
+                version=ip.get('version'),
+                extra={'reverse': ip['reverse']}
+            )
+            ips.append(new_ip)
+
+        extra = {'bandwidth': iface['bandwidth'],
+                 'type': iface['type']}
+
+        if iface['vlan'] is not None:
+            extra.update({'vlan': iface['vlan']['name']})
+
+        return NetworkInterface(
+            iface['id'],
+            NODE_STATE_MAP.get(
+                iface['state'],
+                NodeState.UNKNOWN
+            ),
+            mac_address=None,
+            driver=self.connection.driver,
+            ips=ips,
+            node_id=iface.get('vm_id'),
+            extra=extra,
+        )
+
+    def _to_ifaces(self, ifaces):
+        return [self._to_iface(i) for i in ifaces]
+
+    def _to_disk(self, element):
+        disk = Disk(
+            id=element['id'],
+            state=NODE_STATE_MAP.get(
+                element['state'],
+                NodeState.UNKNOWN
+            ),
+            name=element['name'],
+            driver=self.connection.driver,
+            size=element['size'],
+            extra={'can_snapshot': element['can_snapshot']}
+        )
+        return disk
+
+    def _to_disks(self, elements):
+        return [self._to_disk(el) for el in elements]
+
+    def _to_key_pair(self, data):
+        key_pair = KeyPair(name=data['name'],
+                           fingerprint=data['fingerprint'],
+                           public_key=data.get('value', None),
+                           private_key=data.get('privatekey', None),
+                           driver=self, extra={'id': data['id']})
+        return key_pair
+
+    def _to_key_pairs(self, data):
+        return [self._to_key_pair(k) for k in data]
+
+    def _to_vlan(self, data):
+        vlan = Vlan(id=data['id'],
+                    state=NODE_STATE_MAP.get(
+                        data['state'],
+                        NodeState.UNKNOWN),
+                    name=data['name'],
+                    driver=self.connection.driver,
+                    subnet=data['subnet'],
+                    gateway=data['gateway'])
+        return vlan
+
+    def _to_vlans(self, data):
+        return [self._to_vlan(vlan) for vlan in data]
+
+    def _get_by_name(self, name, entities):
+        find = [x for x in entities if x.name == name]
+        return find[0] if find else None

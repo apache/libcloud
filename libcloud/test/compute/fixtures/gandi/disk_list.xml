@@ -1,200 +1,928 @@
-<?xml version='1.0' encoding='UTF-8'?>
 <methodResponse>
-<params>
-<param>
-<value><array><data>
-<value><struct>
-<member>
-<name>datacenter_id</name>
-<value><int>1</int></value>
-</member>
-<member>
-<name>name</name>
-<value><string>disk_libcloud2</string></value>
-</member>
-<member>
-<name>kernel_version</name>
-<value><string>2.6.32</string></value>
-</member>
-<member>
-<name>can_snapshot</name>
-<value><boolean>0</boolean></value>
-</member>
-<member>
-<name>visibility</name>
-<value><string>private</string></value>
-</member>
-<member>
-<name>label</name>
-<value><string>Debian 5</string></value>
-</member>
-<member>
-<name>vms_id</name>
-<value><array><data>
-</data></array></value>
-</member>
-<member>
-<name>source</name>
-<value><int>23351</int></value>
-</member>
-<member>
-<name>state</name>
-<value><string>created</string></value>
-</member>
-<member>
-<name>is_boot_disk</name>
-<value><boolean>0</boolean></value>
-</member>
-<member>
-<name>date_updated</name>
-<value><dateTime.iso8601>20101116T10:51:59</dateTime.iso8601></value>
-</member>
-<member>
-<name>date_created</name>
-<value><dateTime.iso8601>20101028T13:52:38</dateTime.iso8601></value>
-</member>
-<member>
-<name>type</name>
-<value><string>data</string></value>
-</member>
-<member>
-<name>id</name>
-<value><int>34918</int></value>
-</member>
-<member>
-<name>size</name>
-<value><int>3072</int></value>
-</member>
-</struct></value>
-<value><struct>
-<member>
-<name>datacenter_id</name>
-<value><int>1</int></value>
-</member>
-<member>
-<name>name</name>
-<value><string>test1</string></value>
-</member>
-<member>
-<name>kernel_version</name>
-<value><string>2.6.32</string></value>
-</member>
-<member>
-<name>can_snapshot</name>
-<value><string></string></value>
-</member>
-<member>
-<name>visibility</name>
-<value><string>private</string></value>
-</member>
-<member>
-<name>label</name>
-<value><string>Debian 5</string></value>
-</member>
-<member>
-<name>vms_id</name>
-<value><array><data>
-<value><int>250133</int></value>
-</data></array></value>
-</member>
-<member>
-<name>source</name>
-<value><int>23351</int></value>
-</member>
-<member>
-<name>state</name>
-<value><string>created</string></value>
-</member>
-<member>
-<name>is_boot_disk</name>
-<value><boolean>1</boolean></value>
-</member>
-<member>
-<name>date_updated</name>
-<value><dateTime.iso8601>20110120T15:02:01</dateTime.iso8601></value>
-</member>
-<member>
-<name>date_created</name>
-<value><dateTime.iso8601>20110120T14:57:55</dateTime.iso8601></value>
-</member>
-<member>
-<name>type</name>
-<value><string>data</string></value>
-</member>
-<member>
-<name>id</name>
-<value><int>34951</int></value>
-</member>
-<member>
-<name>size</name>
-<value><int>3072</int></value>
-</member>
-</struct></value>
-<value><struct>
-<member>
-<name>datacenter_id</name>
-<value><int>1</int></value>
-</member>
-<member>
-<name>name</name>
-<value><string>test_disk</string></value>
-</member>
-<member>
-<name>kernel_version</name>
-<value><string>2.6.32</string></value>
-</member>
-<member>
-<name>can_snapshot</name>
-<value><boolean>1</boolean></value>
-</member>
-<member>
-<name>visibility</name>
-<value><string>private</string></value>
-</member>
-<member>
-<name>label</name>
-<value><string>Debian 5</string></value>
-</member>
-<member>
-<name>vms_id</name>
-<value><array><data>
-<value><int>250288</int></value>
-</data></array></value>
-</member>
-<member>
-<name>source</name>
-<value><int>23351</int></value>
-</member>
-<member>
-<name>state</name>
-<value><string>created</string></value>
-</member>
-<member>
-<name>is_boot_disk</name>
-<value><boolean>1</boolean></value>
-</member>
-<member>
-<name>date_updated</name>
-<value><dateTime.iso8601>20110325T16:31:11</dateTime.iso8601></value>
-</member>
-<member>
-<name>date_created</name>
-<value><dateTime.iso8601>20110324T17:14:06</dateTime.iso8601></value>
-</member>
-<member>
-<name>type</name>
-<value><string>data</string></value>
-</member>
-<member>
-<name>id</name>
-<value><int>35170</int></value>
-</member>
-<member>
-<name>size</name>
-<value><int>3072</int></value>
-</member>
-</struct></value>
-</data></array></value>
-</param>
-</params>
+	<params>
+		<param>
+			<value>
+				<array>
+					<data>
+						<value>
+							<struct>
+								<member>
+									<name>vms_id</name>
+									<value>
+										<array>
+											<data>
+												<value>
+													<int>352686</int>
+												</value>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<string>1c644d80-5aa9-11e8-84b2-00163ea0592c</string>
+									</value>
+								</member>
+								<member>
+									<name>name</name>
+									<value>
+										<string>disk24667611</string>
+									</value>
+								</member>
+								<member>
+									<name>kernel_version</name>
+									<value>
+										<string>grub-x86_64 (xen)</string>
+									</value>
+								</member>
+								<member>
+									<name>can_snapshot</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>total_size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>snapshots_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>visibility</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>label</name>
+									<value>
+										<string>Debian 8</string>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>source</name>
+									<value>
+										<int>17945187</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>created</string>
+									</value>
+								</member>
+								<member>
+									<name>is_boot_disk</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T16:38:40</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>24667611</int>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T16:38:20</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>data</string>
+									</value>
+								</member>
+								<member>
+									<name>snapshot_profile_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>is_migrating</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>vms_id</name>
+									<value>
+										<array>
+											<data>
+												<value>
+													<int>352698</int>
+												</value>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<string>b3cfa440-5aad-11e8-84b2-00163ea0592c</string>
+									</value>
+								</member>
+								<member>
+									<name>name</name>
+									<value>
+										<string>disk24667995</string>
+									</value>
+								</member>
+								<member>
+									<name>kernel_version</name>
+									<value>
+										<string>grub-x86_64 (xen)</string>
+									</value>
+								</member>
+								<member>
+									<name>can_snapshot</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>total_size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>snapshots_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>visibility</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>label</name>
+									<value>
+										<string>Debian 8</string>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>source</name>
+									<value>
+										<int>17945187</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>created</string>
+									</value>
+								</member>
+								<member>
+									<name>is_boot_disk</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T17:11:25</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>24667995</int>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T17:11:12</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>data</string>
+									</value>
+								</member>
+								<member>
+									<name>snapshot_profile_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>is_migrating</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>vms_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<string>4c10e306-5ab1-11e8-84b2-00163ea0592c</string>
+									</value>
+								</member>
+								<member>
+									<name>name</name>
+									<value>
+										<string>disk24668247</string>
+									</value>
+								</member>
+								<member>
+									<name>kernel_version</name>
+									<value>
+										<string>grub-x86_64 (xen)</string>
+									</value>
+								</member>
+								<member>
+									<name>can_snapshot</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>total_size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>snapshots_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>visibility</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>label</name>
+									<value>
+										<string>Debian 8</string>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>source</name>
+									<value>
+										<int>17945187</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>created</string>
+									</value>
+								</member>
+								<member>
+									<name>is_boot_disk</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T17:36:56</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>24668247</int>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T17:35:59</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>data</string>
+									</value>
+								</member>
+								<member>
+									<name>snapshot_profile_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>is_migrating</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>vms_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<string>4c36105e-5ab1-11e8-84b2-00163ea0592c</string>
+									</value>
+								</member>
+								<member>
+									<name>name</name>
+									<value>
+										<string>disk24668250</string>
+									</value>
+								</member>
+								<member>
+									<name>kernel_version</name>
+									<value>
+										<string>grub-x86_64 (xen)</string>
+									</value>
+								</member>
+								<member>
+									<name>can_snapshot</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>total_size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>snapshots_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>visibility</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>label</name>
+									<value>
+										<string>Debian 8</string>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>source</name>
+									<value>
+										<int>17945187</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>created</string>
+									</value>
+								</member>
+								<member>
+									<name>is_boot_disk</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T17:36:56</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>24668250</int>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T17:36:00</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>data</string>
+									</value>
+								</member>
+								<member>
+									<name>snapshot_profile_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>is_migrating</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>vms_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<string>4bd50e8a-5ab1-11e8-84b2-00163ea0592c</string>
+									</value>
+								</member>
+								<member>
+									<name>name</name>
+									<value>
+										<string>disk24668253</string>
+									</value>
+								</member>
+								<member>
+									<name>kernel_version</name>
+									<value>
+										<string>grub-x86_64 (xen)</string>
+									</value>
+								</member>
+								<member>
+									<name>can_snapshot</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>total_size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>snapshots_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>visibility</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>label</name>
+									<value>
+										<string>Debian 8</string>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>source</name>
+									<value>
+										<int>17945187</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>created</string>
+									</value>
+								</member>
+								<member>
+									<name>is_boot_disk</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T17:36:55</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>24668253</int>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T17:36:01</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>data</string>
+									</value>
+								</member>
+								<member>
+									<name>snapshot_profile_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>is_migrating</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>vms_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<string>4beb19a0-5ab1-11e8-84b2-00163ea0592c</string>
+									</value>
+								</member>
+								<member>
+									<name>name</name>
+									<value>
+										<string>disk24668256</string>
+									</value>
+								</member>
+								<member>
+									<name>kernel_version</name>
+									<value>
+										<string>grub-x86_64 (xen)</string>
+									</value>
+								</member>
+								<member>
+									<name>can_snapshot</name>
+									<value>
+										<boolean>1</boolean>
+									</value>
+								</member>
+								<member>
+									<name>total_size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>snapshots_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>visibility</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>label</name>
+									<value>
+										<string>Debian 8</string>
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>source</name>
+									<value>
+										<int>17945187</int>
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>created</string>
+									</value>
+								</member>
+								<member>
+									<name>is_boot_disk</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T17:36:56</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>24668256</int>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T17:36:02</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>size</name>
+									<value>
+										<int>3072</int>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>data</string>
+									</value>
+								</member>
+								<member>
+									<name>snapshot_profile_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>is_migrating</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+							</struct>
+						</value>
+						<value>
+							<struct>
+								<member>
+									<name>vms_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>entity_id</name>
+									<value>
+										<string>7928e884-5ab1-11e8-84b2-00163ea0592c</string>
+									</value>
+								</member>
+								<member>
+									<name>name</name>
+									<value>
+										<string>libcloud</string>
+									</value>
+								</member>
+								<member>
+									<name>kernel_version</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>can_snapshot</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+								<member>
+									<name>total_size</name>
+									<value>
+										<int>1024</int>
+									</value>
+								</member>
+								<member>
+									<name>snapshots_id</name>
+									<value>
+										<array>
+											<data>
+											</data>
+										</array>
+									</value>
+								</member>
+								<member>
+									<name>visibility</name>
+									<value>
+										<string>private</string>
+									</value>
+								</member>
+								<member>
+									<name>label</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>datacenter_id</name>
+									<value>
+										<int>4</int>
+									</value>
+								</member>
+								<member>
+									<name>source</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>state</name>
+									<value>
+										<string>created</string>
+									</value>
+								</member>
+								<member>
+									<name>is_boot_disk</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+								<member>
+									<name>date_updated</name>
+									<value>
+										<dateTime.iso8601>20180518T17:38:12</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>id</name>
+									<value>
+										<int>24668274</int>
+									</value>
+								</member>
+								<member>
+									<name>date_created</name>
+									<value>
+										<dateTime.iso8601>20180518T17:37:43</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>size</name>
+									<value>
+										<int>1024</int>
+									</value>
+								</member>
+								<member>
+									<name>type</name>
+									<value>
+										<string>data</string>
+									</value>
+								</member>
+								<member>
+									<name>snapshot_profile_id</name>
+									<value>
+										<nil />
+									</value>
+								</member>
+								<member>
+									<name>is_migrating</name>
+									<value>
+										<boolean>0</boolean>
+									</value>
+								</member>
+							</struct>
+						</value>
+					</data>
+				</array>
+			</value>
+		</param>
+	</params>
 </methodResponse>
