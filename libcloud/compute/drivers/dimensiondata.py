@@ -4439,15 +4439,18 @@ class DimensionDataNodeDriver(NodeDriver):
 
     def _to_vmware_tools(self, element):
         status = None
-        if hasattr(element, 'runningStatus'):
+        #if hasattr(element, 'runningStatus'):
+        if element.get('runningStatus'):
             status = element.get('runningStatus')
 
         version_status = None
-        if hasattr(element, 'version_status'):
+        #if hasattr(element, 'version_status'):
+        if element.get('versionStatus'):
             version_status = element.get('version_status')
 
         api_version = None
-        if hasattr(element, 'apiVersion'):
+        #if hasattr(element, 'apiVersion'):
+        if element.get('apiVersion'):
             api_version = element.get('apiVersion')
 
         return DimensionDataServerVMWareTools(
