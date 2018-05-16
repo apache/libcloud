@@ -3639,7 +3639,7 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_subnetwork(name, region_name)
 
-    def ex_create_network(self, name, cidr, description=None, mode="auto"):
+    def ex_create_network(self, name, cidr=None, description=None, mode="auto"):
         """
         Create a network. In November 2015, Google introduced Subnetworks and
         suggests using networks with 'auto' generated subnetworks. See, the
