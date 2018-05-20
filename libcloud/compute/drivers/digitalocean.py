@@ -95,6 +95,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
     EX_CREATE_ATTRIBUTES = ['backups',
                             'ipv6',
                             'private_networking',
+                            'tags',
                             'ssh_keys']
 
     def list_images(self):
@@ -138,6 +139,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         * `backups`: ``bool`` defaults to False
         * `ipv6`: ``bool`` defaults to False
         * `private_networking`: ``bool`` defaults to False
+        * `tags`: ``list`` of ``str`` tags
         * `user_data`: ``str`` for cloud-config data
         * `ssh_keys`: ``list`` of ``int`` key ids or ``str`` fingerprints
 
