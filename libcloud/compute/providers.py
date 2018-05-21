@@ -147,6 +147,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.oneandone', 'OneAndOneNodeDriver'),
     Provider.UPCLOUD:
     ('libcloud.compute.drivers.upcloud', 'UpcloudDriver'),
+    Provider.SCALEWAY:
+    ('libcloud.compute.drivers.scaleway', 'ScalewayNodeDriver'),
 }
 
 
