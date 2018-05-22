@@ -12,6 +12,3 @@ class Provider(object):
     """
     GOOGLE_BQ = 'google'
     GOOGLE_BQ_BILLING = 'google'
-
-
-

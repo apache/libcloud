@@ -44,7 +44,7 @@ class GoogleBQBilling():
             for table in self.client.list_tables(dataset_ref):
                 if table.table_id.startswith(self.BILLING_TABLE_PREFIX):
                     return table
-        except NotFound as e:
+        except NotFound:
             # list_tables raises exception if dataset is missing
             raise GoogleBQBillingExcepton('Project has not billing dataset')
 
