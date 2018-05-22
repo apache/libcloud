@@ -120,7 +120,7 @@ class ApiDocsCommand(Command):
 
 forbid_publish()
 
-install_requires = ['requests']
+install_requires = ['requests', 'google-cloud-bigquery==1.1.0']
 
 if PY2_pre_279:
     install_requires.append('backports.ssl_match_hostname')
