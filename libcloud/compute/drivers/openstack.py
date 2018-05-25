@@ -2554,7 +2554,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         # We run the init once to get the Glance V2 API connection
         # and put that on the object under self.image_connection.
         self._ex_force_base_url = str(kwargs.pop('ex_force_image_url',
-                                                None))
+                                                 None))
         kwargs['ex_force_base_url'] = self._ex_force_base_url
         self.connectionCls = self.image_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
@@ -2563,7 +2563,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         # We run the init once to get the Neutron V2 API connection
         # and put that on the object under self.image_connection.
         self._ex_force_base_url = str(kwargs.pop('ex_force_network_url',
-                                                    None))
+                                                 None))
         kwargs['ex_force_base_url'] = self._ex_force_base_url
         self.connectionCls = self.network_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
@@ -2736,7 +2736,6 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         return self._to_image_member(response.object)
 
-
     def _to_networks(self, obj):
         networks = obj['networks']
         return [self._to_network(network) for network in networks]
@@ -2759,7 +2758,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``list`` of :class:`OpenStackNetwork`
         """
-        response = self.network_connection.request(self._networks_url_prefix).object
+        response = self.network_connection.request(
+            self._networks_url_prefix).object
         return self._to_networks(response)
 
     def _to_subnets(self, obj):
@@ -2784,7 +2784,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``list`` of :class:`OpenStack_2_SubNet`
         """
-        response = self.network_connection.request(self._subnets_url_prefix).object
+        response = self.network_connection.request(
+            self._subnets_url_prefix).object
         return self._to_subnets(response)
 
 
