@@ -2479,11 +2479,30 @@ class OpenStack_2_Connection(OpenStackComputeConnection):
     accept_format = 'application/json'
     default_content_type = 'application/json; charset=UTF-8'
 
+    def __init__(self, *args, **kwargs):
+        if 'ex_force_image_url' in kwargs:
+            del kwargs['ex_force_image_url']
+        if 'ex_force_network_url' in kwargs:
+            del kwargs['ex_force_network_url']
+        super(OpenStack_2_Connection, self).__init__(*args, **kwargs)
+
     def encode_data(self, data):
         return json.dumps(data)
 
 
 class OpenStack_2_ImageConnection(OpenStackImageConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
+class OpenStack_2_NetworkConnection(OpenStackBaseConnection):
+    service_type = 'network'
+    service_name = 'neutron'
+    service_region = 'RegionOne'
     responseCls = OpenStack_1_1_Response
     accept_format = 'application/json'
     default_content_type = 'application/json; charset=UTF-8'
@@ -2514,11 +2533,14 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     # See https://developer.openstack.org/api-ref/
     # image/v2/index.html#list-image-members
     image_connectionCls = OpenStack_2_ImageConnection
+    network_connectionCls = OpenStack_2_NetworkConnection
     image_connection = None
+    network_connection = None
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
-    _networks_url_prefix = '/os-networks'
+    _networks_url_prefix = '/v2.0/networks'
+    _subnets_url_prefix = '/v2.0/subnets'
 
     def __init__(self, *args, **kwargs):
         original_connectionCls = self.connectionCls
@@ -2527,14 +2549,31 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if 'ex_force_auth_version' not in kwargs:
             kwargs['ex_force_auth_version'] = '3.x_password'
 
+        original_ex_force_base_url = kwargs.get('ex_force_base_url', None)
+
         # We run the init once to get the Glance V2 API connection
         # and put that on the object under self.image_connection.
+        self._ex_force_base_url = str(kwargs.pop('ex_force_image_url',
+                                                None))
+        kwargs['ex_force_base_url'] = self._ex_force_base_url
         self.connectionCls = self.image_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.image_connection = self.connection
 
+        # We run the init once to get the Neutron V2 API connection
+        # and put that on the object under self.image_connection.
+        self._ex_force_base_url = str(kwargs.pop('ex_force_network_url',
+                                                    None))
+        kwargs['ex_force_base_url'] = self._ex_force_base_url
+        self.connectionCls = self.network_connectionCls
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+        self.network_connection = self.connection
+
         # We run the init again to get the compute API connection
         # and that's put under self.connection as normal.
+        self._ex_force_base_url = original_ex_force_base_url
+        if original_ex_force_base_url:
+            kwargs['ex_force_base_url'] = self._ex_force_base_url
         self.connectionCls = original_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
 
@@ -2698,6 +2737,57 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return self._to_image_member(response.object)
 
 
+    def _to_networks(self, obj):
+        networks = obj['networks']
+        return [self._to_network(network) for network in networks]
+
+    def _to_network(self, obj):
+        extra = {}
+        if obj.get('router:external', None):
+            extra['router:external'] = obj.get('router:external')
+        if obj.get('subnets', None):
+            extra['subnets'] = obj.get('subnets')
+        return OpenStackNetwork(id=obj['id'],
+                                name=obj['name'],
+                                cidr=None,
+                                driver=self,
+                                extra=extra)
+
+    def ex_list_networks(self):
+        """
+        Get a list of Networks that are available.
+
+        :rtype: ``list`` of :class:`OpenStackNetwork`
+        """
+        response = self.network_connection.request(self._networks_url_prefix).object
+        return self._to_networks(response)
+
+    def _to_subnets(self, obj):
+        subnets = obj['subnets']
+        return [self._to_subnet(subnet) for subnet in subnets]
+
+    def _to_subnet(self, obj):
+        extra = {}
+        if obj.get('router:external', None):
+            extra['router:external'] = obj.get('router:external')
+        if obj.get('subnets', None):
+            extra['subnets'] = obj.get('subnets')
+        return OpenStack_2_SubNet(id=obj['id'],
+                                  name=obj['name'],
+                                  cidr=None,
+                                  driver=self,
+                                  extra=extra)
+
+    def ex_list_subnets(self):
+        """
+        Get a list of Subnet that are available.
+
+        :rtype: ``list`` of :class:`OpenStack_2_SubNet`
+        """
+        response = self.network_connection.request(self._subnets_url_prefix).object
+        return self._to_subnets(response)
+
+
 class OpenStack_1_1_FloatingIpPool(object):
     """
     Floating IP Pool info.
@@ -2801,3 +2891,21 @@ class OpenStack_1_1_FloatingIpAddress(object):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
                 ' pool=%s, driver=%s>'
                 % (self.id, self.ip_address, self.pool, self.driver))
+
+
+class OpenStack_2_SubNet(object):
+    """
+    A Virtual SubNet.
+    """
+
+    def __init__(self, id, name, cidr, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.cidr = cidr
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<OpenStack_2_SubNet id="%s" name="%s" cidr="%s">' % (self.id,
+                                                                     self.name,
+                                                                     self.cidr)

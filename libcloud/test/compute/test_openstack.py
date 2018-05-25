@@ -1568,7 +1568,9 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     driver_type = OpenStack_2_NodeDriver
     driver_kwargs = {
         'ex_force_auth_version': '2.0',
-        'ex_force_auth_url': 'https://auth.api.example.com'
+        'ex_force_auth_url': 'https://auth.api.example.com:8774',
+        'ex_force_image_url': 'https://auth.api.example.com:9292',
+        'ex_force_network_url': 'https://auth.api.example.com:9696'
     }
 
     def setUp(self):
@@ -1692,6 +1694,21 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(image_member.extra['updated'], '2018-03-02T14:20:37Z')
         self.assertEqual(image_member.extra['schema'], '/v2/schemas/member')
 
+    def test_ex_list_networks(self):
+        networks = self.driver.ex_list_networks()
+        network = networks[0]
+
+        self.assertEqual(len(networks), 1)
+        self.assertEqual(network.name, 'private-network')
+        self.assertEqual(network.extra['subnets'], ['54d6f61d-db07-451c-9ab3-b9609b6b6f0b'])
+
+    def test_ex_list_subnets(self):
+        subnets = self.driver.ex_list_subnets()
+        subnet = subnets[0]
+
+        self.assertEqual(len(subnets), 2)
+        self.assertEqual(subnet.name, 'private-subnet')
+        self.assertEqual(subnet.cidr, '10.0.0.0/24')
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -2144,6 +2161,13 @@ class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
             setattr(self, new_name, method_type(method, self,
                                                 OpenStack_2_0_MockHttp))
 
+    def _v2_0_networks(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v2_0__networks.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_0_subnets(self, method, url, body, headers):
+        body = self.auth_fixtures.load('_v2_0__subnets.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
     driver_args = OPENSTACK_PARAMS + ('1.1',)
