@@ -591,7 +591,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog,
                                           auth_version='2.0')
         service_types = catalog.get_service_types()
-        self.assertEqual(service_types, ['compute', 'image', 'network', 
+        self.assertEqual(service_types, ['compute', 'image', 'network',
                                          'object-store', 'rax:object-cdn'])
 
         service_types = catalog.get_service_types(region='ORD')

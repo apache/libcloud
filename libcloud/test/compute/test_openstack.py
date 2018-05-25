@@ -1711,6 +1711,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         network = self.driver.ex_list_networks()[0]
         self.assertTrue(self.driver.ex_delete_network(network=network))
 
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
     should_list_volumes = True
@@ -2181,6 +2182,7 @@ class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
             new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
                                                 OpenStack_2_0_MockHttp))
+
 
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
     driver_args = OPENSTACK_PARAMS + ('1.1',)
