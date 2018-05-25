@@ -1399,24 +1399,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(pool.delete_floating_ip.call_count, 1)
 
-    def test_ex_list_network(self):
-        networks = self.driver.ex_list_networks()
-        network = networks[0]
-
-        self.assertEqual(len(networks), 3)
-        self.assertEqual(network.name, 'test1')
-        self.assertEqual(network.cidr, '127.0.0.0/24')
-
-    def test_ex_create_network(self):
-        network = self.driver.ex_create_network(name='test1',
-                                                cidr='127.0.0.0/24')
-        self.assertEqual(network.name, 'test1')
-        self.assertEqual(network.cidr, '127.0.0.0/24')
-
-    def test_ex_delete_network(self):
-        network = self.driver.ex_list_networks()[0]
-        self.assertTrue(self.driver.ex_delete_network(network=network))
-
     def test_ex_get_metadata_for_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
@@ -1568,9 +1550,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     driver_type = OpenStack_2_NodeDriver
     driver_kwargs = {
         'ex_force_auth_version': '2.0',
-        'ex_force_auth_url': 'https://auth.api.example.com:8774',
-        'ex_force_image_url': 'https://auth.api.example.com:9292',
-        'ex_force_network_url': 'https://auth.api.example.com:9696'
+        'ex_force_auth_url': 'https://auth.api.example.com'
     }
 
     def setUp(self):
@@ -1579,6 +1559,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.driver_klass.image_connectionCls.auth_url = "https://auth.api.example.com"
         # normally authentication happens lazily, but we force it here
         self.driver.image_connection._populate_hosts_and_request_paths()
+
+        self.driver_klass.network_connectionCls.conn_class = OpenStack_2_0_MockHttp
+        self.driver_klass.network_connectionCls.auth_url = "https://auth.api.example.com"
+        # normally authentication happens lazily, but we force it here
+        self.driver.network_connection._populate_hosts_and_request_paths()
 
     def test_ex_force_auth_token_passed_to_connection(self):
         base_url = 'https://servers.api.rackspacecloud.com/v1.1/slug'
@@ -1698,8 +1683,8 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         networks = self.driver.ex_list_networks()
         network = networks[0]
 
-        self.assertEqual(len(networks), 1)
-        self.assertEqual(network.name, 'private-network')
+        self.assertEqual(len(networks), 2)
+        self.assertEqual(network.name, 'net1')
         self.assertEqual(network.extra['subnets'], ['54d6f61d-db07-451c-9ab3-b9609b6b6f0b'])
 
     def test_ex_list_subnets(self):
@@ -1709,6 +1694,22 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(len(subnets), 2)
         self.assertEqual(subnet.name, 'private-subnet')
         self.assertEqual(subnet.cidr, '10.0.0.0/24')
+
+    def test_ex_list_network(self):
+        networks = self.driver.ex_list_networks()
+        network = networks[0]
+
+        self.assertEqual(len(networks), 2)
+        self.assertEqual(network.name, 'net1')
+
+    def test_ex_create_network(self):
+        network = self.driver.ex_create_network(name='net1',
+                                                cidr='127.0.0.0/24')
+        self.assertEqual(network.name, 'net1')
+
+    def test_ex_delete_network(self):
+        network = self.driver.ex_list_networks()[0]
+        self.assertTrue(self.driver.ex_delete_network(network=network))
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -2141,6 +2142,26 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
         return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v2_1337_v2_0_networks(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__networks.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == 'POST':
+            body = self.fixtures.load('_v2_0__networks_POST.json')
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v2_1337_v2_0_networks_d32019d3_bc6e_4319_9c1d_6722fc136a22(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__networks_POST.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_subnets(self, method, url, body, headers):
+        body = self.fixtures.load('_v2_0__subnets.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
@@ -2160,14 +2181,6 @@ class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
             new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
                                                 OpenStack_2_0_MockHttp))
-
-    def _v2_0_networks(self, method, url, body, headers):
-        body = self.auth_fixtures.load('_v2_0__networks.json')
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-
-    def _v2_0_subnets(self, method, url, body, headers):
-        body = self.auth_fixtures.load('_v2_0__subnets.json')
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
     driver_args = OPENSTACK_PARAMS + ('1.1',)

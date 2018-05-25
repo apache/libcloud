@@ -80,6 +80,12 @@ class OpenStackImageConnection(OpenStackBaseConnection):
     service_region = 'RegionOne'
 
 
+class OpenStackNetworkConnection(OpenStackBaseConnection):
+    service_type = 'network'
+    service_name = 'neutron'
+    service_region = 'RegionOne'
+
+
 class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """
     Base OpenStack node driver. Should not be used directly.
@@ -2479,13 +2485,6 @@ class OpenStack_2_Connection(OpenStackComputeConnection):
     accept_format = 'application/json'
     default_content_type = 'application/json; charset=UTF-8'
 
-    def __init__(self, *args, **kwargs):
-        if 'ex_force_image_url' in kwargs:
-            del kwargs['ex_force_image_url']
-        if 'ex_force_network_url' in kwargs:
-            del kwargs['ex_force_network_url']
-        super(OpenStack_2_Connection, self).__init__(*args, **kwargs)
-
     def encode_data(self, data):
         return json.dumps(data)
 
@@ -2499,10 +2498,7 @@ class OpenStack_2_ImageConnection(OpenStackImageConnection):
         return json.dumps(data)
 
 
-class OpenStack_2_NetworkConnection(OpenStackBaseConnection):
-    service_type = 'network'
-    service_name = 'neutron'
-    service_region = 'RegionOne'
+class OpenStack_2_NetworkConnection(OpenStackNetworkConnection):
     responseCls = OpenStack_1_1_Response
     accept_format = 'application/json'
     default_content_type = 'application/json; charset=UTF-8'
@@ -2549,22 +2545,24 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if 'ex_force_auth_version' not in kwargs:
             kwargs['ex_force_auth_version'] = '3.x_password'
 
-        original_ex_force_base_url = kwargs.get('ex_force_base_url', None)
+        original_ex_force_base_url = kwargs.get('ex_force_base_url')
 
         # We run the init once to get the Glance V2 API connection
         # and put that on the object under self.image_connection.
-        self._ex_force_base_url = str(kwargs.pop('ex_force_image_url',
-                                                 None))
-        kwargs['ex_force_base_url'] = self._ex_force_base_url
+        if original_ex_force_base_url or kwargs.get('ex_force_image_url'):
+            kwargs['ex_force_base_url'] = \
+                str(kwargs.pop('ex_force_image_url',
+                               original_ex_force_base_url))
         self.connectionCls = self.image_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.image_connection = self.connection
 
         # We run the init once to get the Neutron V2 API connection
         # and put that on the object under self.image_connection.
-        self._ex_force_base_url = str(kwargs.pop('ex_force_network_url',
-                                                 None))
-        kwargs['ex_force_base_url'] = self._ex_force_base_url
+        if original_ex_force_base_url or kwargs.get('ex_force_network_url'):
+            kwargs['ex_force_base_url'] = \
+                str(kwargs.pop('ex_force_network_url',
+                               original_ex_force_base_url))
         self.connectionCls = self.network_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.network_connection = self.connection
@@ -2774,7 +2772,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             extra['subnets'] = obj.get('subnets')
         return OpenStack_2_SubNet(id=obj['id'],
                                   name=obj['name'],
-                                  cidr=None,
+                                  cidr=obj['cidr'],
                                   driver=self,
                                   extra=extra)
 
