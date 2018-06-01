@@ -366,6 +366,13 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         domain = self.auth_instance.get_domain(domain_id='default')
         self.assertEqual(domain.name, 'Default')
 
+    def test_get_user(self):
+        user = self.auth_instance.get_user(user_id='a')
+        self.assertEqual(user.id, 'a')
+        self.assertEqual(user.domain_id, 'default')
+        self.assertEqual(user.enabled, True)
+        self.assertEqual(user.email, 'openstack-test@localhost')
+
     def test_create_user(self):
         user = self.auth_instance.create_user(email='test2@localhost', password='test1',
                                               name='test2', domain_id='default')
@@ -681,6 +688,10 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
         raise NotImplementedError()
 
     def _v3_users_a(self, method, url, body, headers):
+        if method == 'GET':
+            # look up a user
+            body = self.fixtures.load('v3_users_a.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         if method == 'PATCH':
             # enable / disable user
             body = self.fixtures.load('v3_users_a.json')
