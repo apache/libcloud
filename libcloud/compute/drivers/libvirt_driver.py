@@ -604,24 +604,27 @@ local-hostname: %s''' % (name, name)
             # only qemu emulator available
             emu = 'qemu'
 
-        if networks:
-            network = networks[0]
-        else:
-            network = 'default'
+        # Add multiple interfaces based on the `networks` list provided.
+        xml_net_conf = []
+        xml_net_template = """
+    <interface type='%(net_type)s'>
+      <source %(net_type)s='%(net_name)s'/>
+      <model type='virtio'/>
+    </interface>"""
 
-        net_type = 'network'
-        net_name = network
-
-        if network in self.ex_list_bridges():
-            # network is a bridge
-            net_type = 'bridge'
-            net_name = network
+        networks = networks or ['default']
+        for net in networks:
+            net_name = net
+            net_type = 'bridge' if net in self.ex_list_bridges() else 'network'
+            xml_net_conf.append(xml_net_template % ({'net_type': net_type,
+                                                     'net_name': net_name}))
 
         init_env = ""
         if env_vars:
             for env_var in env_vars:
                 init_env += "<initenv name='%s'>%s</initenv>\n" % (env_var, env_vars[env_var])
-        conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, init_env, disk_path, image_conf, net_type, net_type, net_name)
+
+        conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, init_env, disk_path, image_conf, ''.join(xml_net_conf))
 
         self.connection.defineXML(conf)
 
@@ -845,11 +848,7 @@ XML_CONF_TEMPLATE = '''
       <driver name='qemu' type='raw' io='native' cache='none'/>
       <source file='%s'/>
       <target dev='hda' bus='virtio'/>
-    </disk>%s
-    <interface type='%s'>
-      <source %s='%s'/>
-      <model type='virtio'/>
-    </interface>
+    </disk>%s%s
     <console type='pty'>
       <target type='serial'/>
     </console>
