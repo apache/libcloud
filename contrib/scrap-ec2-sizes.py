@@ -21,7 +21,7 @@ This script downloads and parses AWS EC2 from https://pricing.us-east-1.amazonaw
 It writes a Python module with constants about EC2's sizes and regions.
 
 Use it as following:
-    $ python scrap-ec2-sizes.py > ../libcloud/compute/constants.py
+    $ python contrib/scrap-ec2-sizes.py > libcloud/compute/constants.py
 """
 
 import re
