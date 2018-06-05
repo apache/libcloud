@@ -85,10 +85,9 @@ class VSphereNodeDriver(NodeDriver):
                                       'please upgrade to python 2.7.11 and '
                                       'pyvmomi 6.0.0+')
 
-                context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-                context.verify_mode = ssl.CERT_NONE
                 try:
                     self.connection = connect.SmartConnect(host=host,
+                                                           post=port,
                                                            user=username,
                                                            pwd=password,
                                                            sslContext=context)
