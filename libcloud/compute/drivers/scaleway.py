@@ -141,8 +141,10 @@ class ScalewayNodeDriver(NodeDriver):
     name = 'Scaleway'
     website = 'https://www.scaleway.com/'
 
-    SNAPSHOT_STATE_MAP = {  # TODO map all states
-        'snapshotting': VolumeSnapshotState.CREATING
+    SNAPSHOT_STATE_MAP = {
+        'snapshotting': VolumeSnapshotState.CREATING,
+        'available': VolumeSnapshotState.AVAILABLE,
+        'error': VolumeSnapshotState.ERROR
     }
 
     def list_locations(self):
@@ -245,7 +247,7 @@ class ScalewayNodeDriver(NodeDriver):
             'organization': self.key,
             'name': name,
             'arch': node.extra['arch'],
-            'root_volume': node.extra['volumes']['0']['id']  # TODO check this
+            'root_volume': node.extra['volumes']['0']['id']
         }
         response = self.connection.request('/images', data=json.dumps(data),
                                            region=region,
