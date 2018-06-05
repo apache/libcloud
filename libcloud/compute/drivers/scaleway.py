@@ -56,21 +56,6 @@ class ScalewayResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED,
                             httplib.CREATED, httplib.NO_CONTENT]
 
-    def parse_body(self):
-        body = super(ScalewayResponse, self).parse_body()
-
-        links = self.connection.connection.getresponse().links
-        if links and 'next' in links:
-            response = self.connection.request(links['next']['url'],
-                                               data=self.connection.data,
-                                               method=self.connection.method)
-            next = response.object
-            merged = {root: child + next[root]
-                      for root, child in list(body.items())}
-            body = merged
-
-        return body
-
     def parse_error(self):
         return super(ScalewayResponse, self).parse_error()['message']
 
@@ -88,8 +73,7 @@ class ScalewayConnection(ConnectionUserAndKey):
     responseCls = ScalewayResponse
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, stream=False, region=None,
-                paged=False):
+                method='GET', raw=False, stream=False, region=None):
         if region:
             old_host = self.host
             self.host = SCALEWAY_API_HOSTS[region.id
@@ -98,18 +82,33 @@ class ScalewayConnection(ConnectionUserAndKey):
             if not self.host == old_host:
                 self.connect()
 
-        if paged:
-            if params is None:
-                params = {}
-
-            if isinstance(params, dict):
-                params['per_page'] = 100
-            else:
-                params.append(('per_page', 100))
-
         return super(ScalewayConnection, self).request(action, params, data,
                                                        headers, method, raw,
                                                        stream)
+
+    def _request_paged(self, action, params=None, data=None, headers=None,
+                       method='GET', raw=False, stream=False, region=None):
+        if params is None:
+            params = {}
+
+        if isinstance(params, dict):
+            params['per_page'] = 100
+        else:
+            params.append(('per_page', 100))
+
+        results = self.request(action, params, data, headers,
+                               method, raw, stream, region).object
+
+        links = self.connection.getresponse().links
+        while links and 'next' in links:
+            next = self.request(links['next']['url'], data=data,
+                                headers=headers, method=method,
+                                raw=raw, stream=stream).object
+            merged = {root: child + next[root]
+                      for root, child in list(results.items())}
+            results = merged
+
+        return results
 
     def add_default_headers(self, headers):
         """
@@ -168,13 +167,13 @@ class ScalewayNodeDriver(NodeDriver):
         :return: list of node size objects
         :rtype: ``list`` of :class:`.NodeSize`
         """
-        response = self.connection.request('/products/servers', region=region,
-                                           paged=True)
-        sizes = response.object['servers']
+        response = self.connection._request_paged('/products/servers',
+                                                  region=region)
+        sizes = response['servers']
 
-        response = self.connection.request('/products/servers/availability',
-                                           region=region, paged=True)
-        availability = response.object['servers']
+        response = self.connection._request_paged(
+            '/products/servers/availability', region=region)
+        availability = response['servers']
 
         return sorted([self._to_size(name, sizes[name], availability[name])
                        for name in sizes], key=lambda x: x.name)
@@ -221,9 +220,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: list of image objects
         :rtype: ``list`` of :class:`.NodeImage`
         """
-        response = self.connection.request('/images', region=region,
-                                           paged=True)
-        images = response.object['images']
+        response = self.connection._request_paged('/images', region=region)
+        images = response['images']
         return [self._to_image(image) for image in images]
 
     def create_image(self, node, name, region=None):
@@ -317,9 +315,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: list of node objects
         :rtype: ``list`` of :class:`.Node`
         """
-        response = self.connection.request('/servers', region=region,
-                                           paged=True)
-        servers = response.object['servers']
+        response = self.connection._request_paged('/servers', region=region)
+        servers = response['servers']
         return [self._to_node(server) for server in servers]
 
     def _to_node(self, server):
@@ -457,9 +454,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
-        response = self.connection.request('/volumes', region=region,
-                                           paged=True)
-        volumes = response.object['volumes']
+        response = self.connection._request_paged('/volumes', region=region)
+        volumes = response['volumes']
         return [self._to_volume(volume) for volume in volumes]
 
     def _to_volume(self, volume):
@@ -485,10 +481,9 @@ class ScalewayNodeDriver(NodeDriver):
         (if None, use default region specified in __init__)
         :type region: :class:`.NodeLocation`
         """
-        response = self.connection.request('/snapshots', region=region,
-                                           paged=True)
+        response = self.connection._request_paged('/snapshots', region=region)
         snapshots = filter(lambda s: s['base_volume']['id'] == volume.id,
-                           response.object['snapshots'])
+                           response['snapshots'])
         return [self._to_snapshot(snapshot) for snapshot in snapshots]
 
     def _to_snapshot(self, snapshot):
