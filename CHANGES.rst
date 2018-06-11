@@ -84,8 +84,11 @@ Storage
 - Update docstring for storage provider class (GITHUB-1201)
   [Clemens Wolff]
 
-- [Azure Blob storage] Allow filtering lists by prefix (LIBCLOUD-986, GITHUB-1193)
+- [Azure Blob Storage] Allow filtering lists by prefix (LIBCLOUD-986, GITHUB-1193)
   [Joshua Hawkinson]
+
+- [Azure Blob Storage] Update driver documentation (GITHUB-1208)
+  [Clemens Wolff]
 
 - [S3] Guess s3 upload content type (LIBCLOUD-958, GITHUB-1195)
   [Iuri de Silvio]
