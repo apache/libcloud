@@ -63,6 +63,9 @@ Compute
 - [OpenStack v2] Fix image members methods (GITHUB-1190)
   [Rick van de Loo]
 
+- [Scaleway] New Scaleway driver (GITHUB-1121)
+  [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
+
 DNS
 ~~~
 
