@@ -5070,7 +5070,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_authorize_security_group_ingress(self, id, from_port, to_port,
                                             cidr_ips=None, group_pairs=None,
-                                            protocol='tcp'):
+                                            protocol='tcp', description=None):
         """
         Edit a Security Group to allow specific ingress traffic using
         CIDR blocks or either a group ID, group name or user ID (account).
@@ -5104,6 +5104,9 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      protocol: tcp/udp/icmp
         :type       protocol: ``str``
 
+        :param      description: description to be added to the rules inserted
+        :type       description: ``str``
+
         :rtype: ``bool``
         """
 
@@ -5112,7 +5115,8 @@ class BaseEC2NodeDriver(NodeDriver):
                                                         from_port,
                                                         to_port,
                                                         cidr_ips,
-                                                        group_pairs)
+                                                        group_pairs,
+                                                        description)
 
         params["Action"] = 'AuthorizeSecurityGroupIngress'
 
@@ -7635,7 +7639,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _get_common_security_group_params(self, group_id, protocol,
                                           from_port, to_port, cidr_ips,
-                                          group_pairs):
+                                          group_pairs, description=None):
         """
         Return a dictionary with common query parameters which are used when
         operating on security groups.
@@ -7654,6 +7658,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
                 ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp'
                           % (index)] = cidr_ip
+                if description is not None:
+                    ip_ranges['IpPermissions.1.IpRanges.%s.Description'
+                              % (index)] = description
 
             params.update(ip_ranges)
 
