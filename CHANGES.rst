@@ -26,6 +26,9 @@ Compute
 - [EC2] Add AWS eu-west-3 (Paris) region (GITHUB-1175)
   [Anthony Monthe]
 
+- [EC2] Add description to ex_authorize_security_group_ingress (GITHUB-1122)
+  [Arturo Noha]
+
 - [GCE] Expand Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
   [maxlip]
 
