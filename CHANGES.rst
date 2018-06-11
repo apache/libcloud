@@ -48,6 +48,9 @@ Compute
 - [GCE] Fix _find_zone_or_region for >500 instances (GITHUB-1203)
   [Léo Ferlin-Sutton]
 
+- [GCE] Allow routing_mode=None in ex_create_network (GITHUB-1217)
+  [Daniel Hunsaker]
+
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
