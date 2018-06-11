@@ -7451,10 +7451,10 @@ class BaseEC2NodeDriver(NodeDriver):
                 index += 1
 
                 ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp'
-                            % (index)] = cidr_ip
+                    % (index)] = cidr_ip
                 if description is not None:
                     ip_ranges['IpPermissions.1.IpRanges.%s.Description'
-                                % (index)] = description
+                        % (index)] = description
 
             params.update(ip_ranges)
 
