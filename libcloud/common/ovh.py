@@ -46,6 +46,8 @@ LOCATIONS = {
     'GRA1': {'id': 'GRA1', 'name': 'Gravelines 1', 'country': 'FR'},
     'GRA2': {'id': 'GRA2', 'name': 'Gravelines 2', 'country': 'FR'},
     'GRA3': {'id': 'GRA3', 'name': 'Gravelines 3', 'country': 'FR'},
+    'GRA4': {'id': 'GRA4', 'name': 'Gravelines 4', 'country': 'FR'},
+    'GRA5': {'id': 'GRA5', 'name': 'Gravelines 5', 'country': 'FR'},
     'GSW': {'id': 'GSW', 'name': 'Paris GSW', 'country': 'FR'},
     'LIM1': {'id': 'LIM1', 'name': 'Limburg 1', 'country': 'DE'},
     'P19': {'id': 'P19', 'name': 'Paris P19', 'country': 'FR'},
