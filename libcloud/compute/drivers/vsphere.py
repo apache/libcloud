@@ -85,27 +85,11 @@ class VSphereNodeDriver(NodeDriver):
                                       'please upgrade to python 2.7.11 and '
                                       'pyvmomi 6.0.0+')
 
-                try:
-                    self.connection = connect.SmartConnect(host=host,
-                                                           post=port,
-                                                           user=username,
-                                                           pwd=password,
-                                                           sslContext=context)
-                    atexit.register(connect.Disconnect, self.connection)
-                except Exception as exc:
-                    error_message = str(exc).lower()
-                    if 'incorrect user name' in error_message:
-                        raise InvalidCredsError('Check your username and '
-                                                'password are valid')
-                    if 'connection refused' in error_message or \
-                            'is not a vim server' in error_message:
-                        raise Exception('Check that the host provided '
-                                        'is a vSphere installation')
-                    if 'name or service not known' in error_message:
-                        raise Exception('Check that the vSphere host is '
-                                        'accessible')
-                    raise Exception('Cannot connect to vSphere using '
-                                    'self signed certs')
+                self.connection = connect.SmartConnect(
+                    host=host, port=port, user=username, pwd=password,
+                    sslContext=context
+                )
+                atexit.register(connect.Disconnect, self.connection)
             else:
                 raise Exception('Cannot connect to vSphere')
 
