@@ -25,7 +25,7 @@ import logging
 
 try:
     from pyVim import connect
-    from pyVmomi import vim
+    from pyVmomi import vim, vmodl
 except ImportError:
     raise ImportError('Missing "pyvmomi" dependency. You can install it '
                       'using pip - pip install pyvmomi')
@@ -235,7 +235,101 @@ class VSphereNodeDriver(NodeDriver):
         return NodeImage(id=uuid, name=name, driver=self,
                          extra=extra)
 
-    def list_nodes(self):
+
+    def _collect_properties(self, content, view_ref, obj_type, path_set=None,
+                            include_mors=False):
+        """
+        Collect properties for managed objects from a view ref
+        Check the vSphere API documentation for example on retrieving
+        object properties:
+            - http://goo.gl/erbFDz
+        Args:
+            content     (ServiceInstance): ServiceInstance content
+            view_ref (pyVmomi.vim.view.*): Starting point of inventory navigation
+            obj_type      (pyVmomi.vim.*): Type of managed object
+            path_set               (list): List of properties to retrieve
+            include_mors           (bool): If True include the managed objects
+                                        refs in the result
+        Returns:
+            A list of properties for the managed objects
+        """
+        collector = content.propertyCollector
+
+        # Create object specification to define the starting point of
+        # inventory navigation
+        obj_spec = vmodl.query.PropertyCollector.ObjectSpec()
+        obj_spec.obj = view_ref
+        obj_spec.skip = True
+
+        # Create a traversal specification to identify the path for collection
+        traversal_spec = vmodl.query.PropertyCollector.TraversalSpec()
+        traversal_spec.name = 'traverseEntities'
+        traversal_spec.path = 'view'
+        traversal_spec.skip = False
+        traversal_spec.type = view_ref.__class__
+        obj_spec.selectSet = [traversal_spec]
+
+        # Identify the properties to the retrieved
+        property_spec = vmodl.query.PropertyCollector.PropertySpec()
+        property_spec.type = obj_type
+
+        if not path_set:
+            property_spec.all = True
+
+        property_spec.pathSet = path_set
+
+        # Add the object and property specification to the
+        # property filter specification
+        filter_spec = vmodl.query.PropertyCollector.FilterSpec()
+        filter_spec.objectSet = [obj_spec]
+        filter_spec.propSet = [property_spec]
+
+        # Retrieve properties
+        props = collector.RetrieveContents([filter_spec])
+
+        data = []
+        for obj in props:
+            properties = {}
+            for prop in obj.propSet:
+                properties[prop.name] = prop.val
+
+            if include_mors:
+                properties['obj'] = obj.obj
+
+            data.append(properties)
+        return data
+
+    def list_nodes(self, enhance=True):
+        """
+        List nodes, excluding templates
+        """
+        nodes = []
+        vm_properties = [
+            'config.template',
+            'summary.config.name', 'summary.config.vmPathName',
+            'summary.config.memorySizeMB', 'summary.config.numCpu',
+            'summary.storage.committed', 'summary.config.guestFullName',
+            'summary.runtime.host', 'summary.config.instanceUuid',
+            'summary.config.annotation', 'summary.runtime.powerState',
+            'summary.runtime.bootTime', 'summary.guest.ipAddress',
+            'summary.overallStatus', 'customValue'
+        ]
+        content = self.connection.RetrieveContent()
+        view = content.viewManager.CreateContainerView(
+            content.rootFolder, [vim.VirtualMachine], True)
+
+        vm_list = self._collect_properties(content, view,
+                                           vim.VirtualMachine,
+                                           path_set=vm_properties,
+                                           include_mors=True)
+
+        nodes.extend(self._to_nodes(vm_list))
+        if enhance:
+            nodes = self._enhance_metadata(nodes, content)
+
+        return nodes
+
+    def list_nodes_recursive(self, enhance=True):
         """
         Lists nodes, excluding templates
         """
@@ -252,8 +346,14 @@ class VSphereNodeDriver(NodeDriver):
                 datacenter = child
                 vm_folder = datacenter.vmFolder
                 vm_list = vm_folder.childEntity
-                nodes.extend(self._to_nodes(vm_list))
+                nodes.extend(self._to_nodes_recursive(vm_list))
 
+        if enhance:
+            nodes = self._enhance_metadata(nodes, content)
+
+        return nodes
+
+    def _enhance_metadata(self, nodes, content):
         nodemap = {}
         for node in nodes:
             node.extra['vSphere version'] = content.about.version
@@ -286,25 +386,116 @@ class VSphereNodeDriver(NodeDriver):
 
     def _to_nodes(self, vm_list):
         nodes = []
+        for vm in vm_list:
+            if vm.get('config.template'):
+                continue  # Do not include templates in node list
+            nodes.append(self._to_node(vm))
+        return nodes
+
+    def _to_nodes_recursive(self, vm_list):
+        nodes = []
         for virtual_machine in vm_list:
             if hasattr(virtual_machine, 'childEntity'):
                 # If this is a group it will have children.
                 # If it does, recurse into them and then return
-                nodes.extend(self._to_nodes(virtual_machine.childEntity))
+                nodes.extend(self._to_nodes_recursive(virtual_machine.childEntity))
             elif isinstance(virtual_machine, vim.VirtualApp):
                 # If this is a vApp, it likely contains child VMs
                 # (vApps can nest vApps, but it is hardly
                 # a common usecase, so ignore that)
-                nodes.extend(self._to_nodes(virtual_machine.vm))
+                nodes.extend(self._to_nodes_recursive(virtual_machine.vm))
             else:
                 if not hasattr(virtual_machine, 'config') or \
                     (virtual_machine.config and \
                      virtual_machine.config.template):
                     continue # Do not include templates in node list
-                nodes.append(self._to_node(virtual_machine))
+                nodes.append(self._to_node_recursive(virtual_machine))
         return nodes
 
-    def _to_node(self, virtual_machine):
+    def _to_node(self, vm):
+        name = vm.get('summary.config.name')
+        path = vm.get('summary.config.vmPathName')
+        memory = vm.get('summary.config.memorySizeMB')
+        cpus = vm.get('summary.config.numCpu')
+        disk = vm.get('summary.storage.committed', 0)/(1024*1024*1024)
+        size = ''
+        if cpus:
+            size = '%dvCPU' % cpus
+            if memory:
+                size += ', %dMB RAM' % memory
+            if disk:
+                size += ', %dGB disk' % disk
+
+        operating_system = vm.get('summary.config.guestFullName')
+        host = vm.get('summary.runtime.host')
+
+        os_type = 'unix'
+        if 'Microsoft' in str(operating_system):
+            os_type = 'windows'
+
+        uuid = vm.get('summary.config.instanceUuid')
+        annotation = vm.get('summary.config.annotation')
+        state = vm.get('summary.runtime.powerState')
+        status = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)
+        boot_time = vm.get('summary.runtime.bootTime')
+
+        ip_addresses = []
+        if vm.get('summary.guest.ipAddress'):
+            ip_addresses.append(vm.get('summary.guest.ipAddress'))
+
+        overall_status = str(vm.get('summary.overallStatus'))
+        public_ips = []
+        private_ips = []
+
+        extra = {
+            'path': path,
+            'operating_system': operating_system,
+            'os_type': os_type,
+            'memory_MB': memory,
+            'cpus': cpus,
+            'overall_status': overall_status,
+            'metadata': {}
+        }
+
+        if disk:
+            extra['disk'] = disk
+
+        if host:
+            extra['host'] = host.name
+            parent = host.parent
+            while parent:
+                if isinstance(parent, vim.ClusterComputeResource):
+                    extra['cluster'] = parent.name
+                    break
+                parent = parent.parent
+
+        if boot_time:
+            extra['boot_time'] = boot_time.isoformat()
+        if annotation:
+            extra['annotation'] = annotation
+
+        for ip_address in ip_addresses:
+            try:
+                if is_public_subnet(ip_address):
+                    public_ips.append(ip_address)
+                else:
+                    private_ips.append(ip_address)
+            except:
+                # IPV6 not supported
+                pass
+
+        for custom_field in vm.get('customValue', []):
+            key_id = custom_field.key
+            key = self.find_custom_field_key(key_id)
+            extra['metadata'][key] = custom_field.value
+
+        node = Node(id=uuid, name=name, state=status, size=size,
+                    public_ips=public_ips, private_ips=private_ips,
+                    driver=self, extra=extra)
+        node._uuid = uuid
+        return node
+
+    def _to_node_recursive(self, virtual_machine):
         summary = virtual_machine.summary
         name = summary.config.name
         path = summary.config.vmPathName
@@ -636,7 +827,7 @@ class VSphereNodeDriver(NodeDriver):
                 reason = str(task.info.error)
             raise Exception(reason)
 
-        node = self._to_node(result)
+        node = self._to_node_recursive(result)
 
         # if network:
         #     self.ex_connect_network(result, network)
