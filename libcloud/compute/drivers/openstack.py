@@ -2761,7 +2761,7 @@ class OpenStack_1_1_FloatingIpPool(object):
         Delete specified floating IP from the pool
 
         :param      ip: floating IP to remove
-        :type       ip::class:`OpenStack_1_1_FloatingIpAddress`
+        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
 
         :rtype: ``bool``
         """
