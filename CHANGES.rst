@@ -120,6 +120,9 @@ Common
   (LIBCLOUD-965, GITHUB-1145)
   [Miguel Caballer]
 
+- Document openstack_connection_kwargs method (GITHUB-1219)
+  [Ken Dreyer]
+
 Compute
 ~~~~~~~
 
