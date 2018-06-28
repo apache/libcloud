@@ -72,6 +72,9 @@ Compute
 - [Scaleway] New Scaleway driver (GITHUB-1121)
   [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
 
+- [OpenStack] Fix API doc for delete_floating_ip (GITHUB-1218)
+  [Ken Dreyer]
+
 DNS
 ~~~
 
@@ -120,7 +123,7 @@ Common
   (LIBCLOUD-965, GITHUB-1145)
   [Miguel Caballer]
 
-- Document openstack_connection_kwargs method (GITHUB-1219)
+- [OpenStack] Document openstack_connection_kwargs method (GITHUB-1219)
   [Ken Dreyer]
 
 Compute
