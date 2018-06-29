@@ -29,6 +29,9 @@ Compute
 - [EC2] Add description to ex_authorize_security_group_ingress (GITHUB-1122)
   [Arturo Noha]
 
+- [EC2] Added script to automatically get EC2 instance sizes (GITHUB-1211)
+  [Anthony Monthe, Quentin Pradet]
+
 - [GCE] Expand Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
   [maxlip]
 
