@@ -104,6 +104,7 @@ class ScalewayConnection(ConnectionUserAndKey):
             next = self.request(links['next']['url'], data=data,
                                 headers=headers, method=method,
                                 raw=raw, stream=stream).object
+            links = self.connection.getresponse().links
             merged = {root: child + next[root]
                       for root, child in list(results.items())}
             results = merged
