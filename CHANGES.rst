@@ -8,6 +8,12 @@ Changes in Apache Libcloud in development
   (GITHUB-1182, GITHUB-1183, GITHUB-1185, GITHUB-1186, GITHUB-1187, GITHUB-1188)
   [Rémy Léone]
 
+Common
+~~~~~~
+
+- [OpenStack] Document openstack_connection_kwargs method (GITHUB-1219)
+  [Ken Dreyer]
+
 Compute
 ~~~~~~~
 
@@ -125,9 +131,6 @@ Common
 - [OpenStack] Authentify with updated Identity API
   (LIBCLOUD-965, GITHUB-1145)
   [Miguel Caballer]
-
-- [OpenStack] Document openstack_connection_kwargs method (GITHUB-1219)
-  [Ken Dreyer]
 
 Compute
 ~~~~~~~
@@ -250,7 +253,6 @@ Compute
 
 - [UpCloud] Add pricing information to list_sizes (LIBCLOUD-969, GITHUB-1152)
   [Mika Lackman]
-
 
 Storage
 ~~~~~~~
