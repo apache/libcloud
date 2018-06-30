@@ -26,6 +26,9 @@ Compute
 - [Digital Ocean] Support attach/detach for floating IPs (GITHUB-1191)
   [Rick van de Loo]
 
+- [Digital Ocean] Add tags extra attribute to create_node (GITHUB-1212)
+  [Nikita Chebykin]
+
 - [Dimension Data] Fix IndexError in list_images (GITHUB-1171)
   [Adam Friedman]
 
@@ -78,11 +81,11 @@ Compute
 - [OpenStack v2] Fix image members methods (GITHUB-1190)
   [Rick van de Loo]
 
-- [Scaleway] New Scaleway driver (GITHUB-1121)
-  [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
-
 - [OpenStack] Fix API doc for delete_floating_ip (GITHUB-1218)
   [Ken Dreyer]
+
+- [Scaleway] New Scaleway driver (GITHUB-1121)
+  [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
 
 DNS
 ~~~
