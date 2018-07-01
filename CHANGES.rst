@@ -26,6 +26,9 @@ Compute
 - [Digital Ocean] Support attach/detach for floating IPs (GITHUB-1191)
   [Rick van de Loo]
 
+- [Digital Ocean] Add ex_get_node_details (GITHUB-1221)
+  [Rick van de Loo]
+
 - [Digital Ocean] Add tags extra attribute to create_node (GITHUB-1212)
   [Nikita Chebykin]
 
