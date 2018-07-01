@@ -495,6 +495,20 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
 
+    def ex_get_node_details(self, node_id):
+        """
+        Lists details of the specified server.
+
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
+
+        :rtype: :class:`Node`
+        """
+        data = self._paginated_request(
+            '/v2/droplets/{}'.format(node_id), 'droplet'
+        )
+        return self._to_node(data)
+
     def ex_create_floating_ip(self, location):
         """
         Create new floating IP reserved to a region.
