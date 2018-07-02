@@ -5056,7 +5056,7 @@ class GCENodeDriver(NodeDriver):
         :type     ex_disk_size: ``int`` or ``None``
 
         :keyword ex_source_instancetemplate: Instamce template to create node
-                                          from.
+                                             from.
         :type    ex_source_instancetemplate: :class: `GCEInstanceTemplate` or
                                           ``str`` or ``None``
 
