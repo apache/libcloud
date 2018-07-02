@@ -28,6 +28,7 @@ from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import GoogleBaseError
 from libcloud.common.google import ResourceNotFoundError
 from libcloud.common.google import ResourceExistsError
+from libcloud.common.google import InvalidRequestError
 from libcloud.common.types import ProviderError
 
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
@@ -3909,16 +3910,17 @@ class GCENodeDriver(NodeDriver):
         return self.ex_get_network(name)
 
     def create_node(
-            self, name, size, image, location=None, ex_network='default',
-            ex_subnetwork=None, ex_tags=None, ex_metadata=None,
-            ex_boot_disk=None, use_existing_disk=True, external_ip='ephemeral',
-            internal_ip=None, ex_disk_type='pd-standard',
-            ex_disk_auto_delete=True, ex_service_accounts=None,
-            description=None, ex_can_ip_forward=None,
+            self, name, size=None, image=None, location=None,
+            ex_network=None, ex_subnetwork=None, ex_tags=None,
+            ex_metadata=None, ex_boot_disk=None, use_existing_disk=True,
+            external_ip='ephemeral', internal_ip=None,
+            ex_disk_type=None, ex_disk_auto_delete=None,
+            ex_service_accounts=None, description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_image_family=None, ex_labels=None,
-            ex_accelerator_type=None, ex_accelerator_count=None):
+            ex_accelerator_type=None, ex_accelerator_count=None,
+            ex_source_instancetemplate=None):
         """
         Create a new node and return a node object for the node.
 
@@ -4056,10 +4058,26 @@ class GCENodeDriver(NodeDriver):
                                         accelerators to attach to the node.
         :type     ex_accelerator_count: ``int`` or ``None``
 
+        :keyword  ex_source_instancetemplate: Instance Template to create
+                                              node from
+        :type     ex_source_instancetemplate: :class:`GCEInstanceTemplate` or
+                                              ``str`` or ``None``
+
 
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
         """
+        # If an instance template was specified we don't want to apply
+        # defaults becuase they may override what is specified in the
+        # template.
+        if ex_source_instancetemplate is None:
+            if ex_network is None:
+                ex_network = 'default'
+            if ex_disk_type is None:
+                ex_disk_type = 'pd-standard'
+            if ex_disk_auto_delete is None:
+                ex_disk_auto_delete = True
+
         if ex_boot_disk and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'ex_boot_disk' and "
                              "'ex_disks_gce_struct'")
@@ -4069,18 +4087,19 @@ class GCENodeDriver(NodeDriver):
                              "'ex_image_family'")
 
         if not (image or ex_image_family or ex_boot_disk or
-                ex_disks_gce_struct):
+                ex_disks_gce_struct or ex_source_instancetemplate):
             raise ValueError("Missing root device or image. Must specify an "
                              "'image', 'ex_image_family', existing "
-                             "'ex_boot_disk', or use the "
-                             "'ex_disks_gce_struct'.")
+                             "'ex_boot_disk', ex_source_instancetemplate,"
+                             "or use the 'ex_disks_gce_struct'.")
+
+        if size and not hasattr(size, 'name'):
+            size = self.ex_get_size(size, location)
 
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
-        if not hasattr(size, 'name'):
-            size = self.ex_get_size(size, location)
-        if not hasattr(ex_network, 'name'):
+        if ex_network and not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
         if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
             ex_subnetwork = \
@@ -4091,7 +4110,7 @@ class GCENodeDriver(NodeDriver):
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
-        if not hasattr(ex_disk_type, 'name'):
+        if ex_disk_type and not hasattr(ex_disk_type, 'name'):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
         if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
             ex_boot_disk = self.ex_get_volume(ex_boot_disk, zone=location)
@@ -4104,28 +4123,44 @@ class GCENodeDriver(NodeDriver):
                 ex_accelerator_type, zone=location)
 
         # Use disks[].initializeParams to auto-create the boot disk
-        if not ex_disks_gce_struct and not ex_boot_disk:
-            ex_disks_gce_struct = [{
-                'autoDelete': ex_disk_auto_delete,
-                'boot': True,
-                'type': 'PERSISTENT',
-                'mode': 'READ_WRITE',
-                'deviceName': name,
-                'initializeParams': {
-                    'diskName': name,
-                    'diskType': ex_disk_type.extra['selfLink'],
-                    'sourceImage': image.extra['selfLink']
-                }
-            }]
+        if (not ex_disks_gce_struct and not ex_boot_disk and
+           not ex_source_instancetemplate):
+                ex_disks_gce_struct = [{
+                    'autoDelete': ex_disk_auto_delete,
+                    'boot': True,
+                    'type': 'PERSISTENT',
+                    'mode': 'READ_WRITE',
+                    'deviceName': name,
+                    'initializeParams': {
+                        'diskName': name,
+                        'diskType': ex_disk_type.extra['selfLink'],
+                        'sourceImage': image.extra['selfLink']
+                    }
+                }]
+
+        if (ex_source_instancetemplate and
+           not hasattr(ex_source_instancetemplate, 'name')):
+            ex_source_instancetemplate = self.ex_get_instancetemplate(
+                ex_source_instancetemplate
+            )
 
         request, node_data = self._create_node_req(
-            name, size, image, location, ex_network, ex_tags, ex_metadata,
-            ex_boot_disk, external_ip, internal_ip, ex_disk_type,
-            ex_disk_auto_delete, ex_service_accounts, description,
-            ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
-            ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
-            ex_subnetwork, ex_labels, ex_accelerator_type,
-            ex_accelerator_count)
+            name=name, size=size, image=image, location=location,
+            network=ex_network, tags=ex_tags, metadata=ex_metadata,
+            boot_disk=ex_boot_disk, external_ip=external_ip,
+            internal_ip=internal_ip, ex_disk_type=ex_disk_type,
+            ex_disk_auto_delete=ex_disk_auto_delete,
+            ex_service_accounts=ex_service_accounts, description=description,
+            ex_can_ip_forward=ex_can_ip_forward,
+            ex_disks_gce_struct=ex_disks_gce_struct,
+            ex_nic_gce_struct=ex_nic_gce_struct,
+            ex_on_host_maintenance=ex_on_host_maintenance,
+            ex_automatic_restart=ex_on_host_maintenance,
+            ex_preemptible=ex_preemptible,
+            ex_subnetwork=ex_subnetwork, ex_labels=ex_labels,
+            ex_accelerator_type=ex_accelerator_type,
+            ex_accelerator_count=ex_accelerator_count,
+            ex_source_instancetemplate=ex_source_instancetemplate)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -4284,7 +4319,8 @@ class GCENodeDriver(NodeDriver):
             preemptible=None, tags=None, metadata=None,
             description=None, disks_gce_struct=None, nic_gce_struct=None,
             use_selflinks=True, labels=None, accelerator_type=None,
-            accelerator_count=None, disk_size=None):
+            accelerator_count=None, disk_size=None,
+            source_instancetemplate=None):
         """
         Create the GCE instance properties needed for instance templates.
 
@@ -4415,13 +4451,18 @@ class GCENodeDriver(NodeDriver):
                              Integer in gigabytes.
         :type     disk_size: ``int`` or ``None``
 
+        :keyword source_instancetemplate: Instamce template to create node
+                                          from.
+        :type    source_instancetemplate: :class: `GCEInstanceTemplate`
+
         :return:  A dictionary formatted for use with the GCE API.
         :rtype:   ``dict``
         """
         instance_properties = {}
 
         # build disks
-        if not image and not source and not disks_gce_struct:
+        if (not image and not source and not disks_gce_struct and
+           not source_instancetemplate):
             raise ValueError("Missing root device or image. Must specify an "
                              "'image', source, or use the "
                              "'disks_gce_struct'.")
@@ -4441,12 +4482,16 @@ class GCENodeDriver(NodeDriver):
                 device_name = source.name
                 image = None
 
-            instance_properties['disks'] = [self._build_disk_gce_struct(
-                device_name, source=source, disk_type=disk_type, image=image,
-                disk_name=disk_name, usage_type='PERSISTENT',
-                mount_mode='READ_WRITE', auto_delete=disk_auto_delete,
-                is_boot=True, use_selflinks=use_selflinks,
-                disk_size=disk_size)]
+            try:
+                instance_properties['disks'] = [self._build_disk_gce_struct(
+                    device_name, source=source, disk_type=disk_type,
+                    image=image, disk_name=disk_name, usage_type='PERSISTENT',
+                    mount_mode='READ_WRITE', auto_delete=disk_auto_delete,
+                    is_boot=True, use_selflinks=use_selflinks,
+                    disk_size=disk_size)]
+            except ValueError:
+                if source_instancetemplate is None:
+                    raise
 
         # build network interfaces
         if nic_gce_struct is not None:
@@ -4503,8 +4548,12 @@ class GCENodeDriver(NodeDriver):
         if can_ip_forward:
             instance_properties['canIpForward'] = True
 
-        instance_properties['machineType'] = self._get_selflink_or_name(
-            obj=node_size, get_selflinks=use_selflinks, objname='size')
+        try:
+            instance_properties['machineType'] = self._get_selflink_or_name(
+                obj=node_size, get_selflinks=use_selflinks, objname='size')
+        except InvalidRequestError:
+            if source_instancetemplate is None:
+                raise
 
         return instance_properties
 
@@ -4849,16 +4898,17 @@ class GCENodeDriver(NodeDriver):
         return scheduling
 
     def ex_create_multiple_nodes(
-            self, base_name, size, image, number, location=None,
-            ex_network='default', ex_subnetwork=None, ex_tags=None,
+            self, base_name, number, size=None, image=None, location=None,
+            ex_network=None, ex_subnetwork=None, ex_tags=None,
             ex_metadata=None, ignore_errors=True, use_existing_disk=True,
             poll_interval=2, external_ip='ephemeral', internal_ip=None,
-            ex_disk_type='pd-standard', ex_disk_auto_delete=True,
+            ex_disk_type=None, ex_disk_auto_delete=None,
             ex_service_accounts=None, timeout=DEFAULT_TASK_COMPLETION_TIMEOUT,
             description=None, ex_can_ip_forward=None, ex_disks_gce_struct=None,
             ex_nic_gce_struct=None, ex_on_host_maintenance=None,
             ex_automatic_restart=None, ex_image_family=None,
-            ex_preemptible=None, ex_labels=None, ex_disk_size=None):
+            ex_preemptible=None, ex_labels=None, ex_disk_size=None,
+            ex_source_instancetemplate=None):
         """
         Create multiple nodes and return a list of Node objects.
 
@@ -5005,10 +5055,26 @@ class GCENodeDriver(NodeDriver):
                                 Integer in gigabytes.
         :type     ex_disk_size: ``int`` or ``None``
 
+        :keyword ex_source_instancetemplate: Instamce template to create node
+                                             from.
+        :type    ex_source_instancetemplate: :class: `GCEInstanceTemplate` or
+                                          ``str`` or ``None``
+
         :return:  A list of Node objects for the new nodes.
         :rtype:   ``list`` of :class:`Node`
 
         """
+        # If an instance template was specified we don't want to apply
+        # defaults becuase they may override what is specified in the
+        # template.
+        if ex_source_instancetemplate is None:
+            if ex_network is None:
+                ex_network = 'default'
+            if ex_disk_type is None:
+                ex_disk_type = 'pd-standard'
+            if ex_disk_auto_delete is None:
+                ex_disk_auto_delete = True
+
         if image and ex_disks_gce_struct:
             raise ValueError("Cannot specify both 'image' and "
                              "'ex_disks_gce_struct'.")
@@ -5020,9 +5086,9 @@ class GCENodeDriver(NodeDriver):
         location = location or self.zone
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
-        if not hasattr(size, 'name'):
+        if size and not hasattr(size, 'name'):
             size = self.ex_get_size(size, location)
-        if not hasattr(ex_network, 'name'):
+        if ex_network and not hasattr(ex_network, 'name'):
             ex_network = self.ex_get_network(ex_network)
         if ex_subnetwork and not hasattr(ex_subnetwork, 'name'):
             ex_subnetwork = \
@@ -5033,8 +5099,14 @@ class GCENodeDriver(NodeDriver):
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
-        if not hasattr(ex_disk_type, 'name'):
+        if ex_disk_type and not hasattr(ex_disk_type, 'name'):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
+
+        if (ex_source_instancetemplate and
+           not hasattr(ex_source_instancetemplate, 'name')):
+            ex_source_instancetemplate = self.ex_get_instancetemplate(
+                ex_source_instancetemplate
+            )
 
         node_attrs = {'size': size,
                       'image': image,
@@ -5058,7 +5130,8 @@ class GCENodeDriver(NodeDriver):
                       'ex_automatic_restart': ex_automatic_restart,
                       'ex_preemptible': ex_preemptible,
                       'ex_labels': ex_labels,
-                      'ex_disk_size': ex_disk_size}
+                      'ex_disk_size': ex_disk_size,
+                      'ex_source_instancetemplate': ex_source_instancetemplate}
         # List for holding the status information for disk/node creation.
         status_list = []
 
@@ -7983,7 +8056,7 @@ class GCENodeDriver(NodeDriver):
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_subnetwork=None, ex_labels=None,
             ex_accelerator_type=None, ex_accelerator_count=None,
-            ex_disk_size=None):
+            ex_disk_size=None, ex_source_instancetemplate=None):
         """
         Returns a request and body to create a new node.
 
@@ -8116,12 +8189,18 @@ class GCENodeDriver(NodeDriver):
                                       with the node.
         :type   ex_accelerator_count: ``int`` or ``None``
 
+        :keyword  ex_source_instancetemplate: Instance Template to create
+                                              node from
+        :type     ex_source_instancetemplate: :class:`GCEInstanceTemplate` or
+                                              ``None``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
 
         # build disks
-        if not image and not boot_disk and not ex_disks_gce_struct:
+        if (not image and not boot_disk and not ex_disks_gce_struct and
+           not ex_source_instancetemplate):
             raise ValueError("Missing root device or image. Must specify an "
                              "'image', existing 'boot_disk', or use the "
                              "'ex_disks_gce_struct'.")
@@ -8148,10 +8227,15 @@ class GCENodeDriver(NodeDriver):
             nic_gce_struct=ex_nic_gce_struct,
             accelerator_type=ex_accelerator_type,
             accelerator_count=ex_accelerator_count,
-            use_selflinks=use_selflinks, disk_size=ex_disk_size)
+            use_selflinks=use_selflinks, disk_size=ex_disk_size,
+            source_instancetemplate=ex_source_instancetemplate)
         node_data['name'] = name
 
         request = '/zones/%s/instances' % (location.name)
+        if ex_source_instancetemplate is not None:
+            request = request + '?sourceInstanceTemplate=%s' % (
+                ex_source_instancetemplate.extra['selfLink']
+            )
         return request, node_data
 
     def _multi_create_disk(self, status, node_attrs):
@@ -8254,7 +8338,8 @@ class GCENodeDriver(NodeDriver):
             ex_subnetwork=node_attrs['subnetwork'],
             ex_preemptible=node_attrs['ex_preemptible'],
             ex_labels=node_attrs['ex_labels'],
-            ex_disk_size=node_attrs['ex_disk_size']
+            ex_disk_size=node_attrs['ex_disk_size'],
+            ex_source_instancetemplate=node_attrs['ex_source_instancetemplate']
         )
 
         try:
