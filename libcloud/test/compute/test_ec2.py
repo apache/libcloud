@@ -126,6 +126,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node.extra['tags']['Name'], 'foo')
         self.assertEqual(len(node.extra['tags']), 1)
 
+        def test_create_node_with_launch_template(self):
+            node = self.driver.create_node(name='foo',
+                                           ex_launch_template_name='foo')
+            self.assertEqual(node.id, 'i-2ba64342')
+            self.assertEqual(node.name, 'foo')
+            self.assertEqual(node.extra['tags']['Name'], 'foo')
+            self.assertEqual(len(node.extra['tags']), 1)
+
     def test_create_node_with_ex_mincount(self):
         image = NodeImage(id='ami-be3adfd7',
                           name=self.image_name,

@@ -1862,16 +1862,46 @@ class BaseEC2NodeDriver(NodeDriver):
                                               the operating systems command
                                               for system shutdown.
         :type       ex_terminate_on_shutdown: ``bool``
+
+        :keyword    ex_launch_template_name: Template to create the instance
+                                             from.
+        :type       ex_launch_template_name: ``str`` or ``None``
+
+        :keyword    ex_launch_template_id:   Template ID to create instance
+                                             from.
+        :type       ex_launch_template_id:   ``str`` or ``None``
+
+        :keyword    ex_launch_template_version: Template version to create
+                                                instance from.
+        :type       ex_launch_template_version: ``str``, ``int`` or ``None``
         """
-        image = kwargs["image"]
-        size = kwargs["size"]
+
         params = {
             'Action': 'RunInstances',
-            'ImageId': image.id,
             'MinCount': str(kwargs.get('ex_mincount', '1')),
             'MaxCount': str(kwargs.get('ex_maxcount', '1')),
-            'InstanceType': size.id
         }
+
+        if 'ex_launch_template_name' in kwargs:
+            params[
+                'LaunchTemplate.LaunchTemplateName'
+            ] = kwargs['ex_launch_template_name']
+
+        if 'ex_launch_template_id' in kwargs:
+            params[
+                'LaunchTemplate.LaunchTemplateId'
+            ] = kwargs['ex_launch_template_id']
+
+        if 'ex_launch_template_version' in kwargs:
+            params[
+                'LaunchTemplate.Version'
+            ] = str(kwargs['ex_launch_template_version'])
+
+        if 'image' in kwargs:
+            params['ImageId'] = kwargs['image'].id
+
+        if 'size' in kwargs:
+            params['InstanceType'] = kwargs['size'].id
 
         if kwargs.get("ex_terminate_on_shutdown", False):
             params["InstanceInitiatedShutdownBehavior"] = "terminate"
