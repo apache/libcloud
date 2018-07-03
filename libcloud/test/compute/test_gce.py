@@ -1211,6 +1211,18 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
 
+    def test_create_node_instance_template(self):
+        node_name = 'node-name'
+        instancetemplate_name = 'my-instance-template1'
+        instancetemplate = self.driver.ex_get_instancetemplate(
+            instancetemplate_name)
+        node = self.driver.create_node(
+            name=node_name,
+            ex_source_instancetemplate=instancetemplate
+        )
+        self.assertTrue(isinstance(node, Node))
+        self.assertEqual(node.name, node_name)
+
     def test_create_node_image_family(self):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
@@ -1385,8 +1397,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         size = self.driver.ex_get_size('n1-standard-1')
         number = 2
         disk_size = "25"
-        nodes = self.driver.ex_create_multiple_nodes(base_name, size, image,
-                                                     number, ex_disk_size=disk_size)
+        nodes = self.driver.ex_create_multiple_nodes(base_name=base_name,
+                                                     size=size, image=image,
+                                                     number=number,
+                                                     ex_disk_size=disk_size)
         self.assertEqual(len(nodes), 2)
         self.assertTrue(isinstance(nodes[0], Node))
         self.assertTrue(isinstance(nodes[1], Node))
@@ -1395,13 +1409,32 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(nodes[0].extra['boot_disk'].size, disk_size)
         self.assertEqual(nodes[1].extra['boot_disk'].size, disk_size)
 
+    def test_ex_create_multiple_nodes_instancetemplate(self):
+        base_name = 'lcnode'
+        number = 2
+        instancetemplate_name = 'my-instance-template1'
+        instancetemplate = self.driver.ex_get_instancetemplate(
+            instancetemplate_name)
+        nodes = self.driver.ex_create_multiple_nodes(
+            base_name=base_name,
+            number=number,
+            ex_source_instancetemplate=instancetemplate
+        )
+        self.assertEqual(len(nodes), 2)
+        self.assertTrue(isinstance(nodes[0], Node))
+        self.assertTrue(isinstance(nodes[1], Node))
+        self.assertEqual(nodes[0].name, '%s-000' % base_name)
+        self.assertEqual(nodes[1].name, '%s-001' % base_name)
+        
     def test_ex_create_multiple_nodes_image_family(self):
         base_name = 'lcnode'
         image = None
         size = self.driver.ex_get_size('n1-standard-1')
         number = 2
         nodes = self.driver.ex_create_multiple_nodes(
-            base_name, size, image, number, ex_image_family='coreos-stable')
+            base_name=base_name, size=size, image=image, number=number,
+            ex_image_family='coreos-stable'
+        )
         self.assertEqual(len(nodes), 2)
         self.assertTrue(isinstance(nodes[0], Node))
         self.assertTrue(isinstance(nodes[1], Node))
