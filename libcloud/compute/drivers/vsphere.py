@@ -299,7 +299,7 @@ class VSphereNodeDriver(NodeDriver):
             data.append(properties)
         return data
 
-    def list_nodes(self, enhance=True):
+    def list_nodes(self, enhance=True, max_properties=20):
         """
         List nodes, excluding templates
         """
@@ -318,10 +318,22 @@ class VSphereNodeDriver(NodeDriver):
         view = content.viewManager.CreateContainerView(
             content.rootFolder, [vim.VirtualMachine], True)
 
-        vm_list = self._collect_properties(content, view,
-                                           vim.VirtualMachine,
-                                           path_set=vm_properties,
-                                           include_mors=True)
+        i = 0
+        vm_dict = {}
+        while i < len(vm_properties):
+            vm_list = self._collect_properties(content, view,
+                                               vim.VirtualMachine,
+                                               path_set=vm_properties[
+                                                   i:i+max_properties],
+                                               include_mors=True)
+            i += max_properties
+            for vm in vm_list:
+                if not vm_dict.get(vm['obj']):
+                    vm_dict[vm['obj']] = vm
+                else:
+                    vm_dict[vm['obj']].update(vm)
+
+        vm_list = [vm_dict[k] for k in vm_dict]
 
         nodes.extend(self._to_nodes(vm_list))
         if enhance:
