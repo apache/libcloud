@@ -250,6 +250,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
                  'types': self.connection.getType(),
+                 'active': bool(domain.isActive()),
                  'hypervisor_name': self.connection.getHostname(),
                  'memory': '%s MB' % str(memory / 1024), 'processors': vcpu_count,
                  'used_cpu_time': used_cpu_time, 'xml_description': xml_description}
@@ -334,11 +335,8 @@ class LibvirtNodeDriver(NodeDriver):
         return domain.destroy() == 0
 
     def ex_undefine_node(self, node):
-        cmd = "virsh destroy %s" % node.id
-        output = self._run_command(cmd).get('output')
         cmd = "virsh undefine %s" % node.id
         output = self._run_command(cmd).get('output')
-
         return True
 
     def ex_start_node(self, node):
