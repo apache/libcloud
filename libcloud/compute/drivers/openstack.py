@@ -2874,9 +2874,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         data = {
             'port':
                 {
-                    'description': description,
+                    'description': description or '',
                     'admin_state_up': admin_state_up,
-                    'name': name,
+                    'name': name or '',
                     'network_id': network.id,
                 }
         }
