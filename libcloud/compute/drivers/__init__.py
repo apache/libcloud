@@ -33,6 +33,7 @@ __all__ = [
     'hostvirtual',
     'ibm_sce',
     'linode',
+    'nttcis',
     'opennebula',
     'rackspace',
     'rimuhosting',

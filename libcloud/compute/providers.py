@@ -147,6 +147,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.oneandone', 'OneAndOneNodeDriver'),
     Provider.UPCLOUD:
     ('libcloud.compute.drivers.upcloud', 'UpcloudDriver'),
+    Provider.NTTCIS:
+    ('libcloud.compute.drivers.nttcis', 'NttCisNodeDriver'),
 }
 
 
