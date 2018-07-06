@@ -1,0 +1,32 @@
+{
+  "port": {
+    "status": "BUILD",
+    "extra_dhcp_opts": [],
+    "description": "Some port description",
+    "allowed_address_pairs": [],
+    "tags": [],
+    "network_id": "123c8a8c-6427-4e8f-a805-2035365f4d43",
+    "tenant_id": "abcdec85bee34bb0a44ab8255eb36abc",
+    "created_at": "2018-07-04T14:38:18Z",
+    "admin_state_up": true,
+    "updated_at": "2018-07-05T14:40:43Z",
+    "binding:vnic_type": "normal",
+    "device_owner": "compute:nova",
+    "name": "Some port name",
+    "revision_number": 2036,
+    "mac_address": "ba:12:12:8a:b2:73",
+    "port_security_enabled": true,
+    "project_id": "abcdec85bee34bb0a44ab8255eb36abc",
+    "fixed_ips": [
+      {
+        "subnet_id": "1231a12a-125b-4329-a3c5-312ea86a7577",
+        "ip_address": "12.123.12.32"
+      }
+    ],
+    "id": "126da55e-cfcb-41c8-ae39-a26cb8a7e723",
+    "security_groups": [
+      "abcfb112-5b5c-4c6b-8b3f-dbaee57df440"
+    ],
+    "device_id": "95e75643-2008-123f-ad13-e20ea64e3c87"
+  }
+}
