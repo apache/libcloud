@@ -90,6 +90,9 @@ Compute
 - [OpenStack] Implement port attaching/detaching (GITHUB-1225)
   [Rick van de Loo]
 
+- [OpenStack] Add methods for getting and creating ports (GITHUB-1226)
+  [Alexander Grooff]
+
 - [OpenStack] Add get_user method (GITHUB-1216)
   [Ken Dreyer]
 
