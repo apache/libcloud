@@ -87,6 +87,9 @@ Compute
 - [OpenStack] Fix API doc for delete_floating_ip (GITHUB-1218)
   [Ken Dreyer]
 
+- [OpenStack] Implement port attaching/detaching (GITHUB-1225)
+  [Rick van de Loo]
+
 - [Scaleway] New Scaleway driver (GITHUB-1121)
   [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
 
