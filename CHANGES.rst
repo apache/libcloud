@@ -90,7 +90,7 @@ Compute
 - [OpenStack] Implement port attaching/detaching (GITHUB-1225)
   [Rick van de Loo]
 
-- [Scaleway] New Scaleway driver (GITHUB-1121)
+- [Scaleway] New Scaleway driver (GITHUB-1121, GITHUB-1216)
   [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
 
 DNS
