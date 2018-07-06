@@ -2604,6 +2604,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             created=created,
             driver=self,
             extra=dict(
+                admin_state_up=element['admin_state_up'],
                 allowed_address_pairs=element['allowed_address_pairs'],
                 binding_vnic_type=element['binding:vnic_type'],
                 device_id=element['device_id'],
@@ -2848,6 +2849,55 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             '/servers/{}/os-interface'.format(node.id),
             method='POST', data=data
         ).success()
+
+    def ex_create_port(self, network, description=None,
+                       admin_state_up=True, name=None):
+        """
+        Creates a new OpenStack_2_PortInterface
+
+        :param      network: ID of the network where the newly created
+                    port should be attached to
+        :type       network: :class:`OpenStackNetwork`
+
+        :param      description: Description of the port
+        :type       description: str
+
+        :param      admin_state_up: The administrative state of the
+                    resource, which is up or down
+        :type       admin_state_up: bool
+
+        :param      name: Human-readable name of the resource
+        :type       name: str
+
+        :rtype: :class:`OpenStack_2_PortInterface`
+        """
+        data = {
+            'port':
+                {
+                    'description': description,
+                    'admin_state_up': admin_state_up,
+                    'name': name,
+                    'network_id': network.id,
+                }
+        }
+        response = self.network_connection.request(
+            '/v2.0/ports', method='POST', data=data
+        )
+        return self._to_port(response.object['port'])
+
+    def ex_get_port(self, port_interface_id):
+        """
+        Retrieve the OpenStack_2_PortInterface with the given ID
+
+        :param      port_interface_id: ID of the requested port
+        :type       port_interface_id: str
+
+        :return: :class:`OpenStack_2_PortInterface`
+        """
+        response = self.network_connection.request(
+            '/v2.0/ports/{}'.format(port_interface_id), method='GET'
+        )
+        return self._to_port(response.object['port'])
 
 
 class OpenStack_1_1_FloatingIpPool(object):

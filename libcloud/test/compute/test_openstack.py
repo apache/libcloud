@@ -47,7 +47,7 @@ from libcloud.compute.drivers.openstack import (
     OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair,
     OpenStack_1_0_Connection,
     OpenStackNodeDriver,
-    OpenStack_2_NodeDriver, OpenStack_2_PortInterfaceState)
+    OpenStack_2_NodeDriver, OpenStack_2_PortInterfaceState, OpenStackNetwork)
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
@@ -1718,6 +1718,51 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         )
         self.assertEqual(port.extra['name'], '')
 
+    def test_ex_create_port(self):
+        network = OpenStackNetwork(id='123c8a8c-6427-4e8f-a805-2035365f4d43', name='test-network',
+                                   cidr='1.2.3.4', driver=self.driver)
+        port = self.driver.ex_create_port(network=network, description='Some port description', name='Some port name',
+                                          admin_state_up=True)
+
+        self.assertEqual(port.id, '126da55e-cfcb-41c8-ae39-a26cb8a7e723')
+        self.assertEqual(port.state, OpenStack_2_PortInterfaceState.BUILD)
+        self.assertEqual(port.created, '2018-07-04T14:38:18Z')
+        self.assertEqual(
+            port.extra['network_id'],
+            '123c8a8c-6427-4e8f-a805-2035365f4d43'
+        )
+        self.assertEqual(
+            port.extra['project_id'],
+            'abcdec85bee34bb0a44ab8255eb36abc'
+        )
+        self.assertEqual(
+            port.extra['tenant_id'],
+            'abcdec85bee34bb0a44ab8255eb36abc'
+        )
+        self.assertEqual(port.extra['admin_state_up'], True)
+        self.assertEqual(port.extra['name'], 'Some port name')
+        self.assertEqual(port.extra['description'], 'Some port description')
+
+    def test_ex_get_port(self):
+        port = self.driver.ex_get_port('126da55e-cfcb-41c8-ae39-a26cb8a7e723')
+
+        self.assertEqual(port.id, '126da55e-cfcb-41c8-ae39-a26cb8a7e723')
+        self.assertEqual(port.state, OpenStack_2_PortInterfaceState.BUILD)
+        self.assertEqual(port.created, '2018-07-04T14:38:18Z')
+        self.assertEqual(
+            port.extra['network_id'],
+            '123c8a8c-6427-4e8f-a805-2035365f4d43'
+        )
+        self.assertEqual(
+            port.extra['project_id'],
+            'abcdec85bee34bb0a44ab8255eb36abc'
+        )
+        self.assertEqual(
+            port.extra['tenant_id'],
+            'abcdec85bee34bb0a44ab8255eb36abc'
+        )
+        self.assertEqual(port.extra['name'], 'Some port name')
+
     def test_ex_delete_port(self):
         ports = self.driver.ex_list_ports()
         port = ports[0]
@@ -1965,12 +2010,18 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == "GET":
             body = self.fixtures.load('_ports_v2.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "POST":
+            body = self.fixtures.load('_port_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
 
     def _v2_1337_v2_0_ports_126da55e_cfcb_41c8_ae39_a26cb8a7e723(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+        elif method == "GET":
+            body = self.fixtures.load('_port_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
 
