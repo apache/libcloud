@@ -308,7 +308,6 @@ class LibvirtNodeDriver(NodeDriver):
         result = self._run_command(command % {'mac': mac_address,
                                               'name': domain.name()})
         if result.get('error'):
-            log.error('Domain %s [%s]: %s', domain.name(), mac_address, result)
             return
 
         # Run arp-scan on the given interface using the local network config
@@ -318,7 +317,6 @@ class LibvirtNodeDriver(NodeDriver):
         iface = result.get('output', '').strip('\n')
         result = self._run_command('arp-scan -I %s -l' % iface, su=True)
         if result.get('error'):
-            log.error('Domain %s [%s]: %s', domain.name(), iface, result)
             return
 
         # Parse the result of `arp-scan` to end up with MAC-IP address tuples.
@@ -388,9 +386,8 @@ class LibvirtNodeDriver(NodeDriver):
         return domain.destroy() == 0
 
     def ex_undefine_node(self, node):
-        cmd = "virsh undefine %s" % node.id
-        output = self._run_command(cmd).get('output')
-        return True
+        domain = self._get_domain_for_node(node=node)
+        return domain.undefine() == 0
 
     def ex_start_node(self, node):
         """
