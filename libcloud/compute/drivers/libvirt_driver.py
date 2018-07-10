@@ -24,6 +24,8 @@ import subprocess
 import mimetypes
 import paramiko
 import atexit
+import logging
+
 from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
 from collections import defaultdict
@@ -44,6 +46,10 @@ try:
 except ImportError:
     raise RuntimeError('Missing "libvirt" dependency. You can install it using '
                        'pip. For example ./bin/pip install libvirt-python')
+
+
+log = logging.getLogger('libcloud.compute.drivers.libvirt')
+
 
 ALLOW_LIBVIRT_LOCALHOST = False
 IMAGES_LOCATION = "/var/lib/libvirt/images"
@@ -279,11 +285,73 @@ class LibvirtNodeDriver(NodeDriver):
         mac_addresses = self._get_mac_addresses_for_domain(domain=domain)
 
         for mac_address in mac_addresses:
-            if mac_address in self.arp_table:
-                ip_addresses = self.arp_table[mac_address]
-                result.extend(ip_addresses)
+            if mac_address not in self.arp_table:
+                self._update_arp_table_with_mac(domain, mac_address)
+            if mac_address not in self.arp_table:
+                continue
+
+            ip_addresses = self.arp_table[mac_address]
+            result.extend(ip_addresses)
 
         return result
+
+    def _update_arp_table_with_mac(self, domain, mac_address):
+        """Update the ARP table given the MAC address of a domain.
+
+        This method attempts to update `self.arp_table` as well as the KVM
+        host's ARP table given a MAC address of an existing domain.
+
+        This method is invoked if there's previously no entry in the host's
+        ARP table regarding `mac_address`. In order to bring the ARP table
+        up-to-date, the interface corresponding to `mac_address` is firstly
+        found. Then an arp-scan is run on that interface to discover the
+        available MAC-IP address combinations. The arp-scan may return MAC-
+        IP address combinations for MAC addresses other than `mac_address`,
+        which will be used to also proactively update the host's ARP table.
+        This way, this method may not have to be called consistently, but
+        rather for MAC addresses previously unseen.
+
+        """
+        # If the domain is inactive, return immediately, since no IP will be
+        # assigned to it anyway.
+        if not bool(domain.isActive()):
+            return
+
+        # Find the interface on the KVM host with which the `mac_address` of
+        # the given domain is associated.
+        command = "virsh domiflist %(name)s | grep %(mac)s | awk '{print $3}'"
+        result = self._run_command(command % {'mac': mac_address,
+                                              'name': domain.name()})
+        if result.get('error'):
+            log.error('Domain %s [%s]: %s', domain.name(), mac_address, result)
+            return
+
+        # Run arp-scan on the given interface using the local network config
+        # in order to generate the IP addresses to scan. The result is going
+        # to include all MAC-IP address combinations available on the given
+        # interface, not just that of the provided `mac_address`.
+        iface = result.get('output', '').strip('\n')
+        result = self._run_command('sudo -n arp-scan -I %s -l' % iface)
+        if result.get('error'):
+            log.error('Domain %s [%s]: %s', domain.name(), iface, result)
+            return
+
+        # Parse the result of `arp-scan` to end up with MAC-IP address tuples.
+        regex = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\t(.*)\t'
+        match = re.findall(regex, result.get('output', ''))
+
+        # Check if `ping` exists on the host. If it does, then we can use it
+        # to ping each IP address returned by `arp-scan` so that the host's
+        # ARP table is permanently updated, which will in turn prevent this
+        # method from being always invoked.
+        ping_exists = self._run_command('command -v ping').get('output')
+
+        # Update `self.arp_table` and the host's ARP table.
+        for ip, mac in match:
+            if mac not in self.arp_table:
+                if ping_exists:
+                    self._run_command('ping -c 1 %s' % ip)
+                self.arp_table.setdefault(mac, []).append(ip)
 
     def _get_mac_addresses_for_domain(self, domain):
         """
@@ -301,9 +369,6 @@ class LibvirtNodeDriver(NodeDriver):
         return result
 
     def list_sizes(self):
-        """
-        Returns sizes
-        """
         return []
 
     def list_locations(self):
@@ -602,7 +667,10 @@ local-hostname: %s''' % (name, name)
             # only qemu emulator available
             emu = 'qemu'
 
-        # Add multiple interfaces based on the `networks` list provided.
+        # Add multiple interfaces based on the `networks` list provided. NOTE
+        # that the RTL8139 virtual network interface driver does not support
+        # VLANs. To use VLANs with a virtual machine, opt for another virtual
+        # network interface like virtio.
         xml_net_conf = []
         xml_net_template = """
     <interface type='%(net_type)s'>
@@ -610,10 +678,13 @@ local-hostname: %s''' % (name, name)
       <model type='virtio'/>
     </interface>"""
 
+        # Create interface configuration. By default, the guest VM will be in
+        # the "default" network, which behaves like a NAT.
         networks = networks or ['default']
+        ex_nets_names = [n.name for n in self.ex_list_networks()]
         for net in networks:
             net_name = net
-            net_type = 'bridge' if net in self.ex_list_bridges() else 'network'
+            net_type = 'network' if net in ex_nets_names else 'bridge'
             xml_net_conf.append(xml_net_template % ({'net_type': net_type,
                                                      'net_name': net_name}))
 
@@ -672,7 +743,6 @@ local-hostname: %s''' % (name, name)
         """
         Check if disk_path exists
         """
-
         cmd = 'ls %s' % disk_path
         error = self._run_command(cmd).get('error')
 
@@ -716,25 +786,36 @@ local-hostname: %s''' % (name, name)
 
         return result
 
-    def ex_list_bridges(self):
-        bridges = []
-        try:
-            # not supported by all hypervisors
-            for net in self.connection.listAllNetworks():
-                    bridges.append(net.bridgeName())
-        except:
-            pass
-        return bridges
-
     def ex_list_networks(self):
-        networks = [Network('default', 'default')]
+        """Return a list of all networks
+
+        This method returns a list of libcloud Network objects
+
+        """
+        networks = []
         try:
-            # not supported by all hypervisors
             for net in self.connection.listAllNetworks():
-                net_name = net.bridgeName()
-                networks.append(Network(net_name, net_name))
+                extra = {'bridge': net.bridgeName(), 'xml': net.XMLDesc()}
+                networks.append(Network(net.UUIDString(), net.name(), extra))
         except:
-            pass
+            pass  # Not supported by all hypervisors.
+        return networks
+
+    def ex_list_interfaces(self):
+        """Return a list of all interfaces
+
+        This method returns all interfaces as a list of libcloud Networks
+
+        """
+        networks = []
+        try:
+            for net in self.connection.listAllInterfaces():
+                if net.name() == 'lo':  # Skip loopback.
+                    continue
+                extra = {'mac': net.MACString(), 'xml': net.XMLDesc()}
+                networks.append(Network(net.name(), net.name(), extra))
+        except:
+            pass  # Not supported by all hypervisors.
         return networks
 
     def _parse_arp_table(self, arp_output):
@@ -822,6 +903,7 @@ class Network(object):
 
     def __repr__(self):
         return '<Network id="%s" name="%s">' % (self.id, self.name)
+
 
 XML_CONF_TEMPLATE = '''
 <domain type='%s'>
