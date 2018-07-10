@@ -225,14 +225,17 @@ class LibvirtNodeDriver(NodeDriver):
                 public_ips.append(ip_address)
             else:
                 private_ips.append(ip_address)
-        try:
-            # this will work only if real name is given to a guest VM's name.
-            public_ip = socket.gethostbyname(domain.name())
-        except:
-            public_ip = ''
-        if public_ip and public_ip not in ip_addresses:
-            # avoid duplicate insertion in public ips
-            public_ips.append(public_ip)
+
+        # TODO This fails in most cases adding a considerable overhead due to
+        # socket timeout. It should be implemented in a more efficient way.
+        # try:
+        #     # this will work only if real name is given to a guest VM's name.
+        #     public_ip = socket.gethostbyname(domain.name())
+        # except:
+        #     public_ip = ''
+        # if public_ip and public_ip not in ip_addresses:
+        #     # avoid duplicate insertion in public ips
+        #     public_ips.append(public_ip)
 
         try:
             xml_description = domain.XMLDesc()
@@ -849,6 +852,12 @@ local-hostname: %s''' % (name, name)
                     allow_agent=False, look_for_keys=False)
         return ssh
 
+    def _ssh_disconnect(self):
+        """Close the SSH connection, if previously established."""
+        if self._ssh_conn is not None:
+            self._ssh_conn.close()
+            self._ssh_conn = None
+
     def _run_command(self, cmd, su=False):
         """Run a command on a local or remote hypervisor.
 
@@ -873,7 +882,6 @@ run() {
 
 run %s
 """ % cmd
-
         else:
             cmd = """
 run() {
@@ -912,7 +920,7 @@ run %s
 
         # Close the SSH connection to the hypervisor.
         try:
-            self.ssh_connection.close()
+            self._ssh_disconnect()
         except Exception as exc:
             log.warn('Failed to close connection to %s: %r', self.host, exc)
 
