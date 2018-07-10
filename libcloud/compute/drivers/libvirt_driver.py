@@ -39,6 +39,7 @@ from libcloud.compute.base import NodeDriver, Node, NodeImage, NodeSize
 from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
 from libcloud.utils.networking import is_public_subnet
+from libcloud.utils.networking import is_valid_ip_address
 
 try:
     import libvirt
@@ -97,6 +98,8 @@ class LibvirtNodeDriver(NodeDriver):
         :param tcp_port: the TCP port to connect to in case of qemu+tcp
         :return:
         """
+        self._ssh_conn = None
+
         self.temp_key = None
         self.secret = None
         if host in ['localhost', '127.0.0.1', '0.0.0.0']:
@@ -165,24 +168,6 @@ class LibvirtNodeDriver(NodeDriver):
             raise Exception("Connection error")
 
             atexit.register(self.disconnect)
-
-    def __del__(self):
-        self.disconnect()
-
-    def disconnect(self):
-        # closes connection to the hypevisor
-        try:
-            self.connection.close()
-        except:
-            pass
-
-        if not self.temp_key:
-            return
-
-        try:
-            os.remove(self.temp_key)
-        except Exception:
-            pass
 
     def list_nodes(self, show_hypervisor=True):
 
@@ -331,7 +316,7 @@ class LibvirtNodeDriver(NodeDriver):
         # to include all MAC-IP address combinations available on the given
         # interface, not just that of the provided `mac_address`.
         iface = result.get('output', '').strip('\n')
-        result = self._run_command('sudo -n arp-scan -I %s -l' % iface)
+        result = self._run_command('arp-scan -I %s -l' % iface, su=True)
         if result.get('error'):
             log.error('Domain %s [%s]: %s', domain.name(), iface, result)
             return
@@ -348,6 +333,9 @@ class LibvirtNodeDriver(NodeDriver):
 
         # Update `self.arp_table` and the host's ARP table.
         for ip, mac in match:
+            if not is_valid_ip_address(ip):
+                log.error('Found invalid IP address %s (%s)', ip, mac)
+                continue
             if mac not in self.arp_table:
                 if ping_exists:
                     self._run_command('ping -c 1 %s' % ip)
@@ -842,56 +830,104 @@ local-hostname: %s''' % (name, name)
 
         return arp_table
 
-    def _run_command(self, cmd):
+    @property
+    def ssh_connection(self):
+        """Return a cached SSH connection object."""
+        if self._ssh_conn is None:
+            self._ssh_conn = self._ssh_connect()
+        return self._ssh_conn
+
+    def _ssh_connect(self):
+        """Connect over SSH and return the SSHClient object.
+
+        This method is meant to be called only by `self.ssh_connection` in
+        order to establish an SSH, if one has not already been established.
+
         """
-        Run a command on a local or remote hypervisor
-        If the hypervisor is remote, run the command with paramiko
+        assert self.secret and self._uri != 'qemu:///system'
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(self.host, port=self.ssh_port, username=self.key,
+                    key_filename=self.secret, timeout=None,
+                    allow_agent=False, look_for_keys=False)
+        return ssh
+
+    def _run_command(self, cmd, su=False):
+        """Run a command on a local or remote hypervisor.
+
+        If the hypervisor is remote, `paramiko` is used to connect over SSH.
+
+        If `su` is True or the user does not belong to the `libvirtd` group,
+        then the command is run with `sudo -n`.
+
         """
-        output = ''
-        error = ''
-        # run cmd with sudo prefix in case user is not root
-        if self.key != 'root':
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        error, output = '', ''
 
-            ssh.connect(self.host, username=self.key, key_filename=self.secret,
-                        port=self.ssh_port, timeout=None, allow_agent=False,
-                        look_for_keys=False)
-            stdin, stdout, stderr = ssh.exec_command('groups')
+        # Prepend `sudo` to `cmd`, if necessary.
+        if su is True:
+            cmd = """
+run() {
+    if [ ! $( command -v sudo ) ] ; then
+        exec "$@"
+    else
+        exec sudo -n "$@"
+    fi
+}
 
-            output = stdout.read()
-            ssh.close()
+run %s
+""" % cmd
 
-            # If the user belongs to the libvirtd group no sudo is required
-            # otherwise we use sudo and require a passwordless one
-            if 'libvirtd' not in output:
-                cmd = 'sudo %s' % cmd
-
-        if self.secret:
-            try:
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-                ssh.connect(self.host, username=self.key, key_filename=self.secret,
-                            port=self.ssh_port, timeout=None, allow_agent=False,
-                            look_for_keys=False)
-                stdin, stdout, stderr = ssh.exec_command(cmd)
-
-                output = stdout.read()
-                error = stderr.read()
-                ssh.close()
-            except:
-                pass
         else:
-            if ALLOW_LIBVIRT_LOCALHOST and self._uri == 'qemu:///system':
-                try:
-                    cmd = shlex.split(cmd)
-                    child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                             stderr=subprocess.PIPE)
-                    output, _ = child.communicate()
-                except:
-                    pass
+            cmd = """
+run() {
+    if [ "$( groups | grep libvirtd )" ] || [ ! $( command -v sudo ) ] ; then
+        exec "$@"
+    else
+        exec sudo -n "$@"
+    fi
+}
+
+run %s
+""" % cmd
+
+        # Run the command using either `paramiko` or `subprocess`.
+        if self._uri == 'qemu:///system':
+            try:
+                output = subprocess.check_output(cmd, shell=True)
+            except subprocess.CalledProcessError as err:
+                error = str(err)
+                log.warn('Failed to run "%s" at %s: %r', cmd, self._uri, err)
+        else:
+            try:
+                stdin, stdout, stderr = self.ssh_connection.exec_command(cmd)
+                error, output = stderr.read(), stdout.read()
+            except Exception as exc:
+                log.warn('Failed to run "%s" at %s: %r', cmd, self.host, err)
+
         return {'output': output, 'error': error}
+
+    def disconnect(self):
+        # Close the libvirt connection to the hypevisor.
+        try:
+            self.connection.close()
+        except Exception as exc:
+            log.warn('Failed to close connection to %s: %r', self._uri, exc)
+
+        # Close the SSH connection to the hypervisor.
+        try:
+            self.ssh_connection.close()
+        except Exception as exc:
+            log.warn('Failed to close connection to %s: %r', self.host, exc)
+
+        # Remove the SSH key from disk.
+        try:
+            os.remove(self.temp_key)
+        except Exception as exc:
+            log.warn('Failed to remove %s: %r', self.temp_key, exc)
+
+    def __del__(self):
+        """Disconnect completely upon garbage collection."""
+        self.disconnect()
 
 
 class Network(object):
