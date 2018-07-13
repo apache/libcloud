@@ -102,15 +102,15 @@ OBJECT_TO_TAGGING_ASSET_TYPE_MAP = {
 
 class NttCisNodeDriver(NodeDriver):
     """
-    DimensionData node driver.
+    NttCis node driver.
     Default api_version is used unless specified.
     """
 
     selected_region = None
     connectionCls = NttCisConnection
-    name = 'DimensionData'
+    name = 'NTTC-CIS'
     website = 'http://www.dimensiondata.com/'
-    type = Provider.DIMENSIONDATA
+    type = Provider.NTTCIS
     features = {'create_node': ['password']}
     api_version = 1.0
 
@@ -1387,7 +1387,7 @@ class NttCisNodeDriver(NodeDriver):
         :param location: The target location
         :type  location: :class:`NodeLocation` or ``str``
 
-        :return: a list of NttCisaNetwork objects
+        :return: a list of NttCisNetwork objects
         :rtype: ``list`` of :class:`NttCisNetwork`
         """
         return self.list_networks(location=location)

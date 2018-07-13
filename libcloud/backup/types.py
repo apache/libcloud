@@ -31,6 +31,7 @@ class Provider(object):
     DIMENSIONDATA = 'dimensiondata'
     EBS = 'ebs'
     GCE = 'gce'
+    NTTCIS = 'nttcis'
 
 
 class BackupTargetType(object):

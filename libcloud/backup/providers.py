@@ -25,7 +25,9 @@ DRIVERS = {
     Provider.GCE:
     ('libcloud.backup.drivers.gce', 'GCEBackupDriver'),
     Provider.DIMENSIONDATA:
-    ('libcloud.backup.drivers.dimensiondata', 'DimensionDataBackupDriver')
+    ('libcloud.backup.drivers.dimensiondata', 'DimensionDataBackupDriver'),
+    Provider.NTTCIS:
+    ('libcloud.backup.drivers.nttcis', 'NttCisNodeDriver'),
 }
 
 

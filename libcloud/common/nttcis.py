@@ -1412,7 +1412,7 @@ class NttCisBackupClientRunningJob(object):
                 % (self.id))
 
 
-class DNttCisBackupClientType(object):
+class NttCisBackupClientType(object):
     """
     A client type object for backups
     """
