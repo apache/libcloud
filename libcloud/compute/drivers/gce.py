@@ -5006,7 +5006,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       image=None, use_existing=True,
-                      ex_disk_type='pd-standard', ex_image_family=None):
+                      disk_type='pd-standard', ex_image_family=None):
         """
         Create a volume (disk).
 
@@ -5032,9 +5032,9 @@ class GCENodeDriver(NodeDriver):
                                 of attempting to create a new disk.
         :type     use_existing: ``bool``
 
-        :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
+        :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
-        :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
+        :type     disk_type: ``str`` or :class:`GCEDiskType`
 
         :keyword  ex_image_family: Determine image from an 'Image Family'
                                    instead of by name. 'image' should be None
@@ -5052,7 +5052,7 @@ class GCENodeDriver(NodeDriver):
             image = self.ex_get_image_from_family(ex_image_family)
 
         request, volume_data, params = self._create_vol_req(
-            size, name, location, snapshot, image, ex_disk_type)
+            size, name, location, snapshot, image, disk_type)
         try:
             self.connection.async_request(request, method='POST',
                                           data=volume_data, params=params)
@@ -6623,7 +6623,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/zones/%s/disks/%s' % (volume.extra['zone'].name,
+        request = '/zones/%s/disks/%s' % (volume.extra['zone'],
                                           volume.name)
         self.connection.async_request(request, method='DELETE')
         return True
@@ -8530,7 +8530,7 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
         extra['selfLink'] = volume.get('selfLink')
-        extra['zone'] = self.ex_get_zone(volume['zone'])
+        extra['zone'] = self.ex_get_zone(volume['zone']).name
         extra['status'] = volume.get('status')
         extra['creationTimestamp'] = volume.get('creationTimestamp')
         extra['description'] = volume.get('description')
@@ -8539,9 +8539,10 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshot'] = volume.get('sourceSnapshot')
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
-        if 'licenses' in volume:
-            lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
-            extra['licenses'] = lic_objs
+        extra['licenses'] = volume.get('licenses')
+        #if 'licenses' in volume:
+        #    lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
+        #    extra['licenses'] = lic_objs
 
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 

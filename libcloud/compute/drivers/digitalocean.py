@@ -336,7 +336,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                        qkey.extra['id']).object['ssh_key']
         return self._to_key_pair(data=data)
 
-    def create_volume(self, size, name, location=None, snapshot=None):
+    def create_volume(self, size, name, location, snapshot=None):
         """
         Create a new volume.
 
@@ -358,7 +358,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
-        attr = {'name': name, 'size_gigabytes': size, 'region': location.id}
+        attr = {'name': name, 'size_gigabytes': size, 'region': location}
 
         res = self.connection.request('/v2/volumes', data=json.dumps(attr),
                                       method='POST')
