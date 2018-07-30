@@ -120,6 +120,12 @@ Storage
 - [S3] Guess s3 upload content type (LIBCLOUD-958, GITHUB-1195)
   [Iuri de Silvio]
 
+Other
+~~~~~
+
+- Fixed spelling in 2.0 changes documentation (GITHUB-1228)
+  [Jimmy Casey]
+
 Changes in Apache Libcloud 2.3.0
 --------------------------------
 
