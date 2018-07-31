@@ -336,7 +336,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                                        qkey.extra['id']).object['ssh_key']
         return self._to_key_pair(data=data)
 
-    def create_volume(self, size, name, location, snapshot=None):
+    def create_volume(self, size, name, location=None, snapshot=None):
         """
         Create a new volume.
 
@@ -399,6 +399,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rytpe: ``bool``
         """
+        import ipdb; ipdb.set_trace
         attr = {'type': 'attach', 'droplet_id': node.id,
                 'volume_id': volume.id, 'region': volume.extra['region_slug']}
 

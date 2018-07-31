@@ -5006,7 +5006,7 @@ class GCENodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       image=None, use_existing=True,
-                      disk_type='pd-standard', ex_image_family=None):
+                      ex_disk_type='pd-standard', ex_image_family=None):
         """
         Create a volume (disk).
 
@@ -5032,9 +5032,9 @@ class GCENodeDriver(NodeDriver):
                                 of attempting to create a new disk.
         :type     use_existing: ``bool``
 
-        :keyword  disk_type: Specify a pd-standard (default) disk or pd-ssd
+        :keyword  ex_disk_type: Specify a pd-standard (default) disk or pd-ssd
                                 for an SSD disk.
-        :type     disk_type: ``str`` or :class:`GCEDiskType`
+        :type     ex_disk_type: ``str`` or :class:`GCEDiskType`
 
         :keyword  ex_image_family: Determine image from an 'Image Family'
                                    instead of by name. 'image' should be None
@@ -5052,7 +5052,7 @@ class GCENodeDriver(NodeDriver):
             image = self.ex_get_image_from_family(ex_image_family)
 
         request, volume_data, params = self._create_vol_req(
-            size, name, location, snapshot, image, disk_type)
+            size, name, location, snapshot, image, ex_disk_type)
         try:
             self.connection.async_request(request, method='POST',
                                           data=volume_data, params=params)
@@ -8540,9 +8540,6 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
         extra['licenses'] = volume.get('licenses')
-        #if 'licenses' in volume:
-        #    lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
-        #    extra['licenses'] = lic_objs
 
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 

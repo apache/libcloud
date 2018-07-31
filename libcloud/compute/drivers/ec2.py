@@ -3927,8 +3927,8 @@ class BaseEC2NodeDriver(NodeDriver):
         res = self.connection.request(self.path, params=params).object
         return self._get_terminate_boolean(res)
 
-    def create_volume(self, size, name, location,
-                      volume_type='standard', snapshot=None, iops=None,
+    def create_volume(self, size, name, location=None, snapshot=None,
+                      ex_volume_type='standard', ex_iops=None,
                       ex_encrypted=None, ex_kms_key_id=None):
         """
         Create a new volume.
@@ -3947,6 +3947,9 @@ class BaseEC2NodeDriver(NodeDriver):
         :param snapshot:  Snapshot from which to create the new
                                volume.  (optional)
         :type snapshot:  :class:`.VolumeSnapshot`
+
+        :param location: Datacenter in which to create a volume in.
+        :type location: :class:`.ExEC2AvailabilityZone`
 
         :param ex_volume_type: Type of volume to create.
         :type ex_volume_type: ``str``
@@ -3976,9 +3979,9 @@ class BaseEC2NodeDriver(NodeDriver):
             'Action': 'CreateVolume',
             'Size': str(size)}
 
-        if volume_type and volume_type not in VALID_VOLUME_TYPES:
+        if ex_volume_type and ex_volume_type not in VALID_VOLUME_TYPES:
             raise ValueError('Invalid volume type specified: %s' %
-                             (volume_type))
+                             (ex_volume_type))
 
         if snapshot:
             params['SnapshotId'] = snapshot.id
@@ -3986,11 +3989,11 @@ class BaseEC2NodeDriver(NodeDriver):
         if location is not None:
             params['AvailabilityZone'] = location
 
-        if volume_type:
-            params['VolumeType'] = volume_type
+        if ex_volume_type:
+            params['VolumeType'] = ex_volume_type
 
-        if volume_type == 'io1' and iops:
-            params['Iops'] = iops
+        if ex_volume_type == 'io1' and ex_iops:
+            params['Iops'] = ex_iops
 
         if ex_encrypted is not None:
             params['Encrypted'] = 1
