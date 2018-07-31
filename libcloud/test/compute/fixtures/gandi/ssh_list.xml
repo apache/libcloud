@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0'?>
 <methodResponse>
 <params>
 <param>
@@ -6,15 +6,15 @@
 <value><struct>
 <member>
 <name>fingerprint</name>
-<value><string>a6:1f:b8:b4:19:91:99:d8:af:ab:d6:17:72:8b:d1:6c</string></value>
+<value><string>17:bb:c5:a5:a2:c8:3b:4f:4d:5e:11:60:47:ca:96:0f</string></value>
 </member>
 <member>
 <name>id</name>
-<value><int>10</int></value>
+<value><int>1</int></value>
 </member>
 <member>
 <name>name</name>
-<value><string>testkey</string></value>
+<value><string>zen</string></value>
 </member>
 </struct></value>
 </data></array></value>

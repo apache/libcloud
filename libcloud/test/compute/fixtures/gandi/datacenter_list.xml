@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='UTF-8'?>
 <methodResponse>
     <params>
         <param>
@@ -8,48 +7,244 @@
                         <value>
                             <struct>
                                 <member>
+                                    <name>name</name>
+                                    <value>
+                                        <string>Bissen, Luxembourg</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>iaas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>deactivate_at</name>
+                                    <value>
+                                        <nil />
+                                    </value>
+                                </member>
+                                <member>
                                     <name>country</name>
-                                    <value><string>France</string></value>
+                                    <value>
+                                        <string>Luxembourg</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>paas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
                                 </member>
                                 <member>
                                     <name>iso</name>
-                                    <value><string>FR</string></value>
+                                    <value>
+                                        <string>LU</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>can_migrate_to</name>
+                                    <value>
+                                        <array>
+                                            <data>
+                                            </data>
+                                        </array>
+                                    </value>
                                 </member>
                                 <member>
                                     <name>id</name>
-                                    <value><int>1</int></value>
+                                    <value>
+                                        <int>3</int>
+                                    </value>
                                 </member>
                                 <member>
                                     <name>dc_code</name>
-                                    <value><string>FR-SD2</string></value>
-                                </member>
-                                <member>
-                                    <name>name</name>
-                                    <value><string>Equinix Paris</string></value>
+                                    <value>
+                                        <string>LU-BI1</string>
+                                    </value>
                                 </member>
                             </struct>
                         </value>
                         <value>
                             <struct>
                                 <member>
+                                    <name>name</name>
+                                    <value>
+                                        <string>Paris, France SD3</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>iaas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>deactivate_at</name>
+                                    <value>
+                                        <nil />
+                                    </value>
+                                </member>
+                                <member>
                                     <name>country</name>
-                                    <value><string>United States of America</string></value>
+                                    <value>
+                                        <string>France</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>paas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
                                 </member>
                                 <member>
                                     <name>iso</name>
-                                    <value><string>US</string></value>
+                                    <value>
+                                        <string>FR</string>
+                                    </value>
                                 </member>
                                 <member>
-                                    <name>dc_code</name>
-                                    <value><string>US-BA1</string></value>
+                                    <name>can_migrate_to</name>
+                                    <value>
+                                        <array>
+                                            <data>
+                                            </data>
+                                        </array>
+                                    </value>
                                 </member>
                                 <member>
                                     <name>id</name>
-                                    <value><int>2</int></value>
+                                    <value>
+                                        <int>4</int>
+                                    </value>
                                 </member>
                                 <member>
+                                    <name>dc_code</name>
+                                    <value>
+                                        <string>FR-SD3</string>
+                                    </value>
+                                </member>
+                            </struct>
+                        </value>
+                        <value>
+                            <struct>
+                                <member>
                                     <name>name</name>
-                                    <value><string>Level3 Baltimore</string></value>
+                                    <value>
+                                        <string>Paris, France SD5</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>iaas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>deactivate_at</name>
+                                    <value>
+                                        <nil />
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>country</name>
+                                    <value>
+                                        <string>France</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>paas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>iso</name>
+                                    <value>
+                                        <string>FR</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>can_migrate_to</name>
+                                    <value>
+                                        <array>
+                                            <data>
+                                            </data>
+                                        </array>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>id</name>
+                                    <value>
+                                        <int>5</int>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>dc_code</name>
+                                    <value>
+                                        <string>FR-SD5</string>
+                                    </value>
+                                </member>
+                            </struct>
+                        </value>
+                        <value>
+                            <struct>
+                                <member>
+                                    <name>name</name>
+                                    <value>
+                                        <string>Paris, France SD6</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>iaas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>deactivate_at</name>
+                                    <value>
+                                        <nil />
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>country</name>
+                                    <value>
+                                        <string>France</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>paas_closed_for</name>
+                                    <value>
+                                        <string>NONE</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>iso</name>
+                                    <value>
+                                        <string>FR</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>can_migrate_to</name>
+                                    <value>
+                                        <array>
+                                            <data>
+                                            </data>
+                                        </array>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>id</name>
+                                    <value>
+                                        <int>6</int>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>dc_code</name>
+                                    <value>
+                                        <string>FR-SD6</string>
+                                    </value>
                                 </member>
                             </struct>
                         </value>
