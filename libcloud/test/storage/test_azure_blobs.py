@@ -647,7 +647,9 @@ class AzureBlobsTests(unittest.TestCase):
 
         stream = self.driver.download_object_as_stream(obj=obj,
                                                        chunk_size=None)
-        self.assertTrue(hasattr(stream, '__iter__'))
+
+        consumed_stream = ''.join(chunk.decode('utf-8') for chunk in stream)
+        self.assertEqual(len(consumed_stream), obj.size)
 
     def test_upload_object_invalid_ex_blob_type(self):
         # Invalid hash is detected on the amazon side and BAD_REQUEST is
