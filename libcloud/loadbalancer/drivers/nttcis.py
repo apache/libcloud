@@ -42,9 +42,9 @@ class NttCisLBDriver(Driver):
 
     selected_region = None
     connectionCls = NttCisConnection
-    name = 'Dimension Data Load Balancer'
+    name = 'NTTC-CIS Load Balancer'
     website = 'https://cloud.nttcis.com/'
-    type = Provider.DIMENSIONDATA
+    type = Provider.NTTCIS
     api_version = 1.0
 
     network_domain_id = None

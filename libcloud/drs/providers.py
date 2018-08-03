@@ -25,30 +25,8 @@ __all__ = [
 ]
 
 DRIVERS = {
-    Provider.RACKSPACE:
-    ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
-    Provider.GOGRID:
-    ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
-    Provider.NINEFOLD:
-    ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
-    Provider.BRIGHTBOX:
-    ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver'),
-    Provider.ELB:
-    ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver'),
-    Provider.ALB:
-        ('libcloud.loadbalancer.drivers.alb', 'ApplicationLBDriver'),
-    Provider.CLOUDSTACK:
-    ('libcloud.loadbalancer.drivers.cloudstack', 'CloudStackLBDriver'),
-    Provider.GCE:
-    ('libcloud.loadbalancer.drivers.gce', 'GCELBDriver'),
-    Provider.SOFTLAYER:
-    ('libcloud.loadbalancer.drivers.softlayer', 'SoftlayerLBDriver'),
-    Provider.DIMENSIONDATA:
-    ('libcloud.loadbalancer.drivers.dimensiondata', 'DimensionDataLBDriver'),
-    Provider.ALIYUN_SLB:
-    ('libcloud.loadbalancer.drivers.slb', 'SLBDriver'),
     Provider.NTTCIS:
-    ('libcloud.loadbalancer.drivers.nttcis', 'NttCisLBDriver'),
+    ('libcloud.drs.drivers.nttcis', 'NttCisDRSDriver'),
 }
 
 

@@ -732,7 +732,8 @@ class NttCisNodeDriver(NodeDriver):
                    ex_ipv6=None, ex_ipv4=None, ex_vlan=None,
                    ex_image=None, ex_deployed=None,
                    ex_started=None, ex_state=None,
-                   ex_network=None, ex_network_domain=None):
+                   ex_network=None, ex_network_domain=None,
+                   ex_snaphots=None):
         """
         List nodes deployed for your organization.
 
@@ -3067,7 +3068,7 @@ class NttCisNodeDriver(NodeDriver):
             % (datacenter_id, start_date, end_date))
         return self._format_csv(result.response)
 
-    def ex_list_ip_address_list(self, ex_network_domain):
+    def ex_list_ip_address_list(self, ex_network_domain:NttCisIpAddressList) -> object:
         """
         List IP Address List by network domain ID specified
 

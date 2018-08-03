@@ -386,10 +386,10 @@ class NttCisConnection(ConnectionUserAndKey):
     oldest_api_version = '2.2'
 
     # Latest version supported
-    latest_api_version = '2.4'
+    latest_api_version = '2.7'
 
     # Default api version
-    active_api_version = '2.4'
+    active_api_version = '2.7'
 
     _orgId = None
     responseCls = NttCisResponse
@@ -837,6 +837,31 @@ class NttCisServerVMWareTools(object):
                 % (self.status, self.version_status, self.api_version))
 
 
+class NttCisSnapshot(object):
+    """
+    NTTCIS Class representing server snapshots
+    """
+    def __init__(self, server_id, service_plan, id=None, window_id=None, start_time=None,
+                 state=None, end_time=None, type=None, expiry_time=None, action=None):
+        self.server_id = server_id
+        self.service_plan = service_plan
+        self.id = id
+        self.window_id = window_id
+        self.start_time = start_time
+        self.end_time = end_time
+        self.state = state
+        self.end_time = end_time
+        self.type = type
+        self.expiry_time = expiry_time
+        self.action = action
+
+    def create_snapshot(self):
+        pass
+
+
+
+
+
 class NttCisFirewallRule(object):
     """
     NTTCIS Firewall Rule for a network domain
@@ -1170,7 +1195,7 @@ class NttCisVirtualListener(object):
                    self.status, self.ip))
 
 
-class NttCisaDefaultHealthMonitor(object):
+class NttCisDefaultHealthMonitor(object):
     """
     A default health monitor for a VIP (node, pool or listener)
     """
@@ -1200,7 +1225,7 @@ class NttCisaDefaultHealthMonitor(object):
                 % (self.id, self.name))
 
 
-class NttCisaPersistenceProfile(object):
+class NttCisPersistenceProfile(object):
     """
     Each Persistence Profile declares the combination of Virtual Listener
     type and protocol with which it is
@@ -1261,7 +1286,7 @@ class NttCisDefaultiRule(object):
                 % (self.id, self.name))
 
 
-class NttCisaVirtualListenerCompatibility(object):
+class NttCisVirtualListenerCompatibility(object):
     """
     A compatibility preference for a persistence profile or iRule
     specifies which virtual listener types this profile or iRule can be
@@ -1359,11 +1384,11 @@ class NttCisBackupClient(object):
         self.running_job = running_job
 
     def __repr__(self):
-        return (('<NttCisaBackupClient: id=%s>')
+        return (('<NttCisBackupClient: id=%s>')
                 % (self.id))
 
 
-class NttCisaBackupClientAlert(object):
+class NttCisBackupClientAlert(object):
     """
     An alert for a backup client
     """
@@ -1753,7 +1778,7 @@ class NttCisPort(object):
 
     def __init__(self, begin, end=None):
         """
-        Initialize an instance of :class:`NttCisaPort`
+        Initialize an instance of :class:`NttCisPort`
 
         :param begin: Port Number Begin
         :type  begin: ``str``

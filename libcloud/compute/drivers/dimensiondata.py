@@ -3067,7 +3067,7 @@ class DimensionDataNodeDriver(NodeDriver):
             % (datacenter_id, start_date, end_date))
         return self._format_csv(result.response)
 
-    def ex_list_ip_address_list(self, ex_network_domain):
+    def ex_list_ip_address_list(self, ex_network_domain: object) -> object:
         """
         List IP Address List by network domain ID specified
 
