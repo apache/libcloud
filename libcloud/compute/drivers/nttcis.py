@@ -46,6 +46,7 @@ from libcloud.common.nttcis import NttCisNic
 from libcloud.common.nttcis import NetworkDomainServicePlan
 from libcloud.common.nttcis import NttCisTagKey
 from libcloud.common.nttcis import NttCisTag
+from libcloud.common.nttcis import NttCisSnapshot
 from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.common.nttcis import SERVER_NS, NETWORK_NS, GENERAL_NS
@@ -4485,6 +4486,8 @@ class NttCisNodeDriver(NodeDriver):
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
         disks = self._to_disks(element)
 
+        has_snapshot = element.find(fixxpath('snapshotService', TYPES_URN)) is not None
+
         # Vmware Tools
 
         # Version 2.3 or earlier
@@ -4518,6 +4521,9 @@ class NttCisNodeDriver(NodeDriver):
                 if has_network_info else None,
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
+            'window': (element.find(fixxpath('snapshotService/window', TYPES_URN)).get('dayOfWeek'),
+                       element.find(fixxpath('snapshotService/window', TYPES_URN)).get('startHour'))
+                       if has_snapshot else None,
             'cpu': cpu_spec,
             'memoryMb': int(findtext(
                 element,

@@ -855,11 +855,12 @@ class NttCisSnapshot(object):
         self.expiry_time = expiry_time
         self.action = action
 
-    def create_snapshot(self):
-        pass
-
-
-
+    def __repr__(self):
+        return (('<NttCisSnapshots '
+                 'id=%s, start_time=%s, '
+                 'end_time=%s, self.type=%s, '
+                 'self.expiry_timne=%s, self.state=%s>')
+                % (self.id, self.start_time, self.end_time, self.type, self.expiry_time, self.state))
 
 
 class NttCisFirewallRule(object):

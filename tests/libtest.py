@@ -8,7 +8,7 @@ def test_list_node_all(compute_driver):
     for node in nodes:
         print(node.extra['networkDomainId'], node.extra['datacenterId'], node.uuid, node.state, node.name, node.extra['cpu'],
               [disk for disk in node.extra['disks']], node.extra['memoryMb'], node.extra['OS_displayName'],
-              node.private_ips, node.extra['ipv6'])
+              node.private_ips, node.extra['ipv6'], node.extra['window'])
     assert isinstance(nodes, list) and len(nodes) > 0
 
 
@@ -238,8 +238,6 @@ def test_get_node(lbdriver):
     print(node.name, node.ip, node.connection_limit, node.connection_rate_limit)
     assert isinstance(node, object)
 
-def test_sap_shots(compute_driver):
-    pass
 
 def test_images(compute_driver):
     images = compute_driver.list_images()
