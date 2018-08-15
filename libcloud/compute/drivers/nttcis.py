@@ -861,6 +861,21 @@ class NttCisNodeDriver(NodeDriver):
             ).object
         )
 
+    def list_snapshot_windows(self, location: str, plan: str) -> list:
+        """
+        List snapshot windows in a given location
+        :param location: a location object or location id such as "NA9"
+        :param plan: 'ESSENTIALS' or 'ADVANCED'
+        :return: dictionary with keys id, day_of_week, start_hour, availability
+        :rtype: dict
+        """
+        params = {}
+        params['datacenterId'] = self._location_to_location_id(location)
+        params['servicePlan'] = plan
+        return self._to_windows(self.connection.request_with_orgId_api_2(
+                   'infrastructure/snapshotWindow',
+                    params=params).object)
+
     def list_networks(self, location=None):
         """
         List networks deployed across all data center locations for your
@@ -1070,7 +1085,22 @@ class NttCisNodeDriver(NodeDriver):
             nodes_obj = self._list_nodes_single_page(params)
             yield self._to_nodes(nodes_obj)
 
-    def ex_start_node(self, node):
+    def ex_edit_metadata(self, node: Node, name: str = None, description: str = None, drs_eligible: str = None) -> bool:
+        request_elem = ET.Element('editServerMetadata', {'xmlns': TYPES_URN, 'id': node.id})
+        if name is not None:
+            ET.SubElement(request_elem, 'name').text = name
+        if description is not None:
+            ET.SubElement(request_elem, 'description').text = description
+        if drs_eligible is not None:
+            ET.SubElement(request_elem, 'drsEligible').text = drs_eligible
+        body = self.connection.request_with_orgId_api_2(
+            'server/editServerMetadata',
+            method="POST",
+            data=ET.tostring(request_elem)).object
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_start_node(self, node: Node) -> bool:
         """
         Powers on an existing deployed server
 
@@ -1088,7 +1118,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_shutdown_graceful(self, node):
+    def ex_shutdown_graceful(self, node: Node) -> bool:
         """
         This function will attempt to "gracefully" stop a server by
         initiating a shutdown sequence within the guest operating system.
@@ -1213,6 +1243,70 @@ class NttCisNodeDriver(NodeDriver):
             data=urlencode(data, True)).object
         response_code = findtext(body, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
+
+    def ex_enable_snapshots(self, node: str, window: str, plan: str='ADVANCED', initiate: str = 'true') -> bool:
+        update_node = ET.Element('enableSnapshotService',
+                                 {'xmlns': TYPES_URN})
+        window_id = window
+        plan = plan
+        update_node.set('serverId', node)
+        ET.SubElement(update_node, 'servicePlan').text = plan
+        ET.SubElement(update_node, 'windowId').text = window_id
+        ET.SubElement(update_node, 'initiateManualSnapshot').text = initiate
+        result = self.connection.request_with_orgId_api_2(
+            'snapshot/enableSnapshotService',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def list_snapshots(self, node: Node) -> list:
+        params = {}
+        params['serverId'] = self.list_nodes(ex_name=node)[0].id
+        return self._to_snapshots(self.connection.request_with_orgId_api_2(
+            'snapshot/snapshot',
+            params=params).object)
+
+    def ex_disable_snapshots(self, node: str) -> bool:
+        update_node = ET.Element('disableSnapshotService',
+                                 {'xmlns': TYPES_URN})
+
+        update_node.set('serverId', node)
+        result = self.connection.request_with_orgId_api_2(
+            'snapshot/disableSnapshotService',
+            method='POST',
+            data=ET.tostring(update_node)).object
+
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_initiate_manual_snapshot(self, name: str, server_id: str = None) -> bool:
+        """
+        Initiate a manual snapshot on the fly
+        :param node: A node object from which to get the node id
+
+        :return: True of False
+        :rtype: ``bool``
+        """
+
+        if server_id is None:
+            node = self.list_nodes(ex_name=name)
+            if len(node) > 1:
+                raise RuntimeError("Found more than one server Id, "
+                                   "please use one the following along with name parameter: {}".format([n.id for n in node]))
+        else:
+            node = []
+            node.append(self.ex_get_node_by_id(server_id))
+        update_node = ET.Element('initiateManualSnapshot',
+                                 {'xmlns': TYPES_URN})
+        update_node.set('serverId', node[0].id)
+        result = self.connection.request_with_orgId_api_2(
+            'snapshot/initiateManualSnapshot',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_create_anti_affinity_rule(self, node_list):
         """
@@ -2484,8 +2578,8 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_reconfigure_node(self, node, memory_gb, cpu_count, cores_per_socket,
-                            cpu_performance):
+    def ex_reconfigure_node(self, node, memory_gb=None, cpu_count=None, cores_per_socket=None,
+                            cpu_performance=None):
         """
         Reconfigure the virtual hardware specification of a node
 
@@ -2546,52 +2640,56 @@ class NttCisNodeDriver(NodeDriver):
             image_description = ''
 
         node_id = self._node_to_node_id(node)
-
+        """
+        Removing anything below 2.4
         # Version 2.3 and lower
         if LooseVersion(self.connection.active_api_version) < LooseVersion(
                 '2.4'):
             response = self.connection.request_with_orgId_api_1(
                 'server/%s?clone=%s&desc=%s' %
                 (node_id, image_name, image_description)).object
-
+        
         # Version 2.4 and higher
         else:
-            clone_server_elem = ET.Element('cloneServer',
-                                           {'id': node_id,
-                                            'xmlns': TYPES_URN})
+        """
+        clone_server_elem = ET.Element('cloneServer',
+                                       {'id': node_id,
+                                        'xmlns': TYPES_URN})
 
-            ET.SubElement(clone_server_elem, 'imageName').text = image_name
+        ET.SubElement(clone_server_elem, 'imageName').text = image_name
 
-            if image_description is not None:
-                ET.SubElement(clone_server_elem, 'description').text = \
-                    image_description
+        if image_description is not None:
+            ET.SubElement(clone_server_elem, 'description').text = \
+                image_description
 
-            if cluster_id is not None:
-                ET.SubElement(clone_server_elem, 'clusterId').text = \
-                    cluster_id
+        if cluster_id is not None:
+            ET.SubElement(clone_server_elem, 'clusterId').text = \
+                cluster_id
 
-            if is_guest_Os_Customization is not None:
-                ET.SubElement(clone_server_elem, 'guestOsCustomization')\
-                    .text = is_guest_Os_Customization
+        if is_guest_Os_Customization is not None:
+            ET.SubElement(clone_server_elem, 'guestOsCustomization')\
+                .text = is_guest_Os_Customization
 
-            if tag_key_id is not None:
-                tag_elem = ET.SubElement(clone_server_elem, 'tagById')
-                ET.SubElement(tag_elem, 'tagKeyId').text = tag_key_id
+        if tag_key_id is not None:
+            tag_elem = ET.SubElement(clone_server_elem, 'tagById')
+            ET.SubElement(tag_elem, 'tagKeyId').text = tag_key_id
 
-                if tag_value is not None:
-                    ET.SubElement(tag_elem, 'value').text = tag_value
+            if tag_value is not None:
+                ET.SubElement(tag_elem, 'value').text = tag_value
 
-            response = self.connection.request_with_orgId_api_2(
-                'server/cloneServer',
-                method='POST',
-                data=ET.tostring(clone_server_elem)).object
-
+        response = self.connection.request_with_orgId_api_2(
+            'server/cloneServer',
+            method='POST',
+            data=ET.tostring(clone_server_elem)).object
+        """
+        removing references to anything lower than 2.4
         # Version 2.3 and lower
         if LooseVersion(self.connection.active_api_version) < LooseVersion(
                 '2.4'):
             response_code = findtext(response, 'result', GENERAL_NS)
         else:
-            response_code = findtext(response, 'responseCode', TYPES_URN)
+        """
+        response_code = findtext(response, 'responseCode', TYPES_URN)
 
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
@@ -4469,6 +4567,28 @@ class NttCisNodeDriver(NodeDriver):
             speed=element.get('speed'),
             state=element.get('state')
         )
+
+    def _to_snapshots(self, object: ET):
+        snapshot_elements = object.findall(fixxpath('snapshot', TYPES_URN))
+        return [self._to_snapshot(el) for el in snapshot_elements]
+
+    def _to_snapshot(self, element: ET):
+        return {'id': element.get('id'), 'start_time': findtext(element, 'startTime', TYPES_URN),
+                'end_time': findtext(element, 'endTime', TYPES_URN),
+                'expiry_time':findtext(element, 'expiryTime', TYPES_URN),
+                'type': findtext(element, 'type', TYPES_URN),
+                'state': findtext(element, 'state', TYPES_URN)}
+                #'server_config': self.to_snapshot_conf_elems(findtext(element, 'serverConfig', TYPES_URN)}
+
+
+
+    def _to_windows(self, object):
+        snapshot_window_elements = object.findall(fixxpath('snapshotWindow', TYPES_URN))
+        return [self._to_window(el) for el in snapshot_window_elements]
+
+    def _to_window(self, element):
+         return {'id': element.get('id'), 'day_of_week': element.get('dayOfWeek'),
+                 'start_hour': element.get('startHour'), 'availability_status': element.get('availabilityStatus')}
 
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))

@@ -239,6 +239,13 @@ def test_get_node(lbdriver):
     assert isinstance(node, object)
 
 
+def test_list_snapshots(compute_driver):
+    snapshots = compute_driver.list_snapshots('web1')
+    for snapshot in snapshots:
+        print(snapshot)
+        assert 'expiry_time' in snapshot
+
+
 def test_images(compute_driver):
     images = compute_driver.list_images()
     print()
