@@ -733,8 +733,7 @@ class NttCisNodeDriver(NodeDriver):
                    ex_ipv6=None, ex_ipv4=None, ex_vlan=None,
                    ex_image=None, ex_deployed=None,
                    ex_started=None, ex_state=None,
-                   ex_network=None, ex_network_domain=None,
-                   ex_snaphots=None):
+                   ex_network_domain=None, ex_snaphots=None):
         """
         List nodes deployed for your organization.
 
@@ -789,7 +788,6 @@ class NttCisNodeDriver(NodeDriver):
                 ipv4=ex_ipv4, vlan=ex_vlan,
                 image=ex_image, deployed=ex_deployed,
                 started=ex_started, state=ex_state,
-                network=ex_network,
                 network_domain=ex_network_domain):
             node_list.extend(nodes)
 
@@ -837,6 +835,26 @@ class NttCisNodeDriver(NodeDriver):
                      price=0,
                      driver=self.connection.driver),
         ]
+
+    def list_datacenter_properties(self, location: str=None) -> list:
+        """
+        return a list of available sizes
+            Currently, the size of the node is dictated by the chosen OS base
+            image, they cannot be set explicitly.
+
+        @inherits: :class:`NodeDriver.list_sizes`
+        """
+
+        return [
+            NodeSize(id=1,
+                     name="default",
+                     ram=0,
+                     disk=0,
+                     bandwidth=0,
+                     price=0,
+                     driver=self.connection.driver),
+        ]
+
 
     def list_locations(self, ex_id=None):
         """
@@ -4556,6 +4574,8 @@ class NttCisNodeDriver(NodeDriver):
             api_version=api_version)
 
     def _to_disks(self, object):
+        for child in object.iter():
+            print(child.tag, child.attrib)
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
         return [self._to_disk(el) for el in disk_elements]
 
@@ -4604,9 +4624,21 @@ class NttCisNodeDriver(NodeDriver):
         has_network_info \
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
-        disks = self._to_disks(element)
 
         has_snapshot = element.find(fixxpath('snapshotService', TYPES_URN)) is not None
+        has_scsi = element.find(fixxpath('scsiController', TYPES_URN)) is not None
+        has_sata = element.find(fixxpath('sataController', TYPES_URN)) is not None
+        has_ide = element.find(fixxpath('ideController')) is not None
+        disks = []
+        if has_scsi:
+            for scsi in element.findall(fixxpath('scsiController', TYPES_URN)):
+                disks.extend(self._to_disks(scsi))
+        if has_sata:
+            for sata in element.findall(fixxpath('sataController', TYPES_URN)):
+                disks.extend(self._to_disks(sata))
+        if has_ide:
+            for ide in element.findall(fixxpath('ideController', TYPES_URN)):
+                disks.extend(self._to_snapshot(ide))
 
         # Vmware Tools
 

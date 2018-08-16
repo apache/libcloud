@@ -84,10 +84,20 @@ def test_edit_metadata_fails(compute_driver):
 
 
 def test_reconfigure_node(compute_driver):
-    node = compute_driver.ex_get_node_by_id('040fefdb-78be-4b17-8ef9-86820bad67d9 ')
+    node = compute_driver.ex_get_node_by_id('040fefdb-78be-4b17-8ef9-86820bad67d9')
     cpu_performance = 'HIGHPERFORMANCE'
     result = compute_driver.ex_reconfigure_node(node, cpu_performance=cpu_performance)
     assert result is True
+
+
+def test_add_disk(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    print(node)
+
+
+def test_remove_disk(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    print(node)
 
 
 def test_list_locations(compute_driver):

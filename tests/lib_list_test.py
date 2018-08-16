@@ -52,6 +52,24 @@ def test_list_node_ipv4(compute_driver):
     assert isinstance(nodes, list) and len(nodes) > 0
 
 
+def test_list_images(compute_driver):
+    images = compute_driver.list_images(location='EU6')
+    print()
+    for image in images:
+        print(image.id, image.name)
+    assert isinstance(images, list) and len(images) > 0
+
+
+def test_list_node_by_image(compute_driver):
+    nodes = compute_driver.list_nodes(ex_image='81a36aa0-555c-4735-b965-4b64fcf0ac8f')
+    print()
+    for node in nodes:
+        print(node.extra['networkDomainId'], node.extra['datacenterId'], node.uuid, node.state, node.name, node.extra['cpu'],
+              [disk for disk in node.extra['disks']], node.extra['memoryMb'], node.extra['OS_displayName'],
+              node.private_ips, node.extra['ipv6'])
+    assert isinstance(nodes, list) and len(nodes) > 0
+
+
 """
     requires retrieving vlan Id first
 """
@@ -244,6 +262,13 @@ def test_list_snapshots(compute_driver):
     for snapshot in snapshots:
         print(snapshot)
         assert 'expiry_time' in snapshot
+
+"""
+def test_list_sizes(compute_driver):
+    properties = compute_driver.list_locations()
+    for property in properties:
+        print(property)
+"""
 
 
 def test_images(compute_driver):
