@@ -52,9 +52,9 @@ def timestamp_to_datetime(timestamp):
     :return:  Datetime object corresponding to timestamp
     :rtype:   :class:`datetime.datetime`
     """
-    # We remove timezone offset and microseconds (Python 2.5 strptime doesn't
-    # support %f)
-    ts = datetime.datetime.strptime(timestamp[:-10], '%Y-%m-%dT%H:%M:%S')
+    # We remove timezone offset, and parse that seperately
+    ts = datetime.datetime.strptime(timestamp[:timestamp.index('+')],
+                                    '%Y-%m-%dT%H:%M:%S.%f')
     tz_hours = int(timestamp[-5:-3])
     tz_mins = int(timestamp[-2:]) * int(timestamp[-6:-5] + '1')
     tz_delta = datetime.timedelta(hours=tz_hours, minutes=tz_mins)
