@@ -6528,7 +6528,7 @@ class GCENodeDriver(NodeDriver):
                 except:
                     raise ValueError('%s must be an RFC3339 timestamp' %
                                      attribute)
-                image_data[attribute] = value.isoformat(timespec='milliseconds')
+                image_data[attribute] = value.isoformat()
 
         request = '/global/images/%s/deprecate' % (image.name)
 
