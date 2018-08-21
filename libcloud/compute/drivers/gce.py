@@ -4698,10 +4698,10 @@ class GCENodeDriver(NodeDriver):
                                'type': 'ONE_TO_ONE_NAT'}]
             if hasattr(external_ip, 'address'):
                 access_configs[0]['natIP'] = external_ip.address
-            ni['accessConfigs'] = access_configs.address
+            ni['accessConfigs'] = access_configs
 
         if internal_ip:
-            ni['networkIP'] = internal_ip
+            ni['networkIP'] = internal_ip.address
 
         return ni
 
