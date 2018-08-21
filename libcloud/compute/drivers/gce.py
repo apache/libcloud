@@ -2907,11 +2907,10 @@ class GCENodeDriver(NodeDriver):
             raise ValueError('INVALID_ARGUMENT_COMBINATION',
                              'Address type must be internal if subnetwork \
                              provided')
-        if subnetwork and not hasattr(subnetwork, 'name'):
-            subnetwork = \
-                self.ex_get_subnetwork(subnetwork, region)
-            address_data['subnetwork'] = subnetwork.extra['selfLink']
-        else:
+        if subnetwork:
+            if not hasattr(subnetwork, 'name'):
+                subnetwork = \
+                    self.ex_get_subnetwork(subnetwork, region)
             address_data['subnetwork'] = subnetwork.extra['selfLink']
         if region == 'global':
             request = '/global/addresses'
