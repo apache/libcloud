@@ -84,6 +84,14 @@ class BaseConnectionClassTestCase(unittest.TestCase):
                                 proxy_url=proxy_url)
 
     def test_constructor(self):
+        proxy_url = 'http://127.0.0.2:3128'
+        os.environ['http_proxy'] = proxy_url
+        conn = LibcloudConnection(host='localhost', port=80)
+        self.assertEqual(conn.proxy_scheme, 'http')
+        self.assertEqual(conn.proxy_host, '127.0.0.2')
+        self.assertEqual(conn.proxy_port, 3128)
+
+        _ = os.environ.pop('http_proxy', None)
         conn = LibcloudConnection(host='localhost', port=80)
         self.assertEqual(conn.proxy_scheme, None)
         self.assertEqual(conn.proxy_host, None)
