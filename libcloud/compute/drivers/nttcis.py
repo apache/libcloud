@@ -30,6 +30,7 @@ from libcloud.common.nttcis import NttCisNetworkDomain
 from libcloud.common.nttcis import NttCisVlan
 from libcloud.common.nttcis import NttCisServerCpuSpecification
 from libcloud.common.nttcis import NttCisServerDisk
+from libcloud.common.nttcis import NttCisScsiController
 from libcloud.common.nttcis import NttCisServerVMWareTools
 from libcloud.common.nttcis import NttCisPublicIpBlock
 from libcloud.common.nttcis import NttCisFirewallRule
@@ -878,6 +879,25 @@ class NttCisNodeDriver(NodeDriver):
                 params=params
             ).object
         )
+
+
+    def ex_get_datacneter(self, ex_id):
+        """
+        List locations (datacenters) available for instantiating servers and
+        networks.
+
+        :keyword ex_id: Filters the location list to this id
+        :type    ex_id: ``str``
+
+        :return:  List of locations
+        :rtype:  ``list`` of :class:`NodeLocation`
+        """
+        params = {}
+        if ex_id is not None:
+            params['id'] = ex_id
+
+        return  self.connection.request_with_orgId_api_2('infrastructure/datacenter', params=params)
+
 
     def list_snapshot_windows(self, location: str, plan: str) -> list:
         """
@@ -2474,12 +2494,51 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_add_storage_to_node(self, node, amount,
-                               speed='STANDARD', scsi_id=None):
+    def ex_add_scsi_controller_to_node(self, server_id: str, adapter_type: str, bus_number: str=None) -> bool:
         """
-        Add storage to the node
+        Added 8/27/18:  Adds a SCSI Controller by node id
+        :param server_id: server id
+        :param adapter_type: the type of SCSI Adapter, i.e., LSI_LOGIC_PARALLEL
+        :param bus_number: optional number of server's bus
+        :return: whether addition is in progress or 'OK' otherwise false
+        """
 
-        :param  node: The server to add storage to
+        update_node = ET.Element('addScsiController', {'xmlns': TYPES_URN})
+        ET.SubElement(update_node, 'serverId').text = server_id
+        ET.SubElement(update_node, 'adapterType').text = adapter_type
+        if bus_number is not None:
+            ET.SubElement(update_node, 'busNumber').text = bus_number
+
+        result = self.connection.request_with_orgId_api_2(
+            'server/addScsiController',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_remove_scsi_controller(self, controller_id: str) -> bool:
+        """
+        Added 8/27/18:  Adds a SCSI Controller by node id
+        :param controller_id: Scsi controller's id
+        :return: whether addition is in progress or 'OK' otherwise false
+        """
+        update_node = ET.Element('removeScsiController', {'xmlns': TYPES_URN})
+        update_node.set('id', controller_id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/removeScsiController',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_add_storage_to_node(self, amount, node=None,
+                               speed='STANDARD', controller_id=None, scsi_id=None):
+        """
+        Updated 8/23/18
+        Add storage to the node
+        One of node or controller_id must be selected
+
+        :param  node: The server to add storage to (required if controller_id is not used
         :type   node: :class:`Node`
 
         :param  amount: The amount of storage to add, in GB
@@ -2488,14 +2547,26 @@ class NttCisNodeDriver(NodeDriver):
         :param  speed: The disk speed type
         :type   speed: ``str``
 
+        :param  conrollter_id: The disk may be added using the cotnroller id (required if node object is not used)
+        :type   controller_id: ``str``
+
         :param  scsi_id: The target SCSI ID (optional)
         :type   scsi_id: ``int``
 
         :rtype: ``bool``
         """
+
+        if (node is None and controller_id is None) or (node is not None and controller_id is not None):
+            raise RuntimeError("Either a node or a controller id must be specified")
+
         update_node = ET.Element('addDisk',
                                  {'xmlns': TYPES_URN})
-        update_node.set('id', node.id)
+        if node is not None:
+            ET.SubElement(update_node, 'serverId').text = node.id
+        elif controller_id is not None:
+            scsi_node = ET.Element('scsiController')
+            ET.SubElement(scsi_node, 'controllerId').text = controller_id
+            update_node.insert(1, scsi_node)
         ET.SubElement(update_node, 'sizeGb').text = str(amount)
         ET.SubElement(update_node, 'speed').text = speed.upper()
         if scsi_id is not None:
@@ -2546,7 +2617,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_change_storage_speed(self, node, disk_id, speed):
+    def ex_change_storage_speed(self, disk_id, speed, iops=None):
         """
         Change the speed (disk tier) of a disk
 
@@ -2561,14 +2632,17 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        create_node = ET.Element('ChangeDiskSpeed', {'xmlns': SERVER_NS})
+        create_node = ET.Element('changeDiskSpeed', {'xmlns': TYPES_URN})
+        create_node.set('id', disk_id)
         ET.SubElement(create_node, 'speed').text = speed
-        result = self.connection.request_with_orgId_api_1(
-            'server/%s/disk/%s/changeSpeed' %
-            (node.id, disk_id),
+        if iops is not None:
+            ET.SubElement(create_node, 'iops').text = str(iops)
+        #result = self.connection.request_with_orgId_api_1(
+        result = self.connection.request_with_orgId_api_2(
+            'server/changeDiskSpeed',
             method='POST',
             data=ET.tostring(create_node)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_change_storage_size(self, node, disk_id, size):
@@ -4573,9 +4647,14 @@ class NttCisNodeDriver(NodeDriver):
             version_status=version_status,
             api_version=api_version)
 
+    def _to_scsi_controllers(self, elements):
+        return NttCisScsiController(id=elements.get('id'),
+                                    adapter_type=elements.get('adapterType'),
+                                    bus_number=elements.get('busNumber'),
+                                    state=elements.get('state')
+                                   )
+
     def _to_disks(self, object):
-        for child in object.iter():
-            print(child.tag, child.attrib)
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
         return [self._to_disk(el) for el in disk_elements]
 
@@ -4629,8 +4708,10 @@ class NttCisNodeDriver(NodeDriver):
         has_scsi = element.find(fixxpath('scsiController', TYPES_URN)) is not None
         has_sata = element.find(fixxpath('sataController', TYPES_URN)) is not None
         has_ide = element.find(fixxpath('ideController')) is not None
+        scsi_controllers = []
         disks = []
         if has_scsi:
+            scsi_controllers.append(self._to_scsi_controllers(element.find(fixxpath('scsiController', TYPES_URN))))
             for scsi in element.findall(fixxpath('scsiController', TYPES_URN)):
                 disks.extend(self._to_disks(scsi))
         if has_sata:
@@ -4685,6 +4766,7 @@ class NttCisNodeDriver(NodeDriver):
             'OS_type': operation_system.get('family'),
             'OS_displayName': operation_system.get('displayName'),
             'status': status,
+            'scsi_controller': scsi_controllers,
             'disks': disks,
             'vmWareTools': vmware_tools
         }

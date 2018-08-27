@@ -808,6 +808,40 @@ class NttCisServerDisk(object):
                 % (self.id, self.size_gb))
 
 
+class NttCisScsiController(object):
+    """
+    A class that represents the disk on a server
+    """
+    def __init__(self, id: str=None, adapter_type: str=None, bus_number: str=None, state: str=None):
+        """
+        Instantiate a new :class:`DimensionDataServerDisk`
+
+        :param id: The id of the controller
+        :type  id: ``str``
+
+        :param adapter_type: The 'brand' of adapter
+        :type  adapter_type: ``str``
+
+        :param bus_number: The bus number occupied on the virtual hardware
+        :type  bus_nubmer: ``str``
+
+        :param state: Curent state (i.e. NORMAL)
+        :type  speed: ``str``
+
+        :param state: State of the disk (i.e. PENDING)
+        :type  state: ``str``
+        """
+        self.id = id
+        self.adapter_type = adapter_type
+        self.bus_number = bus_number
+        self.state = state
+
+    def __repr__(self):
+        return (('<NttCisScsiController: '
+                 'id=%s, adapter_type=%s, bus_number=%s, state=%s')
+                % (self.id, self.adapter_type, self.bus_number, self.state))
+
+
 class NttCisServerVMWareTools(object):
     """
     A class that represents the VMWareTools for a node
@@ -1336,6 +1370,13 @@ class NttCisBackupDetails(object):
                 % (self.asset_id))
 
 
+class NttCisDataCenter(object):
+    """
+    Class that represents a Cloud Infrastructure Datacenter
+    """
+
+
+
 class NttCisBackupClient(object):
     """
     An object that represents a backup client
@@ -1591,6 +1632,10 @@ class NttCisTagKey(object):
     def __repr__(self):
         return (('NttCisTagKey: name=%s>')
                 % (self.name))
+
+
+class NttCisFactory(object):
+    pass
 
 
 class NttCisIpAddressList(object):

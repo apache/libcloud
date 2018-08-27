@@ -90,14 +90,88 @@ def test_reconfigure_node(compute_driver):
     assert result is True
 
 
-def test_add_disk(compute_driver):
+def test_add_disk_by_node(compute_driver):
+    """
+    Speeds can be specified based on DataCenter
+    :param compute_driver: libcloud.DriverType.COMPUTE.NTTCIS
+    :return: NA
+    """
     node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
-    print(node)
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    result = compute_driver.ex_add_storage_to_node(20, node)
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 180, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
 
 
-def test_remove_disk(compute_driver):
+def test_add_disk_by_controller_id(compute_driver):
     node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
-    print(node)
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    result = compute_driver.ex_add_storage_to_node(20, controller_id=node.extra['scsi_controller'][0].id)
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 180, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+
+def test_changing_diskspeed(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    disk_id = 'f8a01c24-4768-46be-af75-9fe877f8c588'
+    result = compute_driver.ex_change_storage_speed(disk_id, 'HIGHPERFORMANCE')
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+
+def test_changing_diskspeed_iops(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    disk_id = 'f8a01c24-4768-46be-af75-9fe877f8c588'
+    result = compute_driver.ex_change_storage_speed(disk_id, 'PROVISIONEDIOPS', iops=60)
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+
+def test_add_scsi_controller(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    adapter_type = 'VMWARE_PARAVIRTUAL'
+    result = compute_driver.ex_add_scsi_controller_to_node(node.id, adapter_type)
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+
+def test_remove_scsi_controller(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    result = compute_driver.ex_remove_scsi_controller('f1126751-c6d5-4d64-893c-8902b8481f90')
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+
+def test_update_vmware_tools(compute_driver):
+    pass
 
 
 def test_list_locations(compute_driver):

@@ -6,9 +6,10 @@ from libcloud import loadbalancer
 def test_list_node_all(compute_driver):
     nodes = compute_driver.list_nodes()
     for node in nodes:
-        print(node.extra['networkDomainId'], node.extra['datacenterId'], node.uuid, node.state, node.name, node.extra['cpu'],
-              [disk for disk in node.extra['disks']], node.extra['memoryMb'], node.extra['OS_displayName'],
-              node.private_ips, node.extra['ipv6'], node.extra['window'])
+         print(node.extra['networkDomainId'], node.extra['datacenterId'], node.uuid, node.state, node.name, node.extra['cpu'],
+              node.extra['scsi_controller'], node.extra['disks'], node.extra['memoryMb'],
+              node.extra['OS_displayName'], node.private_ips, node.extra['ipv6'], node.extra['window'])
+
     assert isinstance(nodes, list) and len(nodes) > 0
 
 
@@ -152,6 +153,10 @@ def test_list_vlan(compute_driver):
           vlan.private_ipv4_range_address, vlan.private_ipv4_range_size, vlan.status)
     assert vlan.name == 'sdk_vlan1'
 
+
+def test_list_datacenter_object_creation(compute_driver):
+    datacenter = compute_driver.ex_get_datacenter('EU6')
+    
 
 def test_list_firewall_rules(compute_driver):
     rules = compute_driver.ex_list_firewall_rules('6aafcf08-cb0b-432c-9c64-7371265db086')
