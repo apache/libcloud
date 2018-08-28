@@ -11,6 +11,9 @@ Changes in Apache Libcloud in development
 - Remove async variable to help with Python 3.7 support (GITHUB-1235)
   [Andreas Hasenack]
 
+- Allow running tests with http_proxy set (GITHUB-1236)
+  [Andreas Hasenack]
+
 Common
 ~~~~~~
 
