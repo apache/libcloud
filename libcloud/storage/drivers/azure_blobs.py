@@ -903,7 +903,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         if blob_type == 'PageBlob':
             headers['Content-Length'] = str('0')
-            headers['x-ms-blob-content-length'] = object_size
+            headers['x-ms-blob-content-length'] = str(object_size)
 
         return headers
 
