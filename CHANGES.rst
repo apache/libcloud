@@ -126,6 +126,9 @@ Storage
 - [Azure Blob Storage] Fix upload/download streams (GITHUB-1231)
   [Michael Perel]
 
+- [Azure Blob Storage] Fix PageBlob headers (GITHUB-1237)
+  [Andreas Hasenack]
+
 - [S3] Guess s3 upload content type (LIBCLOUD-958, GITHUB-1195)
   [Iuri de Silvio]
 
