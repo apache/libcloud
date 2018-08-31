@@ -213,6 +213,7 @@ class Provider(Type):
     SOLUSVM = 'solusvm'
 
     CLEARCENTER = "clearcenter"
+    CLEARVM = "clearvm"
 
 DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
                                   Provider.RACKSPACE_NOVA_BETA,
@@ -289,6 +290,7 @@ class NodeState(Type):
     RECONFIGURING = 'reconfiguring'
     MIGRATING = 'migrating'
     NORMAL = 'normal'
+    OFF = 'off'
 
 
 class StorageVolumeState(Type):
