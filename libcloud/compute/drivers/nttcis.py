@@ -1348,6 +1348,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_create_anti_affinity_rule(self, node_list):
         """
+        Edited to work with api 2.x.  No longer supports 1.0
         Create an anti affinity rule given a list of nodes
         Anti affinity rules ensure that servers will not reside
         on the same VMware ESX host
@@ -1360,16 +1361,16 @@ class NttCisNodeDriver(NodeDriver):
         """
         if not isinstance(node_list, (list, tuple)):
             raise TypeError("Node list must be a list or a tuple.")
-        anti_affinity_xml_request = ET.Element('NewAntiAffinityRule',
-                                               {'xmlns': SERVER_NS})
+        anti_affinity_xml_request = ET.Element('createAntiAffinityRule',
+                                               {'xmlns': TYPES_URN})
         for node in node_list:
             ET.SubElement(anti_affinity_xml_request, 'serverId').text = \
                 self._node_to_node_id(node)
-        result = self.connection.request_with_orgId_api_1(
-            'antiAffinityRule',
+        result = self.connection.request_with_orgId_api_2(
+            'server/createAntiAffinityRule',
             method='POST',
             data=ET.tostring(anti_affinity_xml_request)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_delete_anti_affinity_rule(self, anti_affinity_rule):
@@ -1382,12 +1383,16 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        rule_id = self._anti_affinity_rule_to_anti_affinity_rule_id(
-            anti_affinity_rule)
-        result = self.connection.request_with_orgId_api_1(
-            'antiAffinityRule/%s?delete' % (rule_id),
-            method='GET').object
-        response_code = findtext(result, 'result', GENERAL_NS)
+        rule_id = anti_affinity_rule
+        #rule_id = self._anti_affinity_rule_to_anti_affinity_rule_id(
+        #    anti_affinity_rule)
+        update_node = ET.Element('deleteAntiAffinityRule', {"xmlns": TYPES_URN})
+        update_node.set('id', rule_id)
+        result = self.connection.request_with_orgId_api_2(
+            'server/deleteAntiAffinityRule',
+            method='POST',
+            data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_list_anti_affinity_rules(self, network=None, network_domain=None,

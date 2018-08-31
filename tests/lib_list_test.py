@@ -61,6 +61,10 @@ def test_list_images(compute_driver):
     assert isinstance(images, list) and len(images) > 0
 
 
+def test_list_os(compute_driver):
+    oss = compute_driver.ex_list_os(location='EU6')
+
+
 def test_list_node_by_image(compute_driver):
     nodes = compute_driver.list_nodes(ex_image='81a36aa0-555c-4735-b965-4b64fcf0ac8f')
     print()
@@ -127,7 +131,7 @@ def test_list_node_state(compute_driver):
     assert isinstance(nodes, list) and len(nodes) > 0
 
 
-def test_list_netwokr_domain_id(compute_driver):
+def test_list_network_domain_id(compute_driver):
     nodes = compute_driver.list_nodes(ex_network_domain='6aafcf08-cb0b-432c-9c64-7371265db086')
     print()
     for node in nodes:
@@ -268,13 +272,38 @@ def test_list_snapshots(compute_driver):
         print(snapshot)
         assert 'expiry_time' in snapshot
 
+
+def test_list_nics(compute_driver):
+    result = compute_driver.ex_list_
+
+
+def test_list_vlans(compute_driver):
+    vlans = compute_driver.ex_list_vlans()
+    print(vlans)
+    assert isinstance(vlans, list)
+
+
+def test_list_anti_affinity_rules(compute_driver):
+    # Could use network domain or node but not both
+    # net_domain = compute_driver.ex_get_network_domain('6aafcf08-cb0b-432c-9c64-7371265db086')
+    node = compute_driver.ex_get_node_by_id("803e5e00-b22a-450a-8827-066ff15ec977")
+    anti_affinity_rules = compute_driver.ex_list_anti_affinity_rules(node=node)
+    assert len(anti_affinity_rules) > 1
+
+
+def test_list_no_anti_affinity_rules(compute_driver):
+    # Could use network domain or node but not both
+    # net_domain = compute_driver.ex_get_network_domain('6aafcf08-cb0b-432c-9c64-7371265db086')
+    node = compute_driver.ex_get_node_by_id("803e5e00-b22a-450a-8827-066ff15ec977")
+    anti_affinity_rules = compute_driver.ex_list_anti_affinity_rules(node=node)
+    assert len(anti_affinity_rules) == 0
+
 """
 def test_list_sizes(compute_driver):
     properties = compute_driver.list_locations()
     for property in properties:
         print(property)
 """
-
 
 def test_images(compute_driver):
     images = compute_driver.list_images()

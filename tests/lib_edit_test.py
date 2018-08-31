@@ -1,7 +1,8 @@
 import pytest
 import libcloud
 from libcloud import loadbalancer
-from libcloud.common.nttcis import NttCisAPIException
+from libcloud.common.nttcis import NttCisAPIException, NttCisVlan
+from tests.lib_create_test import test_deploy_vlan
 
 
 def test_disable_node_snapshot(compute_driver):
@@ -171,7 +172,76 @@ def test_remove_scsi_controller(compute_driver):
 
 
 def test_update_vmware_tools(compute_driver):
-    pass
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    result = compute_driver.ex_update_vm_tools(node)
+    assert result is True
+    compute_driver.ex_wait_for_state('running', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+
+
+def test_add_node_to_vlan(compute_driver):
+    vlan = test_deploy_vlan(compute_driver, "test_vlan_create", "6aafcf08-cb0b-432c-9c64-7371265db086", "10.0.2.0")
+    assert isinstance(vlan, NttCisVlan)
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    result = compute_driver.ex_attach_node_to_vlan(node, vlan=vlan)
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+
+def test_remove_nic(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    result = compute_driver.ex_disable_snapshots(node.id)
+    assert result is True
+    result = compute_driver.ex_destroy_nic("e9cdea1b-c4f2-4769-93a8-57e24248abdd")
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+""""
+No wayt to get nic id's via libcloud
+def test_exchange_nic_vlans(compute_driver):
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    print(node.extra)
+"""
+
+
+def test_change_nic_type(compute_driver):
+    nic_id = "7a27b2b1-7b20-404f-be53-4695023c2734"
+    nic_type = 'VMXNET3'
+    node = compute_driver.ex_get_node_by_id('803e5e00-b22a-450a-8827-066ff15ec977')
+    shut_result = compute_driver.ex_shutdown_graceful(node)
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, node.id)
+    result = compute_driver.ex_change_nic_network_adapter(nic_id, nic_type)
+    assert result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
+    result = compute_driver.ex_start_node(node)
+    assert result is True
+
+
+def test_create_anti_affinity_rule(compute_driver):
+    server1 = compute_driver.ex_get_node_by_id("d0425097-202f-4bba-b268-c7a73b8da129")
+    server2 = compute_driver.ex_get_node_by_id("803e5e00-b22a-450a-8827-066ff15ec977")
+    servers = [server1, server2]
+    result = compute_driver.ex_create_anti_affinity_rule(servers)
+    assert isinstance(result, )
+
+
+def test_delete_anti_affinity_rule(compute_driver):
+    anti_affinity_rule = "40d83160-0fa2-418d-a73e-5f15fe1354fc"
+    result = compute_driver.ex_delete_anti_affinity_rule(anti_affinity_rule)
+    assert result is True
+
+
+
 
 
 def test_list_locations(compute_driver):

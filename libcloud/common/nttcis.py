@@ -593,12 +593,14 @@ class NttCisConnection(ConnectionUserAndKey):
         cnt = 0
         result = None
         object_state = None
+        state = state.lower()
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
             if isinstance(result, Node):
                 object_state = result.state
             else:
-                object_state = result.status
+                # BUG: need to use result.status.lower() or will never match if client uses lower case
+                object_state = result.status.lower()
 
             if object_state is state or object_state in state:
                 return result
