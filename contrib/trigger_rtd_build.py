@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,11 +15,10 @@
 # limitations under the License.
 
 import sys
-import urllib2
+import requests
 
 
 key = sys.argv[1]
 url = 'https://readthedocs.org/build/%s' % (key)
-req = urllib2.Request(url, '')
-f = urllib2.urlopen(req)
-print f.read()
+r = requests.post(url)
+print(r.text)
