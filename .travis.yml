@@ -46,7 +46,7 @@ matrix:
             - libvirt-dev
       # Trigger ReadTheDocs build on docs builder
       after_success:
-        - ./contrib/trigger_rtd_build.py 8284
+        - python3 ./contrib/trigger_rtd_build.py 8284
 
 install:
   - pip install --upgrade "pip==9.0.1"
