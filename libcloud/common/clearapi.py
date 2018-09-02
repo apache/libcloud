@@ -5,7 +5,7 @@ from libcloud.common.base import JsonResponse
 from libcloud.common.base import ConnectionKey
 
 
-class ClearVmResponse(JsonResponse):
+class ClearAPIResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                             httplib.NO_CONTENT]
 
@@ -25,12 +25,12 @@ class ClearVmResponse(JsonResponse):
         return self.status in self.valid_response_codes
 
 
-class ClearVmConnection(ConnectionKey):
+class ClearAPIConnection(ConnectionKey):
     """
     Connection class for the ClearVm driver.
     """
 
-    responseCls = ClearVmResponse
+    responseCls = ClearAPIResponse
 
     def add_default_headers(self, headers):
         """

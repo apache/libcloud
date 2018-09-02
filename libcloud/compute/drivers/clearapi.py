@@ -1,24 +1,23 @@
 from libcloud.compute.base import Node, NodeDriver
-from libcloud.common.clearvm import ClearVmConnection
+from libcloud.common.clearapi import ClearAPIConnection
 from libcloud.compute.types import Provider, NodeState
 
 import json
 
 
 __all__ = [
-    "ClearVmNodeDriver"
+    "ClearAPINodeDriver"
 ]
 
-class ClearVmNodeDriver(NodeDriver):
+class ClearAPINodeDriver(NodeDriver):
     """
-    Base ClearVm node driver.
+    Base ClearAPI node driver.
     A `node` can be either a host or a guest
     """
 
-    connectionCls = ClearVmConnection
-    type = Provider.CLEARVM
-    name = 'ClearVm'
-    website = 'https://www.clearvm.com'
+    connectionCls = ClearAPIConnection
+    type = Provider.CLEARAPI
+    name = 'ClearAPI'
 
     # TODO: map describing available states of nodes
     NODE_STATE_MAP = {'Active': NodeState.RUNNING,
@@ -43,14 +42,14 @@ class ClearVmNodeDriver(NodeDriver):
         host = host.split('/')[0]
 
         self.connectionCls.host = host
-        super(ClearVmNodeDriver, self).__init__(key=key, uri=url)
+        super(ClearAPINodeDriver, self).__init__(key=key, uri=url)
         self.connection.host = host
 
     def list_nodes(self):
         """
-        List clearvm nodes
+        List clearAPI nodes
 
-        :rtype: ``list`` of :class:`ClearVmNode`
+        :rtype: ``list`` of :class:`ClearAPINode`
         """
 
         response = self.connection.request('/clearos/clearapi/v2/rest/host/get_all_host')

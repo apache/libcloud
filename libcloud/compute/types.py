@@ -213,7 +213,7 @@ class Provider(Type):
     SOLUSVM = 'solusvm'
 
     CLEARCENTER = "clearcenter"
-    CLEARVM = "clearvm"
+    CLEARAPI = "clearapi"
 
 DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
                                   Provider.RACKSPACE_NOVA_BETA,
