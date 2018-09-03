@@ -39,7 +39,6 @@ class ClearAPINodeDriver(NodeDriver):
         for prefix in prefixes:
             if host.startswith(prefix):
                 host = host.replace(prefix, '')
-        host = host.split('/')[0]
 
         self.connectionCls.host = host
         super(ClearAPINodeDriver, self).__init__(key=key, uri=url)
@@ -51,8 +50,7 @@ class ClearAPINodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`ClearAPINode`
         """
-
-        response = self.connection.request('/v2/rest/host/get_all_host')
+        response = self.connection.request('/clearos/clearapi/v2/rest/host/get_all_host')
         nodes = [self._to_node(host)
                  for host in response.object['data']]
         return nodes
@@ -88,19 +86,19 @@ class ClearAPINodeDriver(NodeDriver):
 
     def ex_start_node(self, node):
         data = {"uuid": node.extra['uuid']}
-        res = self.connection.request('/v2/rest/host/power/on',
+        res = self.connection.request('/clearos/clearapi/v2/rest/host/power/on',
                                       data=json.dumps(data), method='POST')
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
     def ex_stop_node(self, node):
         data = {"uuid": node.extra['uuid']}
-        res = self.connection.request('/v2/rest/host/power/off',
+        res = self.connection.request('/clearos/clearapi/v2/rest/host/power/off',
                                       data=json.dumps(data), method='POST')
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
     def ex_get_host(self, node):
         data = {"uuid": node.extra['uuid']}
-        response = self.connection.request('/v2/rest/host/get_host',
+        response = self.connection.request('/clearos/clearapi/v2/rest/host/get_host',
                                       data=json.dumps(data), method='POST')
         if 'data' in response.object:
             ret = {}
