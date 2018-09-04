@@ -133,6 +133,7 @@ setup(
     description='A standard Python library that abstracts away differences' +
                 ' among multiple cloud provider APIs. For more information' +
                 ' and documentation, please see http://libcloud.apache.org',
+    long_description=open('README.rst').read(),
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     install_requires=install_requires,
