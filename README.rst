@@ -29,6 +29,12 @@ Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources
 through a unified and easy to use API.
 
+:Code:          https://github.com/apache/libcloud
+:License:       Apache 2.0; see LICENSE file
+:Issues:        https://github.com/apache/libcloud/issues
+:Website:       https://libcloud.apache.org/
+:Documentation: https://libcloud.readthedocs.io
+
 Resources you can manage with Libcloud are divided into the following categories:
 
 * **Compute** - Cloud Servers and Block Storage - services such as Amazon EC2 and Rackspace
