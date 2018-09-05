@@ -2849,6 +2849,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         response = self.network_connection.request(
             self._subnets_url_prefix).object
         return self._to_subnets(response)
+
     def ex_list_ports(self):
         """
         List all OpenStack_2_PortInterfaces
