@@ -1,0 +1,14 @@
+{
+  "token": {
+    "creation_date": "2014-05-22T08:06:51.742826+00:00",
+    "expires": "2014-05-20T14:05:06.393875+00:00",
+    "id": "token",
+    "inherits_user_perms": true,
+    "permissions": [],
+    "roles": {
+      "organization": null,
+      "role": null
+    },
+    "user_id": "5bea0358"
+  }
+}

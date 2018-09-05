@@ -3892,13 +3892,14 @@ class GCENodeDriver(NodeDriver):
         else:
             network_data['autoCreateSubnetworks'] = (mode.lower() == 'auto')
 
-        if routing_mode.lower() not in ['regional', 'global']:
-            raise ValueError("Invalid Routing Mode: '%s'. Must be 'REGIONAL', "
-                             "or 'GLOBAL'." % routing_mode)
-        else:
-            network_data['routingConfig'] = {
-                'routingMode': routing_mode.upper()
-            }
+        if routing_mode:
+            if routing_mode.lower() not in ['regional', 'global']:
+                raise ValueError("Invalid Routing Mode: '%s'. Must be "
+                                 "'REGIONAL', or 'GLOBAL'." % routing_mode)
+            else:
+                network_data['routingConfig'] = {
+                    'routingMode': routing_mode.upper()
+                }
 
         request = '/global/networks'
 

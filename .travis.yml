@@ -1,15 +1,7 @@
 language: python
 sudo: false
-# Add or remove version for match with Travis support
-python:
-    - 2.7
-    - 3.4
-    - 3.5
-    - 3.6
-    - pypy
-    - pypy3
-os:
-  - linux
+dist: trusty
+os: linux
 
 # Note: graphviz is needed for grapgs embedded in the docs
 addons:
@@ -21,6 +13,15 @@ addons:
 matrix:
   fast_finish: true
   include:
+    - python: 2.7
+    - python: 3.4
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+      sudo: required
+    - pypy
+    - pypy3
     - env: ENV=checks
       python: 2.7
       before_script: TOX_ENV=checks

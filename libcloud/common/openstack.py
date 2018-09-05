@@ -435,6 +435,7 @@ class OpenStackDriverMixin(object):
 
     def openstack_connection_kwargs(self):
         """
+        Returns certain ``ex_*`` parameters for this connection.
 
         :rtype: ``dict``
         """

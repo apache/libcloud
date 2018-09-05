@@ -1130,6 +1130,20 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         result = self._to_domain(data=response.object['domain'])
         return result
 
+    def get_user(self, user_id):
+        """
+        Get a user account by ID.
+
+        :param user_id: User's id.
+        :type name: ``str``
+
+        :return: Located user.
+        :rtype: :class:`.OpenStackIdentityUser`
+        """
+        response = self.authenticated_request('/v3/users/%s' % user_id)
+        user = self._to_user(data=response.object['user'])
+        return user
+
     def list_user_projects(self, user):
         """
         Retrieve all the projects user belongs to.

@@ -1435,7 +1435,7 @@ class AzureNodeDriver(NodeDriver):
 
         return response
 
-    def _perform_post(self, path, body, response_type=None, async=False):
+    def _perform_post(self, path, body, response_type=None):
         request = AzureHTTPRequest()
         request.method = 'POST'
         request.host = AZURE_SERVICE_MANAGEMENT_HOST
@@ -1447,7 +1447,7 @@ class AzureNodeDriver(NodeDriver):
 
         return response
 
-    def _perform_put(self, path, body, response_type=None, async=False):
+    def _perform_put(self, path, body, response_type=None):
         request = AzureHTTPRequest()
         request.method = 'PUT'
         request.host = AZURE_SERVICE_MANAGEMENT_HOST
@@ -1459,7 +1459,7 @@ class AzureNodeDriver(NodeDriver):
 
         return response
 
-    def _perform_delete(self, path, async=False):
+    def _perform_delete(self, path):
         request = AzureHTTPRequest()
         request.method = 'DELETE'
         request.host = AZURE_SERVICE_MANAGEMENT_HOST
@@ -1469,9 +1469,6 @@ class AzureNodeDriver(NodeDriver):
         response = self._perform_request(request)
 
         self.raise_for_response(response, 202)
-
-        if async:
-            return self._parse_response_for_async_op(response)
 
     def _perform_request(self, request):
         try:
