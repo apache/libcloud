@@ -227,6 +227,19 @@ def test_change_nic_type(compute_driver):
     assert result is True
 
 
+def test_edit_firewall_rule(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name]
+    rule_name = 'sdk_test_firewall_rule_2'
+    rules = compute_driver.ex_list_firewall_rules(net_domain[0])
+    rule = [rule for rule in rules if rule.name == rule_name]
+    rule[0].destination.port_end = None
+    result = compute_driver.ex_edit_firewall_rule(rule[0])
+    print(compute_driver.ex_get_firewall_rule(net_domain[0].id, rule[0].id))
+    assert result is True
+
+
 def test_create_anti_affinity_rule(compute_driver):
     server1 = compute_driver.ex_get_node_by_id("d0425097-202f-4bba-b268-c7a73b8da129")
     server2 = compute_driver.ex_get_node_by_id("803e5e00-b22a-450a-8827-066ff15ec977")
@@ -241,8 +254,19 @@ def test_delete_anti_affinity_rule(compute_driver):
     assert result is True
 
 
+def test_delete_port_list(compute_driver):
+    portlists = compute_driver.ex_list_portlist('6aafcf08-cb0b-432c-9c64-7371265db086')
+    port_list_to_delete = [plist for plist in portlists if plist.name == 'sdk_test_port_list']
+    result = compute_driver.ex_delete_portlist(port_list_to_delete[0])
+    assert result is True
 
 
+def test_delete_address_list(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name]
+    addresslist_to_delete = compute_driver.ex_get_ip_address_list(net_domain[0], 'sdk_test_address_list')
+    print(addresslist_to_delete)
 
 def test_list_locations(compute_driver):
     locations = compute_driver.list_locations()

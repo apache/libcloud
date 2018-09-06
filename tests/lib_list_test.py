@@ -298,6 +298,8 @@ def test_list_no_anti_affinity_rules(compute_driver):
     anti_affinity_rules = compute_driver.ex_list_anti_affinity_rules(node=node)
     assert len(anti_affinity_rules) == 0
 
+
+
 """
 def test_list_sizes(compute_driver):
     properties = compute_driver.list_locations()

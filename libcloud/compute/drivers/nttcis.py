@@ -1990,9 +1990,10 @@ class NttCisNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_firewall_rules(response, network_domain)
 
+    """
     def ex_create_firewall_rule(self, network_domain, rule, position,
                                 position_relative_to_rule=None):
-        """
+        
         Creates a firewall rule
 
         :param network_domain: The network domain in which to create
@@ -2015,7 +2016,7 @@ class NttCisNodeDriver(NodeDriver):
             :class:`NttCisFirewallRule` or ``str``
 
         :rtype: ``bool``
-        """
+        
         positions_without_rule = ('FIRST', 'LAST')
         positions_with_rule = ('BEFORE', 'AFTER')
 
@@ -2103,8 +2104,123 @@ class NttCisNodeDriver(NodeDriver):
                 rule_id = info.get('value')
         rule.id = rule_id
         return rule
+    """
 
-    def ex_edit_firewall_rule(self, rule, position,
+    def ex_create_firewall_rule(self, network_domain, name, action, ip_version, protocol,
+                                source_addr, destination, position, enabled=1,  position_relative_to_rule=None):
+        """
+        Creates a firewall rule
+
+        :param network_domain: The network domain in which to create
+                                the firewall rule
+        :type  network_domain: :class:`NttCisNetworkDomain` or ``str``
+
+        :param rule: The rule in which to create
+        :type  rule: :class:`NttCisFirewallRule`
+
+        :param position: The position in which to create the rule
+                         There are two types of positions
+                         with position_relative_to_rule arg and without it
+                         With: 'BEFORE' or 'AFTER'
+                         Without: 'FIRST' or 'LAST'
+        :type  position: ``str``
+
+        :param position_relative_to_rule: The rule or rule name in
+                                          which to decide positioning by
+        :type  position_relative_to_rule:
+            :class:`NttCisFirewallRule` or ``str``
+
+        :rtype: ``bool``
+        """
+        positions_without_rule = ('FIRST', 'LAST')
+        positions_with_rule = ('BEFORE', 'AFTER')
+
+        create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
+        ET.SubElement(create_node, "networkDomainId").text = \
+            self._network_domain_to_network_domain_id(network_domain)
+        ET.SubElement(create_node, "name").text = name
+        ET.SubElement(create_node, "action").text = action
+        ET.SubElement(create_node, "ipVersion").text = ip_version
+        ET.SubElement(create_node, "protocol").text = protocol
+        # Setup source port rule
+        source = ET.SubElement(create_node, "source")
+        if source_addr.address_list_id is not None:
+            source_ip = ET.SubElement(source, 'ipAddressListId')
+            source_ip.text = source_addr.address_list_id
+        else:
+            source_ip = ET.SubElement(source, 'ip')
+            if source_addr.any_ip:
+                source_ip.set('address', 'ANY')
+            else:
+                source_ip.set('address', source.ip_address)
+                if source.ip_prefix_size is not None:
+                    source_ip.set('prefixSize',
+                                  str(source.ip_prefix_size))
+        if source_addr.port_list_id is not None:
+            source_port = ET.SubElement(source, 'portListId')
+            source_port.text = source.port_list_id
+        else:
+            if source_addr.port_begin is not None:
+                source_port = ET.SubElement(source, 'port')
+                source_port.set('begin', source_addr.port_begin)
+            if source_addr.port_end is not None:
+                source_port.set('end', source_addr.port_end)
+        # Setup destination port rule
+        dest = ET.SubElement(create_node, "destination")
+        if destination.address_list_id is not None:
+            dest_ip = ET.SubElement(dest, 'ipAddressListId')
+            dest_ip.text = destination.address_list_id
+        else:
+            dest_ip = ET.SubElement(dest, 'ip')
+            if destination.any_ip:
+                dest_ip.set('address', 'ANY')
+            else:
+                dest_ip.set('address', destination.ip_address)
+                if destination.ip_prefix_size is not None:
+                    dest_ip.set('prefixSize', destination.ip_prefix_size)
+        if destination.port_list_id is not None:
+            dest_port = ET.SubElement(dest, 'portListId')
+            dest_port.text = destination.port_list_id
+        else:
+            if destination.port_begin is not None:
+                dest_port = ET.SubElement(dest, 'port')
+                dest_port.set('begin', destination.port_begin)
+            if destination.port_end is not None:
+                dest_port.set('end', destination.port_end)
+        # Set up positioning of rule
+        ET.SubElement(create_node, "enabled").text = str(enabled)
+        placement = ET.SubElement(create_node, "placement")
+        if position_relative_to_rule is not None:
+            if position not in positions_with_rule:
+                raise ValueError("When position_relative_to_rule is specified"
+                                 " position must be %s"
+                                 % ', '.join(positions_with_rule))
+            if isinstance(position_relative_to_rule,
+                          NttCisFirewallRule):
+                rule_name = position_relative_to_rule.name
+            else:
+                rule_name = position_relative_to_rule
+            placement.set('relativeToRule', rule_name)
+        else:
+            if position not in positions_without_rule:
+                raise ValueError("When position_relative_to_rule is not"
+                                 " specified position must be %s"
+                                 % ', '.join(positions_without_rule))
+        placement.set('position', position)
+
+        response = self.connection.request_with_orgId_api_2(
+            'network/createFirewallRule',
+            method='POST',
+            data=ET.tostring(create_node)).object
+
+        rule_id = None
+        for info in findall(response, 'info', TYPES_URN):
+            if info.get('name') == 'firewallRuleId':
+                rule_id = info.get('value')
+        rule = self.ex_get_firewall_rule(network_domain, rule_id)
+        return rule
+
+    def ex_edit_firewall_rule(self, rule, position=None,
                               relative_rule_for_position=None):
         """
         Edit a firewall rule
@@ -2222,24 +2338,26 @@ class NttCisNodeDriver(NodeDriver):
                 dest_port.set('end', rule.destination.port_end)
         # Set up positioning of rule
         ET.SubElement(edit_node, "enabled").text = str(rule.enabled).lower()
-        placement = ET.SubElement(edit_node, "placement")
-        if relative_rule_for_position is not None:
-            if position not in positions_with_rule:
-                raise ValueError("When position_relative_to_rule is specified"
-                                 " position must be %s"
-                                 % ', '.join(positions_with_rule))
-            if isinstance(relative_rule_for_position,
-                          NttCisFirewallRule):
-                rule_name = relative_rule_for_position.name
+        # changing placement to an option
+        if position is not None:
+            placement = ET.SubElement(edit_node, "placement")
+            if relative_rule_for_position is not None:
+                if position not in positions_with_rule:
+                    raise ValueError("When position_relative_to_rule is specified"
+                                     " position must be %s"
+                                     % ', '.join(positions_with_rule))
+                if isinstance(relative_rule_for_position,
+                              NttCisFirewallRule):
+                    rule_name = relative_rule_for_position.name
+                else:
+                    rule_name = relative_rule_for_position
+                placement.set('relativeToRule', rule_name)
             else:
-                rule_name = relative_rule_for_position
-            placement.set('relativeToRule', rule_name)
-        else:
-            if position not in positions_without_rule:
-                raise ValueError("When position_relative_to_rule is not"
-                                 " specified position must be %s"
-                                 % ', '.join(positions_without_rule))
-        placement.set('position', position)
+                if position not in positions_without_rule:
+                    raise ValueError("When position_relative_to_rule is not"
+                                     " specified position must be %s"
+                                     % ', '.join(positions_without_rule))
+            placement.set('position', position)
 
         response = self.connection.request_with_orgId_api_2(
             'network/editFirewallRule',
