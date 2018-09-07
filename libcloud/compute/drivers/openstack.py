@@ -228,7 +228,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return self.connection.request('/os-volumes/%s' % volume.id,
                                        method='DELETE').success()
 
-    def attach_volume(self, node, volume, device="auto"):
+    def attach_volume(self, node, volume, device=None):
         # when "auto" or None is provided for device, openstack will let
         # the guest OS pick the next available device (fi. /dev/vdb)
         return self.connection.request(

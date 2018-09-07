@@ -3987,7 +3987,7 @@ class BaseEC2NodeDriver(NodeDriver):
             params['SnapshotId'] = snapshot.id
 
         if location is not None:
-            params['AvailabilityZone'] = location.availability_zone.name
+            params['AvailabilityZone'] = location
 
         if ex_volume_type:
             params['VolumeType'] = ex_volume_type

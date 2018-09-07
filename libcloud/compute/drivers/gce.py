@@ -6623,7 +6623,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/zones/%s/disks/%s' % (volume.extra['zone'].name,
+        request = '/zones/%s/disks/%s' % (volume.extra['zone'],
                                           volume.name)
         self.connection.async_request(request, method='DELETE')
         return True
@@ -8530,7 +8530,7 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
         extra['selfLink'] = volume.get('selfLink')
-        extra['zone'] = self.ex_get_zone(volume['zone'])
+        extra['zone'] = self.ex_get_zone(volume['zone']).name
         extra['status'] = volume.get('status')
         extra['creationTimestamp'] = volume.get('creationTimestamp')
         extra['description'] = volume.get('description')
@@ -8539,9 +8539,7 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshot'] = volume.get('sourceSnapshot')
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
-        if 'licenses' in volume:
-            lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
-            extra['licenses'] = lic_objs
+        extra['licenses'] = volume.get('licenses')
 
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 
