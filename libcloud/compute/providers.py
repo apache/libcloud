@@ -148,7 +148,9 @@ DRIVERS = {
     Provider.SOLUSVM:
     ('libcloud.compute.drivers.solusvm', 'SolusVMNodeDriver'),
     Provider.CLEARCENTER:
-    ('libcloud.compute.drivers.clearcenter', 'ClearCenterNodeDriver')
+    ('libcloud.compute.drivers.clearcenter', 'ClearCenterNodeDriver'),
+    Provider.CLEARAPI:
+    ('libcloud.compute.drivers.clearapi', 'ClearAPINodeDriver')
 }
 
 

@@ -1833,6 +1833,39 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         return response
 
+    def ex_open_console(self, node_id):
+        """
+        Get remote console URL
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :return: Dictionary with the output
+        :rtype: ``dict``
+
+        """
+        microversion = 2.0  # TODO: figure this out dynamically
+        if microversion >= 2.5:
+            data = {
+                "remote_console": {
+                    "protocol": "vnc",
+                    "type": "novnc"
+                }
+            }
+            uri = '/servers/%s/remote-consoles'
+        else:
+            data = {
+                "os-getVNCConsole": {
+                    "type": "novnc"
+                }
+            }
+            uri = '/servers/%s/action'
+
+        resp = self.connection.request(uri % node_id,
+                                       method='POST', data=data).object
+        console = resp.get('remote_console') or resp.get('console', {})
+        return console.get('url')
+
     def ex_get_console_output(self, node, length=None):
         """
         Get console output
