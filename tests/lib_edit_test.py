@@ -1,7 +1,7 @@
 import pytest
 import libcloud
 from libcloud import loadbalancer
-from libcloud.common.nttcis import NttCisAPIException, NttCisVlan
+from libcloud.common.nttcis import NttCisIpAddress, NttCisVlan
 from tests.lib_create_test import test_deploy_vlan
 
 
@@ -240,6 +240,17 @@ def test_edit_firewall_rule(compute_driver):
     assert result is True
 
 
+def test_delete_firewall_rule(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name]
+    rule_name = 'sdk_test_firewall_rule_2'
+    rules = compute_driver.ex_list_firewall_rules(net_domain[0])
+    rule = [rule for rule in rules if rule.name == rule_name]
+    result = compute_driver.ex_delete_firewall_rule(rule[0])
+    assert result is True
+
+
 def test_create_anti_affinity_rule(compute_driver):
     server1 = compute_driver.ex_get_node_by_id("d0425097-202f-4bba-b268-c7a73b8da129")
     server2 = compute_driver.ex_get_node_by_id("803e5e00-b22a-450a-8827-066ff15ec977")
@@ -258,6 +269,35 @@ def test_delete_port_list(compute_driver):
     portlists = compute_driver.ex_list_portlist('6aafcf08-cb0b-432c-9c64-7371265db086')
     port_list_to_delete = [plist for plist in portlists if plist.name == 'sdk_test_port_list']
     result = compute_driver.ex_delete_portlist(port_list_to_delete[0])
+    assert result is True
+
+
+def test_edit_address_list(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name]
+    addr_list = compute_driver.ex_get_ip_address_list(net_domain[0], 'sdk_test_address_list')
+    assert addr_list[0].ip_version == 'IPV4'
+    ip_address_1 = NttCisIpAddress(begin='190.2.2.100')
+    ip_address_2 = NttCisIpAddress(begin='190.2.2.106', end='190.2.2.108')
+    ip_address_3 = NttCisIpAddress(begin='190.2.2.0', prefix_size='24')
+    ip_address_4 = NttCisIpAddress(begin='10.2.0.0', prefix_size='24')
+    ip_address_collection = [ip_address_1, ip_address_2, ip_address_3, ip_address_4]
+
+    result = compute_driver.ex_edit_ip_address_list("d32aa8d4-831b-4fd6-95da-c639768834f0",
+                                                    ip_address_collection=ip_address_collection)
+    assert result is True
+
+
+def test_edit_address_list_2(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name]
+    # An ip address list object can be used as an argument or the id of the address list
+    addr_list = compute_driver.ex_get_ip_address_list(net_domain[0], 'sdk_test_address_list')
+
+    result = compute_driver.ex_edit_ip_address_list("d32aa8d4-831b-4fd6-95da-c639768834f0",
+                                                    description='nil')
     assert result is True
 
 

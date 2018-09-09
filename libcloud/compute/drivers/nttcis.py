@@ -3603,11 +3603,11 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_edit_ip_address_list(self, ex_ip_address_list, description,
-                                ip_address_collection,
+    def ex_edit_ip_address_list(self, ex_ip_address_list, description=None,
+                                ip_address_collection=None,
                                 child_ip_address_lists=None):
         """
-        Edit IP Address List. IP Address list.
+        Edit IP Address List. IP Address list.  Bear in mind you cannot add ip addresses to 
 
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
@@ -3659,6 +3659,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of NttCisIpAddressList objects
         :rtype: ``list`` of :class:`NttCisIpAddressList`
         """
+
         edit_ip_address_list = ET.Element(
             'editIpAddressList',
             {'xmlns': TYPES_URN,
@@ -3666,24 +3667,28 @@ class NttCisNodeDriver(NodeDriver):
                  ex_ip_address_list),
              'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"
              })
+        if description is not None:
+            if description != 'nil':
+                ET.SubElement(
+                    edit_ip_address_list,
+                    'description'
+                ).text = description
+            else:
+                ET.SubElement(edit_ip_address_list, 'description',  {'xsi:nil': 'true'})
 
-        ET.SubElement(
-            edit_ip_address_list,
-            'description'
-        ).text = description
+        if ip_address_collection is not None:
+            for ip in ip_address_collection:
+                ip_address = ET.SubElement(
+                    edit_ip_address_list,
+                    'ipAddress',
+                )
+                ip_address.set('begin', ip.begin)
 
-        for ip in ip_address_collection:
-            ip_address = ET.SubElement(
-                edit_ip_address_list,
-                'ipAddress',
-            )
-            ip_address.set('begin', ip.begin)
+                if ip.end:
+                    ip_address.set('end', ip.end)
 
-            if ip.end:
-                ip_address.set('end', ip.end)
-
-            if ip.prefix_size:
-                ip_address.set('prefixSize', ip.prefix_size)
+                if ip.prefix_size:
+                    ip_address.set('prefixSize', ip.prefix_size)
 
         if child_ip_address_lists is not None:
             ET.SubElement(
