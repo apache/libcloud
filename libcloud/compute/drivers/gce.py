@@ -8540,6 +8540,7 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
         extra['licenses'] = volume.get('licenses')
+        extra['users'] = volume.get('users')
 
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 
