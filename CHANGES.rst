@@ -50,6 +50,9 @@ Compute
 - [EC2] Added script to automatically get EC2 instance sizes (GITHUB-1211)
   [Anthony Monthe, Quentin Pradet]
 
+- [EC2] Update instance sizes (GITHUB-1238)
+  [Ward Vandewege]
+
 - [GCE] Expand Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
   [maxlip]
 
