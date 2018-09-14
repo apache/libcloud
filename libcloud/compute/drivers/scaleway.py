@@ -39,7 +39,7 @@ __all__ = [
 ]
 
 SCALEWAY_API_HOSTS = {
-    'default': 'api.scaleway.com',
+    'default': 'cp-par1.scaleway.com',
     'account': 'account.scaleway.com',
     'par1': 'cp-par1.scaleway.com',
     'ams1': 'cp-ams1.scaleway.com',
