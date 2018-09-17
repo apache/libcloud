@@ -1,6 +1,7 @@
 import pytest
 import libcloud
 from libcloud import loadbalancer
+from libcloud.compute.drivers.nttcis import NttCisPort
 from libcloud.common.nttcis import NttCisIpAddress, NttCisVlan
 from tests.lib_create_test import test_deploy_vlan
 
@@ -88,6 +89,27 @@ def test_reconfigure_node(compute_driver):
     node = compute_driver.ex_get_node_by_id('040fefdb-78be-4b17-8ef9-86820bad67d9')
     cpu_performance = 'HIGHPERFORMANCE'
     result = compute_driver.ex_reconfigure_node(node, cpu_performance=cpu_performance)
+    assert result is True
+
+
+def test_edit_vlan(compute_driver):
+    vlan = compute_driver.ex_list_vlans(name='sdk_test2')[0]
+    vlan.name = 'sdk_test_2'
+    vlan.description = "Second test Vlan"
+    result = compute_driver.ex_update_vlan(vlan)
+    assert isinstance(result, NttCisVlan)
+
+
+def test_expand_vlan(compute_driver):
+    vlan = compute_driver.ex_list_vlans(name='sdk_test_3')[0]
+    vlan.private_ipv4_range_size = '23'
+    result = compute_driver.ex_expand_vlan(vlan)
+    assert isinstance(result, NttCisVlan)
+
+
+def test_delete_vlan(compute_driver):
+    vlan = compute_driver.ex_list_vlans(name='sdk_test_3')[0]
+    result = compute_driver.ex_delete_vlan(vlan)
     assert result is True
 
 
@@ -275,8 +297,8 @@ def test_delete_port_list(compute_driver):
 def test_edit_address_list(compute_driver):
     domain_name = 'sdk_test_1'
     domains = compute_driver.ex_list_network_domains(location='EU6')
-    net_domain = [d for d in domains if d.name == domain_name]
-    addr_list = compute_driver.ex_get_ip_address_list(net_domain[0], 'sdk_test_address_list')
+    net_domain = [d for d in domains if d.name == domain_name][0]
+    addr_list = compute_driver.ex_get_ip_address_list(net_domain, 'sdk_test_address_list')
     assert addr_list[0].ip_version == 'IPV4'
     ip_address_1 = NttCisIpAddress(begin='190.2.2.100')
     ip_address_2 = NttCisIpAddress(begin='190.2.2.106', end='190.2.2.108')
@@ -289,12 +311,18 @@ def test_edit_address_list(compute_driver):
     assert result is True
 
 
+def test_delete_public_ip_block(compute_driver):
+    block = compute_driver.ex_get_public_ip_block("813b87a8-18e1-11e5-8d4f-180373fb68df")
+    result = compute_driver.ex_delete_public_ip_block(block)
+    assert result is True
+
+
 def test_edit_address_list_2(compute_driver):
     domain_name = 'sdk_test_1'
     domains = compute_driver.ex_list_network_domains(location='EU6')
-    net_domain = [d for d in domains if d.name == domain_name]
+    net_domain = [d for d in domains if d.name == domain_name][0]
     # An ip address list object can be used as an argument or the id of the address list
-    addr_list = compute_driver.ex_get_ip_address_list(net_domain[0], 'sdk_test_address_list')
+    addr_list = compute_driver.ex_get_ip_address_list(net_domain, 'sdk_test_address_list')
 
     result = compute_driver.ex_edit_ip_address_list("d32aa8d4-831b-4fd6-95da-c639768834f0",
                                                     description='nil')
@@ -304,12 +332,41 @@ def test_edit_address_list_2(compute_driver):
 def test_delete_address_list(compute_driver):
     domain_name = 'sdk_test_1'
     domains = compute_driver.ex_list_network_domains(location='EU6')
-    net_domain = [d for d in domains if d.name == domain_name]
-    addresslist_to_delete = compute_driver.ex_get_ip_address_list(net_domain[0], 'sdk_test_address_list')
+    net_domain = [d for d in domains if d.name == domain_name][0]
+    addresslist_to_delete = compute_driver.ex_get_ip_address_list(net_domain, 'sdk_test_address_list')
     print(addresslist_to_delete)
+
+
+def test_edit_port_list_1(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name]
+    port_list_name = 'sdk_test_port_list'
+    port_lists = compute_driver.ex_list_portlist(net_domain[0])
+    port_list = [port for port in port_lists if port.name == port_list_name][0]
+    port_collection = [NttCisPort(begin='8000', end='8080'), NttCisPort(begin='9000')]
+    result = compute_driver.ex_edit_portlist(port_list.id, port_collection=port_collection)
+    assert result is True
+
+
+def test_unreserve_ip_address(compute_driver):
+    vlan_name = 'sdk_vlan1'
+    vlan = compute_driver.ex_list_vlans(name=vlan_name)[0]
+    ip = '2a00:47c0:111:1331:7df0:9beb:43c9:5c'
+    result = compute_driver.ex_unreserve_ip_addresses(vlan, ip)
+    assert result is True
+
 
 def test_list_locations(compute_driver):
     locations = compute_driver.list_locations()
     for location in locations:
         print(location)
 
+
+def test_delete_nat_rule(compute_driver):
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    rule = compute_driver.ex_get_nat_rule(network_domain, '74f0897f-5536-4c17-84b0-d52b1fb3aea6')
+    result = compute_driver.ex_delete_nat_rule(rule)
+    assert result is True

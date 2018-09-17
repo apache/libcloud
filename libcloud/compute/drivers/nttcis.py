@@ -40,6 +40,7 @@ from libcloud.common.nttcis import NttCisAntiAffinityRule
 from libcloud.common.nttcis import NttCisIpAddressList
 from libcloud.common.nttcis import NttCisChildIpAddressList
 from libcloud.common.nttcis import NttCisIpAddress
+from libcloud.common.nttcis import NttCisReservedIpAddress
 from libcloud.common.nttcis import NttCisPortList
 from libcloud.common.nttcis import NttCisPort
 from libcloud.common.nttcis import NttCisChildPortList
@@ -47,16 +48,16 @@ from libcloud.common.nttcis import NttCisNic
 from libcloud.common.nttcis import NetworkDomainServicePlan
 from libcloud.common.nttcis import NttCisTagKey
 from libcloud.common.nttcis import NttCisTag
-from libcloud.common.nttcis import NttCisSnapshot
+from libcloud.common.nttcis import XmlDictConfig, XmlListConfig, Generic
 from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.common.nttcis import SERVER_NS, NETWORK_NS, GENERAL_NS
 from libcloud.utils.py3 import urlencode, ensure_string
-from libcloud.utils.xml import fixxpath, findtext, findall
+from libcloud.utils.xml import fixxpath, findtext, findall, return_all
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
 import sys
-
+import re
 # Node state map is a dictionary with the keys as tuples
 # These tuples represent:
 # (<state_of_node_from_didata>, <is node started?>, <action happening>)
@@ -1974,6 +1975,82 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
+
+    # 09/10/18 Adding private IPv4 and IPv6  addressing capability
+    def ex_reserve_ip(self, vlan: NttCisVlan, ip: str, description: None) -> bool:
+        vlan_id = self._vlan_to_vlan_id(vlan)
+        if re.match(r'(\d+\.){3}', ip):
+            private_ip = ET.Element('reservePrivateIpv4Address', {'xmlns': TYPES_URN})
+            resource = 'network/reservePrivateIpv4Address'
+        elif re.search(r':', ip):
+            private_ip = ET.Element('reserveIpv6Address', {'xmlns': TYPES_URN})
+            resource = 'network/reserveIpv6Address'
+        ET.SubElement(private_ip, 'vlanId').text = vlan_id
+        ET.SubElement(private_ip, 'ipAddress').text = ip
+        if description is not None:
+            ET.SubElement(private_ip, 'description').text = description
+
+        result = self.connection.request_with_orgId_api_2(
+            resource,
+            method='POST',
+            data=ET.tostring(private_ip)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_unreserve_ip_addresses(self, vlan: NttCisVlan, ip: str) -> bool:
+        vlan_id = self._vlan_to_vlan_id(vlan)
+        if re.match(r'(\d+\.){3}', ip):
+            private_ip = ET.Element('unreservePrivateIpv4Address', {'xmlns': TYPES_URN})
+            resource = 'network/reservePrivateIpv4Address'
+        elif re.search(r':', ip):
+            private_ip = ET.Element('unreserveIpv6Address', {'xmlns': TYPES_URN})
+            resource = 'network/unreserveIpv6Address'
+        ET.SubElement(private_ip, 'vlanId').text = vlan_id
+        ET.SubElement(private_ip, 'ipAddress').text = ip
+        result = self.connection.\
+            request_with_orgId_api_2(
+                                     resource,
+                                     method='POST',
+                                     data=ET.tostring(private_ip)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_list_reserved_ipv4(self,  vlan: NttCisVlan=None, datacenter_id: str=None):
+        if vlan is not None:
+            vlan_id = self._vlan_to_vlan_id(vlan)
+            params = {"vlanId": vlan_id}
+            response = self.connection \
+                .request_with_orgId_api_2('network/reservedPrivateIpv4Address', params=params).object
+
+        elif datacenter_id is not None:
+            params = {'datacenterId': datacenter_id}
+            response = self.connection \
+                .request_with_orgId_api_2('network/reservedPrivateIpv4Address', params=params).object
+        else:
+            response = self.connection \
+                .request_with_orgId_api_2('network/reservedPrivateIpv4Address').object
+
+        addresses = self._to_ipv4_addresses(response)
+        return addresses
+
+    def ex_list_reserved_ipv6(self,  vlan: NttCisVlan=None, datacenter_id: str=None):
+        if vlan is not None:
+            vlan_id = self._vlan_to_vlan_id(vlan)
+            params = {"vlanId": vlan_id}
+            response = self.connection \
+                .request_with_orgId_api_2('network/reservedIpv6Address', params=params).object
+
+        elif datacenter_id is not None:
+            params = {'datacenterId': datacenter_id}
+            response = self.connection \
+                .request_with_orgId_api_2('network/reservedIpv6Address', params=params).object
+        else:
+            response = self.connection \
+                .request_with_orgId_api_2('network/reservedIpv6Address').object
+
+        addresses = self._to_ipv6_addresses(response)
+        return addresses
+
     def ex_get_node_by_id(self, id):
         node = self.connection.request_with_orgId_api_2(
             'server/server/%s' % id).object
@@ -3816,7 +3893,6 @@ class NttCisNodeDriver(NodeDriver):
         :return:  NttCisPortList object
         :rtype:  :class:`NttCisPort`
         """
-
         url_path = ('network/portList/%s' % ex_portlist_id)
         response = self.connection.request_with_orgId_api_2(
             url_path).object
@@ -3925,8 +4001,8 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_edit_portlist(self, ex_portlist, description,
-                         port_collection, child_portlist_list=None):
+    def ex_edit_portlist(self, ex_portlist, description=None,
+                         port_collection=None, child_portlist_list=None):
         """
         Edit Port List.
 
@@ -3985,21 +4061,25 @@ class NttCisNodeDriver(NodeDriver):
                 'xmlns': TYPES_URN,
                 'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"
             })
+        if description is not None:
+            if description != 'nil':
+                ET.SubElement(
+                    existing_port_address_list,
+                    'description'
+                ).text = description
+            else:
+                ET.SubElement(existing_port_address_list, "description", {"xsi:nil": "true"})
 
-        ET.SubElement(
-            existing_port_address_list,
-            'description'
-        ).text = description
+        if port_collection is not None:
+            for port in port_collection:
+                p = ET.SubElement(
+                    existing_port_address_list,
+                    'port'
+                )
+                p.set('begin', port.begin)
 
-        for port in port_collection:
-            p = ET.SubElement(
-                existing_port_address_list,
-                'port'
-            )
-            p.set('begin', port.begin)
-
-            if port.end:
-                p.set('end', port.end)
+                if port.end:
+                    p.set('end', port.end)
 
         if child_portlist_list is not None:
             for child in child_portlist_list:
@@ -4806,6 +4886,23 @@ class NttCisNodeDriver(NodeDriver):
                 'type': findtext(element, 'type', TYPES_URN),
                 'state': findtext(element, 'state', TYPES_URN)}
                 #'server_config': self.to_snapshot_conf_elems(findtext(element, 'serverConfig', TYPES_URN)}
+
+    def _to_ipv4_addresses(self, object):
+         ipv4_address_elements = object.findall(fixxpath('ipv4', TYPES_URN))
+         return [self._to_ipv4_6_address(el) for el in ipv4_address_elements]
+
+    def _to_ipv6_addresses(self, object):
+         ipv6_address_elements = object.findall(fixxpath('reservedIpv6Address', TYPES_URN))
+         return [self._to_ipv4_6_address(el) for el in ipv6_address_elements]
+
+    def _to_ipv4_6_address(self, element):
+        return  NttCisReservedIpAddress(
+                                        element.get('datacenterId'),
+                                        element.get('exclusive'),
+                                        findtext(element, 'vlanId', TYPES_URN),
+                                        findtext(element, 'ipAddress', TYPES_URN),
+                                        description=findtext(element, 'description', TYPES_URN),
+        )
 
 
 

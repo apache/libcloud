@@ -2,16 +2,42 @@ from pprint import pprint
 import pytest
 import libcloud
 from libcloud import loadbalancer
-from libcloud.compute.drivers.nttcis import NttCisPort, NttCisIpAddress
+from libcloud.compute.drivers.nttcis import NttCisPort, NttCisIpAddress, NttCisPublicIpBlock, NttCisNatRule
 from libcloud.common.nttcis import NttCisFirewallRule, NttCisVlan, NttCisFirewallAddress
 
 
-def test_deploy_vlan(compute_driver, vlan_name, network_domain_id, base_ipv4_addr):
-    network_domain = compute_driver.ex_get_network_domain(network_domain_id)
+def test_deploy_vlan(compute_driver, vlan_name='sdk_test2', network_domain_name='sdk_test_1', base_ipv4_addr='10.1.2.0'):
+    # Default network size is 24 bits. Interval and polling times default to 2 and 60.
+    interval = 3
+    timeout = 60
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
     result = compute_driver.ex_create_vlan(network_domain, vlan_name, base_ipv4_addr)
     assert isinstance(result, NttCisVlan)
-    compute_driver.ex_wait_for_state('normal', compute_driver.ex_get_vlan, 2, 60, result.id)
+    compute_driver.ex_wait_for_state('normal', compute_driver.ex_get_vlan, interval, timeout, result.id)
     return result
+
+
+def test_deploy_vlan_2(compute_driver, vlan_name='sdk_test_3', network_domain_name='sdk_test_1',
+                     base_ipv4_addr='10.2.0.0', private_ipv4_prefix_size=24):
+    # Default network size is 24 bits. Interval and polling times default to 2 and 60.
+    interval = 3
+    timeout = 60
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    result = compute_driver.ex_create_vlan(network_domain, vlan_name, base_ipv4_addr,
+                                           private_ipv4_prefix_size=private_ipv4_prefix_size)
+    assert isinstance(result, NttCisVlan)
+    compute_driver.ex_wait_for_state('normal', compute_driver.ex_get_vlan, interval, timeout, result.id)
+    return result
+
+
+def test_create_nat_rule(compute_driver):
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    result = compute_driver.ex_create_nat_rule(network_domain, '10.1.1.7', '168.128.13.126')
+    assert isinstance(result, NttCisNatRule)
 
 
 def test_deploy_server(compute_driver):
@@ -134,3 +160,50 @@ def test_create_address_list(compute_driver):
                                   description,
                                   ip_version, address_list)
     assert result is True
+
+
+def test_create_public_ip_block(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name][0]
+    ip_block = compute_driver.ex_add_public_ip_block_to_network_domain(net_domain)
+    assert isinstance(ip_block, NttCisPublicIpBlock)
+    print(ip_block)
+
+
+def test_create_private_ipv4_address(compute_driver):
+    vlan_name = 'sdk_vlan1'
+    vlan = compute_driver.ex_list_vlans(name=vlan_name)[0]
+    ip = '10.1.1.20'
+    description = 'A test reserved ipv4 address'
+    result = compute_driver.ex_reserve_ip(vlan, ip, description)
+    assert result is True
+
+
+def test_create_ipv6_addresss(compute_driver):
+    vlan_name = 'sdk_vlan1'
+    vlan = compute_driver.ex_list_vlans(name=vlan_name)[0]
+    ipv6 = '2a00:47c0:111:1331:7df0:9beb:43c9:5c'
+    result = compute_driver.ex_reserve_ip(vlan, ipv6)
+    assert result is True
+
+
+def test_create_load_balancer(lbdriver, compute_driver):
+
+    member1 = compute_driver.list_nodes(ex_name='web1')[0]
+    member2 = compute_driver.list_nodes(ex_name='web2')[0]
+    members = [member1, member2]
+    name = 'sdk_test_balancer'
+    port = '8000'
+    protocol = 'http'
+    algorithm = 1
+    members = [m for m in members]
+    ex_listener_ip_address = "168.128.13.127"
+    lb = lbdriver.create_balancer(name, port=port, protocol=protocol, algorithm=algorithm,  members=members,
+                                  ex_listener_ip_address=ex_listener_ip_address)
+    assert lb.name == name
+
+
+def test_create_pool(lbdriver):
+    pass
+

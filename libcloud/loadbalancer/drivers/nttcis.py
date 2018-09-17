@@ -23,6 +23,7 @@ from libcloud.common.nttcis import NttCisDefaultHealthMonitor
 from libcloud.common.nttcis import NttCisPersistenceProfile
 from libcloud.common.nttcis import \
     NttCisVirtualListenerCompatibility
+from libcloud.common.nttcis import Node
 from libcloud.common.nttcis import NttCisDefaultiRule
 from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
@@ -47,7 +48,7 @@ class NttCisLBDriver(Driver):
     type = Provider.NTTCIS
     api_version = 1.0
 
-    network_domain_id = None
+    #network_domain_id = None
 
     _VALUE_TO_ALGORITHM_MAP = {
         'ROUND_ROBIN': Algorithm.ROUND_ROBIN,
@@ -68,8 +69,10 @@ class NttCisLBDriver(Driver):
         'REQUIRES_SUPPORT': State.ERROR
     }
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+    def __init__(self, key, network_domain_id, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=DEFAULT_REGION, **kwargs):
+
+        self.network_domain_id = network_domain_id
 
         if region not in API_ENDPOINTS and host is None:
             raise ValueError(
@@ -78,11 +81,11 @@ class NttCisLBDriver(Driver):
             self.selected_region = API_ENDPOINTS[region]
 
         super(NttCisLBDriver, self).__init__(key=key, secret=secret,
-                                                    secure=secure, host=host,
-                                                    port=port,
-                                                    api_version=api_version,
-                                                    region=region,
-                                                    **kwargs)
+                                             secure=secure, host=host,
+                                             port=port,
+                                             api_version=api_version,
+                                             region=region,
+                                             **kwargs)
 
     def _ex_connection_class_kwargs(self):
         """
@@ -138,14 +141,15 @@ class NttCisLBDriver(Driver):
         # Attach the members to the pool as nodes
         if members is not None:
             for member in members:
-                node = self.ex_create_node(
-                    network_domain_id=network_domain_id,
-                    name=member.ip,
-                    ip=member.ip,
-                    ex_description=None)
+                #if not isinstance(member, Node):
+                #    node = self.ex_create_node(
+                #        network_domain_id=network_domain_id,
+                #        name=member.name,
+                #        ip=member.private_ips[0],
+                #        ex_description=None)
                 self.ex_create_pool_member(
                     pool=pool,
-                    node=node,
+                    node=member,
                     port=port)
 
         # Create the virtual listener (balancer)
@@ -354,7 +358,7 @@ class NttCisLBDriver(Driver):
         if port is not None:
             ET.SubElement(create_pool_m, "port").text = str(port)
         ET.SubElement(create_pool_m, "status").text = 'ENABLED'
-
+        test = ET.tostring(create_pool_m)
         response = self.connection.request_with_orgId_api_2(
             'networkDomainVip/addPoolMember',
             method='POST',

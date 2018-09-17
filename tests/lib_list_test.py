@@ -78,6 +78,7 @@ def test_list_node_by_image(compute_driver):
 """
     requires retrieving vlan Id first
 """
+
 def test_list_node_vlan(compute_driver):
     nodes = compute_driver.list_nodes(ex_vlan='eb05a24e-85a6-46e3-a7c9-f1765737476d')
     print()
@@ -160,7 +161,7 @@ def test_list_vlan(compute_driver):
 
 def test_list_datacenter_object_creation(compute_driver):
     datacenter = compute_driver.ex_get_datacenter('EU6')
-    
+
 
 def test_list_firewall_rules(compute_driver):
     rules = compute_driver.ex_list_firewall_rules('6aafcf08-cb0b-432c-9c64-7371265db086')
@@ -307,9 +308,55 @@ def test_list_sizes(compute_driver):
         print(property)
 """
 
+
 def test_images(compute_driver):
     images = compute_driver.list_images()
     print()
     print(images)
     assert isinstance(images, list) and len(images) > 0
 
+
+def test_list_public_ip_blocks(compute_driver):
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name][0]
+    blocks = compute_driver.ex_list_public_ip_blocks(net_domain)
+    print(blocks)
+
+
+def test_list_private_ipv4_addresses_vlan(compute_driver):
+    vlan_name = 'sdk_vlan1'
+    vlan = compute_driver.ex_list_vlans(name=vlan_name)[0]
+    ip_addresses = compute_driver.ex_list_reserved_ipv4(vlan=vlan)
+    for ip_address in ip_addresses:
+        print(ip_address)
+
+
+def test_list_private_ipv4_addresses_datacenter(compute_driver):
+    datacenter_id = 'EU8'
+    ip_addresses = compute_driver.ex_list_reserved_ipv4(datacenter_id=datacenter_id)
+    for ip_address in ip_addresses:
+        print(ip_address)
+
+
+def test_list_private_ipv4_addresses_all(compute_driver):
+    ip_addresses = compute_driver.ex_list_reserved_ipv4()
+    for ip_address in ip_addresses:
+        print(ip_address)
+
+
+def test_list_reserved_ipv6_address_vlan(compute_driver):
+    vlan_name = 'sdk_vlan1'
+    vlan = compute_driver.ex_list_vlans(name=vlan_name)[0]
+    ip_addresses = compute_driver.ex_list_reserved_ipv6(vlan=vlan)
+    for ip_address in ip_addresses:
+        print(ip_address)
+
+
+def test_list_nat_rules(compute_driver):
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    rules = compute_driver.ex_list_nat_rules(network_domain)
+    for rule in rules:
+        print(rule)

@@ -26,6 +26,8 @@ from libcloud.compute.base import Node
 from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 from libcloud.compute.types import LibcloudError, InvalidCredsError
+from collections import abc
+from keyword import iskeyword
 
 # Roadmap / TODO:
 #
@@ -489,6 +491,7 @@ class NttCisConnection(ConnectionUserAndKey):
             params=params, data=data,
             method=method, headers=headers)
 
+
     def paginated_request_with_orgId_api_2(self, action, params=None, data='',
                                            headers=None, method='GET',
                                            page_size=250):
@@ -738,7 +741,7 @@ class NttCisPublicIpBlock(object):
         self.status = status
 
     def __repr__(self):
-        return (('<DimensionDataNetworkDomain: id=%s, base_ip=%s, '
+        return (('<NttCisNetworkDomain: id=%s, base_ip=%s, '
                  'size=%s, location=%s, status=%s>')
                 % (self.id, self.base_ip, self.size, self.location,
                    self.status))
@@ -897,6 +900,24 @@ class NttCisSnapshot(object):
                  'end_time=%s, self.type=%s, '
                  'self.expiry_timne=%s, self.state=%s>')
                 % (self.id, self.start_time, self.end_time, self.type, self.expiry_time, self.state))
+
+
+class NttCisReservedIpAddress(object):
+    """
+    NTTCIS Rerverse IPv4 address
+    """
+
+    def __init__(self, datacenter_id, exclusive, vlan_id, ip, description=None):
+        self.datacenter_id = datacenter_id
+        self.exclusive = exclusive
+        self.vlan_id = vlan_id
+        self.ip = ip
+        self.description = description
+
+    def __repr__(self):
+        return (('<NttCisReservedIpAddress '
+                 'datacenterId=%s, exclusiven=%s, vlanId=%s, ipAddress=%s, description=-%s') %
+                (self.datacenter_id, self.exclusive, self.vlan_id, self.ip, self.description))
 
 
 class NttCisFirewallRule(object):
@@ -1908,3 +1929,109 @@ class NttCisNic(object):
         return ('<NttCisNic: private_ip_v4=%s, vlan=%s,'
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
+
+
+#####  Testing new concept below this line
+
+class XmlListConfig(list):
+
+    def __init__(self, elem_list):
+        for element in elem_list:
+            if element is not None:
+                # treat like dict
+                #print(element.attrib, len(element))
+                if len(element) >= 0 or element[0].tag != element[1].tag:
+                    self.append(XmlDictConfig(element))
+                # treat like list
+                elif element[0].tag == element[1].tag:
+                    if 'property' in element.tag:
+                        self.append({element.attrib.get('name'): element.attrib.get('value')})
+                    else:
+                        self.append(element.attrib)
+            elif element.text:
+                text = element.text.strip()
+                if text:
+                    self.append(text)
+
+
+class XmlDictConfig(dict):
+
+    def __init__(self, parent_element):
+        if parent_element.items():
+            if 'property' in parent_element.tag:
+                self.update({parent_element.attrib.get('name'): parent_element.attrib.get('value')})
+            else:
+                self.update(dict(parent_element.items()))
+
+        for element in parent_element:
+            if len(element) > 0:
+                # treat like dict - we assume that if the first two tags
+                # in a series are different, then they are all different.
+                if len(element) == 1 or element[0].tag != element[1].tag:
+                    elem_dict = XmlDictConfig(element)
+
+                # treat like list - we assume that if the first two tags
+                # in a series are the same, then the rest are the same.
+                else:
+                    # here, we put the list in dictionary; the key is the
+                    # tag name the list elements all share in common, and
+                    # the value is the list itself
+                    elem_dict = {element[0].tag.split('}')[1]: XmlListConfig(element)}
+
+                # if the tag has attributes, add those to the dict
+                if element.items():
+                    elem_dict.update(dict(element.items()))
+                self.update({element.tag.split('}')[1]: elem_dict})
+            # this assumes that if you've got an attribute in a tag,
+            # you won't be having any text. This may or may not be a
+            # good idea -- time will tell. It works for the way we are
+            # currently doing XML configuration files...
+            elif element.items():
+                # It is possible to have duplicate element tags. If so, convert to a dict of lists
+                if element.tag in self:
+                    tmp_list = list()
+                    tmp_dict = dict()
+                    if isinstance(self[element.tag], list):
+                        tmp_list.append(element.tag)
+                    else:
+                        for k, v in self[element.tag].items():
+                            if isinstance(k, XmlListConfig):
+                                tmp_list.append(k)
+                            else:
+                                tmp_dict.update({k: v})
+                        tmp_list.append(tmp_dict)
+                        tmp_list.append(dict(element.items()))
+                    self[element.tag] = tmp_list
+                else:
+                    self.update({element.tag.split('}')[1]: dict(element.items())})
+            # finally, if there are no child tags and no attributes, extract
+            # the text
+            else:
+                self.update({element.tag.split('}')[1]: element.text})
+
+
+class Generic:
+    def __new__(cls, arg):
+        if isinstance(arg, abc.Mapping):
+            return super().__new__(cls)
+        elif isinstance(arg, abc.MutableSequence):
+            return [cls(item) for item in arg]
+        else:
+            return arg
+
+    def __init__(self, mapping):
+        self.__data = {}
+        for key, value in mapping.items():
+            if iskeyword(key):
+                key += '_'
+            self.__data[key] = value
+
+    def __getattr__(self, name):
+        if hasattr(self.__data, name):
+            return getattr(self.__data, name)
+        else:
+            return Generic(self.__data[name])
+
+    def __repr__(self):
+        values = ','.join("{}={!r}".format(k, v) for k,v in self.__data.items())
+        return values
