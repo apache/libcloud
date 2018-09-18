@@ -108,6 +108,9 @@ Compute
 - [Scaleway] New Scaleway driver (GITHUB-1121, GITHUB-1220)
   [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
 
+- [Scaleway] Update Scaleway default API host (GITHUB-1239)
+  [Rémy Léone]
+
 DNS
 ~~~
 
