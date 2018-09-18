@@ -97,17 +97,25 @@ class NttCisLBDriver(Driver):
         kwargs['region'] = self.selected_region
         return kwargs
 
-    def create_balancer(self, name, port=None, protocol=None,
-                        algorithm=None, members=None,
+    def create_balancer(self, name, listener_port=None, port=None, protocol=None,
+                        algorithm=None, members=None, optimization_profile=None,
                         ex_listener_ip_address=None):
         """
+        BUG:  libcloud.common.nttcis.NttCisAPIException: CONFIGURATION_NOT_SUPPORTED:
+         optimizationProfile is required for type STANDARD and protocol TCP.
+
+
         Create a new load balancer instance
 
         :param name: Name of the new load balancer (required)
         :type  name: ``str``
 
-        :param port: An integer in the range of 1-65535. If not supplied,
+        :param listener_port: An integer in the range of 1-65535. If not supplied,
                      it will be taken to mean 'Any Port'
+        :type  port: ``int
+
+        :param port: An integer in the range of 1-65535. If not supplied,
+                     it will be taken to mean 'Any Port'  Assumed that node ports will different from listener port.
         :type  port: ``int``
 
         :param protocol: Loadbalancer protocol, defaults to http.
@@ -119,6 +127,10 @@ class NttCisLBDriver(Driver):
         :param algorithm: Load balancing algorithm, defaults to ROUND_ROBIN.
         :type algorithm: :class:`.Algorithm`
 
+        :param optimization_profile: For STANDARD type and protocol TCP an optimization type of
+                         TCP, LAN_OPT, WAN_OPT, MOBILE_OPT, or TCP_LEGACY is required
+        :type  protcol: ``str``
+
         :param ex_listener_ip_address: Must be a valid IPv4 in dot-decimal
                                        notation (x.x.x.x).
         :type ex_listener_ip_address: ``str``
@@ -129,24 +141,27 @@ class NttCisLBDriver(Driver):
         if protocol is None:
             protocol = 'http'
         if algorithm is None:
-            algorithm = Algorithm.ROUND_ROBIN
+            algor = Algorithm.ROUND_ROBIN
+        else:
+            algor = Algorithm.__dict__[algorithm]
 
         # Create a pool first
+        al = self._ALGORITHM_TO_VALUE_MAP[algor]
         pool = self.ex_create_pool(
             network_domain_id=network_domain_id,
             name=name,
             ex_description=None,
-            balancer_method=self._ALGORITHM_TO_VALUE_MAP[algorithm])
+            balancer_method=self._ALGORITHM_TO_VALUE_MAP[algor])
 
         # Attach the members to the pool as nodes
         if members is not None:
             for member in members:
-                #if not isinstance(member, Node):
-                #    node = self.ex_create_node(
-                #        network_domain_id=network_domain_id,
-                #        name=member.name,
-                #        ip=member.private_ips[0],
-                #        ex_description=None)
+                if not isinstance(member, Member):
+                    member = self.ex_create_node(
+                        network_domain_id=network_domain_id,
+                        name=member.name,
+                        ip=member.private_ips[0],
+                        ex_description=None)
                 self.ex_create_pool_member(
                     pool=pool,
                     node=member,
@@ -157,8 +172,10 @@ class NttCisLBDriver(Driver):
             network_domain_id=network_domain_id,
             name=name,
             ex_description=name,
-            port=port,
+            port=listener_port,
             pool=pool,
+            protocol=protocol,
+            optimization_profile=optimization_profile,
             listener_ip_address=ex_listener_ip_address)
 
         return LoadBalancer(
@@ -580,6 +597,7 @@ class NttCisLBDriver(Driver):
                                    fallback_persistence_profile=None,
                                    irule=None,
                                    protocol='TCP',
+                                   optimization_profile = None,
                                    connection_limit=25000,
                                    connection_rate_limit=2000,
                                    source_port_preservation='PRESERVE'):
@@ -619,6 +637,10 @@ class NttCisLBDriver(Driver):
                          for PERFORMANCE_LAYER_4 choice of ANY, TCP, UDP, HTTP
         :type  protcol: ``str``
 
+        :param optimization_profile: For STANDARD type and protocol TCP an optimization type of
+                         TCP, LAN_OPT, WAN_OPT, MOBILE_OPT, or TCP_LEGACY is required
+        :type  protcol: ``str``
+
         :param connection_limit: Maximum number
                                 of concurrent connections per sec
         :type  connection_limit: ``int``
@@ -637,6 +659,10 @@ class NttCisLBDriver(Driver):
             listener_type = 'PERFORMANCE_LAYER_4'
         else:
             listener_type = 'STANDARD'
+
+        if listener_type == 'STANDARD' and optimization_profile is None:
+            raise ValueError(" CONFIGURATION_NOT_SUPPORTED: optimizationProfile is required for type STANDARD and protocol TCP")
+
 
         create_node_elm = ET.Element('createVirtualListener',
                                      {'xmlns': TYPES_URN})
@@ -666,6 +692,8 @@ class NttCisLBDriver(Driver):
         if persistence_profile is not None:
             ET.SubElement(create_node_elm, "persistenceProfileId") \
                 .text = persistence_profile.id
+        if optimization_profile is not None:
+            ET.SubElement(create_node_elm, 'optimizationProfile').text = optimization_profile
         if fallback_persistence_profile is not None:
             ET.SubElement(create_node_elm, "fallbackPersistenceProfileId") \
                 .text = fallback_persistence_profile.id

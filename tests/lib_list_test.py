@@ -300,6 +300,11 @@ def test_list_no_anti_affinity_rules(compute_driver):
     assert len(anti_affinity_rules) == 0
 
 
+def test_list_locations(compute_driver):
+    locations = compute_driver.list_locations()
+    for location in locations:
+        print(location)
+
 
 """
 def test_list_sizes(compute_driver):
@@ -360,3 +365,17 @@ def test_list_nat_rules(compute_driver):
     rules = compute_driver.ex_list_nat_rules(network_domain)
     for rule in rules:
         print(rule)
+
+
+def test_list_customer_images(compute_driver):
+    location = 'EU6'
+    images = compute_driver.ex_list_customer_images(location)
+    for image in images:
+        print(image, image.extra)
+
+
+def test_get_customer_image(compute_driver):
+    imagee_id = '84da095f-c8c7-4ace-9fb6-eceb1047027c'
+    image = compute_driver.ex_get_image_by_id(imagee_id)
+    print(image, image.extra)
+

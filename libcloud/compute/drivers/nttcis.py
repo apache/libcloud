@@ -857,7 +857,6 @@ class NttCisNodeDriver(NodeDriver):
                      driver=self.connection.driver),
         ]
 
-
     def list_locations(self, ex_id=None):
         """
         List locations (datacenters) available for instantiating servers and
@@ -1019,7 +1018,7 @@ class NttCisNodeDriver(NodeDriver):
                     'urn:guestOsCustomization'
                 ).text = is_guest_os_customization
 
-            if len(tagkey_name_value_dictionaries) > 0:
+            if tagkey_name_value_dictionaries is not None and len(tagkey_name_value_dictionaries) > 0:
                 for k, v in tagkey_name_value_dictionaries.items():
                     tag_elem = ET.SubElement(
                         import_image_elem,

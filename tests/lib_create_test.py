@@ -1,7 +1,7 @@
 from pprint import pprint
 import pytest
 import libcloud
-from libcloud import loadbalancer
+
 from libcloud.compute.drivers.nttcis import NttCisPort, NttCisIpAddress, NttCisPublicIpBlock, NttCisNatRule
 from libcloud.common.nttcis import NttCisFirewallRule, NttCisVlan, NttCisFirewallAddress
 
@@ -188,20 +188,31 @@ def test_create_ipv6_addresss(compute_driver):
     assert result is True
 
 
-def test_create_load_balancer(lbdriver, compute_driver):
+def test_import_customer_image(compute_driver):
+    package_name = "bitnami-couchdb-2.1.2-1-r35-linux-centos-7-x86_64.mf"
+    name = "bitnami-couchdb-2.1.2-1-r35-linux-centos-7-x86_64"
+    datacenter_id = 'EU6'
+    is_guest_os_customization = 'false'
+    result = compute_driver.import_image(package_name, name, datacenter_id=datacenter_id,
+                                         is_guest_os_customization=is_guest_os_customization)
+    assert result is True
 
+
+def test_create_load_balancer(lbdriver, compute_driver):
     member1 = compute_driver.list_nodes(ex_name='web1')[0]
     member2 = compute_driver.list_nodes(ex_name='web2')[0]
     members = [member1, member2]
     name = 'sdk_test_balancer'
-    port = '8000'
-    protocol = 'http'
-    algorithm = 1
+    port = '80'
+    listener_port = '8000'
+    protocol = 'TCP'
+    algorithm = 'LEAST_CONNECTIONS'
     members = [m for m in members]
     ex_listener_ip_address = "168.128.13.127"
-    lb = lbdriver.create_balancer(name, port=port, protocol=protocol, algorithm=algorithm,  members=members,
+    lb = lbdriver.create_balancer(name, listener_port=listener_port, port=port, protocol=protocol,
+                                  algorithm=algorithm, members=members, optimization_profile='TCP',
                                   ex_listener_ip_address=ex_listener_ip_address)
-    assert lb.name == name
+
 
 
 def test_create_pool(lbdriver):
