@@ -105,6 +105,15 @@ Compute
 - [OpenStack] Add get_user method (GITHUB-1216)
   [Ken Dreyer]
 
+- [OpenStack] Add ex_list_subnets to OpenStack_2_NodeDriver (GITHUB-1215, LIBCLOUD-604)
+  [Miguel Caballer]
+
+- [OpenStack] The OpenStack_2_NodeDriver uses two connections (GITHUB-1215, LIBCLOUD-997)
+  [Miguel Caballer]
+
+- [OpenStack] The OpenStack_2_NodeDriver /v2.0/networks instead of /os-networks (GITHUB-1215, LIBCLOUD-998)
+  [Miguel Caballer]
+
 - [Scaleway] New Scaleway driver (GITHUB-1121, GITHUB-1220)
   [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
 
