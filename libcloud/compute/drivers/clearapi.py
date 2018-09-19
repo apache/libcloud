@@ -57,9 +57,6 @@ class ClearAPINodeDriver(NodeDriver):
 
 
     def _to_node(self, data):
-        extra_keys = ['model_name', 'serial_number', 'cpu_usages', 'ram', 'add_date',
-                      'ram_usages', 'uuid', 'added_by', 'company_id', 'product_id']
-
         extra = {}
         private_ips = []
         private_ips.append(data['ipv4'])
@@ -69,12 +66,8 @@ class ClearAPINodeDriver(NodeDriver):
         else:
             state = NodeState.STOPPED
 
-        for key in extra_keys:
-            if key in data:
-                extra[key] = data[key]
-
-        extra['power_control_info'] = data['power_control_info'][0]
-        extra['power_supply_info'] = data['power_supply_info'][0]
+        for key in data:
+            extra[key] = data[key]
 
         json_data = {"uuid": data['uuid']}
 
