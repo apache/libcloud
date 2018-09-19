@@ -901,6 +901,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                                  # XXX: needs hardcode
                                  vcpus=vcpus,
                                  bandwidth=None,
+                                 extra=el.get('extra_specs'),
                                  # Hardcoded
                                  price=self._get_size_price(el.get('id')),
                                  driver=self.connection.driver)
@@ -2560,7 +2561,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
-    _networks_url_prefix = '/os-networks'
+    _networks_url_prefix = '/v2.0/networks'
+    _subnets_url_prefix = '/v2.0/subnets'
 
     PORT_INTERFACE_MAP = {
         'BUILD': OpenStack_2_PortInterfaceState.BUILD,
@@ -2576,20 +2578,33 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if 'ex_force_auth_version' not in kwargs:
             kwargs['ex_force_auth_version'] = '3.x_password'
 
+        original_ex_force_base_url = kwargs.get('ex_force_base_url')
+
         # We run the init once to get the Glance V2 API connection
         # and put that on the object under self.image_connection.
+        if original_ex_force_base_url or kwargs.get('ex_force_image_url'):
+            kwargs['ex_force_base_url'] = \
+                str(kwargs.pop('ex_force_image_url',
+                               original_ex_force_base_url))
         self.connectionCls = self.image_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.image_connection = self.connection
 
-        # We run the init again to get the Neutron V2 API connection
-        # and put that on the object under self.network_connection.
+        # We run the init once to get the Neutron V2 API connection
+        # and put that on the object under self.image_connection.
+        if original_ex_force_base_url or kwargs.get('ex_force_network_url'):
+            kwargs['ex_force_base_url'] = \
+                str(kwargs.pop('ex_force_network_url',
+                               original_ex_force_base_url))
         self.connectionCls = self.network_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.network_connection = self.connection
 
         # We run the init once again to get the compute API connection
         # and that's put under self.connection as normal.
+        self._ex_force_base_url = original_ex_force_base_url
+        if original_ex_force_base_url:
+            kwargs['ex_force_base_url'] = self._ex_force_base_url
         self.connectionCls = original_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
 
@@ -2782,6 +2797,58 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             method='PUT', data=data
         )
         return self._to_image_member(response.object)
+
+    def _to_networks(self, obj):
+        networks = obj['networks']
+        return [self._to_network(network) for network in networks]
+
+    def _to_network(self, obj):
+        extra = {}
+        if obj.get('router:external', None):
+            extra['router:external'] = obj.get('router:external')
+        if obj.get('subnets', None):
+            extra['subnets'] = obj.get('subnets')
+        return OpenStackNetwork(id=obj['id'],
+                                name=obj['name'],
+                                cidr=None,
+                                driver=self,
+                                extra=extra)
+
+    def ex_list_networks(self):
+        """
+        Get a list of Networks that are available.
+
+        :rtype: ``list`` of :class:`OpenStackNetwork`
+        """
+        response = self.network_connection.request(
+            self._networks_url_prefix).object
+        return self._to_networks(response)
+
+    def _to_subnets(self, obj):
+        subnets = obj['subnets']
+        return [self._to_subnet(subnet) for subnet in subnets]
+
+    def _to_subnet(self, obj):
+        extra = {}
+        if obj.get('router:external', None):
+            extra['router:external'] = obj.get('router:external')
+        if obj.get('subnets', None):
+            extra['subnets'] = obj.get('subnets')
+        return OpenStack_2_SubNet(id=obj['id'],
+                                  name=obj['name'],
+                                  cidr=obj['cidr'],
+                                  driver=self,
+                                  extra=extra)
+
+    def ex_list_subnets(self):
+        """
+        Get a list of Subnet that are available.
+
+        :rtype: ``list`` of :class:`OpenStack_2_SubNet`
+        """
+        response = self.network_connection.request(
+            self._subnets_url_prefix).object
+        return self._to_subnets(response)
 
     def ex_list_ports(self):
         """
@@ -3003,6 +3070,24 @@ class OpenStack_1_1_FloatingIpAddress(object):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
                 ' pool=%s, driver=%s>'
                 % (self.id, self.ip_address, self.pool, self.driver))
+
+
+class OpenStack_2_SubNet(object):
+    """
+    A Virtual SubNet.
+    """
+
+    def __init__(self, id, name, cidr, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.cidr = cidr
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<OpenStack_2_SubNet id="%s" name="%s" cidr="%s">' % (self.id,
+                                                                     self.name,
+                                                                     self.cidr)
 
 
 class OpenStack_2_PortInterface(UuidMixin):
