@@ -99,7 +99,7 @@ VM_SIZES = [
 # Default timeout (in seconds) for long running tasks
 DEFAULT_TASK_COMPLETION_TIMEOUT = 600
 
-DEFAULT_API_VERSION = '5.1'
+DEFAULT_API_VERSION = '5.5'
 
 """
 Valid vCloud API v1.5 input values.
@@ -469,6 +469,8 @@ class VCloudNodeDriver(NodeDriver):
                 cls = VCloud_1_5_NodeDriver
             elif api_version == '5.1':
                 cls = VCloud_5_1_NodeDriver
+            elif api_version == '5.5':
+                cls = VCloud_5_5_NodeDriver
             else:
                 raise NotImplementedError(
                     "No VCloudNodeDriver found for API version %s" %
@@ -1044,6 +1046,23 @@ class VCloud_1_5_Connection(VCloudConnection):
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/*+xml;version=1.5'
+        headers['x-vcloud-authorization'] = self.token
+        return headers
+
+
+class VCloud_5_5_Connection(VCloud_1_5_Connection):
+
+    def _get_auth_headers(self):
+        """Compatibility for using v5.5 API"""
+        return {
+            'Authorization': "Basic %s" % base64.b64encode(
+                b('%s:%s' % (self.user_id, self.key))).decode('utf-8'),
+            'Content-Length': '0',
+            'Accept': 'application/*+xml;version=5.5'
+        }
+
+    def add_default_headers(self, headers):
+        headers['Accept'] = 'application/*+xml;version=5.5'
         headers['x-vcloud-authorization'] = self.token
         return headers
 
@@ -2339,6 +2358,10 @@ class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
             # MB
             raise ValueError(
                 '%s is not a valid vApp VM memory value' % (vm_memory))
+
+
+class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
+    connectionCls = VCloud_5_5_Connection
 
 
 class VCloudNetwork(object):
