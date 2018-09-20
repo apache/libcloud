@@ -206,7 +206,7 @@ def test_create_load_balancer(lbdriver, compute_driver):
     port = '80'
     listener_port = '8000'
     protocol = 'TCP'
-    algorithm = 'LEAST_CONNECTIONS'
+    algorithm = 'LEAST_CONNECTIONS_MEMBER'
     members = [m for m in members]
     ex_listener_ip_address = "168.128.13.127"
     lb = lbdriver.create_balancer(name, listener_port=listener_port, port=port, protocol=protocol,
@@ -214,7 +214,27 @@ def test_create_load_balancer(lbdriver, compute_driver):
                                   ex_listener_ip_address=ex_listener_ip_address)
 
 
+def test_create_vip_node(compute_driver, lbdriver):
+    node_address = '10.1.1.7'
+    node_name = "web1"
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name][0]
+    node = lbdriver.ex_create_node(net_domain.id, node_name, node_address)
+    print(node)
 
-def test_create_pool(lbdriver):
+
+def test_add_pool_member(compute_driver, lbdriver):
+    pool_name = 'sdk_test_balancer'
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    pools = lbdriver.ex_get_pools(ex_network_domain_id=network_domain.id)
+    pool = [p for p in pools if p.name == pool_name][0]
+    node = lbdriver.ex_get_node("eca8dac3-1417-4fdf-83c3-2b7b848ab171")
+    result = lbdriver.ex_create_pool_member(pool, node, port=80)
+    print(result)
+
+
+def test_create_server_monitor(compute_driver):
     pass
-

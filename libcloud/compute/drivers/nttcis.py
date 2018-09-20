@@ -112,7 +112,7 @@ class NttCisNodeDriver(NodeDriver):
     selected_region = None
     connectionCls = NttCisConnection
     name = 'NTTC-CIS'
-    website = 'http://www.dimensiondata.com/'
+    website = 'https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html'
     type = Provider.NTTCIS
     features = {'create_node': ['password']}
     api_version = 1.0

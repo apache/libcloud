@@ -52,9 +52,12 @@ class NttCisLBDriver(Driver):
 
     _VALUE_TO_ALGORITHM_MAP = {
         'ROUND_ROBIN': Algorithm.ROUND_ROBIN,
-        'LEAST_CONNECTIONS': Algorithm.LEAST_CONNECTIONS,
-        'SHORTEST_RESPONSE': Algorithm.SHORTEST_RESPONSE,
-        'PERSISTENT_IP': Algorithm.PERSISTENT_IP
+        'LEAST_CONNECTIONS_MEMBER': Algorithm.LEAST_CONNECTIONS_MEMBER,
+        'LEAST_CONNECTIONS_NODE': Algorithm.LEAST_CONNECTIONS_NODE,
+        'OBSERVED_MEMBER': Algorithm.OBSERVED_MEMBER,
+        'OBSERVED_NODE': Algorithm.OBSERVED_NODE,
+        'PREDICTIVE_MEMBER': Algorithm.PREDICTIVE_MEMBER,
+        'PREDICTIVE_NODE': Algorithm.PREDICTIVE_NODE
     }
     _ALGORITHM_TO_VALUE_MAP = reverse_dict(_VALUE_TO_ALGORITHM_MAP)
 
@@ -146,7 +149,7 @@ class NttCisLBDriver(Driver):
             algor = Algorithm.__dict__[algorithm]
 
         # Create a pool first
-        al = self._ALGORITHM_TO_VALUE_MAP[algor]
+
         pool = self.ex_create_pool(
             network_domain_id=network_domain_id,
             name=name,
@@ -189,6 +192,28 @@ class NttCisLBDriver(Driver):
                    'network_domain_id': network_domain_id,
                    'listener_ip_address': ex_listener_ip_address}
         )
+
+    def ex_update_listener(self, virtual_listener: NttCisVirtualListener, **kwargs) -> NttCisVirtualListener:
+        """
+        Update a current virtual listener.
+        :param virtual_listener: The listener to be updated
+        :return: The edited version of the listener
+        """
+        edit_listener_elm = ET.Element('editVirtualListener', {'xmlns': TYPES_URN,
+                                                               'id': virtual_listener.id,
+                                                               'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"})
+        for k, v in kwargs.items():
+            if v is None:
+                ET.SubElement(edit_listener_elm, k, {'xsi:nil': 'true'})
+            else:
+                ET.SubElement(edit_listener_elm, k).text = v
+
+        result = self.connection.request_with_orgId_api_2(
+            'networkDomainVip/editVirtualListener',
+            method='POST',
+            data=ET.tostring(edit_listener_elm)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def list_balancers(self, ex_network_domain_id=None):
         """
@@ -375,7 +400,6 @@ class NttCisLBDriver(Driver):
         if port is not None:
             ET.SubElement(create_pool_m, "port").text = str(port)
         ET.SubElement(create_pool_m, "status").text = 'ENABLED'
-        test = ET.tostring(create_pool_m)
         response = self.connection.request_with_orgId_api_2(
             'networkDomainVip/addPoolMember',
             method='POST',
@@ -402,10 +426,13 @@ class NttCisLBDriver(Driver):
                        network_domain_id,
                        name,
                        ip,
-                       ex_description,
+                       ex_description=None,
                        connection_limit=25000,
                        connection_rate_limit=2000):
         """
+        Inconsistent use of objects.
+        Either always pass an object and have the method get the id, or always pass the id.
+
         Create a new node
 
         :param network_domain_id: Network Domain ID (required)
@@ -434,8 +461,9 @@ class NttCisLBDriver(Driver):
         ET.SubElement(create_node_elm, "networkDomainId") \
             .text = network_domain_id
         ET.SubElement(create_node_elm, "name").text = name
-        ET.SubElement(create_node_elm, "description").text \
-            = str(ex_description)
+        if ex_description is not None:
+            ET.SubElement(create_node_elm, "description").text \
+                = str(ex_description)
         ET.SubElement(create_node_elm, "ipv4Address").text = ip
         ET.SubElement(create_node_elm, "status").text = 'ENABLED'
         ET.SubElement(create_node_elm, "connectionLimit") \
@@ -473,13 +501,16 @@ class NttCisLBDriver(Driver):
         :rtype: ``NttCisNode``
         """
         create_node_elm = ET.Element('editNode', {'xmlns': TYPES_URN})
+        create_node_elm.set('id', node.id)
+        ET.SubElement(create_node_elm, 'healthMonitorId') \
+            .text = node.health_monitor_id
         ET.SubElement(create_node_elm, "connectionLimit") \
             .text = str(node.connection_limit)
         ET.SubElement(create_node_elm, "connectionRateLimit") \
             .text = str(node.connection_rate_limit)
 
         self.connection.request_with_orgId_api_2(
-            action='networkDomainVip/createNode',
+            action='networkDomainVip/editNode',
             method='POST',
             data=ET.tostring(create_node_elm)).object
         return node
@@ -772,9 +803,11 @@ class NttCisLBDriver(Driver):
         :rtype: ``bool``
         """
         create_node_elm = ET.Element('editPool', {'xmlns': TYPES_URN})
-
+        create_node_elm.set('id', pool.id)
         ET.SubElement(create_node_elm, "loadBalanceMethod") \
             .text = str(pool.load_balance_method)
+        ET.SubElement(create_node_elm, 'healthMonitorId').text \
+            = pool.health_monitor_id
         ET.SubElement(create_node_elm, "serviceDownAction") \
             .text = pool.service_down_action
         ET.SubElement(create_node_elm, "slowRampTime").text \
@@ -966,7 +999,7 @@ class NttCisLBDriver(Driver):
         return self.connection.wait_for_state(state, func, poll_interval,
                                               timeout, *args, **kwargs)
 
-    def ex_get_default_health_monitors(self, network_domain_id):
+    def ex_get_default_health_monitors(self, network_domain):
         """
         Get the default health monitors available for a network domain
 
@@ -977,7 +1010,7 @@ class NttCisLBDriver(Driver):
         """
         result = self.connection.request_with_orgId_api_2(
             action='networkDomainVip/defaultHealthMonitor',
-            params={'networkDomainId': network_domain_id},
+            params={'networkDomainId': network_domain.id},
             method='GET').object
         return self._to_health_monitors(result)
 

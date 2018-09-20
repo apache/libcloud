@@ -379,3 +379,12 @@ def test_get_customer_image(compute_driver):
     image = compute_driver.ex_get_image_by_id(imagee_id)
     print(image, image.extra)
 
+
+def test_list_health_monitors(compute_driver, lbdriver):
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    monitors = lbdriver.ex_get_default_health_monitors(network_domain)
+    for monitor in monitors:
+        print(monitor)
+

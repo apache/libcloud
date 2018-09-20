@@ -179,6 +179,7 @@ class Node(UuidMixin):
         :param state: Node state.
         :type state: :class:`libcloud.compute.types.NodeState`
 
+
         :param public_ips: Public IP addresses associated with this node.
         :type public_ips: ``list``
 

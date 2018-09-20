@@ -2,7 +2,7 @@ import pytest
 import libcloud
 from libcloud import loadbalancer
 from libcloud.compute.drivers.nttcis import NttCisPort
-from libcloud.common.nttcis import NttCisIpAddress, NttCisVlan
+from libcloud.common.nttcis import NttCisIpAddress, NttCisVlan, NttCisVIPNode
 from tests.lib_create_test import test_deploy_vlan
 
 
@@ -369,4 +369,84 @@ def test_delete_nat_rule(compute_driver):
     network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
     rule = compute_driver.ex_get_nat_rule(network_domain, '74f0897f-5536-4c17-84b0-d52b1fb3aea6')
     result = compute_driver.ex_delete_nat_rule(rule)
+    assert result is True
+
+
+def test_update_health_monitor(compute_driver, lbdriver):
+    pool_name = 'sdk_test_balancer'
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    pools = lbdriver.ex_get_pools(ex_network_domain_id=network_domain.id)
+    pool = [p for p in pools if p.name == pool_name][0]
+    pool.health_monitor_id = '9f79487a-1b6d-11e5-8d4f-180373fb68df'
+    result = lbdriver.ex_update_pool(pool)
+    assert result is True
+
+
+def test_update_node_monitor(compute_driver, lbdriver):
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    nodes = lbdriver.ex_get_nodes(ex_network_domain_id=network_domain.id)
+    #pool = [p for p in pools if p.name == pool_name][0]
+    health_monitor_id = '9f79a126-1b6d-11e5-8d4f-180373fb68df'
+    for node in nodes:
+        node.health_monitor_id = health_monitor_id
+        result = lbdriver.ex_update_node(node)
+        assert isinstance(result, NttCisVIPNode)
+
+
+def test_remove_node(compute_driver, lbdriver):
+    node_name = 'web1'
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    nodes = lbdriver.ex_get_nodes(ex_network_domain_id=network_domain.id)
+    node = [n for n in nodes if n.name == node_name][0]
+    pool_name = "sdk_test_balancer"
+    pools = lbdriver.ex_get_pools(ex_network_domain_id=network_domain.id)
+    pool = [p for p in pools if p.name == pool_name][0]
+    pool_members = lbdriver.ex_get_pool_members(pool.id)
+    pool_member = [pm for pm in pool_members if pm.node_id == node.id][0]
+    result = lbdriver.ex_destroy_pool_member(pool_member)
+    assert result is True
+
+
+def test_delete_node(compute_driver, lbdriver):
+    node_name = 'web1'
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    nodes = lbdriver.ex_get_nodes(ex_network_domain_id=network_domain.id)
+    node = [n for n in nodes if n.name == node_name][0]
+    result = lbdriver.ex_destroy_node(node.id)
+    assert result is True
+
+
+def test_remove_pool(compute_driver, lbdriver):
+    listener_name = "sdk_test_balancer"
+    listeners = lbdriver.list_balancers(ex_network_domain_id=lbdriver.network_domain_id)
+    listener = [l for l in listeners if l.name == listener_name][0]
+    pool_id = None
+    result = lbdriver.ex_update_listener(listener, poolId=pool_id)
+    assert result is True
+
+
+def test_delete_pool(compute_driver, lbdriver):
+    network_domain_name = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    network_domain = [nd for nd in network_domains if nd.name == network_domain_name][0]
+    pool_name = "sdk_test_balancer"
+    pools = lbdriver.ex_get_pools(ex_network_domain_id=network_domain.id)
+    pool = [p for p in pools if p.name == pool_name][0]
+    result = lbdriver.ex_destroy_pool(pool)
+    assert result is True
+
+
+def test_delete_listener(compute_driver, lbdriver):
+    listener_name = "sdk_test_balancer"
+    listeners = lbdriver.list_balancers(ex_network_domain_id=lbdriver.network_domain_id)
+    listener = [l for l in listeners if l.name == listener_name][0]
+    result = lbdriver.destroy_balancer(listener)
     assert result is True
