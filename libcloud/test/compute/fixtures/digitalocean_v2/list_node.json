@@ -1,0 +1,112 @@
+{
+    "droplet": {
+        "status": "active",
+        "kernel": {
+            "version": "3.13.0-57-generic",
+            "id": 5175,
+            "name": "Ubuntu 14.04 x64 vmlinuz-3.13.0-57-generic"
+        },
+        "volume_ids": [],
+        "locked": false,
+        "name": "example.com",
+        "backup_ids": [],
+        "created_at": "2015-11-10T11:01:41Z",
+        "snapshot_ids": [],
+        "size_slug": "8gb",
+        "networks": {
+            "v4": [
+                {
+                    "type": "public",
+                    "netmask": "255.255.255.0",
+                    "ip_address": "36.123.0.123",
+                    "gateway": "36.123.0.1"
+                }
+            ],
+            "v6": []
+        },
+        "next_backup_window": null,
+        "vcpus": 4,
+        "size": {
+            "price_monthly": 80.0,
+            "available": true,
+            "transfer": 5.0,
+            "price_hourly": 0.11905,
+            "regions": [
+                "ams2",
+                "ams3",
+                "blr1",
+                "fra1",
+                "lon1",
+                "nyc1",
+                "nyc2",
+                "nyc3",
+                "sfo1",
+                "sfo2",
+                "sgp1",
+                "tor1"
+            ],
+            "vcpus": 4,
+            "memory": 8192,
+            "disk": 80,
+            "slug": "8gb"
+        },
+        "image": {
+            "min_disk_size": 20,
+            "slug": null,
+            "name": "14.04 x64",
+            "created_at": "2014-13-13T20:20:20Z",
+            "id": 12089443,
+            "regions": [
+                "ams2",
+                "nyc3"
+            ],
+            "distribution": "Ubuntu",
+            "type": "snapshot",
+            "public": false,
+            "size_gigabytes": 1.76
+        },
+        "memory": 8192,
+        "region": {
+            "available": true,
+            "sizes": [
+                "32gb",
+                "16gb",
+                "2gb",
+                "1gb",
+                "4gb",
+                "8gb",
+                "512mb",
+                "48gb",
+                "s-1vcpu-3gb",
+                "m-1vcpu-8gb",
+                "m-16gb",
+                "m-32gb",
+                "s-1vcpu-1gb",
+                "s-1vcpu-2gb",
+                "s-2vcpu-2gb",
+                "s-3vcpu-1gb",
+                "s-2vcpu-4gb",
+                "s-4vcpu-8gb",
+                "s-6vcpu-16gb",
+                "s-8vcpu-32gb",
+                "s-12vcpu-48gb"
+            ],
+            "features": [
+                "private_networking",
+                "backups",
+                "ipv6",
+                "metadata",
+                "install_agent",
+                "image_transfer"
+            ],
+            "name": "Amsterdam 2",
+            "slug": "ams2"
+        },
+        "disk": 40,
+        "id": 3164444,
+        "tags": ["mytag1", "mytag2"],
+        "features": [
+            "virtio"
+        ]
+    }
+}

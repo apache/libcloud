@@ -258,12 +258,12 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(b(uri), b('%C3%A9'))
 
         # Unicode without unicode characters
-        uri = urlquote('~abc')
-        self.assertEqual(b(uri), b('%7Eabc'))
+        uri = urlquote('v=1')
+        self.assertEqual(b(uri), b('v%3D1'))
 
         # Already-encoded bytestring without unicode characters
-        uri = urlquote(b('~abc'))
-        self.assertEqual(b(uri), b('%7Eabc'))
+        uri = urlquote(b('v=1'))
+        self.assertEqual(b(uri), b('v%3D1'))
 
     def test_get_secure_random_string(self):
         for i in range(1, 500):

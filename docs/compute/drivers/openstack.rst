@@ -88,9 +88,17 @@ Available arguments:
 * ``ex_force_service_type``
 * ``ex_force_service_name``
 * ``ex_force_service_region``
-* ``ex_force_base_url`` - Base URL to the OpenStack API endpoint. By default,
+* ``ex_force_base_url`` - Base URL to the OpenStack nova API endpoint. By default,
   driver obtains API endpoint URL from the server catalog, but if this argument
   is provided, this step is skipped and the provided value is used directly.
+* ``ex_force_network_url`` - Base URL to the OpenStack neutron API endpoint. By default,
+  driver obtains API endpoint URL from the server catalog, but if this argument
+  is provided, this step is skipped and the provided value is used directly. Only valid 
+  in case of api_version >= 2.0.
+* ``ex_force_image_url`` - Base URL to the OpenStack glance API endpoint. By default,
+  driver obtains API endpoint URL from the server catalog, but if this argument
+  is provided, this step is skipped and the provided value is used directly. Only valid 
+  in case of api_version >= 2.0.
 
 Some examples which show how to use this arguments can be found in the section
 below.

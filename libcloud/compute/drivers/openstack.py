@@ -38,12 +38,13 @@ from libcloud.common.openstack import OpenStackDriverMixin
 from libcloud.common.openstack import OpenStackException
 from libcloud.common.openstack import OpenStackResponse
 from libcloud.utils.networking import is_public_subnet
-from libcloud.compute.base import NodeSize, NodeImage, NodeImageMember
+from libcloud.compute.base import NodeSize, NodeImage, NodeImageMember, \
+    UuidMixin
 from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, StorageVolumeState, Provider, \
-    VolumeSnapshotState
+    VolumeSnapshotState, Type
 from libcloud.pricing import get_size_price
 from libcloud.utils.xml import findall
 from libcloud.utils.py3 import ET
@@ -59,6 +60,8 @@ __all__ = [
     'OpenStack_1_1_NodeDriver',
     'OpenStack_1_1_FloatingIpPool',
     'OpenStack_1_1_FloatingIpAddress',
+    'OpenStack_2_PortInterfaceState',
+    'OpenStack_2_PortInterface',
     'OpenStackNodeDriver'
 ]
 
@@ -77,6 +80,12 @@ class OpenStackComputeConnection(OpenStackBaseConnection):
 class OpenStackImageConnection(OpenStackBaseConnection):
     service_type = 'image'
     service_name = 'glance'
+    service_region = 'RegionOne'
+
+
+class OpenStackNetworkConnection(OpenStackBaseConnection):
+    service_type = 'network'
+    service_name = 'neutron'
     service_region = 'RegionOne'
 
 
@@ -892,6 +901,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                                  # XXX: needs hardcode
                                  vcpus=vcpus,
                                  bandwidth=None,
+                                 extra=el.get('extra_specs'),
                                  # Hardcoded
                                  price=self._get_size_price(el.get('id')),
                                  driver=self.connection.driver)
@@ -2491,6 +2501,25 @@ class OpenStack_2_ImageConnection(OpenStackImageConnection):
         return json.dumps(data)
 
 
+class OpenStack_2_NetworkConnection(OpenStackNetworkConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
+class OpenStack_2_PortInterfaceState(Type):
+    """
+    Standard states of OpenStack_2_PortInterfaceState
+    """
+    BUILD = 'build'
+    ACTIVE = 'active'
+    DOWN = 'down'
+    UNKNOWN = 'unknown'
+
+
 class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     """
     OpenStack node driver.
@@ -2514,10 +2543,33 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     # image/v2/index.html#list-image-members
     image_connectionCls = OpenStack_2_ImageConnection
     image_connection = None
+
+    # Similarly not all node-related operations are exposed through the
+    # compute API
+    # See https://developer.openstack.org/api-ref/compute/
+    # For example, creating a new node in an OpenStack that is configured to
+    # create a new port for every new instance will make it so that if that
+    # port is detached it disappears. But if the port is manually created
+    # beforehand using the neutron network API and node is booted with that
+    # port pre-specified, then detaching that port later will result in that
+    # becoming a re-attachable resource much like a floating ip. So because
+    # even though this is the compute driver, we do connect to the networking
+    # API here because some operations relevant for compute can only be
+    # accessed from there.
+    network_connectionCls = OpenStack_2_NetworkConnection
+    network_connection = None
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
-    _networks_url_prefix = '/os-networks'
+    _networks_url_prefix = '/v2.0/networks'
+    _subnets_url_prefix = '/v2.0/subnets'
+
+    PORT_INTERFACE_MAP = {
+        'BUILD': OpenStack_2_PortInterfaceState.BUILD,
+        'ACTIVE': OpenStack_2_PortInterfaceState.ACTIVE,
+        'DOWN': OpenStack_2_PortInterfaceState.DOWN,
+        'UNKNOWN': OpenStack_2_PortInterfaceState.UNKNOWN
+    }
 
     def __init__(self, *args, **kwargs):
         original_connectionCls = self.connectionCls
@@ -2526,16 +2578,66 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if 'ex_force_auth_version' not in kwargs:
             kwargs['ex_force_auth_version'] = '3.x_password'
 
+        original_ex_force_base_url = kwargs.get('ex_force_base_url')
+
         # We run the init once to get the Glance V2 API connection
         # and put that on the object under self.image_connection.
+        if original_ex_force_base_url or kwargs.get('ex_force_image_url'):
+            kwargs['ex_force_base_url'] = \
+                str(kwargs.pop('ex_force_image_url',
+                               original_ex_force_base_url))
         self.connectionCls = self.image_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.image_connection = self.connection
 
-        # We run the init again to get the compute API connection
+        # We run the init once to get the Neutron V2 API connection
+        # and put that on the object under self.image_connection.
+        if original_ex_force_base_url or kwargs.get('ex_force_network_url'):
+            kwargs['ex_force_base_url'] = \
+                str(kwargs.pop('ex_force_network_url',
+                               original_ex_force_base_url))
+        self.connectionCls = self.network_connectionCls
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+        self.network_connection = self.connection
+
+        # We run the init once again to get the compute API connection
         # and that's put under self.connection as normal.
+        self._ex_force_base_url = original_ex_force_base_url
+        if original_ex_force_base_url:
+            kwargs['ex_force_base_url'] = self._ex_force_base_url
         self.connectionCls = original_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+
+    def _to_port(self, element):
+        created = element['created_at']
+        updated = element.get('updated_at')
+        return OpenStack_2_PortInterface(
+            id=element['id'],
+            state=self.PORT_INTERFACE_MAP.get(
+                element.get('status'), OpenStack_2_PortInterfaceState.UNKNOWN
+            ),
+            created=created,
+            driver=self,
+            extra=dict(
+                admin_state_up=element['admin_state_up'],
+                allowed_address_pairs=element['allowed_address_pairs'],
+                binding_vnic_type=element['binding:vnic_type'],
+                device_id=element['device_id'],
+                description=element['description'],
+                device_owner=element['device_owner'],
+                fixed_ips=element['fixed_ips'],
+                mac_address=element['mac_address'],
+                name=element['name'],
+                network_id=element['network_id'],
+                project_id=element['project_id'],
+                port_security_enabled=element['port_security_enabled'],
+                revision_number=element['revision_number'],
+                security_groups=element['security_groups'],
+                tags=element['tags'],
+                tenant_id=element['tenant_id'],
+                updated=updated,
+            )
+        )
 
     def get_image(self, image_id):
         """
@@ -2696,6 +2798,174 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         return self._to_image_member(response.object)
 
+    def _to_networks(self, obj):
+        networks = obj['networks']
+        return [self._to_network(network) for network in networks]
+
+    def _to_network(self, obj):
+        extra = {}
+        if obj.get('router:external', None):
+            extra['router:external'] = obj.get('router:external')
+        if obj.get('subnets', None):
+            extra['subnets'] = obj.get('subnets')
+        return OpenStackNetwork(id=obj['id'],
+                                name=obj['name'],
+                                cidr=None,
+                                driver=self,
+                                extra=extra)
+
+    def ex_list_networks(self):
+        """
+        Get a list of Networks that are available.
+
+        :rtype: ``list`` of :class:`OpenStackNetwork`
+        """
+        response = self.network_connection.request(
+            self._networks_url_prefix).object
+        return self._to_networks(response)
+
+    def _to_subnets(self, obj):
+        subnets = obj['subnets']
+        return [self._to_subnet(subnet) for subnet in subnets]
+
+    def _to_subnet(self, obj):
+        extra = {}
+        if obj.get('router:external', None):
+            extra['router:external'] = obj.get('router:external')
+        if obj.get('subnets', None):
+            extra['subnets'] = obj.get('subnets')
+        return OpenStack_2_SubNet(id=obj['id'],
+                                  name=obj['name'],
+                                  cidr=obj['cidr'],
+                                  driver=self,
+                                  extra=extra)
+
+    def ex_list_subnets(self):
+        """
+        Get a list of Subnet that are available.
+
+        :rtype: ``list`` of :class:`OpenStack_2_SubNet`
+        """
+        response = self.network_connection.request(
+            self._subnets_url_prefix).object
+        return self._to_subnets(response)
+
+    def ex_list_ports(self):
+        """
+        List all OpenStack_2_PortInterfaces
+
+        https://developer.openstack.org/api-ref/network/v2/#list-ports
+
+        :rtype: ``list`` of :class:`OpenStack_2_PortInterface`
+        """
+        response = self.network_connection.request(
+            '/v2.0/ports'
+        )
+        return [self._to_port(port) for port in response.object['ports']]
+
+    def ex_delete_port(self, port):
+        """
+        Delete an OpenStack_2_PortInterface
+
+        https://developer.openstack.org/api-ref/network/v2/#delete-port
+
+        :param      port: port interface to remove
+        :type       port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+         """
+        response = self.network_connection.request(
+            '/v2.0/ports/%s' % port.id, method='DELETE'
+        )
+        return response.success()
+
+    def ex_detach_port_interface(self, node, port):
+        """
+        Detaches an OpenStack_2_PortInterface interface from a Node.
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      port: port interface to remove
+        :type       port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        return self.connection.request(
+            '/servers/%s/os-interface/%s' % (node.id, port.id),
+            method='DELETE'
+        ).success()
+
+    def ex_attach_port_interface(self, node, port):
+        """
+        Attaches an OpenStack_2_PortInterface to a Node.
+
+        :param      node: node
+        :type       node: :class:`Node`
+
+        :param      port: port interface to remove
+        :type       port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        data = {
+            'interfaceAttachment': {
+                'port_id': port.id
+            }
+        }
+        return self.connection.request(
+            '/servers/{}/os-interface'.format(node.id),
+            method='POST', data=data
+        ).success()
+
+    def ex_create_port(self, network, description=None,
+                       admin_state_up=True, name=None):
+        """
+        Creates a new OpenStack_2_PortInterface
+
+        :param      network: ID of the network where the newly created
+                    port should be attached to
+        :type       network: :class:`OpenStackNetwork`
+
+        :param      description: Description of the port
+        :type       description: str
+
+        :param      admin_state_up: The administrative state of the
+                    resource, which is up or down
+        :type       admin_state_up: bool
+
+        :param      name: Human-readable name of the resource
+        :type       name: str
+
+        :rtype: :class:`OpenStack_2_PortInterface`
+        """
+        data = {
+            'port':
+                {
+                    'description': description or '',
+                    'admin_state_up': admin_state_up,
+                    'name': name or '',
+                    'network_id': network.id,
+                }
+        }
+        response = self.network_connection.request(
+            '/v2.0/ports', method='POST', data=data
+        )
+        return self._to_port(response.object['port'])
+
+    def ex_get_port(self, port_interface_id):
+        """
+        Retrieve the OpenStack_2_PortInterface with the given ID
+
+        :param      port_interface_id: ID of the requested port
+        :type       port_interface_id: str
+
+        :return: :class:`OpenStack_2_PortInterface`
+        """
+        response = self.network_connection.request(
+            '/v2.0/ports/{}'.format(port_interface_id), method='GET'
+        )
+        return self._to_port(response.object['port'])
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -2761,7 +3031,7 @@ class OpenStack_1_1_FloatingIpPool(object):
         Delete specified floating IP from the pool
 
         :param      ip: floating IP to remove
-        :type       ip::class:`OpenStack_1_1_FloatingIpAddress`
+        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
 
         :rtype: ``bool``
         """
@@ -2800,3 +3070,71 @@ class OpenStack_1_1_FloatingIpAddress(object):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
                 ' pool=%s, driver=%s>'
                 % (self.id, self.ip_address, self.pool, self.driver))
+
+
+class OpenStack_2_SubNet(object):
+    """
+    A Virtual SubNet.
+    """
+
+    def __init__(self, id, name, cidr, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.cidr = cidr
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<OpenStack_2_SubNet id="%s" name="%s" cidr="%s">' % (self.id,
+                                                                     self.name,
+                                                                     self.cidr)
+
+
+class OpenStack_2_PortInterface(UuidMixin):
+    """
+    Port Interface info. Similar in functionality to a floating IP (can be
+    attached / detached from a compute instance) but implementation-wise a
+    bit different.
+
+    > A port is a connection point for attaching a single device, such as the
+    > NIC of a server, to a network. The port also describes the associated
+    > network configuration, such as the MAC and IP addresses to be used on
+    > that port.
+    https://docs.openstack.org/python-openstackclient/pike/cli/command-objects/port.html
+
+    Also see:
+    https://developer.openstack.org/api-ref/compute/#port-interfaces-servers-os-interface
+    """
+
+    def __init__(self, id, state, driver, created=None, extra=None):
+        """
+        :param id: Port Interface ID.
+        :type id: ``str``
+        :param state: State of the OpenStack_2_PortInterface.
+        :type state: :class:`.OpenStack_2_PortInterfaceState`
+        :param      created: A datetime object that represents when the
+                             port interface was created
+        :type       created: ``datetime.datetime``
+        :param extra: Optional provided specific attributes associated with
+                      this image.
+        :type extra: ``dict``
+        """
+        self.id = str(id)
+        self.state = state
+        self.driver = driver
+        self.created = created
+        self.extra = extra or {}
+        UuidMixin.__init__(self)
+
+    def delete(self):
+        """
+        Delete this Port Interface
+
+        :rtype: ``bool``
+        """
+        return self.driver.ex_delete_port(self)
+
+    def __repr__(self):
+        return (('<OpenStack_2_PortInterface: id=%s, state=%s, '
+                 'driver=%s  ...>')
+                % (self.id, self.state, self.driver.name))

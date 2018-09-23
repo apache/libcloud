@@ -292,6 +292,14 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         result = self.driver.delete_volume_snapshot(snapshot)
         self.assertTrue(result)
 
+    def test_ex_get_node_details(self):
+        node = self.driver.ex_get_node_details('3164444')
+        self.assertEqual(node.name, 'example.com')
+        self.assertEqual(node.public_ips, ['36.123.0.123'])
+        self.assertEqual(node.extra['image']['id'], 12089443)
+        self.assertEqual(node.extra['size_slug'], '8gb')
+        self.assertEqual(len(node.extra['tags']), 2)
+
     def test_ex_create_floating_ip(self):
         nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
         floating_ip = self.driver.ex_create_floating_ip(nyc1)
@@ -375,6 +383,10 @@ class DigitalOceanMockHttp(MockHttp):
 
     def _v2_droplets(self, method, url, body, headers):
         body = self.fixtures.load('list_nodes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_droplets_3164444(self, method, url, body, headers):
+        body = self.fixtures.load('list_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v2_droplets_INVALID_IMAGE(self, method, url, body, headers):
