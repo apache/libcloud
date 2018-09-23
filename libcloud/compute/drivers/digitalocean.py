@@ -95,6 +95,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
     EX_CREATE_ATTRIBUTES = ['backups',
                             'ipv6',
                             'private_networking',
+                            'tags',
                             'ssh_keys']
 
     def list_images(self):
@@ -138,6 +139,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         * `backups`: ``bool`` defaults to False
         * `ipv6`: ``bool`` defaults to False
         * `private_networking`: ``bool`` defaults to False
+        * `tags`: ``list`` of ``str`` tags
         * `user_data`: ``str`` for cloud-config data
         * `ssh_keys`: ``list`` of ``int`` key ids or ``str`` fingerprints
 
@@ -492,6 +494,20 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         res = self.connection.request('v2/snapshots/%s' % (snapshot.id),
                                       method='DELETE')
         return res.status == httplib.NO_CONTENT
+
+    def ex_get_node_details(self, node_id):
+        """
+        Lists details of the specified server.
+
+        :param       node_id: ID of the node which should be used
+        :type        node_id: ``str``
+
+        :rtype: :class:`Node`
+        """
+        data = self._paginated_request(
+            '/v2/droplets/{}'.format(node_id), 'droplet'
+        )
+        return self._to_node(data)
 
     def ex_create_floating_ip(self, location):
         """

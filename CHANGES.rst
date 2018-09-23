@@ -4,9 +4,21 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+- Support Python 3.7 (GITHUB-1227, GITHUB-1236)
+  [Andreas Hasenack, Andrew Starr-Bochicchio, Quentin Pradet]
+
 - Cleanup various Python files
   (GITHUB-1182, GITHUB-1183, GITHUB-1185, GITHUB-1186, GITHUB-1187, GITHUB-1188)
   [Rémy Léone]
+
+- Allow running tests with http_proxy set (GITHUB-1236)
+  [Andreas Hasenack]
+
+Common
+~~~~~~
+
+- [OpenStack] Document openstack_connection_kwargs method (GITHUB-1219)
+  [Ken Dreyer]
 
 Compute
 ~~~~~~~
@@ -20,11 +32,26 @@ Compute
 - [Digital Ocean] Support attach/detach for floating IPs (GITHUB-1191)
   [Rick van de Loo]
 
+- [Digital Ocean] Add ex_get_node_details (GITHUB-1221)
+  [Rick van de Loo]
+
+- [Digital Ocean] Add tags extra attribute to create_node (GITHUB-1212)
+  [Nikita Chebykin]
+
 - [Dimension Data] Fix IndexError in list_images (GITHUB-1171)
   [Adam Friedman]
 
 - [EC2] Add AWS eu-west-3 (Paris) region (GITHUB-1175)
   [Anthony Monthe]
+
+- [EC2] Add description to ex_authorize_security_group_ingress (GITHUB-1122)
+  [Arturo Noha]
+
+- [EC2] Added script to automatically get EC2 instance sizes (GITHUB-1211)
+  [Anthony Monthe, Quentin Pradet]
+
+- [EC2] Update instance sizes (GITHUB-1238)
+  [Ward Vandewege]
 
 - [GCE] Expand Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
   [maxlip]
@@ -45,6 +72,12 @@ Compute
 - [GCE] Update public image projects list (LIBCLOUD-961, GITHUB-1143)
   [Sean Marlow]
 
+- [GCE] Fix _find_zone_or_region for >500 instances (GITHUB-1203)
+  [Léo Ferlin-Sutton]
+
+- [GCE] Allow routing_mode=None in ex_create_network (GITHUB-1217)
+  [Daniel Hunsaker]
+
 - [OpenStack] Implement Glance Image API v2 (GITHUB-1151)
   [Rick van de Loo]
 
@@ -60,6 +93,33 @@ Compute
 - [OpenStack v2] Fix image members methods (GITHUB-1190)
   [Rick van de Loo]
 
+- [OpenStack] Fix API doc for delete_floating_ip (GITHUB-1218)
+  [Ken Dreyer]
+
+- [OpenStack] Implement port attaching/detaching (GITHUB-1225)
+  [Rick van de Loo]
+
+- [OpenStack] Add methods for getting and creating ports (GITHUB-1226)
+  [Alexander Grooff]
+
+- [OpenStack] Add get_user method (GITHUB-1216)
+  [Ken Dreyer]
+
+- [OpenStack] Add ex_list_subnets to OpenStack_2_NodeDriver (GITHUB-1215, LIBCLOUD-604)
+  [Miguel Caballer]
+
+- [OpenStack] The OpenStack_2_NodeDriver uses two connections (GITHUB-1215, LIBCLOUD-997)
+  [Miguel Caballer]
+
+- [OpenStack] The OpenStack_2_NodeDriver /v2.0/networks instead of /os-networks (GITHUB-1215, LIBCLOUD-998)
+  [Miguel Caballer]
+
+- [Scaleway] New Scaleway driver (GITHUB-1121, GITHUB-1220)
+  [Daniel Hunsaker, Nándor István Krácser, Rémy Léone]
+
+- [Scaleway] Update Scaleway default API host (GITHUB-1239)
+  [Rémy Léone]
+
 DNS
 ~~~
 
@@ -69,11 +129,29 @@ DNS
 Storage
 ~~~~~~~
 
-- [Azure Blob storage] Allow filtering lists by prefix (LIBCLOUD-986, GITHUB-1193)
+- Update docstring for storage provider class (GITHUB-1201)
+  [Clemens Wolff]
+
+- [Azure Blob Storage] Allow filtering lists by prefix (LIBCLOUD-986, GITHUB-1193)
   [Joshua Hawkinson]
+
+- [Azure Blob Storage] Update driver documentation (GITHUB-1208)
+  [Clemens Wolff]
+
+- [Azure Blob Storage] Fix upload/download streams (GITHUB-1231)
+  [Michael Perel]
+
+- [Azure Blob Storage] Fix PageBlob headers (GITHUB-1237)
+  [Andreas Hasenack]
 
 - [S3] Guess s3 upload content type (LIBCLOUD-958, GITHUB-1195)
   [Iuri de Silvio]
+
+Other
+~~~~~
+
+- Fixed spelling in 2.0 changes documentation (GITHUB-1228)
+  [Jimmy Casey]
 
 Changes in Apache Libcloud 2.3.0
 --------------------------------
@@ -223,7 +301,6 @@ Compute
 
 - [UpCloud] Add pricing information to list_sizes (LIBCLOUD-969, GITHUB-1152)
   [Mika Lackman]
-
 
 Storage
 ~~~~~~~

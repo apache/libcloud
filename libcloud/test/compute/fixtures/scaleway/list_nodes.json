@@ -1,0 +1,74 @@
+{
+  "servers": [
+    {
+      "bootscript": null,
+      "arch": "arm",
+      "creation_date": "2014-05-22T12:57:22.514299+00:00",
+      "dynamic_public_ip": false,
+      "id": "741db378",
+      "image": {
+        "id": "85917034-46b0-4cc5-8b48-f0a2245e357e",
+        "name": "ubuntu working"
+      },
+      "location": null,
+      "name": "my_server",
+      "organization": "000a115d-2852-4b0a-9ce8-47f1134ba95a",
+      "private_ip": null,
+      "public_ip": null,
+      "state": "running",
+      "tags": [
+        "test",
+        "www"
+      ],
+      "volumes": {
+        "0": {
+          "export_uri": null,
+          "id": "c1eb8f3a-4f0b-4b95-a71c-93223e457f5a",
+          "name": "vol simple snapshot",
+          "organization": "000a115d-2852-4b0a-9ce8-47f1134ba95a",
+          "server": {
+            "id": "741db378-6b87-46d4-a8c5-4e46a09ab1f8",
+            "name": "my_server"
+          },
+          "size": 10000000000,
+          "volume_type": "l_ssd"
+        }
+      }
+    },
+    {
+      "bootscript": null,
+      "arch": "arm",
+      "creation_date": "2014-05-22T12:57:22.514299+00:00",
+      "dynamic_public_ip": false,
+      "id": "0e9f85af",
+      "image": {
+        "id": "85917034-46b0-4cc5-8b48-f0a2245e357e",
+        "name": "ubuntu working"
+      },
+      "location": null,
+      "name": "my_server",
+      "organization": "000a115d-2852-4b0a-9ce8-47f1134ba95a",
+      "private_ip": null,
+      "public_ip": null,
+      "state": "running",
+      "tags": [
+        "test",
+        "www"
+      ],
+      "volumes": {
+        "0": {
+          "export_uri": null,
+          "id": "fb09bb31-ecd9-4dff-8b55-b6e45715199d",
+          "name": "vol simple snapshot",
+          "organization": "000a115d-2852-4b0a-9ce8-47f1134ba95a",
+          "server": {
+            "id": "0e9f85af-b6aa-401e-a00d-484f832c5024",
+            "name": "my_server"
+          },
+          "size": 10000000000,
+          "volume_type": "l_ssd"
+        }
+      }
+    }
+  ]
+}

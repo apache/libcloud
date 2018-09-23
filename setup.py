@@ -37,7 +37,6 @@ libcloud.utils.SHOW_DEPRECATION_WARNING = False
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 PY3_pre_34 = PY3 and sys.version_info < (3, 4)
-PY2_pre_26 = PY2 and sys.version_info < (2, 6)
 PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
 
@@ -53,7 +52,7 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.container.drivers.dummy',
                     'libcloud.backup.drivers.dummy']
 
-SUPPORTED_VERSIONS = ['2.6', '2.7', 'PyPy', '3.x']
+SUPPORTED_VERSIONS = ['2.7', 'PyPy', '3.3+']
 
 TEST_REQUIREMENTS = [
     'mock',
@@ -134,9 +133,11 @@ setup(
     description='A standard Python library that abstracts away differences' +
                 ' among multiple cloud provider APIs. For more information' +
                 ' and documentation, please see http://libcloud.apache.org',
+    long_description=open('README.rst').read(),
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     install_requires=install_requires,
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4",
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
@@ -159,13 +160,12 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ]
