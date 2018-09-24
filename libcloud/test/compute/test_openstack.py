@@ -1818,6 +1818,49 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
         self.assertTrue(ret)
 
+    def test_list_volumes(self):
+        volumes = self.driver.list_volumes()
+        self.assertEqual(len(volumes), 2)
+        volume = volumes[0]
+
+        self.assertEqual('6edbc2f4-1507-44f8-ac0d-eed1d2608d38', volume.id)
+        self.assertEqual('test-volume-attachments', volume.name)
+        self.assertEqual(StorageVolumeState.INUSE, volume.state)
+        self.assertEqual(2, volume.size)
+        self.assertEqual(volume.extra, {
+            'description': '',
+            'attachments': [{
+                "attachment_id": "3b4db356-253d-4fab-bfa0-e3626c0b8405",
+                "id": '6edbc2f4-1507-44f8-ac0d-eed1d2608d38',
+                "device": "/dev/vdb",
+                "server_id": "f4fda93b-06e0-4743-8117-bc8bcecd651b",
+                "volume_id": "6edbc2f4-1507-44f8-ac0d-eed1d2608d38",
+            }],
+            'snapshot_id': None,
+            'state': 'in-use',
+            'location': 'nova',
+            'volume_type': 'lvmdriver-1',
+            'metadata': {},
+            'created_at': '2013-06-24T11:20:13.000000'
+        })
+
+        # also test that unknown state resolves to StorageVolumeState.UNKNOWN
+        volume = volumes[1]
+        self.assertEqual('cfcec3bc-b736-4db5-9535-4c24112691b5', volume.id)
+        self.assertEqual('test_volume', volume.name)
+        self.assertEqual(50, volume.size)
+        self.assertEqual(StorageVolumeState.UNKNOWN, volume.state)
+        self.assertEqual(volume.extra, {
+            'description': 'some description',
+            'attachments': [],
+            'snapshot_id': '01f48111-7866-4cd2-986a-e92683c4a363',
+            'state': 'some-unknown-state',
+            'location': 'nova',
+            'volume_type': None,
+            'metadata': {},
+            'created_at': '2013-06-21T12:39:02.000000',
+        })
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -2307,6 +2350,41 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_v2_0_subnets(self, method, url, body, headers):
         body = self.fixtures.load('_v2_0__subnets.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_volumes_detail(self, method, url, body, headers):
+        body = self.fixtures.load('_v2_0__volumes.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_volumes(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__volume.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__volume.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+    
+    def _v2_1337_snapshots_detail(self, method, url, body, headers):
+        body = self.fixtures.load('_v2_0__snapshots.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_snapshots(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__snapshot.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__snapshot.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+    
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.

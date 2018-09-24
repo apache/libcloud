@@ -1,0 +1,44 @@
+{
+    "volumes": [
+        {
+            "status": "in-use",
+            "attachments": [
+                {
+                    "server_id": "f4fda93b-06e0-4743-8117-bc8bcecd651b",
+                    "attachment_id": "3b4db356-253d-4fab-bfa0-e3626c0b8405",
+                    "volume_id": "6edbc2f4-1507-44f8-ac0d-eed1d2608d38",
+                    "device": "/dev/vdb",
+                    "id": "6edbc2f4-1507-44f8-ac0d-eed1d2608d38"
+                }
+            ],
+            "availability_zone": "nova",
+            "replication_status": "disabled",
+            "snapshot_id": null,
+            "id": "6edbc2f4-1507-44f8-ac0d-eed1d2608d38",
+            "size": 2,
+            "user_id": "32779452fcd34ae1a53a797ac8a1e064",
+            "metadata": {},
+            "description": "",
+            "name": "test-volume-attachments",
+            "created_at": "2013-06-24T11:20:13.000000",
+            "volume_type": "lvmdriver-1"
+        },
+        {
+            "status": "some-unknown-state",
+            "migration_status": null,
+            "attachments": [],
+            "availability_zone": "nova",
+            "replication_status": "disabled",
+            "snapshot_id": "01f48111-7866-4cd2-986a-e92683c4a363",
+            "id": "cfcec3bc-b736-4db5-9535-4c24112691b5",
+            "size": 50,
+            "user_id": "32779452fcd34ae1a53a797ac8a1e064",
+            "metadata": {},
+            "description": "some description",
+            "name": "test_volume",
+            "bootable": "false",
+            "created_at": "2013-06-21T12:39:02.000000",
+            "volume_type": null
+        }
+    ]
+}

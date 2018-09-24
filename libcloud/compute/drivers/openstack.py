@@ -89,6 +89,12 @@ class OpenStackNetworkConnection(OpenStackBaseConnection):
     service_region = 'RegionOne'
 
 
+class OpenStackVolumeConnection(OpenStackBaseConnection):
+    service_type = 'volume'
+    service_name = 'cinder'
+    service_region = 'RegionOne'
+
+
 class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     """
     Base OpenStack node driver. Should not be used directly.
@@ -2200,20 +2206,27 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         return StorageVolume(
             id=api_node['id'],
-            name=api_node['displayName'],
+            name=api_node.get('name', api_node.get('displayName', None)),
             size=api_node['size'],
             state=state,
             driver=self,
             extra={
-                'description': api_node['displayDescription'],
+                'description': api_node.get('description',
+                                            api_node.get('displayDescription',
+                                                         None)),
                 'attachments': [att for att in api_node['attachments'] if att],
                 # TODO: remove in 1.18.0
                 'state': api_node.get('status', None),
-                'snapshot_id': api_node.get('snapshotId', None),
-                'location': api_node.get('availabilityZone', None),
-                'volume_type': api_node.get('volumeType', None),
+                'snapshot_id': api_node.get('snapshot_id',
+                                            api_node.get('snapshotId', None)),
+                'location': api_node.get('availability_zone',
+                                         api_node.get('availabilityZone',
+                                                      None)),
+                'volume_type': api_node.get('volume_type',
+                                            api_node.get('volumeType', None)),
                 'metadata': api_node.get('metadata', None),
-                'created_at': api_node.get('createdAt', None)
+                'created_at': api_node.get('created_at',
+                                           api_node.get('createdAt', None))
             }
         )
 
@@ -2222,10 +2235,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             data = data['snapshot']
 
         volume_id = data.get('volume_id', data.get('volumeId', None))
-        display_name = data.get('display_name', data.get('displayName', None))
+        display_name = data.get('name',
+                                data.get('display_name',
+                                         data.get('displayName', None)))
         created_at = data.get('created_at', data.get('createdAt', None))
-        description = data.get('display_description',
-                               data.get('displayDescription', None))
+        description = data.get('description',
+                               data.get('display_description',
+                                        data.get('displayDescription', None)))
         status = data.get('status', None)
 
         extra = {'volume_id': volume_id,
@@ -2514,6 +2530,15 @@ class OpenStack_2_NetworkConnection(OpenStackNetworkConnection):
         return json.dumps(data)
 
 
+class OpenStack_2_VolumeConnection(OpenStackVolumeConnection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
 class OpenStack_2_PortInterfaceState(Type):
     """
     Standard states of OpenStack_2_PortInterfaceState
@@ -2562,6 +2587,14 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     # accessed from there.
     network_connectionCls = OpenStack_2_NetworkConnection
     network_connection = None
+
+    # Similarly not all node-related operations are exposed through the
+    # compute API
+    # See https://developer.openstack.org/api-ref/compute/
+    # For example, volume management are made in the cinder service
+    volume_connectionCls = OpenStack_2_VolumeConnection
+    volume_connection = None
+
     type = Provider.OPENSTACK
 
     features = {"create_node": ["generates_password"]}
@@ -2594,8 +2627,18 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.image_connection = self.connection
 
+        # We run the init once to get the Cinder V2 API connection
+        # and put that on the object under self.volume_connection.
+        if original_ex_force_base_url or kwargs.get('ex_force_volume_url'):
+            kwargs['ex_force_base_url'] = \
+                str(kwargs.pop('ex_force_volume_url',
+                               original_ex_force_base_url))
+        self.connectionCls = self.volume_connectionCls
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+        self.volume_connection = self.connection
+
         # We run the init once to get the Neutron V2 API connection
-        # and put that on the object under self.image_connection.
+        # and put that on the object under self.network_connection.
         if original_ex_force_base_url or kwargs.get('ex_force_network_url'):
             kwargs['ex_force_base_url'] = \
                 str(kwargs.pop('ex_force_network_url',
@@ -2969,6 +3012,110 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             '/v2.0/ports/{}'.format(port_interface_id), method='GET'
         )
         return self._to_port(response.object['port'])
+
+    def list_volumes(self):
+        return self._to_volumes(
+            self.connection.request('/volumes/detail').object)
+
+    def ex_get_volume(self, volumeId):
+        return self._to_volume(
+            self.connection.request('/volumes/%s' % volumeId).object)
+
+    def create_volume(self, size, name, location=None, snapshot=None,
+                      ex_volume_type=None):
+        """
+        Create a new volume.
+
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
+
+        :param name: Name of the volume to be created
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+
+        :param snapshot:  Snapshot from which to create the new
+                          volume.  (optional)
+        :type snapshot:  :class:`.VolumeSnapshot`
+
+        :param ex_volume_type: What kind of volume to create.
+                            (optional)
+        :type ex_volume_type: ``str``
+
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
+        """
+        volume = {
+            'name': name,
+            'description': name,
+            'size': size,
+            'metadata': {
+                'contents': name,
+            },
+        }
+
+        if ex_volume_type:
+            volume['volume_type'] = ex_volume_type
+
+        if location:
+            volume['availability_zone'] = location
+
+        if snapshot:
+            volume['snapshot_id'] = snapshot.id
+
+        resp = self.connection.request('/volumes',
+                                       method='POST',
+                                       data={'volume': volume})
+        return self._to_volume(resp.object)
+
+    def destroy_volume(self, volume):
+        return self.connection.request('/volumes/%s' % volume.id,
+                                       method='DELETE').success()
+
+    def ex_list_snapshots(self):
+        return self._to_snapshots(
+            self.connection.request('/snapshots/detail').object)
+
+    def create_volume_snapshot(self, volume, name=None, ex_description=None,
+                               ex_force=True):
+        """
+        Create snapshot from volume
+
+        :param volume: Instance of `StorageVolume`
+        :type  volume: `StorageVolume`
+
+        :param name: Name of snapshot (optional)
+        :type  name: `str` | `NoneType`
+
+        :param ex_description: Description of the snapshot (optional)
+        :type  ex_description: `str` | `NoneType`
+
+        :param ex_force: Specifies if we create a snapshot that is not in
+                         state `available`. For example `in-use`. Defaults
+                         to True. (optional)
+        :type  ex_force: `bool`
+
+        :rtype: :class:`VolumeSnapshot`
+        """
+        data = {'snapshot': {'volume_id': volume.id, 'force': ex_force}}
+
+        if name is not None:
+            data['snapshot']['name'] = name
+
+        if ex_description is not None:
+            data['snapshot']['description'] = ex_description
+
+        return self._to_snapshot(self.connection.request('/snapshots',
+                                                         method='POST',
+                                                         data=data).object)
+
+    def destroy_volume_snapshot(self, snapshot):
+        resp = self.connection.request('/snapshots/%s' % snapshot.id,
+                                       method='DELETE')
+        return resp.status == httplib.ACCEPTED
 
 
 class OpenStack_1_1_FloatingIpPool(object):
