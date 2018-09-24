@@ -89,8 +89,8 @@ class OpenStackNetworkConnection(OpenStackBaseConnection):
     service_region = 'RegionOne'
 
 
-class OpenStackVolumeConnection(OpenStackBaseConnection):
-    service_type = 'volume'
+class OpenStackVolumeV2Connection(OpenStackBaseConnection):
+    service_type = 'volumev2'
     service_name = 'cinder'
     service_region = 'RegionOne'
 
@@ -2526,7 +2526,7 @@ class OpenStack_2_NetworkConnection(OpenStackNetworkConnection):
         return json.dumps(data)
 
 
-class OpenStack_2_VolumeConnection(OpenStackVolumeConnection):
+class OpenStack_2_VolumeV2Connection(OpenStackVolumeV2Connection):
     responseCls = OpenStack_1_1_Response
     accept_format = 'application/json'
     default_content_type = 'application/json; charset=UTF-8'
@@ -2588,8 +2588,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     # compute API
     # See https://developer.openstack.org/api-ref/compute/
     # For example, volume management are made in the cinder service
-    volume_connectionCls = OpenStack_2_VolumeConnection
-    volume_connection = None
+    volumev2_connectionCls = OpenStack_2_VolumeV2Connection
+    volumev2_connection = None
 
     type = Provider.OPENSTACK
 
@@ -2624,14 +2624,14 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         self.image_connection = self.connection
 
         # We run the init once to get the Cinder V2 API connection
-        # and put that on the object under self.volume_connection.
+        # and put that on the object under self.volumev2_connection.
         if original_ex_force_base_url or kwargs.get('ex_force_volume_url'):
             kwargs['ex_force_base_url'] = \
                 str(kwargs.pop('ex_force_volume_url',
                                original_ex_force_base_url))
-        self.connectionCls = self.volume_connectionCls
+        self.connectionCls = self.volumev2_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
-        self.volume_connection = self.connection
+        self.volumev2_connection = self.connection
 
         # We run the init once to get the Neutron V2 API connection
         # and put that on the object under self.network_connection.
