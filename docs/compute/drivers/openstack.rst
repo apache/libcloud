@@ -99,6 +99,10 @@ Available arguments:
   driver obtains API endpoint URL from the server catalog, but if this argument
   is provided, this step is skipped and the provided value is used directly. Only valid 
   in case of api_version >= 2.0.
+  * ``ex_force_volume_url`` - Base URL to the OpenStack cinder API endpoint. By default,
+  driver obtains API endpoint URL from the server catalog, but if this argument
+  is provided, this step is skipped and the provided value is used directly. Only valid 
+  in case of api_version >= 2.0.
 
 Some examples which show how to use this arguments can be found in the section
 below.
