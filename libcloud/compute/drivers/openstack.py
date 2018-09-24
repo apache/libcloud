@@ -1816,7 +1816,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 security_groups]
 
     def _to_security_group(self, obj):
-        rules = self._to_security_group_rules(obj.get('rules', []))
+        rules = self._to_security_group_rules(obj.get('security_group_rules',
+                                                      obj.get('rules', [])))
         return OpenStackSecurityGroup(id=obj['id'],
                                       tenant_id=obj['tenant_id'],
                                       name=obj['name'],
@@ -3116,6 +3117,47 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         resp = self.volumev2_connection.request('/snapshots/%s' % snapshot.id,
                                                 method='DELETE')
         return resp.status == httplib.ACCEPTED
+
+
+    def ex_list_security_groups(self):
+        """
+        Get a list of Security Groups that are available.
+
+        :rtype: ``list`` of :class:`OpenStackSecurityGroup`
+        """
+        return self._to_security_groups(
+            self.network_connection.request('/v2.0/security-groups').object)
+
+    def ex_create_security_group(self, name, description):
+        """
+        Create a new Security Group
+
+        :param name: Name of the new Security Group
+        :type  name: ``str``
+
+        :param description: Description of the new Security Group
+        :type  description: ``str``
+
+        :rtype: :class:`OpenStackSecurityGroup`
+        """
+        return self._to_security_group(self.network_connection .request(
+            '/v2.0/security-groups', method='POST',
+            data={'security_group': {'name': name, 'description': description}}
+        ).object['security_group'])
+
+    def ex_delete_security_group(self, security_group):
+        """
+        Delete a Security Group.
+
+        :param security_group: Security Group should be deleted
+        :type  security_group: :class:`OpenStackSecurityGroup`
+
+        :rtype: ``bool``
+        """
+        resp = self.network_connection.request('/v2.0/security-groups/%s' %
+                                       (security_group.id),
+                                       method='DELETE')
+        return resp.status==httplib.NO_CONTENT
 
 
 class OpenStack_1_1_FloatingIpPool(object):

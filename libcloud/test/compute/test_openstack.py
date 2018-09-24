@@ -2400,7 +2400,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_volumes(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('_v2_0__volume.json')
-            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
         if method == 'GET':
@@ -2417,7 +2417,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_snapshots(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('_v2_0__snapshot.json')
-            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
         if method == 'GET':
@@ -2426,7 +2426,14 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'DELETE':
             body = ''
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
-    
+
+    def _v2_1337_v2_0_security_groups(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__security_group.json')
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__security_group.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
