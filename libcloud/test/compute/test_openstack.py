@@ -1565,6 +1565,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         # normally authentication happens lazily, but we force it here
         self.driver.network_connection._populate_hosts_and_request_paths()
 
+        self.driver_klass.volumev2_connectionCls.conn_class = OpenStack_2_0_MockHttp
+        self.driver_klass.volumev2_connectionCls.auth_url = "https://auth.api.example.com"
+        # normally authentication happens lazily, but we force it here
+        self.driver.volumev2_connection._populate_hosts_and_request_paths()
+
     def test_ex_force_auth_token_passed_to_connection(self):
         base_url = 'https://servers.api.rackspacecloud.com/v1.1/slug'
         kwargs = {
@@ -1849,6 +1854,43 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
             'metadata': {},
             'created_at': '2013-06-21T12:39:02.000000',
         })
+
+    def test_create_volume_passes_location_to_request_only_if_not_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test', location='mylocation')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertEqual(kwargs["data"]["volume"]["availability_zone"], "mylocation")
+
+    def test_create_volume_does_not_pass_location_to_request_if_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertFalse("availability_zone" in kwargs["data"]["volume"])
+
+    def test_create_volume_passes_volume_type_to_request_only_if_not_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test', ex_volume_type='myvolumetype')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertEqual(kwargs["data"]["volume"]["volume_type"], "myvolumetype")
+
+    def test_create_volume_does_not_pass_volume_type_to_request_if_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertFalse("volume_type" in kwargs["data"]["volume"])
+
+    def test_ex_create_snapshot_does_not_post_optional_parameters_if_none(self):
+        volume = self.driver.list_volumes()[0]
+        with patch.object(self.driver, '_to_snapshot'):
+            with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+                self.driver.create_volume_snapshot(volume,
+                                                   name=None,
+                                                   ex_description=None,
+                                                   ex_force=True)
+
+        name, args, kwargs = mock_request.mock_calls[0]
+        self.assertFalse("display_name" in kwargs["data"]["snapshot"])
+        self.assertFalse("display_description" in kwargs["data"]["snapshot"])
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
