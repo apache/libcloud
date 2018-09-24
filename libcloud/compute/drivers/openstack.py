@@ -3067,13 +3067,13 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             volume['snapshot_id'] = snapshot.id
 
         resp = self.volumev2_connection.request('/volumes',
-                                       method='POST',
-                                       data={'volume': volume})
+                                                method='POST',
+                                                data={'volume': volume})
         return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
         return self.volumev2_connection.request('/volumes/%s' % volume.id,
-                                       method='DELETE').success()
+                                                method='DELETE').success()
 
     def ex_list_snapshots(self):
         return self._to_snapshots(
@@ -3108,13 +3108,13 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if ex_description is not None:
             data['snapshot']['description'] = ex_description
 
-        return self._to_snapshot(self.volumev2_connection.request('/snapshots',
-                                                         method='POST',
-                                                         data=data).object)
+        return self._to_snapshot(
+            self.volumev2_connection.request('/snapshots', method='POST',
+                                             data=data).object)
 
     def destroy_volume_snapshot(self, snapshot):
         resp = self.volumev2_connection.request('/snapshots/%s' % snapshot.id,
-                                       method='DELETE')
+                                                method='DELETE')
         return resp.status == httplib.ACCEPTED
 
 
