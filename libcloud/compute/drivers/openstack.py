@@ -91,7 +91,7 @@ class OpenStackNetworkConnection(OpenStackBaseConnection):
 
 class OpenStackVolumeV2Connection(OpenStackBaseConnection):
     service_type = 'volumev2'
-    service_name = 'cinder'
+    service_name = 'cinderv2'
     service_region = 'RegionOne'
 
 

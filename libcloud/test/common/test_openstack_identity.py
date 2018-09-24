@@ -626,7 +626,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
                                           auth_version='2.0')
 
         service_names = catalog.get_service_names()
-        self.assertEqual(service_names, ['cinder', 'cloudFiles',
+        self.assertEqual(service_names, ['cinderv2', 'cloudFiles',
                                          'cloudFilesCDN', 'cloudServers',
                                          'cloudServersOpenStack',
                                          'cloudServersPreprod',
