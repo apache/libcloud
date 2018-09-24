@@ -139,7 +139,7 @@
                         "versionId": "2"
                     }
                 ],
-                "name": "cinder",
+                "name": "cinderv2",
                 "type": "volumev2"
             },
             {
