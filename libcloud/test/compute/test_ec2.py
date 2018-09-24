@@ -1803,13 +1803,12 @@ class NimbusTests(EC2Tests):
         self.assertExecutedMethodCount(0)
 
     def test_create_volume_snapshot_with_tags(self):
-            vol = StorageVolume(id='vol-4282672b', name='test',
-                                state=StorageVolumeState.AVAILABLE,
-                                size=10, driver=self.driver)
-            snap = self.driver.create_volume_snapshot(
-                vol, 'Test snapshot', ex_metadata={'my_tag': 'test'})
-            self.assertDictEqual({}, snap.extra['tags'])
-
+        vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.AVAILABLE,
+                            size=10, driver=self.driver)
+        snap = self.driver.create_volume_snapshot(
+            vol, 'Test snapshot', ex_metadata={'my_tag': 'test'})
+        self.assertDictEqual({}, snap.extra['tags'])
 
 
 class EucTests(LibcloudTestCase, TestCaseMixin):
