@@ -3269,7 +3269,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         List available floating IP pools
 
-        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpPool`
+        :rtype: ``list`` of :class:`OpenStack_2_FloatingIpPool`
         """
         return self._to_floating_ip_pools(
             self.network_connection.request('/v2.0/networks?router:external'
