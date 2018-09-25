@@ -45,7 +45,7 @@ from libcloud.compute.drivers.openstack import (
     OpenStack_1_1_NodeDriver, OpenStackSecurityGroup,
     OpenStackSecurityGroupRule, OpenStack_1_1_FloatingIpPool,
     OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair,
-    OpenStack_1_0_Connection,
+    OpenStack_1_0_Connection, OpenStack_2_FloatingIpPool,
     OpenStackNodeDriver,
     OpenStack_2_NodeDriver, OpenStack_2_PortInterfaceState, OpenStackNetwork)
 from libcloud.compute.base import Node, NodeImage, NodeSize
@@ -1399,6 +1399,53 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(pool.delete_floating_ip.call_count, 1)
 
+    def test_OpenStack_2_FloatingIpPool_list_floating_ips(self):
+        pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)
+        ret = pool.list_floating_ips()
+
+        self.assertEqual(ret[0].id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
+        self.assertEqual(ret[0].pool, pool)
+        self.assertEqual(ret[0].ip_address, '10.3.1.42')
+        self.assertEqual(ret[0].node_id, None)
+        self.assertEqual(ret[1].id, '04c5336a-0629-4694-ba30-04b0bdfa88a4')
+        self.assertEqual(ret[1].pool, pool)
+        self.assertEqual(ret[1].ip_address, '10.3.1.1')
+        self.assertEqual(
+            ret[1].node_id, 'fcfc96da-19e2-40fd-8497-f29da1b21143')
+
+    def test_OpenStack_2_FloatingIpPool_get_floating_ip(self):
+        pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)
+        ret = pool.get_floating_ip('10.3.1.42')
+
+        self.assertEqual(ret.id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
+        self.assertEqual(ret.pool, pool)
+        self.assertEqual(ret.ip_address, '10.3.1.42')
+        self.assertEqual(ret.node_id, None)
+
+    def test_OpenStack_2_FloatingIpPool_create_floating_ip(self):
+        pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)
+        ret = pool.create_floating_ip()
+
+        self.assertEqual(ret.id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
+        self.assertEqual(ret.pool, pool)
+        self.assertEqual(ret.ip_address, '10.3.1.42')
+        self.assertEqual(ret.node_id, None)
+
+    def test_OpenStack_2_FloatingIpPool_delete_floating_ip(self):
+        pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)
+        ip = OpenStack_1_1_FloatingIpAddress('foo-bar-id', '42.42.42.42', pool)
+
+        self.assertTrue(pool.delete_floating_ip(ip))
+
+    def test_OpenStack_2_FloatingIpAddress_delete(self):
+        pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)
+        pool.delete_floating_ip = Mock()
+        ip = OpenStack_1_1_FloatingIpAddress('foo-bar-id', '42.42.42.42', pool)
+
+        ip.pool.delete_floating_ip()
+
+        self.assertEqual(pool.delete_floating_ip.call_count, 1)
+
     def test_ex_get_metadata_for_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
@@ -2374,8 +2421,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
     def _v2_1337_v2_0_networks(self, method, url, body, headers):
         if method == 'GET':
-            body = self.fixtures.load('_v2_0__networks.json')
-            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            if "router:external=True" in url:
+                body = self.fixtures.load('_v2_0__networks_public.json')
+                return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            else:
+                body = self.fixtures.load('_v2_0__networks.json')
+                return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         elif method == 'POST':
             body = self.fixtures.load('_v2_0__networks_POST.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
@@ -2449,6 +2500,19 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_v2_0_security_group_rules_2(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_floatingips(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__floatingip.json')
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__floatingips.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+    
+    def _v2_1337_v2_0_floatingips_foo_bar_id(self, method, url, body, headers):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
