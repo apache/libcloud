@@ -1112,7 +1112,7 @@ class OpenStackSecurityGroupRule(object):
 
     def __init__(self, id, parent_group_id, ip_protocol, from_port, to_port,
                  driver, ip_range=None, group=None, tenant_id=None,
-                 extra=None):
+                 direction=None, extra=None):
         """
         Constructor.
 
@@ -1140,6 +1140,9 @@ class OpenStackSecurityGroupRule(object):
         :keyword    tenant_id: Owner of the security group.
         :type       tenant_id: ``str``
 
+        :keyword    direction: Security group Direction (ingress or egress).
+        :type       direction: ``str``
+
         :keyword    extra: Extra attributes associated with this rule.
         :type       extra: ``dict``
         """
@@ -1151,11 +1154,20 @@ class OpenStackSecurityGroupRule(object):
         self.driver = driver
         self.ip_range = ''
         self.group = {}
+        self.direction = 'ingress'
 
         if group is None:
             self.ip_range = ip_range
         else:
             self.group = {'name': group, 'tenant_id': tenant_id}
+
+        # by default in old versions only ingress was used
+        if direction is not None:
+            if direction in ['ingress', 'egress']:
+                self.direction = direction
+            else:
+                raise OpenStackException("Security group direction incorrect "
+                                         "value: ingress or egress.")
 
         self.tenant_id = tenant_id
         self.extra = extra or {}
@@ -1678,7 +1690,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         resp = self.connection.request('%s/%s' % (self._networks_url_prefix,
                                                   network.id),
                                        method='DELETE')
-        return resp.status == httplib.ACCEPTED
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_get_console_output(self, node, length=None):
         """
@@ -1840,6 +1852,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``list`` of :class:`OpenStackSecurityGroup`
         """
+        print(vars(self.connection.request(
+            '/servers/%s/os-security-groups' % (node.id))))
         return self._to_security_groups(
             self.connection.request('/servers/%s/os-security-groups' %
                                     (node.id)).object)
@@ -3116,8 +3130,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     def destroy_volume_snapshot(self, snapshot):
         resp = self.volumev2_connection.request('/snapshots/%s' % snapshot.id,
                                                 method='DELETE')
-        return resp.status == httplib.ACCEPTED
-
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_list_security_groups(self):
         """
@@ -3155,9 +3168,96 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :rtype: ``bool``
         """
         resp = self.network_connection.request('/v2.0/security-groups/%s' %
-                                       (security_group.id),
-                                       method='DELETE')
-        return resp.status==httplib.NO_CONTENT
+                                               (security_group.id),
+                                               method='DELETE')
+        return resp.status == httplib.NO_CONTENT
+
+    def _to_security_group_rule(self, obj):
+        ip_range = group = tenant_id = parent_id = None
+        protocol = from_port = to_port = direction = None
+
+        if 'parent_group_id' in obj:
+            if obj['group'] == {}:
+                ip_range = obj['ip_range'].get('cidr', None)
+            else:
+                group = obj['group'].get('name', None)
+                tenant_id = obj['group'].get('tenant_id', None)
+
+            parent_id = obj['parent_group_id']
+            from_port = obj['from_port']
+            to_port = obj['to_port']
+            protocol = obj['ip_protocol']
+        else:
+            ip_range = obj.get('remote_ip_prefix', None)
+            group = obj.get('remote_group_id', None)
+            tenant_id = obj.get('tenant_id', None)
+
+            parent_id = obj['security_group_id']
+            from_port = obj['port_range_min']
+            to_port = obj['port_range_max']
+            protocol = obj['protocol']
+
+        return OpenStackSecurityGroupRule(
+            id=obj['id'], parent_group_id=parent_id,
+            ip_protocol=protocol, from_port=from_port,
+            to_port=to_port, driver=self, ip_range=ip_range,
+            group=group, tenant_id=tenant_id, direction=direction)
+
+    def ex_create_security_group_rule(self, security_group, ip_protocol,
+                                      from_port, to_port, cidr=None,
+                                      source_security_group=None):
+        """
+        Create a new Rule in a Security Group
+
+        :param security_group: Security Group in which to add the rule
+        :type  security_group: :class:`OpenStackSecurityGroup`
+
+        :param ip_protocol: Protocol to which this rule applies
+                            Examples: tcp, udp, ...
+        :type  ip_protocol: ``str``
+
+        :param from_port: First port of the port range
+        :type  from_port: ``int``
+
+        :param to_port: Last port of the port range
+        :type  to_port: ``int``
+
+        :param cidr: CIDR notation of the source IP range for this rule
+        :type  cidr: ``str``
+
+        :param source_security_group: Existing Security Group to use as the
+                                      source (instead of CIDR)
+        :type  source_security_group: L{OpenStackSecurityGroup
+
+        :rtype: :class:`OpenStackSecurityGroupRule`
+        """
+        source_security_group_id = None
+        if type(source_security_group) == OpenStackSecurityGroup:
+            source_security_group_id = source_security_group.id
+
+        return self._to_security_group_rule(self.network_connection.request(
+            '/v2.0/security-group-rules', method='POST',
+            data={'security_group_rule': {
+                'protocol': ip_protocol,
+                'port_range_min': from_port,
+                'port_range_max': to_port,
+                'remote_ip_prefix': cidr,
+                'remote_group_id': source_security_group_id,
+                'security_group_id': security_group.id}}
+        ).object['security_group_rule'])
+
+    def ex_delete_security_group_rule(self, rule):
+        """
+        Delete a Rule from a Security Group.
+
+        :param rule: Rule should be deleted
+        :type  rule: :class:`OpenStackSecurityGroupRule`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('/v2.0/security-group-rules/%s' %
+                                       (rule.id), method='DELETE')
+        return resp.status == httplib.NO_CONTENT
 
 
 class OpenStack_1_1_FloatingIpPool(object):
