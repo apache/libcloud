@@ -147,6 +147,9 @@ Storage
 - [S3] Guess s3 upload content type (LIBCLOUD-958, GITHUB-1195)
   [Iuri de Silvio]
 
+- [S3] Add Amazon S3 (cn-northwest-1) Storage Driver (GITHUB-1241)
+  [@yangkang55]
+
 Other
 ~~~~~
 
