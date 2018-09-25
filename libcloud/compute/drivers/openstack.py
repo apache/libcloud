@@ -59,6 +59,7 @@ __all__ = [
     'OpenStack_1_1_Connection',
     'OpenStack_1_1_NodeDriver',
     'OpenStack_1_1_FloatingIpPool',
+    'OpenStack_2_FloatingIpPool',
     'OpenStack_1_1_FloatingIpAddress',
     'OpenStack_2_PortInterfaceState',
     'OpenStack_2_PortInterface',
@@ -3251,9 +3252,28 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/v2.0/security-group-rules/%s' %
-                                       (rule.id), method='DELETE')
+        resp = self.network_connection.request(
+            '/v2.0/security-group-rules/%s' % (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
+
+    def _to_floating_ip_pool(self, obj):
+        return OpenStack_2_FloatingIpPool(obj['id'], obj['name'],
+                                          self.network_connection)
+
+    def _to_floating_ip_pools(self, obj):
+        pool_elements = obj['networks']
+        return [self._to_floating_ip_pool(pool) for pool in pool_elements]
+
+    def ex_list_floating_ip_pools(self):
+        """
+        List available floating IP pools
+
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpPool`
+        """
+        return self._to_floating_ip_pools(
+            self.network_connection.request('/v2.0/networks?router:external'
+                                            '=True&fields=id&fields='
+                                            'name').object)
 
 
 class OpenStack_1_1_FloatingIpPool(object):
@@ -3359,6 +3379,104 @@ class OpenStack_1_1_FloatingIpAddress(object):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
                 ' pool=%s, driver=%s>'
                 % (self.id, self.ip_address, self.pool, self.driver))
+
+
+class OpenStack_2_FloatingIpPool(OpenStack_1_1_FloatingIpPool):
+    """
+    Floating IP Pool info.
+    """
+
+    def __init__(self, id, name, connection):
+        self.id = id
+        self.name = name
+        self.connection = connection
+
+    def _to_floating_ips(self, obj):
+        ip_elements = obj['floatingips']
+        return [self._to_floating_ip(ip) for ip in ip_elements]
+
+    def _to_floating_ip(self, obj):
+        instance_id = None
+
+        # In neutron version prior to 13.0.0 port_details does not exists
+        if 'port_details' not in obj and 'port_id' in obj:
+            port = self.connection.driver.ex_get_port(obj['port_id'])
+            if port:
+                obj['port_details'] = {"device_id": port.extra["device_id"],
+                                       "device_owner":
+                                           port.extra["device_owner"],
+                                       "mac_address":
+                                           port.extra["mac_address"]}
+
+        if 'port_details' in obj and obj['port_details']:
+            if obj['port_details']['device_owner'] == 'compute:nova':
+                instance_id = obj['port_details']['device_id']
+
+        ip_address = obj['floating_ip_address']
+        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
+                                               ip_address=ip_address,
+                                               pool=self,
+                                               node_id=instance_id,
+                                               driver=self.connection.driver)
+
+    def list_floating_ips(self):
+        """
+        List floating IPs in the pool
+
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        return self._to_floating_ips(
+            self.connection.request('/v2.0/floatingips').object)
+
+    def get_floating_ip(self, ip):
+        """
+        Get specified floating IP from the pool
+
+        :param      ip: floating IP to get
+        :type       ip: ``str``
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        floating_ips = self._to_floating_ips(
+            self.connection.request('/v2.0/floatingips?floating_ip_address'
+                                    '=%s' % ip).object)
+        return floating_ips[0]
+
+    def create_floating_ip(self):
+        """
+        Create new floating IP in the pool
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        resp = self.connection.request('/v2.0/floatingips',
+                                       method='POST',
+                                       data={'floatingip':
+                                             {'floating_network_id': self.id}}
+                                       )
+        data = resp.object['floatingip']
+        id = data['id']
+        ip_address = data['floating_ip_address']
+        return OpenStack_1_1_FloatingIpAddress(id=id,
+                                               ip_address=ip_address,
+                                               pool=self,
+                                               node_id=None,
+                                               driver=self.connection.driver)
+
+    def delete_floating_ip(self, ip):
+        """
+        Delete specified floating IP from the pool
+
+        :param      ip: floating IP to remove
+        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('/v2.0/floatingips/%s' % ip.id,
+                                       method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
+    def __repr__(self):
+        return ('<OpenStack_2_FloatingIpPool: name=%s>' % self.name)
 
 
 class OpenStack_2_SubNet(object):
