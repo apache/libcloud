@@ -2688,11 +2688,12 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                 mac_address=element['mac_address'],
                 name=element['name'],
                 network_id=element['network_id'],
-                project_id=element['project_id'],
-                port_security_enabled=element['port_security_enabled'],
-                revision_number=element['revision_number'],
+                project_id=element.get('project_id', None),
+                port_security_enabled=element.get('port_security_enabled',
+                                                  None),
+                revision_number=element.get('revision_number', None),
                 security_groups=element['security_groups'],
-                tags=element['tags'],
+                tags=element.get('tags', None),
                 tenant_id=element['tenant_id'],
                 updated=updated,
             )
@@ -3398,8 +3399,9 @@ class OpenStack_2_FloatingIpPool(OpenStack_1_1_FloatingIpPool):
     def _to_floating_ip(self, obj):
         instance_id = None
 
+        print(obj)
         # In neutron version prior to 13.0.0 port_details does not exists
-        if 'port_details' not in obj and 'port_id' in obj:
+        if 'port_details' not in obj and 'port_id' in obj and obj['port_id']:
             port = self.connection.driver.ex_get_port(obj['port_id'])
             if port:
                 obj['port_details'] = {"device_id": port.extra["device_id"],
