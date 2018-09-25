@@ -1399,24 +1399,6 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         self.assertEqual(pool.delete_floating_ip.call_count, 1)
 
-    def test_ex_list_network(self):
-        networks = self.driver.ex_list_networks()
-        network = networks[0]
-
-        self.assertEqual(len(networks), 3)
-        self.assertEqual(network.name, 'test1')
-        self.assertEqual(network.cidr, '127.0.0.0/24')
-
-    def test_ex_create_network(self):
-        network = self.driver.ex_create_network(name='test1',
-                                                cidr='127.0.0.0/24')
-        self.assertEqual(network.name, 'test1')
-        self.assertEqual(network.cidr, '127.0.0.0/24')
-
-    def test_ex_delete_network(self):
-        network = self.driver.ex_list_networks()[0]
-        self.assertTrue(self.driver.ex_delete_network(network=network))
-
     def test_ex_get_metadata_for_node(self):
         image = NodeImage(id=11, name='Ubuntu 8.10 (intrepid)', driver=self.driver)
         size = NodeSize(1, '256 slice', None, None, None, None, driver=self.driver)
@@ -1696,6 +1678,38 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(image_member.created, '2018-03-02T14:19:38Z')
         self.assertEqual(image_member.extra['updated'], '2018-03-02T14:20:37Z')
         self.assertEqual(image_member.extra['schema'], '/v2/schemas/member')
+
+    def test_ex_list_networks(self):
+        networks = self.driver.ex_list_networks()
+        network = networks[0]
+
+        self.assertEqual(len(networks), 2)
+        self.assertEqual(network.name, 'net1')
+        self.assertEqual(network.extra['subnets'], ['54d6f61d-db07-451c-9ab3-b9609b6b6f0b'])
+
+    def test_ex_list_subnets(self):
+        subnets = self.driver.ex_list_subnets()
+        subnet = subnets[0]
+
+        self.assertEqual(len(subnets), 2)
+        self.assertEqual(subnet.name, 'private-subnet')
+        self.assertEqual(subnet.cidr, '10.0.0.0/24')
+
+    def test_ex_list_network(self):
+        networks = self.driver.ex_list_networks()
+        network = networks[0]
+
+        self.assertEqual(len(networks), 2)
+        self.assertEqual(network.name, 'net1')
+
+    def test_ex_create_network(self):
+        network = self.driver.ex_create_network(name='net1',
+                                                cidr='127.0.0.0/24')
+        self.assertEqual(network.name, 'net1')
+
+    def test_ex_delete_network(self):
+        network = self.driver.ex_list_networks()[0]
+        self.assertTrue(self.driver.ex_delete_network(network=network))
 
     def test_ex_list_ports(self):
         ports = self.driver.ex_list_ports()
@@ -2256,6 +2270,26 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
         return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v2_1337_v2_0_networks(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__networks.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == 'POST':
+            body = self.fixtures.load('_v2_0__networks_POST.json')
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v2_1337_v2_0_networks_d32019d3_bc6e_4319_9c1d_6722fc136a22(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__networks_POST.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_subnets(self, method, url, body, headers):
+        body = self.fixtures.load('_v2_0__subnets.json')
+        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
