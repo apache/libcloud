@@ -85,7 +85,7 @@ DRIVERS = {
     ('libcloud.storage.drivers.oss', 'OSSStorageDriver'),
     Provider.DIGITALOCEAN_SPACES:
     ('libcloud.storage.drivers.digitalocean_spaces',
-         'DigitalOceanSpacesStorageDriver'),
+     'DigitalOceanSpacesStorageDriver'),
 }
 
 
