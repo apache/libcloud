@@ -13,7 +13,7 @@
             "name": "ftp", 
             "security_group_rules": [
                 {
-                    "security_group_id": "4",
+                    "security_group_id": 4,
                     "direction": "ingress",
                     "port_range_max": 21, 
                     "port_range_min": 20, 

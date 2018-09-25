@@ -2370,7 +2370,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         if method == 'DELETE':
             body = ''
-            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_v2_0_subnets(self, method, url, body, headers):
         body = self.fixtures.load('_v2_0__subnets.json')
@@ -2391,7 +2391,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         if method == 'DELETE':
             body = ''
-            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
     
     def _v2_1337_snapshots_detail(self, method, url, body, headers):
         body = self.fixtures.load('_v2_0__snapshots.json')
@@ -2408,15 +2408,33 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         if method == 'DELETE':
             body = ''
-            return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_v2_0_security_groups(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('_v2_0__security_group.json')
             return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
         if method == 'GET':
+            body = self.fixtures.load('_v2_0__security_groups.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_security_groups_6(self, method, url, body, headers):
+        if method == 'GET':
             body = self.fixtures.load('_v2_0__security_group.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_security_group_rules(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__security_group_rule.json')
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_security_group_rules_2(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
