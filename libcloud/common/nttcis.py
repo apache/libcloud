@@ -33,7 +33,7 @@ from keyword import iskeyword
 #
 # 1.0 - Copied from OpSource API, named provider details.
 
-# setup a few variables to represent all of the DimensionData cloud namespaces
+# setup a few variables to represent all of the NTTC-CIS cloud namespaces
 NAMESPACE_BASE = "http://oec.api.opsource.net/schemas"
 ORGANIZATION_NS = NAMESPACE_BASE + "/organization"
 SERVER_NS = NAMESPACE_BASE + "/server"
@@ -47,45 +47,40 @@ TYPES_URN = "urn:didata.com:api:cloud:types"
 
 # API end-points
 API_ENDPOINTS = {
-    'dd-na': {
+    'na': {
         'name': 'North America (NA)',
         'host': 'api-na.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-eu': {
+    'eu': {
         'name': 'Europe (EU)',
         'host': 'api-eu.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-au': {
+    'au': {
         'name': 'Australia (AU)',
         'host': 'api-au.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-au-gov': {
+    'au-gov': {
         'name': 'Australia Canberra ACT (AU)',
         'host': 'api-canberra.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-af': {
+    'af': {
         'name': 'Africa (AF)',
         'host': 'api-mea.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-ap': {
+    'ap': {
         'name': 'Asia Pacific (AP)',
         'host': 'api-ap.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-latam': {
-        'name': 'South America (LATAM)',
-        'host': 'api-latam.dimensiondata.com',
-        'vendor': 'DimensionData'
-    },
-    'dd-canada': {
+    'canada': {
         'name': 'Canada (CA)',
         'host': 'api-canada.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
     'is-na': {
         'name': 'North America (NA)',
@@ -617,7 +612,7 @@ class NttCisConnection(ConnectionUserAndKey):
 
     def _get_orgId(self):
         """
-        Send the /myaccount API request to DimensionData cloud and parse the
+        Send the /myaccount API request to NTTC-CIS cloud and parse the
         'orgId' from the XML response object. We need the orgId to use most
         of the other API functions
         """
@@ -1692,8 +1687,8 @@ class NttCisTagKey(object):
         self.display_on_report = display_on_report
 
     def __repr__(self):
-        return (('NttCisTagKey: name=%s>')
-                % (self.name))
+        return (('NttCisTagKey: id=%s name=%s>')
+                % (self.id, self.name))
 
 
 class NttCisFactory(object):
@@ -2035,3 +2030,7 @@ class Generic:
     def __repr__(self):
         values = ','.join("{}={!r}".format(k, v) for k,v in self.__data.items())
         return values
+
+
+def cloud_factory(from_dict: dict):
+    pass

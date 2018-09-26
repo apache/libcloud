@@ -296,7 +296,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = False
         >>> DimensionData = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -331,7 +331,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -1306,6 +1306,12 @@ class NttCisNodeDriver(NodeDriver):
             'snapshot/snapshot',
             params=params).object)
 
+    def get_snapshot(self, snapshot_id: str) -> list:
+        return self._to_snapshot(self.connection.request_with_orgId_api_2(
+                                 'snapshot/snapshot/%s' % snapshot_id).object)
+
+
+
     def ex_disable_snapshots(self, node: str) -> bool:
         update_node = ET.Element('disableSnapshotService',
                                  {'xmlns': TYPES_URN})
@@ -1345,6 +1351,9 @@ class NttCisNodeDriver(NodeDriver):
             data=ET.tostring(update_node)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_create_snapshot_preview_server(self, ):
+        pass
 
     def ex_create_anti_affinity_rule(self, node_list):
         """
@@ -2306,7 +2315,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -2844,7 +2853,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_change_storage_size(self, node, disk_id, size):
+    def ex_change_storage_size(self, disk_id, size):
         """
         Change the size of a disk
 
@@ -2859,15 +2868,23 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        create_node = ET.Element('ChangeDiskSize', {'xmlns': SERVER_NS})
+        create_node = ET.Element('expandDisk', {'xmlns': TYPES_URN,
+                                                'id': disk_id})
         ET.SubElement(create_node, 'newSizeGb').text = str(size)
+        '''
+        This code is for version 1 of MCP, need version 2
         result = self.connection.request_with_orgId_api_1(
             'server/%s/disk/%s/changeSize' %
             (node.id, disk_id),
             method='POST',
             data=ET.tostring(create_node)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        '''
+        result = self.connection.request_with_orgId_api_2(
+            'server/expandDisk',
+            method='POST',
+            data=ET.tostring(create_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_reconfigure_node(self, node, memory_gb=None, cpu_count=None, cores_per_socket=None,
                             cpu_performance=None):
@@ -3022,7 +3039,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_base_image_by_id(self, id):
         """
-        Gets a Base image in the Dimension Data Cloud given the id
+        Gets a Base image in the NTTC-CIS Cloud given the id
 
         :param id: The id of the image
         :type  id: ``str``
@@ -3035,7 +3052,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_customer_image_by_id(self, id):
         """
-        Gets a Customer image in the Dimension Data Cloud given the id
+        Gets a Customer image in the NTTC-CIS Cloud given the id
 
         :param id: The id of the image
         :type  id: ``str``
@@ -3048,7 +3065,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_image_by_id(self, id):
         """
-        Gets a Base/Customer image in the Dimension Data Cloud given the id
+        Gets a Base/Customer image in the NTTC-CIS Cloud given the id
 
         Note: This first checks the base image
               If it is not a base image we check if it is a customer image
@@ -3070,7 +3087,7 @@ class NttCisNodeDriver(NodeDriver):
     def ex_create_tag_key(self, name, description=None,
                           value_required=True, display_on_report=True):
         """
-        Creates a tag key in the Dimension Data Cloud
+        Creates a tag key in the NTTC-CIS Cloud
 
         :param name: The name of the tag key (required)
         :type  name: ``str``
@@ -3106,7 +3123,7 @@ class NttCisNodeDriver(NodeDriver):
     def ex_list_tag_keys(self, id=None, name=None,
                          value_required=None, display_on_report=None):
         """
-        List tag keys in the Dimension Data Cloud
+        List tag keys in the NTTC-CIS Cloud
 
         :param id: Filter the list to the id of the tag key
         :type  id: ``str``
@@ -3160,6 +3177,8 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_tag_key_by_name(self, name):
         """
+        NOTICE: Tag key is one of those instances where Libloud handles the search of a list for the client code.
+                This behavior exists inconsistently across libcloud.
         Get a specific tag key by Name
 
         :param name: Name of the tag key you want (required)
@@ -3239,7 +3258,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_apply_tag_to_asset(self, asset, tag_key, value=None):
         """
-        Apply a tag to a Dimension Data Asset
+        Apply a tag to a NTTC-CIS Asset
 
         :param asset: The asset to apply a tag to. (required)
         :type  asset: :class:`Node` or :class:`NodeImage` or
@@ -3309,7 +3328,7 @@ class NttCisNodeDriver(NodeDriver):
                      tag_key_name=None, tag_key_id=None, value=None,
                      value_required=None, display_on_report=None):
         """
-        List tags in the Dimension Data Cloud
+        List tags in the NTTC-CIS Cloud
 
         :param asset_id: Filter the list by asset id
         :type  asset_id: ``str``
@@ -3467,7 +3486,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -3508,7 +3527,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -3558,7 +3577,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -3691,7 +3710,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -3796,7 +3815,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -3835,7 +3854,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -3876,7 +3895,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -3908,7 +3927,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.common.dimensiondata import DimensionDataPort
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -4011,7 +4030,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.common.dimensiondata import DimensionDataPort
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')
@@ -4110,7 +4129,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
         >>> cls = get_driver(Provider.DIMENSIONDATA)
         >>> driver = cls('myusername','mypassword', region='dd-au')

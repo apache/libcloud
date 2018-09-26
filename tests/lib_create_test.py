@@ -236,5 +236,19 @@ def test_add_pool_member(compute_driver, lbdriver):
     print(result)
 
 
-def test_create_server_monitor(compute_driver):
-    pass
+def test_create_and_apply_tag(compute_driver, compute_driver_na):
+    tag_name = "sdk_test_tag"
+    description = "Tagged assets for test domain"
+    result = compute_driver_na.ex_create_tag_key(tag_name, description=description)
+    assert result is True
+    key = compute_driver_na.ex_get_tag_key_by_name(tag_name)
+    server_name = 'web2'
+    net_domain_name = 'sdk_test_1'
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    assets = [compute_driver.list_nodes(ex_name=server_name)[0],
+           [nd for nd in network_domains if nd.name == net_domain_name][0]]
+    for asset in assets:
+        result = compute_driver.ex_apply_tag_to_asset(asset, key, value='IT')
+        assert result is True
+
+

@@ -388,3 +388,14 @@ def test_list_health_monitors(compute_driver, lbdriver):
     for monitor in monitors:
         print(monitor)
 
+
+def test_list_tag_key(compute_driver_na):
+    tag_keys = compute_driver_na.ex_list_tag_keys()
+    for key in tag_keys:
+        print(key)
+
+
+def test_get_snapshot(compute_driver):
+    snapshot_id = '7118cd30-3184-4a3a-b097-2a2d25b9cb28'
+    snapshot = compute_driver.get_snapshot(snapshot_id)
+    print(snapshot)

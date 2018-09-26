@@ -1,8 +1,9 @@
 import pytest
+import time
 import libcloud
 from libcloud import loadbalancer
 from libcloud.compute.drivers.nttcis import NttCisPort
-from libcloud.common.nttcis import NttCisIpAddress, NttCisVlan, NttCisVIPNode
+from libcloud.common.nttcis import NttCisIpAddress, NttCisVlan, NttCisVIPNode, NttCisAPIException
 from tests.lib_create_test import test_deploy_vlan
 
 
@@ -166,6 +167,28 @@ def test_changing_diskspeed_iops(compute_driver):
     compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 240, node.id)
     result = compute_driver.ex_start_node(node)
     assert result is True
+
+
+def test_expand_disk(compute_driver):
+    server_name = "web2"
+    server = compute_driver.list_nodes(ex_name=server_name)[0]
+
+    disk = server.extra['disks'][0]
+    size = 95
+    result = compute_driver.ex_change_storage_size(disk.id, size)
+    assert result is True
+    while True:
+        try:
+            shut_result = compute_driver.ex_shutdown_graceful(server)
+        except NttCisAPIException:
+            time.sleep(2)
+            continue
+        else:
+            break
+    assert shut_result is True
+    compute_driver.ex_wait_for_state('stopped', compute_driver.ex_get_node_by_id, 2, 45, server.id)
+    compute_driver.ex_start_node(server)
+    compute_driver.ex_wait_for_state('running', compute_driver.ex_get_node_by_id, 2, 45, server.id)
 
 
 def test_add_scsi_controller(compute_driver):
@@ -449,4 +472,53 @@ def test_delete_listener(compute_driver, lbdriver):
     listeners = lbdriver.list_balancers(ex_network_domain_id=lbdriver.network_domain_id)
     listener = [l for l in listeners if l.name == listener_name][0]
     result = lbdriver.destroy_balancer(listener)
+    assert result is True
+
+
+def test_add_server_monitor(compute_driver):
+    server_name = "web2"
+    server = compute_driver.list_nodes(ex_name=server_name)[0]
+    service_plan = 'ADVANCED'
+    result = compute_driver.ex_enable_monitoring(server, service_plan=service_plan)
+    assert result is True
+
+
+def test_edit_server_monitor(compute_driver):
+    server_name = "web2"
+    server = compute_driver.list_nodes(ex_name=server_name)[0]
+    service_plan = 'ESSENTIALS'
+    result = compute_driver.ex_update_monitoring_plan(server, service_plan=service_plan)
+    assert result is True
+
+
+def test_delete_server_monitor(compute_driver):
+    server_name = "web2"
+    server = compute_driver.list_nodes(ex_name=server_name)[0]
+    result = compute_driver.ex_disable_monitoring(server)
+    assert result is True
+
+
+def test_delete_tag_key(compute_driver_na):
+    tag_name = "sdk_test_tag"
+    tag_key = compute_driver_na.ex_get_tag_key_by_name(tag_name)
+    tag_id = tag_key.id
+    result = compute_driver_na.ex_remove_tag_key(tag_id)
+    assert result is True
+
+
+def test_modify_tag(compute_driver_na):
+    tag_name = "sdk_test_tag"
+    description = "Tagged assets for NetDomain sdk_test_1"
+    tag_key = compute_driver_na.ex_get_tag_key_by_name(tag_name)
+    result = compute_driver_na.ex_modify_tag_key(tag_key, description=description)
+    assert result is True
+
+
+def test_remove_tag_from_asset(compute_driver, compute_driver_na):
+    tag_name = "sdk_test_tag"
+    tag_key = compute_driver_na.ex_get_tag_key_by_name(tag_name)
+    net_domain_name = 'sdk_test_1'
+    network_domains = compute_driver.ex_list_network_domains(location='EU6')
+    asset = [nd for nd in network_domains if nd.name == net_domain_name][0]
+    result = compute_driver.ex_remove_tag_from_asset(asset, tag_key)
     assert result is True
