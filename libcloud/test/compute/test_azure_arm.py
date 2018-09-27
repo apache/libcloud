@@ -554,6 +554,45 @@ class AzureNodeDriverTests(LibcloudTestCase):
         res_value = snapshot.destroy()
         self.assertTrue(res_value)
 
+    def test_update_network_profile(self):
+        nics = self.driver.ex_list_nics()
+        node = self.driver.list_nodes()[0]
+        network_profile = node.extra['properties']['networkProfile']
+        primary_nic_exists = False
+        num_nics_before = len(network_profile["networkInterfaces"])
+
+        for nic in network_profile["networkInterfaces"]:
+            if "properties" in nic and nic["properties"]["primary"]:
+                primary_nic_exists = True
+        if not primary_nic_exists:
+            network_profile["networkInterfaces"][0]["properties"] = {
+                "primary": True}
+        network_profile["networkInterfaces"].append({"id": nics[0].id})
+        self.driver.ex_update_network_profile_of_node(
+            node, network_profile)
+
+        network_profile = node.extra['properties']['networkProfile']
+        num_nics_after = len(network_profile["networkInterfaces"])
+
+        self.assertEqual(num_nics_after, num_nics_before + 1)
+
+    def test_update_nic_properties(self):
+        nics = self.driver.ex_list_nics()
+        nic_to_update = nics[0]
+        nic_properties = nic_to_update.extra
+        ip_configs = nic_properties['ipConfigurations']
+        ip_configs[0]['properties']['primary'] = True
+        updated_nic = self.driver.ex_update_nic_properties(
+            nic_to_update, resource_group='REVIZOR', properties=nic_properties)
+        self.assertTrue(
+            updated_nic.extra['ipConfigurations'][0]['properties']['primary'])
+
+    def test_check_ip_address_availability(self):
+        networks = self.driver.ex_list_networks()
+        result = self.driver.ex_check_ip_address_availability(
+            'REVIZOR', networks[0], '0.0.0.0')
+        self.assertFalse(result['available'])
+
     def test_get_instance_vhd(self):
         with mock.patch.object(self.driver, '_ex_delete_old_vhd'):
             # Default storage suffix
