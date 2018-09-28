@@ -3240,6 +3240,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return self._to_security_group_rule(self.network_connection.request(
             '/v2.0/security-group-rules', method='POST',
             data={'security_group_rule': {
+                'direction': 'ingress',
                 'protocol': ip_protocol,
                 'port_range_min': from_port,
                 'port_range_max': to_port,
