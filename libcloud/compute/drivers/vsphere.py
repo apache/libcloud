@@ -26,13 +26,14 @@ import logging
 try:
     from pyVim import connect
     from pyVmomi import vim, vmodl
+    from pyVim.task import WaitForTask
 except ImportError:
     raise ImportError('Missing "pyvmomi" dependency. You can install it '
                       'using pip - pip install pyvmomi')
 
 import atexit
 
-from libcloud.common.types import InvalidCredsError
+from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeSize
 from libcloud.compute.base import NodeImage, NodeLocation
@@ -70,10 +71,11 @@ class VSphereNodeDriver(NodeDriver):
                                         'password are valid')
             if 'connection refused' in error_message or 'is not a vim server' \
                                                         in error_message:
-                raise Exception('Check that the host provided is a '
-                                'vSphere installation')
+                raise LibcloudError('Check that the host provided is a '
+                                    'vSphere installation')
             if 'name or service not known' in error_message:
-                raise Exception('Check that the vSphere host is accessible')
+                raise LibcloudError(
+                    'Check that the vSphere host is accessible')
             if 'certificate verify failed' in error_message:
                 # bypass self signed certificates
                 try:
@@ -91,7 +93,7 @@ class VSphereNodeDriver(NodeDriver):
                 )
                 atexit.register(connect.Disconnect, self.connection)
             else:
-                raise Exception('Cannot connect to vSphere')
+                raise LibcloudError('Cannot connect to vSphere')
 
     def list_locations(self):
         """
@@ -312,12 +314,11 @@ class VSphereNodeDriver(NodeDriver):
             'summary.runtime.host', 'summary.config.instanceUuid',
             'summary.config.annotation', 'summary.runtime.powerState',
             'summary.runtime.bootTime', 'summary.guest.ipAddress',
-            'summary.overallStatus', 'customValue'
+            'summary.overallStatus', 'customValue', 'snapshot'
         ]
         content = self.connection.RetrieveContent()
         view = content.viewManager.CreateContainerView(
             content.rootFolder, [vim.VirtualMachine], True)
-
         i = 0
         vm_dict = {}
         while i < len(vm_properties):
@@ -466,7 +467,8 @@ class VSphereNodeDriver(NodeDriver):
             'memory_MB': memory,
             'cpus': cpus,
             'overall_status': overall_status,
-            'metadata': {}
+            'metadata': {},
+            'snapshots': []
         }
 
         if disk:
@@ -495,6 +497,15 @@ class VSphereNodeDriver(NodeDriver):
             except:
                 # IPV6 not supported
                 pass
+        if vm.get('snapshot'):
+            snapshots = [{
+                'id': s.id,
+                'name': s.name,
+                'description': s.description,
+                'created': s.createTime.strftime('%Y-%m-%d %H:%M'),
+                'state': s.state,
+                } for s in vm['snapshot'].rootSnapshotList]
+            extra['snapshots'] = snapshots
 
         for custom_field in vm.get('customValue', []):
             key_id = custom_field.key
@@ -549,7 +560,8 @@ class VSphereNodeDriver(NodeDriver):
             "memory_MB": memory,
             "cpus": cpus,
             "overallStatus": overall_status,
-            "metadata": {}
+            "metadata": {},
+            "snapshots": []
         }
 
         if disk:
@@ -578,6 +590,15 @@ class VSphereNodeDriver(NodeDriver):
             except:
                 # IPV6 not supported
                 pass
+        if virtual_machine.snapshot:
+            snapshots = [{
+                'id': s.id,
+                'name': s.name,
+                'description': s.description,
+                'created': s.createTime.strftime('%Y-%m-%d %H:%M'),
+                'state': s.state,
+                } for s in virtual_machine.snapshot.rootSnapshotList]
+            extra['snapshots'] = snapshots
 
         for custom_field in virtual_machine.customValue:
             key_id = custom_field.key
@@ -594,45 +615,92 @@ class VSphereNodeDriver(NodeDriver):
         """
         """
         vm = self.find_by_uuid(node.id)
-        try:
-            vm.RebootGuest()
-        except:
-            pass
-        return True
+        return self.wait_for_task(vm.RebootGuest())
 
     def destroy_node(self, node):
         """
         """
         vm = self.find_by_uuid(node.id)
-        try:
-            vm.PowerOff()
-        except:
-            pass
-        try:
-            vm.Destroy()
-        except:
-            pass
-        return True
+        self.ex_stop_node(vm)
+        return self.wait_for_task(vm.Destroy())
 
     def ex_stop_node(self, node):
         """
         """
         vm = self.find_by_uuid(node.id)
-        try:
-            vm.PowerOff()
-        except:
-            pass
-        return True
+        return self.wait_for_task(vm.PowerOff())
 
     def ex_start_node(self, node):
         """
         """
         vm = self.find_by_uuid(node.id)
-        try:
-            vm.PowerOn()
-        except:
-            pass
-        return True
+        return self.wait_for_task(vm.PowerOn())
+
+    def ex_list_snapshots(self, node):
+        """
+        List node snapshots
+        """
+        vm = self.find_by_uuid(node.id)
+        if not vm.snapshot:
+            return []
+        snapshots = vm.snapshot.rootSnapshotList
+        return [{'id': s.id,
+                 'name': s.name,
+                 'description': s.description,
+                 'created': s.createTime.strftime('%Y-%m-%d %H:%M'),
+                 'state': s.state} for s in snapshots]
+
+    def ex_create_snapshot(self, node, snapshot_name, description='',
+                           dump_memory=False, quiesce=False):
+        """
+        Create node snapshot
+        """
+        vm = self.find_by_uuid(node.id)
+        return WaitForTask(
+            vm.CreateSnapshot(snapshot_name, description, dump_memory, quiesce)
+        )
+
+    def ex_remove_snapshot(self, node, snapshot_name=None, remove_children=True):
+        """
+        Remove a snapshot from node.
+        If snapshot_name is not defined remove the last one.
+        """
+        vm = self.find_by_uuid(node.id)
+        if not vm.snapshot:
+            raise LibcloudError(
+                "Remove snapshot failed. No snapshots for node %s" % node.name)
+        snapshots = vm.snapshot.rootSnapshotList
+        if not snapshot_name:
+            snapshot = snapshots[-1].snapshot
+        else:
+            for s in snapshots:
+                if snapshot_name == s.name:
+                    snapshot = s.snapshot
+                    break
+            else:
+                raise LibcloudError("Snapshot `%s` not found" % snapshot_name)
+        return self.wait_for_task(snapshot.RemoveSnapshot_Task(
+            removeChildren=remove_children))
+
+    def ex_revert_to_snapshot(self, node, snapshot_name=None):
+        """
+        Revert node to a specific snapshot.
+        If snapshot_name is not defined revert to the last one.
+        """
+        vm = self.find_by_uuid(node.id)
+        if not vm.snapshot:
+            raise LibcloudError("Revert failed. No snapshots for node %s" % node.name)
+        snapshots = vm.snapshot.rootSnapshotList
+        if not snapshot_name:
+            snapshot = snapshots[-1].snapshot
+        else:
+            for s in snapshots:
+                if snapshot_name == s.name:
+                    snapshot = s.snapshot
+                    break
+            else:
+                raise LibcloudError("Snapshot `%s` not found" % snapshot_name)
+        return self.wait_for_task(snapshot.RevertToSnapshot_Task())
 
     def find_by_uuid(self, node_uuid):
         """Searches VMs for a given uuid
@@ -641,7 +709,7 @@ class VSphereNodeDriver(NodeDriver):
         vm = self.connection.content.searchIndex.FindByUuid(None, node_uuid,
                                                             True, True)
         if not vm:
-            raise Exception("Unable to locate VirtualMachine.")
+            raise LibcloudError("Unable to locate VirtualMachine.")
         return vm
 
     def find_custom_field_key(self, key_id):
@@ -684,15 +752,16 @@ class VSphereNodeDriver(NodeDriver):
         task_done = False
         while not task_done:
             if (time.time() - start_time >= timeout):
-                raise Exception('Timeout while waiting '
-                                'for import task Id %s'
-                                % task.info.id)
+                raise LibcloudError('Timeout while waiting '
+                                    'for import task Id %s'
+                                    % task.info.id)
             if task.info.state == 'success':
-                return task.info.result
+                if task.info.result and task.info.result != 'success':
+                    return task.info.result
+                return True
 
             if task.info.state == 'error':
-                print "there was an error"
-                task_done = True
+                raise LibcloudError(task.info.error.msg)
             time.sleep(interval)
 
     def create_node(self, **kwargs):
@@ -830,21 +899,7 @@ class VSphereNodeDriver(NodeDriver):
             spec=clonespec
         )
 
-        result = self.wait_for_task(task)
-
-        if task.info.state == 'error':
-            try:
-                reason = task.info.error.reason
-            except:
-                reason = str(task.info.error)
-            raise Exception(reason)
-
-        node = self._to_node_recursive(result)
-
-        # if network:
-        #     self.ex_connect_network(result, network)
-
-        return node
+        return self._to_node_recursive(self.wait_for_task(task))
 
     def ex_connect_network(self, vm, network_name):
         spec = vim.vm.ConfigSpec()
