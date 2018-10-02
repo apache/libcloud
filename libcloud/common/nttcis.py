@@ -346,12 +346,12 @@ class NttCisResponse(XmlResponse):
                 if message is not None:
                     break
             raise NttCisAPIException(code=code,
-                                            msg=message,
-                                            driver=self.connection.driver)
+                                     msg=message,
+                                     driver=self.connection.driver)
         if self.status is not httplib.OK:
             raise NttCisAPIException(code=self.status,
-                                            msg=body,
-                                            driver=self.connection.driver)
+                                     msg=body,
+                                     driver=self.connection.driver)
 
         return self.body
 
@@ -416,8 +416,8 @@ class NttCisConnection(ConnectionUserAndKey):
                     .format(self.active_api_version)
 
                 raise NttCisAPIException(code=None,
-                                                msg=msg,
-                                                driver=self.driver)
+                                         msg=msg,
+                                         driver=self.driver)
             elif LooseVersion(api_version) > LooseVersion(
                     self.latest_api_version):
                 msg = 'Unsupported API Version. The version specified is ' \
@@ -426,8 +426,8 @@ class NttCisConnection(ConnectionUserAndKey):
                     .format(self.active_api_version)
 
                 raise NttCisAPIException(code=None,
-                                                msg=msg,
-                                                driver=self.driver)
+                                         msg=msg,
+                                         driver=self.driver)
 
             else:
                 # Overwrite default version using the version user specified
@@ -485,7 +485,6 @@ class NttCisConnection(ConnectionUserAndKey):
             action=action,
             params=params, data=data,
             method=method, headers=headers)
-
 
     def paginated_request_with_orgId_api_2(self, action, params=None, data='',
                                            headers=None, method='GET',
@@ -597,7 +596,8 @@ class NttCisConnection(ConnectionUserAndKey):
             if isinstance(result, Node):
                 object_state = result.state
             else:
-                # BUG: need to use result.status.lower() or will never match if client uses lower case
+                # BUG: need to use result.status.lower() or
+                #  will never match if client uses lower case
                 object_state = result.status.lower()
 
             if object_state is state or object_state in state:
@@ -607,8 +607,8 @@ class NttCisConnection(ConnectionUserAndKey):
 
         msg = 'Status check for object %s timed out' % (result)
         raise NttCisAPIException(code=object_state,
-                                        msg=msg,
-                                        driver=self.driver)
+                                 msg=msg,
+                                 driver=self.driver)
 
     def _get_orgId(self):
         """
@@ -812,7 +812,8 @@ class NttCisScsiController(object):
     """
     A class that represents the disk on a server
     """
-    def __init__(self, id: str=None, adapter_type: str=None, bus_number: str=None, state: str=None):
+    def __init__(self, id: str=None, adapter_type: str=None,
+                 bus_number: str=None, state: str=None):
         """
         Instantiate a new :class:`DimensionDataServerDisk`
 
@@ -875,8 +876,9 @@ class NttCisSnapshot(object):
     """
     NTTCIS Class representing server snapshots
     """
-    def __init__(self, server_id, service_plan, id=None, window_id=None, start_time=None,
-                 state=None, end_time=None, type=None, expiry_time=None, action=None):
+    def __init__(self, server_id, service_plan, id=None, window_id=None,
+                 start_time=None, state=None, end_time=None,
+                 type=None, expiry_time=None, action=None):
         self.server_id = server_id
         self.service_plan = service_plan
         self.id = id
@@ -894,15 +896,16 @@ class NttCisSnapshot(object):
                  'id=%s, start_time=%s, '
                  'end_time=%s, self.type=%s, '
                  'self.expiry_timne=%s, self.state=%s>')
-                % (self.id, self.start_time, self.end_time, self.type, self.expiry_time, self.state))
+                % (self.id, self.start_time, self.end_time,
+                   self.type, self.expiry_time, self.state))
 
 
 class NttCisReservedIpAddress(object):
     """
     NTTCIS Rerverse IPv4 address
     """
-
-    def __init__(self, datacenter_id, exclusive, vlan_id, ip, description=None):
+    def __init__(self, datacenter_id, exclusive, vlan_id, ip,
+                 description=None):
         self.datacenter_id = datacenter_id
         self.exclusive = exclusive
         self.vlan_id = vlan_id
@@ -911,15 +914,16 @@ class NttCisReservedIpAddress(object):
 
     def __repr__(self):
         return (('<NttCisReservedIpAddress '
-                 'datacenterId=%s, exclusiven=%s, vlanId=%s, ipAddress=%s, description=-%s') %
-                (self.datacenter_id, self.exclusive, self.vlan_id, self.ip, self.description))
+                 'datacenterId=%s, exclusiven=%s, vlanId=%s, ipAddress=%s,'
+                 ' description=-%s') % (self.datacenter_id, self.exclusive,
+                                        self.vlan_id, self.ip,
+                                        self.description))
 
 
 class NttCisFirewallRule(object):
     """
     NTTCIS Firewall Rule for a network domain
     """
-
     def __init__(self, id, name, action, location, network_domain,
                  status, ip_version, protocol, source, destination,
                  enabled):
@@ -947,9 +951,7 @@ class NttCisFirewallRule(object):
 
 """
 class NttCisFirewallAddress(object):
-    
     The source or destination model in a firewall rule
-    
     def __init__(self, any_ip, ip_address, ip_prefix_size,
                  port_begin, port_end, address_list_id,
                  port_list_id):
@@ -961,7 +963,6 @@ class NttCisFirewallAddress(object):
         self.port_end = port_end
         self.address_list_id = address_list_id
         self.port_list_id = port_list_id
-
     def __repr__(self):
         return (
             '<NttCisFirewallAddress: any_ip=%s, ip_address=%s, '
@@ -985,10 +986,14 @@ class NttCisFirewallAddress(object):
                  port_list_id=None):
         """
         param any_ip: used to set ip address to "ANY"
-        :param ip_address: An ip address of either IPv4 decimal notation or an IPv6 address
+        :param ip_address: An ip address of either IPv4 decimal
+                           notation or an IPv6 address
         :param ip_prefix_size: An integer denoting prefix size.
-        :param port_begin: integer for an individual port or start of a list  of ports if not using a port list
-        :param port_end: integer required if using a list of ports (NOT a port list but a list starting with port begin)
+        :param port_begin: integer for an individual port or start of a list
+                           of ports if
+                           not using a port list
+        :param port_end: integer required if using a list of ports
+                         (NOT a port list but a list starting with port begin)
         :param address_list_id: An id identifying an address list
         :param port_list_id:  An id identifying a port list
         """
@@ -1427,13 +1432,6 @@ class NttCisBackupDetails(object):
                 % (self.asset_id))
 
 
-class NttCisDataCenter(object):
-    """
-    Class that represents a Cloud Infrastructure Datacenter
-    """
-
-
-
 class NttCisBackupClient(object):
     """
     An object that represents a backup client
@@ -1443,33 +1441,25 @@ class NttCisBackupClient(object):
                  alert=None, running_job=None):
         """
         Initialize an instance of :class:`NttCisBackupClient`
-
         :param id: Unique ID for the client
         :type  id: ``str``
-
         :param type: The type of client that this client is
         :type  type: :class:`NttCisBackupClientType`
-
         :param status: The states of this particular backup client.
                        i.e. (Unregistered)
         :type  status: ``str``
-
         :param schedule_policy: The schedule policy for this client
                                 NOTE: NTTCIS only sends back the name
                                 of the schedule policy, no further details
         :type  schedule_policy: ``str``
-
         :param storage_policy: The storage policy for this client
                                NOTE: NTTCIS only sends back the name
                                of the storage policy, no further details
         :type  storage_policy: ``str``
-
         :param download_url: The download url for this client
         :type  download_url: ``str``
-
         :param alert: The alert configured for this backup client (optional)
         :type  alert: :class:`NttCisBackupClientAlert`
-
         :param alert: The running job for the client (optional)
         :type  alert: :class:`NttCisBackupClientRunningJob`
         """
@@ -1924,113 +1914,3 @@ class NttCisNic(object):
         return ('<NttCisNic: private_ip_v4=%s, vlan=%s,'
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
-
-
-#####  Testing new concept below this line
-
-class XmlListConfig(list):
-
-    def __init__(self, elem_list):
-        for element in elem_list:
-            if element is not None:
-                # treat like dict
-                #print(element.attrib, len(element))
-                if len(element) >= 0 or element[0].tag != element[1].tag:
-                    self.append(XmlDictConfig(element))
-                # treat like list
-                elif element[0].tag == element[1].tag:
-                    if 'property' in element.tag:
-                        self.append({element.attrib.get('name'): element.attrib.get('value')})
-                    else:
-                        self.append(element.attrib)
-            elif element.text:
-                text = element.text.strip()
-                if text:
-                    self.append(text)
-
-
-class XmlDictConfig(dict):
-
-    def __init__(self, parent_element):
-        if parent_element.items():
-            if 'property' in parent_element.tag:
-                self.update({parent_element.attrib.get('name'): parent_element.attrib.get('value')})
-            else:
-                self.update(dict(parent_element.items()))
-
-        for element in parent_element:
-            if len(element) > 0:
-                # treat like dict - we assume that if the first two tags
-                # in a series are different, then they are all different.
-                if len(element) == 1 or element[0].tag != element[1].tag:
-                    elem_dict = XmlDictConfig(element)
-
-                # treat like list - we assume that if the first two tags
-                # in a series are the same, then the rest are the same.
-                else:
-                    # here, we put the list in dictionary; the key is the
-                    # tag name the list elements all share in common, and
-                    # the value is the list itself
-                    elem_dict = {element[0].tag.split('}')[1]: XmlListConfig(element)}
-
-                # if the tag has attributes, add those to the dict
-                if element.items():
-                    elem_dict.update(dict(element.items()))
-                self.update({element.tag.split('}')[1]: elem_dict})
-            # this assumes that if you've got an attribute in a tag,
-            # you won't be having any text. This may or may not be a
-            # good idea -- time will tell. It works for the way we are
-            # currently doing XML configuration files...
-            elif element.items():
-                # It is possible to have duplicate element tags. If so, convert to a dict of lists
-                if element.tag in self:
-                    tmp_list = list()
-                    tmp_dict = dict()
-                    if isinstance(self[element.tag], list):
-                        tmp_list.append(element.tag)
-                    else:
-                        for k, v in self[element.tag].items():
-                            if isinstance(k, XmlListConfig):
-                                tmp_list.append(k)
-                            else:
-                                tmp_dict.update({k: v})
-                        tmp_list.append(tmp_dict)
-                        tmp_list.append(dict(element.items()))
-                    self[element.tag] = tmp_list
-                else:
-                    self.update({element.tag.split('}')[1]: dict(element.items())})
-            # finally, if there are no child tags and no attributes, extract
-            # the text
-            else:
-                self.update({element.tag.split('}')[1]: element.text})
-
-
-class Generic:
-    def __new__(cls, arg):
-        if isinstance(arg, abc.Mapping):
-            return super().__new__(cls)
-        elif isinstance(arg, abc.MutableSequence):
-            return [cls(item) for item in arg]
-        else:
-            return arg
-
-    def __init__(self, mapping):
-        self.__data = {}
-        for key, value in mapping.items():
-            if iskeyword(key):
-                key += '_'
-            self.__data[key] = value
-
-    def __getattr__(self, name):
-        if hasattr(self.__data, name):
-            return getattr(self.__data, name)
-        else:
-            return Generic(self.__data[name])
-
-    def __repr__(self):
-        values = ','.join("{}={!r}".format(k, v) for k,v in self.__data.items())
-        return values
-
-
-def cloud_factory(from_dict: dict):
-    pass

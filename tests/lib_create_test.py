@@ -252,3 +252,22 @@ def test_create_and_apply_tag(compute_driver, compute_driver_na):
         assert result is True
 
 
+def test_create_preivew_server(compute_driver):
+    snapshot_id = '7118cd30-3184-4a3a-b097-2a2d25b9cb28'
+    preview_server_name = 'web2_snapshot'
+    server_description = 'A server created from latest snapshot at preview creation time'
+    server_started = 'true'
+    nics_connected = 'true'
+    tag_name = 'sdk_test_tag'
+    value = 'IT'
+    result = compute_driver.ex_create_snapshot_preview_server(snapshot_id, preview_server_name, server_started,
+                                                              nics_connected=nics_connected,
+                                                              server_description=server_description,
+                                                              tag_key_name=tag_name, tag_value=value)
+    print(result)
+
+
+def test_migrate_preview_server(compute_driver):
+    preview_id = "a598375f-40f4-4745-9556-ef8a8625734d"
+    result = compute_driver.ex_migrate_preview_server(preview_id)
+    assert result is True

@@ -274,10 +274,6 @@ def test_list_snapshots(compute_driver):
         assert 'expiry_time' in snapshot
 
 
-def test_list_nics(compute_driver):
-    result = compute_driver.ex_list_
-
-
 def test_list_vlans(compute_driver):
     vlans = compute_driver.ex_list_vlans()
     print(vlans)

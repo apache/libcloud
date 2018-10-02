@@ -48,8 +48,6 @@ class NttCisLBDriver(Driver):
     type = Provider.NTTCIS
     api_version = 1.0
 
-    #network_domain_id = None
-
     _VALUE_TO_ALGORITHM_MAP = {
         'ROUND_ROBIN': Algorithm.ROUND_ROBIN,
         'LEAST_CONNECTIONS_MEMBER': Algorithm.LEAST_CONNECTIONS_MEMBER,
@@ -72,8 +70,9 @@ class NttCisLBDriver(Driver):
         'REQUIRES_SUPPORT': State.ERROR
     }
 
-    def __init__(self, key, network_domain_id, secret=None, secure=True, host=None, port=None,
-                 api_version=None, region=DEFAULT_REGION, **kwargs):
+    def __init__(self, key, network_domain_id, secret=None, secure=True,
+                 host=None, port=None, api_version=None,
+                 region=DEFAULT_REGION, **kwargs):
 
         self.network_domain_id = network_domain_id
 
@@ -100,25 +99,28 @@ class NttCisLBDriver(Driver):
         kwargs['region'] = self.selected_region
         return kwargs
 
-    def create_balancer(self, name, listener_port=None, port=None, protocol=None,
-                        algorithm=None, members=None, optimization_profile=None,
+    def create_balancer(self, name, listener_port=None, port=None,
+                        protocol=None, algorithm=None, members=None,
+                        optimization_profile=None,
                         ex_listener_ip_address=None):
         """
-        BUG:  libcloud.common.nttcis.NttCisAPIException: CONFIGURATION_NOT_SUPPORTED:
-         optimizationProfile is required for type STANDARD and protocol TCP.
-
+        BUG:  libcloud.common.nttcis.NttCisAPIException:
+        CONFIGURATION_NOT_SUPPORTED: optimizationProfile is required for type
+        STANDARD and protocol TCP.
 
         Create a new load balancer instance
 
         :param name: Name of the new load balancer (required)
         :type  name: ``str``
 
-        :param listener_port: An integer in the range of 1-65535. If not supplied,
-                     it will be taken to mean 'Any Port'
+        :param listener_port: An integer in the range of 1-65535.
+                              If not supplied, it will be taken to
+                               mean 'Any Port'
         :type  port: ``int
 
         :param port: An integer in the range of 1-65535. If not supplied,
-                     it will be taken to mean 'Any Port'  Assumed that node ports will different from listener port.
+                     it will be taken to mean 'Any Port'  Assumed that
+                     node ports will different from listener port.
         :type  port: ``int``
 
         :param protocol: Loadbalancer protocol, defaults to http.
@@ -130,8 +132,10 @@ class NttCisLBDriver(Driver):
         :param algorithm: Load balancing algorithm, defaults to ROUND_ROBIN.
         :type algorithm: :class:`.Algorithm`
 
-        :param optimization_profile: For STANDARD type and protocol TCP an optimization type of
-                         TCP, LAN_OPT, WAN_OPT, MOBILE_OPT, or TCP_LEGACY is required
+        :param optimization_profile: For STANDARD type and protocol TCP
+                                     an optimization type of TCP, LAN_OPT,
+                                      WAN_OPT, MOBILE_OPT, or TCP_LEGACY is
+                                      required
         :type  protcol: ``str``
 
         :param ex_listener_ip_address: Must be a valid IPv4 in dot-decimal
@@ -193,15 +197,18 @@ class NttCisLBDriver(Driver):
                    'listener_ip_address': ex_listener_ip_address}
         )
 
-    def ex_update_listener(self, virtual_listener: NttCisVirtualListener, **kwargs) -> NttCisVirtualListener:
+    def ex_update_listener(self, virtual_listener: NttCisVirtualListener,
+                           **kwargs) -> bool:
         """
         Update a current virtual listener.
         :param virtual_listener: The listener to be updated
         :return: The edited version of the listener
         """
-        edit_listener_elm = ET.Element('editVirtualListener', {'xmlns': TYPES_URN,
-                                                               'id': virtual_listener.id,
-                                                               'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"})
+        edit_listener_elm = ET.Element('editVirtualListener',
+                                       {'xmlns': TYPES_URN,
+                                        'id': virtual_listener.id,
+                                        'xmlns:xsi':
+                                        "http://www.w3.org/2001/XMLSchema-instance"})
         for k, v in kwargs.items():
             if v is None:
                 ET.SubElement(edit_listener_elm, k, {'xsi:nil': 'true'})
@@ -234,8 +241,8 @@ class NttCisLBDriver(Driver):
 
         return self._to_balancers(
             self.connection
-            .request_with_orgId_api_2('networkDomainVip/virtualListener',
-                                      params=params).object)
+                .request_with_orgId_api_2('networkDomainVip/virtualListener',
+                                          params=params).object)
 
     def get_balancer(self, balancer_id):
         """
@@ -431,7 +438,8 @@ class NttCisLBDriver(Driver):
                        connection_rate_limit=2000):
         """
         Inconsistent use of objects.
-        Either always pass an object and have the method get the id, or always pass the id.
+        Either always pass an object and have the method get the id, or
+         always pass the id.
 
         Create a new node
 
@@ -628,7 +636,7 @@ class NttCisLBDriver(Driver):
                                    fallback_persistence_profile=None,
                                    irule=None,
                                    protocol='TCP',
-                                   optimization_profile = None,
+                                   optimization_profile=None,
                                    connection_limit=25000,
                                    connection_rate_limit=2000,
                                    source_port_preservation='PRESERVE'):
@@ -668,8 +676,10 @@ class NttCisLBDriver(Driver):
                          for PERFORMANCE_LAYER_4 choice of ANY, TCP, UDP, HTTP
         :type  protcol: ``str``
 
-        :param optimization_profile: For STANDARD type and protocol TCP an optimization type of
-                         TCP, LAN_OPT, WAN_OPT, MOBILE_OPT, or TCP_LEGACY is required
+        :param optimization_profile: For STANDARD type and protocol
+                                     TCP an optimization type of TCP, LAN_OPT,
+                                      WAN_OPT, MOBILE_OPT,
+                                       or TCP_LEGACY is required
         :type  protcol: ``str``
 
         :param connection_limit: Maximum number
@@ -692,8 +702,9 @@ class NttCisLBDriver(Driver):
             listener_type = 'STANDARD'
 
         if listener_type == 'STANDARD' and optimization_profile is None:
-            raise ValueError(" CONFIGURATION_NOT_SUPPORTED: optimizationProfile is required for type STANDARD and protocol TCP")
-
+            raise ValueError(
+                " CONFIGURATION_NOT_SUPPORTED: optimizationProfile is"
+                " required for type STANDARD and protocol TCP")
 
         create_node_elm = ET.Element('createVirtualListener',
                                      {'xmlns': TYPES_URN})
@@ -724,7 +735,8 @@ class NttCisLBDriver(Driver):
             ET.SubElement(create_node_elm, "persistenceProfileId") \
                 .text = persistence_profile.id
         if optimization_profile is not None:
-            ET.SubElement(create_node_elm, 'optimizationProfile').text = optimization_profile
+            ET.SubElement(create_node_elm, 'optimizationProfile').text = \
+                optimization_profile
         if fallback_persistence_profile is not None:
             ET.SubElement(create_node_elm, "fallbackPersistenceProfileId") \
                 .text = fallback_persistence_profile.id
