@@ -697,20 +697,92 @@ local-hostname: %s''' % (name, name)
 
         return True
 
-    def ex_clone_vm(self, node, new_name=None):
-        """
-        Clones a VM
-        """
-        # TODO
-        # if VM is running, raise exception and exit
-        # step1: get existing node conf through loookupbyname and fetch disk info
-        # step2: remove uuid and mac from new node conf
-        # step3: set name in new node conf
-        # step4: cp disk img to new one
-        # step4: define new xml
-        # step5: start new node
+    def ex_clone_vm(self, node, new_name=None, resume_node=False):
+        """Clone a domain
 
-        return None
+        The only required parameters are the `node` to clone and a `new_name`,
+        which is going to be the name/hostname of the new guest VM, thus also
+        oughts to be unique.
+
+        Extra steps may also be required as soon as the cloning is done, such
+        as changing host-unique files, e.g. the contents of /etc/hostname. If
+        custom network configuration had been set up for the original domain,
+        the clone is going to inherit it, as well. If static IPs have been
+        assigned, they would most probably have to change on the new node to
+        avoid potential routing conflicts, etc. See /etc/network/ for such
+        changes. On the other hand, if networking has been set up using DHCP,
+        the aforementioned changes are deemed unnecessary.
+
+        Finally, the original guest VM may be optionally resumed.
+
+        """
+        # Generate unique clone name, if not provided.
+        new_name = new_name or '%s-clone-%s' % (node.name,
+                                                os.urandom(4).encode('hex'))
+
+        # Get the current domain.
+        domain = self._get_domain_for_node(node)
+
+        # If it's running, stop it.
+        if bool(domain.isActive()):
+            self.ex_stop_node(node)
+
+        # Get the domain's XML description.
+        et = ET.XML(domain.XMLDesc())
+
+        # Replace the current name with `new_name`.
+        for child in et.getchildren():
+            if child.tag == 'name':
+                new_child = et.makeelement('name')
+                new_child.text = new_name
+                et.replace(child, new_child)
+                break
+        else:
+            raise Exception("Failed to change the 'name' element of the XML")
+
+        # Remove the old domain's UUID.
+        for child in et.getchildren():
+            if child.tag == 'uuid':
+                et.remove(child)
+                break
+        else:
+            raise Exception("Failed to remove the 'uuid' element of the XML")
+
+        # Remove the old domain's MAC addresses, so they can be auto-generated.
+        for child in et.findall('devices/interface'):
+            for grandchild in child.getchildren():
+                if grandchild.tag == 'mac':
+                    child.remove(grandchild)
+                    break
+
+        # Point disk path to its new location.
+        for child in et.findall('devices/disk/source'):
+            if child.get('file') and child.get('file').endswith('.img'):
+                old_disk_path = child.get('file')
+                new_disk_path = old_disk_path.replace(domain.name(), new_name)
+                child.set('file', new_disk_path)
+                break
+        else:
+            raise Exception("Failed to locate disk path in XML description")
+
+        # Copy the disk to its new location, as specified above.
+        output = self._run_command('cp %s %s' % (old_disk_path, new_disk_path))
+        if output.get('error'):
+            raise Exception("Error copying the clone's disk image from "
+                            "%s to %s" % (old_disk_path, new_disk_path))
+
+        # Define the new domain via the modified XML.
+        self.connection.defineXML(ET.tostring(et))
+
+        # Start the new domain.
+        new_domain = self.connection.lookupByName(new_name)
+        new_domain.create()
+
+        # Resume the stopped node.
+        if resume_node:
+            self.ex_resume_node(node)
+
+        return True
 
     def ex_name_validator(self, name):
         """
