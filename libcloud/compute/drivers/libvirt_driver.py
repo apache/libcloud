@@ -25,6 +25,7 @@ import mimetypes
 import paramiko
 import atexit
 import logging
+import netaddr
 
 from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
@@ -521,10 +522,21 @@ class LibvirtNodeDriver(NodeDriver):
 
         return sysinfo
 
+    def _ex_get_cidr_from_network_name(self, network_name):
+        """Return the CIDR of the network with name `network_name`
+
+        This method is meant to return a `netaddr.IPNetwork` instance.
+
+        """
+        for ex_net in (self.ex_list_networks() + self.ex_list_interfaces()):
+            if network_name == ex_net.name:
+                return ex_net.cidr
+        return None
+
     def create_node(self, name, disk_size=4, ram=512,
                     cpu=1, image=None, disk_path=None, create_from_existing=None,
                     os_type='linux', networks=[], cloud_init=None, public_key=None,
-                    env_vars=None):
+                    env_vars=None, interface_name='ens'):
         """
         Creates a VM
 
@@ -553,6 +565,82 @@ class LibvirtNodeDriver(NodeDriver):
 
         if not create_from_existing and not image:
             raise Exception("You have to specify at least an image iso, to boot from, or an existing disk_path to import")
+
+        # Network names are required later on to define the domain's XML.
+        # NOTE that `networks` can either already be a list of network
+        # names or a list of python dicts. The former is the legacy way
+        # of doing things. In case of the latter, each dict will include
+        # additional information for static IP assignment. For now, the
+        # only accepted key-value pairs are:
+        # - ip:           the IPv4 address to statically assign to the
+        #                 interface
+        # - primary:      the primary interface, which will be assigned
+        #                 a routing rule for the default GW
+        # - gateway:      the IPv4 address for the default Gateway. If
+        #                 not given, it will default to the first IP of
+        #                 the interface's network's range following the
+        #                 network's own IP address
+        # - network_name: the name of the corresponding network, such as
+        #                 'default'
+        network_names = []
+        for n in networks:
+            if isinstance(n, basestring):
+                network_names.append(n)
+            else:
+                network_names.append(n.get('network_name'))
+
+        network_names = network_names or ['default']
+
+        network_interfaces_init = ''
+
+        # If multiple networks are specified or static IP assignment has
+        # been requested, we supply a custom network-interfaces field in
+        # meta-data. We enumerate interfaces starting at 3, as in recent
+        # cases interfaces are configured with predictable names, such
+        # as 'ens3' by default, as per https://www.freedesktop.org/wiki/
+        # Software/systemd/PredictableNetworkInterfaceNames/
+        if networks and (len(networks) > 1 or isinstance(networks[0], dict)):
+            i = 3
+            for net in networks:
+                cidr = None
+                if isinstance(net, dict) and net.get('ip'):
+                    ip, gw = net.get('ip'), net.get('gateway')
+                    if not is_valid_ip_address(ip):
+                        raise ValueError("Invalid IPv4 address %s" % ip)
+                    if gw and not is_valid_ip_address(gateway):
+                        raise ValueError("Invalid IPv4 address for GW %s" % gw)
+                    name = net['network_name']
+                    cidr = self._ex_get_cidr_from_network_name(name)
+                    mode = 'static'
+                else:
+                    mode = 'dhcp'
+
+                if not network_interfaces_init:
+                    network_interfaces_init = 'network-interfaces: |'
+                if mode == 'static' and cidr:
+                    network_interfaces_init += '\n' + '\n'.join((
+                        '  auto %s%s' % (interface_name, i),
+                        '  iface %s%s inet %s' % (interface_name, i, mode),
+                        '  address %s' % net['ip'],
+                        '  network %s' % cidr.network,
+                        '  netmask %s' % cidr.netmask,
+                        '  broadcast %s' % cidr.broadcast,
+                    ))
+                    if net.get('primary'):
+                        gw = net.get('gateway') or cidr[1]
+                        network_interfaces_init += '\n  gateway %s' % (gw)
+                else:
+                    network_interfaces_init += '\n' + '\n'.join((
+                        '  auto %s%s' % (interface_name, i),
+                        '  iface %s%s inet dhcp' % (interface_name, i),
+                    ))
+                i += 1
+
+            if not (network_interfaces_init.count('dhcp') or
+                    network_interfaces_init.count('gateway')):
+                log.error('Default GW not set')
+
+
         # define the VM
         if image:
             if not self.ex_validate_disk(image):
@@ -567,16 +655,16 @@ class LibvirtNodeDriver(NodeDriver):
                     if self.key != 'root':
                         output = self._run_command('chown -R %s %s' % (self.key, directory)).get('output')
 
+                    # Create meta-data. Extend with public SSH key and custom
+                    # network-interfaces, if applicable.
+                    metadata = 'instance-id: %s\nlocal-hostname: %s' % (name,
+                                                                        name)
+
                     if public_key:
-                        metadata = \
-'''instance-id: %s
-local-hostname: %s
-public-keys:
-  - %s''' % (name, name, public_key)
-                    else:
-                        metadata = \
-'''instance-id: %s
-local-hostname: %s''' % (name, name)
+                        metadata += '\npublic-keys:\n  - %s' % public_key
+
+                    if network_interfaces_init:
+                        metadata += '\n%s' % network_interfaces_init
 
                     metadata_file = pjoin(directory, 'meta-data')
                     output = self._run_command('echo "%s" > %s' % (metadata, metadata_file)).get('output')
@@ -668,9 +756,8 @@ local-hostname: %s''' % (name, name)
 
         # Create interface configuration. By default, the guest VM will be in
         # the "default" network, which behaves like a NAT.
-        networks = networks or ['default']
         ex_nets_names = [n.name for n in self.ex_list_networks()]
-        for net in networks:
+        for net in network_names:
             net_name = net
             net_type = 'network' if net in ex_nets_names else 'bridge'
             xml_net_conf.append(xml_net_template % ({'net_type': net_type,
@@ -979,7 +1066,7 @@ run %s
                 stdin, stdout, stderr = self.ssh_connection.exec_command(cmd)
                 error, output = stderr.read(), stdout.read()
             except Exception as exc:
-                log.warn('Failed to run "%s" at %s: %r', cmd, self.host, err)
+                log.warn('Failed to run "%s" at %s: %r', cmd, self.host, exc)
 
         return {'output': output, 'error': error}
 
@@ -1013,6 +1100,45 @@ class Network(object):
         self.id = str(id)
         self.name = name
         self.extra = extra
+
+    @property
+    def xml(self):
+        """Return the XML description of self."""
+        return self.extra.get('xml', '')
+
+    @property
+    def cidr(self):
+        """Return a `netaddr.IPNetwork` instance representing self."""
+        if self.is_network:
+            children = ET.XML(self.xml).findall('ip')
+            if children:
+                child = children[0]
+                return netaddr.IPNetwork('%s/%s' % (child.get('address'),
+                                                    child.get('netmask')))
+        if self.is_interface:
+            children = ET.XML(self.xml).findall('protocol')
+            children = [
+                c for
+                c in children if c.get('family') == 'ipv4'
+            ]
+            grandchildren = [
+                g for c in children for g in c.findall('ip')
+            ]
+            if grandchildren:
+                child = grandchildren[0]
+                return netaddr.IPNetwork('%s/%s' % (child.get('address'),
+                                                    child.get('prefix')))
+        return None
+
+    @property
+    def is_network(self):
+        """Return True if self is part of self.list_networks."""
+        return self.xml and ET.XML(self.xml).tag == 'network'
+
+    @property
+    def is_interface(self):
+        """Return True if self is an interface as in bridged networks."""
+        return self.xml and ET.XML(self.xml).tag == 'interface'
 
     def __repr__(self):
         return '<Network id="%s" name="%s">' % (self.id, self.name)
