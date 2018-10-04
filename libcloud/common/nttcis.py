@@ -18,9 +18,6 @@ NTTCIS Common Components
 from io import BytesIO
 from base64 import b64encode
 from time import sleep
-from collections.abc import MutableSequence, Mapping
-from lxml import etree
-from copy import deepcopy
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
 from libcloud.utils.py3 import httplib

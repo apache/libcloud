@@ -22,7 +22,6 @@ from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.nttcis import dd_object_to_id
-from libcloud.common.nttcis import process_xml
 from libcloud.common.nttcis import NttCisAPIException
 from libcloud.common.nttcis import (NttCisConnection,
                                     NttCisStatus)
@@ -4968,10 +4967,15 @@ class NttCisNodeDriver(NodeDriver):
         return [self._to_snapshot(el) for el in snapshot_elements]
 
     def _to_snapshot(self, element: ET):
-        ET.register_namespace("", "urn:didata.com:api:cloud:types")
-        snap_shot_xml = ET.tostring(element)
-        print()
-        return process_xml(snap_shot_xml)
+        return {'id': element.get('id'), 'start_time':
+                findtext(element, 'startTime', TYPES_URN),
+                'end_time': findtext(element, 'endTime', TYPES_URN),
+                'expiry_time': findtext(element, 'expiryTime', TYPES_URN),
+                'type': findtext(element, 'type', TYPES_URN),
+                'state': findtext(element, 'state', TYPES_URN),
+                'server_config': self.to_snapshot_conf_elems(
+                findtext(element, 'serverConfig', TYPES_URN))
+                }
 
     def _to_ipv4_addresses(self, object):
         ipv4_address_elements = object.findall(fixxpath('ipv4', TYPES_URN))
