@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Dimension Data Common Components
+NTTCIS Common Components
 """
+from io import BytesIO
 from base64 import b64encode
 from time import sleep
+from collections.abc import MutableSequence, Mapping
+from lxml import etree
+from copy import deepcopy
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
 from libcloud.utils.py3 import httplib
@@ -1914,3 +1918,4 @@ class NttCisNic(object):
         return ('<NttCisNic: private_ip_v4=%s, vlan=%s,'
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
+

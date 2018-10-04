@@ -22,6 +22,7 @@ from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.nttcis import dd_object_to_id
+from libcloud.common.nttcis import process_xml
 from libcloud.common.nttcis import NttCisAPIException
 from libcloud.common.nttcis import (NttCisConnection,
                                     NttCisStatus)
@@ -894,7 +895,9 @@ class NttCisNodeDriver(NodeDriver):
         if ex_id is not None:
             params['id'] = ex_id
 
-        return  self.connection.request_with_orgId_api_2('infrastructure/datacenter', params=params)
+        return self.connection.\
+            request_with_orgId_api_2('infrastructure/datacenter',
+                                     params=params)
 
     def list_snapshot_windows(self, location: str, plan: str) -> list:
         """
@@ -1016,7 +1019,7 @@ class NttCisNodeDriver(NodeDriver):
                 ).text = is_guest_os_customization
 
             if tagkey_name_value_dictionaries is not None and \
-                len(tagkey_name_value_dictionaries) > 0:
+               len(tagkey_name_value_dictionaries) > 0:
                 for k, v in tagkey_name_value_dictionaries.items():
                     tag_elem = ET.SubElement(
                         import_image_elem,
@@ -1124,7 +1127,8 @@ class NttCisNodeDriver(NodeDriver):
     def ex_edit_metadata(self, node: Node, name: str = None,
                          description: str = None,
                          drs_eligible: str = None) -> bool:
-        request_elem = ET.Element('editServerMetadata', {'xmlns': TYPES_URN, 'id': node.id})
+        request_elem = ET.Element('editServerMetadata',
+                                  {'xmlns': TYPES_URN, 'id': node.id})
         if name is not None:
             ET.SubElement(request_elem, 'name').text = name
         if description is not None:
@@ -1324,12 +1328,12 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_initiate_manual_snapshot(self, name: str, server_id: str = None) -> \
-                                    bool:
+    def ex_initiate_manual_snapshot(self, name: str,
+                                    server_id: str = None) -> bool:
         """
         Initiate a manual snapshot on the fly
-        :param node: A node object from which to get the node id
-
+        :param name: optional name of server
+        :param server_id: optinal parameter to use instead of name
         :return: True of False
         :rtype: ``bool``
         """
@@ -1367,17 +1371,17 @@ class NttCisNodeDriver(NodeDriver):
         ET.SubElement(create_preview, 'serverName').text = server_name
         if server_description is not None:
             ET.SubElement(create_preview, 'serverDescription').text = \
-                          server_description
+                server_description
         if target_cluster_id is not None:
             ET.SubElement(create_preview, 'targetClusterId').text = \
-                          target_cluster_id
+                target_cluster_id
         ET.SubElement(create_preview, 'serverStarted').text = \
-                      server_started
+            server_started
         ET.SubElement(create_preview, 'nicsConnected').text = \
-                      nics_connected
+            nics_connected
         if preserve_mac_addresses is not None:
             ET.SubElement(create_preview, 'preserveMacAddresses').text = \
-                          preserve_mac_addresses
+                preserve_mac_addresses
         if tag_key_name is not None:
             tag_elem = ET.SubElement(create_preview, 'tag')
             ET.SubElement(tag_elem, 'tagKeyName').text = tag_key_name
@@ -1386,7 +1390,6 @@ class NttCisNodeDriver(NodeDriver):
             tag_elem = ET.SubElement(create_preview, 'tagById')
             ET.SubElement(create_preview, 'tagKeyId').text = tag_key_name
             ET.SubElement(tag_elem, 'value').text = tag_value
-        test = ET.tostring(create_preview)
         result = self.connection.request_with_orgId_api_2(
             'snapshot/createSnapshotPreviewServer',
             method='POST',
@@ -1397,8 +1400,8 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_migrate_preview_server(self, preview_id):
         migrate_preview = ET.Element('migrateSnapshotPreviewServer',
-                                    {'xmlns': TYPES_URN,
-                                     'serverId': preview_id})
+                                     {'xmlns': TYPES_URN,
+                                      'serverId': preview_id})
         result = self.connection.request_with_orgId_api_2(
             'snapshot/migrateSnapshotPreviewServer',
             method='POST',
@@ -1444,8 +1447,7 @@ class NttCisNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         rule_id = anti_affinity_rule
-        #rule_id = self._anti_affinity_rule_to_anti_affinity_rule_id(
-        #    anti_affinity_rule)
+
         update_node = ET.Element('deleteAntiAffinityRule',
                                  {"xmlns": TYPES_URN})
         update_node.set('id', rule_id)
@@ -1988,9 +1990,8 @@ class NttCisNodeDriver(NodeDriver):
         if state is not None:
             params['state'] = state
         response = self.connection.request_with_orgId_api_2(
-                                                            'network/vlan',
-                                                            params=params).\
-            object
+            'network/vlan',
+            params=params).object
         return self._to_vlans(response)
 
     def ex_add_public_ip_block_to_network_domain(self, network_domain):
@@ -2036,7 +2037,6 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-
     # 09/10/18 Adding private IPv4 and IPv6  addressing capability
     def ex_reserve_ip(self, vlan: NttCisVlan, ip: str, description: None) ->\
             bool:
@@ -2055,11 +2055,9 @@ class NttCisNodeDriver(NodeDriver):
             ET.SubElement(private_ip, 'description').text = description
 
         result = self.connection.request_with_orgId_api_2(
-                                                          resource,
-                                                          method='POST',
-                                                          data=ET.tostring(
-                                                              private_ip)
-                                                          ).object
+            resource,
+            method='POST',
+            data=ET.tostring(private_ip)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
@@ -2077,13 +2075,13 @@ class NttCisNodeDriver(NodeDriver):
         ET.SubElement(private_ip, 'ipAddress').text = ip
         result = self.connection.\
             request_with_orgId_api_2(
-                                     resource,
-                                     method='POST',
-                                     data=ET.tostring(private_ip)).object
+                resource,
+                method='POST',
+                data=ET.tostring(private_ip)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_list_reserved_ipv4(self,  vlan: NttCisVlan=None,
+    def ex_list_reserved_ipv4(self, vlan: NttCisVlan=None,
                               datacenter_id: str=None):
         if vlan is not None:
             vlan_id = self._vlan_to_vlan_id(vlan)
@@ -2100,13 +2098,11 @@ class NttCisNodeDriver(NodeDriver):
         else:
             response = self.connection \
                 .request_with_orgId_api_2(
-                                          'network/reservedPrivateIpv4Address'
-            ).object
-
+                    'network/reservedPrivateIpv4Address').object
         addresses = self._to_ipv4_addresses(response)
         return addresses
 
-    def ex_list_reserved_ipv6(self,  vlan: NttCisVlan=None,
+    def ex_list_reserved_ipv6(self, vlan: NttCisVlan=None,
                               datacenter_id: str=None):
         if vlan is not None:
             vlan_id = self._vlan_to_vlan_id(vlan)
@@ -2123,8 +2119,7 @@ class NttCisNodeDriver(NodeDriver):
         else:
             response = self.connection \
                 .request_with_orgId_api_2(
-                                          'network/reservedIpv6Address').object
-
+                    'network/reservedIpv6Address').object
         addresses = self._to_ipv6_addresses(response)
         return addresses
 
@@ -2147,33 +2142,25 @@ class NttCisNodeDriver(NodeDriver):
     """
     def ex_create_firewall_rule(self, network_domain, rule, position,
                                 position_relative_to_rule=None):
-        
         Creates a firewall rule
-
         :param network_domain: The network domain in which to create
                                 the firewall rule
         :type  network_domain: :class:`NttCisNetworkDomain` or ``str``
-
         :param rule: The rule in which to create
         :type  rule: :class:`NttCisFirewallRule`
-
         :param position: The position in which to create the rule
                          There are two types of positions
                          with position_relative_to_rule arg and without it
                          With: 'BEFORE' or 'AFTER'
                          Without: 'FIRST' or 'LAST'
         :type  position: ``str``
-
         :param position_relative_to_rule: The rule or rule name in
                                           which to decide positioning by
         :type  position_relative_to_rule:
-            :class:`NttCisFirewallRule` or ``str``
-
+             :class:`NttCisFirewallRule` or ``str``
         :rtype: ``bool``
-        
         positions_without_rule = ('FIRST', 'LAST')
         positions_with_rule = ('BEFORE', 'AFTER')
-
         create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, "networkDomainId").text = \
             self._network_domain_to_network_domain_id(network_domain)
@@ -2262,7 +2249,7 @@ class NttCisNodeDriver(NodeDriver):
     """
 
     def ex_create_firewall_rule(self, network_domain, name, action,
-                                ip_version, protocol, 
+                                ip_version, protocol,
                                 source_addr, destination,
                                 position, enabled=1,
                                 position_relative_to_rule=None):
@@ -2501,9 +2488,10 @@ class NttCisNodeDriver(NodeDriver):
             placement = ET.SubElement(edit_node, "placement")
             if relative_rule_for_position is not None:
                 if position not in positions_with_rule:
-                    raise ValueError("When position_relative_to_rule is specified"
-                                     " position must be %s"
-                                     % ', '.join(positions_with_rule))
+                    raise ValueError(
+                        "When position_relative_to_rule is specified"
+                        " position must be %s" %
+                        ', '.join(positions_with_rule))
                 if isinstance(relative_rule_for_position,
                               NttCisFirewallRule):
                     rule_name = relative_rule_for_position.name
@@ -2775,7 +2763,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_add_scsi_controller_to_node(self, server_id: str, 
+    def ex_add_scsi_controller_to_node(self, server_id: str,
                                        adapter_type: str,
                                        bus_number: str=None) -> bool:
         """
@@ -2785,7 +2773,6 @@ class NttCisNodeDriver(NodeDriver):
         :param bus_number: optional number of server's bus
         :return: whether addition is in progress or 'OK' otherwise false
         """
-
         update_node = ET.Element('addScsiController',
                                  {'xmlns': TYPES_URN})
         ET.SubElement(update_node, 'serverId').text = server_id
@@ -2823,7 +2810,7 @@ class NttCisNodeDriver(NodeDriver):
         Add storage to the node
         One of node or controller_id must be selected
 
-        :param  node: The server to add storage to (required if 
+        :param  node: The server to add storage to (required if
                       controller_id is not used
         :type   node: :class:`Node`
 
@@ -2833,8 +2820,8 @@ class NttCisNodeDriver(NodeDriver):
         :param  speed: The disk speed type
         :type   speed: ``str``
 
-        :param  conrollter_id: The disk may be added using the 
-                               cotnroller id (required if node 
+        :param  conrollter_id: The disk may be added using the
+                               cotnroller id (required if node
                                object is not used)
         :type   controller_id: ``str``
 
@@ -2927,7 +2914,6 @@ class NttCisNodeDriver(NodeDriver):
         ET.SubElement(create_node, 'speed').text = speed
         if iops is not None:
             ET.SubElement(create_node, 'iops').text = str(iops)
-        #result = self.connection.request_with_orgId_api_1(
         result = self.connection.request_with_orgId_api_2(
             'server/changeDiskSpeed',
             method='POST',
@@ -2968,7 +2954,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_reconfigure_node(self, node, memory_gb=None, cpu_count=None, 
+    def ex_reconfigure_node(self, node, memory_gb=None, cpu_count=None,
                             cores_per_socket=None, cpu_performance=None):
         """
         Reconfigure the virtual hardware specification of a node
@@ -3038,7 +3024,6 @@ class NttCisNodeDriver(NodeDriver):
             response = self.connection.request_with_orgId_api_1(
                 'server/%s?clone=%s&desc=%s' %
                 (node_id, image_name, image_description)).object
-        
         # Version 2.4 and higher
         else:
         """
@@ -3259,7 +3244,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_tag_key_by_name(self, name):
         """
-        NOTICE: Tag key is one of those instances where Libloud 
+        NOTICE: Tag key is one of those instances where Libloud
                 handles the search of a list for the client code.
                 This behavior exists inconsistently across libcloud.
         Get a specific tag key by Name
@@ -3560,9 +3545,8 @@ class NttCisNodeDriver(NodeDriver):
             % (datacenter_id, start_date, end_date))
         return self._format_csv(result.response)
 
-    def ex_list_ip_address_list(self, 
-                                ex_network_domain:NttCisIpAddressList) -> \
-        object:
+    def ex_list_ip_address_list(
+            self, ex_network_domain: NttCisIpAddressList) -> object:
         """
         List IP Address List by network domain ID specified
 
@@ -3787,9 +3771,8 @@ class NttCisNodeDriver(NodeDriver):
                                 ip_address_collection=None,
                                 child_ip_address_lists=None):
         """
-        Edit IP Address List. IP Address list. 
-        Bear in mind you cannot add ip addresses to 
-
+        Edit IP Address List. IP Address list.
+        Bear in mind you cannot add ip addresses to
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
         >>> from libcloud.compute.providers import get_driver
@@ -4864,8 +4847,7 @@ class NttCisNodeDriver(NodeDriver):
         locations = self.list_locations()
         for element in findall(object, 'networkDomain', TYPES_URN):
             network_domains.append(self._to_network_domain(
-                                                           element, locations))
-
+                element, locations))
         return network_domains
 
     def _to_network_domain(self, element, locations):
@@ -4966,8 +4948,7 @@ class NttCisNodeDriver(NodeDriver):
         return NttCisScsiController(id=elements.get('id'),
                                     adapter_type=elements.get('adapterType'),
                                     bus_number=elements.get('busNumber'),
-                                    state=elements.get('state')
-                                   )
+                                    state=elements.get('state'))
 
     def _to_disks(self, object):
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
@@ -4987,42 +4968,38 @@ class NttCisNodeDriver(NodeDriver):
         return [self._to_snapshot(el) for el in snapshot_elements]
 
     def _to_snapshot(self, element: ET):
-        return {'id': element.get('id'), 'start_time':
-                findtext(element, 'startTime', TYPES_URN),
-                'end_time': findtext(element, 'endTime', TYPES_URN),
-                'expiry_time':findtext(element, 'expiryTime', TYPES_URN),
-                'type': findtext(element, 'type', TYPES_URN),
-                'state': findtext(element, 'state', TYPES_URN),
-                'server_config': self.to_snapshot_conf_elems(
-                    findtext(element, 'serverConfig', TYPES_URN))
-                }
+        ET.register_namespace("", "urn:didata.com:api:cloud:types")
+        snap_shot_xml = ET.tostring(element)
+        print()
+        return process_xml(snap_shot_xml)
 
     def _to_ipv4_addresses(self, object):
-         ipv4_address_elements = object.findall(fixxpath('ipv4', TYPES_URN))
-         return [self._to_ipv4_6_address(el) for el in ipv4_address_elements]
+        ipv4_address_elements = object.findall(fixxpath('ipv4', TYPES_URN))
+        return [self._to_ipv4_6_address(el) for el in ipv4_address_elements]
 
     def _to_ipv6_addresses(self, object):
-         ipv6_address_elements = object.findall(fixxpath('reservedIpv6Address', TYPES_URN))
-         return [self._to_ipv4_6_address(el) for el in ipv6_address_elements]
+        ipv6_address_elements = object.findall(
+            fixxpath('reservedIpv6Address', TYPES_URN))
+        return [self._to_ipv4_6_address(el) for el in ipv6_address_elements]
 
     def _to_ipv4_6_address(self, element):
-        return  NttCisReservedIpAddress(
-                                        element.get('datacenterId'),
-                                        element.get('exclusive'),
-                                        findtext(element, 'vlanId', TYPES_URN),
-                                        findtext(element, 'ipAddress', TYPES_URN),
-                                        description=
-                                        findtext(element, 'description', TYPES_URN),)
+        return NttCisReservedIpAddress(
+            element.get('datacenterId'),
+            element.get('exclusive'),
+            findtext(element, 'vlanId', TYPES_URN),
+            findtext(element, 'ipAddress', TYPES_URN),
+            description=findtext(element, 'description', TYPES_URN),)
 
     def _to_windows(self, object):
-        snapshot_window_elements = object.findall(fixxpath(
-                                                  'snapshotWindow', TYPES_URN))
+        snapshot_window_elements = object.findall(
+            fixxpath('snapshotWindow', TYPES_URN))
         return [self._to_window(el) for el in snapshot_window_elements]
 
     def _to_window(self, element):
-         return {'id': element.get('id'), 'day_of_week': element.get('dayOfWeek'),
-                 'start_hour': element.get('startHour'),
-                 'availability_status': element.get('availabilityStatus')}
+        return {'id': element.get('id'),
+                'day_of_week': element.get('dayOfWeek'),
+                'start_hour': element.get('startHour'),
+                'availability_status': element.get('availabilityStatus')}
 
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))
@@ -5050,9 +5027,8 @@ class NttCisNodeDriver(NodeDriver):
         disks = []
         if has_scsi:
             scsi_controllers.append(
-                                    self._to_scsi_controllers(
-                                        element.find(fixxpath(
-                                        'scsiController', TYPES_URN))))
+                self._to_scsi_controllers(element.find(fixxpath(
+                    'scsiController', TYPES_URN))))
             for scsi in element.findall(fixxpath('scsiController', TYPES_URN)):
                 disks.extend(self._to_disks(scsi))
         if has_sata:
@@ -5073,15 +5049,13 @@ class NttCisNodeDriver(NodeDriver):
                 'operatingSystem', TYPES_URN))
         # Version 2.4 or later
         else:
-            #vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
+            # vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
             vmtools_elm = element.find(fixxpath('guest/vmTools', TYPES_URN))
             if vmtools_elm is not None:
                 vmware_tools = self._to_vmware_tools(vmtools_elm)
             else:
                 vmware_tools = NttCisServerVMWareTools(
-                status=None,
-                version_status=None,
-                api_version=None)
+                    status=None, version_status=None, api_version=None)
             operation_system = element.find(fixxpath(
                 'guest/operatingSystem', TYPES_URN))
 
@@ -5099,12 +5073,9 @@ class NttCisNodeDriver(NodeDriver):
                                              TYPES_URN)).get('dayOfWeek'),
                        element.find(fixxpath('snapshotService/window',
                                              TYPES_URN)).get('startHour'))
-                       if has_snapshot else None,
+            if has_snapshot else None,
             'cpu': cpu_spec,
-            'memoryMb': int(findtext(
-                element,
-                'memoryGb',
-                TYPES_URN)) * 1024,
+            'memoryMb': int(findtext(element, 'memoryGb', TYPES_URN)) * 1024,
             'OS_id': operation_system.get('id'),
             'OS_type': operation_system.get('family'),
             'OS_displayName': operation_system.get('displayName'),
@@ -5153,14 +5124,11 @@ class NttCisNodeDriver(NodeDriver):
                          step_name=findtext(element, 'step/name', TYPES_URN),
                          step_number=findtext(element, 'step_number',
                                               TYPES_URN),
-                         step_percent_complete=findtext(
-                                                        element,
+                         step_percent_complete=findtext(element,
                                                         'step/percentComplete',
                                                         TYPES_URN),
-                         failure_reason=findtext(
-                                                element,
-                                                'failureReason',
-                                                TYPES_URN))
+                         failure_reason=findtext(element, 'failureReason',
+                                                 TYPES_URN))
         return s
 
     def _to_ip_address_lists(self, object):

@@ -208,7 +208,8 @@ class NttCisLBDriver(Driver):
                                        {'xmlns': TYPES_URN,
                                         'id': virtual_listener.id,
                                         'xmlns:xsi':
-                                        "http://www.w3.org/2001/XMLSchema-instance"})
+                                        "http://www.w3.org/2001/"
+                                        "XMLSchema-instance"})
         for k, v in kwargs.items():
             if v is None:
                 ET.SubElement(edit_listener_elm, k, {'xsi:nil': 'true'})
