@@ -17,6 +17,8 @@ Dimension Data Common Components
 """
 from base64 import b64encode
 from time import sleep
+from lxml import etree
+from io import BytesIO
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
 from libcloud.utils.py3 import httplib
@@ -1933,8 +1935,150 @@ class NttCisNic(object):
 
 #####  Testing new concept below this line
 
-class XmlListConfig(list):
+attrs = {}
 
+
+def processor(mapping, name=None):
+    mapping = mapping
+
+    map_copy = deepcopy(mapping)
+
+    def add_items(key, value, name=None):
+        if name in attrs:
+            print(attrs)
+            attrs[name].update({key: value})
+        elif name is not None:
+            attrs[name] = value
+
+        else:
+            attrs.update({key: value})
+        if key in map_copy:
+            del map_copy[key]
+        elif key in map_copy[name]:
+            del map_copy[name][key]
+            if len(map_copy[name]) == 0:
+                del map_copy[name]
+
+    def handle_map(map, name):
+        tmp = {}
+        types = [type(x) for x in map.values()]
+        if XmlListConfig not in types and XmlDictConfig not in types and dict not in types:
+            return map
+
+        elif XmlListConfig in types:
+            result = handle_seq(map, name)
+            return result
+        else:
+            for k, v in map.items():
+                if isinstance(v, str):
+                    tmp.update({k: v})
+                if isinstance(v, dict):
+                    cls = build_class(k.capitalize(), v)
+                    tmp.update({k: cls})
+                elif isinstance(v, XmlDictConfig):
+                    cls = build_class(k.capitalize(), v)
+                    return (k, cls)
+            return tmp
+
+    def handle_seq(seq, name):
+        tmp = {}
+        tmp_list = []
+        if isinstance(seq, list):
+            tmp = []
+            for _ in seq:
+                cls = build_class(name.capitalize(), _)
+                tmp.append(cls)
+            return tmp
+        for k, v in seq.items():
+            if isinstance(v, Mapping):
+                result1 = handle_map(v, k)
+            elif isinstance(v, MutableSequence):
+                for _ in v:
+                    if isinstance(_, Mapping):
+                        types = [type(x) for x in _.values()]
+                        if XmlDictConfig in types:
+                            result = handle_map(_, k)
+                            if isinstance(result, tuple):
+                                tmp.update({result[0]: result[1]})
+                            else:
+                                tmp.update({k: result})
+                        else:
+                            tmp_list = [build_class(k.capitalize(), i) for i in v]
+                            tmp[k] = tmp_list
+                        print()
+            elif isinstance(v, str):
+                tmp.update({k: v})
+        return tmp
+
+    def build_class(key, value):
+        klass = class_factory(key.capitalize(), value)
+        return klass(value)
+
+    def process(mapping, name):
+        for k1, v1 in mapping.items():
+            if isinstance(v1, Mapping):
+                types = [type(v) for v in v1.values()]
+                if MutableSequence not in types and dict not in types:
+                    result = handle_map(v1, k1)
+                    cls = build_class(k1.capitalize(), result)
+                    add_items(k1, cls)
+                elif XmlListConfig in types:
+                    result = handle_seq(v1, k1)
+                    cls = build_class(list(v1)[0], result)
+                    add_items(k1, cls)
+                elif dict in types:
+                    result = handle_map(v1, k1)
+                    cls = build_class(k1.capitalize(), result)
+                    add_items(k1, cls, k1)
+            elif isinstance(v1, list):
+                tmp = {}
+                tmp1 = {}
+                tmp2 = {}
+                tmp2[k1] = []
+                for i, j in enumerate(v1):
+                    if isinstance(j, dict):
+                        key = list(j)[0]
+                        result = handle_map(j, key)
+                        tmp1[k1 + str(i)] = build_class(k1, result)
+                        tmp2[k1].append(tmp1[k1 + str(i)])
+                if tmp2:
+                    #cls = build_class(k1.capitalize(), tmp2)
+                    add_items(k1, tmp2[k1], k1)
+            elif isinstance(v1, str):
+                add_items(k1, v1)
+
+
+
+
+    if len(map_copy) == 0:
+        return 1
+    #print(attrs)
+    return process(mapping, name)
+
+
+def class_factory(cls_name, attrs):
+
+    def __init__(self, *args, **kwargs):
+        for key in attrs:
+            setattr(self, key, attrs[key])
+
+    def __iter__(self):
+        for name in self.__dict__:
+            yield getattr(self, name)
+
+    def __repr__(self):
+        values = ', '.join('{}={!r}'.format(*i) for i in zip(self.__dict__, self))
+        return '{}({})'.format(self.__class__.__name__, values)
+
+    cls_attrs = dict(
+                    __init__=__init__,
+                    __iter__=__iter__,
+                    __repr__=__repr__)
+
+    return type("NttCis{}".format(cls_name), (object,), cls_attrs)
+
+
+class XmlListConfig(list):
     def __init__(self, elem_list):
         for element in elem_list:
             if element is not None:
@@ -1988,20 +2132,21 @@ class XmlDictConfig(dict):
             # currently doing XML configuration files...
             elif element.items():
                 # It is possible to have duplicate element tags. If so, convert to a dict of lists
-                if element.tag in self:
+                if element.tag.split('}')[1] in self:
                     tmp_list = list()
                     tmp_dict = dict()
-                    if isinstance(self[element.tag], list):
-                        tmp_list.append(element.tag)
+                    if isinstance(self[element.tag.split('}')[1]], list):
+                        tmp_list.append(element.tag.split('}')[1])
                     else:
-                        for k, v in self[element.tag].items():
+                        for k, v in self[element.tag.split('}')[1]].items():
                             if isinstance(k, XmlListConfig):
                                 tmp_list.append(k)
                             else:
                                 tmp_dict.update({k: v})
                         tmp_list.append(tmp_dict)
                         tmp_list.append(dict(element.items()))
-                    self[element.tag] = tmp_list
+                        print()
+                    self[element.tag.split('}')[1]] = tmp_list
                 else:
                     self.update({element.tag.split('}')[1]: dict(element.items())})
             # finally, if there are no child tags and no attributes, extract
@@ -2010,28 +2155,19 @@ class XmlDictConfig(dict):
                 self.update({element.tag.split('}')[1]: element.text})
 
 
-class Generic:
-    def __new__(cls, arg):
-        if isinstance(arg, abc.Mapping):
-            return super().__new__(cls)
-        elif isinstance(arg, abc.MutableSequence):
-            return [cls(item) for item in arg]
-        else:
-            return arg
+def process_xml(xml):
+    tree = etree.parse(BytesIO(xml))
+    root = tree.getroot()
+    elem = root.tag.split('}')[1].capitalize()
+    items = dict(root.items())
 
-    def __init__(self, mapping):
-        self.__data = {}
-        for key, value in mapping.items():
-            if iskeyword(key):
-                key += '_'
-            self.__data[key] = value
+    if 'pageNumber' in items:
+        converted_xml = XmlListConfig(root)
+        processor(converted_xml[0])
+    else:
+        converted_xml = XmlDictConfig(root)
+        processor(converted_xml)
+    klass = class_factory(elem.capitalize(), attrs)
+    cls = klass(attrs)
 
-    def __getattr__(self, name):
-        if hasattr(self.__data, name):
-            return getattr(self.__data, name)
-        else:
-            return Generic(self.__data[name])
-
-    def __repr__(self):
-        values = ','.join("{}={!r}".format(k, v) for k,v in self.__data.items())
-        return values
+    return cls
