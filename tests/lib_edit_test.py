@@ -522,3 +522,9 @@ def test_remove_tag_from_asset(compute_driver, compute_driver_na):
     asset = [nd for nd in network_domains if nd.name == net_domain_name][0]
     result = compute_driver.ex_remove_tag_from_asset(asset, tag_key)
     assert result is True
+
+
+def test_clean_failed(compute_driver):
+    failed_id = "da4d163b-06c7-42df-b670-fe48969aa749 "
+    result = compute_driver.ex_clean_failed_deployment(failed_id)
+    print(result)

@@ -4973,8 +4973,7 @@ class NttCisNodeDriver(NodeDriver):
                 'expiry_time': findtext(element, 'expiryTime', TYPES_URN),
                 'type': findtext(element, 'type', TYPES_URN),
                 'state': findtext(element, 'state', TYPES_URN),
-                'server_config': self.to_snapshot_conf_elems(
-                findtext(element, 'serverConfig', TYPES_URN))
+
                 }
 
     def _to_ipv4_addresses(self, object):

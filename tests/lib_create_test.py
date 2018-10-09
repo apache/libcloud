@@ -271,3 +271,7 @@ def test_migrate_preview_server(compute_driver):
     preview_id = "a598375f-40f4-4745-9556-ef8a8625734d"
     result = compute_driver.ex_migrate_preview_server(preview_id)
     assert result is True
+
+
+def test_create_cg(drs_driver):
+    pass

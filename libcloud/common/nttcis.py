@@ -1916,3 +1916,11 @@ class NttCisNic(object):
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
 
+
+class ConsistencyGroup(object):
+    """
+    A representation of Consistency Groups in NTTC-CIS
+    """
+    def __init__(self, description, name=None, journal_size_gb=None,
+                 sourceServer=None, targetServer=None):
+        pass

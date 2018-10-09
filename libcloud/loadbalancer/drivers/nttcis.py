@@ -23,7 +23,6 @@ from libcloud.common.nttcis import NttCisDefaultHealthMonitor
 from libcloud.common.nttcis import NttCisPersistenceProfile
 from libcloud.common.nttcis import \
     NttCisVirtualListenerCompatibility
-from libcloud.common.nttcis import Node
 from libcloud.common.nttcis import NttCisDefaultiRule
 from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
@@ -38,7 +37,7 @@ from libcloud.loadbalancer.types import Provider
 
 class NttCisLBDriver(Driver):
     """
-    NttCis node driver.
+    NttCis LB driver.
     """
 
     selected_region = None

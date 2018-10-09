@@ -14,7 +14,30 @@
 # limitations under the License.
 
 __all__ = [
-    'rackspace',
-    'gogrid',
-    'nttcis'
+    "Provider",
+    "LibcloudDRSError",
+    "LibcloudDRSImmutableError",
+
 ]
+
+from libcloud.common.types import LibcloudError
+
+
+class LibcloudDRSError(LibcloudError):
+    pass
+
+
+class LibcloudDRSImmutableError(LibcloudDRSError):
+    pass
+
+
+class Provider(object):
+    """
+    Defines for each of the supported providers
+
+    Non-Dummy drivers are sorted in alphabetical order. Please preserve this
+    ordering when adding new drivers.
+
+    :cvar ALIYUN_SLB: Aliyun SLB loadbalancer driver
+    """
+    NTTCIS = 'nttcis'
