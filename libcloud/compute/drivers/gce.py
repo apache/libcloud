@@ -3268,12 +3268,13 @@ class GCENodeDriver(NodeDriver):
         firewall_data['direction'] = direction
         firewall_data['priority'] = priority
         firewall_data['description'] = description
-        if direction == 'INGRESS':
+        if allowed is not None:
             firewall_data['allowed'] = allowed
-        elif direction == 'EGRESS':
+        if denied is not None:
             firewall_data['denied'] = denied
         firewall_data['network'] = nw.extra['selfLink']
-        if source_ranges is None and source_tags is None \
+        if direction == 'INGRESS' and source_ranges is None \
+                and source_tags is None \
                 and source_service_accounts is None:
             source_ranges = ['0.0.0.0/0']
         if source_ranges is not None:
