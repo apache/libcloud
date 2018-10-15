@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<networkDomain xmlns="urn:didata.com:api:cloud:types" id="8cdfd607-f429-4df6-9352-162cfc0891be" datacenterId="NA12">
+    <name>test</name>
+    <description>test2</description>
+    <type>ESSENTIALS</type>
+    <snatIpv4Address>168.128.26.20</snatIpv4Address>
+    <createTime>2015-07-15T03:36:00.000Z</createTime>
+    <state>NORMAL</state>
+</networkDomain>

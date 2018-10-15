@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<vlan
+xmlns="urn:didata.com:api:cloud:types" id="0e56433f-d808-4669-821d-812769517ff8" datacenterId="NA9">
+<networkDomain id="8cdfd607-f429-4df6-9352-162cfc0891be" name="Production
+Network Domain"/>
+<name>Production VLAN</name>
+<description>test2</description>
+<privateIpv4Range address="10.0.3.0" prefixSize="24"/>
+<ipv4GatewayAddress>10.0.3.1</ipv4GatewayAddress>
+<ipv6Range address="2607:f480:1111:1153:0:0:0:0" prefixSize="64"/>
+<ipv6GatewayAddress>2607:f480:1111:1153:0:0:0:1</ipv6GatewayAddress>
+<createTime>2015-02-13T10:56:44.000Z</createTime>
+<state>NORMAL</state>
+</vlan>

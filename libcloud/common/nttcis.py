@@ -271,7 +271,7 @@ API_ENDPOINTS = {
 }
 
 # Default API end-point for the base connection class.
-DEFAULT_REGION = 'dd-na'
+DEFAULT_REGION = 'na'
 
 BAD_CODE_XML_ELEMENTS = (
     ('responseCode', SERVER_NS),

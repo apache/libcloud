@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-06T12:24:57.820-05:00/5974fe37-bac5-4345-8a88-4c93a874bf4a">
+<operation>DELETE_NAT_RULE</operation>
+<responseCode>OK</responseCode>
+<message>NAT Rule with Id 2187a636-7ebb-49a1-a2ff-5d617f496dce has been
+deleted.</message>
+</response>

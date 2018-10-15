@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160422T150018531-0400_f9fe6110-6156-4f8b-8c6e-97927e87f744">
+  <operation>REMOVE_TAGS</operation>
+  <responseCode>OK</responseCode>
+  <message>Tag(s) successfully removed.</message>
+</response>

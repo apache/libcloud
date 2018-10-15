@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-02-13T05:58:00.905-05:00/04a82e12-2d51-420e-84f5-bf2630c5a5e5">
+<operation>DEPLOY_VLAN</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to deploy VLAN 'Production VLAN' has been accepted and is
+being processed.</message>
+<info name="vlanId" value="0e56433f_d808_4669_821d_812769517ff8"/>
+</response>

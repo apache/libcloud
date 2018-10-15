@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<networkDomains xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="5" totalCount="5" pageSize="250">
+    <networkDomain id="b30c224c-c95b-4cd9-bb8b-bfdfb5486abf" datacenterId="NA9">
+        <name>Aurora</name>
+        <description>Project Aurora Demo Environments</description>
+        <type>ADVANCED</type>
+        <snatIpv4Address>168.128.2.136</snatIpv4Address>
+        <createTime>2015-07-13T03:52:16.000Z</createTime>
+        <state>NORMAL</state>
+    </networkDomain>
+    <networkDomain id="b74444b5-ad7d-4ed1-a9e0-02aab80f7858" datacenterId="NA12">
+        <name>Test net domain</name>
+        <description>description of my network</description>
+        <type>ESSENTIALS</type>
+        <snatIpv4Address>168.128.26.20</snatIpv4Address>
+        <createTime>2015-07-15T03:36:00.000Z</createTime>
+        <state>NORMAL</state>
+    </networkDomain>
+    <networkDomain id="2122a8c3-cefe-4a3d-afb4-44bc159266c7" datacenterId="NA12">
+        <name>another networkj</name>
+        <description>net network netowkrm</description>
+        <type>ESSENTIALS</type>
+        <snatIpv4Address>168.128.26.22</snatIpv4Address>
+        <createTime>2015-07-15T03:40:09.000Z</createTime>
+        <state>NORMAL</state>
+    </networkDomain>
+    <networkDomain id="d3320077-c2ce-4523-8c65-d417e766077b" datacenterId="NA9">
+        <name>Imports</name>
+        <description>Imported servers</description>
+        <type>ADVANCED</type>
+        <snatIpv4Address>168.128.2.69</snatIpv4Address>
+        <createTime>2015-08-18T03:53:02.000Z</createTime>
+        <state>NORMAL</state>
+    </networkDomain>
+    <networkDomain id="68a60a3c-030d-4d4b-a8fd-4a6991afc27b" datacenterId="NA9">
+        <name>Platform R2.0 Lab (MCP 2.0)</name>
+        <description>This is the R2.0 lab for Platform on MCP 2.0</description>
+        <type>ESSENTIALS</type>
+        <snatIpv4Address>168.128.2.149</snatIpv4Address>
+        <createTime>2015-08-25T01:39:22.000Z</createTime>
+        <state>NORMAL</state>
+    </networkDomain>
+</networkDomains>

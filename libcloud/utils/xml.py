@@ -25,7 +25,6 @@ def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
     if not namespace:
         return xpath
-    path = '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
     return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
 
 

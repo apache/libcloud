@@ -322,7 +322,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> pprint(node)
 
 
-        Create Node in MCP2 Data Center
+        Create Node in MCP2 Data CenterF
 
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
@@ -771,11 +771,8 @@ class NttCisNodeDriver(NodeDriver):
                            this state
         :type    ex_state: ``str``
 
-        :keyword ex_network: Filters the node list to nodes in this network
-        :type    ex_network: :class:`NttCisNetwork` or ``str``
-
-        :keyword ex_network_domain: Filters the node list to nodes in this
-                                    network domain
+       :keyword ex_network_domain: Filters the node list to nodes in this
+                                   network domain
         :type    ex_network_domain: :class:`NttCisNetworkDomain`
                                     or ``str``
 
@@ -2296,13 +2293,13 @@ class NttCisNodeDriver(NodeDriver):
             if source_addr.any_ip:
                 source_ip.set('address', 'ANY')
             else:
-                source_ip.set('address', source.ip_address)
-                if source.ip_prefix_size is not None:
+                source_ip.set('address', source_addr.ip_address)
+                if source_addr.ip_prefix_size is not None:
                     source_ip.set('prefixSize',
-                                  str(source.ip_prefix_size))
+                                  str(source_addr.ip_prefix_size))
         if source_addr.port_list_id is not None:
             source_port = ET.SubElement(source, 'portListId')
-            source_port.text = source.port_list_id
+            source_port.text = source_addr.port_list_id
         else:
             if source_addr.port_begin is not None:
                 source_port = ET.SubElement(source, 'port')
@@ -2321,7 +2318,7 @@ class NttCisNodeDriver(NodeDriver):
             else:
                 dest_ip.set('address', destination.ip_address)
                 if destination.ip_prefix_size is not None:
-                    dest_ip.set('prefixSize', destination.ip_prefix_size)
+                    dest_ip.set('prefixSizfe', destination.ip_prefix_size)
         if destination.port_list_id is not None:
             dest_port = ET.SubElement(dest, 'portListId')
             dest_port.text = destination.port_list_id

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<server id="5a32d6e4-9707-4813-a269-56ab4d989f4d" datacenterId="NA9">
+    <name>Production Web Server</name>
+    <description>Server to host our main web application.</description>
+
+    <cpu count="2" speed="STANDARD" coresPerSocket="1"/>
+    <memoryGb>4</memoryGb>
+    <disk id="c2e1f199-116e-4dbc-9960-68720b832b0a" scsiId="0" sizeGb="50"
+          speed="STANDARD" state="NORMAL"/>
+    <networkInfo networkDomainId="553f26b6-2a73-42c3-a78b-6116f11291d0">
+        <primaryNic id="5e869800-df7b-4626-bcbf-8643b8be11fd"
+                    privateIpv4="10.0.4.8"
+                    ipv6="2607:f480:1111:1282:2960:fb72:7154:6160"
+                    vlanId="bc529e20-dc6f-42ba-be20-0ffe44d1993f"
+                    vlanName="Production VLAN" state="NORMAL"/>
+    </networkInfo>
+    <backup assetId="5579f3a7-4c32-4cf5-8a7e-b45c36a35c10"
+            servicePlan="Enterprise" state="NORMAL"/>
+    <monitoring monitoringId="11049" servicePlan="ESSENTIALS" state="NORMAL"/>
+    <softwareLabel>MSSQL2008R2S</softwareLabel>
+    <sourceImageId>3ebf3c0f-90fe-4a8b-8585-6e65b316592c</sourceImageId>
+    <createTime>2015-12-02T10:31:33.000Z</createTime>
+    <deployed>true</deployed>
+    <started>true</started>
+    <state>stopped</state>
+    <progress>
+        <action>SHUTDOWN_SERVER</action>
+        <requestTime>2015-12-02T11:07:40.000Z</requestTime>
+        <userName>devuser1</userName>
+    </progress>
+    <guest osCustomization="true">
+        <operatingSystem id="WIN2008S32" displayName="WIN2008S/32"
+                     family="WINDOWS"/>
+        <vmTools versionStatus="CURRENT" runningStatus="RUNNING"
+                 apiVersion="9354"/>
+    </guest>
+    <virtualHardware version="vmx-08"
+                     upToDate="false"/> <!-- DRS: drsEligible or consistencyGroup or neither -->
+    <drsEligible/>
+    **OR**
+    <consistencyGroup id="1f4ef-1238933-2344adce-1098" name="ProductionCG" status="DRS_MODE" serverRole="TARGET"/>
+</server>

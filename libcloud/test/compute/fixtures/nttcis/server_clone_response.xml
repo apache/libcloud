@@ -1,0 +1,9 @@
+ <response requestId= "na/2014-04-14T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e"
+xmlns= "urn:didata.com:api:cloud:types" >
+   <operation>CLONE_SERVER</operation>
+   <responseCode>IN_PROGRESS</responseCode>
+   <message>Request to Clone Server '9ed47330-5561-11e5-8c14-b8ca3a5d9ef8' has been
+accepted and is being processed.</message>
+   <info name="imageId" value="3389ffe8-c3fc-11e3-b29c-001517c4643e"/>
+   <info name="clusterId" value="33dsadsae8-c3fc-11e3-b29c-001517c4643e"/>
+</response>

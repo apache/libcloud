@@ -1,0 +1,8 @@
+<urn:response requestId="na/2015-01-18T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e"
+xmlns:urn="urn:didata.com:api:cloud:types">
+    <urn:operation>EXCHANGE_NIC_VLANS</urn:operation>
+    <urn:responseCode>OK</urn:responseCode>
+    <urn:message>Request to exchange VLANs for Server with Id
+'1cec8cfb-69e7-4de9-8404-debf116f5242' has been accepted and is being
+processed.</urn:message>
+</urn:response>
