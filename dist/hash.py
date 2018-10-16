@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Writes SHA-256 and SHA-512 hashes of files passed as arguments"""
 
 import hashlib
 import sys
