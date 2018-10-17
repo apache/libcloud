@@ -77,6 +77,7 @@ DRIVERS = {
     ('libcloud.dns.drivers.powerdns', 'PowerDNSDriver'),
     Provider.ONAPP:
     ('libcloud.dns.drivers.onapp', 'OnAppDNSDriver'),
+    Provider.CLOUDNS: ('libcloud.dns.drivers.cloudns', 'ClouDNSDNSDriver'),
 
     # Deprecated
     Provider.RACKSPACE_US:

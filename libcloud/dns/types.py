@@ -40,6 +40,7 @@ class Provider(object):
     AURORADNS = 'auroradns'
     BUDDYNS = 'buddyns'
     CLOUDFLARE = 'cloudflare'
+    CLOUDNS = 'cloudns'
     DIGITAL_OCEAN = 'digitalocean'
     DNSIMPLE = 'dnsimple'
     DURABLEDNS = 'durabledns'
