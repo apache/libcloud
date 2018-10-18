@@ -105,7 +105,7 @@ def test_deploy_firewall_rule_2(compute_driver):
 
     rule = compute_driver.ex_create_firewall_rule(net_domain[0], 'sdk_test_firewall_rule_2', 'ACCEPT_DECISIVELY',
                                                   'IPV4', 'TCP', source_firewall_address, dest_firewall_address, 'LAST')
-    print(rule)
+    pprint(rule)
     assert isinstance(rule, NttCisFirewallRule)
 
 
@@ -116,7 +116,7 @@ def test_deploy_firewall_rule_3(compute_driver):
     source_firewall_address = NttCisFirewallAddress(any_ip='ANY')
     dest_firewall_address = NttCisFirewallAddress(ip_address='10.2.0.0', ip_prefix_size='16',
                                                   port_begin='25')
-    rule_name = 'sdk_test_firewall_rule_2'
+    rule_name = 'sdk_test_firewall_rule_3'
     rules = compute_driver.ex_list_firewall_rules(net_domain[0])
     rule = [rule for rule in rules if rule.name == rule_name]
     relative_to = compute_driver.ex_get_firewall_rule(net_domain[0], rule[0].id)
@@ -273,5 +273,66 @@ def test_migrate_preview_server(compute_driver):
     assert result is True
 
 
-def test_create_cg(drs_driver):
-    pass
+def test_create_complex_rule(compute_driver):
+    # Get location
+    location = compute_driver.ex_get_location_by_id(id='EU6')
+
+    # Get network domain by location
+    networkDomainName = "sdk_test_1"
+    network_domains = compute_driver.ex_list_network_domains(location=location.id)
+    my_network_domain = [d for d in network_domains if d.name ==
+                         networkDomainName][0]
+
+    # Create an instance of NttCisFirewallAddress for source
+    source_firewall_address = NttCisFirewallAddress(any_ip='ANY')
+
+    # Create an instance of NttCisIpAddress for an Address List for the destination
+    address_list_name = 'sdk_test_address_list'
+    description = 'A test address list'
+    ip_version = 'IPV4'
+    # An optional prefix list can be specified as a named argument, prefix_size=
+    address_obj = [NttCisIpAddress('10.2.0.1', end='10.2.0.11')]
+
+    result = compute_driver.ex_create_ip_address_list(my_network_domain.id,
+                                                      address_list_name,
+                                                      description,
+                                                      ip_version,
+                                                      address_obj)
+
+    try:
+        assert result is True
+    except Exception as e:
+        raise RuntimeError("Something went wrong in address list creation.")
+    else:
+        addr_list = compute_driver.ex_list_ip_address_list(my_network_domain.id)
+        addr_list = [al for al in addr_list if al.name == address_list_name][0]
+
+    # Instead of a single port or list of ports, create a port list for the destianation
+    port_list_name = 'sdk_test_port_list'
+    description = 'A test port list'
+
+    # rerquires an instance of NttCisPort object
+    ports = [NttCisPort(begin='8000', end='8080')]
+    result = compute_driver.ex_create_portlist(my_network_domain.id, port_list_name, description, ports)
+
+    try:
+        assert result is True
+    except Exception as e:
+        raise RuntimeError("Something went wrong in address list creation.")
+    else:
+        port_list = compute_driver.ex_list_portlist(my_network_domain.id)
+        port_list = [pl for pl in port_list if pl.name == port_list_name][0]
+
+    # Create an instance of NttCisFirewallAddress for destination
+    dest_firewall_address = NttCisFirewallAddress(address_list_id=addr_list.id, port_list_id=port_list.id)
+
+    # Finally create firewall rule
+    rule = compute_driver.ex_create_firewall_rule(my_network_domain.id,
+                                                  'sdk_test_firewall_rule',
+                                                  'ACCEPT_DECISIVELY',
+                                                  'IPV4',
+                                                  'TCP',
+                                                  source_firewall_address,
+                                                  dest_firewall_address,
+                                                  'LAST')
+    print(rule)

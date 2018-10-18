@@ -103,9 +103,6 @@ class NttCisLBDriver(Driver):
                         optimization_profile=None,
                         ex_listener_ip_address=None):
         """
-        BUG:  libcloud.common.nttcis.NttCisAPIException:
-        CONFIGURATION_NOT_SUPPORTED: optimizationProfile is required for type
-        STANDARD and protocol TCP.
 
         Create a new load balancer instance
 

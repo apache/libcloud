@@ -987,16 +987,26 @@ class NttCisFirewallAddress(object):
                  port_list_id=None):
         """
         param any_ip: used to set ip address to "ANY"
-        :param ip_address: An ip address of either IPv4 decimal
+        :param ip_address: Optional, an ip address of either IPv4 decimal
                            notation or an IPv6 address
+        :type ``str``
+
         :param ip_prefix_size: An integer denoting prefix size.
+        :type ``int``
+
         :param port_begin: integer for an individual port or start of a list
-                           of ports if
-                           not using a port list
+                           of ports if not using a port list
+        :type ``int``
+
         :param port_end: integer required if using a list of ports
                          (NOT a port list but a list starting with port begin)
+        :type  ``int``
+
         :param address_list_id: An id identifying an address list
+        :type ``str``
+
         :param port_list_id:  An id identifying a port list
+        :type ``str``
         """
         self.any_ip = any_ip
         self.ip_address = ip_address

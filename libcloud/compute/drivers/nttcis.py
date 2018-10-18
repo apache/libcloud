@@ -2246,7 +2246,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_create_firewall_rule(self, network_domain, name, action,
                                 ip_version, protocol,
-                                source_addr, destination,
+                                source_addr, dest_addr,
                                 position, enabled=1,
                                 position_relative_to_rule=None):
         """
@@ -2256,8 +2256,23 @@ class NttCisNodeDriver(NodeDriver):
                                 the firewall rule
         :type  network_domain: :class:`NttCisNetworkDomain` or ``str``
 
-        :param rule: The rule in which to create
-        :type  rule: :class:`NttCisFirewallRule`
+        :param name: The rule's name
+        :type  ``str``
+
+        :param action: 'ACCEPT_DECISIVELY' or 'DROP'
+        :type ``str``
+
+        :param ip_version:  'IPV4' or 'IPV6'
+        :type ``str``
+
+        :param protocol: One of 'IP', 'ICMP', 'TCP', or 'UDP'
+        :type ``str``
+
+        :param source_addr:  The source address, which must be an NttCisFirewallAddress instance
+        :type ``NttCisFirewallAddress``
+
+        :param dest_addr: The destination address, which must be an NttCisFirewallAddress instance
+        :type `NttCisFirewallAddress``
 
         :param position: The position in which to create the rule
                          There are two types of positions
@@ -2265,6 +2280,9 @@ class NttCisNodeDriver(NodeDriver):
                          With: 'BEFORE' or 'AFTER'
                          Without: 'FIRST' or 'LAST'
         :type  position: ``str``
+
+        :param enabled: Firewall rule is enabled upon creation. Set to 1 for true or 0 for false.
+        :type ``int``
 
         :param position_relative_to_rule: The rule or rule name in
                                           which to decide positioning by
@@ -2308,26 +2326,26 @@ class NttCisNodeDriver(NodeDriver):
                 source_port.set('end', source_addr.port_end)
         # Setup destination port rule
         dest = ET.SubElement(create_node, "destination")
-        if destination.address_list_id is not None:
+        if dest_addr.address_list_id is not None:
             dest_ip = ET.SubElement(dest, 'ipAddressListId')
-            dest_ip.text = destination.address_list_id
+            dest_ip.text = dest_addr.address_list_id
         else:
             dest_ip = ET.SubElement(dest, 'ip')
-            if destination.any_ip:
+            if dest_addr.any_ip:
                 dest_ip.set('address', 'ANY')
             else:
-                dest_ip.set('address', destination.ip_address)
-                if destination.ip_prefix_size is not None:
-                    dest_ip.set('prefixSizfe', destination.ip_prefix_size)
-        if destination.port_list_id is not None:
+                dest_ip.set('address', dest_addr.ip_address)
+                if dest_addr.ip_prefix_size is not None:
+                    dest_ip.set('prefixSize', dest_addr.ip_prefix_size)
+        if dest_addr.port_list_id is not None:
             dest_port = ET.SubElement(dest, 'portListId')
-            dest_port.text = destination.port_list_id
+            dest_port.text = dest_addr.port_list_id
         else:
-            if destination.port_begin is not None:
+            if dest_addr.port_begin is not None:
                 dest_port = ET.SubElement(dest, 'port')
-                dest_port.set('begin', destination.port_begin)
-            if destination.port_end is not None:
-                dest_port.set('end', destination.port_end)
+                dest_port.set('begin', dest_addr.port_begin)
+            if dest_addr.port_end is not None:
+                dest_port.set('end', dest_addr.port_end)
         # Set up positioning of rule
         ET.SubElement(create_node, "enabled").text = str(enabled)
         placement = ET.SubElement(create_node, "placement")
