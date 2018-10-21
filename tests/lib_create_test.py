@@ -54,7 +54,31 @@ def test_deploy_server(compute_driver):
     new_node = compute_driver.create_node("ubuntu", image[0], psswd, ex_description="auto_created_server",
                                          ex_network_domain=net_domain[0], ex_primary_nic_vlan=vlan[0])
     compute_driver.ex_wait_for_state('running', compute_driver.ex_get_node_by_id, 2, 300, new_node.id)
-    assert new_node.state == 'running'
+    node = compute_driver.ex_get_node_by_id(new_node.id)
+    assert node.state == 'running'
+
+
+def test_deploy_customized_server(compute_driver, capsys):
+    image_name = "SLES 12 64-bit"
+    images = compute_driver.list_images(location='EU6')
+    image = [i for i in images if i.name == image_name][0]
+    domain_name = 'sdk_test_1'
+    domains = compute_driver.ex_list_network_domains(location='EU6')
+    net_domain = [d for d in domains if d.name == domain_name][0]
+    psswd = 'Snmpv2c!'
+    vlan_name = "sdk_vlan1"
+    vlans = compute_driver.ex_list_vlans()
+    vlan = [v for v in vlans if v.name == vlan_name][0]
+    new_node = compute_driver.create_node("Suse_12", image, psswd,
+                                          ex_description="Customized_Suse server",
+                                          ex_network_domain=net_domain,
+                                          ex_primary_nic_vlan=vlan,
+                                          ex_primary_nic_network_adapter='VMXNET3',
+                                          ex_memory_gb=8
+                                          )
+    compute_driver.ex_wait_for_state('running', compute_driver.ex_get_node_by_id, 2, 600, new_node.id)
+    node = compute_driver.ex_get_node_by_id(new_node.id)
+    assert node.state == 'running'
 
 
 def test_delete_server(compute_driver):

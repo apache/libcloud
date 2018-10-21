@@ -4,7 +4,7 @@ from libcloud.compute.providers import get_driver
 from libcloud.common.nttcis import NttCisFirewallAddress, NttCisIpAddress, NttCisPort
 import libcloud.security
 
-# Get dimension data driver
+# Get nttcis driver
 libcloud.security.VERIFY_SSL_CERT = True
 cls = get_driver(Provider.NTTCIS)
 driver = cls('myusername', 'mypassword', region='eu')

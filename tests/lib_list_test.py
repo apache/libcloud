@@ -102,6 +102,11 @@ def test_list_node_image(compute_driver):
 """
 
 
+def test_get_node_by_id(compute_driver):
+    node = compute_driver.ex_get_node_by_id("50db7b25-6dd8-49ea-8b06-942cee5850b7")
+    print(node)
+
+
 def test_list_node_started(compute_driver):
     nodes = compute_driver.list_nodes(ex_started='true')
     print()
