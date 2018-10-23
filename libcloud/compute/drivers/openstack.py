@@ -2927,8 +2927,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         data = {'subnet': {'cidr': cidr, 'network_id': network.id,
                            'ip_version': ip_version, 'name': name}}
-        response = self.connection.request(self._subnets_url_prefix,
-                                           method='POST', data=data).object
+        response = self.network_connection.request(
+            self._subnets_url_prefix, method='POST', data=data).object
         return self._to_subnet(response['subnet'])
 
     def ex_delete_subnet(self, subnet):
@@ -2940,9 +2940,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('%s/%s' % (self._subnets_url_prefix,
-                                                  subnet.id),
-                                       method='DELETE')
+        resp = self.network_connection.request('%s/%s' % (
+            self._subnets_url_prefix, subnet.id), method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_list_ports(self):
