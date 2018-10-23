@@ -2220,27 +2220,26 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         return StorageVolume(
             id=api_node['id'],
-            name=api_node.get('name', api_node.get('displayName', None)),
+            name=api_node.get('name', api_node.get('displayName')),
             size=api_node['size'],
             state=state,
             driver=self,
             extra={
                 'description': api_node.get('description',
-                                            api_node.get('displayDescription',
-                                                         None)),
+                                            api_node.get('displayDescription')
+                                            ),
                 'attachments': [att for att in api_node['attachments'] if att],
                 # TODO: remove in 1.18.0
                 'state': api_node.get('status', None),
                 'snapshot_id': api_node.get('snapshot_id',
-                                            api_node.get('snapshotId', None)),
+                                            api_node.get('snapshotId')),
                 'location': api_node.get('availability_zone',
-                                         api_node.get('availabilityZone',
-                                                      None)),
+                                         api_node.get('availabilityZone')),
                 'volume_type': api_node.get('volume_type',
-                                            api_node.get('volumeType', None)),
+                                            api_node.get('volumeType')),
                 'metadata': api_node.get('metadata', None),
                 'created_at': api_node.get('created_at',
-                                           api_node.get('createdAt', None))
+                                           api_node.get('createdAt'))
             }
         )
 
@@ -3166,6 +3165,14 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                                              data=data).object)
 
     def destroy_volume_snapshot(self, snapshot):
+        """
+        Delete a Volume Snapshot.
+
+        :param snapshot: Snapshot to be deleted
+        :type  snapshot: :class:`VolumeSnapshot`
+
+        :rtype: ``bool``
+        """
         resp = self.volumev2_connection.request('/snapshots/%s' % snapshot.id,
                                                 method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
@@ -3423,7 +3430,7 @@ class OpenStack_1_1_FloatingIpAddress(object):
                 % (self.id, self.ip_address, self.pool, self.driver))
 
 
-class OpenStack_2_FloatingIpPool(OpenStack_1_1_FloatingIpPool):
+class OpenStack_2_FloatingIpPool(object):
     """
     Floating IP Pool info.
     """
