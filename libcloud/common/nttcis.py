@@ -1233,7 +1233,7 @@ class NttCisPoolMember(object):
 
 class NttCisVIPNode(object):
     def __init__(self, id, name, status, ip, connection_limit='10000',
-                 connection_rate_limit='10000'):
+                 connection_rate_limit='10000', health_monitor=None):
         """
         Initialize an instance of :class:`NttCisVIPNode`
 
@@ -1261,6 +1261,8 @@ class NttCisVIPNode(object):
         self.ip = ip
         self.connection_limit = connection_limit
         self.connection_rate_limit = connection_rate_limit
+        if health_monitor is not None:
+            self.health_monitor_id = health_monitor
 
     def __repr__(self):
         return (('<NttCisVIPNode: id=%s, name=%s, '

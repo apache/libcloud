@@ -834,7 +834,7 @@ class NttCisNodeDriver(NodeDriver):
                      driver=self.connection.driver),
         ]
 
-    def list_datacenter_properties(self, location: str=None) -> list:
+    def list_datacenter_properties(self, location):
         """
         return a list of available sizes
             Currently, the size of the node is dictated by the chosen OS base
@@ -895,7 +895,7 @@ class NttCisNodeDriver(NodeDriver):
             request_with_orgId_api_2('infrastructure/datacenter',
                                      params=params)
 
-    def list_snapshot_windows(self, location: str, plan: str) -> list:
+    def list_snapshot_windows(self, location, plan):
         """
         List snapshot windows in a given location
         :param location: a location object or location id such as "NA9"
@@ -1120,9 +1120,10 @@ class NttCisNodeDriver(NodeDriver):
             nodes_obj = self._list_nodes_single_page(params)
             yield self._to_nodes(nodes_obj)
 
-    def ex_edit_metadata(self, node: Node, name: str = None,
-                         description: str = None,
-                         drs_eligible: str = None) -> bool:
+    def ex_edit_metadata(self, node,
+                         name=None,
+                         description=None,
+                         drs_eligible=None):
         request_elem = ET.Element('editServerMetadata',
                                   {'xmlns': TYPES_URN, 'id': node.id})
         if name is not None:
@@ -1138,7 +1139,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_start_node(self, node: Node) -> bool:
+    def ex_start_node(self, node):
         """
         Powers on an existing deployed server
 
@@ -1156,7 +1157,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_shutdown_graceful(self, node: Node) -> bool:
+    def ex_shutdown_graceful(self, node):
         """
         This function will attempt to "gracefully" stop a server by
         initiating a shutdown sequence within the guest operating system.
@@ -1282,8 +1283,26 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_enable_snapshots(self, node: str, window: str, plan: str='ADVANCED',
-                            initiate: str = 'true') -> bool:
+    def ex_enable_snapshots(self, node, window, plan='ADVANCED', initiate='true'):
+        """
+        Enable snapshot service on a server
+
+        :param      node: Node ID of the node on which to enable snapshots.
+        :type       node: ``str``
+
+        :param      window: The window id of the window in which the snapshot
+                            is enabled.
+        :type       name: ``str``
+
+        :param      plan: Pland type 'ESSENTIALS' or 'ADVANCED
+        :type       plan: ``str``
+
+        :param      initiate: Run a snapshot upon configuration of the snapshot.
+        :type       ``str``
+
+        :rtype: ``bool``
+        """
+
         update_node = ET.Element('enableSnapshotService',
                                  {'xmlns': TYPES_URN})
         window_id = window
@@ -1300,18 +1319,42 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def list_snapshots(self, node: Node) -> list:
+    def list_snapshots(self, node):
+        """
+        List snapshots of a server
+
+        :param      node: Node nameof the node on which to enable snapshots.
+        :type       node: ``str``
+
+        :rtype: ``list``
+        """
         params = {}
         params['serverId'] = self.list_nodes(ex_name=node)[0].id
         return self._to_snapshots(self.connection.request_with_orgId_api_2(
             'snapshot/snapshot',
             params=params).object)
 
-    def get_snapshot(self, snapshot_id: str) -> list:
+    def get_snapshot(self, snapshot_id):
+        """
+        Get snapshot of a server by snapshot id.
+
+        :param      snapshot_id: ID of snapshot to retrieve.
+        :type       snapshot_id: ``str``
+
+        :rtype: ``dict``
+        """
         return self._to_snapshot(self.connection.request_with_orgId_api_2(
                                  'snapshot/snapshot/%s' % snapshot_id).object)
 
-    def ex_disable_snapshots(self, node: str) -> bool:
+    def ex_disable_snapshots(self, node):
+        """
+        Disable snapshots on a server.  This also deletes current snapshots.
+
+        :param      node: Node ID of the node on which to enable snapshots.
+        :type       node: ``str``
+
+        :rtype: ``list``
+        """
         update_node = ET.Element('disableSnapshotService',
                                  {'xmlns': TYPES_URN})
 
@@ -1324,12 +1367,15 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_initiate_manual_snapshot(self, name: str,
-                                    server_id: str = None) -> bool:
+    def ex_initiate_manual_snapshot(self, name=None, server_id=None):
         """
-        Initiate a manual snapshot on the fly
+        Initiate a manual snapshot of server on the fly
         :param name: optional name of server
+        :type ``str``
+
         :param server_id: optinal parameter to use instead of name
+        :type ``str``
+
         :return: True of False
         :rtype: ``bool``
         """
@@ -1361,6 +1407,45 @@ class NttCisNodeDriver(NodeDriver):
                                           preserve_mac_addresses=None,
                                           tag_key_name=None,
                                           tag_key_id=None, tag_value=None):
+        """
+        Create a snapshot preview of a server to clone to a new server
+
+        :param snapshot_id: ID of the specific snahpshot to use in
+                                 creating preview server.
+        :type  snapshot_id: ``str``
+
+        :param server_name: Name of the server created from the snapshot
+        :type  ``str``
+
+        :param nics_connected: 'true' or 'false'.  Should the nics be
+                                automatically connected
+        :type  ``str``
+
+        :param server_description: (Optional) A brief description of the
+                                   server.
+        :type ``str``
+
+        :param target_cluster_id: (Optional) The ID of a specific cluster as
+                                   opposed to the default.
+        :type ``str``
+
+        :param preserve_mac_address: (Optional) If set to 'true' will preserve
+                                      mac address from the original server.
+        :type ``str``
+
+        :param tag_key_name: (Optional) If tagging is desired and by name is
+                             desired, set this to the tag name.
+        :type ``str``
+
+        :param tag_key_id: (Optional) If tagging is desired and by id is
+                            desired, set this to the tag id.
+        :type ``str``
+
+        :param tag_value: (Optional) If using a tag_key_id or tag_key_name,
+                           set the value fo tag_value.
+
+        :rtype: ``str``
+        """
         create_preview = ET.Element('createSnapshotPreviewServer',
                                     {'xmlns': TYPES_URN,
                                      'snapshotId': snapshot_id})

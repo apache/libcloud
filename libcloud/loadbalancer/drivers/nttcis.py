@@ -30,7 +30,7 @@ from libcloud.common.nttcis import TYPES_URN
 from libcloud.utils.misc import reverse_dict
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer
+from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer, DEFAULT_ALGORITHM
 from libcloud.loadbalancer.base import Member
 from libcloud.loadbalancer.types import Provider
 
@@ -100,7 +100,7 @@ class NttCisLBDriver(Driver):
 
     def create_balancer(self, name, listener_port=None, port=None,
                         protocol=None, algorithm=None, members=None,
-                        optimization_profile=None,
+                        optimization_profile="TCP",
                         ex_listener_ip_address=None):
         """
 
@@ -131,7 +131,7 @@ class NttCisLBDriver(Driver):
         :param optimization_profile: For STANDARD type and protocol TCP
                                      an optimization type of TCP, LAN_OPT,
                                       WAN_OPT, MOBILE_OPT, or TCP_LEGACY is
-                                      required
+                                      required. Default is TCP
         :type  protcol: ``str``
 
         :param ex_listener_ip_address: Must be a valid IPv4 in dot-decimal
@@ -144,9 +144,7 @@ class NttCisLBDriver(Driver):
         if protocol is None:
             protocol = 'http'
         if algorithm is None:
-            algor = Algorithm.ROUND_ROBIN
-        else:
-            algor = Algorithm.__dict__[algorithm]
+            algorithm = DEFAULT_ALGORITHM
 
         # Create a pool first
 
@@ -154,7 +152,7 @@ class NttCisLBDriver(Driver):
             network_domain_id=network_domain_id,
             name=name,
             ex_description=None,
-            balancer_method=self._ALGORITHM_TO_VALUE_MAP[algor])
+            balancer_method=self._ALGORITHM_TO_VALUE_MAP[algorithm])
 
         # Attach the members to the pool as nodes
         if members is not None:
@@ -633,7 +631,7 @@ class NttCisLBDriver(Driver):
                                    fallback_persistence_profile=None,
                                    irule=None,
                                    protocol='TCP',
-                                   optimization_profile=None,
+                                   optimization_profile="TCP",
                                    connection_limit=25000,
                                    connection_rate_limit=2000,
                                    source_port_preservation='PRESERVE'):
@@ -676,7 +674,7 @@ class NttCisLBDriver(Driver):
         :param optimization_profile: For STANDARD type and protocol
                                      TCP an optimization type of TCP, LAN_OPT,
                                       WAN_OPT, MOBILE_OPT,
-                                       or TCP_LEGACY is required
+                                       or TCP_LEGACY is required. Default is 'TCP'.
         :type  protcol: ``str``
 
         :param connection_limit: Maximum number
@@ -1019,7 +1017,8 @@ class NttCisLBDriver(Driver):
         """
         result = self.connection.request_with_orgId_api_2(
             action='networkDomainVip/defaultHealthMonitor',
-            params={'networkDomainId': network_domain.id},
+            #params={'networkDomainId': network_domain.id},
+            params={'networkDomainId': network_domain},
             method='GET').object
         return self._to_health_monitors(result)
 
@@ -1140,6 +1139,7 @@ class NttCisLBDriver(Driver):
             status=self._VALUE_TO_STATE_MAP.get(
                 findtext(element, 'state', TYPES_URN),
                 State.UNKNOWN),
+            health_monitor=element.find(fixxpath('healthMonitor', TYPES_URN)).get('id'),
             connection_rate_limit=findtext(element,
                                            'connectionRateLimit', TYPES_URN),
             connection_limit=findtext(element, 'connectionLimit', TYPES_URN),

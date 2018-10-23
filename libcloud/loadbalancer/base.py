@@ -130,6 +130,7 @@ class Algorithm(object):
     PREDICTIVE_MEMBER = 5
     PREDICTIVE_NODE = 6
 
+
 DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 
 

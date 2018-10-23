@@ -1,7 +1,7 @@
 from pprint import pprint
 import pytest
 import libcloud
-
+from libcloud.loadbalancer.base import Algorithm
 from libcloud.compute.drivers.nttcis import NttCisPort, NttCisIpAddress, NttCisPublicIpBlock, NttCisNatRule
 from libcloud.common.nttcis import NttCisFirewallRule, NttCisVlan, NttCisFirewallAddress
 
@@ -230,12 +230,13 @@ def test_create_load_balancer(lbdriver, compute_driver):
     port = '80'
     listener_port = '8000'
     protocol = 'TCP'
-    algorithm = 'LEAST_CONNECTIONS_MEMBER'
+    algorithm = Algorithm.LEAST_CONNECTIONS_MEMBER
     members = [m for m in members]
     ex_listener_ip_address = "168.128.13.127"
     lb = lbdriver.create_balancer(name, listener_port=listener_port, port=port, protocol=protocol,
                                   algorithm=algorithm, members=members, optimization_profile='TCP',
                                   ex_listener_ip_address=ex_listener_ip_address)
+    print(lb)
 
 
 def test_create_vip_node(compute_driver, lbdriver):

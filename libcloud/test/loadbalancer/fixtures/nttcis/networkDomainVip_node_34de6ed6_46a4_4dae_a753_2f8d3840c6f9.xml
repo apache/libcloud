@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns="urn:didata.com:api:cloud:types" id="34de6ed6-46a4-4dae-a753-2f8d3840c6f9" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-6116f11291d0</networkDomainId>
+<name>ProductionNode.2</name>
+<description>Production Server 2</description>
+<ipv4Address>10.10.10.101</ipv4Address>
+<state>NORMAL</state>
+<status>ENABLED</status>
+<healthMonitor id="0168b83a-d487-11e4-811f-005056806999" name="ICMP"/>
+<connectionLimit>10000</connectionLimit>
+<connectionRateLimit>2000</connectionRateLimit>
+<createTime>2015-05-27T13:56:13.000Z</createTime>
+</node>
