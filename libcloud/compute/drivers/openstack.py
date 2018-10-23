@@ -1681,7 +1681,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
     def ex_delete_network(self, network):
         """
-        Get a list of NodeNetorks that are available.
+        Delete a Network
 
         :param network: Network which should be used
         :type network: :class:`OpenStackNetwork`
@@ -2913,6 +2913,44 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         response = self.network_connection.request(
             self._subnets_url_prefix).object
         return self._to_subnets(response)
+
+    def ex_create_subnet(self, name, network, cidr, ip_version=4):
+        """
+        Create a new Subnet
+
+        :param name: Name of subnet which should be used
+        :type name: ``str``
+
+        :param network: Parent network of the subnet
+        :type network: ``OpenStackNetwork``
+
+        :param cidr: cidr of network which should be used
+        :type cidr: ``str``
+
+        :param ip_version: ip_version of subnet which should be used
+        :type ip_version: ``int``
+
+        :rtype: :class:`OpenStack_2_SubNet`
+        """
+        data = {'subnet': {'cidr': cidr, 'network_id': network.id,
+                           'ip_version': ip_version, 'name': name}}
+        response = self.connection.request(self._subnets_url_prefix,
+                                           method='POST', data=data).object
+        return self._to_subnet(response['subnet'])
+
+    def ex_delete_subnet(self, subnet):
+        """
+        Delete a Subnet
+
+        :param subnet: Subnet which should be deleted
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('%s/%s' % (self._subnets_url_prefix,
+                                                  subnet.id),
+                                       method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_list_ports(self):
         """

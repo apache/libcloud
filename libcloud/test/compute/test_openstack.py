@@ -1758,6 +1758,17 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(subnet.name, 'private-subnet')
         self.assertEqual(subnet.cidr, '10.0.0.0/24')
 
+    def test_ex_create_subnet(self):
+        network = self.driver.ex_list_networks()[0]
+        subnet = self.driver.ex_create_subnet('name', network, '10.0.0.0/24')
+
+        self.assertEqual(subnet.name, 'name')
+        self.assertEqual(subnet.cidr, '10.0.0.0/24')
+
+    def test_ex_delete_subnet(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        self.assertTrue(self.driver.ex_delete_subnet(subnet=subnet))
+
     def test_ex_list_network(self):
         networks = self.driver.ex_list_networks()
         network = networks[0]
@@ -2440,9 +2451,21 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v2_1337_v2_0_subnets_08eae331_0402_425a_923c_34f7cfe39c1b(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__subnet.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
     def _v2_1337_v2_0_subnets(self, method, url, body, headers):
-        body = self.fixtures.load('_v2_0__subnets.json')
-        return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__subnet.json')
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load('_v2_0__subnets.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_volumes_detail(self, method, url, body, headers):
         body = self.fixtures.load('_v2_0__volumes.json')
