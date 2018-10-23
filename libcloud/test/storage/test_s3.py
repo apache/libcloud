@@ -42,7 +42,8 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.drivers.s3 import BaseS3Connection
-from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
+from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver,\
+    S3CNNorthWestStorageDriver
 from libcloud.storage.drivers.s3 import S3EUWestStorageDriver
 from libcloud.storage.drivers.s3 import S3APSEStorageDriver
 from libcloud.storage.drivers.s3 import S3APNEStorageDriver
@@ -1010,6 +1011,10 @@ class S3Tests(unittest.TestCase):
 
 class S3USWestTests(S3Tests):
     driver_type = S3USWestStorageDriver
+
+
+class S3CNNorthWestTests(S3Tests):
+    driver_type = S3CNNorthWestStorageDriver
 
 
 class S3EUWestTests(S3Tests):

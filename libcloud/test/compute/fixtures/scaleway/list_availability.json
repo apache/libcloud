@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "X64-120GB": {
+      "availability": "scarce"
+    },
+    "START1-XS": {
+      "availability": "available"
+    },
+    "ARM64-4GB": {
+      "availability": "shortage"
+    }
+  }
+}

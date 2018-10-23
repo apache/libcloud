@@ -44,8 +44,6 @@ class DummyFileObject(file):
             yield self._get_chunk(self._chunk_len)
             i += 1
 
-        raise StopIteration
-
     def _get_chunk(self, chunk_len):
         chunk = [str(x) for x in random.randint(97, 120)]
         return chunk

@@ -92,6 +92,7 @@ class Provider(object):
     S3_AP_SOUTHEAST2 = 's3_ap_southeast2'
     S3_CA_CENTRAL = 's3_ca_central'
     S3_CN_NORTH = 's3_cn_north'
+    S3_CN_NORTHWEST = 's3_cn_northwest'
     S3_EU_WEST = 's3_eu_west'
     S3_EU_WEST2 = 's3_eu_west_2'
     S3_EU_CENTRAL = 's3_eu_central'

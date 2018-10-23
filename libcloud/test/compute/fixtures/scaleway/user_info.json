@@ -1,0 +1,15 @@
+{
+	"user": {
+		"email": "jsnow@got.com",
+		"firstname": "John",
+		"fullname": "John Snow",
+		"id": "5bea0358",
+		"lastname": "Snow",
+		"organizations": null,
+		"roles": null,
+		"ssh_public_keys": [{
+			"fingerprint": "f5:d1:78:ed:28:72:5f:e1:ac:94:fd:1f:e0:a3:48:6d",
+			"key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAQQDGk5 example"
+		}]
+	}
+}
