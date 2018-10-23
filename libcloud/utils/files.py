@@ -49,8 +49,8 @@ def read_in_chunks(iterator, chunk_size=None, fill_size=False,
                       length (except for last chunk).
     :type fill_size: ``bool``
 
-    :param yield_empty: If true and iterator returned no data, yield empty
-                        bytes object before raising StopIteration.
+    :param yield_empty: If true and iterator returned no data, only yield empty
+                        bytes object
     :type yield_empty: ``bool``
 
     TODO: At some point in the future we could use byte arrays here if version

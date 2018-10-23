@@ -149,6 +149,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.upcloud', 'UpcloudDriver'),
     Provider.NTTCIS:
     ('libcloud.compute.drivers.nttcis', 'NttCisNodeDriver'),
+    Provider.SCALEWAY:
+    ('libcloud.compute.drivers.scaleway', 'ScalewayNodeDriver'),
 }
 
 

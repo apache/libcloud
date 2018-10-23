@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.storage.types import Provider
-from libcloud.storage.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.common.providers import get_driver as _get_provider_driver
 from libcloud.common.providers import set_driver as _set_provider_driver
+from libcloud.storage.types import OLD_CONSTANT_TO_NEW_MAPPING
+from libcloud.storage.types import Provider
 
 DRIVERS = {
     Provider.DUMMY:
@@ -37,6 +37,8 @@ DRIVERS = {
     ('libcloud.storage.drivers.s3', 'S3USGovWestStorageDriver'),
     Provider.S3_CN_NORTH:
     ('libcloud.storage.drivers.s3', 'S3CNNorthStorageDriver'),
+    Provider.S3_CN_NORTHWEST:
+    ('libcloud.storage.drivers.s3', 'S3CNNorthWestStorageDriver'),
     Provider.S3_EU_WEST:
     ('libcloud.storage.drivers.s3', 'S3EUWestStorageDriver'),
     Provider.S3_EU_WEST2:

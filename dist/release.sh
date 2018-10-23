@@ -37,4 +37,5 @@ python setup.py bdist_wheel
 
 cd dist
 
-./hash-sign.sh -u ${user} *.tar.bz2 *.tar.gz *.zip *.whl
+./hash.py *.tar.bz2 *.tar.gz *.zip *.whl
+./sign.sh -u ${user} *.tar.bz2 *.tar.gz *.zip *.whl
