@@ -1849,8 +1849,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``list`` of :class:`OpenStackSecurityGroup`
         """
-        print(vars(self.connection.request(
-            '/servers/%s/os-security-groups' % (node.id))))
         return self._to_security_groups(
             self.connection.request('/servers/%s/os-security-groups' %
                                     (node.id)).object)
@@ -3438,7 +3436,6 @@ class OpenStack_2_FloatingIpPool(OpenStack_1_1_FloatingIpPool):
     def _to_floating_ip(self, obj):
         instance_id = None
 
-        print(obj)
         # In neutron version prior to 13.0.0 port_details does not exists
         if 'port_details' not in obj and 'port_id' in obj and obj['port_id']:
             port = self.connection.driver.ex_get_port(obj['port_id'])
