@@ -5062,11 +5062,22 @@ class NttCisNodeDriver(NodeDriver):
             state=element.get('state')
         )
 
-    def _to_snapshots(self, object: ET):
+    def _to_snapshots(self, object):
+        """
+        Takes an xml object and gathers indivicual elements
+        :param object: XML data
+        :return: list of dictionaries with keys
+                 id
+                 start_time
+                 end_time
+                 expiry_time
+                 type of snapshot
+                 state
+        """
         snapshot_elements = object.findall(fixxpath('snapshot', TYPES_URN))
         return [self._to_snapshot(el) for el in snapshot_elements]
 
-    def _to_snapshot(self, element: ET):
+    def _to_snapshot(self, element):
         return {'id': element.get('id'), 'start_time':
                 findtext(element, 'startTime', TYPES_URN),
                 'end_time': findtext(element, 'endTime', TYPES_URN),
