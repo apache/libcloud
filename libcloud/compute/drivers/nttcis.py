@@ -1283,21 +1283,23 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_enable_snapshots(self, node, window, plan='ADVANCED', initiate='true'):
+    def ex_enable_snapshots(self, node, window, plan='ADVANCED',
+                            initiate='true'):
         """
         Enable snapshot service on a server
 
         :param      node: Node ID of the node on which to enable snapshots.
         :type       node: ``str``
 
-        :param      window: The window id of the window in which the snapshot
-                            is enabled.
+        :param      window: The window id of the window in which the
+                            snapshot is enabled.
         :type       name: ``str``
 
         :param      plan: Pland type 'ESSENTIALS' or 'ADVANCED
         :type       plan: ``str``
 
-        :param      initiate: Run a snapshot upon configuration of the snapshot.
+        :param      initiate: Run a snapshot upon configuration of the
+                              snapshot.
         :type       ``str``
 
         :rtype: ``bool``
@@ -2119,8 +2121,7 @@ class NttCisNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     # 09/10/18 Adding private IPv4 and IPv6  addressing capability
-    def ex_reserve_ip(self, vlan: NttCisVlan, ip: str, description: None) ->\
-            bool:
+    def ex_reserve_ip(self, vlan, ip, description):
         vlan_id = self._vlan_to_vlan_id(vlan)
         if re.match(r'(\d+\.){3}', ip):
             private_ip = ET.Element('reservePrivateIpv4Address',
@@ -2142,7 +2143,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_unreserve_ip_addresses(self, vlan: NttCisVlan, ip: str) -> bool:
+    def ex_unreserve_ip_addresses(self, vlan, ip):
         vlan_id = self._vlan_to_vlan_id(vlan)
         if re.match(r'(\d+\.){3}', ip):
             private_ip = ET.Element('unreservePrivateIpv4Address',
@@ -2162,8 +2163,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_list_reserved_ipv4(self, vlan: NttCisVlan=None,
-                              datacenter_id: str=None):
+    def ex_list_reserved_ipv4(self, vlan=None, datacenter_id=None):
         if vlan is not None:
             vlan_id = self._vlan_to_vlan_id(vlan)
             params = {"vlanId": vlan_id}
@@ -2353,10 +2353,12 @@ class NttCisNodeDriver(NodeDriver):
         :param protocol: One of 'IP', 'ICMP', 'TCP', or 'UDP'
         :type ``str``
 
-        :param source_addr:  The source address, which must be an NttCisFirewallAddress instance
+        :param source_addr:  The source address, which must be an
+                             NttCisFirewallAddress instance
         :type ``NttCisFirewallAddress``
 
-        :param dest_addr: The destination address, which must be an NttCisFirewallAddress instance
+        :param dest_addr: The destination address, which must be an
+                          NttCisFirewallAddress instance
         :type `NttCisFirewallAddress``
 
         :param position: The position in which to create the rule
@@ -2366,13 +2368,14 @@ class NttCisNodeDriver(NodeDriver):
                          Without: 'FIRST' or 'LAST'
         :type  position: ``str``
 
-        :param enabled: Firewall rule is enabled upon creation. Set to 1 for true or 0 for false.
+        :param enabled: Firewall rule is enabled upon creation.
+                        Set to 1 for true or 0 for false.
         :type ``int``
 
         :param position_relative_to_rule: The rule or rule name in
                                           which to decide positioning by
         :type  position_relative_to_rule:
-            :class:`NttCisFirewallRule` or ``str``
+                                          :class:`NttCisFirewallRule` or ``str``
 
         :rtype: ``bool``
         """

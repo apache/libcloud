@@ -27,8 +27,7 @@ from libcloud.compute.base import Node
 from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 from libcloud.compute.types import LibcloudError, InvalidCredsError
-from collections import abc
-from keyword import iskeyword
+
 
 # Roadmap / TODO:
 #
@@ -812,8 +811,7 @@ class NttCisScsiController(object):
     """
     A class that represents the disk on a server
     """
-    def __init__(self, id: str=None, adapter_type: str=None,
-                 bus_number: str=None, state: str=None):
+    def __init__(self, id, adapter_type, bus_number, state):
         """
         Instantiate a new :class:`DimensionDataServerDisk`
 
@@ -1926,12 +1924,3 @@ class NttCisNic(object):
         return ('<NttCisNic: private_ip_v4=%s, vlan=%s,'
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
-
-
-class ConsistencyGroup(object):
-    """
-    A representation of Consistency Groups in NTTC-CIS
-    """
-    def __init__(self, description, name=None, journal_size_gb=None,
-                 sourceServer=None, targetServer=None):
-        pass

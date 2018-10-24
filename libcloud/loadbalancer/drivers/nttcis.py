@@ -30,7 +30,8 @@ from libcloud.common.nttcis import TYPES_URN
 from libcloud.utils.misc import reverse_dict
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer, DEFAULT_ALGORITHM
+from libcloud.loadbalancer.base import Algorithm, Driver,\
+    LoadBalancer, DEFAULT_ALGORITHM
 from libcloud.loadbalancer.base import Member
 from libcloud.loadbalancer.types import Provider
 
@@ -191,8 +192,7 @@ class NttCisLBDriver(Driver):
                    'listener_ip_address': ex_listener_ip_address}
         )
 
-    def ex_update_listener(self, virtual_listener: NttCisVirtualListener,
-                           **kwargs) -> bool:
+    def ex_update_listener(self, virtual_listener, **kwargs):
         """
         Update a current virtual listener.
         :param virtual_listener: The listener to be updated
@@ -672,9 +672,10 @@ class NttCisLBDriver(Driver):
         :type  protcol: ``str``
 
         :param optimization_profile: For STANDARD type and protocol
-                                     TCP an optimization type of TCP, LAN_OPT,
-                                      WAN_OPT, MOBILE_OPT,
-                                       or TCP_LEGACY is required. Default is 'TCP'.
+                                     TCP an optimization type of TCP,
+                                     LAN_OPT, WAN_OPT, MOBILE_OPT,
+                                     or TCP_LEGACY is required.
+                                     Default is 'TCP'.
         :type  protcol: ``str``
 
         :param connection_limit: Maximum number
@@ -685,7 +686,7 @@ class NttCisLBDriver(Driver):
         :type  connection_rate_limit: ``int``
 
         :param source_port_preservation: Choice of PRESERVE,
-                                        PRESERVE_STRICT or CHANGE
+                                         PRESERVE_STRICT or CHANGE
         :type  source_port_preservation: ``str``
 
         :return: Instance of the listener
@@ -1017,7 +1018,6 @@ class NttCisLBDriver(Driver):
         """
         result = self.connection.request_with_orgId_api_2(
             action='networkDomainVip/defaultHealthMonitor',
-            #params={'networkDomainId': network_domain.id},
             params={'networkDomainId': network_domain},
             method='GET').object
         return self._to_health_monitors(result)
@@ -1139,7 +1139,8 @@ class NttCisLBDriver(Driver):
             status=self._VALUE_TO_STATE_MAP.get(
                 findtext(element, 'state', TYPES_URN),
                 State.UNKNOWN),
-            health_monitor=element.find(fixxpath('healthMonitor', TYPES_URN)).get('id'),
+            health_monitor=element.find(fixxpath('healthMonitor',
+                                                 TYPES_URN)).get('id'),
             connection_rate_limit=findtext(element,
                                            'connectionRateLimit', TYPES_URN),
             connection_limit=findtext(element, 'connectionLimit', TYPES_URN),
