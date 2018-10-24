@@ -2183,8 +2183,7 @@ class NttCisNodeDriver(NodeDriver):
         addresses = self._to_ipv4_addresses(response)
         return addresses
 
-    def ex_list_reserved_ipv6(self, vlan: NttCisVlan=None,
-                              datacenter_id: str=None):
+    def ex_list_reserved_ipv6(self, vlan=None, datacenter_id=None):
         if vlan is not None:
             vlan_id = self._vlan_to_vlan_id(vlan)
             params = {"vlanId": vlan_id}
@@ -2375,7 +2374,7 @@ class NttCisNodeDriver(NodeDriver):
         :param position_relative_to_rule: The rule or rule name in
                                           which to decide positioning by
         :type  position_relative_to_rule:
-                                          :class:`NttCisFirewallRule` or ``str``
+                                        ::class:`NttCisFirewallRule` or ``str``
 
         :rtype: ``bool``
         """
