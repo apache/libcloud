@@ -15,6 +15,8 @@
 """
 NTT CIS Driver
 """
+import sys
+import re
 
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import LooseVersion
@@ -50,13 +52,12 @@ from libcloud.common.nttcis import NttCisTagKey
 from libcloud.common.nttcis import NttCisTag
 from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
-from libcloud.common.nttcis import SERVER_NS, NETWORK_NS, GENERAL_NS
+from libcloud.common.nttcis import NETWORK_NS, GENERAL_NS
 from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall, return_all
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
-import sys
-import re
+
 # Node state map is a dictionary with the keys as tuples
 # These tuples represent:
 # (<state_of_node_from_didata>, <is node started?>, <action happening>)
@@ -2888,7 +2889,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_remove_scsi_controller(self, controller_id: str) -> bool:
+    def ex_remove_scsi_controller(self, controller_id):
         """
         Added 8/27/18:  Adds a SCSI Controller by node id
         :param controller_id: Scsi controller's id
@@ -3646,8 +3647,7 @@ class NttCisNodeDriver(NodeDriver):
             % (datacenter_id, start_date, end_date))
         return self._format_csv(result.response)
 
-    def ex_list_ip_address_list(
-            self, ex_network_domain: NttCisIpAddressList) -> object:
+    def ex_list_ip_address_list(self, ex_network_domain):
         """
         List IP Address List by network domain ID specified
 
