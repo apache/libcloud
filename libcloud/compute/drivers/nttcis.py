@@ -2864,9 +2864,9 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_add_scsi_controller_to_node(self, server_id: str,
-                                       adapter_type: str,
-                                       bus_number: str=None) -> bool:
+    def ex_add_scsi_controller_to_node(self, server_id,
+                                       adapter_type,
+                                       bus_number=None):
         """
         Added 8/27/18:  Adds a SCSI Controller by node id
         :param server_id: server id
