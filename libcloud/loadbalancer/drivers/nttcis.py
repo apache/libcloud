@@ -1133,14 +1133,18 @@ class NttCisLBDriver(Driver):
 
         name = findtext(element, 'name', TYPES_URN)
 
+        try:
+            hm = element.find(fixxpath('healthMonitor', TYPES_URN)).get('id')
+        except AttributeError:
+            hm = None
+
         node = NttCisVIPNode(
             id=element.get('id'),
             name=name,
             status=self._VALUE_TO_STATE_MAP.get(
                 findtext(element, 'state', TYPES_URN),
                 State.UNKNOWN),
-            health_monitor=element.find(fixxpath('healthMonitor',
-                                                 TYPES_URN)).get('id'),
+            health_monitor=hm,
             connection_rate_limit=findtext(element,
                                            'connectionRateLimit', TYPES_URN),
             connection_limit=findtext(element, 'connectionLimit', TYPES_URN),

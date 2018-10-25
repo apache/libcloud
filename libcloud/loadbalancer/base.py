@@ -122,6 +122,7 @@ class Algorithm(object):
     """
     Represents a load balancing algorithm.
     """
+    RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
     WEIGHTED_ROUND_ROBIN = 3
