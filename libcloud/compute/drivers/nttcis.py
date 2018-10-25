@@ -54,7 +54,7 @@ from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.common.nttcis import NETWORK_NS, GENERAL_NS
 from libcloud.utils.py3 import urlencode, ensure_string
-from libcloud.utils.xml import fixxpath, findtext, findall, return_all
+from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
 
