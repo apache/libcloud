@@ -15,7 +15,7 @@
 """
 NTTCIS Common Components
 """
-from io import BytesIO
+
 from base64 import b64encode
 from time import sleep
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version

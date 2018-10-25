@@ -6,7 +6,7 @@ NTT-CIS provides IT-as-a-Service to customers around the globe on their
 cloud platform (Compute as a Service). The CaaS service is available either on
 one a hybrid cloud instance or as a private instance on premises.
 
-.. figure:: /_static/images/provider_logos/nttcis.png
+.. figure:: /_static/images/provider_logos/ntt.png
     :align: center
     :width: 300
     :target: http://www.ntt.com/en/services/cloud/enterprise-cloud.html/
