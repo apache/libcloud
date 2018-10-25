@@ -23,4 +23,5 @@ new_node = driver.create_node("Suse_12", image, psswd,
                               ex_primary_nic_network_adapter='VMXNET3',
                               ex_memory_gb=8
                               )
-driver.ex_wait_for_state('running', driver.ex_get_node_by_id, 20, 420, new_node.id)
+driver.ex_wait_for_state('running', driver.ex_get_node_by_id,
+                         20, 420, new_node.id)

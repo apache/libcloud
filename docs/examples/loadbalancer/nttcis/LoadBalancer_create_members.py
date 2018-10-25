@@ -27,7 +27,12 @@ def create_load_balancer():
     algorithm = Algorithm.LEAST_CONNECTIONS_MEMBER
     members = [m for m in members]
     ex_listener_ip_address = "168.128.13.127"
-    lb = lbdriver.create_balancer(name, listener_port=listener_port, port=port, protocol=protocol,
-                                  algorithm=algorithm, members=members, optimization_profile='TCP',
-                                  ex_listener_ip_address=ex_listener_ip_address)
+    lb = lbdriver.create_balancer(
+        name,
+        listener_port=listener_port,
+        port=port, protocol=protocol,
+        algorithm=algorithm, members=members,
+        optimization_profile='TCP',
+        ex_listener_ip_address=ex_listener_ip_address
+    )
     print(lb)

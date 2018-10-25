@@ -1,8 +1,8 @@
-from pprint import pprint
+import libcloud.security
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
-from libcloud.common.nttcis import NttCisFirewallAddress, NttCisIpAddress, NttCisPort
-import libcloud.security
+from libcloud.common.nttcis import NttCisFirewallAddress,\
+    NttCisIpAddress, NttCisPort
 
 # Get nttcis driver
 libcloud.security.VERIFY_SSL_CERT = True
@@ -41,13 +41,17 @@ else:
     addr_list = driver.ex_list_ip_address_list(my_network_domain.id)
     addr_list = [al for al in addr_list if al.name == address_list_name][0]
 
-# Instead of a single port or list of ports, create a port list for the destianation
+# Instead of a single port or list of ports, create a port
+# list for the destianation
 port_list_name = 'sdk_test_port_list'
 description = 'A test port list'
 
 # rerquires an instance of NttCisPort object
 ports = [NttCisPort(begin='8000', end='8080')]
-result = driver.ex_create_portlist(my_network_domain.id, port_list_name, description, ports)
+result = driver.ex_create_portlist(my_network_domain.id,
+                                   port_list_name,
+                                   description,
+                                   ports)
 
 try:
     assert result is True
@@ -58,7 +62,8 @@ else:
     port_list = [pl for pl in port_list if pl.name == port_list_name][0]
 
 # Create an instance of NttCisFirewallAddress for destination
-dest_firewall_address = NttCisFirewallAddress(address_list_id=addr_list.id, port_list_id=port_list.id)
+dest_firewall_address = NttCisFirewallAddress(address_list_id=addr_list.id,
+                                              port_list_id=port_list.id)
 
 # Finally create firewall rule
 rule = driver.ex_create_firewall_rule(my_network_domain.id,

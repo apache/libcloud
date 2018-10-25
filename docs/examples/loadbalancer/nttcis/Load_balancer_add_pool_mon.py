@@ -37,5 +37,6 @@ for result in results:
     print(result)
 
 # Add desired health monitor
-result = update_health_monitors(lbdriver, net_domains[0], "9f79487a-1b6d-11e5-8d4f-180373fb68df")
+result = update_health_monitors(lbdriver, net_domains[0],
+                                "9f79487a-1b6d-11e5-8d4f-180373fb68df")
 assert result is True
