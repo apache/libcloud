@@ -112,7 +112,7 @@ class NttCisLBDriver(Driver):
 
         :param listener_port: An integer in the range of 1-65535.
                               If not supplied, it will be taken to
-                               mean 'Any Port'
+                              mean 'Any Port'
         :type  port: ``int
 
         :param port: An integer in the range of 1-65535. If not supplied,
@@ -131,8 +131,8 @@ class NttCisLBDriver(Driver):
 
         :param optimization_profile: For STANDARD type and protocol TCP
                                      an optimization type of TCP, LAN_OPT,
-                                      WAN_OPT, MOBILE_OPT, or TCP_LEGACY is
-                                      required. Default is TCP
+                                     WAN_OPT, MOBILE_OPT, or TCP_LEGACY is
+                                     required. Default is TCP
         :type  protcol: ``str``
 
         :param ex_listener_ip_address: Must be a valid IPv4 in dot-decimal
