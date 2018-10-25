@@ -432,10 +432,6 @@ class NttCisLBDriver(Driver):
                        connection_limit=25000,
                        connection_rate_limit=2000):
         """
-        Inconsistent use of objects.
-        Either always pass an object and have the method get the id, or
-         always pass the id.
-
         Create a new node
 
         :param network_domain_id: Network Domain ID (required)
