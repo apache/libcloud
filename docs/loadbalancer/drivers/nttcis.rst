@@ -11,7 +11,7 @@ one of the public cloud instances or as a private instance on premises.
     :width: 300
     :target:  http://www.ntt.com/en/services/cloud/enterprise-cloud.html/
 
-CaaS has its own non-standard `API`_ , `libcloud` provides a Python
+CaaS has its own non-standard `API`_, `libcloud` provides a Python
 wrapper on top of this `API`_ with common methods with other IaaS solutions and
 Public cloud providers. Therefore, you can use use the NTTC-CIS libcloud
 driver to communicate with both the public and private clouds.
@@ -61,3 +61,5 @@ API Docs
 .. autoclass:: libcloud.loadbalancer.drivers.nttcis.NttCisLBDriver
     :members:
     :inherited-members:
+
+.. _`API`: https://docs.mcp-services.net/display/CCD/API+2

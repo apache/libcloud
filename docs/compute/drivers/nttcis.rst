@@ -64,7 +64,7 @@ API Docs
     :members:
     :inherited-members:
 
-.. _`API`: http://cloud.dimensiondata.com/au/en/services/public-cloud/api
+.. _`API`: https://docs.mcp-services.net/display/CCD/API+2
 
 
 Debugging Tips
