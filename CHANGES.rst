@@ -20,6 +20,9 @@ Common
 - [OpenStack] Document openstack_connection_kwargs method (GITHUB-1219)
   [Ken Dreyer]
 
+- [OpenStack] Handle missing user email in OpenStackIdentityUser (GITHUB-1249)
+  [Ken Dreyer]
+
 Compute
 ~~~~~~~
 
