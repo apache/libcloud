@@ -53,6 +53,9 @@ Compute
 - [EC2] Update instance sizes (GITHUB-1238)
   [Ward Vandewege]
 
+- [EC2] Accept tags when create a snapshot (LIBCLOUD-1014, GITHUB-1240)
+  [Rafael Gonçalves]
+
 - [GCE] Expand Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
   [maxlip]
 
