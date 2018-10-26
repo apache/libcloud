@@ -523,7 +523,7 @@ class NttCisConnection(ConnectionUserAndKey):
                                              method).object
         yield resp
         if len(resp) <= 0:
-            raise StopIteration
+            return
 
         pcount = resp.get('pageCount')  # pylint: disable=no-member
         psize = resp.get('pageSize')  # pylint: disable=no-member
