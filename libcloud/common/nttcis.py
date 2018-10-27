@@ -15,7 +15,8 @@
 """
 NTTCIS Common Components
 """
-
+from copy import deepcopy
+from collections.abc import MutableSequence, Mapping
 from base64 import b64encode
 from time import sleep
 from lxml import etree
@@ -1926,7 +1927,7 @@ class NttCisNic(object):
         return ('<NttCisNic: private_ip_v4=%s, vlan=%s,'
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
-<<<<<<< HEAD
+
 
 
 #####  Testing new concept below this line

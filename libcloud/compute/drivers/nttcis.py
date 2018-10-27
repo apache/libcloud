@@ -53,6 +53,7 @@ from libcloud.common.nttcis import NttCisTag
 from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.common.nttcis import NETWORK_NS, GENERAL_NS
+from libcloud.common.nttcis import process_xml
 from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
@@ -5122,6 +5123,8 @@ class NttCisNodeDriver(NodeDriver):
         return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
+        return process_xml(element)
+        """    
         started = findtext(element, 'started', TYPES_URN)
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
         dd_state = findtext(element, 'state', TYPES_URN)
@@ -5227,7 +5230,7 @@ class NttCisNodeDriver(NodeDriver):
                  driver=self.connection.driver,
                  extra=extra)
         return n
-
+        """
     def _to_status(self, element):
         if element is None:
             return NttCisStatus()
