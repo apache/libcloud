@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+        requestId="na9_20160321T074626030-0400_7e9fffe7-190b-46f2-9107- 9d52fe57d0ad"
+        xmlns="urn:didata.com:api:cloud:types">
+    <operation>EDIT_IP_ADDRESS_LIST</operation>
+    <responseCode>OK</responseCode>
+    <message>IP Address List 'MyIpAddressList' has been edited
+        successfully.
+    </message>
+</response>

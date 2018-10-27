@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+  <osImage xmlns="urn:didata.com:api:cloud:types" id="6b4fb0c7-a57b-4f58-b59c-9958f94f971a" datacenterId="NA9">
+    <name>Win2012 DC 2 CPU</name>
+    <description>Windows 2012 Datacenter</description>
+    <cpu count="2" speed="STANDARD" coresPerSocket="1" />
+    <memoryGb>4</memoryGb>
+    <disk id="f5e01854-a211-4ec6-96d6-2753b6d47877" scsiId="0" sizeGb="50" speed="STANDARD" />
+    <createTime>2015-09-17T11:44:43.000Z</createTime>
+    <osImageKey>T-WIN-2012-DATACTR-64-2-4-50</osImageKey>
+    <guest osCustomization="true">
+        <operatingSystem id="WIN2012DC64" displayName="WIN2012DC/64" family="WINDOWS" />
+    </guest>
+  </osImage>

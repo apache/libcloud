@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defaultPersistenceProfiles
+ xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="4"
+totalCount="4" pageSize="250">
+ <defaultPersistenceProfile id="a34ca024-f3db-11e4-b010-005056806999"
+fallbackCompatible="false">
+ <name>CCDEFAULT.Cookie</name>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="HTTP"/>
+ </defaultPersistenceProfile>
+ <defaultPersistenceProfile id="a34ca25c-f3db-11e4-b010-005056806999"
+fallbackCompatible="true">
+ <name>CCDEFAULT.DestinationAddress</name>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="HTTP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="ANY"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="ANY"/>
+ </defaultPersistenceProfile>
+ <defaultPersistenceProfile id="a34ca4b7-f3db-11e4-b010-005056806999"
+fallbackCompatible="false">
+ <name>CCDEFAULT.Sip</name>
+ <virtualListenerCompatibility type="STANDARD" protocol="UDP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="TCP"/>
+ </defaultPersistenceProfile>
+ <defaultPersistenceProfile id="a34ca3f6-f3db-11e4-b010-005056806999"
+fallbackCompatible="true">
+ <name>CCDEFAULT.SourceAddress</name>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="HTTP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="ANY"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="ANY"/>
+ </defaultPersistenceProfile>
+</defaultPersistenceProfiles>

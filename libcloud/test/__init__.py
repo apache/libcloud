@@ -173,7 +173,12 @@ class MockHttp(LibcloudConnection):
 
     def _get_method_name(self, type, use_param, qs, path):
         path = path.split('?')[0]
-        meth_name = path.replace('/', '_').replace('.', '_').replace('-', '_')
+        meth_name = (
+            path
+            .replace('/', '_')
+            .replace('.', '_')
+            .replace('-', '_')
+            .replace('~', '%7E'))  # Python 3.7 no longer quotes ~
 
         if type:
             meth_name = '%s_%s' % (meth_name, self.type)

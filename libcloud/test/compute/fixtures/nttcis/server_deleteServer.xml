@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-
+08T05:49:07.774-04:00/f0a53414-e991-4c9b-b52f-5770ff5b606b">
+<operation>DELETE_SERVER</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to Delete Server (Id:d577a691-e116-4913-a440-
+022d2729fc84) has been accepted and is being processed</message>
+</response>

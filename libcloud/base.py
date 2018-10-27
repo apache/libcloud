@@ -25,6 +25,9 @@ from libcloud.container.providers import get_driver as get_container_driver
 from libcloud.dns.providers import Provider as DnsProvider
 from libcloud.dns.providers import get_driver as get_dns_driver
 
+from libcloud.drs.providers import Provider as DrsProvider
+from libcloud.drs.providers import get_driver as get_drs_driver
+
 from libcloud.loadbalancer.providers import Provider as LoadBalancerProvider
 from libcloud.loadbalancer.providers import get_driver as \
     get_loadbalancer_driver
@@ -46,6 +49,9 @@ class DriverType(object):
     """ DNS service provider driver """
     DNS = DnsProvider
 
+    """ DRS service provider driver """
+    DRS = DrsProvider
+
     """ Load balancer provider-driver """
     LOADBALANCER = LoadBalancerProvider
 
@@ -58,6 +64,7 @@ DriverTypeFactoryMap = {
     DriverType.COMPUTE: get_compute_driver,
     DriverType.CONTAINER: get_container_driver,
     DriverType.DNS: get_dns_driver,
+    DriverType.DRS: get_drs_driver,
     DriverType.LOADBALANCER: get_loadbalancer_driver,
     DriverType.STORAGE: get_storage_driver
 }

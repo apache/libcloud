@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response requestId="NA9/2015-03-06T04:49:42.721-05:00/f69f1106-0df7-4614-b517-844ce29013e4"
+xmlns="urn:didata.com:api:cloud:types">
+<operation>DELETE_FIREWALL_RULE</operation>
+<responseCode>OK</responseCode>
+<message>Firewall Rule (Id:84e34850-595d-436e-a885-7cd37edb24a4) has been
+deleted</message>
+</response>

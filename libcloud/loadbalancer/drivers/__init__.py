@@ -15,5 +15,6 @@
 
 __all__ = [
     'rackspace',
-    'gogrid'
+    'gogrid',
+    'nttcis'
 ]

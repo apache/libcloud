@@ -221,7 +221,6 @@ class LibcloudConnection(LibcloudBaseConnection):
             verify=self.verification
         )
 
-
     def prepared_request(self, method, url, body=None,
                          headers=None, raw=False, stream=False):
         headers = self._normalize_headers(headers=headers)

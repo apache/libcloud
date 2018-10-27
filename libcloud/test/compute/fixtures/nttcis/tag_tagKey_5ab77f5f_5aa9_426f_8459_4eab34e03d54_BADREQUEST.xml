@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T190934127-0400_6504c4a8-afa1-476f-b9d4-a01d8e52d599">
+  <operation>GET_TAG_KEY</operation>
+  <responseCode>RESOURCE_NOT_FOUND</responseCode>
+  <message>Tag Key 5ab77f5f-5aa9-426f-8459-4eab34e03d5 not found.</message>
+</response>

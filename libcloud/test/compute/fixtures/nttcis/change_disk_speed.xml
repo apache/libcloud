@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<response requestId="na9_20160321T074626030-0400_7e9fffe7-190b-46f2-91079d52fe57d0ad" xmlns="urn:didata.com:api:cloud:types">
+ <operation>CHANGE_DISK_SPEED</operation>
+ <responseCode>IN_PROGRESS</responseCode>
+ <message>Request to Change Disk Speed has been accepted. Please use appropriate Get or List API for status.</message>
+</response>

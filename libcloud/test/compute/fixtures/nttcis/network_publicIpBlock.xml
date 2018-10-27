@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<publicIpBlocks xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1" totalCount="1" pageSize="250">
+    <publicIpBlock id="9945dc4a-bdce-11e4-8c14-b8ca3a5d9ef8" datacenterId="NA9">
+        <networkDomainId>8cdfd607-f429-4df6-9352-162cfc0891be</networkDomainId>
+        <baseIp>168.128.4.18</baseIp>
+        <size>2</size>
+        <createTime>2015-07-13T04:07:37.000Z</createTime>
+        <state>NORMAL</state>
+    </publicIpBlock>
+</publicIpBlocks>

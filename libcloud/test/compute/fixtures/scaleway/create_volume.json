@@ -1,0 +1,13 @@
+{
+  "volume": {
+    "creation_date": "2014-05-22T12:57:22.514299+00:00",
+    "modification_date": "2014-05-22T12:57:22.514299+00:00",
+    "export_uri": null,
+    "id": "c675f420-cfeb-48ff-ba2a-9d2a4dbe3fcd",
+    "name": "volume-0-3",
+    "organization": "000a115d-2852-4b0a-9ce8-47f1134ba95a",
+    "server": null,
+    "size": 10000000000,
+    "volume_type": "l_ssd"
+  }
+}

@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Dimension Data Common Components
+NTTCIS Common Components
 """
+
 from base64 import b64encode
 from time import sleep
 from lxml import etree
@@ -28,14 +29,13 @@ from libcloud.compute.base import Node
 from libcloud.utils.py3 import basestring
 from libcloud.utils.xml import findtext
 from libcloud.compute.types import LibcloudError, InvalidCredsError
-from collections import abc
-from keyword import iskeyword
+
 
 # Roadmap / TODO:
 #
 # 1.0 - Copied from OpSource API, named provider details.
 
-# setup a few variables to represent all of the DimensionData cloud namespaces
+# setup a few variables to represent all of the NTTC-CIS cloud namespaces
 NAMESPACE_BASE = "http://oec.api.opsource.net/schemas"
 ORGANIZATION_NS = NAMESPACE_BASE + "/organization"
 SERVER_NS = NAMESPACE_BASE + "/server"
@@ -49,45 +49,40 @@ TYPES_URN = "urn:didata.com:api:cloud:types"
 
 # API end-points
 API_ENDPOINTS = {
-    'dd-na': {
+    'na': {
         'name': 'North America (NA)',
         'host': 'api-na.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-eu': {
+    'eu': {
         'name': 'Europe (EU)',
         'host': 'api-eu.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-au': {
+    'au': {
         'name': 'Australia (AU)',
         'host': 'api-au.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-au-gov': {
+    'au-gov': {
         'name': 'Australia Canberra ACT (AU)',
         'host': 'api-canberra.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-af': {
+    'af': {
         'name': 'Africa (AF)',
         'host': 'api-mea.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-ap': {
+    'ap': {
         'name': 'Asia Pacific (AP)',
         'host': 'api-ap.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
-    'dd-latam': {
-        'name': 'South America (LATAM)',
-        'host': 'api-latam.dimensiondata.com',
-        'vendor': 'DimensionData'
-    },
-    'dd-canada': {
+    'canada': {
         'name': 'Canada (CA)',
         'host': 'api-canada.dimensiondata.com',
-        'vendor': 'DimensionData'
+        'vendor': 'NTTC-CIS'
     },
     'is-na': {
         'name': 'North America (NA)',
@@ -277,7 +272,7 @@ API_ENDPOINTS = {
 }
 
 # Default API end-point for the base connection class.
-DEFAULT_REGION = 'dd-na'
+DEFAULT_REGION = 'na'
 
 BAD_CODE_XML_ELEMENTS = (
     ('responseCode', SERVER_NS),
@@ -353,12 +348,12 @@ class NttCisResponse(XmlResponse):
                 if message is not None:
                     break
             raise NttCisAPIException(code=code,
-                                            msg=message,
-                                            driver=self.connection.driver)
+                                     msg=message,
+                                     driver=self.connection.driver)
         if self.status is not httplib.OK:
             raise NttCisAPIException(code=self.status,
-                                            msg=body,
-                                            driver=self.connection.driver)
+                                     msg=body,
+                                     driver=self.connection.driver)
 
         return self.body
 
@@ -423,8 +418,8 @@ class NttCisConnection(ConnectionUserAndKey):
                     .format(self.active_api_version)
 
                 raise NttCisAPIException(code=None,
-                                                msg=msg,
-                                                driver=self.driver)
+                                         msg=msg,
+                                         driver=self.driver)
             elif LooseVersion(api_version) > LooseVersion(
                     self.latest_api_version):
                 msg = 'Unsupported API Version. The version specified is ' \
@@ -433,8 +428,8 @@ class NttCisConnection(ConnectionUserAndKey):
                     .format(self.active_api_version)
 
                 raise NttCisAPIException(code=None,
-                                                msg=msg,
-                                                driver=self.driver)
+                                         msg=msg,
+                                         driver=self.driver)
 
             else:
                 # Overwrite default version using the version user specified
@@ -493,7 +488,6 @@ class NttCisConnection(ConnectionUserAndKey):
             params=params, data=data,
             method=method, headers=headers)
 
-
     def paginated_request_with_orgId_api_2(self, action, params=None, data='',
                                            headers=None, method='GET',
                                            page_size=250):
@@ -531,7 +525,7 @@ class NttCisConnection(ConnectionUserAndKey):
                                              method).object
         yield resp
         if len(resp) <= 0:
-            raise StopIteration
+            return
 
         pcount = resp.get('pageCount')  # pylint: disable=no-member
         psize = resp.get('pageSize')  # pylint: disable=no-member
@@ -602,11 +596,11 @@ class NttCisConnection(ConnectionUserAndKey):
         while cnt < timeout / poll_interval:
             result = func(*args, **kwargs)
             if isinstance(result, Node):
-                object_state = result.state
+                object_state = result.state.lower()
             else:
-                # BUG: need to use result.status.lower() or will never match if client uses lower case
+                # BUG: need to use result.status.lower() or
+                #  will never match if client uses lower case
                 object_state = result.status.lower()
-
             if object_state is state or object_state in state:
                 return result
             sleep(poll_interval)
@@ -614,12 +608,12 @@ class NttCisConnection(ConnectionUserAndKey):
 
         msg = 'Status check for object %s timed out' % (result)
         raise NttCisAPIException(code=object_state,
-                                        msg=msg,
-                                        driver=self.driver)
+                                 msg=msg,
+                                 driver=self.driver)
 
     def _get_orgId(self):
         """
-        Send the /myaccount API request to DimensionData cloud and parse the
+        Send the /myaccount API request to NTTC-CIS cloud and parse the
         'orgId' from the XML response object. We need the orgId to use most
         of the other API functions
         """
@@ -819,7 +813,7 @@ class NttCisScsiController(object):
     """
     A class that represents the disk on a server
     """
-    def __init__(self, id: str=None, adapter_type: str=None, bus_number: str=None, state: str=None):
+    def __init__(self, id, adapter_type, bus_number, state):
         """
         Instantiate a new :class:`DimensionDataServerDisk`
 
@@ -882,8 +876,9 @@ class NttCisSnapshot(object):
     """
     NTTCIS Class representing server snapshots
     """
-    def __init__(self, server_id, service_plan, id=None, window_id=None, start_time=None,
-                 state=None, end_time=None, type=None, expiry_time=None, action=None):
+    def __init__(self, server_id, service_plan, id=None, window_id=None,
+                 start_time=None, state=None, end_time=None,
+                 type=None, expiry_time=None, action=None):
         self.server_id = server_id
         self.service_plan = service_plan
         self.id = id
@@ -901,15 +896,16 @@ class NttCisSnapshot(object):
                  'id=%s, start_time=%s, '
                  'end_time=%s, self.type=%s, '
                  'self.expiry_timne=%s, self.state=%s>')
-                % (self.id, self.start_time, self.end_time, self.type, self.expiry_time, self.state))
+                % (self.id, self.start_time, self.end_time,
+                   self.type, self.expiry_time, self.state))
 
 
 class NttCisReservedIpAddress(object):
     """
     NTTCIS Rerverse IPv4 address
     """
-
-    def __init__(self, datacenter_id, exclusive, vlan_id, ip, description=None):
+    def __init__(self, datacenter_id, exclusive, vlan_id, ip,
+                 description=None):
         self.datacenter_id = datacenter_id
         self.exclusive = exclusive
         self.vlan_id = vlan_id
@@ -918,15 +914,16 @@ class NttCisReservedIpAddress(object):
 
     def __repr__(self):
         return (('<NttCisReservedIpAddress '
-                 'datacenterId=%s, exclusiven=%s, vlanId=%s, ipAddress=%s, description=-%s') %
-                (self.datacenter_id, self.exclusive, self.vlan_id, self.ip, self.description))
+                 'datacenterId=%s, exclusiven=%s, vlanId=%s, ipAddress=%s,'
+                 ' description=-%s') % (self.datacenter_id, self.exclusive,
+                                        self.vlan_id, self.ip,
+                                        self.description))
 
 
 class NttCisFirewallRule(object):
     """
     NTTCIS Firewall Rule for a network domain
     """
-
     def __init__(self, id, name, action, location, network_domain,
                  status, ip_version, protocol, source, destination,
                  enabled):
@@ -954,9 +951,7 @@ class NttCisFirewallRule(object):
 
 """
 class NttCisFirewallAddress(object):
-    
     The source or destination model in a firewall rule
-    
     def __init__(self, any_ip, ip_address, ip_prefix_size,
                  port_begin, port_end, address_list_id,
                  port_list_id):
@@ -968,7 +963,6 @@ class NttCisFirewallAddress(object):
         self.port_end = port_end
         self.address_list_id = address_list_id
         self.port_list_id = port_list_id
-
     def __repr__(self):
         return (
             '<NttCisFirewallAddress: any_ip=%s, ip_address=%s, '
@@ -992,12 +986,26 @@ class NttCisFirewallAddress(object):
                  port_list_id=None):
         """
         param any_ip: used to set ip address to "ANY"
-        :param ip_address: An ip address of either IPv4 decimal notation or an IPv6 address
+        :param ip_address: Optional, an ip address of either IPv4 decimal
+                           notation or an IPv6 address
+        :type ``str``
+
         :param ip_prefix_size: An integer denoting prefix size.
-        :param port_begin: integer for an individual port or start of a list  of ports if not using a port list
-        :param port_end: integer required if using a list of ports (NOT a port list but a list starting with port begin)
+        :type ``int``
+
+        :param port_begin: integer for an individual port or start of a list
+                           of ports if not using a port list
+        :type ``int``
+
+        :param port_end: integer required if using a list of ports
+                         (NOT a port list but a list starting with port begin)
+        :type  ``int``
+
         :param address_list_id: An id identifying an address list
+        :type ``str``
+
         :param port_list_id:  An id identifying a port list
+        :type ``str``
         """
         self.any_ip = any_ip
         self.ip_address = ip_address
@@ -1225,7 +1233,7 @@ class NttCisPoolMember(object):
 
 class NttCisVIPNode(object):
     def __init__(self, id, name, status, ip, connection_limit='10000',
-                 connection_rate_limit='10000'):
+                 connection_rate_limit='10000', health_monitor=None):
         """
         Initialize an instance of :class:`NttCisVIPNode`
 
@@ -1253,6 +1261,8 @@ class NttCisVIPNode(object):
         self.ip = ip
         self.connection_limit = connection_limit
         self.connection_rate_limit = connection_rate_limit
+        if health_monitor is not None:
+            self.health_monitor_id = health_monitor
 
     def __repr__(self):
         return (('<NttCisVIPNode: id=%s, name=%s, '
@@ -1434,13 +1444,6 @@ class NttCisBackupDetails(object):
                 % (self.asset_id))
 
 
-class NttCisDataCenter(object):
-    """
-    Class that represents a Cloud Infrastructure Datacenter
-    """
-
-
-
 class NttCisBackupClient(object):
     """
     An object that represents a backup client
@@ -1450,33 +1453,25 @@ class NttCisBackupClient(object):
                  alert=None, running_job=None):
         """
         Initialize an instance of :class:`NttCisBackupClient`
-
         :param id: Unique ID for the client
         :type  id: ``str``
-
         :param type: The type of client that this client is
         :type  type: :class:`NttCisBackupClientType`
-
         :param status: The states of this particular backup client.
                        i.e. (Unregistered)
         :type  status: ``str``
-
         :param schedule_policy: The schedule policy for this client
                                 NOTE: NTTCIS only sends back the name
                                 of the schedule policy, no further details
         :type  schedule_policy: ``str``
-
         :param storage_policy: The storage policy for this client
                                NOTE: NTTCIS only sends back the name
                                of the storage policy, no further details
         :type  storage_policy: ``str``
-
         :param download_url: The download url for this client
         :type  download_url: ``str``
-
         :param alert: The alert configured for this backup client (optional)
         :type  alert: :class:`NttCisBackupClientAlert`
-
         :param alert: The running job for the client (optional)
         :type  alert: :class:`NttCisBackupClientRunningJob`
         """
@@ -1694,8 +1689,8 @@ class NttCisTagKey(object):
         self.display_on_report = display_on_report
 
     def __repr__(self):
-        return (('NttCisTagKey: name=%s>')
-                % (self.name))
+        return (('NttCisTagKey: id=%s name=%s>')
+                % (self.id, self.name))
 
 
 class NttCisFactory(object):
@@ -1931,6 +1926,7 @@ class NttCisNic(object):
         return ('<NttCisNic: private_ip_v4=%s, vlan=%s,'
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
+<<<<<<< HEAD
 
 
 #####  Testing new concept below this line
@@ -2171,3 +2167,4 @@ def process_xml(xml):
     cls = klass(attrs)
 
     return cls
+

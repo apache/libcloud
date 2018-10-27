@@ -31,3 +31,5 @@ lib/
 pip-selfcheck.json
 report.html
 .pytest_cache
+tests/
+

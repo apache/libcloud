@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-02-25T06:55:10.939-05:00/0593b9af-6b0c-4e5b-8e74-57b0e752f2bf">
+<operation>EDIT_VLAN</operation>
+<responseCode>OK</responseCode>
+<message>VLAN 'test' was edited successfully</message>
+</response>

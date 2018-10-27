@@ -3067,7 +3067,7 @@ class DimensionDataNodeDriver(NodeDriver):
             % (datacenter_id, start_date, end_date))
         return self._format_csv(result.response)
 
-    def ex_list_ip_address_list(self, ex_network_domain: object) -> object:
+    def ex_list_ip_address_list(self, ex_network_domain):
         """
         List IP Address List by network domain ID specified
 
@@ -4495,15 +4495,17 @@ class DimensionDataNodeDriver(NodeDriver):
                 'operatingSystem', TYPES_URN))
         # Version 2.4 or later
         else:
-            #vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
+            # vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
             vmtools_elm = element.find(fixxpath('guest/vmTools', TYPES_URN))
             if vmtools_elm is not None:
                 vmware_tools = self._to_vmware_tools(vmtools_elm)
             else:
-                vmware_tools = DimensionDataServerVMWareTools(
-                status=None,
-                version_status=None,
-                api_version=None)
+                vmware_tools = \
+                    DimensionDataServerVMWareTools(
+                        status=None,
+                        version_status=None,
+                        api_version=None
+                    )
             operation_system = element.find(fixxpath(
                 'guest/operatingSystem', TYPES_URN))
 

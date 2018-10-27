@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datacenters xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="5" totalCount="5" pageSize="250">
+    <datacenter id="NA3" type="MCP 1.0">
+        <displayName>US - West</displayName>
+        <city>Santa Clara</city>
+        <state>California</state>
+        <country>US</country>
+        <vpnUrl>https://na3.cloud-vpn.net</vpnUrl>
+        <ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+        <networking type="1" maintenanceStatus="NORMAL">
+            <property name="MAX_SERVER_TO_VIP_CONNECTIONS" value="20"/>
+        </networking>
+        <hypervisor type="VMWARE" maintenanceStatus="NORMAL">
+            <diskSpeed id="HIGHPERFORMANCE" default="false" available="true">
+                <displayName>High Performance</displayName>
+                <abbreviation>HPF</abbreviation>
+                <description>Faster than Standard. Uses 15000 RPM disk with Fast Cache.</description>
+            </diskSpeed>
+            <diskSpeed id="STANDARD" default="true" available="true">
+                <displayName>Standard</displayName>
+                <abbreviation>STD</abbreviation>
+                <description>Standard Disk Speed</description>
+            </diskSpeed>
+            <diskSpeed id="ECONOMY" default="false" available="true">
+                <displayName>Economy</displayName>
+                <abbreviation>ECN</abbreviation>
+                <description>Slower than Standard. Uses 7200 RPM disk without Fast Cache.</description>
+            </diskSpeed>
+            <property name="MIN_DISK_SIZE_GB" value="10"/>
+            <property name="MAX_DISK_SIZE_GB" value="1000"/>
+            <property name="MAX_TOTAL_ADDITIONAL_STORAGE_GB" value="10000"/>
+            <property name="MAX_TOTAL_IMAGE_STORAGE_GB" value="2600"/>
+            <property name="MAX_CPU_COUNT" value="16"/>
+            <property name="MIN_MEMORY_MB" value="1024"/>
+            <property name="MAX_MEMORY_MB" value="131072"/>
+        </hypervisor>
+        <backup type="COMMVAULT" maintenanceStatus="NORMAL"/>
+        <consoleAccess maintenanceStatus="NORMAL"/>
+        <monitoring maintenanceStatus="NORMAL"/>
+    </datacenter>
+    <datacenter id="NA1" type="MCP 1.0">
+        <displayName>US - East</displayName>
+        <city>Ashburn</city>
+        <state>Virginia</state>
+        <country>US</country>
+        <vpnUrl>https://na1.cloud-vpn.net</vpnUrl>
+        <ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+        <networking type="1" maintenanceStatus="NORMAL">
+            <property name="MAX_SERVER_TO_VIP_CONNECTIONS" value="20"/>
+        </networking>
+        <hypervisor type="VMWARE" maintenanceStatus="NORMAL">
+            <diskSpeed id="STANDARD" default="true" available="true">
+                <displayName>Standard</displayName>
+                <abbreviation>STD</abbreviation>
+                <description>Standard Disk Speed</description>
+            </diskSpeed>
+            <property name="MIN_DISK_SIZE_GB" value="10"/>
+            <property name="MAX_DISK_SIZE_GB" value="1000"/>
+            <property name="MAX_TOTAL_ADDITIONAL_STORAGE_GB" value="10000"/>
+            <property name="MAX_TOTAL_IMAGE_STORAGE_GB" value="2600"/>
+            <property name="MAX_CPU_COUNT" value="8"/>
+            <property name="MIN_MEMORY_MB" value="1024"/>
+            <property name="MAX_MEMORY_MB" value="65536"/>
+        </hypervisor>
+        <backup type="COMMVAULT" maintenanceStatus="NORMAL"/>
+        <consoleAccess maintenanceStatus="NORMAL"/>
+        <monitoring maintenanceStatus="NORMAL"/>
+    </datacenter>
+    <datacenter id="NA5" type="MCP 1.0">
+        <displayName>US - East 2</displayName>
+        <city>Ashburn</city>
+        <state>Virginia</state>
+        <country>US</country>
+        <vpnUrl>https://na5.cloud-vpn.net</vpnUrl>
+        <ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+        <networking type="1" maintenanceStatus="NORMAL">
+            <property name="MAX_SERVER_TO_VIP_CONNECTIONS" value="20"/>
+        </networking>
+        <hypervisor type="VMWARE" maintenanceStatus="NORMAL">
+            <diskSpeed id="HIGHPERFORMANCE" default="false" available="true">
+                <displayName>High Performance</displayName>
+                <abbreviation>HPF</abbreviation>
+                <description>Faster than Standard. Uses 15000 RPM disk with Fast Cache.</description>
+            </diskSpeed>
+            <diskSpeed id="STANDARD" default="true" available="true">
+                <displayName>Standard</displayName>
+                <abbreviation>STD</abbreviation>
+                <description>Standard Disk Speed</description>
+            </diskSpeed>
+            <diskSpeed id="ECONOMY" default="false" available="true">
+                <displayName>Economy</displayName>
+                <abbreviation>ECN</abbreviation>
+                <description>Slower than Standard. Uses 7200 RPM disk without Fast Cache.</description>
+            </diskSpeed>
+            <property name="MIN_DISK_SIZE_GB" value="10"/>
+            <property name="MAX_DISK_SIZE_GB" value="1000"/>
+            <property name="MAX_TOTAL_ADDITIONAL_STORAGE_GB" value="10000"/>
+            <property name="MAX_TOTAL_IMAGE_STORAGE_GB" value="2600"/>
+            <property name="MAX_CPU_COUNT" value="16"/>
+            <property name="MIN_MEMORY_MB" value="1024"/>
+            <property name="MAX_MEMORY_MB" value="131072"/>
+        </hypervisor>
+        <backup type="COMMVAULT" maintenanceStatus="NORMAL"/>
+        <consoleAccess maintenanceStatus="NORMAL"/>
+        <monitoring maintenanceStatus="NORMAL"/>
+    </datacenter>
+    <datacenter id="NA9" type="MCP 2.0">
+        <displayName>US - East 3 - MCP 2.0</displayName>
+        <city>Ashburn</city>
+        <state>Virginia</state>
+        <country>US</country>
+        <vpnUrl>https://na9.cloud-vpn.net</vpnUrl>
+        <ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+        <networking type="2" maintenanceStatus="NORMAL">
+            <property name="MAX_NODE_CONNECTION_LIMIT" value="100000"/>
+            <property name="MAX_NODE_CONNECTION_RATE_LIMIT" value="4000"/>
+            <property name="MAX_VIRTUAL_LISTENER_CONNECTION_LIMIT" value="100000"/>
+            <property name="MAX_VIRTUAL_LISTENER_CONNECTION_RATE_LIMIT" value="4000"/>
+        </networking>
+        <hypervisor type="VMWARE" maintenanceStatus="NORMAL">
+            <diskSpeed id="STANDARD" default="true" available="true">
+                <displayName>Standard</displayName>
+                <abbreviation>STD</abbreviation>
+                <description>Standard Disk Speed</description>
+            </diskSpeed>
+            <diskSpeed id="HIGHPERFORMANCE" default="false" available="true">
+                <displayName>High Performance</displayName>
+                <abbreviation>HPF</abbreviation>
+                <description>Faster than Standard. Uses 15000 RPM disk with Fast Cache.</description>
+            </diskSpeed>
+            <diskSpeed id="ECONOMY" default="false" available="true">
+                <displayName>Economy</displayName>
+                <abbreviation>ECN</abbreviation>
+                <description>Slower than Standard. Uses 7200 RPM disk without Fast Cache.</description>
+            </diskSpeed>
+            <property name="MIN_DISK_SIZE_GB" value="10"/>
+            <property name="MAX_DISK_SIZE_GB" value="1000"/>
+            <property name="MAX_TOTAL_ADDITIONAL_STORAGE_GB" value="14000"/>
+            <property name="MAX_TOTAL_IMAGE_STORAGE_GB" value="2600"/>
+            <property name="MAX_CPU_COUNT" value="32"/>
+            <property name="MIN_MEMORY_MB" value="1024"/>
+            <property name="MAX_MEMORY_MB" value="262144"/>
+        </hypervisor>
+        <backup type="COMMVAULT" maintenanceStatus="NORMAL"/>
+        <consoleAccess maintenanceStatus="NORMAL"/>
+        <monitoring maintenanceStatus="NORMAL"/>
+    </datacenter>
+    <datacenter id="NA12" type="MCP 2.0">
+        <displayName>US - West - MCP 2.0</displayName>
+        <city>Santa Clara</city>
+        <state>California</state>
+        <country>US</country>
+        <vpnUrl>https://na12.cloud-vpn.net</vpnUrl>
+        <ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+        <networking type="2" maintenanceStatus="NORMAL">
+            <property name="MAX_NODE_CONNECTION_LIMIT" value="100000"/>
+            <property name="MAX_NODE_CONNECTION_RATE_LIMIT" value="4000"/>
+            <property name="MAX_VIRTUAL_LISTENER_CONNECTION_LIMIT" value="100000"/>
+            <property name="MAX_VIRTUAL_LISTENER_CONNECTION_RATE_LIMIT" value="4000"/>
+        </networking>
+        <hypervisor type="VMWARE" maintenanceStatus="NORMAL">
+            <diskSpeed id="STANDARD" default="true" available="true">
+                <displayName>Standard</displayName>
+                <abbreviation>STD</abbreviation>
+                <description>Standard Disk Speed</description>
+            </diskSpeed>
+            <diskSpeed id="HIGHPERFORMANCE" default="false" available="true">
+                <displayName>High Performance</displayName>
+                <abbreviation>HPF</abbreviation>
+                <description>Faster than Standard. Uses 15000 RPM disk with Fast Cache.</description>
+            </diskSpeed>
+            <diskSpeed id="ECONOMY" default="false" available="true">
+                <displayName>Economy</displayName>
+                <abbreviation>ECN</abbreviation>
+                <description>Slower than Standard. Uses 7200 RPM disk without Fast Cache.</description>
+            </diskSpeed>
+            <property name="MIN_DISK_SIZE_GB" value="10"/>
+            <property name="MAX_DISK_SIZE_GB" value="1000"/>
+            <property name="MAX_TOTAL_ADDITIONAL_STORAGE_GB" value="14000"/>
+            <property name="MAX_TOTAL_IMAGE_STORAGE_GB" value="2600"/>
+            <property name="MAX_CPU_COUNT" value="32"/>
+            <property name="MIN_MEMORY_MB" value="1024"/>
+            <property name="MAX_MEMORY_MB" value="262144"/>
+        </hypervisor>
+        <consoleAccess maintenanceStatus="NORMAL"/>
+        <monitoring maintenanceStatus="NORMAL"/>
+    </datacenter>
+</datacenters>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="na9/2015-06-11T05:45:22.833-04:00/0dc58e64-6e05-4de2-98d6-70bee28cba97">
+<operation>CREATE_VIRTUAL_LISTENER</operation>
+<responseCode>OK</responseCode>
+<message>Virtual Listener 'Production.Load.Balancer' has been created on
+IP 165.180.12.22.</message>
+<info name="virtualListenerId" value="8334f461-0df0-42d5-97eb-f4678eb26bea"/>
+<info name="name" value="Production.Load.Balancer"/>
+<info name="listenerIpAddress" value="165.180.12.22"/>
+</response>

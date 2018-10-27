@@ -15,6 +15,8 @@
 """
 NTT CIS Driver
 """
+import sys
+import re
 
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import LooseVersion
@@ -24,7 +26,7 @@ from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
 from libcloud.common.nttcis import dd_object_to_id
 from libcloud.common.nttcis import NttCisAPIException
 from libcloud.common.nttcis import (NttCisConnection,
-                                           NttCisStatus)
+                                    NttCisStatus)
 from libcloud.common.nttcis import NttCisNetwork
 from libcloud.common.nttcis import NttCisNetworkDomain
 from libcloud.common.nttcis import NttCisVlan
@@ -48,16 +50,14 @@ from libcloud.common.nttcis import NttCisNic
 from libcloud.common.nttcis import NetworkDomainServicePlan
 from libcloud.common.nttcis import NttCisTagKey
 from libcloud.common.nttcis import NttCisTag
-from libcloud.common.nttcis import XmlDictConfig, XmlListConfig, Generic
 from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
-from libcloud.common.nttcis import SERVER_NS, NETWORK_NS, GENERAL_NS
+from libcloud.common.nttcis import NETWORK_NS, GENERAL_NS
 from libcloud.utils.py3 import urlencode, ensure_string
-from libcloud.utils.xml import fixxpath, findtext, findall, return_all
+from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
 from libcloud.compute.types import NodeState, Provider
-import sys
-import re
+
 # Node state map is a dictionary with the keys as tuples
 # These tuples represent:
 # (<state_of_node_from_didata>, <is node started?>, <action happening>)
@@ -130,11 +130,11 @@ class NttCisNodeDriver(NodeDriver):
             self.api_version = api_version
 
         super(NttCisNodeDriver, self).__init__(key=key, secret=secret,
-                                                      secure=secure, host=host,
-                                                      port=port,
-                                                      api_version=api_version,
-                                                      region=region,
-                                                      **kwargs)
+                                               secure=secure, host=host,
+                                               port=port,
+                                               api_version=api_version,
+                                               region=region,
+                                               **kwargs)
 
     def _ex_connection_class_kwargs(self):
         """
@@ -284,7 +284,7 @@ class NttCisNodeDriver(NodeDriver):
                     **kwargs
                     ):
         """
-        Create a new DimensionData node in MCP2. However, it is still
+        Create a new NTTCIS node in MCP2. However, it is still
         backward compatible for MCP1 for a limited time. Please consider
         using MCP2 datacenter as MCP1 will phase out soon.
 
@@ -296,9 +296,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = False
-        >>> DimensionData = get_driver(Provider.DIMENSIONDATA)
+        >>> NTTCIS = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Password
@@ -323,7 +323,7 @@ class NttCisNodeDriver(NodeDriver):
         >>> pprint(node)
 
 
-        Create Node in MCP2 Data Center
+        Create Node in MCP2 Data CenterF
 
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
@@ -331,9 +331,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Password
@@ -454,7 +454,7 @@ class NttCisNodeDriver(NodeDriver):
                                      will not be configured correctly.
         :type       ex_ipv4_gateway: ``str``
 
-        :keyword    ex_disks: (optional) Dimensiondata disks. Optional disk
+        :keyword    ex_disks: (optional) NTTCIS disks. Optional disk
                             elements can be used to define the disk speed
                             that each disk on the Server; inherited from the
                             source Server Image will be deployed to. It is
@@ -526,7 +526,7 @@ class NttCisNodeDriver(NodeDriver):
                 vlans = kwargs.get('ex_additional_nics_vlan')
                 if isinstance(vlans, (list, tuple)):
                     for v in vlans:
-                        add_nic =NttCisNic(vlan=v)
+                        add_nic = NttCisNic(vlan=v)
                         additional_nics.append(add_nic)
                 else:
                     raise TypeError("ex_additional_nics_vlan must "
@@ -772,11 +772,8 @@ class NttCisNodeDriver(NodeDriver):
                            this state
         :type    ex_state: ``str``
 
-        :keyword ex_network: Filters the node list to nodes in this network
-        :type    ex_network: :class:`NttCisNetwork` or ``str``
-
-        :keyword ex_network_domain: Filters the node list to nodes in this
-                                    network domain
+       :keyword ex_network_domain: Filters the node list to nodes in this
+                                   network domain
         :type    ex_network_domain: :class:`NttCisNetworkDomain`
                                     or ``str``
 
@@ -838,7 +835,7 @@ class NttCisNodeDriver(NodeDriver):
                      driver=self.connection.driver),
         ]
 
-    def list_datacenter_properties(self, location: str=None) -> list:
+    def list_datacenter_properties(self, location):
         """
         return a list of available sizes
             Currently, the size of the node is dictated by the chosen OS base
@@ -880,7 +877,6 @@ class NttCisNodeDriver(NodeDriver):
             ).object
         )
 
-
     def ex_get_datacneter(self, ex_id):
         """
         List locations (datacenters) available for instantiating servers and
@@ -896,10 +892,11 @@ class NttCisNodeDriver(NodeDriver):
         if ex_id is not None:
             params['id'] = ex_id
 
-        return  self.connection.request_with_orgId_api_2('infrastructure/datacenter', params=params)
+        return self.connection.\
+            request_with_orgId_api_2('infrastructure/datacenter',
+                                     params=params)
 
-
-    def list_snapshot_windows(self, location: str, plan: str) -> list:
+    def list_snapshot_windows(self, location, plan):
         """
         List snapshot windows in a given location
         :param location: a location object or location id such as "NA9"
@@ -911,8 +908,8 @@ class NttCisNodeDriver(NodeDriver):
         params['datacenterId'] = self._location_to_location_id(location)
         params['servicePlan'] = plan
         return self._to_windows(self.connection.request_with_orgId_api_2(
-                   'infrastructure/snapshotWindow',
-                    params=params).object)
+                                'infrastructure/snapshotWindow',
+                                params=params).object)
 
     def list_networks(self, location=None):
         """
@@ -1018,7 +1015,8 @@ class NttCisNodeDriver(NodeDriver):
                     'urn:guestOsCustomization'
                 ).text = is_guest_os_customization
 
-            if tagkey_name_value_dictionaries is not None and len(tagkey_name_value_dictionaries) > 0:
+            if tagkey_name_value_dictionaries is not None and \
+               len(tagkey_name_value_dictionaries) > 0:
                 for k, v in tagkey_name_value_dictionaries.items():
                     tag_elem = ET.SubElement(
                         import_image_elem,
@@ -1123,8 +1121,12 @@ class NttCisNodeDriver(NodeDriver):
             nodes_obj = self._list_nodes_single_page(params)
             yield self._to_nodes(nodes_obj)
 
-    def ex_edit_metadata(self, node: Node, name: str = None, description: str = None, drs_eligible: str = None) -> bool:
-        request_elem = ET.Element('editServerMetadata', {'xmlns': TYPES_URN, 'id': node.id})
+    def ex_edit_metadata(self, node,
+                         name=None,
+                         description=None,
+                         drs_eligible=None):
+        request_elem = ET.Element('editServerMetadata',
+                                  {'xmlns': TYPES_URN, 'id': node.id})
         if name is not None:
             ET.SubElement(request_elem, 'name').text = name
         if description is not None:
@@ -1138,7 +1140,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_start_node(self, node: Node) -> bool:
+    def ex_start_node(self, node):
         """
         Powers on an existing deployed server
 
@@ -1156,7 +1158,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_shutdown_graceful(self, node: Node) -> bool:
+    def ex_shutdown_graceful(self, node):
         """
         This function will attempt to "gracefully" stop a server by
         initiating a shutdown sequence within the guest operating system.
@@ -1282,7 +1284,28 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(body, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_enable_snapshots(self, node: str, window: str, plan: str='ADVANCED', initiate: str = 'true') -> bool:
+    def ex_enable_snapshots(self, node, window, plan='ADVANCED',
+                            initiate='true'):
+        """
+        Enable snapshot service on a server
+
+        :param      node: Node ID of the node on which to enable snapshots.
+        :type       node: ``str``
+
+        :param      window: The window id of the window in which the
+                            snapshot is enabled.
+        :type       name: ``str``
+
+        :param      plan: Pland type 'ESSENTIALS' or 'ADVANCED
+        :type       plan: ``str``
+
+        :param      initiate: Run a snapshot upon configuration of the
+                              snapshot.
+        :type       ``str``
+
+        :rtype: ``bool``
+        """
+
         update_node = ET.Element('enableSnapshotService',
                                  {'xmlns': TYPES_URN})
         window_id = window
@@ -1299,14 +1322,42 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def list_snapshots(self, node: Node) -> list:
+    def list_snapshots(self, node):
+        """
+        List snapshots of a server
+
+        :param      node: Node nameof the node on which to enable snapshots.
+        :type       node: ``str``
+
+        :rtype: ``list``
+        """
         params = {}
         params['serverId'] = self.list_nodes(ex_name=node)[0].id
         return self._to_snapshots(self.connection.request_with_orgId_api_2(
             'snapshot/snapshot',
             params=params).object)
 
-    def ex_disable_snapshots(self, node: str) -> bool:
+    def get_snapshot(self, snapshot_id):
+        """
+        Get snapshot of a server by snapshot id.
+
+        :param      snapshot_id: ID of snapshot to retrieve.
+        :type       snapshot_id: ``str``
+
+        :rtype: ``dict``
+        """
+        return self._to_snapshot(self.connection.request_with_orgId_api_2(
+                                 'snapshot/snapshot/%s' % snapshot_id).object)
+
+    def ex_disable_snapshots(self, node):
+        """
+        Disable snapshots on a server.  This also deletes current snapshots.
+
+        :param      node: Node ID of the node on which to enable snapshots.
+        :type       node: ``str``
+
+        :rtype: ``list``
+        """
         update_node = ET.Element('disableSnapshotService',
                                  {'xmlns': TYPES_URN})
 
@@ -1319,10 +1370,14 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_initiate_manual_snapshot(self, name: str, server_id: str = None) -> bool:
+    def ex_initiate_manual_snapshot(self, name=None, server_id=None):
         """
-        Initiate a manual snapshot on the fly
-        :param node: A node object from which to get the node id
+        Initiate a manual snapshot of server on the fly
+        :param name: optional name of server
+        :type ``str``
+
+        :param server_id: optinal parameter to use instead of name
+        :type ``str``
 
         :return: True of False
         :rtype: ``bool``
@@ -1332,7 +1387,9 @@ class NttCisNodeDriver(NodeDriver):
             node = self.list_nodes(ex_name=name)
             if len(node) > 1:
                 raise RuntimeError("Found more than one server Id, "
-                                   "please use one the following along with name parameter: {}".format([n.id for n in node]))
+                                   "please use one the following along"
+                                   " with name parameter: {}".
+                                   format([n.id for n in node]))
         else:
             node = []
             node.append(self.ex_get_node_by_id(server_id))
@@ -1343,6 +1400,96 @@ class NttCisNodeDriver(NodeDriver):
             'snapshot/initiateManualSnapshot',
             method='POST',
             data=ET.tostring(update_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_create_snapshot_preview_server(self, snapshot_id, server_name,
+                                          server_started, nics_connected,
+                                          server_description=None,
+                                          target_cluster_id=None,
+                                          preserve_mac_addresses=None,
+                                          tag_key_name=None,
+                                          tag_key_id=None, tag_value=None):
+        """
+        Create a snapshot preview of a server to clone to a new server
+
+        :param snapshot_id: ID of the specific snahpshot to use in
+                                 creating preview server.
+        :type  snapshot_id: ``str``
+
+        :param server_name: Name of the server created from the snapshot
+        :type  ``str``
+
+        :param nics_connected: 'true' or 'false'.  Should the nics be
+                                automatically connected
+        :type  ``str``
+
+        :param server_description: (Optional) A brief description of the
+                                   server.
+        :type ``str``
+
+        :param target_cluster_id: (Optional) The ID of a specific cluster as
+                                   opposed to the default.
+        :type ``str``
+
+        :param preserve_mac_address: (Optional) If set to 'true' will preserve
+                                      mac address from the original server.
+        :type ``str``
+
+        :param tag_key_name: (Optional) If tagging is desired and by name is
+                             desired, set this to the tag name.
+        :type ``str``
+
+        :param tag_key_id: (Optional) If tagging is desired and by id is
+                            desired, set this to the tag id.
+        :type ``str``
+
+        :param tag_value: (Optional) If using a tag_key_id or tag_key_name,
+                           set the value fo tag_value.
+
+        :rtype: ``str``
+        """
+        create_preview = ET.Element('createSnapshotPreviewServer',
+                                    {'xmlns': TYPES_URN,
+                                     'snapshotId': snapshot_id})
+        ET.SubElement(create_preview, 'serverName').text = server_name
+        if server_description is not None:
+            ET.SubElement(create_preview, 'serverDescription').text = \
+                server_description
+        if target_cluster_id is not None:
+            ET.SubElement(create_preview, 'targetClusterId').text = \
+                target_cluster_id
+        ET.SubElement(create_preview, 'serverStarted').text = \
+            server_started
+        ET.SubElement(create_preview, 'nicsConnected').text = \
+            nics_connected
+        if preserve_mac_addresses is not None:
+            ET.SubElement(create_preview, 'preserveMacAddresses').text = \
+                preserve_mac_addresses
+        if tag_key_name is not None:
+            tag_elem = ET.SubElement(create_preview, 'tag')
+            ET.SubElement(tag_elem, 'tagKeyName').text = tag_key_name
+            ET.SubElement(tag_elem, 'value').text = tag_value
+        elif tag_key_id is not None:
+            tag_elem = ET.SubElement(create_preview, 'tagById')
+            ET.SubElement(create_preview, 'tagKeyId').text = tag_key_name
+            ET.SubElement(tag_elem, 'value').text = tag_value
+        result = self.connection.request_with_orgId_api_2(
+            'snapshot/createSnapshotPreviewServer',
+            method='POST',
+            data=ET.tostring(create_preview)).object
+        for info in findall(result, 'info', TYPES_URN):
+            if info.get('name') == 'serverId':
+                return info.get('value')
+
+    def ex_migrate_preview_server(self, preview_id):
+        migrate_preview = ET.Element('migrateSnapshotPreviewServer',
+                                     {'xmlns': TYPES_URN,
+                                      'serverId': preview_id})
+        result = self.connection.request_with_orgId_api_2(
+            'snapshot/migrateSnapshotPreviewServer',
+            method='POST',
+            data=ET.tostring(migrate_preview)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
@@ -1384,9 +1531,9 @@ class NttCisNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         rule_id = anti_affinity_rule
-        #rule_id = self._anti_affinity_rule_to_anti_affinity_rule_id(
-        #    anti_affinity_rule)
-        update_node = ET.Element('deleteAntiAffinityRule', {"xmlns": TYPES_URN})
+
+        update_node = ET.Element('deleteAntiAffinityRule',
+                                 {"xmlns": TYPES_URN})
         update_node.set('id', rule_id)
         result = self.connection.request_with_orgId_api_2(
             'server/deleteAntiAffinityRule',
@@ -1926,9 +2073,9 @@ class NttCisNodeDriver(NodeDriver):
             params['ipv6Address'] = ipv6_address
         if state is not None:
             params['state'] = state
-        response = self.connection.request_with_orgId_api_2('network/vlan',
-                                                            params=params) \
-                                  .object
+        response = self.connection.request_with_orgId_api_2(
+            'network/vlan',
+            params=params).object
         return self._to_vlans(response)
 
     def ex_add_public_ip_block_to_network_domain(self, network_domain):
@@ -1974,15 +2121,16 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-
     # 09/10/18 Adding private IPv4 and IPv6  addressing capability
-    def ex_reserve_ip(self, vlan: NttCisVlan, ip: str, description: None) -> bool:
+    def ex_reserve_ip(self, vlan, ip, description):
         vlan_id = self._vlan_to_vlan_id(vlan)
         if re.match(r'(\d+\.){3}', ip):
-            private_ip = ET.Element('reservePrivateIpv4Address', {'xmlns': TYPES_URN})
+            private_ip = ET.Element('reservePrivateIpv4Address',
+                                    {'xmlns': TYPES_URN})
             resource = 'network/reservePrivateIpv4Address'
         elif re.search(r':', ip):
-            private_ip = ET.Element('reserveIpv6Address', {'xmlns': TYPES_URN})
+            private_ip = ET.Element('reserveIpv6Address',
+                                    {'xmlns': TYPES_URN})
             resource = 'network/reserveIpv6Address'
         ET.SubElement(private_ip, 'vlanId').text = vlan_id
         ET.SubElement(private_ip, 'ipAddress').text = ip
@@ -1996,57 +2144,63 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_unreserve_ip_addresses(self, vlan: NttCisVlan, ip: str) -> bool:
+    def ex_unreserve_ip_addresses(self, vlan, ip):
         vlan_id = self._vlan_to_vlan_id(vlan)
         if re.match(r'(\d+\.){3}', ip):
-            private_ip = ET.Element('unreservePrivateIpv4Address', {'xmlns': TYPES_URN})
+            private_ip = ET.Element('unreservePrivateIpv4Address',
+                                    {'xmlns': TYPES_URN})
             resource = 'network/reservePrivateIpv4Address'
         elif re.search(r':', ip):
-            private_ip = ET.Element('unreserveIpv6Address', {'xmlns': TYPES_URN})
+            private_ip = ET.Element('unreserveIpv6Address',
+                                    {'xmlns': TYPES_URN})
             resource = 'network/unreserveIpv6Address'
         ET.SubElement(private_ip, 'vlanId').text = vlan_id
         ET.SubElement(private_ip, 'ipAddress').text = ip
         result = self.connection.\
             request_with_orgId_api_2(
-                                     resource,
-                                     method='POST',
-                                     data=ET.tostring(private_ip)).object
+                resource,
+                method='POST',
+                data=ET.tostring(private_ip)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_list_reserved_ipv4(self,  vlan: NttCisVlan=None, datacenter_id: str=None):
+    def ex_list_reserved_ipv4(self, vlan=None, datacenter_id=None):
         if vlan is not None:
             vlan_id = self._vlan_to_vlan_id(vlan)
             params = {"vlanId": vlan_id}
             response = self.connection \
-                .request_with_orgId_api_2('network/reservedPrivateIpv4Address', params=params).object
+                .request_with_orgId_api_2('network/reservedPrivateIpv4Address',
+                                          params=params).object
 
         elif datacenter_id is not None:
             params = {'datacenterId': datacenter_id}
             response = self.connection \
-                .request_with_orgId_api_2('network/reservedPrivateIpv4Address', params=params).object
+                .request_with_orgId_api_2('network/reservedPrivateIpv4Address',
+                                          params=params).object
         else:
             response = self.connection \
-                .request_with_orgId_api_2('network/reservedPrivateIpv4Address').object
-
+                .request_with_orgId_api_2(
+                    'network/reservedPrivateIpv4Address').object
         addresses = self._to_ipv4_addresses(response)
         return addresses
 
-    def ex_list_reserved_ipv6(self,  vlan: NttCisVlan=None, datacenter_id: str=None):
+    def ex_list_reserved_ipv6(self, vlan=None, datacenter_id=None):
         if vlan is not None:
             vlan_id = self._vlan_to_vlan_id(vlan)
             params = {"vlanId": vlan_id}
             response = self.connection \
-                .request_with_orgId_api_2('network/reservedIpv6Address', params=params).object
+                .request_with_orgId_api_2('network/reservedIpv6Address',
+                                          params=params).object
 
         elif datacenter_id is not None:
             params = {'datacenterId': datacenter_id}
             response = self.connection \
-                .request_with_orgId_api_2('network/reservedIpv6Address', params=params).object
+                .request_with_orgId_api_2('network/reservedIpv6Address',
+                                          params=params).object
         else:
             response = self.connection \
-                .request_with_orgId_api_2('network/reservedIpv6Address').object
-
+                .request_with_orgId_api_2(
+                    'network/reservedIpv6Address').object
         addresses = self._to_ipv6_addresses(response)
         return addresses
 
@@ -2069,33 +2223,25 @@ class NttCisNodeDriver(NodeDriver):
     """
     def ex_create_firewall_rule(self, network_domain, rule, position,
                                 position_relative_to_rule=None):
-        
         Creates a firewall rule
-
         :param network_domain: The network domain in which to create
                                 the firewall rule
         :type  network_domain: :class:`NttCisNetworkDomain` or ``str``
-
         :param rule: The rule in which to create
         :type  rule: :class:`NttCisFirewallRule`
-
         :param position: The position in which to create the rule
                          There are two types of positions
                          with position_relative_to_rule arg and without it
                          With: 'BEFORE' or 'AFTER'
                          Without: 'FIRST' or 'LAST'
         :type  position: ``str``
-
         :param position_relative_to_rule: The rule or rule name in
                                           which to decide positioning by
         :type  position_relative_to_rule:
-            :class:`NttCisFirewallRule` or ``str``
-
+             :class:`NttCisFirewallRule` or ``str``
         :rtype: ``bool``
-        
         positions_without_rule = ('FIRST', 'LAST')
         positions_with_rule = ('BEFORE', 'AFTER')
-
         create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, "networkDomainId").text = \
             self._network_domain_to_network_domain_id(network_domain)
@@ -2138,7 +2284,8 @@ class NttCisNodeDriver(NodeDriver):
             else:
                 dest_ip.set('address', rule.destination.ip_address)
                 if rule.destination.ip_prefix_size is not None:
-                    dest_ip.set('prefixSize', rule.destination.ip_prefix_size)
+                    dest_ip.set('prefixSize',
+                                 rule.destination.ip_prefix_size)
         if rule.destination.port_list_id is not None:
             dest_port = ET.SubElement(dest, 'portListId')
             dest_port.text = rule.destination.port_list_id
@@ -2182,8 +2329,11 @@ class NttCisNodeDriver(NodeDriver):
         return rule
     """
 
-    def ex_create_firewall_rule(self, network_domain, name, action, ip_version, protocol,
-                                source_addr, destination, position, enabled=1,  position_relative_to_rule=None):
+    def ex_create_firewall_rule(self, network_domain, name, action,
+                                ip_version, protocol,
+                                source_addr, dest_addr,
+                                position, enabled=1,
+                                position_relative_to_rule=None):
         """
         Creates a firewall rule
 
@@ -2191,8 +2341,25 @@ class NttCisNodeDriver(NodeDriver):
                                 the firewall rule
         :type  network_domain: :class:`NttCisNetworkDomain` or ``str``
 
-        :param rule: The rule in which to create
-        :type  rule: :class:`NttCisFirewallRule`
+        :param name: The rule's name
+        :type  ``str``
+
+        :param action: 'ACCEPT_DECISIVELY' or 'DROP'
+        :type ``str``
+
+        :param ip_version:  'IPV4' or 'IPV6'
+        :type ``str``
+
+        :param protocol: One of 'IP', 'ICMP', 'TCP', or 'UDP'
+        :type ``str``
+
+        :param source_addr:  The source address, which must be an
+                             NttCisFirewallAddress instance
+        :type ``NttCisFirewallAddress``
+
+        :param dest_addr: The destination address, which must be an
+                          NttCisFirewallAddress instance
+        :type `NttCisFirewallAddress``
 
         :param position: The position in which to create the rule
                          There are two types of positions
@@ -2201,10 +2368,14 @@ class NttCisNodeDriver(NodeDriver):
                          Without: 'FIRST' or 'LAST'
         :type  position: ``str``
 
+        :param enabled: Firewall rule is enabled upon creation.
+                        Set to 1 for true or 0 for false.
+        :type ``int``
+
         :param position_relative_to_rule: The rule or rule name in
                                           which to decide positioning by
         :type  position_relative_to_rule:
-            :class:`NttCisFirewallRule` or ``str``
+                                        ::class:`NttCisFirewallRule` or ``str``
 
         :rtype: ``bool``
         """
@@ -2228,13 +2399,13 @@ class NttCisNodeDriver(NodeDriver):
             if source_addr.any_ip:
                 source_ip.set('address', 'ANY')
             else:
-                source_ip.set('address', source.ip_address)
-                if source.ip_prefix_size is not None:
+                source_ip.set('address', source_addr.ip_address)
+                if source_addr.ip_prefix_size is not None:
                     source_ip.set('prefixSize',
-                                  str(source.ip_prefix_size))
+                                  str(source_addr.ip_prefix_size))
         if source_addr.port_list_id is not None:
             source_port = ET.SubElement(source, 'portListId')
-            source_port.text = source.port_list_id
+            source_port.text = source_addr.port_list_id
         else:
             if source_addr.port_begin is not None:
                 source_port = ET.SubElement(source, 'port')
@@ -2243,26 +2414,26 @@ class NttCisNodeDriver(NodeDriver):
                 source_port.set('end', source_addr.port_end)
         # Setup destination port rule
         dest = ET.SubElement(create_node, "destination")
-        if destination.address_list_id is not None:
+        if dest_addr.address_list_id is not None:
             dest_ip = ET.SubElement(dest, 'ipAddressListId')
-            dest_ip.text = destination.address_list_id
+            dest_ip.text = dest_addr.address_list_id
         else:
             dest_ip = ET.SubElement(dest, 'ip')
-            if destination.any_ip:
+            if dest_addr.any_ip:
                 dest_ip.set('address', 'ANY')
             else:
-                dest_ip.set('address', destination.ip_address)
-                if destination.ip_prefix_size is not None:
-                    dest_ip.set('prefixSize', destination.ip_prefix_size)
-        if destination.port_list_id is not None:
+                dest_ip.set('address', dest_addr.ip_address)
+                if dest_addr.ip_prefix_size is not None:
+                    dest_ip.set('prefixSize', dest_addr.ip_prefix_size)
+        if dest_addr.port_list_id is not None:
             dest_port = ET.SubElement(dest, 'portListId')
-            dest_port.text = destination.port_list_id
+            dest_port.text = dest_addr.port_list_id
         else:
-            if destination.port_begin is not None:
+            if dest_addr.port_begin is not None:
                 dest_port = ET.SubElement(dest, 'port')
-                dest_port.set('begin', destination.port_begin)
-            if destination.port_end is not None:
-                dest_port.set('end', destination.port_end)
+                dest_port.set('begin', dest_addr.port_begin)
+            if dest_addr.port_end is not None:
+                dest_port.set('end', dest_addr.port_end)
         # Set up positioning of rule
         ET.SubElement(create_node, "enabled").text = str(enabled)
         placement = ET.SubElement(create_node, "placement")
@@ -2306,9 +2477,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -2419,9 +2590,10 @@ class NttCisNodeDriver(NodeDriver):
             placement = ET.SubElement(edit_node, "placement")
             if relative_rule_for_position is not None:
                 if position not in positions_with_rule:
-                    raise ValueError("When position_relative_to_rule is specified"
-                                     " position must be %s"
-                                     % ', '.join(positions_with_rule))
+                    raise ValueError(
+                        "When position_relative_to_rule is specified"
+                        " position must be %s" %
+                        ', '.join(positions_with_rule))
                 if isinstance(relative_rule_for_position,
                               NttCisFirewallRule):
                     rule_name = relative_rule_for_position.name
@@ -2693,7 +2865,9 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_add_scsi_controller_to_node(self, server_id: str, adapter_type: str, bus_number: str=None) -> bool:
+    def ex_add_scsi_controller_to_node(self, server_id,
+                                       adapter_type,
+                                       bus_number=None):
         """
         Added 8/27/18:  Adds a SCSI Controller by node id
         :param server_id: server id
@@ -2701,8 +2875,8 @@ class NttCisNodeDriver(NodeDriver):
         :param bus_number: optional number of server's bus
         :return: whether addition is in progress or 'OK' otherwise false
         """
-
-        update_node = ET.Element('addScsiController', {'xmlns': TYPES_URN})
+        update_node = ET.Element('addScsiController',
+                                 {'xmlns': TYPES_URN})
         ET.SubElement(update_node, 'serverId').text = server_id
         ET.SubElement(update_node, 'adapterType').text = adapter_type
         if bus_number is not None:
@@ -2715,7 +2889,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_remove_scsi_controller(self, controller_id: str) -> bool:
+    def ex_remove_scsi_controller(self, controller_id):
         """
         Added 8/27/18:  Adds a SCSI Controller by node id
         :param controller_id: Scsi controller's id
@@ -2731,13 +2905,15 @@ class NttCisNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_add_storage_to_node(self, amount, node=None,
-                               speed='STANDARD', controller_id=None, scsi_id=None):
+                               speed='STANDARD', controller_id=None,
+                               scsi_id=None):
         """
         Updated 8/23/18
         Add storage to the node
         One of node or controller_id must be selected
 
-        :param  node: The server to add storage to (required if controller_id is not used
+        :param  node: The server to add storage to (required if
+                      controller_id is not used
         :type   node: :class:`Node`
 
         :param  amount: The amount of storage to add, in GB
@@ -2746,7 +2922,9 @@ class NttCisNodeDriver(NodeDriver):
         :param  speed: The disk speed type
         :type   speed: ``str``
 
-        :param  conrollter_id: The disk may be added using the cotnroller id (required if node object is not used)
+        :param  conrollter_id: The disk may be added using the
+                               cotnroller id (required if node
+                               object is not used)
         :type   controller_id: ``str``
 
         :param  scsi_id: The target SCSI ID (optional)
@@ -2755,8 +2933,10 @@ class NttCisNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        if (node is None and controller_id is None) or (node is not None and controller_id is not None):
-            raise RuntimeError("Either a node or a controller id must be specified")
+        if (node is None and controller_id is None) or \
+           (node is not None and controller_id is not None):
+            raise RuntimeError("Either a node or a controller "
+                               "id must be specified")
 
         update_node = ET.Element('addDisk',
                                  {'xmlns': TYPES_URN})
@@ -2836,7 +3016,6 @@ class NttCisNodeDriver(NodeDriver):
         ET.SubElement(create_node, 'speed').text = speed
         if iops is not None:
             ET.SubElement(create_node, 'iops').text = str(iops)
-        #result = self.connection.request_with_orgId_api_1(
         result = self.connection.request_with_orgId_api_2(
             'server/changeDiskSpeed',
             method='POST',
@@ -2844,7 +3023,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
 
-    def ex_change_storage_size(self, node, disk_id, size):
+    def ex_change_storage_size(self, disk_id, size):
         """
         Change the size of a disk
 
@@ -2859,18 +3038,26 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        create_node = ET.Element('ChangeDiskSize', {'xmlns': SERVER_NS})
+        create_node = ET.Element('expandDisk', {'xmlns': TYPES_URN,
+                                                'id': disk_id})
         ET.SubElement(create_node, 'newSizeGb').text = str(size)
+        '''
+        This code is for version 1 of MCP, need version 2
         result = self.connection.request_with_orgId_api_1(
             'server/%s/disk/%s/changeSize' %
             (node.id, disk_id),
             method='POST',
             data=ET.tostring(create_node)).object
-        response_code = findtext(result, 'result', GENERAL_NS)
-        return response_code in ['IN_PROGRESS', 'SUCCESS']
+        '''
+        result = self.connection.request_with_orgId_api_2(
+            'server/expandDisk',
+            method='POST',
+            data=ET.tostring(create_node)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_reconfigure_node(self, node, memory_gb=None, cpu_count=None, cores_per_socket=None,
-                            cpu_performance=None):
+    def ex_reconfigure_node(self, node, memory_gb=None, cpu_count=None,
+                            cores_per_socket=None, cpu_performance=None):
         """
         Reconfigure the virtual hardware specification of a node
 
@@ -2939,7 +3126,6 @@ class NttCisNodeDriver(NodeDriver):
             response = self.connection.request_with_orgId_api_1(
                 'server/%s?clone=%s&desc=%s' %
                 (node_id, image_name, image_description)).object
-        
         # Version 2.4 and higher
         else:
         """
@@ -3022,7 +3208,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_base_image_by_id(self, id):
         """
-        Gets a Base image in the Dimension Data Cloud given the id
+        Gets a Base image in the NTTC-CIS Cloud given the id
 
         :param id: The id of the image
         :type  id: ``str``
@@ -3035,7 +3221,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_customer_image_by_id(self, id):
         """
-        Gets a Customer image in the Dimension Data Cloud given the id
+        Gets a Customer image in the NTTC-CIS Cloud given the id
 
         :param id: The id of the image
         :type  id: ``str``
@@ -3048,7 +3234,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_image_by_id(self, id):
         """
-        Gets a Base/Customer image in the Dimension Data Cloud given the id
+        Gets a Base/Customer image in the NTTC-CIS Cloud given the id
 
         Note: This first checks the base image
               If it is not a base image we check if it is a customer image
@@ -3070,7 +3256,7 @@ class NttCisNodeDriver(NodeDriver):
     def ex_create_tag_key(self, name, description=None,
                           value_required=True, display_on_report=True):
         """
-        Creates a tag key in the Dimension Data Cloud
+        Creates a tag key in the NTTC-CIS Cloud
 
         :param name: The name of the tag key (required)
         :type  name: ``str``
@@ -3106,7 +3292,7 @@ class NttCisNodeDriver(NodeDriver):
     def ex_list_tag_keys(self, id=None, name=None,
                          value_required=None, display_on_report=None):
         """
-        List tag keys in the Dimension Data Cloud
+        List tag keys in the NTTC-CIS Cloud
 
         :param id: Filter the list to the id of the tag key
         :type  id: ``str``
@@ -3160,6 +3346,9 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_get_tag_key_by_name(self, name):
         """
+        NOTICE: Tag key is one of those instances where Libloud
+                handles the search of a list for the client code.
+                This behavior exists inconsistently across libcloud.
         Get a specific tag key by Name
 
         :param name: Name of the tag key you want (required)
@@ -3239,7 +3428,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_apply_tag_to_asset(self, asset, tag_key, value=None):
         """
-        Apply a tag to a Dimension Data Asset
+        Apply a tag to a NTTC-CIS Asset
 
         :param asset: The asset to apply a tag to. (required)
         :type  asset: :class:`Node` or :class:`NodeImage` or
@@ -3309,7 +3498,7 @@ class NttCisNodeDriver(NodeDriver):
                      tag_key_name=None, tag_key_id=None, value=None,
                      value_required=None, display_on_report=None):
         """
-        List tags in the Dimension Data Cloud
+        List tags in the NTTC-CIS Cloud
 
         :param asset_id: Filter the list by asset id
         :type  asset_id: ``str``
@@ -3458,7 +3647,7 @@ class NttCisNodeDriver(NodeDriver):
             % (datacenter_id, start_date, end_date))
         return self._format_csv(result.response)
 
-    def ex_list_ip_address_list(self, ex_network_domain:NttCisIpAddressList) -> object:
+    def ex_list_ip_address_list(self, ex_network_domain):
         """
         List IP Address List by network domain ID specified
 
@@ -3467,9 +3656,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3508,9 +3697,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3555,12 +3744,12 @@ class NttCisNodeDriver(NodeDriver):
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
         >>> from libcloud.compute.providers import get_driver
-        >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
+        >>> from libcloud.common.nttcis import NttCisIpAddress
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3573,10 +3762,10 @@ class NttCisNodeDriver(NodeDriver):
                               networkDomainName][0]
         >>>
         >>> # IP Address collection
-        >>> ipAddress_1 = DimensionDataIpAddress(begin='190.2.2.100')
-        >>> ipAddress_2 = DimensionDataIpAddress(begin='190.2.2.106',
+        >>> ipAddress_1 = NttCisIpAddress(begin='190.2.2.100')
+        >>> ipAddress_2 = NttCisIpAddress(begin='190.2.2.106',
                                                  end='190.2.2.108')
-        >>> ipAddress_3 = DimensionDataIpAddress(begin='190.2.2.0',
+        >>> ipAddress_3 = NttCisIpAddress(begin='190.2.2.0',
                                                  prefix_size='24')
         >>> ip_address_collection = [ipAddress_1, ipAddress_2, ipAddress_3]
         >>>
@@ -3683,24 +3872,24 @@ class NttCisNodeDriver(NodeDriver):
                                 ip_address_collection=None,
                                 child_ip_address_lists=None):
         """
-        Edit IP Address List. IP Address list.  Bear in mind you cannot add ip addresses to 
-
+        Edit IP Address List. IP Address list.
+        Bear in mind you cannot add ip addresses to
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
         >>> from libcloud.compute.providers import get_driver
-        >>> from libcloud.common.dimensiondata import DimensionDataIpAddress
+        >>> from libcloud.common.NTTCIS import NttCisIpAddress
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # IP Address collection
-        >>> ipAddress_1 = DimensionDataIpAddress(begin='190.2.2.100')
-        >>> ipAddress_2 = DimensionDataIpAddress(begin='190.2.2.106',
+        >>> ipAddress_1 = NttCisIpAddress(begin='190.2.2.100')
+        >>> ipAddress_2 = NttCisIpAddress(begin='190.2.2.106',
         >>>                                      end='190.2.2.108')
-        >>> ipAddress_3 = DimensionDataIpAddress(
+        >>> ipAddress_3 = NttCisIpAddress(
         >>>                   begin='190.2.2.0', prefix_size='24')
         >>> ip_address_collection = [ipAddress_1, ipAddress_2, ipAddress_3]
         >>>
@@ -3750,7 +3939,8 @@ class NttCisNodeDriver(NodeDriver):
                     'description'
                 ).text = description
             else:
-                ET.SubElement(edit_ip_address_list, 'description',  {'xsi:nil': 'true'})
+                ET.SubElement(edit_ip_address_list, 'description',
+                              {'xsi:nil': 'true'})
 
         if ip_address_collection is not None:
             for ip in ip_address_collection:
@@ -3796,9 +3986,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> ip_address_list_id = '5e7c323f-c885-4e4b-9a27-94c44217dbd3'
@@ -3835,9 +4025,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -3876,9 +4066,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get specific portlist by ID
@@ -3905,12 +4095,12 @@ class NttCisNodeDriver(NodeDriver):
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
         >>> from libcloud.compute.providers import get_driver
-        >>> from libcloud.common.dimensiondata import DimensionDataPort
+        >>> from libcloud.common.nttcis import NttCisPort
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Get location
@@ -4008,12 +4198,12 @@ class NttCisNodeDriver(NodeDriver):
         >>> from pprint import pprint
         >>> from libcloud.compute.types import Provider
         >>> from libcloud.compute.providers import get_driver
-        >>> from libcloud.common.dimensiondata import DimensionDataPort
+        >>> from libcloud.common.NTTCIS import DimensionDataPort
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Port Collection
@@ -4067,7 +4257,8 @@ class NttCisNodeDriver(NodeDriver):
                     'description'
                 ).text = description
             else:
-                ET.SubElement(existing_port_address_list, "description", {"xsi:nil": "true"})
+                ET.SubElement(existing_port_address_list, "description",
+                              {"xsi:nil": "true"})
 
         if port_collection is not None:
             for port in port_collection:
@@ -4110,9 +4301,9 @@ class NttCisNodeDriver(NodeDriver):
         >>> from libcloud.compute.providers import get_driver
         >>> import libcloud.security
         >>>
-        >>> # Get dimension data driver
+        >>> # Get NTTC-CIS driver
         >>> libcloud.security.VERIFY_SSL_CERT = True
-        >>> cls = get_driver(Provider.DIMENSIONDATA)
+        >>> cls = get_driver(Provider.NTTCIS)
         >>> driver = cls('myusername','mypassword', region='dd-au')
         >>>
         >>> # Delete Port List
@@ -4756,8 +4947,8 @@ class NttCisNodeDriver(NodeDriver):
         network_domains = []
         locations = self.list_locations()
         for element in findall(object, 'networkDomain', TYPES_URN):
-            network_domains.append(self._to_network_domain(element, locations))
-
+            network_domains.append(self._to_network_domain(
+                element, locations))
         return network_domains
 
     def _to_network_domain(self, element, locations):
@@ -4858,8 +5049,7 @@ class NttCisNodeDriver(NodeDriver):
         return NttCisScsiController(id=elements.get('id'),
                                     adapter_type=elements.get('adapterType'),
                                     bus_number=elements.get('busNumber'),
-                                    state=elements.get('state')
-                                   )
+                                    state=elements.get('state'))
 
     def _to_disks(self, object):
         disk_elements = object.findall(fixxpath('disk', TYPES_URN))
@@ -4874,44 +5064,58 @@ class NttCisNodeDriver(NodeDriver):
             state=element.get('state')
         )
 
-    def _to_snapshots(self, object: ET):
+    def _to_snapshots(self, object):
+        """
+        Takes an xml object and gathers indivicual elements
+        :param object: XML data
+        :return: list of dictionaries with keys
+                 id
+                 start_time
+                 end_time
+                 expiry_time
+                 type of snapshot
+                 state
+        """
         snapshot_elements = object.findall(fixxpath('snapshot', TYPES_URN))
         return [self._to_snapshot(el) for el in snapshot_elements]
 
-    def _to_snapshot(self, element: ET):
-        return {'id': element.get('id'), 'start_time': findtext(element, 'startTime', TYPES_URN),
+    def _to_snapshot(self, element):
+        return {'id': element.get('id'), 'start_time':
+                findtext(element, 'startTime', TYPES_URN),
                 'end_time': findtext(element, 'endTime', TYPES_URN),
-                'expiry_time':findtext(element, 'expiryTime', TYPES_URN),
+                'expiry_time': findtext(element, 'expiryTime', TYPES_URN),
                 'type': findtext(element, 'type', TYPES_URN),
-                'state': findtext(element, 'state', TYPES_URN)}
-                #'server_config': self.to_snapshot_conf_elems(findtext(element, 'serverConfig', TYPES_URN)}
+                'state': findtext(element, 'state', TYPES_URN),
+
+                }
 
     def _to_ipv4_addresses(self, object):
-         ipv4_address_elements = object.findall(fixxpath('ipv4', TYPES_URN))
-         return [self._to_ipv4_6_address(el) for el in ipv4_address_elements]
+        ipv4_address_elements = object.findall(fixxpath('ipv4', TYPES_URN))
+        return [self._to_ipv4_6_address(el) for el in ipv4_address_elements]
 
     def _to_ipv6_addresses(self, object):
-         ipv6_address_elements = object.findall(fixxpath('reservedIpv6Address', TYPES_URN))
-         return [self._to_ipv4_6_address(el) for el in ipv6_address_elements]
+        ipv6_address_elements = object.findall(
+            fixxpath('reservedIpv6Address', TYPES_URN))
+        return [self._to_ipv4_6_address(el) for el in ipv6_address_elements]
 
     def _to_ipv4_6_address(self, element):
-        return  NttCisReservedIpAddress(
-                                        element.get('datacenterId'),
-                                        element.get('exclusive'),
-                                        findtext(element, 'vlanId', TYPES_URN),
-                                        findtext(element, 'ipAddress', TYPES_URN),
-                                        description=findtext(element, 'description', TYPES_URN),
-        )
-
-
+        return NttCisReservedIpAddress(
+            element.get('datacenterId'),
+            element.get('exclusive'),
+            findtext(element, 'vlanId', TYPES_URN),
+            findtext(element, 'ipAddress', TYPES_URN),
+            description=findtext(element, 'description', TYPES_URN),)
 
     def _to_windows(self, object):
-        snapshot_window_elements = object.findall(fixxpath('snapshotWindow', TYPES_URN))
+        snapshot_window_elements = object.findall(
+            fixxpath('snapshotWindow', TYPES_URN))
         return [self._to_window(el) for el in snapshot_window_elements]
 
     def _to_window(self, element):
-         return {'id': element.get('id'), 'day_of_week': element.get('dayOfWeek'),
-                 'start_hour': element.get('startHour'), 'availability_status': element.get('availabilityStatus')}
+        return {'id': element.get('id'),
+                'day_of_week': element.get('dayOfWeek'),
+                'start_hour': element.get('startHour'),
+                'availability_status': element.get('availabilityStatus')}
 
     def _to_nodes(self, object):
         node_elements = object.findall(fixxpath('server', TYPES_URN))
@@ -4928,14 +5132,19 @@ class NttCisNodeDriver(NodeDriver):
             = element.find(fixxpath('networkInfo', TYPES_URN)) is not None
         cpu_spec = self._to_cpu_spec(element.find(fixxpath('cpu', TYPES_URN)))
 
-        has_snapshot = element.find(fixxpath('snapshotService', TYPES_URN)) is not None
-        has_scsi = element.find(fixxpath('scsiController', TYPES_URN)) is not None
-        has_sata = element.find(fixxpath('sataController', TYPES_URN)) is not None
+        has_snapshot = element.find(fixxpath('snapshotService',
+                                             TYPES_URN)) is not None
+        has_scsi = element.find(fixxpath('scsiController',
+                                         TYPES_URN)) is not None
+        has_sata = element.find(fixxpath('sataController',
+                                         TYPES_URN)) is not None
         has_ide = element.find(fixxpath('ideController')) is not None
         scsi_controllers = []
         disks = []
         if has_scsi:
-            scsi_controllers.append(self._to_scsi_controllers(element.find(fixxpath('scsiController', TYPES_URN))))
+            scsi_controllers.append(
+                self._to_scsi_controllers(element.find(fixxpath(
+                    'scsiController', TYPES_URN))))
             for scsi in element.findall(fixxpath('scsiController', TYPES_URN)):
                 disks.extend(self._to_disks(scsi))
         if has_sata:
@@ -4956,15 +5165,13 @@ class NttCisNodeDriver(NodeDriver):
                 'operatingSystem', TYPES_URN))
         # Version 2.4 or later
         else:
-            #vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
+            # vmtools_elm = fixxpath('guest/vmTools', TYPES_URN)
             vmtools_elm = element.find(fixxpath('guest/vmTools', TYPES_URN))
             if vmtools_elm is not None:
                 vmware_tools = self._to_vmware_tools(vmtools_elm)
             else:
                 vmware_tools = NttCisServerVMWareTools(
-                status=None,
-                version_status=None,
-                api_version=None)
+                    status=None, version_status=None, api_version=None)
             operation_system = element.find(fixxpath(
                 'guest/operatingSystem', TYPES_URN))
 
@@ -4978,14 +5185,13 @@ class NttCisNodeDriver(NodeDriver):
                 if has_network_info else None,
             'datacenterId': element.get('datacenterId'),
             'deployedTime': findtext(element, 'createTime', TYPES_URN),
-            'window': (element.find(fixxpath('snapshotService/window', TYPES_URN)).get('dayOfWeek'),
-                       element.find(fixxpath('snapshotService/window', TYPES_URN)).get('startHour'))
-                       if has_snapshot else None,
+            'window': (element.find(fixxpath('snapshotService/window',
+                                             TYPES_URN)).get('dayOfWeek'),
+                       element.find(fixxpath('snapshotService/window',
+                                             TYPES_URN)).get('startHour'))
+            if has_snapshot else None,
             'cpu': cpu_spec,
-            'memoryMb': int(findtext(
-                element,
-                'memoryGb',
-                TYPES_URN)) * 1024,
+            'memoryMb': int(findtext(element, 'memoryGb', TYPES_URN)) * 1024,
             'OS_id': operation_system.get('id'),
             'OS_type': operation_system.get('family'),
             'OS_displayName': operation_system.get('displayName'),
@@ -5026,34 +5232,19 @@ class NttCisNodeDriver(NodeDriver):
         if element is None:
             return NttCisStatus()
         s = NttCisStatus(action=findtext(element, 'action', TYPES_URN),
-                                request_time=findtext(
-                                    element,
-                                    'requestTime',
-                                    TYPES_URN),
-                                user_name=findtext(
-                                    element,
-                                    'userName',
-                                    TYPES_URN),
-                                number_of_steps=findtext(
-                                    element,
-                                    'numberOfSteps',
-                                    TYPES_URN),
-                                step_name=findtext(
-                                    element,
-                                    'step/name',
-                                    TYPES_URN),
-                                step_number=findtext(
-                                    element,
-                                    'step_number',
-                                    TYPES_URN),
-                                step_percent_complete=findtext(
-                                    element,
-                                    'step/percentComplete',
-                                    TYPES_URN),
-                                failure_reason=findtext(
-                                    element,
-                                    'failureReason',
-                                    TYPES_URN))
+                         request_time=findtext(element, 'requestTime',
+                                               TYPES_URN),
+                         user_name=findtext(element, 'userName', TYPES_URN),
+                         number_of_steps=findtext(element, 'numberOfSteps',
+                                                  TYPES_URN),
+                         step_name=findtext(element, 'step/name', TYPES_URN),
+                         step_number=findtext(element, 'step_number',
+                                              TYPES_URN),
+                         step_percent_complete=findtext(element,
+                                                        'step/percentComplete',
+                                                        TYPES_URN),
+                         failure_reason=findtext(element, 'failureReason',
+                                                 TYPES_URN))
         return s
 
     def _to_ip_address_lists(self, object):

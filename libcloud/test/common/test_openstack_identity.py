@@ -366,6 +366,13 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         domain = self.auth_instance.get_domain(domain_id='default')
         self.assertEqual(domain.name, 'Default')
 
+    def test_get_user(self):
+        user = self.auth_instance.get_user(user_id='a')
+        self.assertEqual(user.id, 'a')
+        self.assertEqual(user.domain_id, 'default')
+        self.assertEqual(user.enabled, True)
+        self.assertEqual(user.email, 'openstack-test@localhost')
+
     def test_create_user(self):
         user = self.auth_instance.create_user(email='test2@localhost', password='test1',
                                               name='test2', domain_id='default')
@@ -525,7 +532,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog,
                                           auth_version='2.0')
         entries = catalog.get_entries()
-        self.assertEqual(len(entries), 7)
+        self.assertEqual(len(entries), 8)
 
         entry = [e for e in entries if e.service_name == 'cloudServers'][0]
         self.assertEqual(entry.service_type, 'compute')
@@ -591,8 +598,8 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         catalog = OpenStackServiceCatalog(service_catalog=service_catalog,
                                           auth_version='2.0')
         service_types = catalog.get_service_types()
-        self.assertEqual(service_types, ['compute', 'image', 'object-store',
-                                         'rax:object-cdn'])
+        self.assertEqual(service_types, ['compute', 'image', 'network',
+                                         'object-store', 'rax:object-cdn'])
 
         service_types = catalog.get_service_types(region='ORD')
         self.assertEqual(service_types, ['rax:object-cdn'])
@@ -611,6 +618,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
                                          'cloudServersOpenStack',
                                          'cloudServersPreprod',
                                          'glance',
+                                         'neutron',
                                          'nova'])
 
         service_names = catalog.get_service_names(service_type='compute')
@@ -681,6 +689,10 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
         raise NotImplementedError()
 
     def _v3_users_a(self, method, url, body, headers):
+        if method == 'GET':
+            # look up a user
+            body = self.fixtures.load('v3_users_a.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         if method == 'PATCH':
             # enable / disable user
             body = self.fixtures.load('v3_users_a.json')

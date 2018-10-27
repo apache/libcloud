@@ -1,23 +1,10 @@
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
-from libcloud.common.nttcis import NttCisPool
-from libcloud.common.nttcis import NttCisPoolMember
-from libcloud.common.nttcis import NttCisVirtualListener
-from libcloud.common.nttcis import NttCisVIPNode
-from libcloud.common.nttcis import NttCisDefaultHealthMonitor
-from libcloud.common.nttcis import NttCisPersistenceProfile
-from libcloud.common.nttcis import \
-    NttCisVirtualListenerCompatibility
-from libcloud.common.nttcis import NttCisDefaultiRule
 from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
-from libcloud.common.nttcis import TYPES_URN
-from libcloud.utils.misc import reverse_dict
-from libcloud.utils.xml import fixxpath, findtext, findall
-from libcloud.loadbalancer.types import State
-from libcloud.loadbalancer.base import Algorithm, Driver, LoadBalancer
-from libcloud.loadbalancer.base import Member
-from libcloud.loadbalancer.types import Provider
+from libcloud.drs.types import Provider
+from libcloud.drs.base import Driver
+from libcloud.common.types import LibcloudError
 
 
 class NttCisDRSDriver(Driver):
@@ -43,9 +30,20 @@ class NttCisDRSDriver(Driver):
         if region is not None:
             self.selected_region = API_ENDPOINTS[region]
 
-        super(NttCisDRSDriver, self).__init__(key=key, secret=secret,
-                                                    secure=secure, host=host,
-                                                    port=port,
-                                                    api_version=api_version,
-                                                    region=region,
-                                                    **kwargs)
+        super(NttCisDRSDriver, self).__init__(key=key,
+                                              secret=secret,
+                                              secure=secure, host=host,
+                                              port=port,
+                                              api_version=api_version,
+                                              region=region,
+                                              **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        """
+            Add the region to the kwargs before the connection is instantiated
+        """
+
+        kwargs = super(NttCisDRSDriver,
+                       self)._ex_connection_class_kwargs()
+        kwargs['region'] = self.selected_region
+        return kwargs

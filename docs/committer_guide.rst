@@ -91,12 +91,18 @@ Making a release (for release managers)
 This section contains information a release manager should follow when
 preparing a release.
 
+0. Update committed files
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Make sure ``CHANGES`` file is up to date
+* Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
+* Make sure ``version`` and ``release`` in ``docs/_conf.py`` are up to date
+* Update constants: ``python contrib/scrap-ec2-sizes.py > libcloud/compute/constants.py``
+
 1. Pre-release check list
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Make sure tests pass on all the supported Python versions (``tox``)
-* Make sure ``CHANGES`` file is up to date
-* Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 * Remove the ``tox`` directory with ``rm -rf .tox``
 * Remove the _secrets_ file with ``rm libcloud/test/secrets.py``
 * Remove leftover builds from previous releases. ``rm -f dist/apache*``
