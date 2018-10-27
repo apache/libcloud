@@ -37,3 +37,13 @@ class NttCisDRSDriver(Driver):
                                               api_version=api_version,
                                               region=region,
                                               **kwargs)
+
+    def _ex_connection_class_kwargs(self):
+        """
+            Add the region to the kwargs before the connection is instantiated
+        """
+
+        kwargs = super(NttCisDRSDriver,
+                       self)._ex_connection_class_kwargs()
+        kwargs['region'] = self.selected_region
+        return kwargs

@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.loadbalancer.types import Provider
-from libcloud.loadbalancer.types import OLD_CONSTANT_TO_NEW_MAPPING
+from libcloud.drs.types import Provider
+#from libcloud.drs.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.common.providers import get_driver as _get_provider_driver
 from libcloud.common.providers import set_driver as _set_provider_driver
 
@@ -31,9 +31,8 @@ DRIVERS = {
 
 
 def get_driver(provider):
-    deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
-    return _get_provider_driver(drivers=DRIVERS, provider=provider,
-                                deprecated_constants=deprecated_constants)
+    #deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
+    return _get_provider_driver(drivers=DRIVERS, provider=provider)
 
 
 def set_driver(provider, module, klass):
