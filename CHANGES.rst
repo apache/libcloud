@@ -2,7 +2,7 @@
 =========
 
 Changes in Apache Libcloud 2.4.0
------------------------------------------
+--------------------------------
 
 - Refuse installation with Python 2.6 and Python 3.3 (support was
   already dropped in Libcloud 2.3.0)
