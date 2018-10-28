@@ -1942,7 +1942,6 @@ def processor(mapping, name=None):
 
     def add_items(key, value, name=None):
         if name in attrs:
-            print(attrs)
             attrs[name].update({key: value})
         elif name is not None:
             attrs[name] = value
@@ -2049,7 +2048,6 @@ def processor(mapping, name=None):
 
     if len(map_copy) == 0:
         return 1
-    #print(attrs)
     return process(mapping, name)
 
 
@@ -2080,7 +2078,6 @@ class XmlListConfig(list):
         for element in elem_list:
             if element is not None:
                 # treat like dict
-                #print(element.attrib, len(element))
                 if len(element) >= 0 or element[0].tag != element[1].tag:
                     self.append(XmlDictConfig(element))
                 # treat like list
@@ -2153,6 +2150,7 @@ class XmlDictConfig(dict):
 
 
 def process_xml(xml):
+    global attrs
     tree = etree.parse(BytesIO(xml))
     root = tree.getroot()
     elem = root.tag.split('}')[1].capitalize()
@@ -2166,6 +2164,6 @@ def process_xml(xml):
         processor(converted_xml)
     klass = class_factory(elem.capitalize(), attrs)
     cls = klass(attrs)
-
+    attrs = {}
     return cls
 

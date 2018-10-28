@@ -782,6 +782,9 @@ class NttCisNodeDriver(NodeDriver):
         :rtype: ``list`` of :class:`Node`
         """
         node_list = []
+        # This is a generator so we changed from the original
+        # and if nodes is not empty, ie, the stop iteration confdition
+        # Then set node_list to nodes and retrn.
         for nodes in self.ex_list_nodes_paginated(
                 location=ex_location,
                 name=ex_name, ipv6=ex_ipv6,
@@ -789,8 +792,8 @@ class NttCisNodeDriver(NodeDriver):
                 image=ex_image, deployed=ex_deployed,
                 started=ex_started, state=ex_state,
                 network_domain=ex_network_domain):
-            node_list.extend(nodes)
-
+            if nodes:
+                node_list = nodes
         return node_list
 
     def list_images(self, location=None):
@@ -5123,7 +5126,8 @@ class NttCisNodeDriver(NodeDriver):
         return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
-        return process_xml(element)
+        # Get all information at once and process in common/nttcis
+        return process_xml(ET.tostring(element))
         """    
         started = findtext(element, 'started', TYPES_URN)
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
