@@ -47,17 +47,3 @@ def findattr(element, xpath, namespace=None):
 
 def findall(element, xpath, namespace=None):
     return element.findall(fixxpath(xpath=xpath, namespace=namespace))
-
-
-def return_all(parent_element):
-    elem_dict = {}
-    if parent_element.items():
-        elem_dict.update(dict(parent_element.items()))
-    for element in parent_element:
-        if element.items():
-            elem_dict.update(dict(element.items()))
-        elif element.text:
-            elem_dict.update({element.tag.split('}')[1]: element.text})
-        else:
-            elem_dict.update(element.attrib)
-    return elem_dict
