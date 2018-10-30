@@ -250,3 +250,13 @@ def test_fail_create_drs(na_compute_driver, drsdriver):
             "sdk_cg", "100", src_id, target_id, description="A test consistency group")
     exception_msg = excinfo.value.msg
     assert exception_msg == 'DRS is not supported between source Data Center NA9 and target Data Center NA12.'
+
+
+def test_create_drs(na_compute_driver, drsdriver):
+    nodes = na_compute_driver.list_nodes(ex_name='Src-Test-VM01')
+    src_id = nodes[0].id
+    nodes = na_compute_driver.list_nodes(ex_name="Tgt-Test-VM01")
+    target_id = nodes[0].id
+    result = drsdriver.create_consistency_group(
+        "sdk_test_cg", "100", src_id, target_id, description="A test consistency group")
+    assert result is True

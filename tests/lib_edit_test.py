@@ -450,3 +450,8 @@ def test_delete_listener(compute_driver, lbdriver):
     listener = [l for l in listeners if l.name == listener_name][0]
     result = lbdriver.destroy_balancer(listener)
     assert result is True
+
+
+def test_delete_consistency_group(drsdriver):
+    cg_name = "sdk_test_cg"
+    pass

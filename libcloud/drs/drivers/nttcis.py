@@ -87,10 +87,4 @@ class NttCisDRSDriver(Driver):
             method="POST",
             data=ET.tostring(consistency_group_elm)).object
         response_code = findtext(response, 'responseCode', TYPES_URN)
-        try:
-            assert response_code in ['IN_PROGRESS', 'OK']
-        except AssertionError:
-            return response_code
-        else:
-            info = findtext(response, "info", TYPES_URN)
-            print(info)
+        return response_code in ['IN_PROGRESS', 'OK']
