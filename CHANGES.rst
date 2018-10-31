@@ -1,6 +1,12 @@
 ﻿Changelog
 =========
 
+Changes in current version of Apache Libcloud
+---------------------------------------------
+
+- Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
+  [Mitch Raful]
+
 Changes in Apache Libcloud 2.4.0
 --------------------------------
 
