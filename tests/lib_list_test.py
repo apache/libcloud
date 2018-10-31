@@ -391,3 +391,9 @@ def test_list_health_monitors(compute_driver, lbdriver):
     for monitor in monitors:
         print(monitor)
 
+
+def test_list_consistency_groups(drsdriver):
+    cgs = drsdriver.list_consistency_groups()
+    for cg in cgs:
+        print(vars(cg))
+        print()

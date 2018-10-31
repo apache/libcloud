@@ -245,18 +245,30 @@ def test_fail_create_drs(na_compute_driver, drsdriver):
     src_id = nodes[0].id
     nodes = na_compute_driver.list_nodes(ex_name="drs_test_2")
     target_id = nodes[0].id
-    with pytest.raises(NttCisAPIException)as excinfo:
+    with pytest.raises(NttCisAPIException) as excinfo:
         result = drsdriver.create_consistency_group(
             "sdk_cg", "100", src_id, target_id, description="A test consistency group")
     exception_msg = excinfo.value.msg
     assert exception_msg == 'DRS is not supported between source Data Center NA9 and target Data Center NA12.'
 
 
-def test_create_drs(na_compute_driver, drsdriver):
-    nodes = na_compute_driver.list_nodes(ex_name='Src-Test-VM01')
+def test_inelligble_drs(na_compute_driver, drsdriver):
+    nodes = na_compute_driver.list_nodes(ex_name='src-sdk-test')
     src_id = nodes[0].id
-    nodes = na_compute_driver.list_nodes(ex_name="Tgt-Test-VM01")
+    nodes = na_compute_driver.list_nodes(ex_name="tgt-sdk-test")
+    target_id = nodes[0].id
+    with pytest.raises(NttCisAPIException) as excinfo:
+        drsdriver.create_consistency_group(
+            "sdk_test2_cg", "100", src_id, target_id, description="A test consistency group")
+    exception_msg = excinfo.value.msg
+    assert exception_msg == 'The drsEligible flag for target Server aee58575-38e2-495f-89d3-854e6a886411 must be set.'
+
+
+def test_create_drs(na_compute_driver, drsdriver):
+    nodes = na_compute_driver.list_nodes(ex_name='src-sdk-test')
+    src_id = nodes[0].id
+    nodes = na_compute_driver.list_nodes(ex_name="tgt-sdk-test")
     target_id = nodes[0].id
     result = drsdriver.create_consistency_group(
-        "sdk_test_cg", "100", src_id, target_id, description="A test consistency group")
+        "sdk_test2_cg", "100", src_id, target_id, description="A test consistency group")
     assert result is True

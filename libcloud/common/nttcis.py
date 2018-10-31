@@ -2166,4 +2166,3 @@ def process_xml(xml):
     cls = klass(attrs)
     attrs = {}
     return cls
-

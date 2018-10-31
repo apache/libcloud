@@ -2,6 +2,7 @@ from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
+from libcloud.common.nttcis import process_xml
 from libcloud.drs.types import Provider
 from libcloud.drs.base import Driver
 from libcloud.common.nttcis import TYPES_URN
@@ -88,3 +89,17 @@ class NttCisDRSDriver(Driver):
             data=ET.tostring(consistency_group_elm)).object
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
+
+    def list_consistency_groups(self):
+        #params = {'networkDomainId': ex_network_domain_id}
+        response = self.connection.request_with_orgId_api_2(
+            'consistencyGroup/consistencyGroup').object
+        cgs = self._to_consistency_groups(response)
+        return cgs
+
+    def _to_consistency_groups(self, object):
+        cgs = findall(object, 'consistencyGroup', TYPES_URN)
+        return [self._to_consistency_group(el) for el in cgs]
+
+    def _to_consistency_group(self, element):
+        return process_xml(ET.tostring(element))
