@@ -252,7 +252,7 @@ def test_fail_create_drs(na_compute_driver, drsdriver):
     assert exception_msg == 'DRS is not supported between source Data Center NA9 and target Data Center NA12.'
 
 
-def test_inelligble_drs(na_compute_driver, drsdriver):
+def test_ineligble_drs(na_compute_driver, drsdriver):
     nodes = na_compute_driver.list_nodes(ex_name='src-sdk-test')
     src_id = nodes[0].id
     nodes = na_compute_driver.list_nodes(ex_name="tgt-sdk-test")
