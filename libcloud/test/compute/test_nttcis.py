@@ -798,7 +798,7 @@ def test_ex_list_network_domains_ALLFILTERS(driver):
 
 def test_ex_list_vlans(driver):
     vlans = driver.ex_list_vlans()
-    assert vlans[0].name ==  "Primary"
+    assert vlans[0].name == "Primary"
 
 
 def test_ex_list_vlans_ALLFILTERS(driver):
