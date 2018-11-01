@@ -744,13 +744,13 @@ class NttCisPublicIpBlock(object):
                    self.status))
 
 
+"""
 class NttCisServerCpuSpecification(object):
-    """
+    
     A class that represents the specification of the CPU(s) for a
     node
-    """
+    
     def __init__(self, cpu_count, cores_per_socket, performance):
-        """
         Instantiate a new :class:`NttCisServerCpuSpecification`
 
         :param cpu_count: The number of CPUs
@@ -762,7 +762,7 @@ class NttCisServerCpuSpecification(object):
 
         :param performance: The performance type, e.g. HIGHPERFORMANCE
         :type  performance: ``str``
-        """
+        
         self.cpu_count = cpu_count
         self.cores_per_socket = cores_per_socket
         self.performance = performance
@@ -772,32 +772,30 @@ class NttCisServerCpuSpecification(object):
                  'cpu_count=%s, cores_per_socket=%s, '
                  'performance=%s>')
                 % (self.cpu_count, self.cores_per_socket, self.performance))
-
-
+"""
+"""
 class NttCisServerDisk(object):
-    """
+    
     A class that represents the disk on a server
-    """
-    def __init__(self, id=None, scsi_id=None, size_gb=None, speed=None,
-                 state=None):
-        """
+    
+    def __init__(self, id=None, scsi_id=None, size_gb=None, speed=None, state=None):
         Instantiate a new :class:`DimensionDataServerDisk`
-
+    
         :param id: The id of the disk
         :type  id: ``str``
-
+    
         :param scsi_id: Representation for scsi
         :type  scsi_id: ``int``
-
+    
         :param size_gb: Size of the disk
         :type  size_gb: ``int``
-
+    
         :param speed: Speed of the disk (i.e. STANDARD)
         :type  speed: ``str``
-
+    
         :param state: State of the disk (i.e. PENDING)
         :type  state: ``str``
-        """
+        
         self.id = id
         self.scsi_id = scsi_id
         self.size_gb = size_gb
@@ -811,11 +809,11 @@ class NttCisServerDisk(object):
 
 
 class NttCisScsiController(object):
-    """
+    
     A class that represents the disk on a server
-    """
+    
     def __init__(self, id, adapter_type, bus_number, state):
-        """
+        
         Instantiate a new :class:`DimensionDataServerDisk`
 
         :param id: The id of the controller
@@ -832,7 +830,7 @@ class NttCisScsiController(object):
 
         :param state: State of the disk (i.e. PENDING)
         :type  state: ``str``
-        """
+        
         self.id = id
         self.adapter_type = adapter_type
         self.bus_number = bus_number
@@ -842,6 +840,7 @@ class NttCisScsiController(object):
         return (('<NttCisScsiController: '
                  'id=%s, adapter_type=%s, bus_number=%s, state=%s')
                 % (self.id, self.adapter_type, self.bus_number, self.state))
+"""
 
 
 class NttCisServerVMWareTools(object):
@@ -1936,6 +1935,13 @@ attrs = {}
 
 
 def processor(mapping, name=None):
+    """
+    Closure that keeps the deepcopy of the original dict
+    converted to XML current.
+    :param mapping: The converted XML to dict/lists
+    :param name: (Optional) what becomes the class name if provided
+    :return: Nothing
+    """
     mapping = mapping
 
     map_copy = deepcopy(mapping)
@@ -1948,6 +1954,7 @@ def processor(mapping, name=None):
 
         else:
             attrs.update({key: value})
+        # trim the copy of the mapping
         if key in map_copy:
             del map_copy[key]
         elif key in map_copy[name]:
@@ -2082,6 +2089,8 @@ class XmlListConfig(list):
                     self.append(XmlDictConfig(element))
                 # treat like list
                 elif element[0].tag == element[1].tag:
+                    # property refers to an element used repeatedly
+                    #  in the XML for data centers only
                     if 'property' in element.tag:
                         self.append({element.attrib.get('name'): element.attrib.get('value')})
                     else:

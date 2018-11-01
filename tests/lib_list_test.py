@@ -395,3 +395,10 @@ def test_list_health_monitors(compute_driver, lbdriver):
 def test_list_consistency_groups(drsdriver):
     cgs = drsdriver.list_consistency_groups()
     return cgs
+
+
+def test_get_consistency_group(drsdriver):
+    cgs = drsdriver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    cg = drsdriver.get_consistency_group(cg_id)
+    assert hasattr(cg, 'description')

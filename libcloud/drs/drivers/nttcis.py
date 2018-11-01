@@ -97,9 +97,16 @@ class NttCisDRSDriver(Driver):
         cgs = self._to_consistency_groups(response)
         return cgs
 
+    def get_consistency_group(self, consistency_group_id):
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/consistencyGroup/%s" % consistency_group_id
+        ).object
+        cg = self._to_process(response)
+        return cg
+
     def _to_consistency_groups(self, object):
         cgs = findall(object, 'consistencyGroup', TYPES_URN)
-        return [self._to_consistency_group(el) for el in cgs]
+        return [self._to_process(el) for el in cgs]
 
-    def _to_consistency_group(self, element):
+    def _to_process(self, element):
         return process_xml(ET.tostring(element))

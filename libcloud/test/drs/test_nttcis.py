@@ -43,6 +43,11 @@ def test_list_consistency_groups(driver):
     assert hasattr(cgs[0], 'serverPair')
 
 
+def test_get_consistency_group(driver):
+    cg = driver.get_consistency_group("3710c093-7dcc-4a21-bd07-af9f4d93b6b5")
+    assert cg.id == "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+
+
 class NttCisMockHttp(MockHttp):
 
     fixtures = DRSFileFixtures('nttcis')
@@ -66,9 +71,17 @@ class NttCisMockHttp(MockHttp):
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_consistencyGroup(self,
-                                                                                                          method,
-                                                                                                          url,
-                                                                                                          body,
-                                                                                                          headers):
+                                                                                         method,
+                                                                                         url,
+                                                                                         body,
+                                                                                         headers):
         body = self.fixtures.load("list_consistency_groups.xml")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_consistencyGroup_3710c093_7dcc_4a21_bd07_af9f4d93b6b5(self,
+                                                                                                                              method,
+                                                                                                                              url,
+                                                                                                                              body,
+                                                                                                                              headers):
+        body = self.fixtures.load("get_consistency_group.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
