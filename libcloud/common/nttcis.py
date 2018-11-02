@@ -2110,6 +2110,7 @@ class XmlDictConfig(dict):
             else:
                 self.update(dict(parent_element.items()))
 
+        c_elems = parent_element.items()
         for element in parent_element:
             if len(element) > 0:
                 # treat like dict - we assume that if the first two tags
@@ -2134,13 +2135,18 @@ class XmlDictConfig(dict):
             # good idea -- time will tell. It works for the way we are
             # currently doing XML configuration files...
             elif element.items():
+                items = element.items()
                 # It is possible to have duplicate element tags. If so, convert to a dict of lists
+                i = element.tag.split('}')[1]
                 if element.tag.split('}')[1] in self:
-                    tmp_list = list()
-                    tmp_dict = dict()
+
+                    t = type(self[element.tag.split('}')[1]])
                     if isinstance(self[element.tag.split('}')[1]], list):
-                        tmp_list.append(element.tag.split('}')[1])
+                        self[element.tag.split('}')[1]].append(dict(element.items()))
+                        #tmp_list.append(element.tag.split('}')[1])
                     else:
+                        tmp_list = list()
+                        tmp_dict = dict()
                         for k, v in self[element.tag.split('}')[1]].items():
                             if isinstance(k, XmlListConfig):
                                 tmp_list.append(k)
@@ -2148,8 +2154,7 @@ class XmlDictConfig(dict):
                                 tmp_dict.update({k: v})
                         tmp_list.append(tmp_dict)
                         tmp_list.append(dict(element.items()))
-                        print()
-                    self[element.tag.split('}')[1]] = tmp_list
+                        self[element.tag.split('}')[1]] = tmp_list
                 else:
                     self.update({element.tag.split('}')[1]: dict(element.items())})
             # finally, if there are no child tags and no attributes, extract

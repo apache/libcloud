@@ -104,9 +104,26 @@ class NttCisDRSDriver(Driver):
         cg = self._to_process(response)
         return cg
 
+    def list_consistency_group_snapshots(self, consistency_group_id):
+        params = {"consistencyGroupId": consistency_group_id}
+        paged_result = self.connection.request_with_orgId_api_2(
+            'consistencyGroup/snapshot',
+            method='GET',
+            params=params
+        ).object
+        snapshots = self._to_process(paged_result)
+        return snapshots
+
     def _to_consistency_groups(self, object):
         cgs = findall(object, 'consistencyGroup', TYPES_URN)
         return [self._to_process(el) for el in cgs]
+
+    def _to_snapshots(self, object):
+        elem = findall(object, "consistencyGroupSnapshots", TYPES_URN)
+        snapshots = []
+        for element in object.findall(fixxpath("snapshot", TYPES_URN)):
+            snapshots.append(self._to_process(element))
+        return snapshots
 
     def _to_process(self, element):
         return process_xml(ET.tostring(element))

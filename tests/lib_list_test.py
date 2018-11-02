@@ -402,3 +402,10 @@ def test_get_consistency_group(drsdriver):
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
     cg = drsdriver.get_consistency_group(cg_id)
     assert hasattr(cg, 'description')
+
+
+def test_get_snapshots(drsdriver):
+    cgs = drsdriver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    snaps = drsdriver.list_consistency_group_snapshots(cg_id)
+    print(cg_id)
