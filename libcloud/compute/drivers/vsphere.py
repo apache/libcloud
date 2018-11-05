@@ -621,7 +621,8 @@ class VSphereNodeDriver(NodeDriver):
         """
         """
         vm = self.find_by_uuid(node.id)
-        self.ex_stop_node(vm)
+        if node.state != NodeState.STOPPED:
+            self.ex_stop_node(node)
         return self.wait_for_task(vm.Destroy())
 
     def ex_stop_node(self, node):
@@ -756,7 +757,7 @@ class VSphereNodeDriver(NodeDriver):
                                     'for import task Id %s'
                                     % task.info.id)
             if task.info.state == 'success':
-                if task.info.result and task.info.result != 'success':
+                if task.info.result and str(task.info.result) != 'success':
                     return task.info.result
                 return True
 
