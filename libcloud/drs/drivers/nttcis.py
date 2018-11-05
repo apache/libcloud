@@ -1,3 +1,5 @@
+import re
+import functools
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import API_ENDPOINTS
@@ -8,6 +10,26 @@ from libcloud.drs.base import Driver
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.common.types import LibcloudError
+
+
+def get_params(func):
+    @functools.wraps(func)
+    def paramed(*args, **kwargs):
+
+        if kwargs:
+            for k, v in kwargs.items():
+                old_key = k
+                matches = re.findall(r'_(\w)', k)
+                for match in matches:
+                    k = k.replace('_'+match, match.upper())
+                del kwargs[old_key]
+                kwargs[k] = v
+            params = kwargs
+            result = func(args[0], params)
+        else:
+            result = func(args[0])
+        return result
+    return paramed
 
 
 class NttCisDRSDriver(Driver):
@@ -90,14 +112,36 @@ class NttCisDRSDriver(Driver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def list_consistency_groups(self):
-        #params = {'networkDomainId': ex_network_domain_id}
+    @get_params
+    def list_consistency_groups(self, params={}):
+        """
+        Functions takes a named parameter that must be one of the following
+        :param params: A dictionary composed of one of the follwing keys and a value
+                       target_data_center_id:
+                       source_network_domain_id:
+                       target_network_domain_id:
+                       source_server_id:
+                       target_server_id:
+                       name:
+                       state:
+                       operation_status:
+                       drs_infrastructure_status:
+        :return:  `list` of :class: `NttCisConsistencyGroup`
+        """
+
         response = self.connection.request_with_orgId_api_2(
-            'consistencyGroup/consistencyGroup').object
+            'consistencyGroup/consistencyGroup', params=params).object
         cgs = self._to_consistency_groups(response)
         return cgs
 
     def get_consistency_group(self, consistency_group_id):
+        """
+        Retrieves a Consistency by it's id and is more efficient thatn listing
+        all consistency groups and filtering that result.
+        :param consistency_group_id: An id of a consistency group
+        :type consistency_group_id: ``str``
+        :return: :class: `NttCisConsistencygroup`
+        """
         response = self.connection.request_with_orgId_api_2(
             "consistencyGroup/consistencyGroup/%s" % consistency_group_id
         ).object
@@ -119,7 +163,6 @@ class NttCisDRSDriver(Driver):
         return [self._to_process(el) for el in cgs]
 
     def _to_snapshots(self, object):
-        elem = findall(object, "consistencyGroupSnapshots", TYPES_URN)
         snapshots = []
         for element in object.findall(fixxpath("snapshot", TYPES_URN)):
             snapshots.append(self._to_process(element))

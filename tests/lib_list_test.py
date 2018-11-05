@@ -394,10 +394,23 @@ def test_list_health_monitors(compute_driver, lbdriver):
 
 def test_list_consistency_groups(drsdriver):
     cgs = drsdriver.list_consistency_groups()
-    return cgs
+    for cg in cgs:
+        print(cg.name)
 
 
-def test_get_consistency_group(drsdriver):
+def test_list_cg_by_src_net_domain(drsdriver):
+    nd = "f9d6a249-c922-4fa1-9f0f-de5b452c4026"
+    cgs = drsdriver.list_consistency_groups(source_network_domain_id=nd)
+    assert cgs[0].name == "sdk_test2_cg"
+
+
+def test_list_cg_by_name(drsdriver):
+    name = "sdk_test2_cg"
+    cg = drsdriver.list_consistency_groups(name=name)
+    assert cg[0].id == "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+
+
+def test_get_consistency_group_by_id(drsdriver):
     cgs = drsdriver.list_consistency_groups()
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
     cg = drsdriver.get_consistency_group(cg_id)
@@ -408,4 +421,4 @@ def test_get_snapshots(drsdriver):
     cgs = drsdriver.list_consistency_groups()
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
     snaps = drsdriver.list_consistency_group_snapshots(cg_id)
-    print(cg_id)
+    assert hasattr(snaps, 'journalUsageGb')

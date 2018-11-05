@@ -744,13 +744,13 @@ class NttCisPublicIpBlock(object):
                    self.status))
 
 
-"""
 class NttCisServerCpuSpecification(object):
-    
+    """
     A class that represents the specification of the CPU(s) for a
     node
-    
+    """
     def __init__(self, cpu_count, cores_per_socket, performance):
+        """
         Instantiate a new :class:`NttCisServerCpuSpecification`
 
         :param cpu_count: The number of CPUs
@@ -762,7 +762,7 @@ class NttCisServerCpuSpecification(object):
 
         :param performance: The performance type, e.g. HIGHPERFORMANCE
         :type  performance: ``str``
-        
+        """
         self.cpu_count = cpu_count
         self.cores_per_socket = cores_per_socket
         self.performance = performance
@@ -772,13 +772,14 @@ class NttCisServerCpuSpecification(object):
                  'cpu_count=%s, cores_per_socket=%s, '
                  'performance=%s>')
                 % (self.cpu_count, self.cores_per_socket, self.performance))
-"""
-"""
+
+
 class NttCisServerDisk(object):
-    
+    """
     A class that represents the disk on a server
-    
+    """
     def __init__(self, id=None, scsi_id=None, size_gb=None, speed=None, state=None):
+        """
         Instantiate a new :class:`DimensionDataServerDisk`
     
         :param id: The id of the disk
@@ -795,7 +796,7 @@ class NttCisServerDisk(object):
     
         :param state: State of the disk (i.e. PENDING)
         :type  state: ``str``
-        
+        """
         self.id = id
         self.scsi_id = scsi_id
         self.size_gb = size_gb
@@ -809,11 +810,11 @@ class NttCisServerDisk(object):
 
 
 class NttCisScsiController(object):
-    
+    """
     A class that represents the disk on a server
-    
+    """
     def __init__(self, id, adapter_type, bus_number, state):
-        
+        """
         Instantiate a new :class:`DimensionDataServerDisk`
 
         :param id: The id of the controller
@@ -830,7 +831,7 @@ class NttCisScsiController(object):
 
         :param state: State of the disk (i.e. PENDING)
         :type  state: ``str``
-        
+        """
         self.id = id
         self.adapter_type = adapter_type
         self.bus_number = bus_number
@@ -840,7 +841,6 @@ class NttCisScsiController(object):
         return (('<NttCisScsiController: '
                  'id=%s, adapter_type=%s, bus_number=%s, state=%s')
                 % (self.id, self.adapter_type, self.bus_number, self.state))
-"""
 
 
 class NttCisServerVMWareTools(object):
@@ -2135,12 +2135,9 @@ class XmlDictConfig(dict):
             # good idea -- time will tell. It works for the way we are
             # currently doing XML configuration files...
             elif element.items():
-                items = element.items()
                 # It is possible to have duplicate element tags. If so, convert to a dict of lists
-                i = element.tag.split('}')[1]
                 if element.tag.split('}')[1] in self:
 
-                    t = type(self[element.tag.split('}')[1]])
                     if isinstance(self[element.tag.split('}')[1]], list):
                         self[element.tag.split('}')[1]].append(dict(element.items()))
                         #tmp_list.append(element.tag.split('}')[1])

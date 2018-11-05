@@ -48,6 +48,11 @@ def test_get_consistency_group(driver):
     assert cg.id == "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
 
 
+def test_get_consistency_group_by_name(driver):
+    cgs = driver.list_consistency_groups(name="skd_test2_cg")
+    assert cgs[0].id == "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+
+
 class NttCisMockHttp(MockHttp):
 
     fixtures = DRSFileFixtures('nttcis')
@@ -84,4 +89,12 @@ class NttCisMockHttp(MockHttp):
                                                                                                                               body,
                                                                                                                               headers):
         body = self.fixtures.load("get_consistency_group.xml")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_consistencyGroup_name(self,
+                                                                                                                              method,
+                                                                                                                              url,
+                                                                                                                              body,
+                                                                                                                              headers):
+        body = self.fixtures.load("list_cg_by_params.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
