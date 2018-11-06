@@ -58,7 +58,7 @@ class DRSConsistencyGroup(object):
         self.extra = extra or {}
 
 
-class Driver(BaseDriver):
+class DRSDriver(BaseDriver):
     """
     A base Driver class to derive from
 
@@ -72,7 +72,7 @@ class Driver(BaseDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  port=None, **kwargs):
-        super(Driver, self).__init__(key=key, secret=secret, secure=secure,
+        super(DRSDriver, self).__init__(key=key, secret=secret, secure=secure,
                                      host=host, port=port, **kwargs)
 
     def create_consistency_group(self, name, journal_sz_gb,

@@ -8,6 +8,7 @@ Provider                      enable container cdn enable object cdn get contain
 `Microsoft Azure (blobs)`_    no                   no                no                    no                
 `Backblaze B2`_               no                   no                no                    no                
 `CloudFiles`_                 yes                  no                yes                   yes               
+`DigitalOcean Spaces`_        no                   no                no                    no                
 `Google Cloud Storage`_       no                   no                no                    no                
 `KTUCloud Storage`_           yes                  no                yes                   yes               
 `Local Storage`_              yes                  yes               yes                   yes               
@@ -23,6 +24,7 @@ Provider                      enable container cdn enable object cdn get contain
 `Amazon S3 (ap-southeast-2)`_ no                   no                no                    no                
 `Amazon S3 (ca-central-1)`_   no                   no                no                    no                
 `Amazon S3 (cn-north-1)`_     no                   no                no                    no                
+`Amazon S3 (cn-northwest-1)`_ no                   no                no                    no                
 `Amazon S3 (eu-central-1)`_   no                   no                no                    no                
 `Amazon S3 (eu-west-1)`_      no                   no                no                    no                
 `Amazon S3 (eu-west-2)`_      no                   no                no                    no                
@@ -40,6 +42,7 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Microsoft Azure (blobs)`: http://windows.azure.com/
 .. _`Backblaze B2`: https://www.backblaze.com/b2/
 .. _`CloudFiles`: http://www.rackspace.com/
+.. _`DigitalOcean Spaces`: https://www.digitalocean.com/products/object-storage/
 .. _`Google Cloud Storage`: http://cloud.google.com/storage
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Local Storage`: http://example.com
@@ -55,6 +58,7 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Amazon S3 (ap-southeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ca-central-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (cn-north-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (cn-northwest-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-central-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-2)`: http://aws.amazon.com/s3/

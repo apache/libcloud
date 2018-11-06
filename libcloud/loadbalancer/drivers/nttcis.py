@@ -141,6 +141,7 @@ class NttCisLBDriver(Driver):
 
         :rtype: :class:`LoadBalancer`
         """
+
         network_domain_id = self.network_domain_id
         if protocol is None:
             protocol = 'http'

@@ -1693,10 +1693,6 @@ class NttCisTagKey(object):
                 % (self.id, self.name))
 
 
-class NttCisFactory(object):
-    pass
-
-
 class NttCisIpAddressList(object):
     """
     NttCis IP Address list

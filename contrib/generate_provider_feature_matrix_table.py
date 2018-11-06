@@ -45,6 +45,11 @@ from libcloud.dns.providers import get_driver as get_dns_driver
 from libcloud.dns.providers import DRIVERS as DNS_DRIVERS
 from libcloud.dns.types import Provider as DNSProvider
 
+from libcloud.drs.base import DRSDriver
+from libcloud.drs.providers import get_driver as get_drs_driver
+from libcloud.drs.providers import DRIVERS as DRS_DRIVERS
+from libcloud.drs.types import Provider as DRSProvider
+
 from libcloud.container.base import ContainerDriver
 from libcloud.container.providers import get_driver as get_container_driver
 from libcloud.container.providers import DRIVERS as CONTAINER_DRIVERS
@@ -89,6 +94,11 @@ BASE_API_METHODS = {
     'dns': ['list_zones', 'list_records', 'iterate_zones', 'iterate_records',
             'create_zone', 'update_zone', 'create_record', 'update_record',
             'delete_zone', 'delete_record'],
+    'drs': ['create_consistency_group', 'list_consistency_groups',
+            'get_consistency_group', 'delete_consistency_group',
+            'list_consistency_group_snapshots', 'expand_journal',
+            'start_failover_preview', 'stop_failover_preview',
+            'initiate_failover'],
     'container': ['install_image', 'list_images', 'deploy_container',
                   'get_container', 'start_container', 'stop_container',
                   'restart_container', 'destroy_container', 'list_containers',
@@ -169,6 +179,17 @@ FRIENDLY_METHODS_NAMES = {
         'delete_zone': 'delete zone',
         'delete_record': 'delete record'
     },
+    'drs': {
+        'create_consistency_group': 'create_consistency_group',
+        'list_consistency_groups': 'list_consistency_groups',
+        'get_consistency_group': 'get_consistency_group',
+        'delete_consistency_group': 'delete_consistency_group',
+        'list_consistency_group_snapshots': 'list_consistency_group_snapshots',
+        'expand_journal': 'expand_journal',
+        'start_failover_preview': 'start_failover_preview',
+        'stop_failover_preview': 'stop_failover_preview',
+        'initiate_failover': 'initiate_failover'
+    },
     'container': {
         'install_image': 'install image',
         'list_images': 'list images',
@@ -242,6 +263,11 @@ def generate_providers_table(api):
         drivers = DNS_DRIVERS
         provider = DNSProvider
         get_driver_method = get_dns_driver
+    elif api == 'drs':
+        driver = DRSDriver
+        drivers = DRS_DRIVERS
+        provider = DRSProvider
+        get_driver_method = get_drs_driver
     elif api == 'container':
         driver = ContainerDriver
         drivers = CONTAINER_DRIVERS

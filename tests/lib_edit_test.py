@@ -452,6 +452,13 @@ def test_delete_listener(compute_driver, lbdriver):
     assert result is True
 
 
+def test_expand_journal(drsdriver):
+    cgs = drsdriver.list_consistency_groups(name="sdk_test2_cg")
+    cg_id = cgs[0].id
+    expand_by = "100"
+    result = drsdriver.expand_journal(cg_id, expand_by)
+    assert result is True
+
 def test_delete_consistency_group(drsdriver):
     cg_name = "sdk_test_cg"
     pass

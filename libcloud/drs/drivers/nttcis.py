@@ -6,7 +6,7 @@ from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
 from libcloud.common.nttcis import process_xml
 from libcloud.drs.types import Provider
-from libcloud.drs.base import Driver
+from libcloud.drs.base import DRSDriver
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.common.types import LibcloudError
@@ -32,7 +32,7 @@ def get_params(func):
     return paramed
 
 
-class NttCisDRSDriver(Driver):
+class NttCisDRSDriver(DRSDriver):
     """
     NttCis node driver.
     """
@@ -117,15 +117,15 @@ class NttCisDRSDriver(Driver):
         """
         Functions takes a named parameter that must be one of the following
         :param params: A dictionary composed of one of the follwing keys and a value
-                       target_data_center_id:
-                       source_network_domain_id:
-                       target_network_domain_id:
-                       source_server_id:
-                       target_server_id:
-                       name:
-                       state:
-                       operation_status:
-                       drs_infrastructure_status:
+                       * target_data_center_id=
+                       * source_network_domain_id=
+                       * target_network_domain_id=
+                       * source_server_id=
+                       * target_server_id=
+                       * name=
+                       * state=
+                       * operation_status=
+                       * drs_infrastructure_status=
         :return:  `list` of :class: `NttCisConsistencyGroup`
         """
 
@@ -157,6 +157,26 @@ class NttCisDRSDriver(Driver):
         ).object
         snapshots = self._to_process(paged_result)
         return snapshots
+
+    def expand_journal(self, consistency_group_id, size_gb):
+        """
+        Expand the consistency group's journhal size in 100Gb increments
+        :param consistency_group_id: The consistency group's UUID
+        :type consistency_group_id: ``str``
+        :param size_gb: Gb in 100 Gb increments
+        :type size_gb: ``str``
+        :return:
+        """
+
+        expand_elm = ET.Element("expandJournal", {"id": consistency_group_id,
+                                                  "xmlns": TYPES_URN})
+        ET.SubElement(expand_elm, "sizeGb").text = size_gb
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/expandJournal",
+            method="POST",
+            data=ET.tostring(expand_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def _to_consistency_groups(self, object):
         cgs = findall(object, 'consistencyGroup', TYPES_URN)

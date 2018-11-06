@@ -12,6 +12,7 @@ Provider                               Documentation                            
 `Google Compute Engine Load Balancer`_ :doc:`Click </loadbalancer/drivers/gce>`           GCE               single region driver         :mod:`libcloud.loadbalancer.drivers.gce`           :class:`GCELBDriver`          
 `GoGrid LB`_                                                                              GOGRID            single region driver         :mod:`libcloud.loadbalancer.drivers.gogrid`        :class:`GoGridLBDriver`       
 `Ninefold LB`_                                                                            NINEFOLD          single region driver         :mod:`libcloud.loadbalancer.drivers.ninefold`      :class:`NinefoldLBDriver`     
+`NTTC-CIS Load Balancer`_              :doc:`Click </loadbalancer/drivers/nttcis>`        NTTCIS            single region driver         :mod:`libcloud.loadbalancer.drivers.nttcis`        :class:`NttCisLBDriver`       
 `Rackspace LB`_                                                                           RACKSPACE         dfw, hkg, iad, lon, ord, syd :mod:`libcloud.loadbalancer.drivers.rackspace`     :class:`RackspaceLBDriver`    
 `Softlayer Load Balancing`_                                                               SOFTLAYER         single region driver         :mod:`libcloud.loadbalancer.drivers.softlayer`     :class:`SoftlayerLBDriver`    
 ====================================== ================================================== ================= ============================ ================================================== ==============================
@@ -25,5 +26,6 @@ Provider                               Documentation                            
 .. _`Google Compute Engine Load Balancer`: https://cloud.google.com/
 .. _`GoGrid LB`: http://www.gogrid.com/
 .. _`Ninefold LB`: http://ninefold.com/
+.. _`NTTC-CIS Load Balancer`: https://cloud.nttcis.com/
 .. _`Rackspace LB`: http://www.rackspace.com/
 .. _`Softlayer Load Balancing`: http://www.softlayer.com/
