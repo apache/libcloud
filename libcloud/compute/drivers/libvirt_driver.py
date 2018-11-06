@@ -607,7 +607,7 @@ class LibvirtNodeDriver(NodeDriver):
                     ip, gw = net.get('ip'), net.get('gateway')
                     if not is_valid_ip_address(ip):
                         raise ValueError("Invalid IPv4 address %s" % ip)
-                    if gw and not is_valid_ip_address(gateway):
+                    if gw and not is_valid_ip_address(gw):
                         raise ValueError("Invalid IPv4 address for GW %s" % gw)
                     name = net['network_name']
                     cidr = self._ex_get_cidr_from_network_name(name)
