@@ -1,20 +1,10 @@
 import pytest
-
-
-import sys
-from types import GeneratorType
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import ET
-from libcloud.common.types import InvalidCredsError
-from libcloud.common.nttcis import NttCisAPIException, NetworkDomainServicePlan
-from libcloud.common.nttcis import TYPES_URN
+from libcloud.common.nttcis import NttCisAPIException
 from libcloud.drs.drivers.nttcis import NttCisDRSDriver as NttCis
-from libcloud.compute.drivers.nttcis import NttCisNic
-from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
 from libcloud.test import MockHttp, unittest
 from libcloud.test.file_fixtures import DRSFileFixtures
 from libcloud.test.secrets import NTTCIS_PARAMS
-from libcloud.utils.xml import fixxpath, findtext, findall
 
 
 @pytest.fixture()
@@ -60,6 +50,22 @@ def test_expand_journal(driver):
     assert result is True
 
 
+def test_list_snapshots(driver):
+    cg_id = "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+    result = driver.list_consistency_group_snapshots(cg_id)
+    assert hasattr(result, 'snapshot')
+    assert len(result.snapshot) == 11
+
+
+def test_list_snapshots_with_min(driver):
+    NttCisMockHttp.type = "WITH_MIN"
+    cg_id = "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+    result = driver.list_consistency_group_snapshots(
+        cg_id, create_time_min="2018-11-07T00:00:00.000-05:00")
+    assert hasattr(result, 'snapshot')
+    assert len(result.snapshot) == 87
+
+
 def test_start_failover_preview(driver):
     pass
 
@@ -73,6 +79,10 @@ class NttCisMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_WITH_MIN(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -116,4 +126,20 @@ class NttCisMockHttp(MockHttp):
                                                                                                                               body,
                                                                                                                               headers):
         body = self.fixtures.load("expand_cg.xml")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_snapshot(self,
+                                                                                                                              method,
+                                                                                                                              url,
+                                                                                                                              body,
+                                                                                                                              headers):
+        body = self.fixtures.load("drs_snapshots.xml")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_snapshot_WITH_MIN(self,
+                                                                                 method,
+                                                                                 url,
+                                                                                 body,
+                                                                                 headers):
+        body = self.fixtures.load("drs_snapshots_by_min.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

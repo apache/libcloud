@@ -422,3 +422,24 @@ def test_get_snapshots(drsdriver):
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
     snaps = drsdriver.list_consistency_group_snapshots(cg_id)
     assert hasattr(snaps, 'journalUsageGb')
+
+
+def test_get_snapshots_by_min_max(drsdriver):
+    cgs = drsdriver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    snaps = drsdriver.list_consistency_group_snapshots(
+        cg_id,
+        create_time_min="2018-11-06T00:00:00.000Z",
+        create_time_max="2018-11-07T00:00:00.000Z")
+    for snap in snaps.snapshot:
+        print(snap)
+
+
+def test_get_snapshots_by_min(drsdriver):
+    cgs = drsdriver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    snaps = drsdriver.list_consistency_group_snapshots(
+        cg_id,
+        create_time_min="2018-11-07T00:00:00.000-05:00")
+    for snap in snaps.snapshot:
+        print(snap)
