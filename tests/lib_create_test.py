@@ -272,3 +272,22 @@ def test_create_drs(na_compute_driver, drsdriver):
     result = drsdriver.create_consistency_group(
         "sdk_test2_cg", "100", src_id, target_id, description="A test consistency group")
     assert result is True
+
+
+def test_start_snapshot_preview(drsdriver):
+    cg_id = "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+    snapshot_id = "87703"
+    result = drsdriver.start_failover_preview(cg_id, snapshot_id)
+    assert result is True
+
+
+def test_stop_snapshot_preivew(drsdriver):
+    cg_id = "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+    result = drsdriver.stop_failover_preview(cg_id)
+    assert result is True
+
+
+def test_initiate_failover(drsdriver):
+    cg_id = "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
+    result = drsdriver.initiate_failover(cg_id)
+    assert result is True

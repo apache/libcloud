@@ -15,7 +15,7 @@ def create_drs(compute_driver, drs_driver):
     assert result is True
 
 
-def compute_driver():
+if __name__ == "__main__":
     cls = libcloud.get_driver(libcloud.DriverType.COMPUTE,
                               libcloud.DriverType.COMPUTE.NTTCIS)
     computedriver = cls('my_user', 'my_pass', region='na')

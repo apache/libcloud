@@ -221,7 +221,86 @@ class NttCisDRSDriver(DRSDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def start_failover_preview(self, consistency_group_id, snapshot_id):
-        pass
+        """
+        Brings a Consistency Group into PREVIEWING_SNAPSHOT mode
+
+        :param consistency_group_id: Id of the Consistency Group to put into
+                                     PRIEVEW_MODE
+        :type consistency_group_id: ``str``
+        :param snapshot_id: Id of the Snapshot to preview
+        :type snapshot_id: ``str``
+        :return: True/False
+        :rtype: ``bool``
+        """
+        preview_elm = ET.Element("startPreviewSnapshot",
+                                 {"consistencyGroupId": consistency_group_id,
+                                  "xmlns": TYPES_URN
+                                  })
+        ET.SubElement(preview_elm, "snapshotId").text = snapshot_id
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/startPreviewSnapshot",
+            method="POST",
+            data=ET.tostring(preview_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def stop_failover_preview(self, consistency_group_id):
+        """
+        Takes a Consistency Group out of PREVIEW_MODE and back to DRS_MODE
+
+        :param consistency_group_id: Consistency Group's Id
+        :type ``str``
+        :return: True/False
+        :rtype: ``bool``
+        """
+        preview_elm = ET.Element("stopPreviewSnapshot",
+                                 {"consistencyGroupId": consistency_group_id,
+                                  "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/stopPreviewSnapshot",
+            method="POST",
+            data=ET.tostring(preview_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def initiate_failover(self, consistency_group_id):
+        """
+        This method is irreversible.
+        It will failover the Consistency Group while removing it as well.
+
+        :param consistency_group_id: Consistency Group's Id to failover
+        :type consistency_group_id: ``str``
+        :return: True/False
+        :rtype: ``bool``
+        """
+        failover_elm = ET.Element("initiateFailover",
+                                  {"consistencyGroupId": consistency_group_id,
+                                   "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/initiateFailover",
+            method="POST",
+            data=ET.tostring(failover_elm)).object
+        response_code = findtext(response, "responseCode", TYPES_URN)
+        return response_code in ["IN_PROGRESS", "OK"]
+
+    def delete_consistency_group(self, consistency_group_id):
+        """
+        Delete's a Consistency Group
+
+        :param consistency_group_id: Id of Consistency Group to delete
+        :type ``str``
+        :return: True/False
+        :rtype: ``bool``
+        """
+        delete_elm = ET.Element("deleteConsistencyGroup",
+                                {"id": consistency_group_id,
+                                 "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/deleteConsistencyGroup",
+            method="POST",
+            data=ET.tostring(delete_elm)).object
+        response_code = findtext(response, "responseCode", TYPES_URN)
+        return response_code in ["IN_PROGRESS", "OK"]
 
     def _to_consistency_groups(self, object):
         cgs = findall(object, 'consistencyGroup', TYPES_URN)

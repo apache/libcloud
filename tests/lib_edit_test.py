@@ -459,6 +459,10 @@ def test_expand_journal(drsdriver):
     result = drsdriver.expand_journal(cg_id, expand_by)
     assert result is True
 
+
 def test_delete_consistency_group(drsdriver):
-    cg_name = "sdk_test_cg"
-    pass
+    cg_name = "sdk_test2_cg"
+    cg = drsdriver.list_consistency_groups(name=cg_name)
+    cg_id = cg[0].id
+    result = drsdriver.delete_consistency_group(cg_id)
+    assert result is True
