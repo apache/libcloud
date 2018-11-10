@@ -178,6 +178,10 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                 params['weight'] = extra['weight']
             except KeyError:
                 params['weight'] = 'null'
+            try:
+                params['ttl'] = extra['ttl']
+            except KeyError:
+                pass
 
         res = self.connection.request('/v2/domains/%s/records' % zone.id,
                                       params=params,
@@ -186,6 +190,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         return Record(id=res.object['domain_record']['id'],
                       name=res.object['domain_record']['name'],
                       type=type, data=data, zone=zone,
+                      ttl=res.object['domain_record']['ttl'],
                       driver=self, extra=extra)
 
     def update_record(self, record, name=None, type=None,
@@ -233,6 +238,10 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                 params['weight'] = extra['weight']
             except KeyError:
                 params['weight'] = 'null'
+            try:
+                params['ttl'] = extra['ttl']
+            except KeyError:
+                pass
 
         res = self.connection.request('/v2/domains/%s/records/%s' %
                                       (record.zone.id, record.id),
@@ -242,6 +251,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         return Record(id=res.object['domain_record']['id'],
                       name=res.object['domain_record']['name'],
                       type=record.type, data=data, zone=record.zone,
+                      ttl=res.object['domain_record']['ttl'],
                       driver=self, extra=extra)
 
     def delete_zone(self, zone):
@@ -284,7 +294,8 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                  'weight': data['weight']}
         return Record(id=data['id'], name=data['name'],
                       type=self._string_to_record_type(data['type']),
-                      data=data['data'], zone=zone, driver=self, extra=extra)
+                      data=data['data'], zone=zone, ttl=data['ttl'],
+                      driver=self, extra=extra)
 
     def _to_zone(self, data):
         extra = {'zone_file': data['zone_file']}
