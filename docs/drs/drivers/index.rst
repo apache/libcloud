@@ -1,6 +1,6 @@
 :orphan:
 
-DNS Drivers Documentation
+DRS Drivers Documentation
 =========================
 
 This chapter includes links to driver (provider) specific documentation pages.

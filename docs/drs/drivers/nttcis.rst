@@ -1,7 +1,7 @@
 NttCis DRS Driver Documentation
 ===============================
 
-`NttC-Cis`_ offers disaster recovery services for Compute Services.
+NTT Communications CIS offers disaster recovery services for Compute Services.
 
 
 Instantiating the driver

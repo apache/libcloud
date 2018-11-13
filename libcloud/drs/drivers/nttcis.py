@@ -38,7 +38,7 @@ class NttCisDRSDriver(DRSDriver):
 
     selected_region = None
     connectionCls = NttCisConnection
-    name = 'NTTC-CIS DRS Consistencty Groups'
+    name = 'NTTC-CIS DRS Consistency Groups'
     website = 'https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html'
     type = Provider.NTTCIS
     api_version = 1.0

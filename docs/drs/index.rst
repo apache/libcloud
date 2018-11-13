@@ -3,7 +3,7 @@ DRS
 
 .. note::
 
-    DRS API is available in Libcloud 2.4.0 and higher.
+    DRS API is available in Libcloud 2.4,x and higher.
 
 DRS API allows you to manage disaster recovery as a separate service.
 
