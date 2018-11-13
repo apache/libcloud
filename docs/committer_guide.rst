@@ -96,7 +96,7 @@ preparing a release.
 
 * Make sure ``CHANGES`` file is up to date
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
-* Make sure ``version`` and ``release`` in ``docs/_conf.py`` are up to date
+* Make sure ``version`` and ``release`` in ``docs/conf.py`` are up to date
 * Update constants: ``python contrib/scrap-ec2-sizes.py > libcloud/compute/constants.py``
 
 1. Pre-release check list

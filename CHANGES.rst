@@ -4,6 +4,15 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+- Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
+  [Mitch Raful]
+
+Changes in Apache Libcloud 2.4.0
+--------------------------------
+
+- Refuse installation with Python 2.6 and Python 3.3 (support was
+  already dropped in Libcloud 2.3.0)
+
 - Support Python 3.7 (GITHUB-1227, GITHUB-1236)
   [Andreas Hasenack, Andrew Starr-Bochicchio, Quentin Pradet]
 
@@ -18,6 +27,9 @@ Common
 ~~~~~~
 
 - [OpenStack] Document openstack_connection_kwargs method (GITHUB-1219)
+  [Ken Dreyer]
+
+- [OpenStack] Handle missing user email in OpenStackIdentityUser (GITHUB-1249)
   [Ken Dreyer]
 
 Compute
@@ -52,6 +64,9 @@ Compute
 
 - [EC2] Update instance sizes (GITHUB-1238)
   [Ward Vandewege]
+
+- [EC2] Accept tags when create a snapshot (LIBCLOUD-1014, GITHUB-1240)
+  [Rafael Gonçalves]
 
 - [GCE] Expand Firewall options coverage (LIBCLOUD-960, GITHUB-1144)
   [maxlip]

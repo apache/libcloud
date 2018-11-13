@@ -1,0 +1,17 @@
+{
+    "user":
+      {
+          "name": "userwithoutemail",
+          "links": {
+              "self": "http://192.168.18.100:5000/v3/users/b"
+          },
+          "domain_id": "default",
+          "enabled": true,
+          "id": "b"
+      },
+    "links": {
+        "self": "http://192.168.18.100:5000/v3/users",
+        "previous": null,
+        "next": null
+    }
+}

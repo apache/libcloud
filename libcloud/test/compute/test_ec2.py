@@ -933,6 +933,14 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         # 2013-08-15T16:22:30.000Z
         self.assertEqual(datetime(2013, 8, 15, 16, 22, 30, tzinfo=UTC), snap.created)
 
+    def test_create_volume_snapshot_with_tags(self):
+        vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.AVAILABLE,
+                            size=10, driver=self.driver)
+        snap = self.driver.create_volume_snapshot(
+            vol, 'Test snapshot', ex_metadata={'my_tag': 'test'})
+        self.assertEqual('test', snap.extra['tags']['my_tag'])
+
     def test_list_snapshots(self):
         snaps = self.driver.list_snapshots()
 
@@ -1793,6 +1801,14 @@ class NimbusTests(EC2Tests):
         node = self.driver.list_nodes()[0]
         self.driver.ex_create_tags(resource=node, tags={'foo': 'bar'})
         self.assertExecutedMethodCount(0)
+
+    def test_create_volume_snapshot_with_tags(self):
+        vol = StorageVolume(id='vol-4282672b', name='test',
+                            state=StorageVolumeState.AVAILABLE,
+                            size=10, driver=self.driver)
+        snap = self.driver.create_volume_snapshot(
+            vol, 'Test snapshot', ex_metadata={'my_tag': 'test'})
+        self.assertDictEqual({}, snap.extra['tags'])
 
 
 class EucTests(LibcloudTestCase, TestCaseMixin):

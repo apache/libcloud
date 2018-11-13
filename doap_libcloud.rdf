@@ -378,6 +378,20 @@
         <revision>v2.2.1</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>2.3.0</name>
+        <created>2018-02-08</created>
+        <revision>v2.3.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>2.4.0</name>
+        <created>2018-11-08</created>
+        <revision>v2.4.0</revision>
+      </Version>
+  </release>
   <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>
