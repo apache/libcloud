@@ -116,7 +116,7 @@ class NttCisDRSDriver(DRSDriver):
         """
         Functions takes a named parameter that must be one of the following
         :param params: A dictionary composed of one of the following keys
-         and a value
+        and a value
                        * target_data_center_id=
                        * source_network_domain_id=
                        * target_network_domain_id=
