@@ -82,6 +82,7 @@ def test_list_node_by_image(compute_driver):
     requires retrieving vlan Id first
 """
 
+
 def test_list_node_vlan(compute_driver):
     nodes = compute_driver.list_nodes(ex_vlan='eb05a24e-85a6-46e3-a7c9-f1765737476d')
     print()
@@ -170,26 +171,7 @@ def test_list_firewall_rules(compute_driver):
     rules = compute_driver.ex_list_firewall_rules('6aafcf08-cb0b-432c-9c64-7371265db086')
     print()
     for rule in rules:
-        print("id {}, name {}, action {}. location {}, ip ver {}, protocol {}, any ip {}, ip {}, prefix {},"
-              " port range {} {} , src address {}, src port list {}, dest. any__ip {}, dest address {}, "
-              "dest prefix {}, dest port range {} {}, dest address list id {}"
-              ", dest port list id {}".format(
-                                              rule.id, rule.name, rule.action,
-                                              rule.location.name, rule.ip_version,
-                                              rule.protocol, rule.source.any_ip,
-                                              rule.source.ip_address,
-                                              rule.source.ip_prefix_size,
-                                              rule.source.port_begin, rule.source.port_end,
-                                              rule.source.address_list_id,
-                                              rule.source.port_list_id,
-                                              rule.destination.any_ip,
-                                              rule.destination.ip_address,
-                                              rule.destination.ip_prefix_size,
-                                              rule.destination.port_begin,
-                                              rule.destination.port_end,
-                                              rule.destination.address_list_id,
-                                              rule.destination.port_list_id,
-                                              ))
+        print(rule)
 
 
 def test_list_address_lists(compute_driver):

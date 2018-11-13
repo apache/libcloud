@@ -30,9 +30,9 @@ from libcloud.common.nttcis import (NttCisConnection,
 from libcloud.common.nttcis import NttCisNetwork
 from libcloud.common.nttcis import NttCisNetworkDomain
 from libcloud.common.nttcis import NttCisVlan
-#from libcloud.common.nttcis import NttCisServerCpuSpecification
-#from libcloud.common.nttcis import NttCisServerDisk
-#from libcloud.common.nttcis import NttCisScsiController
+from libcloud.common.nttcis import NttCisServerCpuSpecification
+from libcloud.common.nttcis import NttCisServerDisk
+from libcloud.common.nttcis import NttCisScsiController
 from libcloud.common.nttcis import NttCisServerVMWareTools
 from libcloud.common.nttcis import NttCisPublicIpBlock
 from libcloud.common.nttcis import NttCisFirewallRule
@@ -53,7 +53,6 @@ from libcloud.common.nttcis import NttCisTag
 from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.common.nttcis import NETWORK_NS, GENERAL_NS
-from libcloud.common.nttcis import process_xml
 from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.utils.py3 import basestring
@@ -4825,22 +4824,23 @@ class NttCisNodeDriver(NodeDriver):
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
-        return process_xml(ET.tostring(element))
+        # For future dynamic rule creation
+        # return process_xml(ET.tostring(element))
 
-        #return NttCisFirewallRule(
-        #    id=element.get('id'),
-        #    network_domain=network_domain,
-        #    name=findtext(element, 'name', TYPES_URN),
-        #    action=findtext(element, 'action', TYPES_URN),
-        #    ip_version=findtext(element, 'ipVersion', TYPES_URN),
-        #    protocol=findtext(element, 'protocol', TYPES_URN),
-        #    enabled=findtext(element, 'enabled', TYPES_URN),
-        #    source=self._to_firewall_address(
-        #        element.find(fixxpath('source', TYPES_URN))),
-        #    destination=self._to_firewall_address(
-        #        element.find(fixxpath('destination', TYPES_URN))),
-        #    location=location,
-        #    status=findtext(element, 'state', TYPES_URN))
+        return NttCisFirewallRule(
+            id=element.get('id'),
+            network_domain=network_domain,
+            name=findtext(element, 'name', TYPES_URN),
+            action=findtext(element, 'action', TYPES_URN),
+            ip_version=findtext(element, 'ipVersion', TYPES_URN),
+            protocol=findtext(element, 'protocol', TYPES_URN),
+            enabled=findtext(element, 'enabled', TYPES_URN),
+            source=self._to_firewall_address(
+                element.find(fixxpath('source', TYPES_URN))),
+            destination=self._to_firewall_address(
+                element.find(fixxpath('destination', TYPES_URN))),
+            location=location,
+            status=findtext(element, 'state', TYPES_URN))
 
     def _to_firewall_address(self, element):
         ip = element.find(fixxpath('ip', TYPES_URN))
@@ -5104,8 +5104,8 @@ class NttCisNodeDriver(NodeDriver):
 
     def _to_node(self, element):
         # Get all information at once and process in common/nttcis
-        return process_xml(ET.tostring(element))
-        """    
+        # Below, future to dynamically generate classes
+        # return process_xml(ET.tostring(element))
         started = findtext(element, 'started', TYPES_URN)
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
         dd_state = findtext(element, 'state', TYPES_URN)
@@ -5211,7 +5211,7 @@ class NttCisNodeDriver(NodeDriver):
                  driver=self.connection.driver,
                  extra=extra)
         return n
-        """
+
     def _to_status(self, element):
         if element is None:
             return NttCisStatus()

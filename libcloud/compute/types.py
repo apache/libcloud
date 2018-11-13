@@ -89,6 +89,7 @@ class Provider(Type):
     :cvar NEPHOSCALE: NephoScale driver
     :cvar NIMBUS: Nimbus
     :cvar NINEFOLD: Ninefold
+    :cvar NTTC-CIS: NTT Communications CIS
     :cvar OPENNEBULA: OpenNebula.org
     :cvar OPSOURCE: Opsource Cloud
     :cvar OUTSCALE_INC: Outscale INC driver.

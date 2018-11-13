@@ -11,7 +11,8 @@ def create_drs(compute_driver, drs_driver):
     consistency_group_name = "sdk_test_cg"
     journal_size_gb = "100"
     result = drs_driver.create_consistency_group(
-        consistency_group_name, journal_size_gb, src_id, target_id, description="A test consistency group")
+        consistency_group_name, journal_size_gb, src_id, target_id,
+        description="A test consistency group")
     assert result is True
 
 

@@ -14,8 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.base import ConnectionKey, BaseDriver
-from libcloud.common.types import LibcloudError
+from libcloud.common.base import ConnectionKey
+from libcloud.common.base import BaseDriver
+
+__all__ = [
+    'DRSConsistencyGroup',
+    'DRSDriver',
+]
 
 
 class DRSConsistencyGroup(object):
@@ -23,7 +28,8 @@ class DRSConsistencyGroup(object):
     Provide a common interface for handling DRS.
     """
 
-    def __init__(self, id, name, description, journalSizeGB,  serverPairSourceServerId, serverPairtargetServerId,
+    def __init__(self, id, name, description, journalSizeGB,
+                 serverPairSourceServerId, serverPairtargetServerId,
                  driver, extra=None):
         """
         :param id: Load balancer ID.
@@ -65,15 +71,15 @@ class DRSDriver(BaseDriver):
     This class is always subclassed by a specific driver.
     """
 
-    name = None
-    website = None
-
     connectionCls = ConnectionKey
+    name = None
+    type = None
+    port = None
 
     def __init__(self, key, secret=None, secure=True, host=None,
                  port=None, **kwargs):
         super(DRSDriver, self).__init__(key=key, secret=secret, secure=secure,
-                                     host=host, port=port, **kwargs)
+                                        host=host, port=port, **kwargs)
 
     def create_consistency_group(self, name, journal_sz_gb,
                                  source_server_id, target_server_id):
@@ -105,7 +111,8 @@ class DRSDriver(BaseDriver):
         """
         Return a :class:`ConsistencyGroup` object.
 
-        :param consistency_group_id: id of a consistency group you want to fetch
+        :param consistency_group_id: id of a consistency group you want
+         to fetch
         :type  consistency_group_id: ``str``
 
         :rtype: :class:`ConsistencyGroup`

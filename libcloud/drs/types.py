@@ -38,6 +38,6 @@ class Provider(object):
     Non-Dummy drivers are sorted in alphabetical order. Please preserve this
     ordering when adding new drivers.
 
-    :cvar ALIYUN_SLB: Aliyun SLB loadbalancer driver
+    :cvar NTTCIS: NTT Communications CIS DRS driver
     """
     NTTCIS = 'nttcis'

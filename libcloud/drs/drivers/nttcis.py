@@ -9,7 +9,6 @@ from libcloud.drs.types import Provider
 from libcloud.drs.base import DRSDriver
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.utils.xml import fixxpath, findtext, findall
-from libcloud.common.types import LibcloudError
 
 
 def get_params(func):
@@ -21,7 +20,7 @@ def get_params(func):
                 old_key = k
                 matches = re.findall(r'_(\w)', k)
                 for match in matches:
-                    k = k.replace('_'+match, match.upper())
+                    k = k.replace('_' + match, match.upper())
                 del kwargs[old_key]
                 kwargs[k] = v
             params = kwargs
@@ -34,13 +33,13 @@ def get_params(func):
 
 class NttCisDRSDriver(DRSDriver):
     """
-    NttCis node driver.
+    NttCis DRS driver.
     """
 
     selected_region = None
     connectionCls = NttCisConnection
     name = 'NTTC-CIS DRS Consistencty Groups'
-    website = 'https://cloud.nttcis.com/'
+    website = 'https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html'
     type = Provider.NTTCIS
     api_version = 1.0
 
@@ -73,7 +72,7 @@ class NttCisDRSDriver(DRSDriver):
         kwargs['region'] = self.selected_region
         return kwargs
 
-    def create_consistency_group(self, name, journal_size_gb ,
+    def create_consistency_group(self, name, journal_size_gb,
                                  source_server_id, target_server_id,
                                  description=None):
         """
@@ -97,7 +96,7 @@ class NttCisDRSDriver(DRSDriver):
         ET.SubElement(consistency_group_elm, "name").text = name
         if description is not None:
             ET.SubElement(
-                consistency_group_elm,"description").text = description
+                consistency_group_elm, "description").text = description
         ET.SubElement(
             consistency_group_elm, "journalSizeGb").text = journal_size_gb
         server_pair = ET.SubElement(consistency_group_elm, "serverPair")
@@ -116,7 +115,8 @@ class NttCisDRSDriver(DRSDriver):
     def list_consistency_groups(self, params={}):
         """
         Functions takes a named parameter that must be one of the following
-        :param params: A dictionary composed of one of the following keys and a value
+        :param params: A dictionary composed of one of the following keys
+         and a value
                        * target_data_center_id=
                        * source_network_domain_id=
                        * target_network_domain_id=

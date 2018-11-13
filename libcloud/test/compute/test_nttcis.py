@@ -12,11 +12,12 @@ from libcloud.common.nttcis import NttCisTag, NttCisTagKey
 from libcloud.common.nttcis import NttCisIpAddress, \
     NttCisIpAddressList, NttCisChildIpAddressList, \
     NttCisPortList, NttCisPort, NttCisChildPortList
+from libcloud.common.nttcis import ClassFactory
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
 from libcloud.compute.drivers.nttcis import NttCisNic
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-from libcloud.test import MockHttp, unittest
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import NTTCIS_PARAMS
 from libcloud.utils.xml import fixxpath, findtext, findall
@@ -73,29 +74,29 @@ def test_node_extras(driver):
     assert isinstance(ret[0].extra['cpu'], NttCisServerCpuSpecification)
     assert isinstance(ret[0].extra['disks'], list)
     assert isinstance(ret[0].extra['disks'][0], NttCisServerDisk)
-    assert ret[0].extra['disks'][0].size_gb == 50
+    assert ret[0].extra['disks'][0].size_gb, 10
     assert isinstance(ret[1].extra['disks'], list)
     assert isinstance(ret[1].extra['disks'][0], NttCisServerDisk)
-    assert ret[1].extra['disks'][0].size_gb == 50
+    assert ret[1].extra['disks'][0].size_gb, 10
 
 
 def test_server_states(driver):
     NttCisMockHttp.type = None
     ret = driver.list_nodes()
-    assert (ret[0].state == 'running')
-    assert (ret[1].state == 'starting')
-    assert (ret[2].state == 'stopping')
-    assert (ret[3].state == 'reconfiguring')
-    assert (ret[4].state == 'running')
-    assert (ret[5].state == 'terminated')
-    assert (ret[6].state == 'stopped')
+    assert ret[0].state == 'running'
+    assert ret[1].state == 'starting'
+    assert ret[2].state == 'stopping'
+    assert ret[3].state == 'reconfiguring'
+    assert ret[4].state == 'running'
+    assert ret[5].state == 'terminated'
+    assert ret[6].state == 'stopped'
     assert len(ret) == 7
 
 
 def test_list_nodes_response_PAGINATED(driver):
     NttCisMockHttp.type = 'PAGINATED'
     ret = driver.list_nodes()
-    assert len(ret) == 9
+    assert len(ret) == 7
 
 
 def test_paginated_mcp2_call_EMPTY(driver):
@@ -143,7 +144,6 @@ def test_list_nodes_response_strings_ALLFILTERS(driver):
     node = ret[3]
     assert isinstance(node.extra['disks'], list)
     assert isinstance(node.extra['disks'][0], NttCisServerDisk)
-    assert node.size.id == '1'
     assert node.image.id == '3ebf3c0f-90fe-4a8b-8585-6e65b316592c'
     assert node.image.name == 'WIN2008S/32'
     disk = node.extra['disks'][0]
@@ -424,7 +424,6 @@ def test_create_node_primary_ipv4(driver):
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
     assert node.extra['status'].action == 'DEPLOY_SERVER'
 
-
 def test_create_node_both_primary_nic_and_vlan_fail(driver):
     rootPw = NodeAuthPassword('pass123')
     image = driver.list_images()[0]
@@ -518,7 +517,6 @@ def test_create_node_ipv4_gateway(driver):
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
     assert node.extra['status'].action == 'DEPLOY_SERVER'
 
-
 def test_create_node_network_domain_no_vlan_no_ipv4_fail(driver):
     rootPw = NodeAuthPassword('pass123')
     image = driver.list_images()[0]
@@ -548,7 +546,6 @@ def test_create_node_mcp2_additional_nics_legacy(driver):
                               ex_is_started=False)
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
     assert node.extra['status'].action == 'DEPLOY_SERVER'
-
 
 def test_create_node_bad_additional_nics_ipv4(driver):
     rootPw = NodeAuthPassword('pass123')

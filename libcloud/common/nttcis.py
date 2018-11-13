@@ -15,12 +15,15 @@
 """
 NTTCIS Common Components
 """
+import xml.etree.ElementTree as etree
 from copy import deepcopy
-from collections.abc import MutableSequence, Mapping
 from base64 import b64encode
 from time import sleep
-from lxml import etree
 from io import BytesIO
+try:
+    from collections.abc import MutableSequence, Mapping
+except ImportError:
+    from collections import MutableSequence, Mapping
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
 from libcloud.utils.py3 import httplib
@@ -778,22 +781,23 @@ class NttCisServerDisk(object):
     """
     A class that represents the disk on a server
     """
-    def __init__(self, id=None, scsi_id=None, size_gb=None, speed=None, state=None):
+    def __init__(self, id=None, scsi_id=None, size_gb=None, speed=None,
+                 state=None):
         """
         Instantiate a new :class:`DimensionDataServerDisk`
-    
+
         :param id: The id of the disk
         :type  id: ``str``
-    
+
         :param scsi_id: Representation for scsi
         :type  scsi_id: ``int``
-    
+
         :param size_gb: Size of the disk
         :type  size_gb: ``int``
-    
+
         :param speed: Speed of the disk (i.e. STANDARD)
         :type  speed: ``str``
-    
+
         :param state: State of the disk (i.e. PENDING)
         :type  state: ``str``
         """
@@ -1924,8 +1928,13 @@ class NttCisNic(object):
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
 
 
+# Dynamically create classes from returned XML. Leaves the API as the
+# single authoritative source.
 
-#####  Testing new concept below this line
+
+class ClassFactory(object):
+    pass
+
 
 attrs = {}
 
@@ -1961,7 +1970,8 @@ def processor(mapping, name=None):
     def handle_map(map, name):
         tmp = {}
         types = [type(x) for x in map.values()]
-        if XmlListConfig not in types and XmlDictConfig not in types and dict not in types:
+        if XmlListConfig not in types and \
+           XmlDictConfig not in types and dict not in types:
             return map
 
         elif XmlListConfig in types:
@@ -1981,7 +1991,6 @@ def processor(mapping, name=None):
 
     def handle_seq(seq, name):
         tmp = {}
-        tmp_list = []
         if isinstance(seq, list):
             tmp = []
             for _ in seq:
@@ -1989,9 +1998,7 @@ def processor(mapping, name=None):
                 tmp.append(cls)
             return tmp
         for k, v in seq.items():
-            if isinstance(v, Mapping):
-                result1 = handle_map(v, k)
-            elif isinstance(v, MutableSequence):
+            if isinstance(v, MutableSequence):
                 for _ in v:
                     if isinstance(_, Mapping):
                         types = [type(x) for x in _.values()]
@@ -2002,7 +2009,8 @@ def processor(mapping, name=None):
                             else:
                                 tmp.update({k: result})
                         else:
-                            tmp_list = [build_class(k.capitalize(), i) for i in v]
+                            tmp_list = [build_class(k.capitalize(), i)
+                                        for i in v]
                             tmp[k] = tmp_list
                         print()
             elif isinstance(v, str):
@@ -2030,7 +2038,6 @@ def processor(mapping, name=None):
                     cls = build_class(k1.capitalize(), result)
                     add_items(k1, cls, k1)
             elif isinstance(v1, list):
-                tmp = {}
                 tmp1 = {}
                 tmp2 = {}
                 tmp2[k1] = []
@@ -2041,13 +2048,9 @@ def processor(mapping, name=None):
                         tmp1[k1 + str(i)] = build_class(k1, result)
                         tmp2[k1].append(tmp1[k1 + str(i)])
                 if tmp2:
-                    #cls = build_class(k1.capitalize(), tmp2)
                     add_items(k1, tmp2[k1], k1)
             elif isinstance(v1, str):
                 add_items(k1, v1)
-
-
-
 
     if len(map_copy) == 0:
         return 1
@@ -2059,21 +2062,24 @@ def class_factory(cls_name, attrs):
     def __init__(self, *args, **kwargs):
         for key in attrs:
             setattr(self, key, attrs[key])
+        if cls_name == "NttCisServer":
+            self.state = self._get_state()
 
     def __iter__(self):
         for name in self.__dict__:
             yield getattr(self, name)
 
     def __repr__(self):
-        values = ', '.join('{}={!r}'.format(*i) for i in zip(self.__dict__, self))
+        values = ', '.join('{}={!r}'.format(*i)
+                           for i in zip(self.__dict__, self))
         return '{}({})'.format(self.__class__.__name__, values)
 
     cls_attrs = dict(
-                    __init__=__init__,
-                    __iter__=__iter__,
-                    __repr__=__repr__)
+        __init__=__init__,
+        __iter__=__iter__,
+        __repr__=__repr__)
 
-    return type("NttCis{}".format(cls_name), (object,), cls_attrs)
+    return type("NttCis{}".format(cls_name), (ClassFactory,), cls_attrs)
 
 
 class XmlListConfig(list):
@@ -2088,7 +2094,8 @@ class XmlListConfig(list):
                     # property refers to an element used repeatedly
                     #  in the XML for data centers only
                     if 'property' in element.tag:
-                        self.append({element.attrib.get('name'): element.attrib.get('value')})
+                        self.append({element.attrib.get('name'):
+                                     element.attrib.get('value')})
                     else:
                         self.append(element.attrib)
             elif element.text:
@@ -2102,11 +2109,10 @@ class XmlDictConfig(dict):
     def __init__(self, parent_element):
         if parent_element.items():
             if 'property' in parent_element.tag:
-                self.update({parent_element.attrib.get('name'): parent_element.attrib.get('value')})
+                self.update({parent_element.attrib.get('name'):
+                             parent_element.attrib.get('value')})
             else:
                 self.update(dict(parent_element.items()))
-
-        c_elems = parent_element.items()
         for element in parent_element:
             if len(element) > 0:
                 # treat like dict - we assume that if the first two tags
@@ -2120,7 +2126,8 @@ class XmlDictConfig(dict):
                     # here, we put the list in dictionary; the key is the
                     # tag name the list elements all share in common, and
                     # the value is the list itself
-                    elem_dict = {element[0].tag.split('}')[1]: XmlListConfig(element)}
+                    elem_dict = {element[0].tag.split('}')[1]:
+                                 XmlListConfig(element)}
 
                 # if the tag has attributes, add those to the dict
                 if element.items():
@@ -2131,12 +2138,13 @@ class XmlDictConfig(dict):
             # good idea -- time will tell. It works for the way we are
             # currently doing XML configuration files...
             elif element.items():
-                # It is possible to have duplicate element tags. If so, convert to a dict of lists
+                # It is possible to have duplicate element tags.
+                # If so, convert to a dict of lists
                 if element.tag.split('}')[1] in self:
 
                     if isinstance(self[element.tag.split('}')[1]], list):
-                        self[element.tag.split('}')[1]].append(dict(element.items()))
-                        #tmp_list.append(element.tag.split('}')[1])
+                        self[element.tag.split('}')[1]].\
+                            append(dict(element.items()))
                     else:
                         tmp_list = list()
                         tmp_dict = dict()
@@ -2149,7 +2157,8 @@ class XmlDictConfig(dict):
                         tmp_list.append(dict(element.items()))
                         self[element.tag.split('}')[1]] = tmp_list
                 else:
-                    self.update({element.tag.split('}')[1]: dict(element.items())})
+                    self.update({element.tag.split('}')[1]:
+                                 dict(element.items())})
             # finally, if there are no child tags and no attributes, extract
             # the text
             else:
