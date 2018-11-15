@@ -6,9 +6,9 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 
 
-class OnAppResponse(JsonResponse):
+class SolusVMResponse(JsonResponse):
     """
-    OnApp response class
+    SolusVM response class
     """
 
     def success(self):
@@ -24,10 +24,9 @@ class OnAppResponse(JsonResponse):
         return self.status in [httplib.OK, httplib.CREATED, httplib.NO_CONTENT]
 
     def parse_error(self):
-
         if self.status == httplib.UNAUTHORIZED:
             body = self.parse_body()
-            error = body.get('errors', {}).get('base')
+            error = body.get('errors', {})
             if error and isinstance(error, list):
                 error = error[0]
             raise InvalidCredsError(error)
@@ -40,12 +39,12 @@ class OnAppResponse(JsonResponse):
             raise Exception(error)
 
 
-class OnAppConnection(ConnectionUserAndKey):
+class SolusVMConnection(ConnectionUserAndKey):
     """
-    OnApp connection class
+    SolusVM connection class
     """
 
-    responseCls = OnAppResponse
+    responseCls = SolusVMResponse
 
     def add_default_headers(self, headers):
         """

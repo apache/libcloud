@@ -121,7 +121,7 @@ class DockertlsConnection(KeyCertificateConnection):
 
     def __init__(self, key, secret, secure=True,
                  host='localhost',
-                 port=4243, key_file='', cert_file='', **kwargs):
+                 port=4243, ca_cert='', key_file='', cert_file='', **kwargs):
 
         super(DockertlsConnection, self).__init__(key_file=key_file,
                                                   cert_file=cert_file,
@@ -151,7 +151,6 @@ class DockertlsConnection(KeyCertificateConnection):
             self.cert_file = cert_file
 
     def add_default_headers(self, headers):
-
         headers['Content-Type'] = 'application/json'
         return headers
 
@@ -181,7 +180,7 @@ class DockerContainerDriver(ContainerDriver):
     version = '1.24'
 
     def __init__(self, key='', secret='', secure=False, host='localhost',
-                 port=4243, key_file=None, cert_file=None):
+                 port=4243, key_file=None, cert_file=None, ca_cert=None):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -222,7 +221,8 @@ class DockerContainerDriver(ContainerDriver):
             if host.startswith(prefix):
                 host = host.strip(prefix)
 
-        super(DockerContainerDriver, self).__init__(key=key, secret=secret,
+        super(DockerContainerDriver, self).__init__(key=key,
+                                                    secret=secret,
                                                     secure=secure, host=host,
                                                     port=port,
                                                     key_file=key_file,
@@ -238,6 +238,12 @@ class DockerContainerDriver(ContainerDriver):
                 raise Exception(
                     'Needs both private key file and '
                     'certificate file for tls authentication')
+
+        if ca_cert:
+            self.connection.connection.ca_cert = ca_cert
+        else:
+            # do not verify SSL certificate
+            self.connection.connection.ca_cert = False
 
         self.connection.secure = secure
         self.connection.host = host
@@ -495,7 +501,6 @@ class DockerContainerDriver(ContainerDriver):
                 '/v%s/containers/%s/start' %
                 (self.version, container.id),
                 method='POST', data=data)
-
         if result.status in VALID_RESPONSE_CODES:
             return self.get_container(container.id)
         else:
@@ -608,7 +613,7 @@ class DockerContainerDriver(ContainerDriver):
         payload = {}
         data = json.dumps(payload)
 
-        if float(self._get_api_version()) > 1.10:
+        if float(self.version) > 1.10:
             result = self.connection.request(
                 "/v%s/containers/%s/logs?follow=%s&stdout=1&stderr=1" %
                 (self.version, container.id, str(stream))).object
@@ -689,20 +694,20 @@ class DockerContainerDriver(ContainerDriver):
                 name = data.get('Id')
         state = data.get('State')
         if isinstance(state, dict):
-            status = data.get(
-                'Status',
-                state.get('Status')
-                if state is not None else None)
+            if state.get('Running'):
+                state = ContainerState.RUNNING
+            else:
+                state = ContainerState.STOPPED
         else:
             status = data.get('Status')
-        if 'Exited' in status:
-            state = ContainerState.STOPPED
-        elif status.startswith('Up '):
-            state = ContainerState.RUNNING
-        elif 'running' in status:
-            state = ContainerState.RUNNING
-        else:
-            state = ContainerState.STOPPED
+            if 'Exited' in status:
+                state = ContainerState.STOPPED
+            elif status.startswith('Up '):
+                state = ContainerState.RUNNING
+            elif 'running' in status:
+                state = ContainerState.RUNNING
+            else:
+                state = ContainerState.STOPPED
         image = data.get('Image')
         ports = data.get('Ports', [])
         created = data.get('Created')

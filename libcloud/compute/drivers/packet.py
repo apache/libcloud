@@ -15,12 +15,14 @@
 """
 Packet Driver
 """
+import multiprocessing.pool
 
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver, Node
+from libcloud.compute.providers import Provider, get_driver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import KeyPair
 
@@ -34,14 +36,16 @@ class PacketResponse(JsonResponse):
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:
             body = self.parse_body()
-            raise InvalidCredsError(body['message'])
+            raise InvalidCredsError(body.get('error'))
         else:
             body = self.parse_body()
             if 'message' in body:
-                error = '%s (code: %s)' % (body['message'], self.status)
+                error = '%s (code: %s)' % (body.get('message'), self.status)
+            elif 'errors' in body:
+                error = body.get('errors')
             else:
                 error = body
-            return error
+            raise Exception(error)
 
     def success(self):
         return self.status in self.valid_response_codes
@@ -88,12 +92,63 @@ class PacketNodeDriver(NodeDriver):
                       'failed': NodeState.ERROR,
                       'active': NodeState.RUNNING}
 
-    def list_nodes(self, ex_project_id):
-        data = self.connection.request('/projects/%s/devices' %
-                                       (ex_project_id),
-                                       params={'include': 'plan'}
-                                       ).object['devices']
-        return list(map(self._to_node, data))
+    def __init__(self, key, project=None):
+        # initialize a NodeDriver for packet.net using the API token
+        # and optionally the project (name or id)
+        # If project specified we need to be sure this is a valid project
+        # so we create the variable self.project_id
+        super(PacketNodeDriver, self).__init__(key=key, project=None)
+        self.project_name = project
+        self.project_id = None
+        self.projects = self.ex_list_projects()
+        if project:
+            for project_obj in self.projects:
+                if project in [project_obj.name, project_obj.id]:
+                    self.project_id = project_obj.id
+                    break
+            if not self.project_id:
+                self.project_name = None
+
+    def ex_list_projects(self):
+        projects = []
+        data = self.connection.request('/projects').object
+        projects = data.get('projects')
+        if projects:
+            projects = [Project(project) for project in projects]
+        return projects
+
+    def list_nodes(self, ex_project_id=None):
+        if ex_project_id:
+            return self.list_nodes_for_project(ex_project_id=ex_project_id)
+        else:
+            # if project has been specified on initialization of driver, then
+            # return nodes for this project only
+            if self.project_id:
+                return self.list_nodes_for_project(
+                    ex_project_id=self.project_id)
+            else:
+                projects = [project.id for project in self.projects]
+
+                def _list_one(project):
+                    driver = get_driver(self.type)(self.key)
+                    try:
+                        return driver.list_nodes_for_project(project)
+                    except:
+                        return []
+                pool = multiprocessing.pool.ThreadPool(8)
+                results = pool.map(_list_one, projects)
+                pool.terminate()
+                nodes = []
+                for result in results:
+                    nodes.extend(result)
+                return nodes
+
+    def list_nodes_for_project(self, ex_project_id):
+            data = self.connection.request('/projects/%s/devices' %
+                                           (ex_project_id),
+                                           params={'include': 'plan'}
+                                           ).object['devices']
+            return list(map(self._to_node, data))
 
     def list_locations(self):
         data = self.connection.request('/facilities')\
@@ -107,20 +162,31 @@ class PacketNodeDriver(NodeDriver):
 
     def list_sizes(self):
         data = self.connection.request('/plans').object['plans']
-        return list(map(self._to_size, data))
+        return [self._to_size(size) for size in data if
+                size.get('line') == 'baremetal']
 
-    def create_node(self, name, size, image, location, ex_project_id):
+    def create_node(self, name, size, image, location,
+                    ex_project_id=None, cloud_init=None):
         """
         Create a node.
 
         :return: The newly created node.
         :rtype: :class:`Node`
         """
+        # if project has been specified on initialization of driver, then
+        # create on this project
+
+        if self.project_id:
+            ex_project_id = self.project_id
+        else:
+            if not ex_project_id:
+                raise Exception('ex_project_id needs to be specified')
 
         params = {'hostname': name, 'plan': size.id,
                   'operating_system': image.id, 'facility': location.id,
                   'include': 'plan', 'billing_cycle': 'hourly'}
-
+        if cloud_init:
+            params["userdata"] = cloud_init
         data = self.connection.request('/projects/%s/devices' %
                                        (ex_project_id),
                                        params=params, method='POST')
@@ -134,6 +200,18 @@ class PacketNodeDriver(NodeDriver):
 
     def reboot_node(self, node):
         params = {'type': 'reboot'}
+        res = self.connection.request('/devices/%s/actions' % (node.id),
+                                      params=params, method='POST')
+        return res.status == httplib.OK
+
+    def ex_start_node(self, node):
+        params = {'type': 'power_on'}
+        res = self.connection.request('/devices/%s/actions' % (node.id),
+                                      params=params, method='POST')
+        return res.status == httplib.OK
+
+    def ex_stop_node(self, node):
+        params = {'type': 'power_off'}
         res = self.connection.request('/devices/%s/actions' % (node.id),
                                       params=params, method='POST')
         return res.status == httplib.OK
@@ -181,8 +259,10 @@ class PacketNodeDriver(NodeDriver):
         return res.status == httplib.NO_CONTENT
 
     def _to_node(self, data):
+        extra = {}
         extra_keys = ['created_at', 'updated_at',
-                      'userdata', 'billing_cycle', 'locked']
+                      'userdata', 'billing_cycle', 'locked',
+                      'iqn', 'locked', 'project', 'description']
         if 'state' in data:
             state = self.NODE_STATE_MAP.get(data['state'], NodeState.UNKNOWN)
         else:
@@ -193,17 +273,19 @@ class PacketNodeDriver(NodeDriver):
 
         if 'operating_system' in data and data['operating_system'] is not None:
             image = self._to_image(data['operating_system'])
+            extra['operating_system'] = data['operating_system'].get('name')
 
         if 'plan' in data and data['plan'] is not None:
             size = self._to_size(data['plan'])
+            extra['plan'] = data['plan'].get('slug')
+        if 'facility' in data:
+            extra['facility'] = data['facility'].get('code')
 
-        extra = {}
         for key in extra_keys:
             if key in data:
                 extra[key] = data[key]
 
         node = Node(id=data['id'], name=data['hostname'], state=state,
-                    image=image, size=size,
                     public_ips=ips['public'], private_ips=ips['private'],
                     extra=extra, driver=self)
         return node
@@ -218,21 +300,20 @@ class PacketNodeDriver(NodeDriver):
                             driver=self)
 
     def _to_size(self, data):
-        extra = {'description': data['description'], 'line': data['line']}
+        cpus = data['specs']['cpus'][0].get('count')
+        extra = {'description': data['description'], 'line': data['line'],
+                 'cpus': cpus}
 
-        ram = data['specs']['memory']['total'].lower()
-        if 'mb' in ram:
-            ram = int(ram.replace('mb', ''))
-        elif 'gb' in ram:
-            ram = int(ram.replace('gb', '')) * 1024
-
+        ram = data['specs']['memory']['total']
         disk = 0
         for disks in data['specs']['drives']:
-            disk += disks['count'] * int(disks['size'].replace('GB', ''))
-
-        price = data['pricing']['hourly']
-
-        return NodeSize(id=data['slug'], name=data['name'], ram=ram, disk=disk,
+            disk_size = disks['size'].replace('GB', '')
+            if 'TB' in disk_size:
+                disk_size = float(disks['size'].replace('TB', '')) * 1000
+            disk += disks['count'] * int(disk_size)
+        name = "%s - %s RAM" % (data.get('name'), ram)
+        price = data['pricing'].get('hour')
+        return NodeSize(id=data['slug'], name=name, ram=ram, disk=disk,
                         bandwidth=0, price=price, extra=extra, driver=self)
 
     def _to_key_pairs(self, data):
@@ -256,3 +337,24 @@ class PacketNodeDriver(NodeDriver):
                 else:
                     private_ips.append(address['address'])
         return {'public': public_ips, 'private': private_ips}
+
+
+class Project(object):
+    def __init__(self, project):
+        self.id = project.get('id')
+        self.name = project.get('name')
+        self.extra = {}
+        self.extra['max_devices'] = project.get('max_devices')
+        self.extra['payment_method'] = project.get('payment_method')
+        self.extra['created_at'] = project.get('created_at')
+        self.extra['credit_amount'] = project.get('credit_amount')
+        self.extra['devices'] = project.get('devices')
+        self.extra['invitations'] = project.get('invitations')
+        self.extra['memberships'] = project.get('memberships')
+        self.extra['href'] = project.get('href')
+        self.extra['members'] = project.get('members')
+        self.extra['ssh_keys'] = project.get('ssh_keys')
+
+    def __repr__(self):
+        return (('<Project: id=%s, name=%s>') %
+                (self.id, self.name))

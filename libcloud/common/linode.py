@@ -31,13 +31,16 @@ API_ROOT = '/'
 # Constants that map a RAM figure to a PlanID (updated 2014-08-25)
 LINODE_PLAN_IDS = {1024: '1',
                    2048: '2',
-                   4096: '4',
-                   8192: '6',
-                   16384: '7',
+                   4096: '3',
+                   8192: '4',
+                   12288: '5',
+                   16384: '6',
+                   24576: '7',
                    32768: '8',
                    49152: '9',
-                   65536: '10',
-                   98304: '12'}
+                   61440: '10',
+                   65536: '11',
+                   81920: '12'}
 
 # Available filesystems for disk creation
 LINODE_DISK_FILESYSTEMS = ['ext3', 'ext4', 'swap', 'raw']
@@ -88,8 +91,10 @@ class LinodeResponse(JsonResponse):
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
         self.objects, self.errors = self.parse_body()
+        if not self.success() and self.errors[0].code !=0:
+            # sent in some cases eg resize node, where response is 200,
+            # error code is 'ok'
 
-        if not self.success():
             # Raise the first error, as there will usually only be one
             raise self.errors[0]
 

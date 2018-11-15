@@ -1839,7 +1839,7 @@ class GCENodeDriver(NodeDriver):
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
-            GoogleOAuth2Credential.default_credential_file + '.' + self.project
+            GoogleOAuth2Credential.default_credential_file + '.' + user_id + self.project
 
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
@@ -2422,7 +2422,7 @@ class GCENodeDriver(NodeDriver):
                      for a in response.get('items', [])]
         return list_data
 
-    def ex_list_subnetworks(self, region=None):
+    def ex_list_subnetworks(self, region=None, filter_expression=None):
         """
         Return the list of subnetworks.
 
@@ -2439,8 +2439,12 @@ class GCENodeDriver(NodeDriver):
         else:
             request = '/regions/%s/subnetworks' % (region.name)
 
+        params = {}
+        if filter_expression:
+            params['filter'] = filter_expression
         list_subnetworks = []
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
 
         if 'items' in response:
             if region is None:
@@ -3846,8 +3850,8 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_subnetwork(name, region_name)
 
-    def ex_create_network(self, name, cidr, description=None,
-                          mode="legacy", routing_mode=None):
+    def ex_create_network(self, name, cidr=None, description=None,
+                          mode="auto", routing_mode=None):
         """
         Create a network. In November 2015, Google introduced Subnetworks and
         suggests using networks with 'auto' generated subnetworks. See, the
@@ -6944,7 +6948,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/zones/%s/disks/%s' % (volume.extra['zone'].name,
+        request = '/zones/%s/disks/%s' % (volume.extra['zone'],
                                           volume.name)
         self.connection.async_request(request, method='DELETE')
         return True
@@ -8728,9 +8732,11 @@ class GCENodeDriver(NodeDriver):
         :return: Location object
         :rtype: :class:`NodeLocation`
         """
+        extra = {}
+        extra['region'] = location.get('region').split('/')[-1]
         return NodeLocation(id=location['id'], name=location['name'],
                             country=location['name'].split('-')[0],
-                            driver=self)
+                            extra=extra, driver=self)
 
     def _to_node(self, node, use_disk_cache=False):
         """
@@ -8803,7 +8809,8 @@ class GCENodeDriver(NodeDriver):
                 src_image = extra['boot_disk'].extra['sourceImage']
                 image = self._get_components_from_path(src_image)['name']
             extra['image'] = image
-        size = self._get_components_from_path(node['machineType'])['name']
+        size = self.connection.request(node['machineType'],
+                                       method='GET').object['id']
 
         return Node(id=node['id'], name=node['name'],
                     state=self.NODE_STATE_MAP[node['status']],
@@ -8940,7 +8947,7 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
         extra['selfLink'] = volume.get('selfLink')
-        extra['zone'] = self.ex_get_zone(volume['zone'])
+        extra['zone'] = self.ex_get_zone(volume['zone']).name
         extra['status'] = volume.get('status')
         extra['creationTimestamp'] = volume.get('creationTimestamp')
         extra['description'] = volume.get('description')
@@ -8949,9 +8956,8 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshot'] = volume.get('sourceSnapshot')
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
-        if 'licenses' in volume:
-            lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
-            extra['licenses'] = lic_objs
+        extra['licenses'] = volume.get('licenses')
+        extra['users'] = volume.get('users')
 
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 

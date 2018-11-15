@@ -65,16 +65,20 @@ class AzureResponse(XmlResponse):
         try:
             # Azure does give some meaningful errors, but is inconsistent
             # Some APIs respond with an XML error. Others just dump HTML
-            body = self.parse_body()
+            if isinstance(self.body, basestring):
+                error_msg = self.body
+                if 'server failed to authenticate the request' in self.body:
+                    error_msg = 'Please check your credentials are valid'
+            else:
+                body = self.parse_body()
 
-            # pylint: disable=no-member
-            if type(body) == ET.Element:
-                code = body.findtext(fixxpath(xpath='Code'))
-                message = body.findtext(fixxpath(xpath='Message'))
-                message = message.split('\n')[0]
-                error_msg = '%s: %s' % (code, message)
-
-        except MalformedResponseError:
+                # pylint: disable=no-member
+                if type(body) == ET.Element:
+                    code = body.findtext(fixxpath(xpath='Code'))
+                    message = body.findtext(fixxpath(xpath='Message'))
+                    message = message.split('\n')[0]
+                    error_msg = '%s: %s' % (code, message)
+        except:
             pass
 
         if msg:

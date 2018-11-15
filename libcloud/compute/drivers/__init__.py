@@ -42,4 +42,5 @@ __all__ = [
     'voxel',
     'vpsnet',
     'onapp',
+    'solusvm',
 ]

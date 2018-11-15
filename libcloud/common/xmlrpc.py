@@ -21,6 +21,7 @@ import sys
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import httplib
 from libcloud.common.base import Response, Connection
+from libcloud.common.types import InvalidCredsError
 
 
 class ProtocolError(Exception):
@@ -68,6 +69,8 @@ class XMLRPCResponse(ErrorCodeMixin, Response):
             e = sys.exc_info()[1]
             self.raise_exception_for_error(e.faultCode, e.faultString)
             error_string = '%s: %s' % (e.faultCode, e.faultString)
+            if 'Invalid API' in error_string:
+                raise InvalidCredsError(error_string)
             raise self.defaultExceptionCls(error_string)
 
     def parse_error(self):

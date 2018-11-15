@@ -1,14 +1,19 @@
-from base64 import b64encode
+import json
+import socket
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
+from libcloud.compute.base import (Node, NodeDriver, NodeState,
+                                   KeyPair, NodeLocation, NodeImage)
 from libcloud.common.types import InvalidCredsError
-from libcloud.common.base import ConnectionUserAndKey, JsonResponse
+from libcloud.common.base import JsonResponse
+from libcloud.common.base import ConnectionKey
 
 
-class OnAppResponse(JsonResponse):
+
+class ClearCenterResponse(JsonResponse):
     """
-    OnApp response class
+    ClearCenter response class
     """
 
     def success(self):
@@ -21,6 +26,12 @@ class OnAppResponse(JsonResponse):
         :rtype: ``bool``
         :return: ``True`` or ``False``
         """
+
+        # ClearCenter returns 200 even on a false apikey
+        body = self.parse_body()
+        if "Authentication Required" in body:
+            raise InvalidCredsError("Provided apikey not valid")
+
         return self.status in [httplib.OK, httplib.CREATED, httplib.NO_CONTENT]
 
     def parse_error(self):
@@ -40,27 +51,27 @@ class OnAppResponse(JsonResponse):
             raise Exception(error)
 
 
-class OnAppConnection(ConnectionUserAndKey):
+class ClearCenterConnection(ConnectionKey):
     """
-    OnApp connection class
+    ClearCenter connection class
     """
 
-    responseCls = OnAppResponse
+    responseCls = ClearCenterResponse
 
     def add_default_headers(self, headers):
         """
-        Add Basic Authentication header to all the requests.
-        It injects the "Authorization: Basic Base64String===" header
-        in each request
+        Add headers that are necessary for every request
 
-        :type  headers: ``dict``
-        :param headers: Default input headers
-
-        :rtype:         ``dict``
-        :return:        Default input headers with the "Authorization" header.
+        This method adds ``apikey`` to the request.
         """
-        b64string = b("%s:%s" % (self.user_id, self.key))
-        encoded = b64encode(b64string).decode("utf-8")
 
-        headers["Authorization"] = "Basic " + encoded
+        headers['Authorization'] = 'Bearer %s' % (self.key)
+        headers['Content-Type'] = 'application/json'
         return headers
+
+    # def add_default_params(self, params):
+    #     """
+    #     Add the limit param to 500 in order not to paginate
+    #     """
+    #     params['limit'] = "500"
+    #     return params
