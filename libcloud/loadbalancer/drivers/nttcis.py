@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import OpenSSL.crypto
 
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
@@ -757,6 +758,28 @@ class NttCisLBDriver(Driver):
             status=State.RUNNING
         )
 
+    def import_ssl_cert(self, network_domain_id, name, crt_file, key_file,
+                        description=None):
+        c = OpenSSL.crypto.load_certificate(
+            OpenSSL.crypto.FILETYPE_PEM, open(crt_file).read())
+        cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, c).decode(encoding='utf-8')
+        k = OpenSSL.crypto.load_privatekey(
+            OpenSSL.crypto.FILETYPE_PEM, open(key_file).read())
+        key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, k).decode(encoding='utf-8')
+        cert_elem = ET.Element("importSslDomainCertificate", {"xmlns": TYPES_URN})
+        ET.SubElement(cert_elem, "networkDomainId").text = network_domain_id
+        ET.SubElement(cert_elem, "name").text = name
+        if description is not None:
+            ET.SubElement(cert_elem, "description").text = description
+        ET.SubElement(cert_elem, "key").text = key
+        ET.SubElement(cert_elem, "certificate").text = cert
+        result = self.connection.request_with_orgId_api_2(
+            'networkDomainVip/importSslDomainCertificate',
+            method='POST',
+            data=ET.tostring(cert_elem)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_get_pools(self, ex_network_domain_id=None):
         """
         Get all of the pools inside the current geography or
@@ -1048,6 +1071,9 @@ class NttCisLBDriver(Driver):
             params={'networkDomainId': network_domain_id},
             method='GET').object
         return self._to_irules(result)
+
+    def ex_list_ssl_domain_certs(self, params={}):
+        pass
 
     def _to_irules(self, object):
         irules = []

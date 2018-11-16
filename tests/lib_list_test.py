@@ -200,7 +200,6 @@ def test_list_nat_rules(compute_driver):
 
 def test_list_balancers(lbdriver):
     balancers = lbdriver.list_balancers(ex_network_domain_id="6aafcf08-cb0b-432c-9c64-7371265db086")
-    print()
     for balancer in balancers:
         print(balancer.id, balancer.ip, balancer.name, balancer.port)
     assert isinstance(balancers, list)
@@ -425,3 +424,7 @@ def test_get_snapshots_by_min(drsdriver):
         create_time_min="2018-11-07T00:00:00.000-05:00")
     for snap in snaps.snapshot:
         print(snap)
+
+
+def test_list_domain_certs(compute_driver, lbdriver):
+    pass

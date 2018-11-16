@@ -291,3 +291,12 @@ def test_initiate_failover(drsdriver):
     cg_id = "3710c093-7dcc-4a21-bd07-af9f4d93b6b5"
     result = drsdriver.initiate_failover(cg_id)
     assert result is True
+
+
+def test_insert_ssl(lbdriver, compute_driver):
+    net_dom_name = "sdk_test_1"
+    net_dom = compute_driver.ex_list_network_domains(name=net_dom_name)[0]
+    cert = '/home/mraful/client/alice.crt'
+    key = '/home/mraful/client/alice.key'
+    result = lbdriver.import_ssl_cert(net_dom.id, "alice", cert, key, description="test cert")
+    assert result is True
