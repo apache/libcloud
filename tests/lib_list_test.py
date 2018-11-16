@@ -427,4 +427,6 @@ def test_get_snapshots_by_min(drsdriver):
 
 
 def test_list_domain_certs(compute_driver, lbdriver):
-    pass
+    certs = lbdriver.ex_list_ssl_domain_certs()
+    for cert in certs:
+        print(cert)

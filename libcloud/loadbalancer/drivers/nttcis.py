@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import OpenSSL.crypto
-
+import functools
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import NttCisPool
@@ -28,6 +28,7 @@ from libcloud.common.nttcis import NttCisDefaultiRule
 from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
+from libcloud.common.nttcis import process_xml
 from libcloud.utils.misc import reverse_dict
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.loadbalancer.types import State
@@ -35,6 +36,26 @@ from libcloud.loadbalancer.base import Algorithm, Driver,\
     LoadBalancer, DEFAULT_ALGORITHM
 from libcloud.loadbalancer.base import Member
 from libcloud.loadbalancer.types import Provider
+
+
+def get_params(func):
+    @functools.wraps(func)
+    def paramed(*args, **kwargs):
+
+        if kwargs:
+            for k, v in kwargs.items():
+                old_key = k
+                matches = re.findall(r'_(\w)', k)
+                for match in matches:
+                    k = k.replace('_' + match, match.upper())
+                del kwargs[old_key]
+                kwargs[k] = v
+            params = kwargs
+            result = func(args[0], params)
+        else:
+            result = func(args[0])
+        return result
+    return paramed
 
 
 class NttCisLBDriver(Driver):
@@ -1072,8 +1093,13 @@ class NttCisLBDriver(Driver):
             method='GET').object
         return self._to_irules(result)
 
+    @get_params
     def ex_list_ssl_domain_certs(self, params={}):
-        pass
+        result = self.connection.request_with_orgId_api_2(
+            action="networkDomainVip/sslDomainCertificate",
+            params=params,
+            method="GET").object
+        return self._to_certs(result)
 
     def _to_irules(self, object):
         irules = []
@@ -1262,3 +1288,12 @@ class NttCisLBDriver(Driver):
             slow_ramp_time=findtext(element, 'slowRampTime', TYPES_URN),
         )
         return pool
+
+    def _to_certs(self, object):
+        certs = []
+        for element in object.findall(fixxpath("sslDomainCertificate", TYPES_URN)):
+            certs.append(self._to_cert(element))
+        return certs
+
+    def _to_cert(self, el):
+        return process_xml(ET.tostring(el))
