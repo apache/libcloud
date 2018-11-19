@@ -426,7 +426,32 @@ def test_get_snapshots_by_min(drsdriver):
         print(snap)
 
 
-def test_list_domain_certs(compute_driver, lbdriver):
+def test_list_domain_certs(lbdriver):
     certs = lbdriver.ex_list_ssl_domain_certs()
     for cert in certs:
         print(cert)
+
+
+def test_list_domain_certs_by_name(lbdriver):
+    certs = lbdriver.ex_list_ssl_domain_certs(name="alice")
+    for cert in certs:
+        print(cert)
+
+
+def test_get_domain_cert(lbdriver):
+    cert_id = "352146be-0d6a-40cf-b935-808ab504a868"
+    cert = lbdriver.ex_get_ssl_domain_cert(cert_id)
+    print(cert.name)
+
+
+def test_list_certificate_chains(lbdriver):
+    cert_name = "ted_carol"
+    certs = lbdriver.ex_list_certificate_chains(name=cert_name)
+    for cert in certs:
+        print(cert)
+
+
+def test_get_certificate_chain(lbdriver):
+    chain_id = "dc5a4235-2f1b-47e1-b6dd-455938a3377b"
+    cert_chain = lbdriver.ex_get_ssl_certificate_chain(chain_id)
+    print(cert_chain.name)

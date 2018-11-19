@@ -424,6 +424,7 @@ def test_create_node_primary_ipv4(driver):
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
     assert node.extra['status'].action == 'DEPLOY_SERVER'
 
+
 def test_create_node_both_primary_nic_and_vlan_fail(driver):
     rootPw = NodeAuthPassword('pass123')
     image = driver.list_images()[0]
@@ -516,6 +517,7 @@ def test_create_node_ipv4_gateway(driver):
                               ex_ipv4_gateway='10.2.2.2')
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
     assert node.extra['status'].action == 'DEPLOY_SERVER'
+
 
 def test_create_node_network_domain_no_vlan_no_ipv4_fail(driver):
     rootPw = NodeAuthPassword('pass123')

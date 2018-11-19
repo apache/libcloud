@@ -296,7 +296,15 @@ def test_initiate_failover(drsdriver):
 def test_insert_ssl(lbdriver, compute_driver):
     net_dom_name = "sdk_test_1"
     net_dom = compute_driver.ex_list_network_domains(name=net_dom_name)[0]
-    cert = '/home/mraful/client/alice.crt'
-    key = '/home/mraful/client/alice.key'
-    result = lbdriver.import_ssl_cert(net_dom.id, "alice", cert, key, description="test cert")
+    cert = '/home/mraful/client/bob.crt'
+    key = '/home/mraful/client/bob.key'
+    result = lbdriver.ex_import_ssl_cert(net_dom.id, "bob", cert, key, description="test cert")
+    assert result is True
+
+
+def test_insert_ssl_chain(lbdriver, compute_driver):
+    net_dom_name = "sdk_test_1"
+    net_dom = compute_driver.ex_list_network_domains(name=net_dom_name)[0]
+    cert = '/home/mraful/client/chain.crt'
+    result = lbdriver.ex_import_ssl_cert_chain(net_dom.id, "ted_carol", cert, description="test cert chain")
     assert result is True

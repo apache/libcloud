@@ -4,31 +4,11 @@ from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
-from libcloud.common.nttcis import process_xml
+from libcloud.common.nttcis import process_xml, get_params
 from libcloud.drs.types import Provider
 from libcloud.drs.base import DRSDriver
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.utils.xml import fixxpath, findtext, findall
-
-
-def get_params(func):
-    @functools.wraps(func)
-    def paramed(*args, **kwargs):
-
-        if kwargs:
-            for k, v in kwargs.items():
-                old_key = k
-                matches = re.findall(r'_(\w)', k)
-                for match in matches:
-                    k = k.replace('_' + match, match.upper())
-                del kwargs[old_key]
-                kwargs[k] = v
-            params = kwargs
-            result = func(args[0], params)
-        else:
-            result = func(args[0])
-        return result
-    return paramed
 
 
 class NttCisDRSDriver(DRSDriver):
@@ -116,16 +96,16 @@ class NttCisDRSDriver(DRSDriver):
         """
         Functions takes a named parameter that must be one of the following
         :param params: A dictionary composed of one of the following keys
-         and a value
-                       * target_data_center_id=
-                       * source_network_domain_id=
-                       * target_network_domain_id=
-                       * source_server_id=
-                       * target_server_id=
-                       * name=
-                       * state=
-                       * operation_status=
-                       * drs_infrastructure_status=
+        and a value
+        * target_data_center_id=
+        * source_network_domain_id=
+        * target_network_domain_id=
+        * source_server_id=
+        * target_server_id=
+        * name=
+        * state=
+        * operation_status=
+        * drs_infrastructure_status=
         :return:  `list` of :class: `NttCisConsistencyGroup`
         """
 

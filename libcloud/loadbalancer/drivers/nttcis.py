@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import OpenSSL.crypto
-import functools
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import NttCisPool
@@ -28,7 +27,7 @@ from libcloud.common.nttcis import NttCisDefaultiRule
 from libcloud.common.nttcis import API_ENDPOINTS
 from libcloud.common.nttcis import DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
-from libcloud.common.nttcis import process_xml
+from libcloud.common.nttcis import process_xml, get_params
 from libcloud.utils.misc import reverse_dict
 from libcloud.utils.xml import fixxpath, findtext, findall
 from libcloud.loadbalancer.types import State
@@ -36,26 +35,6 @@ from libcloud.loadbalancer.base import Algorithm, Driver,\
     LoadBalancer, DEFAULT_ALGORITHM
 from libcloud.loadbalancer.base import Member
 from libcloud.loadbalancer.types import Provider
-
-
-def get_params(func):
-    @functools.wraps(func)
-    def paramed(*args, **kwargs):
-
-        if kwargs:
-            for k, v in kwargs.items():
-                old_key = k
-                matches = re.findall(r'_(\w)', k)
-                for match in matches:
-                    k = k.replace('_' + match, match.upper())
-                del kwargs[old_key]
-                kwargs[k] = v
-            params = kwargs
-            result = func(args[0], params)
-        else:
-            result = func(args[0])
-        return result
-    return paramed
 
 
 class NttCisLBDriver(Driver):
@@ -779,14 +758,30 @@ class NttCisLBDriver(Driver):
             status=State.RUNNING
         )
 
-    def import_ssl_cert(self, network_domain_id, name, crt_file, key_file,
+    def ex_import_ssl_cert(self, network_domain_id, name, crt_file, key_file,
                         description=None):
+        """
+        Import an ssl cert for ssl offloading onto the the load balancer
+        :param network_domain_id:  The Network Domain's Id.
+        :type ``str``
+        :param name: The name of the ssl certificate
+        :type ``str``
+        :param crt_file: The complete path to the certificate file
+        :type ``str``
+        :param key_file: The complete pathy to the key file
+        :type ``str``
+        :param description: (Optional) A description of the certificate
+        :type ``str``
+        :return: ``bool``
+        """
         c = OpenSSL.crypto.load_certificate(
             OpenSSL.crypto.FILETYPE_PEM, open(crt_file).read())
-        cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, c).decode(encoding='utf-8')
+        cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, c)\
+            .decode(encoding='utf-8')
         k = OpenSSL.crypto.load_privatekey(
             OpenSSL.crypto.FILETYPE_PEM, open(key_file).read())
-        key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, k).decode(encoding='utf-8')
+        key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, k)\
+            .decode(encoding='utf-8')
         cert_elem = ET.Element("importSslDomainCertificate", {"xmlns": TYPES_URN})
         ET.SubElement(cert_elem, "networkDomainId").text = network_domain_id
         ET.SubElement(cert_elem, "name").text = name
@@ -798,6 +793,38 @@ class NttCisLBDriver(Driver):
             'networkDomainVip/importSslDomainCertificate',
             method='POST',
             data=ET.tostring(cert_elem)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_import_ssl_cert_chain(self, network_domain_id, name,
+                                 chain_crt_file, description=None):
+        """
+        Import an ssl certificate chain for ssl offloading onto the the load balancer
+        :param network_domain_id:  The Network Domain's Id.
+        :type ``str``
+        :param name: The name of the ssl certificate chain
+        :type ``str``
+        :param crt_file: The complete path to the certificate chain file
+        :type ``str``
+        :param description: (Optional) A description of the certificate chain
+        :type ``str``
+        :return: ``bool``
+        """
+        c = OpenSSL.crypto.load_certificate(
+            OpenSSL.crypto.FILETYPE_PEM, open(chain_crt_file).read())
+        cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, c)\
+            .decode(encoding='utf-8')
+        cert_chain_elem = ET.Element("importSslCertificateChain", {"xmlns": TYPES_URN})
+        ET.SubElement(cert_chain_elem, "networkDomainId")\
+            .text = network_domain_id
+        ET.SubElement(cert_chain_elem, "name").text = name
+        if description is not None:
+            ET.SubElement(cert_chain_elem, "description").text = description
+        ET.SubElement(cert_chain_elem, "certificateChain").text = cert
+        result = self.connection.request_with_orgId_api_2(
+            "networkDomainVip/importSslCertificateChain",
+            method="POST",
+            data=ET.tostring(cert_chain_elem)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
@@ -1095,11 +1122,71 @@ class NttCisLBDriver(Driver):
 
     @get_params
     def ex_list_ssl_domain_certs(self, params={}):
+        """
+        Functions takes a named parameter that can be one or none of the
+        following
+        :param params: A dictionary composed of one of the following keys
+        and a value
+        * id=
+        * network_domain_id=
+        * name=
+        * state=
+        * create_time=
+        * expiry_time=
+        * state=
+        :return: `list` of :class: `NttCisdomaincertificate`
+        """
         result = self.connection.request_with_orgId_api_2(
             action="networkDomainVip/sslDomainCertificate",
             params=params,
             method="GET").object
         return self._to_certs(result)
+
+    def ex_get_ssl_domain_cert(self, cert_id):
+        """
+        Function gets the cert by id. Use this if only if the id
+        is already known
+        :param cert_id: The id of the specific cert
+        :return: :class: `NttCisdomaincertificate
+        """
+        result = self.connection.request_with_orgId_api_2(
+            action="networkDomainVip/sslDomainCertificate/%s" % cert_id,
+            method="GET").object
+        return self._to_cert(result)
+
+    @get_params
+    def ex_list_ssl_certificate_chains(self, params={}):
+        """
+        Functions takes a named parameter that can be one or none of the
+        following to filter returned items
+        :param params: A dictionary composed of one of the following keys
+        and a value
+        * id=
+        * network_domain_id=
+        * name=
+        * state=
+        * create_time=
+        * expiry_time=
+        * state=
+        :return: `list` of :class: `NttCissslcertficiatechain`
+        """
+        result = self.connection.request_with_orgId_api_2(
+            action="networkDomainVip/sslCertificateChain",
+            params=params,
+            method="GET").object
+        return self._to_certificate_chains(result)
+
+    def ex_get_ssl_certificate_chain(self, chain_id):
+        """
+        Function gets the certificate chain by id. Use this if only if the id
+        is already known
+        :param cert_id: The id of the specific cert
+        :return: :class: `NttCiscertificatechain
+        """
+        result = self.connection.request_with_orgId_api_2(
+            action="networkDomainVip/sslCertificateChain/%s" % chain_id,
+            method="GET").object
+        return self._to_certificate_chain(result)
 
     def _to_irules(self, object):
         irules = []
@@ -1296,4 +1383,13 @@ class NttCisLBDriver(Driver):
         return certs
 
     def _to_cert(self, el):
+        return process_xml(ET.tostring(el))
+
+    def _to_certificate_chains(self, object):
+        cert_chains = []
+        for element in object.findall(fixxpath("sslCertificateChain", TYPES_URN)):
+            cert_chains.append(self._to_certificate_chain(element))
+        return cert_chains
+
+    def _to_certificate_chain(self, el):
         return process_xml(ET.tostring(el))

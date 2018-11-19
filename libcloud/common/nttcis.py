@@ -16,6 +16,8 @@
 NTTCIS Common Components
 """
 import xml.etree.ElementTree as etree
+import re
+import functools
 from copy import deepcopy
 from base64 import b64encode
 from time import sleep
@@ -289,6 +291,25 @@ BAD_MESSAGE_XML_ELEMENTS = (
     ('message', TYPES_URN),
     ('resultDetail', GENERAL_NS)
 )
+
+
+def get_params(func):
+    @functools.wraps(func)
+    def paramed(*args, **kwargs):
+        if kwargs:
+            for k, v in kwargs.items():
+                old_key = k
+                matches = re.findall(r'_(\w)', k)
+                for match in matches:
+                    k = k.replace('_' + match, match.upper())
+                del kwargs[old_key]
+                kwargs[k] = v
+            params = kwargs
+            result = func(args[0], params)
+        else:
+            result = func(args[0])
+        return result
+    return paramed
 
 
 def dd_object_to_id(obj, obj_type, id_value='id'):

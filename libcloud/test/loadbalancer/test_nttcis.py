@@ -19,6 +19,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.nttcis import NttCisVIPNode, NttCisPool
 from libcloud.common.nttcis import NttCisPoolMember
+from libcloud.common.nttcis import NttCisAPIException
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
 from libcloud.loadbalancer.drivers.nttcis import NttCisLBDriver as NttCis
 from libcloud.loadbalancer.types import State
@@ -518,6 +519,24 @@ def test_ex_get_default_irules(driver):
     assert irules[0].compatible_listeners[0].type == 'PERFORMANCE_LAYER_4'
 
 
+def test_ex_insert_ssl_certificate(driver):
+    net_dom_id = "6aafcf08-cb0b-432c-9c64-7371265db086 "
+    cert = 'fixtures/nttcis/alice.crt'
+    key = 'fixtures/nttcis/alice.key'
+    result = driver.ex_import_ssl_cert(net_dom_id, "alice", cert, key, description="test cert")
+    assert result is True
+
+
+def test_ex_insert_ssl_certificate_FAIL(driver):
+    NttCisMockHttp.type = "FAIL"
+    net_dom_id = "6aafcf08-cb0b-432c-9c64-7371265db086 "
+    cert = 'fixtures/nttcis/denis.crt'
+    key = 'fixtures/nttcis/denis.key'
+    with pytest.raises(NttCisAPIException) as excinfo:
+        result = driver.ex_import_ssl_cert(net_dom_id, "denis", cert, key, description="test cert")
+    assert excinfo.value.msg == "Data Center EU6 requires key length must be one of 512, 1024, 2048."
+
+
 class NttCisMockHttp(MockHttp):
 
     fixtures = LoadBalancerFileFixtures('nttcis')
@@ -529,7 +548,7 @@ class NttCisMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
+    def _oec_0_9_myaccount_FAIL(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -642,6 +661,25 @@ class NttCisMockHttp(MockHttp):
         body = self.fixtures.load(
             'networkDomainVip_defaultIrule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_importSslDomainCertificate(self,
+                                                                                                   method,
+                                                                                                   url,
+                                                                                                   body,
+                                                                                                   headers):
+        body = self.fixtures.load(
+            "ssl_import_success.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_importSslDomainCertificate_FAIL(self,
+                                                                                                        method,                                                                                                           url,
+                                                                                                        body,
+                                                                                                        headers):
+        body = self.fixtures.load(
+            "ssl_import_fail.xml"
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
