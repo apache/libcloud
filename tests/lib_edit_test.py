@@ -466,3 +466,14 @@ def test_delete_consistency_group(drsdriver):
     cg_id = cg[0].id
     result = drsdriver.delete_consistency_group(cg_id)
     assert result is True
+
+
+def test_edit_ssl_offload_profile(lbdriver):
+    profile_name = "ssl_offload"
+    datacenter_id = "EU6"
+    profile = lbdriver.ex_list_ssl_offload_profiles(name=profile_name, datacenter_id=datacenter_id)[0]
+    result = lbdriver.ex_edit_ssl_offload_profile(profile.id, profile.name,
+                                                  profile.sslDomainCertificate.id,
+                                                  ciphers=profile.ciphers,
+                                                  description="A test edit of an offload profile")
+    assert result is True

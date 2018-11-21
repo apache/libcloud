@@ -537,6 +537,26 @@ def test_ex_insert_ssl_certificate_FAIL(driver):
     assert excinfo.value.msg == "Data Center EU6 requires key length must be one of 512, 1024, 2048."
 
 
+def test_ex_create_ssl_offload_profile(driver):
+    net_domain_id = "6aafcf08-cb0b-432c-9c64-7371265db086"
+    name = "ssl_offload"
+    domain_cert = driver.ex_list_ssl_domain_certs(name="alice")[0]
+    result = driver.ex_create_ssl_offload_profile(net_domain_id, name, domain_cert.id, ciphers="!ECDHE+AES-GCM:")
+    assert result is True
+
+
+def test_ex_list_ssl_offload_profile(driver):
+    NttCisMockHttp.type = "LIST"
+    profiles = driver.ex_list_ssl_offload_profiles()
+    assert profiles[0].sslDomainCertificate.name == "alice"
+
+
+def test_ex_get_ssl_offload_profile(driver):
+    profile_id = "b1d3b5a7-75d7-4c44-a2b7-5bfa773dec63"
+    profile = driver.ex_get_ssl_offload_profile(profile_id)
+    assert profile.name == "ssl_offload"
+
+
 class NttCisMockHttp(MockHttp):
 
     fixtures = LoadBalancerFileFixtures('nttcis')
@@ -549,6 +569,10 @@ class NttCisMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_FAIL(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_LIST(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -680,6 +704,46 @@ class NttCisMockHttp(MockHttp):
             "ssl_import_fail.xml"
         )
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslDomainCertificate(self,
+                                                                                             method,                                                                                                           url,
+                                                                                             body,
+                                                                                             headers):
+        body = self.fixtures.load(
+            "ssl_cert_by_name.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createSslOffloadProfile(self,
+                                                                                                method,
+                                                                                                url,
+                                                                                                body,
+                                                                                                headers):
+        body = self.fixtures.load(
+            "create_ssl_offload_profile.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslOffloadProfile_LIST(self,
+                                                                                               method,
+                                                                                               url,
+                                                                                               body,
+                                                                                               headers):
+        body = self.fixtures.load(
+            "list_ssl_offload_profiles.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslOffloadProfile_b1d3b5a7_75d7_4c44_a2b7_5bfa773dec63(self,
+                                                                                                                               method,
+                                                                                                                               url,
+                                                                                                                               body,
+                                                                                                                               headers):
+        body = self.fixtures.load(
+            "get_ssl_offload_profile.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

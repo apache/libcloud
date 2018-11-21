@@ -92,10 +92,10 @@ class NttCisDRSDriver(DRSDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     @get_params
-    def list_consistency_groups(self, params={}):
+    def list_consistency_groups(self, params):
         """
         Functions takes a named parameter that must be one of the following
-        :param params: A dictionary composed of one of the following keys
+        :param params: A sequence of comma separated keyword arguments
         and a value
         * target_data_center_id=
         * source_network_domain_id=

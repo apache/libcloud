@@ -308,3 +308,11 @@ def test_insert_ssl_chain(lbdriver, compute_driver):
     cert = '/home/mraful/client/chain.crt'
     result = lbdriver.ex_import_ssl_cert_chain(net_dom.id, "ted_carol", cert, description="test cert chain")
     assert result is True
+
+
+def test_create_ssl_profile(lbdriver):
+    net_domain_id = "6aafcf08-cb0b-432c-9c64-7371265db086"
+    name = "ssl_offload"
+    domain_cert = lbdriver.ex_list_ssl_domain_certs(name="alice")[0]
+    result = lbdriver.ex_create_ssl_offload_profile(net_domain_id, name, domain_cert.id, ciphers="!ECDHE+AES-GCM:")
+    assert result is True

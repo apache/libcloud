@@ -804,7 +804,7 @@ class NttCisLBDriver(Driver):
         :type ``str``
         :param name: The name of the ssl certificate chain
         :type ``str``
-        :param crt_file: The complete path to the certificate chain file
+        :param chain_crt_file: The complete path to the certificate chain file
         :type ``str``
         :param description: (Optional) A description of the certificate chain
         :type ``str``
@@ -825,6 +825,92 @@ class NttCisLBDriver(Driver):
             "networkDomainVip/importSslCertificateChain",
             method="POST",
             data=ET.tostring(cert_chain_elem)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_create_ssl_offload_profile(self, netowrk_domain_id,
+                                      name, ssl_domain_cert_id,
+                                      description=None,
+                                      ciphers=None,
+                                      ssl_cert_chain_id=None):
+        """
+        Creates an SSL Offload profile
+        :param network_domain_id: The network domain's Id
+        :type ``str``
+        :param name: Offload profile's name
+        :type ``str``
+        :param ssl_domain_cert_id: Certificate's Id
+        :type ``str``
+        :param description: (Optional) Profile's description
+        :type ``str``
+        :param ciphers: (Optional) The default cipher string is:
+        "MEDIUM:HIGH:!EXPORT:!ADH:!MD5:!RC4:!SSLv2:!SSLv3:
+        !ECDHE+AES-GCM:!ECDHE+AES:!ECDHE+3DES:!ECDHE_ECDSA:
+        !ECDH_RSA:!ECDH_ECDSA:@SPEED" It is possible to choose just a subset
+        of this string
+        :type ``str``
+        :param ssl_cert_chain_id: (Optional) Bind the certificate
+        chain to the profile.
+        :type ``str``
+        """
+        ssl_offload_elem = ET.Element("createSslOffloadProfile",
+                                      {"xmlns": TYPES_URN})
+        ET.SubElement(ssl_offload_elem, "networkDomainId").text = netowrk_domain_id
+        ET.SubElement(ssl_offload_elem, "name").text = name
+        if description is not None:
+            ET.SubElement(ssl_offload_elem, "description").text = description
+        if ciphers is not None:
+            ET.SubElement(ssl_offload_elem, "ciphers").text = ciphers
+        ET.SubElement(ssl_offload_elem, "sslDomainCertificateId")\
+            .text = ssl_domain_cert_id
+        if ssl_cert_chain_id is not None:
+            ET.SubElement(ssl_offload_elem, "sslCertificateChainId")\
+                .text = ssl_cert_chain_id
+        result = self.connection.request_with_orgId_api_2(
+            "networkDomainVip/createSslOffloadProfile",
+            method="POST",
+            data=ET.tostring(ssl_offload_elem)).object
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_edit_ssl_offload_profile(self, profile_id,
+                                    name, ssl_domain_cert_id,
+                                    description=None,
+                                    ciphers=None,
+                                    ssl_cert_chain_id=None):
+        """
+        The function edits the ssl offload profile
+        :param profil_id: The id of the profile to be edited
+        :type ``str``
+        :param name: The name of the profile, new name or previous name
+        :type ``str``
+        :param ssl_domain_cert_id: The certificate id to use, new or current
+        :type ``str``
+        :param description: (Optional) Profile's description
+        :type ``str``
+        :param ciphers: (Optional) String of acceptable ciphers to use
+        :type ``str``
+        :param ssl_cert_chain_id: If using a certificate chain
+        or changing to a new one
+        :type: ``str``
+        :return: ``bool``
+        """
+        ssl_offload_elem = ET.Element("editSslOffloadProfile",
+                                      {"xmlns": TYPES_URN, "id": profile_id})
+        ET.SubElement(ssl_offload_elem, "name").text = name
+        if description is not None:
+            ET.SubElement(ssl_offload_elem, "description").text = description
+        if ciphers is not None:
+            ET.SubElement(ssl_offload_elem, "ciphers").text = ciphers
+        ET.SubElement(ssl_offload_elem, "sslDomainCertificateId") \
+            .text = ssl_domain_cert_id
+        if ssl_cert_chain_id is not None:
+            ET.SubElement(ssl_offload_elem, "sslCertificateChainId") \
+                .text = ssl_cert_chain_id
+        result = self.connection.request_with_orgId_api_2(
+            "networkDomainVip/editSslOffloadProfile",
+            method="POST",
+            data=ET.tostring(ssl_offload_elem)).object
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
@@ -1121,11 +1207,11 @@ class NttCisLBDriver(Driver):
         return self._to_irules(result)
 
     @get_params
-    def ex_list_ssl_domain_certs(self, params={}):
+    def ex_list_ssl_domain_certs(self, params):
         """
         Functions takes a named parameter that can be one or none of the
         following
-        :param params: A dictionary composed of one of the following keys
+        :param params: A sequence of comma separated keyword arguments
         and a value
         * id=
         * network_domain_id=
@@ -1133,8 +1219,7 @@ class NttCisLBDriver(Driver):
         * state=
         * create_time=
         * expiry_time=
-        * state=
-        :return: `list` of :class: `NttCisdomaincertificate`
+        :return: `list` of :class: `NttCisDomaincertificate`
         """
         result = self.connection.request_with_orgId_api_2(
             action="networkDomainVip/sslDomainCertificate",
@@ -1155,11 +1240,11 @@ class NttCisLBDriver(Driver):
         return self._to_cert(result)
 
     @get_params
-    def ex_list_ssl_certificate_chains(self, params={}):
+    def ex_list_ssl_certificate_chains(self, params):
         """
         Functions takes a named parameter that can be one or none of the
         following to filter returned items
-        :param params: A dictionary composed of one of the following keys
+        :param params: A sequence of comma separated keyword arguments
         and a value
         * id=
         * network_domain_id=
@@ -1167,7 +1252,6 @@ class NttCisLBDriver(Driver):
         * state=
         * create_time=
         * expiry_time=
-        * state=
         :return: `list` of :class: `NttCissslcertficiatechain`
         """
         result = self.connection.request_with_orgId_api_2(
@@ -1187,6 +1271,37 @@ class NttCisLBDriver(Driver):
             action="networkDomainVip/sslCertificateChain/%s" % chain_id,
             method="GET").object
         return self._to_certificate_chain(result)
+
+    @get_params
+    def ex_list_ssl_offload_profiles(self, params):
+        """
+       Functions takes a named parameter that can be one or none of the
+       following to filter returned items
+       :param params: A sequence of comma separated keyword arguments
+       and a value
+       * id=
+       * network_domain_id=
+       * datacenter_id=
+       * name=
+       * state=
+       * ssl_domain_certificate_id=
+       * ssl_domain_certificate_name=
+       * ssl_certificate_chain_id=
+       * ssl_certificate_chain_name=
+       * create_time=
+       :return: `list` of :class: `NttCisSslssloffloadprofile`
+       """
+        result = self.connection.request_with_orgId_api_2(
+            action="networkDomainVip/sslOffloadProfile",
+            params=params,
+            method="GET").object
+        return self._to_ssl_profiles(result)
+
+    def ex_get_ssl_offload_profile(self, profile_id):
+        result = self.connection.request_with_orgId_api_2(
+            action="networkDomainVip/sslOffloadProfile/%s" % profile_id,
+            method="GET").object
+        return self._to_ssl_profile(result)
 
     def _to_irules(self, object):
         irules = []
@@ -1392,4 +1507,13 @@ class NttCisLBDriver(Driver):
         return cert_chains
 
     def _to_certificate_chain(self, el):
+        return process_xml(ET.tostring(el))
+
+    def _to_ssl_profiles(self, object):
+        profiles = []
+        for element in object.findall(fixxpath("sslOffloadProfile", TYPES_URN)):
+            profiles.append(self._to_ssl_profile(element))
+        return profiles
+
+    def _to_ssl_profile(self, el):
         return process_xml(ET.tostring(el))

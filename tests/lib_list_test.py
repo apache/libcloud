@@ -455,3 +455,15 @@ def test_get_certificate_chain(lbdriver):
     chain_id = "dc5a4235-2f1b-47e1-b6dd-455938a3377b"
     cert_chain = lbdriver.ex_get_ssl_certificate_chain(chain_id)
     print(cert_chain.name)
+
+
+def test_list_ssl_offload_profiles(lbdriver):
+    profiles = lbdriver.ex_list_ssl_offload_profiles()
+    for profile in profiles:
+        print(profile)
+
+
+def test_get_ssl_offload_profile(lbdriver):
+    profile_id = "b1d3b5a7-75d7-4c44-a2b7-5bfa773dec63"
+    profile = lbdriver.ex_get_ssl_offload_profile(profile_id)
+    print(profile.name, profile.createTime, profile.state)
