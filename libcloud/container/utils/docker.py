@@ -64,12 +64,15 @@ class RegistryClient(object):
 
     def __init__(self, host, username=None, password=None, **kwargs):
         """
-        Construct a Docker hub client
+        Construct a Docker registry client
 
-        :param username: (optional) Your Hub account username
+        :param host: Your registry endpoint, e.g. 'registry.hub.docker.com'
+        :type  host: ``str``
+
+        :param username: (optional) Your registry account username
         :type  username: ``str``
 
-        :param password: (optional) Your hub account password
+        :param password: (optional) Your registry account password
         :type  password: ``str``
         """
         self.connection = self.connectionCls(host,
