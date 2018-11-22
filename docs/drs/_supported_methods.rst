@@ -3,7 +3,7 @@
 =================================== ======================== ======================= ===================== ======================== ================================ ============== ====================== ===================== =================
 Provider                            create_consistency_group list_consistency_groups get_consistency_group delete_consistency_group list_consistency_group_snapshots expand_journal start_failover_preview stop_failover_preview initiate_failover
 =================================== ======================== ======================= ===================== ======================== ================================ ============== ====================== ===================== =================
-`NTTC-CIS DRS Consistencty Groups`_ yes                      yes                     yes                   no                       yes                              no             no                     no                    no               
+`NTTC-CIS DRS Consistencty Groups`_ yes                      yes                     yes                   yes                      yes                              yes            yes                    yes                   yes              
 =================================== ======================== ======================= ===================== ======================== ================================ ============== ====================== ===================== =================
 
-.. _`NTTC-CIS DRS Consistencty Groups`: https://cloud.nttcis.com/
+.. _`NTTC-CIS DRS Consistencty Groups`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html

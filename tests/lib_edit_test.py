@@ -477,3 +477,24 @@ def test_edit_ssl_offload_profile(lbdriver):
                                                   ciphers=profile.ciphers,
                                                   description="A test edit of an offload profile")
     assert result is True
+
+
+def test_delete_ssl_offload_profile(lbdriver):
+    profile_name = "ssl_offload"
+    profile = lbdriver.ex_list_ssl_offload_profiles(name=profile_name)[0]
+    result = lbdriver.ex_delete_ssl_offload_profile(profile.id)
+    assert result is True
+
+
+def test_delete_ssl_certificate_chain(lbdriver):
+    chain_name = "ted_carol"
+    cert_chain = lbdriver.ex_list_ssl_certificate_chains(name=chain_name)[0]
+    result = lbdriver.ex_delete_ssl_certificate_chain(cert_chain.id)
+    assert result is True
+
+
+def test_delete_ssl_domain_certificate(lbdriver):
+    cert_name = "alice"
+    cert = lbdriver.ex_list_ssl_domain_certs(name=cert_name)[0]
+    result = lbdriver.ex_delete_ssl_domain_certificate(cert.id)
+    assert result is True

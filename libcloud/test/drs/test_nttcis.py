@@ -1,18 +1,18 @@
 import pytest
 from libcloud.utils.py3 import httplib
+from libcloud.test import MockHttp
 from libcloud.common.nttcis import NttCisAPIException
-from libcloud.drs.drivers.nttcis import NttCisDRSDriver as NttCis
-from libcloud.test import MockHttp, unittest
+from libcloud.drs.drivers.nttcis import NttCisDRSDriver
 from libcloud.test.file_fixtures import DRSFileFixtures
 from libcloud.test.secrets import NTTCIS_PARAMS
 
 
 @pytest.fixture()
 def driver():
-    NttCis.connectionCls.active_api_version = "2.7"
-    NttCis.connectionCls.conn_class = NttCisMockHttp
+    NttCisDRSDriver.connectionCls.active_api_version = "2.7"
+    NttCisDRSDriver.connectionCls.conn_class = NttCisMockHttp
     NttCisMockHttp.type = None
-    driver = NttCis(*NTTCIS_PARAMS)
+    driver = NttCisDRSDriver(*NTTCIS_PARAMS)
     return driver
 
 

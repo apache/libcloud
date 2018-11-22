@@ -6,4 +6,4 @@ Provider                            Documentation                      Provider 
 `NTTC-CIS DRS Consistencty Groups`_ :doc:`Click </drs/drivers/nttcis>` NTTCIS            single region driver :mod:`libcloud.drs.drivers.nttcis` :class:`NttCisDRSDriver`
 =================================== ================================== ================= ==================== ================================== ========================
 
-.. _`NTTC-CIS DRS Consistencty Groups`: https://cloud.nttcis.com/
+.. _`NTTC-CIS DRS Consistencty Groups`: https://www.us.ntt.com/en/services/cloud/enterprise-cloud.html

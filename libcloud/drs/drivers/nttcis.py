@@ -1,5 +1,3 @@
-import re
-import functools
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import API_ENDPOINTS
@@ -61,14 +59,14 @@ class NttCisDRSDriver(DRSDriver):
         :param name: Name of consistency group
         :type name: ``str``
         :param journal_size_gb: Journal size in GB
-        :type journal_size_gb: ``str``
+        :type  journal_size_gb: ``str``
         :param source_server_id: Id of the server to copy
-        :type source_server_id: ``str``
+        :type  source_server_id: ``str``
         :param target_server_id: Id of the server to receive the copy
-        :type: ``str``
+        :type source_server_id: ``str``
         :param description: (Optional) Description of consistency group
-        :type: ``str``
-        :return: :class: `NttCisConsistenccyGroup`
+        :type description: ``str``
+        :returns: :class: NttCisConsistenccyGroup
         """
 
         consistency_group_elm = ET.Element('createConsistencyGroup',
@@ -92,21 +90,21 @@ class NttCisDRSDriver(DRSDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     @get_params
-    def list_consistency_groups(self, params):
+    def list_consistency_groups(self, params={}):
         """
         Functions takes a named parameter that must be one of the following
         :param params: A sequence of comma separated keyword arguments
         and a value
-        * target_data_center_id=
-        * source_network_domain_id=
-        * target_network_domain_id=
-        * source_server_id=
-        * target_server_id=
-        * name=
-        * state=
-        * operation_status=
-        * drs_infrastructure_status=
-        :return:  `list` of :class: `NttCisConsistencyGroup`
+            * target_data_center_id=
+            * source_network_domain_id=
+            * target_network_domain_id=
+            * source_server_id=
+            * target_server_id=
+            * name=
+            * state=
+            * operation_status=
+            * drs_infrastructure_status=
+        :returns:  `list` of :class: `NttCisConsistencyGroup`
         """
 
         response = self.connection.request_with_orgId_api_2(
@@ -118,9 +116,10 @@ class NttCisDRSDriver(DRSDriver):
         """
         Retrieves a Consistency by it's id and is more efficient thatn listing
         all consistency groups and filtering that result.
+
         :param consistency_group_id: An id of a consistency group
         :type consistency_group_id: ``str``
-        :return: :class: `NttCisConsistencygroup`
+        :returns: :class: `NttCisConsistencygroup`
         """
         response = self.connection.request_with_orgId_api_2(
             "consistencyGroup/consistencyGroup/%s" % consistency_group_id
@@ -153,7 +152,7 @@ class NttCisDRSDriver(DRSDriver):
                                            substitute time offset for Z, i.e,
                                            -05:00
         :type create_time_max: ``str``
-        :return: `list` of :class" `NttCisSnapshots`
+        :returns: `list` of :class: `NttCisSnapshots`
         """
 
         if create_time_min is None and create_time_max is None:
@@ -183,11 +182,12 @@ class NttCisDRSDriver(DRSDriver):
     def expand_journal(self, consistency_group_id, size_gb):
         """
         Expand the consistency group's journhal size in 100Gb increments
+
         :param consistency_group_id: The consistency group's UUID
         :type consistency_group_id: ``str``
         :param size_gb: Gb in 100 Gb increments
         :type size_gb: ``str``
-        :return: ``bool``
+        :returns: ``bool``
         """
 
         expand_elm = ET.Element("expandJournal", {"id": consistency_group_id,
@@ -209,7 +209,7 @@ class NttCisDRSDriver(DRSDriver):
         :type consistency_group_id: ``str``
         :param snapshot_id: Id of the Snapshot to preview
         :type snapshot_id: ``str``
-        :return: True/False
+        :returns: True/False
         :rtype: ``bool``
         """
         preview_elm = ET.Element("startPreviewSnapshot",
@@ -230,7 +230,7 @@ class NttCisDRSDriver(DRSDriver):
 
         :param consistency_group_id: Consistency Group's Id
         :type ``str``
-        :return: True/False
+        :returns: True/False
         :rtype: ``bool``
         """
         preview_elm = ET.Element("stopPreviewSnapshot",
@@ -250,7 +250,7 @@ class NttCisDRSDriver(DRSDriver):
 
         :param consistency_group_id: Consistency Group's Id to failover
         :type consistency_group_id: ``str``
-        :return: True/False
+        :returns: True/False
         :rtype: ``bool``
         """
         failover_elm = ET.Element("initiateFailover",
@@ -268,7 +268,7 @@ class NttCisDRSDriver(DRSDriver):
         Delete's a Consistency Group
 
         :param consistency_group_id: Id of Consistency Group to delete
-        :type ``str``
+        :type consistency_group_id: ``str``
         :return: True/False
         :rtype: ``bool``
         """

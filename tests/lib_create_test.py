@@ -1,7 +1,4 @@
-from pprint import pprint
 import pytest
-import libcloud
-
 from libcloud.compute.drivers.nttcis import NttCisPort, NttCisIpAddress, NttCisPublicIpBlock, NttCisNatRule
 from libcloud.common.nttcis import NttCisFirewallRule, NttCisVlan, NttCisFirewallAddress, NttCisAPIException
 
@@ -298,7 +295,7 @@ def test_insert_ssl(lbdriver, compute_driver):
     net_dom = compute_driver.ex_list_network_domains(name=net_dom_name)[0]
     cert = '/home/mraful/client/bob.crt'
     key = '/home/mraful/client/bob.key'
-    result = lbdriver.ex_import_ssl_cert(net_dom.id, "bob", cert, key, description="test cert")
+    result = lbdriver.ex_import_ssl_domain_certificate(net_dom.id, "bob", cert, key, description="test cert")
     assert result is True
 
 
