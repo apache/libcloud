@@ -1,0 +1,13 @@
+{
+    "id": 327653,
+    "domain": "example.at",
+    "type": "MASTER",
+    "masters": [
+        ""
+    ],
+    "serial": 2017100401,
+    "created": "2017-10-04T12:11:35Z",
+    "last_check": null,
+    "dnssec_status": "Unsigned",
+    "dnssec_status_detail": "Unsigned"
+}

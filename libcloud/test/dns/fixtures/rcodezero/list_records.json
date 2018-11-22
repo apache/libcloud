@@ -1,0 +1,40 @@
+{
+    "current_page": 1,
+    "data": [
+        {
+            "name": "example.at.",
+            "type": "SOA",
+            "ttl": 3600,
+            "records": [
+                {
+                    "content": "sec1.rcode0.net. rcodezero-soa.ipcom.at. 2018033001 10800 3600 604800 3600",
+                    "disabled": false
+                }
+            ]
+        },
+        {
+            "name": "example.at.",
+            "type": "NS",
+            "ttl": 3600,
+            "records": [
+                {
+                    "content": "sec2.rcode0.net.",
+                    "disabled": false
+                },
+                {
+                    "content": "sec1.rcode0.net.",
+                    "disabled": false
+                }
+            ]
+        }
+    ],
+    "from": 1,
+    "last_page": 1,
+    "next_page_url": null,
+    "path": "https://my.rcodezero.at/api/v1/zones/example.at/rrsets",
+    "per_page": 100,
+    "prev_page_url": null,
+    "to": 2,
+    "total": 2
+}
+
