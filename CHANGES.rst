@@ -7,6 +7,12 @@ Changes in Apache Libcloud in development
 - Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
   [Mitch Raful]
 
+Container
+~~~~~~~~~
+
+- [Docker] Improve docstring for RegistryClient (GITHUB-1254)
+  [Ken Dreyer]
+
 Changes in Apache Libcloud 2.4.0
 --------------------------------
 
