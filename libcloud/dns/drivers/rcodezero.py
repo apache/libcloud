@@ -417,9 +417,10 @@ class RcodeZeroDNSDriver(DNSDriver):
         else:
             ttl = record.ttl
 
-        return Record(id=hashlib.md5(name + ' ' + data).hexdigest(), name=name,
-                      data=data, type=type, zone=record.zone, driver=self,
-                      ttl=ttl, extra=extra)
+        return Record(id=hashlib.md5(str(name + ' ' +
+                                         data).encode('utf-8')).hexdigest(),
+                      name=name, data=data, type=type, zone=record.zone,
+                      driver=self, ttl=ttl, extra=extra)
 
     def _to_zone(self, item):
         extra = {}
@@ -448,8 +449,9 @@ class RcodeZeroDNSDriver(DNSDriver):
                 # strip domain and trailing dot from recordname
                 recordname = re.sub('.' + zone.id + '$', '', item['name'][:-1])
                 records.append(
-                    Record(id=hashlib.md5(recordname + ' ' +
-                                          record['content']).hexdigest(),
+                    Record(id=hashlib.md5(str(recordname + ' ' +
+                                              record['content']).
+                                          encode('utf-8')).hexdigest(),
                            name=recordname, data=record['content'],
                            type=item['type'], zone=zone,
                            driver=self, ttl=item['ttl'], extra=extra))
@@ -480,7 +482,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             if not (extra is None or extra.get('disabled', None) is None):
                 content['disabled'] = extra['disabled']
             rrset['records'].append(content)
-        id = hashlib.md5(name + ' ' + data).hexdigest()
+        id = hashlib.md5(str(name + ' ' + data).encode('utf-8')).hexdigest()
     # check if rrset contains more than one record. if yes we need to create an
     # update request
         for r in cur_records:
