@@ -240,7 +240,7 @@ class NephoscaleNodeDriver(NodeDriver):
                             price=self._get_size_price(size_id=str(value_id)),
                             driver=self)
             sizes.append(size)
-        return sorted(sizes, key=lambda k: k.price)
+        return sorted(sizes, key=lambda k: k.price or 0)
 
     def list_nodes(self, baremetal=True):
         """
