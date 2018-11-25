@@ -2138,7 +2138,9 @@ class AzureNodeDriver(NodeDriver):
         kwargs["cloud_environment"] = self.cloud_environment
         return kwargs
 
+    def _fetch_power_state(self, data):
         state = NodeState.UNKNOWN
+        created_at = None
         try:
             action = "%s/InstanceView" % (data["id"])
             r = self.connection.request(action,
@@ -2146,18 +2148,25 @@ class AzureNodeDriver(NodeDriver):
             for status in r.object["statuses"]:
                 if status["code"] in ["ProvisioningState/creating"]:
                     state = NodeState.PENDING
+                    if status.get('time'):
+                        created_at = status.get('time')
                 elif status["code"] == "ProvisioningState/deleting":
                     state = NodeState.TERMINATED
                     break
                 elif status["code"].startswith("ProvisioningState/failed"):
                     state = NodeState.ERROR
+                    if status.get('time'):
+                        created_at = status.get('time')
                     break
                 elif status["code"] == "ProvisioningState/updating":
                     state = NodeState.UPDATING
                     break
                 elif status["code"] == "ProvisioningState/succeeded":
                     state = NodeState.RUNNING
+                    if status.get('time'):
+                        created_at = status.get('time')
                 if status["code"] == "PowerState/deallocated":
+                    state = NodeState.STOPPED
                     break
                 elif status["code"] == "PowerState/stopped":
                     state = NodeState.PAUSED
@@ -2165,24 +2174,15 @@ class AzureNodeDriver(NodeDriver):
                 elif status["code"] == "PowerState/deallocating":
                     state = NodeState.PENDING
                     break
+                elif status["code"] == "PowerState/starting":
+                    state = NodeState.STARTING
+                    break
                 elif status["code"] == "PowerState/running":
                     state = NodeState.RUNNING
-                if status.get('time'):
-                    created_at = status.get('time')
         except BaseHTTPError as h:
             pass
 
-        extra = {}
-        extra['location'] = data.get('location','')
-        try:
-            extra['storageUri'] = data['properties']['diagnosticsProfile']['bootDiagnostics']['storageUri']
-        except:
-            pass
-        try:
-            extra['storageProfile'] = data['properties']['storageProfile']
-        except:
-            pass
-        return state
+        return state, created_at
 
     def _to_node(self, data, fetch_nic=True, fetch_power_state=True):
         private_ips = []
@@ -2207,8 +2207,9 @@ class AzureNodeDriver(NodeDriver):
                     pass
 
         state = NodeState.UNKNOWN
+        created_at = None
         if fetch_power_state:
-            state = self._fetch_power_state(data)
+            state, created_at = self._fetch_power_state(data)
         else:
             ps = data["properties"]["provisioningState"].lower()
             if ps == "creating":
@@ -2222,7 +2223,14 @@ class AzureNodeDriver(NodeDriver):
             elif ps == "succeeded":
                 state = NodeState.RUNNING
 
+        extra = {}
+        extra['location'] = data.get('location','')
+        try:
+            extra['storageUri'] = data['properties']['diagnosticsProfile']['bootDiagnostics']['storageUri']
+        except:
+            pass
 
+        extra['storageProfile'] = data['properties'].get('storageProfile')
         extra['size'] = data['properties'].get('hardwareProfile', {}).get('vmSize')
         extra['osProfile'] = data['properties'].get('osProfile')
         extra['osDisk'] = data['properties'].get('storageProfile', {}).get('osDisk')
