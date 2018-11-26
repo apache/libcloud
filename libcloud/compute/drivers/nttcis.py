@@ -52,6 +52,7 @@ from libcloud.common.nttcis import NttCisTagKey
 from libcloud.common.nttcis import NttCisTag
 from libcloud.common.nttcis import API_ENDPOINTS, DEFAULT_REGION
 from libcloud.common.nttcis import TYPES_URN
+from libcloud.common.nttcis import process_xml
 from libcloud.common.nttcis import NETWORK_NS, GENERAL_NS
 from libcloud.utils.py3 import urlencode, ensure_string
 from libcloud.utils.xml import fixxpath, findtext, findall
@@ -863,6 +864,19 @@ class NttCisNodeDriver(NodeDriver):
                      driver=self.connection.driver),
         ]
 
+    def list_geographic_regions(self, params={}):
+        """
+        Return all geographic regions available to the organization
+
+        :return:  List of regions
+        :rtype:  ``list`` of :class:`NttCisGeographicregion`
+        """
+        return self._to_geographic_regions(
+            self.connection.request_with_orgId_api_2(
+                "infrastructure/geographicRegion",
+                method="GET",
+                params=params).object)
+
     def list_locations(self, ex_id=None):
         """
         List locations (datacenters) available for instantiating servers and
@@ -872,7 +886,7 @@ class NttCisNodeDriver(NodeDriver):
         :type    ex_id: ``str``
 
         :return:  List of locations
-        :rtype:  ``list`` of :class:`NodeLocation`
+        :rtype:  ``list`` of :class:`NttCisDatacenter`
         """
 
         params = {}
@@ -886,26 +900,6 @@ class NttCisNodeDriver(NodeDriver):
                 params=params
             ).object
         )
-
-    def ex_get_datacneter(self, ex_id):
-        """
-        List locations (datacenters) available for instantiating servers and
-        networks.
-
-        :keyword ex_id: Filters the location list to this id
-        :type    ex_id: ``str``
-
-        :return:  List of locations
-        :rtype:  ``list`` of :class:`NodeLocation`
-        """
-
-        params = {}
-        if ex_id is not None:
-            params['id'] = ex_id
-
-        return self.connection.\
-            request_with_orgId_api_2('infrastructure/datacenter',
-                                     params=params)
 
     def list_snapshot_windows(self, location, plan):
         """
@@ -4995,11 +4989,7 @@ class NttCisNodeDriver(NodeDriver):
         return locations
 
     def _to_location(self, element):
-        l = NodeLocation(id=element.get('id'),
-                         name=findtext(element, 'displayName', TYPES_URN),
-                         country=findtext(element, 'country', TYPES_URN),
-                         driver=self)
-        return l
+        return process_xml(ET.tostring(element))
 
     def _to_cpu_spec(self, element):
         return NttCisServerCpuSpecification(
@@ -5069,6 +5059,15 @@ class NttCisNodeDriver(NodeDriver):
                 'state': findtext(element, 'state', TYPES_URN),
 
                 }
+
+    def _to_geographic_regions(self, object):
+        regions = []
+        for region in object.findall(fixxpath('geographicRegion', TYPES_URN)):
+            regions.append(self._to_geographic_region(region))
+        return regions
+
+    def _to_geographic_region(self, el):
+        return process_xml(ET.tostring(el))
 
     def _to_ipv4_addresses(self, object):
         ipv4_address_elements = object.findall(fixxpath('ipv4', TYPES_URN))

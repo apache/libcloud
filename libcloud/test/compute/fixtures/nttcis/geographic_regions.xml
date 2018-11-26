@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<geographicRegions xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="8" totalCount="8" pageSize="250">
+    <geographicRegion id="africa" isHome="false">
+        <name>Africa</name>
+        <cloudApiHost>afapi.opsourcecloud.net</cloudApiHost>
+        <cloudUiUrl>https://mea.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://af-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-af.cloud-vpn.net</ftpsHost>
+        <timeZone>Africa/Johannesburg</timeZone>
+        <state>ENABLED</state>
+    </geographicRegion>
+    <geographicRegion id="asiapacific" isHome="false">
+        <name>Asia Pacific</name>
+        <cloudApiHost>apapi.opsourcecloud.net</cloudApiHost>
+        <cloudUiUrl>https://ap.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://ap-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-ap.cloud-vpn.net</ftpsHost>
+        <timeZone>Asia/Tokyo</timeZone>
+        <state>ENABLED</state>
+    </geographicRegion>
+    <geographicRegion id="australia" isHome="false">
+        <name>Australia</name>
+        <cloudApiHost>auapi.opsourcecloud.net</cloudApiHost>
+        <cloudUiUrl>https://au.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://au-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-au.cloud-vpn.net</ftpsHost>
+        <timeZone>Australia/Sydney</timeZone>
+        <state>ENABLED</state>
+    </geographicRegion>
+    <geographicRegion id="canada" isHome="false">
+        <name>Canada</name>
+        <cloudApiHost>api-canada.dimensiondata.com</cloudApiHost>
+        <cloudUiUrl>https://canada.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://ca-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-canada.cloud-vpn.net</ftpsHost>
+        <timeZone>America/Toronto</timeZone>
+        <state>ENABLED</state>
+    </geographicRegion>
+    <geographicRegion id="europe" isHome="false">
+        <name>Europe</name>
+        <cloudApiHost>euapi.opsourcecloud.net</cloudApiHost>
+        <cloudUiUrl>https://eu.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://eu-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-eu.cloud-vpn.net</ftpsHost>
+        <timeZone>Europe/Amsterdam</timeZone>
+        <state>ENABLED</state>
+    </geographicRegion>
+    <geographicRegion id="indonesia" isHome="false">
+        <name>Indonesia</name>
+        <cloudApiHost>idapi.opsourcecloud.net</cloudApiHost>
+        <cloudUiUrl>https://id.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://id-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-id.cloud-vpn.net</ftpsHost>
+        <timeZone>Asia/Jakarta</timeZone>
+        <state>NOT_ENABLED</state>
+    </geographicRegion>
+    <geographicRegion id="israel" isHome="false">
+        <name>Israel</name>
+        <cloudApiHost>ilapi.opsourcecloud.net</cloudApiHost>
+        <cloudUiUrl>https://il.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://il-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-med-1.cloud-vpn.net</ftpsHost>
+        <timeZone>Asia/Jerusalem</timeZone>
+        <state>NOT_ENABLED</state>
+    </geographicRegion>
+    <geographicRegion id="northamerica" isHome="true">
+        <name>North America</name>
+        <cloudApiHost>api.opsourcecloud.net</cloudApiHost>
+        <cloudUiUrl>https://na.mcp-services.net</cloudUiUrl>
+        <monitoringUrl>https://na-monitoring.mcp-services.net</monitoringUrl>
+        <ftpsHost>ftps-na.cloud-vpn.net</ftpsHost>
+        <timeZone>America/New_York</timeZone>
+        <state>ENABLED</state>
+    </geographicRegion>
+</geographicRegions>
