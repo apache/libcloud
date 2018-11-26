@@ -61,12 +61,6 @@ def test_list_locations_response(driver):
     assert first_loc.country == 'US'
 
 
-def test_list_geograhic_regions(driver):
-    ret = driver.list_geographic_regions()
-    assert isinstance(ret, list)
-    assert ret[7].isHome == 'true'
-
-
 def test_list_nodes_response(driver):
     NttCisMockHttp.type = None
     ret = driver.list_nodes()
@@ -2899,12 +2893,5 @@ class NttCisMockHttp(MockHttp):
         self, method, url, body, headers):
         body = self.fixtures.load(
             'deploy_customised_server.xml'
-        )
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]
-
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_infrastructure_geographicRegion(
-        self, method, url, body, headers):
-        body = self.fixtures.load(
-            'geographic_regions.xml'
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
