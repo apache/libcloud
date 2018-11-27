@@ -922,7 +922,7 @@ class NttCisNodeDriver(NodeDriver):
 
         return self._to_networks(
             self.connection
-            .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
+            .request_with_orgId_api_2('networkWithLocation%s' % url_ext)
             .object)
 
     def import_image(self, ovf_package_name, name,

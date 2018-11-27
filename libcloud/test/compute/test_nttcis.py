@@ -9,6 +9,8 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.nttcis import NttCisAPIException, NetworkDomainServicePlan
 from libcloud.common.nttcis import NttCisServerCpuSpecification, NttCisServerDisk, NttCisServerVMWareTools
 from libcloud.common.nttcis import NttCisTag, NttCisTagKey
+from libcloud.common.nttcis import NttCisServerCpuSpecification
+from libcloud.common.nttcis import NttCisServerDisk
 from libcloud.common.nttcis import NttCisIpAddress, \
     NttCisIpAddressList, NttCisChildIpAddressList, \
     NttCisPortList, NttCisPort, NttCisChildPortList
@@ -245,6 +247,134 @@ def test_ex_list_customer_images(driver):
     assert images[0].extra['location'].id == 'NA9'
     assert images[0].extra['cpu'].cpu_count == 4
     assert images[0].extra['OS_displayName'] == 'REDHAT6/64'
+
+
+def test_create_mcp1_node_optional_param(driver):
+    root_pw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    network = driver.ex_list_networks()[0]
+    cpu_spec = NttCisServerCpuSpecification(cpu_count='4',
+                                            cores_per_socket='2',
+                                            performance='STANDARD')
+    disks = [NttCisServerDisk(scsi_id='0', speed='HIGHPERFORMANCE')]
+    node = driver.create_node(name='test2', image=image, auth=root_pw,
+                              ex_description='test2 node',
+                              ex_network=network,
+                              ex_is_started=False,
+                              ex_memory_gb=8,
+                              ex_disks=disks,
+                              ex_cpu_specification=cpu_spec,
+                              ex_primary_dns='10.0.0.5',
+                              ex_secondary_dns='10.0.0.6'
+                              )
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+
+
+def test_create_mcp1_node_response_no_pass_random_gen(driver):
+    image = driver.list_images()[0]
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node',
+                              ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_windows(driver):
+    image = driver.ex_list_customer_images()[1]
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_windows_STR(driver):
+    image = driver.ex_list_customer_images()[1].id
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert  node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_linux(driver):
+    image = driver.ex_list_customer_images()[0]
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' not in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_linux_STR(driver):
+    image = driver.ex_list_customer_images()[0].id
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' not in node.extra
+
+
+def test_create_mcp1_node_response_STR(driver):
+    rootPw = 'pass123'
+    image = driver.list_images()[0].id
+    network = driver.ex_list_networks()[0].id
+    node = driver.create_node(name='test2', image=image, auth=rootPw,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+
+
+def test_create_mcp1_node_no_network(driver):
+    rootPw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    with pytest.raises(InvalidRequestError):
+        driver.create_node(name='test2',
+                           image=image,
+                           auth=rootPw,
+                           ex_description='test2 node',
+                           ex_network=None,
+                           ex_is_started=False)
+
+
+def test_create_node_mcp1_ipv4(driver):
+    rootPw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    node = driver.create_node(name='test2',
+                              image=image,
+                              auth=rootPw,
+                              ex_description='test2 node',
+                              ex_network='fakenetwork',
+                              ex_primary_ipv4='10.0.0.1',
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+
+
+def test_create_node_mcp1_network(driver):
+    rootPw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    node = driver.create_node(name='test2',
+                              image=image,
+                              auth=rootPw,
+                              ex_description='test2 node',
+                              ex_network='fakenetwork',
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
 
 
 def test_create_node_response_network_domain(driver):
@@ -1704,6 +1834,11 @@ class NttCisMockHttp(MockHttp):
 
     def _oec_0_9_myaccount_ALLFILTERS(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'networkWithLocation.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):

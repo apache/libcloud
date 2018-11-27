@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns3:NetworkWithLocations xmlns:ns16="http://oec.api.opsource.net/schemas/reset" xmlns:ns14="http://oec.api.opsource.net/schemas/multigeo" xmlns:ns15="http://oec.api.opsource.net/schemas/support" xmlns:ns9="http://oec.api.opsource.net/schemas/directory" xmlns:ns5="http://oec.api.opsource.net/schemas/vip" xmlns:ns12="http://oec.api.opsource.net/schemas/admin" xmlns:ns13="http://oec.api.opsource.net/schemas/general" xmlns:ns6="http://oec.api.opsource.net/schemas/organization" xmlns:ns7="http://oec.api.opsource.net/schemas/whitelabel" xmlns:ns10="http://oec.api.opsource.net/schemas/storage" xmlns:ns8="http://oec.api.opsource.net/schemas/backup" xmlns:ns11="http://oec.api.opsource.net/schemas/serverbootstrap" xmlns:ns2="http://oec.api.opsource.net/schemas/server" xmlns:ns1="http://oec.api.opsource.net/schemas/datacenter" xmlns:ns4="http://oec.api.opsource.net/schemas/manualimport" xmlns:ns3="http://oec.api.opsource.net/schemas/network">
+    <ns3:network>
+        <ns3:id>4bba37be-506f-11e3-b29c-001517c4643e</ns3:id>
+        <ns3:name>test-net1</ns3:name>
+        <ns3:description>Test Network.</ns3:description>
+        <ns3:location>NA5</ns3:location>
+        <ns3:privateNet>10.192.176.0</ns3:privateNet>
+        <ns3:multicast>false</ns3:multicast>
+    </ns3:network>
+    <ns3:network>
+        <ns3:id>208e3a8e-9d2f-11e2-b29c-001517c4643e</ns3:id>
+        <ns3:name>Test Network</ns3:name>
+        <ns3:description>Network description</ns3:description>
+        <ns3:location>NA9</ns3:location>
+        <ns3:privateNet>10.172.74.0</ns3:privateNet>
+        <ns3:multicast>false</ns3:multicast>
+    </ns3:network>
+</ns3:NetworkWithLocations>
