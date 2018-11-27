@@ -19,6 +19,9 @@ Compute
 - [OpenStack] Implement OpenStack_1_1_NodeDriver ex_get_snapshot (GITHUB-1257)
   [Rick van de Loo]
 
+- [UpCloud] Update documentation for UpCloud driver (LIBCLOUD-1026, GITHUB-1259)
+  [Ilari Mäkelä]
+
 Changes in Apache Libcloud 2.4.0
 --------------------------------
 
