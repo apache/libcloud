@@ -13,6 +13,12 @@ Container
 - [Docker] Improve docstring for RegistryClient (GITHUB-1254)
   [Ken Dreyer]
 
+Compute
+~~~~~~~
+
+- [OpenStack] Implement OpenStack_1_1_NodeDriver ex_get_snapshot (GITHUB-1257)
+  [Rick van de Loo]
+
 Changes in Apache Libcloud 2.4.0
 --------------------------------
 
