@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181031T115504819-0400_9c995adf-a3e8-4b1e-9d1f-a34bf52b693d">
-    <operation>CREATE_CONSISTENCY_GROUP</operation>
-    <responseCode>INCOMPATIBLE_OPERATION</responseCode>
-    <message>The drsEligible flag for target Server aee58575-38e2-495f-89d3-854e6a886411 must be set.</message>
-</response>
