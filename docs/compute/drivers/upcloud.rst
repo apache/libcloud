@@ -6,15 +6,17 @@ from data centers based in multiple countries.
 .. figure:: /_static/images/provider_logos/upcloud.png
     :align: center
     :width: 300
-    :target: https://www.upcloud.com/
+    :target: https://upcloud.com/
 
-UpCloud currently operates globally from six (6) data centers:
+UpCloud currently operates globally from eight (8) data centers:
 
 * Amsterdam, Netherlands
 * Chicago, USA
 * Frankfurt, Germany
-* Helsinki, Finland
+* Helsinki 1, Finland
+* Helsinki 2, Finland
 * London, UK
+* San Jose, USA
 * Singapore, Singapore
 
 Instantiating a driver
@@ -30,7 +32,7 @@ Enabling API access
 -------------------
 
 To allow API access to your UpCloud account, you first need to enable the API
-permissions by visiting `My Account -> User accounts`_ in your UpCloud Control
+permissions by visiting `People`_ in your UpCloud Control
 Panel. We recommend you to set up a sub-account specifically for the API usage
 with its own username and password, as it allows you to assign specific permissions
 for increased security.
@@ -41,5 +43,5 @@ limit the API connections to a specific IP address or address range for addition
 security. Once you are done entering the user information, hit the **Save** button
 at the bottom of the page to create the new username.
 
-.. _`UpCloud`: https://www.upcloud.com/
-.. _`My Account -> User accounts`: https://my.upcloud.com/account
+.. _`UpCloud`: https://upcloud.com/
+.. _`People`: https://hub.upcloud.com/people

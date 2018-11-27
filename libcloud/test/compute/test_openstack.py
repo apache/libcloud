@@ -1482,6 +1482,17 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         # invalid date is parsed as None
         assert snapshots[2].created is None
 
+    def test_ex_get_snapshot(self):
+        if self.driver_type.type == 'rackspace':
+            self.conn_class.type = 'RACKSPACE'
+
+        snapshot = self.driver.ex_get_snapshot('3fbbcccf-d058-4502-8844-6feeffdf4cb5')
+        self.assertEqual(snapshot.created, datetime.datetime(2012, 2, 29, 3, 50, 7, tzinfo=UTC))
+        self.assertEqual(snapshot.extra['created'], "2012-02-29T03:50:07Z")
+        self.assertEqual(snapshot.extra['name'], 'snap-001')
+        self.assertEqual(snapshot.name, 'snap-001')
+        self.assertEqual(snapshot.state, VolumeSnapshotState.AVAILABLE)
+
     def test_list_volume_snapshots(self):
         volume = self.driver.list_volumes()[0]
 
@@ -2242,6 +2253,30 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_snapshot.json')
+            status_code = httplib.OK
+        elif method == 'DELETE':
+            body = ''
+            status_code = httplib.NO_CONTENT
+        else:
+            raise NotImplementedError()
+
+        return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5_RACKSPACE(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_os_snapshot_rackspace.json')
+            status_code = httplib.OK
+        elif method == 'DELETE':
+            body = ''
+            status_code = httplib.NO_CONTENT
+        else:
+            raise NotImplementedError()
+
+        return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
+
     def _v1_1_slug_os_snapshots_RACKSPACE(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_os_snapshots_rackspace.json')
@@ -2251,24 +2286,6 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             raise NotImplementedError()
 
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-
-    def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
-        if method == 'DELETE':
-            body = ''
-            status_code = httplib.NO_CONTENT
-        else:
-            raise NotImplementedError()
-
-        return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
-
-    def _v1_1_slug_os_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5_RACKSPACE(self, method, url, body, headers):
-        if method == 'DELETE':
-            body = ''
-            status_code = httplib.NO_CONTENT
-        else:
-            raise NotImplementedError()
-
-        return (status_code, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_v2_0_networks(self, method, url, body, headers):
         if method == 'GET':

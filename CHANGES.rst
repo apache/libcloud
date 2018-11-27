@@ -7,6 +7,21 @@ Changes in Apache Libcloud in development
 - Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
   [Mitch Raful]
 
+Container
+~~~~~~~~~
+
+- [Docker] Improve docstring for RegistryClient (GITHUB-1254)
+  [Ken Dreyer]
+
+Compute
+~~~~~~~
+
+- [OpenStack] Implement OpenStack_1_1_NodeDriver ex_get_snapshot (GITHUB-1257)
+  [Rick van de Loo]
+
+- [UpCloud] Update documentation for UpCloud driver (LIBCLOUD-1026, GITHUB-1259)
+  [Ilari Mäkelä]
+
 Changes in Apache Libcloud 2.4.0
 --------------------------------
 
