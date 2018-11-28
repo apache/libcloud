@@ -2216,14 +2216,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         return StorageVolume(
             id=api_node['id'],
-            name=api_node.get('name', api_node.get('displayName')),
+            name=api_node.get('displayName', api_node.get('name')),
             size=api_node['size'],
             state=state,
             driver=self,
             extra={
-                'description': api_node.get('description',
-                                            api_node.get('displayDescription')
-                                            ),
+                'description': api_node.get('displayDescription',
+                                            api_node.get('description')),
                 'attachments': [att for att in api_node['attachments'] if att],
                 # TODO: remove in 1.18.0
                 'state': api_node.get('status', None),
