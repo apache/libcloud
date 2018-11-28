@@ -3060,10 +3060,23 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return self._to_port(response.object['port'])
 
     def list_volumes(self):
+        """
+        Get a list of Volumes that are available.
+
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
         return self._to_volumes(
             self.volumev2_connection.request('/volumes/detail').object)
 
     def ex_get_volume(self, volumeId):
+        """
+        Retrieve the StorageVolume with the given ID
+
+        :param volumeId: ID of the volume
+        :type volumeId: ``string``
+
+        :return: :class:`StorageVolume`
+        """
         return self._to_volume(
             self.volumev2_connection.request('/volumes/%s' % volumeId).object)
 
@@ -3118,10 +3131,23 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
+        """
+        Delete a Volume.
+
+        :param volume: Volume to be deleted
+        :type  volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
+        """
         return self.volumev2_connection.request('/volumes/%s' % volume.id,
                                                 method='DELETE').success()
 
     def ex_list_snapshots(self):
+        """
+        Get a list of Snapshot that are available.
+
+        :rtype: ``list`` of :class:`VolumeSnapshot`
+        """
         return self._to_snapshots(
             self.volumev2_connection.request('/snapshots/detail').object)
 
