@@ -379,6 +379,12 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         self.assertEqual(user.name, 'userwithoutemail')
         self.assertEqual(user.email, None)
 
+    def test_get_user_without_enabled(self):
+        user = self.auth_instance.get_user(user_id='c')
+        self.assertEqual(user.id, 'c')
+        self.assertEqual(user.name, 'userwithoutenabled')
+        self.assertEqual(user.enabled, None)
+
     def test_create_user(self):
         user = self.auth_instance.create_user(email='test2@localhost', password='test1',
                                               name='test2', domain_id='default')
@@ -709,6 +715,13 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
         if method == 'GET':
             # look up a user
             body = self.fixtures.load('v3_users_b.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v3_users_c(self, method, url, body, headers):
+        if method == 'GET':
+            # look up a user
+            body = self.fixtures.load('v3_users_c.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
