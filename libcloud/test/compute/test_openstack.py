@@ -20,6 +20,7 @@ import sys
 import unittest
 import datetime
 import pytest
+
 from libcloud.utils.iso8601 import UTC
 
 try:
@@ -47,7 +48,8 @@ from libcloud.compute.drivers.openstack import (
     OpenStack_1_1_FloatingIpAddress, OpenStackKeyPair,
     OpenStack_1_0_Connection, OpenStack_2_FloatingIpPool,
     OpenStackNodeDriver,
-    OpenStack_2_NodeDriver, OpenStack_2_PortInterfaceState, OpenStackNetwork)
+    OpenStack_2_NodeDriver, OpenStack_2_PortInterfaceState, OpenStackNetwork,
+    OpenStackException)
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
 
@@ -1628,6 +1630,32 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         # normally authentication happens lazily, but we force it here
         self.driver.volumev2_connection._populate_hosts_and_request_paths()
 
+    def test__paginated_request_single_page(self):
+        snapshots = self.driver._paginated_request(
+            '/snapshots/detail', 'snapshots',
+            self.driver.volumev2_connection
+        )['snapshots']
+
+        self.assertEqual(len(snapshots), 3)
+        self.assertEqual(snapshots[0]['name'], 'snap-001')
+
+    def test__paginated_request_two_pages(self):
+        snapshots = self.driver._paginated_request(
+            '/snapshots/detail?unit_test=paginate', 'snapshots',
+            self.driver.volumev2_connection
+        )['snapshots']
+
+        self.assertEqual(len(snapshots), 6)
+        self.assertEqual(snapshots[0]['name'], 'snap-101')
+        self.assertEqual(snapshots[3]['name'], 'snap-001')
+
+    def test__paginated_request_raises_if_stuck_in_a_loop(self):
+        with pytest.raises(OpenStackException):
+            self.driver._paginated_request(
+                '/snapshots/detail?unit_test=pagination_loop', 'snapshots',
+                self.driver.volumev2_connection
+            )
+
     def test_ex_force_auth_token_passed_to_connection(self):
         base_url = 'https://servers.api.rackspacecloud.com/v1.1/slug'
         kwargs = {
@@ -2485,7 +2513,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
     
     def _v2_1337_snapshots_detail(self, method, url, body, headers):
-        body = self.fixtures.load('_v2_0__snapshots.json')
+        if ('unit_test=paginate' in url and 'marker' not in url) or \
+                'unit_test=pagination_loop' in url:
+            body = self.fixtures.load('_v2_0__snapshots_paginate_start.json')
+        else:
+            body = self.fixtures.load('_v2_0__snapshots.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_snapshots(self, method, url, body, headers):
