@@ -2596,10 +2596,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     network_connectionCls = OpenStack_2_NetworkConnection
     network_connection = None
 
-    # Similarly not all node-related operations are exposed through the
-    # compute API
-    # See https://developer.openstack.org/api-ref/compute/
-    # For example, volume management are made in the cinder service
+    # Similarly all image operations are noe exposed through the block-storage
+    # API of the cinde service:
+    # https://developer.openstack.org/api-ref/block-storage/
     volumev2_connectionCls = OpenStack_2_VolumeV2Connection
     volumev2_connection = None
 
