@@ -40,7 +40,7 @@ class TestUtils(unittest.TestCase):
         # Debug mode is disabled
         _init_once()
 
-        self.assertEqual(LoggingConnection.log, None)
+        self.assertIsNone(LoggingConnection.log)
 
         if have_paramiko:
             paramiko_log_level = paramiko_logger.getEffectiveLevel()

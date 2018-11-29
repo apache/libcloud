@@ -232,7 +232,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_find_node('testNode', self.driver.vdcs[0])
         self.assertEqual(node.name, "testNode")
         node = self.driver.ex_find_node('testNonExisting', self.driver.vdcs[0])
-        self.assertEqual(node, None)
+        self.assertIsNone(node)
 
     def test_ex_add_vm_disk__with_invalid_values(self):
         self.assertRaises(

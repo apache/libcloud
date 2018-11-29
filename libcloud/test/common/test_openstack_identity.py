@@ -123,8 +123,8 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
                       parent_conn=connection)
 
             self.assertEqual(osa.urls, {})
-            self.assertEqual(osa.auth_token, None)
-            self.assertEqual(osa.auth_user_info, None)
+            self.assertIsNone(osa.auth_token)
+            self.assertIsNone(osa.auth_user_info)
             osa = osa.authenticate()
 
             self.assertTrue(len(osa.urls) >= 1)
@@ -377,13 +377,13 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         user = self.auth_instance.get_user(user_id='b')
         self.assertEqual(user.id, 'b')
         self.assertEqual(user.name, 'userwithoutemail')
-        self.assertEqual(user.email, None)
+        self.assertIsNone(user.email)
 
     def test_get_user_without_enabled(self):
         user = self.auth_instance.get_user(user_id='c')
         self.assertEqual(user.id, 'c')
         self.assertEqual(user.name, 'userwithoutenabled')
-        self.assertEqual(user.enabled, None)
+        self.assertIsNone(user.enabled)
 
     def test_create_user(self):
         user = self.auth_instance.create_user(email='test2@localhost', password='test1',
@@ -527,7 +527,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
 
         entry = [e for e in entries if e.service_type == 'cloudFilesCDN'][0]
         self.assertEqual(entry.service_type, 'cloudFilesCDN')
-        self.assertEqual(entry.service_name, None)
+        self.assertIsNone(entry.service_name)
         self.assertEqual(len(entry.endpoints), 2)
         self.assertEqual(entry.endpoints[0].region, 'ORD')
         self.assertEqual(entry.endpoints[0].url,
@@ -550,7 +550,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         self.assertEqual(entry.service_type, 'compute')
         self.assertEqual(entry.service_name, 'cloudServers')
         self.assertEqual(len(entry.endpoints), 1)
-        self.assertEqual(entry.endpoints[0].region, None)
+        self.assertIsNone(entry.endpoints[0].region)
         self.assertEqual(entry.endpoints[0].url,
                          'https://servers.api.rackspacecloud.com/v1.0/1337')
         self.assertEqual(entry.endpoints[0].endpoint_type, 'external')
@@ -566,7 +566,7 @@ class OpenStackServiceCatalogTestCase(unittest.TestCase):
         self.assertEqual(len(entries), 6)
         entry = [e for e in entries if e.service_type == 'volume'][0]
         self.assertEqual(entry.service_type, 'volume')
-        self.assertEqual(entry.service_name, None)
+        self.assertIsNone(entry.service_name)
         self.assertEqual(len(entry.endpoints), 3)
         self.assertEqual(entry.endpoints[0].region, 'regionOne')
         self.assertEqual(entry.endpoints[0].endpoint_type, 'external')

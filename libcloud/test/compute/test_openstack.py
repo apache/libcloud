@@ -293,7 +293,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
                         driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size)
         self.assertEqual(node.name, 'racktest')
-        self.assertEqual(node.extra.get('password'), None)
+        self.assertIsNone(node.extra.get('password'))
 
     def test_create_node_ex_shared_ip_group(self):
         OpenStackMockHttp.type = 'EX_SHARED_IP_GROUP'
@@ -815,7 +815,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver_klass.connectionCls.conn_class.type = 'ERROR_STATE_NO_IMAGE_ID'
 
         nodes = self.driver.list_nodes()
-        self.assertEqual(nodes[0].extra['imageId'], None)
+        self.assertIsNone(nodes[0].extra['imageId'])
 
     def test_list_volumes(self):
         volumes = self.driver.list_volumes()
@@ -1150,10 +1150,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         image = self.driver.get_image(image_id)
         self.assertEqual(image.id, image_id)
         self.assertEqual(image.name, 'Windows 2008 SP2 x86 (B24)')
-        self.assertEqual(image.extra['serverId'], None)
+        self.assertIsNone(image.extra['serverId'])
         self.assertEqual(image.extra['minDisk'], "5")
         self.assertEqual(image.extra['minRam'], "256")
-        self.assertEqual(image.extra['visibility'], None)
+        self.assertIsNone(image.extra['visibility'])
 
     def test_delete_image(self):
         image = NodeImage(
@@ -1255,7 +1255,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(security_group_rule.from_port, 14)
         self.assertEqual(security_group_rule.to_port, 16)
         self.assertEqual(security_group_rule.ip_range, '0.0.0.0/0')
-        self.assertEqual(security_group_rule.tenant_id, None)
+        self.assertIsNone(security_group_rule.tenant_id)
 
     def test_ex_delete_security_group_rule(self):
         security_group_rule = OpenStackSecurityGroupRule(
@@ -1271,7 +1271,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(
             keypair.fingerprint, '5d:66:33:ae:99:0f:fb:cb:86:f2:bc:ae:53:99:b6:ed')
         self.assertTrue(len(keypair.public_key) > 10)
-        self.assertEqual(keypair.private_key, None)
+        self.assertIsNone(keypair.private_key)
 
     def test_get_key_pair(self):
         key_pair = self.driver.get_key_pair(name='test-key-pair')
@@ -1304,7 +1304,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(
             keypair.fingerprint, '97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a')
         self.assertEqual(keypair.public_key, pub_key)
-        self.assertEqual(keypair.private_key, None)
+        self.assertIsNone(keypair.private_key)
 
     def test_import_key_pair_from_string(self):
         name = 'key3'
@@ -1317,7 +1317,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(
             keypair.fingerprint, '97:10:a6:e7:92:65:7e:69:fe:e6:81:8f:39:3c:8f:5a')
         self.assertEqual(keypair.public_key, pub_key)
-        self.assertEqual(keypair.private_key, None)
+        self.assertIsNone(keypair.private_key)
 
     def test_delete_key_pair(self):
         keypair = OpenStackKeyPair(
@@ -1359,7 +1359,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[0].id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
         self.assertEqual(ret[0].pool, pool)
         self.assertEqual(ret[0].ip_address, '10.3.1.42')
-        self.assertEqual(ret[0].node_id, None)
+        self.assertIsNone(ret[0].node_id)
         self.assertEqual(ret[1].id, '04c5336a-0629-4694-ba30-04b0bdfa88a4')
         self.assertEqual(ret[1].pool, pool)
         self.assertEqual(ret[1].ip_address, '10.3.1.1')
@@ -1373,7 +1373,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret.id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
         self.assertEqual(ret.pool, pool)
         self.assertEqual(ret.ip_address, '10.3.1.42')
-        self.assertEqual(ret.node_id, None)
+        self.assertIsNone(ret.node_id)
 
     def test_OpenStack_1_1_FloatingIpPool_create_floating_ip(self):
         pool = OpenStack_1_1_FloatingIpPool('foo', self.driver.connection)
@@ -1382,7 +1382,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret.id, '09ea1784-2f81-46dc-8c91-244b4df75bde')
         self.assertEqual(ret.pool, pool)
         self.assertEqual(ret.ip_address, '10.3.1.42')
-        self.assertEqual(ret.node_id, None)
+        self.assertIsNone(ret.node_id)
 
     def test_OpenStack_1_1_FloatingIpPool_delete_floating_ip(self):
         pool = OpenStack_1_1_FloatingIpPool('foo', self.driver.connection)
@@ -1600,7 +1600,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         image = self.driver.get_image(image_id)
         self.assertEqual(image.id, image_id)
         self.assertEqual(image.name, 'hypernode')
-        self.assertEqual(image.extra['serverId'], None)
+        self.assertIsNone(image.extra['serverId'])
         self.assertEqual(image.extra['minDisk'], 40)
         self.assertEqual(image.extra['minRam'], 0)
         self.assertEqual(image.extra['visibility'], "shared")
@@ -1629,7 +1629,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         }
         image = self.driver.ex_update_image(image_id, data)
         self.assertEqual(image.name, 'hypernode')
-        self.assertEqual(image.extra['serverId'], None)
+        self.assertIsNone(image.extra['serverId'])
         self.assertEqual(image.extra['minDisk'], 40)
         self.assertEqual(image.extra['minRam'], 0)
         self.assertEqual(image.extra['visibility'], "shared")

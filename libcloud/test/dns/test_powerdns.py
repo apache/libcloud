@@ -46,7 +46,7 @@ class PowerDNSTestCase(LibcloudTestCase):
                                               type=RecordType.A,
                                               data='192.0.5.4',
                                               extra={'ttl': 86400})
-        self.assertEqual(record.id, None)
+        self.assertIsNone(record.id)
         self.assertEqual(record.name, 'newrecord.example.com')
         self.assertEqual(record.data, '192.0.5.4')
         self.assertEqual(record.type, RecordType.A)
@@ -57,8 +57,8 @@ class PowerDNSTestCase(LibcloudTestCase):
         zone = self.driver.create_zone('example.org', extra=extra)
         self.assertEqual(zone.id, 'example.org.')
         self.assertEqual(zone.domain, 'example.org')
-        self.assertEqual(zone.type, None)
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.type)
+        self.assertIsNone(zone.ttl)
 
     def test_delete_record(self):
         self.assertTrue(self.test_record.delete())
@@ -74,8 +74,8 @@ class PowerDNSTestCase(LibcloudTestCase):
         zone = self.driver.get_zone('example.com.')
         self.assertEqual(zone.id, 'example.com.')
         self.assertEqual(zone.domain, 'example.com')
-        self.assertEqual(zone.type, None)
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.type)
+        self.assertIsNone(zone.ttl)
 
     def test_list_record_types(self):
         result = self.driver.list_record_types()
@@ -89,12 +89,12 @@ class PowerDNSTestCase(LibcloudTestCase):
         zones = self.driver.list_zones()
         self.assertEqual(zones[0].id, 'example.com.')
         self.assertEqual(zones[0].domain, 'example.com')
-        self.assertEqual(zones[0].type, None)
-        self.assertEqual(zones[0].ttl, None)
+        self.assertIsNone(zones[0].type)
+        self.assertIsNone(zones[0].ttl)
         self.assertEqual(zones[1].id, 'example.net.')
         self.assertEqual(zones[1].domain, 'example.net')
-        self.assertEqual(zones[1].type, None)
-        self.assertEqual(zones[1].ttl, None)
+        self.assertIsNone(zones[1].type)
+        self.assertIsNone(zones[1].ttl)
 
     def test_update_record(self):
         record = self.driver.update_record(self.test_record,
@@ -102,7 +102,7 @@ class PowerDNSTestCase(LibcloudTestCase):
                                            type=RecordType.A,
                                            data='127.0.0.1',
                                            extra={'ttl': 300})
-        self.assertEqual(record.id, None)
+        self.assertIsNone(record.id)
         self.assertEqual(record.name, 'newrecord.example.com')
         self.assertEqual(record.data, '127.0.0.1')
         self.assertEqual(record.type, RecordType.A)
