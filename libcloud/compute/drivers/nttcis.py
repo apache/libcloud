@@ -872,7 +872,7 @@ class NttCisNodeDriver(NodeDriver):
         :type    ex_id: ``str``
 
         :return:  List of locations
-        :rtype:  ``list`` of :class:`NodeLocation`
+        :rtype:  ``list`` of :class:`NttCisDatacenter`
         """
 
         params = {}
@@ -886,26 +886,6 @@ class NttCisNodeDriver(NodeDriver):
                 params=params
             ).object
         )
-
-    def ex_get_datacneter(self, ex_id):
-        """
-        List locations (datacenters) available for instantiating servers and
-        networks.
-
-        :keyword ex_id: Filters the location list to this id
-        :type    ex_id: ``str``
-
-        :return:  List of locations
-        :rtype:  ``list`` of :class:`NodeLocation`
-        """
-
-        params = {}
-        if ex_id is not None:
-            params['id'] = ex_id
-
-        return self.connection.\
-            request_with_orgId_api_2('infrastructure/datacenter',
-                                     params=params)
 
     def list_snapshot_windows(self, location, plan):
         """
@@ -942,7 +922,7 @@ class NttCisNodeDriver(NodeDriver):
 
         return self._to_networks(
             self.connection
-            .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
+            .request_with_orgId_api_2('networkWithLocation%s' % url_ext)
             .object)
 
     def import_image(self, ovf_package_name, name,
@@ -1339,18 +1319,23 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def list_snapshots(self, node):
+    def list_snapshots(self, node, page_size=None):
         """
-        List snapshots of a server
+        List snapshots of a server. The list of snapshots can get large.
+        Therefore, page_size is optional to limit this if desired.
 
-        :param      node: Node nameof the node on which to enable snapshots.
-        :type       node: ``str``
-
-        :rtype: ``list``
+        :param node: Node nameof the node on which to enable snapshots.
+        :type node: ``str``
+        :param page_size: (Optional) Limit the number of records returned
+        :return snapshots
+        :rtype: ``list`` of `dictionaries`
         """
 
         params = {}
         params['serverId'] = self.list_nodes(ex_name=node)[0].id
+        if page_size is not None:
+            params["pageSize"] = page_size
+
         return self._to_snapshots(self.connection.request_with_orgId_api_2(
             'snapshot/snapshot',
             params=params).object)
@@ -1359,9 +1344,9 @@ class NttCisNodeDriver(NodeDriver):
         """
         Get snapshot of a server by snapshot id.
 
-        :param      snapshot_id: ID of snapshot to retrieve.
-        :type       snapshot_id: ``str``
-
+        :param snapshot_id: ID of snapshot to retrieve.
+        :type  snapshot_id: ``str``
+        :return a snapshot
         :rtype: ``dict``
         """
 
@@ -1372,10 +1357,10 @@ class NttCisNodeDriver(NodeDriver):
         """
         Disable snapshots on a server.  This also deletes current snapshots.
 
-        :param      node: Node ID of the node on which to enable snapshots.
-        :type       node: ``str``
-
-        :rtype: ``list``
+        :param node: Node ID of the node on which to enable snapshots.
+        :type node: ``str``
+        :return True or False
+        :rtype: ``bool``
         """
 
         update_node = ET.Element('disableSnapshotService',
@@ -1501,9 +1486,8 @@ class NttCisNodeDriver(NodeDriver):
             'snapshot/createSnapshotPreviewServer',
             method='POST',
             data=ET.tostring(create_preview)).object
-        for info in findall(result, 'info', TYPES_URN):
-            if info.get('name') == 'serverId':
-                return info.get('value')
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_migrate_preview_server(self, preview_id):
         migrate_preview = ET.Element('migrateSnapshotPreviewServer',

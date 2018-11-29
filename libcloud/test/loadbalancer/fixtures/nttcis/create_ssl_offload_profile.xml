@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181120T182115551+0100_71eaf104-d809-4a13-a64a-70af21467378">
+    <operation>CREATE_SSL_OFFLOAD_PROFILE</operation>
+    <responseCode>OK</responseCode>
+    <message>SSL Offload Profile has been created.</message>
+    <info name="sslOffloadProfileId" value="e47a11ba-ea09-4826-a0f4-b3e09040bc1a"/>
+</response>

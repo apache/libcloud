@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181108T160941803-0500_729ba262-347d-4da9-bf4d-c30e861bfa63">
-    <operation>INITIATE_FAILOVER</operation>
-    <responseCode>IN_PROGRESS</responseCode>
-    <message>Request to Initiate Failover has been accepted. Please use appropriate Get or List API for status.</message>
-</response>

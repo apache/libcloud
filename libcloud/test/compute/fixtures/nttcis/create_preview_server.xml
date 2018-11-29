@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181128T230815109+0100_29483e8f-e94d-4472-8c92-723b9068828d">
+    <operation>CREATE_SNAPSHOT_PREVIEW_SERVER</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Create Snapshot Preview Server has been accepted. Please use appropriate Get or List API for status.</message>
+    <info name="serverId" value="17bff533-1959-4d16-b0bc-cea6f4cd1bb6"/>
+</response>

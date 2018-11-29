@@ -1,8 +1,7 @@
 NTTC-CIS Load Balancer Driver Documentation
 =================================================
 
-Dimension Data are a global IT Services company and form part of the NTT Group.
-Dimension Data provide IT-as-a-Service to customers around the globe on their
+NTT Communications provide IT-as-a-Service to customers around the globe on their
 cloud platform (Compute as a Service). The CaaS service is available either on
 one of the public cloud instances or as a private instance on premises.
 

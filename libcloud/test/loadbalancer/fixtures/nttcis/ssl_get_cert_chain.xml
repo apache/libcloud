@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sslCertificateChain xmlns="urn:didata.com:api:cloud:types" id="dc5a4235-2f1b-47e1-b6dd-455938a3377b" datacenterId="EU6">
+    <networkDomainId>6aafcf08-cb0b-432c-9c64-7371265db086</networkDomainId>
+    <name>ted_carol</name>
+    <description>test cert chain</description>
+    <state>NORMAL</state>
+    <createTime>2018-11-19T02:07:32.000Z</createTime>
+    <expiryTime>2019-11-19T00:21:30.000Z</expiryTime>
+</sslCertificateChain>

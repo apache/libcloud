@@ -16,6 +16,8 @@
 NTTCIS Common Components
 """
 import xml.etree.ElementTree as etree
+import re
+import functools
 from copy import deepcopy
 from base64 import b64encode
 from time import sleep
@@ -289,6 +291,25 @@ BAD_MESSAGE_XML_ELEMENTS = (
     ('message', TYPES_URN),
     ('resultDetail', GENERAL_NS)
 )
+
+
+def get_params(func):
+    @functools.wraps(func)
+    def paramed(*args, **kwargs):
+        if kwargs:
+            for k, v in kwargs.items():
+                old_key = k
+                matches = re.findall(r'_(\w)', k)
+                for match in matches:
+                    k = k.replace('_' + match, match.upper())
+                del kwargs[old_key]
+                kwargs[k] = v
+            params = kwargs
+            result = func(args[0], params)
+        else:
+            result = func(args[0])
+        return result
+    return paramed
 
 
 def dd_object_to_id(obj, obj_type, id_value='id'):
@@ -1944,14 +1965,25 @@ def processor(mapping, name=None):
     Closure that keeps the deepcopy of the original dict
     converted to XML current.
     :param mapping: The converted XML to dict/lists
+    :type mapping: ``dict``
     :param name: (Optional) what becomes the class name if provided
+    :type: ``str``
     :return: Nothing
     """
     mapping = mapping
-
+    # the map_copy will have keys deleted after the key and value are processed
     map_copy = deepcopy(mapping)
 
     def add_items(key, value, name=None):
+        """
+        Add items to the global attr dict, then delete key, value from map copy
+        :param key: from the process function becomes the attribute name
+        :type key: ``str``
+        :param value: The value of the property and may be a dict
+        :type value: ``str``
+        :param name: Name of class, often same as key
+        :type: name" ``str``
+        """
         if name in attrs:
             attrs[name].update({key: value})
         elif name is not None:
@@ -2012,7 +2044,6 @@ def processor(mapping, name=None):
                             tmp_list = [build_class(k.capitalize(), i)
                                         for i in v]
                             tmp[k] = tmp_list
-                        print()
             elif isinstance(v, str):
                 tmp.update({k: v})
         return tmp
@@ -2021,7 +2052,12 @@ def processor(mapping, name=None):
         klass = class_factory(key.capitalize(), value)
         return klass(value)
 
-    def process(mapping, name):
+    def process(mapping):
+        """
+        This function is recursive, creating attributes for the class factory.
+        :param mapping: the dictionary converted from XML
+        :return: itself (recursive)
+        """
         for k1, v1 in mapping.items():
             if isinstance(v1, Mapping):
                 types = [type(v) for v in v1.values()]
@@ -2054,11 +2090,21 @@ def processor(mapping, name=None):
 
     if len(map_copy) == 0:
         return 1
-    return process(mapping, name)
+    return process(mapping)
 
 
 def class_factory(cls_name, attrs):
-
+    """
+    This class takes a name and a dictionary to create a class.
+    The clkass has an init method, an iter for retrieving properties,
+    and, finally, a repr for returning the instance
+    :param cls_name: The name to be tacked onto the suffix NttCis
+    :type cls_name: ``str``
+    :param attrs: The attributes and values for an instance
+    :type attrs: ``dict``
+    :return:  a class that inherits from ClassFactory
+    :rtype: ``ClassFactory``
+    """
     def __init__(self, *args, **kwargs):
         for key in attrs:
             setattr(self, key, attrs[key])
@@ -2083,6 +2129,10 @@ def class_factory(cls_name, attrs):
 
 
 class XmlListConfig(list):
+    """
+    Creates a class from XML elements that make a list.  If a list of
+    XML elements with attributes, the attributes are passed to XmlDictConfig.
+    """
     def __init__(self, elem_list):
         for element in elem_list:
             if element is not None:
@@ -2105,7 +2155,11 @@ class XmlListConfig(list):
 
 
 class XmlDictConfig(dict):
-
+    """
+    Inherits from dict.  Looks for XML elements, such as attrib, that
+    can be converted to a dictionary.  Any XML element that contains
+    other XML elements, will be passed to XmlListConfig
+    """
     def __init__(self, parent_element):
         if parent_element.items():
             if 'property' in parent_element.tag:
@@ -2166,6 +2220,16 @@ class XmlDictConfig(dict):
 
 
 def process_xml(xml):
+    """
+    Take the xml and put it into a dictionary. The process the dictionary
+    recursively.  This returns a class based on the XML API.  Thus, properties
+    will have the camel case found in the Java XML.  This a trade-off
+    to reduce the number of "static" classes that all have to be synchronized
+    with any changes in the API.
+    :param xml: The serialized version of the XML returned from Cloud Control
+    :return:  a dynamic class that inherits from ClassFactory
+    :rtype: `ClassFactory`
+    """
     global attrs
     tree = etree.parse(BytesIO(xml))
     root = tree.getroot()
