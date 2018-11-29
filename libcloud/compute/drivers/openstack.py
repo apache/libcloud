@@ -1168,7 +1168,8 @@ class OpenStackSecurityGroupRule(object):
                 self.direction = direction
             else:
                 raise OpenStackException("Security group direction incorrect "
-                                         "value: ingress or egress.")
+                                         "value: ingress or egress.", 500,
+                                         driver)
 
         self.tenant_id = tenant_id
         self.extra = extra or {}
