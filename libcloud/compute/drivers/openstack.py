@@ -2668,7 +2668,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
 
     def _to_port(self, element):
-        created = element['created_at']
+        created = element.get('created_at')
         updated = element.get('updated_at')
         return OpenStack_2_PortInterface(
             id=element['id'],
