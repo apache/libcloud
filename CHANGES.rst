@@ -10,7 +10,7 @@ Changes in Apache Libcloud in development
 Common
 ~~~~~~
 
-- [OpenStack] Handle missing user "enabled" attribute (GITHUB-1261)
+- [OpenStack] Handle missing user enabled attribute (GITHUB-1261)
   [Ken Dreyer]
 
 Compute
