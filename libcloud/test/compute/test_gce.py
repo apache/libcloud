@@ -60,7 +60,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.driver = GCENodeDriver(*GCE_PARAMS, **kwargs)
 
     def test_default_scopes(self):
-        self.assertEqual(self.driver.scopes, None)
+        self.assertIsNone(self.driver.scopes)
 
     def test_timestamp_to_datetime(self):
         timestamp1 = '2013-06-26T10:05:19.340-07:00'
@@ -2157,7 +2157,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertFalse(zone.next_mw_duration)
 
         zone_no_mw = self.driver.ex_get_zone('us-central1-a')
-        self.assertEqual(zone_no_mw.time_until_mw, None)
+        self.assertIsNone(zone_no_mw.time_until_mw)
 
 
 class GCEMockHttp(MockHttp):

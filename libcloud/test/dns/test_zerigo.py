@@ -69,8 +69,8 @@ class ZerigoTests(unittest.TestCase):
         self.assertEqual(records[0].type, RecordType.A)
         self.assertEqual(records[0].data, '172.16.16.1')
         self.assertEqual(records[0].extra['fqdn'], 'www.example.com')
-        self.assertEqual(records[0].extra['notes'], None)
-        self.assertEqual(records[0].extra['priority'], None)
+        self.assertIsNone(records[0].extra['notes'])
+        self.assertIsNone(records[0].extra['priority'])
 
         self.assertEqual(records[1].name, 'test')
         self.assertEqual(records[1].extra['ttl'], 3600)
@@ -80,8 +80,8 @@ class ZerigoTests(unittest.TestCase):
         record1 = list(self.driver.list_records(zone=zone))[-1]
         record2 = list(self.driver.list_records(zone=zone))[-2]
 
-        self.assertEqual(record1.name, None)
-        self.assertEqual(record2.name, None)
+        self.assertIsNone(record1.name)
+        self.assertIsNone(record2.name)
 
     def test_list_records_no_results(self):
         zone = self.driver.list_zones()[0]
