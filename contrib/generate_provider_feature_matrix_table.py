@@ -242,11 +242,6 @@ def generate_providers_table(api):
         drivers = DNS_DRIVERS
         provider = DNSProvider
         get_driver_method = get_dns_driver
-    elif api == 'drs':
-        driver = DRSDriver
-        drivers = DRS_DRIVERS
-        provider = DRSProvider
-        get_driver_method = get_drs_driver
     elif api == 'container':
         driver = ContainerDriver
         drivers = CONTAINER_DRIVERS
