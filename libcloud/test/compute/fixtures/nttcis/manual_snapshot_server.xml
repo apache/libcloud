@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server xmlns="urn:didata.com:api:cloud:types" id="e1eb7d71-93c9-4b9c-807c-e05932dc8143" datacenterId="EU6">
+    <name>test</name>
+    <description>auto_created_server</description>
+    <cpu count="2" speed="STANDARD" coresPerSocket="1"/>
+    <memoryGb>4</memoryGb>
+    <scsiController state="NORMAL" id="f6a0a9b4-8e8e-4db4-84a3-6aed43f2a6ee" adapterType="LSI_LOGIC_PARALLEL" key="1000" busNumber="0">
+        <disk state="NORMAL" id="b96f35f3-ad63-489a-9e0e-a675cd1d1143" sizeGb="20" speed="STANDARD" scsiId="0"/>
+    </scsiController>
+    <networkInfo networkDomainId="6aafcf08-cb0b-432c-9c64-7371265db086">
+        <primaryNic id="8f2c0823-94f9-4ac7-a59d-d0ed292da7b0" privateIpv4="10.1.1.10" ipv6="2a00:47c0:111:1331:524d:5ca0:b59c:4220" vlanId="eb05a24e-85a6-46e3-a7c9-f1765737476d" vlanName="sdk_vlan1" networkAdapter="VMXNET3" connected="true" macAddress="00:50:56:bb:9b:d5" key="4000" state="NORMAL"/>
+    </networkInfo>
+    <snapshotService servicePlan="ADVANCED" state="NORMAL" manualSnapshotInProgress="false">
+        <window dayOfWeek="DAILY" startHour="12"/>
+    </snapshotService>
+    <source type="IMAGE_ID" value="81a36aa0-555c-4735-b965-4b64fcf0ac8f"/>
+    <createTime>2018-11-15T19:23:36.000Z</createTime>
+    <deployed>true</deployed>
+    <started>true</started>
+    <state>NORMAL</state>
+    <guest osCustomization="true">
+        <operatingSystem id="UBUNTU1664" displayName="UBUNTU16/64" family="UNIX" osUnitsGroupId="CANONICAL"/>
+        <vmTools type="OPEN_VM_TOOLS" versionStatus="UNMANAGED" runningStatus="RUNNING" apiVersion="10304"/>
+    </guest>
+    <virtualHardware version="vmx-10" upToDate="false"/>
+</server>

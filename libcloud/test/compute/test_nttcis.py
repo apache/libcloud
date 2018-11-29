@@ -186,6 +186,42 @@ def test_list_datacenter_snapshot_windows(driver):
     assert isinstance(ret[0], dict)
 
 
+def test_list_snapshots(driver):
+    NttCisMockHttp.type = None
+    snapshots = driver.list_snapshots('sdk_server_1', page_size=1)
+    assert len(snapshots) == 1
+    assert snapshots[0]['id'] == "d11940a8-1455-43bf-a2de-b51a38c2aa94"
+
+
+def test_enable_snapshot_service(driver):
+    NttCisMockHttp.type = None
+    window_id = 'ea646520-4272-11e8-838c-180373fb68df'
+    node = 'e1eb7d71-93c9-4b9c-807c-e05932dc8143'
+    result = driver.ex_enable_snapshots(node, window_id)
+    assert result is True
+
+
+def test_initiate_manual_snapshot(driver):
+    NttCisMockHttp.type = None
+    result = driver.ex_initiate_manual_snapshot('test', 'e1eb7d71-93c9-4b9c-807c-e05932dc8143')
+    assert result is True
+
+
+def test_create_snapshot_preview_server(driver):
+    snapshot_id = "dd9a9e7e-2de7-4543-adef-bb1fda7ac030"
+    server_name = "test_snapshot"
+    start = "true"
+    nic_connected = "true"
+    result = driver.ex_create_snapshot_preview_server(
+        snapshot_id, server_name, start, nic_connected)
+    assert result is True
+
+
+def test_disable_node_snapshot(driver):
+    node = "e1eb7d71-93c9-4b9c-807c-e05932dc8143"
+    assert driver.ex_disable_snapshots(node) is True
+
+
 def test_reboot_node_response(driver):
     node = Node(id='11', name=None, state=None,
                 public_ips=None, private_ips=None, driver=driver)
@@ -3028,5 +3064,47 @@ class NttCisMockHttp(MockHttp):
         self, method, url, body, headers):
         body = self.fixtures.load(
             'deploy_customised_server.xml'
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_snapshot(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "list_server_snapshots.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_enableSnapshotService(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "enable_snapshot_service.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_initiateManualSnapshot(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "initiate_manual_snapshot.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e1eb7d71_93c9_4b9c_807c_e05932dc8143(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "manual_snapshot_server.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_createSnapshotPreviewServer(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "create_preview_server.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_disableSnapshotService(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "disable_server_snapshot_service.xml"
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
