@@ -38,7 +38,6 @@ Main
     storage/index
     loadbalancer/index
     dns/index
-    drs/index
     container/index
     backup/index
     troubleshooting
