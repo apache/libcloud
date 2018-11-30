@@ -4,8 +4,14 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+General
+~~~~~~~
+
 - Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
   [Mitch Raful]
+
+- Use assertIsNone instead of assertEqual with None in tests (GITHUB-1264)
+  [Ken Dreyer]
 
 Common
 ~~~~~~
