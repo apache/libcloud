@@ -1,5 +1,5 @@
 import pytest
-
+from dateutil.parser import parse
 
 import sys
 from types import GeneratorType
@@ -1844,6 +1844,82 @@ def test_ex_list_tags_ALLPARAMS(driver):
     assert len(tags) == 3
 
 
+def test_list_consistency_groups(driver):
+    cgs = driver.list_consistency_groups()
+    assert isinstance(cgs, list)
+
+
+def test_list_cg_by_src_net_domain(driver):
+    nd = "f9d6a249-c922-4fa1-9f0f-de5b452c4026"
+    cgs = driver.list_consistency_groups(source_network_domain_id=nd)
+    assert cgs[0].name == "sdk_test2_cg"
+
+
+def test_list_cg_by_name(driver):
+    NttCisMockHttp.type = "CG_BY_NAME"
+    name = "sdk_test2_cg"
+    cg = driver.list_consistency_groups(name=name)
+    assert cg[0].id == "195a426b-4559-4c79-849e-f22cdf2bfb6e"
+
+
+def test_get_consistency_group_by_id(driver):
+    NttCisMockHttp.type = None
+    cgs = driver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    cg = driver.get_consistency_group(cg_id)
+    assert hasattr(cg, 'description')
+
+
+def test_get_drs_snapshots(driver):
+    NttCisMockHttp.type = None
+    cgs = driver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    snaps = driver.list_consistency_group_snapshots(cg_id)
+    assert hasattr(snaps, 'journalUsageGb')
+
+
+def test_get_drs_snapshots_by_min_max(driver):
+    cgs = driver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    snaps = driver.list_consistency_group_snapshots(
+        cg_id,
+        create_time_min="2018-11-28T00:00:00.000Z",
+        create_time_max="2018-11-29T00:00:00.000Z")
+    for snap in snaps.snapshot:
+        assert (parse(snaps.snapshot[0].createTime) < parse(snap.createTime)) is False
+
+
+def test_get_drs_snapshots_by_min(driver):
+    cgs = driver.list_consistency_groups()
+    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
+    snaps = driver.list_consistency_group_snapshots(
+        cg_id,
+        create_time_min="2018-11-29T00:00:00.000-05:00")
+    for snap in snaps.snapshot:
+        assert (parse(snaps.snapshot[0].createTime) < parse(snap.createTime)) is False
+
+
+def test_expand_drs_journal(driver):
+    cgs = driver.list_consistency_groups(name="sdk_test2_cg")
+    cg_id = cgs[0].id
+    expand_by = "100"
+    result = driver.expand_journal(cg_id, expand_by)
+    assert result is True
+
+
+def test_start_drs_snapshot_preview(driver):
+    cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
+    snapshot_id = "3893"
+    result = driver.start_drs_failover_preview(cg_id, snapshot_id)
+    assert result is True
+
+
+def test_stop_drs_snapshot_preivew(driver):
+    cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
+    result = driver.stop_drs_failover_preview(cg_id)
+    assert result is True
+
+
 class InvalidRequestError(Exception):
     def __init__(self, tag):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
@@ -1869,6 +1945,22 @@ class NttCisMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_ALLFILTERS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_NET_DOMAIN(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_CG_BY_NAME(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_MIN_MAX(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_MIN(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2107,7 +2199,7 @@ class NttCisMockHttp(MockHttp):
             'server_startServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_sna_compute_hutdownServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}shutdownServer":
             raise InvalidRequestError(request.tag)
@@ -3106,5 +3198,75 @@ class NttCisMockHttp(MockHttp):
         self, method, url, body, headers):
         body = self.fixtures.load(
             "disable_server_snapshot_service.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_consistencyGroup(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "list_consistency_groups.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_consistencyGroup_NET_DOMAIN(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "cg_by_src_network_domain.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_consistencyGroup_CG_BY_NAME(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "get_cg_by_name_or_id.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_consistencyGroup_195a426b_4559_4c79_849e_f22cdf2bfb6e(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "get_cg_by_name_or_id.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_snapshot(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "list_drs_snapshots.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_snapshot_MIN_MAX(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_snap_shots_by_min_max_time.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_snapshot_MIN(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_snap_shots_by_min.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_expandJournal(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_expand_journal.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_startPreviewSnapshot(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_start_failover_preview.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_stopPreviewSnapshot(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_stop_failover_preview.xml"
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
