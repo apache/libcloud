@@ -1920,6 +1920,20 @@ def test_stop_drs_snapshot_preivew(driver):
     assert result is True
 
 
+def test_start_drs_failover_invalid_status(driver):
+    NttCisMockHttp.type = "INVALID_STATUS"
+    cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
+    with pytest.raises(NttCisAPIException) as excinfo:
+        result = driver.initiate_drs_failover(cg_id)
+    assert "INVALID_STATUS" in excinfo.value.code
+
+
+def test_initiate_drs_failover(driver):
+    cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
+    result = driver.initiate_drs_failover(cg_id)
+    assert result is True
+
+
 class InvalidRequestError(Exception):
     def __init__(self, tag):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
@@ -1961,6 +1975,10 @@ class NttCisMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_MIN(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_INVALID_STATUS(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3268,5 +3286,19 @@ class NttCisMockHttp(MockHttp):
         self, method, url, body, headers):
         body = self.fixtures.load(
             "drs_stop_failover_preview.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_initiateFailover_INVALID_STATUS(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_invalid_status.xml"
+        )
+        return httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_initiateFailover(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_initiate_failover.xml"
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
