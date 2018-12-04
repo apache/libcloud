@@ -25,6 +25,9 @@ Compute
 - [OpenStack] Implement OpenStack_1_1_NodeDriver ex_get_snapshot (GITHUB-1257)
   [Rick van de Loo]
 
+- [OpenStack] Pagination in various OpenStack_2_NodeDriver methods (GITHUB-1263)
+  [Rick van de Loo]
+
 - [OpenStack] Implement OpenStack_2_NodeDriver ex_create_subnet (LIBCLOUD-874, GITHUB-1242)
   [Miguel Caballer]
 
