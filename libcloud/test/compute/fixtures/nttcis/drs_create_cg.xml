@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181204T165435521-0500_b730567e-d306-40c5-a9a3-27b018f60fc7">
+    <operation>CREATE_CONSISTENCY_GROUP</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Create Consistency Group has been accepted. Please use appropriate Get or List API for status.</message>
+    <info name="consistencyGroupId" value="fad067be-6ca7-495d-99dc-7921c5f2ca5d"/>
+</response>

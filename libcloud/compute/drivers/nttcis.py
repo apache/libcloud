@@ -1017,7 +1017,6 @@ class NttCisNodeDriver(NodeDriver):
                         'urn:tag')
                     ET.SubElement(tag_elem,
                                   'urn:tagKeyName').text = k
-
                     if v is not None:
                         ET.SubElement(tag_elem,
                                       'urn:value').text = v

@@ -1934,6 +1934,42 @@ def test_initiate_drs_failover(driver):
     assert result is True
 
 
+def test_create_drs_fail_not_supported(driver):
+    NttCisMockHttp.type = "FAIL_NOT_SUPPORTED"
+    src_id = "032f3967-00e4-4780-b4ef-8587460f9dd4"
+    target_id = "aee58575-38e2-495f-89d3-854e6a886411"
+    with pytest.raises(NttCisAPIException) as excinfo:
+        result = driver.create_consistency_group(
+            "sdk_cg", "100", src_id, target_id, description="A test consistency group")
+    exception_msg = excinfo.value.msg
+    assert exception_msg == 'DRS is not supported between source Data Center NA9 and target Data Center NA12.'
+
+
+def test_create_drs_cg_fail_ineligble(driver):
+    NttCisMockHttp.type = "FAIL_INELIGIBLE"
+    src_id = "032f3967-00e4-4780-b4ef-8587460f9dd4"
+    target_id = "aee58575-38e2-495f-89d3-854e6a886411"
+    with pytest.raises(NttCisAPIException) as excinfo:
+        driver.create_consistency_group(
+            "sdk_test2_cg", "100", src_id, target_id, description="A test consistency group")
+    exception_msg = excinfo.value.msg
+    assert exception_msg == 'The drsEligible flag for target Server aee58575-38e2-495f-89d3-854e6a886411 must be set.'
+
+
+def test_create_drs_cg(driver):
+    src_id = "032f3967-00e4-4780-b4ef-8587460f9dd4"
+    target_id = "aee58575-38e2-495f-89d3-854e6a886411"
+    result = driver.create_consistency_group(
+        "sdk_test2_cg2", "100", src_id, target_id, description="A test consistency group")
+    assert result is True
+
+
+def test_delete_consistency_group(driver):
+    cg_id = "fad067be-6ca7-495d-99dc-7921c5f2ca5"
+    result = driver.delete_consistency_group(cg_id)
+    assert result is True
+
+
 class InvalidRequestError(Exception):
     def __init__(self, tag):
         super(InvalidRequestError, self).__init__("Invalid Request - %s" % tag)
@@ -1979,6 +2015,14 @@ class NttCisMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_INVALID_STATUS(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_FAIL_INELIGIBLE(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_FAIL_NOT_SUPPORTED(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -3302,3 +3346,32 @@ class NttCisMockHttp(MockHttp):
             "drs_initiate_failover.xml"
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_createConsistencyGroup_FAIL_INELIGIBLE(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_fail_create_cg_ineligible.xml"
+        )
+        return httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_createConsistencyGroup_FAIL_NOT_SUPPORTED(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_fail_create_cg_not_supported.xml"
+        )
+        return httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_createConsistencyGroup(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_create_cg.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_consistencyGroup_deleteConsistencyGroup(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "drs_delete_consistency_group.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
