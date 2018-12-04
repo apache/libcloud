@@ -863,6 +863,15 @@ class VCloud_1_5_Connection(VCloudConnection):
 
 
 class VCloud_5_5_Connection(VCloud_1_5_Connection):
+
+    def _get_auth_headers(self):
+        """Compatibility for using v5.5+ APIs"""
+        return {
+            'Authorization': "Basic %s" % base64.b64encode(
+                b('%s:%s' % (self.user_id, self.key))).decode('utf-8'),
+            'Accept': 'application/*+xml;version=5.5'
+        }
+
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/*+xml;version=5.5'
         headers['x-vcloud-authorization'] = self.token
