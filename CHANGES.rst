@@ -4,13 +4,19 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+General
+~~~~~~~
+
 - Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
   [Mitch Raful]
 
-Container
-~~~~~~~~~
+- Use assertIsNone instead of assertEqual with None in tests (GITHUB-1264)
+  [Ken Dreyer]
 
-- [Docker] Improve docstring for RegistryClient (GITHUB-1254)
+Common
+~~~~~~
+
+- [OpenStack] Handle missing user enabled attribute (GITHUB-1261)
   [Ken Dreyer]
 
 Compute
@@ -19,8 +25,68 @@ Compute
 - [OpenStack] Implement OpenStack_1_1_NodeDriver ex_get_snapshot (GITHUB-1257)
   [Rick van de Loo]
 
+- [OpenStack] Pagination in various OpenStack_2_NodeDriver methods (GITHUB-1263)
+  [Rick van de Loo]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_create_subnet (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_delete_subnet (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver list_volumes (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_get_volume (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver create_volume (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver destroy_volume (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_list_snapshots (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver create_volume_snapshot (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver destroy_volume_snapshot (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_list_security_groups (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_create_security_group (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_delete_security_group (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_create_security_group_rule (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_delete_security_group_rule (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Implement OpenStack_2_NodeDriver ex_list_floating_ip_pools (LIBCLOUD-874, GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Fix parse_error if 'code' not in API response message (GITHUB-1242)
+  [Miguel Caballer]
+
+- [OpenStack] Adapt _to_port function to work with old OpenStack versions (GITHUB-1242)
+  [Miguel Caballer]
+
 - [UpCloud] Update documentation for UpCloud driver (LIBCLOUD-1026, GITHUB-1259)
   [Ilari Mäkelä]
+
+Container
+~~~~~~~~~
+
+- [Docker] Improve docstring for RegistryClient (GITHUB-1254)
+  [Ken Dreyer]
 
 Changes in Apache Libcloud 2.4.0
 --------------------------------

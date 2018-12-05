@@ -1,0 +1,52 @@
+{
+    "snapshots_links": [
+      {
+        "href": "https://api.example.com:8776/v2/abcdec85bee34bb0a44ab8255eb36fbd/snapshots?&marker=abcde279-4cc0-4b47-a4ee-ec9c9e474b1b",
+        "rel": "next"
+      }
+    ],
+    "snapshots": [
+        {
+            "status": "available",
+            "metadata": {
+                "name": "test"
+            },
+            "os-extended-snapshot-attributes:progress": "100%",
+            "name": "snap-101",
+            "volume_id": "473f7b48-c4c1-4e70-9acc-086b39073506",
+            "os-extended-snapshot-attributes:project_id": "bab7d5c60cd041a0a36f7c4b6e1dd978",
+            "created_at": "2012-02-29T03:50:07Z",
+            "size": 1,
+            "id": "3fbbcccf-d058-4502-8844-6feeffdf4cb5",
+            "description": "volume snapshot"
+        },
+        {
+            "status": "available",
+            "metadata": {
+                "name": "test2"
+            },
+            "os-extended-snapshot-attributes:progress": "100%",
+            "name": "test-volume-snapshot2",
+            "volume_id": "7edbc2f4-1507-44f8-ac0d-eed1d2608d38",
+            "os-extended-snapshot-attributes:project_id": "bab7d5c60cd041a0a36f7c4b6e1dd978",
+            "created_at": "2015-11-29T02:25:51.000000",
+            "size": 1,
+            "id": "5fbbdccf-e058-6502-8844-6feeffdf4cb5",
+            "description": "volume snapshot"
+        },
+        {
+            "status": "available",
+            "metadata": {
+                "name": "test2"
+            },
+            "os-extended-snapshot-attributes:progress": "100%",
+            "name": "test-volume-snapshot",
+            "volume_id": "473f7b48-c4c1-4e70-9acc-086b39073506",
+            "os-extended-snapshot-attributes:project_id": "bab7d5c60cd041a0a36f7c4b6e1dd978",
+            "created_at": "2013-02-29T03:50:07Z",
+            "size": 1,
+            "id": "2fbbcccf-d058-4502-8844-6feeffdf4cb5",
+            "description": "volume snapshot"
+        }
+    ]
+}

@@ -40,7 +40,7 @@ class GoogleTests(GoogleTestCase):
         self.driver = GoogleDNSDriver(*DNS_PARAMS_GOOGLE, **kwargs)
 
     def test_default_scopes(self):
-        self.assertEqual(self.driver.scopes, None)
+        self.assertIsNone(self.driver.scopes)
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
