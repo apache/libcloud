@@ -84,16 +84,17 @@ class DummyNodeDriver(NodeDriver):
             self.nl = []
             startip = _ip_to_int('127.0.0.1')
             for i in range(num):
-                ip = _int_to_ip(startip + i)
-                self.nl.append(
-                    Node(id=i,
-                         name='dummy-%d' % (i),
-                         state=NodeState.RUNNING,
-                         public_ips=[ip],
-                         private_ips=[],
-                         driver=self,
-                         extra={'foo': 'bar'})
-                )
+                if i:
+                    ip = _int_to_ip(startip + i)
+                    self.nl.append(
+                        Node(id=i,
+                             name='dummy-%d' % (i),
+                             state=NodeState.RUNNING,
+                             public_ips=[ip],
+                             private_ips=[],
+                             driver=self,
+                             extra={'foo': 'bar'})
+                    )
         else:
             self.nl = [
                 Node(id=1,
