@@ -1,0 +1,18 @@
+{
+    "volume": {
+        "status": "available",
+        "attachments": [],
+        "availability_zone": "nova",
+        "bootable": "false",
+        "os-vol-host-attr:host": "ip-10-168-107-25",
+        "source_volid": null,
+        "snapshot_id": null,
+        "id": "cd76a3a1-c4ce-40f6-9b9f-07a61508938d",
+        "description": "Super volume.",
+        "name": "test",
+        "created_at": "2013-02-25T02:40:21.000000",
+        "volume_type": "None",
+        "size": 1,
+        "metadata": {}
+    }
+}

@@ -59,7 +59,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         record = records[0]
         self.assertEqual(record.id, '364797364')
-        self.assertEqual(record.name, None)
+        self.assertIsNone(record.name)
         self.assertEqual(record.type, 'A')
         self.assertEqual(record.data, '192.30.252.153')
 

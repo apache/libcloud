@@ -114,7 +114,7 @@ class OneAndOneTests(unittest.TestCase):
         self.assertEqual(node.name, "Docs Content Test Server: CentOS 7-1")
         self.assertEqual(node.extra["description"], "My server description")
 
-        self.assertEqual(node.extra["status"]["percent"], None)
+        self.assertIsNone(node.extra["status"]["percent"])
         self.assertEqual(node.extra["status"]["state"], "POWERED_ON")
 
         self.assertEqual(node.extra["image"]["id"],
@@ -142,11 +142,11 @@ class OneAndOneTests(unittest.TestCase):
                          "FDBE99EDD57F8596CBF71B6B64BD0A92")
         self.assertEqual(node.extra["ips"][0]["ip"], "62.151.179.99")
 
-        self.assertEqual(node.extra["monitoring_policy"], None)
+        self.assertIsNone(node.extra["monitoring_policy"])
         self.assertEqual(node.extra["alerts"], [])
-        self.assertEqual(node.extra["snapshot"], None)
-        self.assertEqual(node.extra["dvd"], None)
-        self.assertEqual(node.extra["private_networks"], None)
+        self.assertIsNone(node.extra["snapshot"])
+        self.assertIsNone(node.extra["dvd"])
+        self.assertIsNone(node.extra["private_networks"])
 
     def test_ex_list_datacenters(self):
         datacenters = self.driver.ex_list_datacenters()

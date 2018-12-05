@@ -31,8 +31,8 @@ class BaseDriverTestCase(unittest.TestCase):
         DummyDriver1.connectionCls = Mock()
         DummyDriver1(key='foo')
         call_kwargs = DummyDriver1.connectionCls.call_args[1]
-        self.assertEqual(call_kwargs['timeout'], None)
-        self.assertEqual(call_kwargs['retry_delay'], None)
+        self.assertIsNone(call_kwargs['timeout'])
+        self.assertIsNone(call_kwargs['retry_delay'])
 
         # 2. Timeout provided as constructor argument
         class DummyDriver1(BaseDriver):
@@ -42,7 +42,7 @@ class BaseDriverTestCase(unittest.TestCase):
         DummyDriver1(key='foo', timeout=12)
         call_kwargs = DummyDriver1.connectionCls.call_args[1]
         self.assertEqual(call_kwargs['timeout'], 12)
-        self.assertEqual(call_kwargs['retry_delay'], None)
+        self.assertIsNone(call_kwargs['retry_delay'])
 
         # 3. timeout provided via "_ex_connection_class_kwargs" method
         class DummyDriver2(BaseDriver):

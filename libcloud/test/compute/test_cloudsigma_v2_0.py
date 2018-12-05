@@ -219,9 +219,9 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(rule.direction, 'out')
         self.assertEqual(rule.dst_ip, '23.0.0.0/32')
         self.assertEqual(rule.ip_proto, 'tcp')
-        self.assertEqual(rule.dst_port, None)
-        self.assertEqual(rule.src_ip, None)
-        self.assertEqual(rule.src_port, None)
+        self.assertIsNone(rule.dst_port)
+        self.assertIsNone(rule.src_ip)
+        self.assertIsNone(rule.src_port)
         self.assertEqual(rule.comment, 'Drop traffic from the VM to IP address 23.0.0.0/32')
 
     def test_ex_create_firewall_policy_no_rules(self):
