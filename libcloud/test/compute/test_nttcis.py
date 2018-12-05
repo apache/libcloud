@@ -1,7 +1,5 @@
 import pytest
 from dateutil.parser import parse
-
-import sys
 from types import GeneratorType
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import ET
@@ -11,10 +9,6 @@ from libcloud.common.nttcis import NttCisServerCpuSpecification, NttCisServerDis
 from libcloud.common.nttcis import NttCisTag, NttCisTagKey
 from libcloud.common.nttcis import NttCisServerCpuSpecification
 from libcloud.common.nttcis import NttCisServerDisk
-from libcloud.common.nttcis import NttCisIpAddress, \
-    NttCisIpAddressList, NttCisChildIpAddressList, \
-    NttCisPortList, NttCisPort, NttCisChildPortList
-from libcloud.common.nttcis import ClassFactory
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
 from libcloud.compute.drivers.nttcis import NttCisNic
@@ -2261,7 +2255,7 @@ class NttCisMockHttp(MockHttp):
             'server_startServer_INPROGRESS.xml')
         return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_sna_compute_hutdownServer(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_shutdownServer(self, method, url, body, headers):
         request = ET.fromstring(body)
         if request.tag != "{urn:didata.com:api:cloud:types}shutdownServer":
             raise InvalidRequestError(request.tag)
@@ -3374,4 +3368,3 @@ class NttCisMockHttp(MockHttp):
             "drs_delete_consistency_group.xml"
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
-

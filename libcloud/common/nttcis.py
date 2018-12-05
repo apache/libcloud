@@ -17,7 +17,7 @@ NTTCIS Common Components
 """
 import xml.etree.ElementTree as etree
 import re
-from functools import wraps, total_ordering
+from functools import wraps
 from copy import deepcopy
 from base64 import b64encode
 from time import sleep
@@ -2095,7 +2095,6 @@ def processor(mapping, name=None):
     return process(mapping)
 
 
-@total_ordering
 def class_factory(cls_name, attrs):
     """
     This class takes a name and a dictionary to create a class.
