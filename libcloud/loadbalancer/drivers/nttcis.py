@@ -12,7 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import OpenSSL.crypto
+try:
+    import OpenSSL
+    OpenSSL
+except ImportError:
+    raise ImportError('Missing "OpenSSL" dependency. You can install it '
+                      'using pip - pip install pyopenssl')
+from OpenSSL import crypto
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import NttCisPool
@@ -833,10 +839,10 @@ class NttCisLBDriver(Driver):
         :type description: ``str``
         :return: ``bool``
         """
-        c = OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, open(chain_crt_file).read())
+        c = crypto.load_certificate(
+            crypto.FILETYPE_PEM, open(chain_crt_file).read())
         cert = OpenSSL.crypto.dump_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, c).decode(encoding='utf-8')
+            crypto.FILETYPE_PEM, c).decode(encoding='utf-8')
         cert_chain_elem = ET.Element("importSslCertificateChain",
                                      {"xmlns": TYPES_URN})
         ET.SubElement(cert_chain_elem, "networkDomainId") \
