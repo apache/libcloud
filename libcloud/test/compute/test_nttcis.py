@@ -1880,7 +1880,7 @@ def test_get_drs_snapshots_by_min_max(driver):
         create_time_min="2018-11-28T00:00:00.000Z",
         create_time_max="2018-11-29T00:00:00.000Z")
     for snap in snaps.snapshot:
-        assert (parse(snaps.snapshot[0].createTime) < parse(snap.createTime)) is False
+        assert "2018-12" not in snap
 
 
 def test_get_drs_snapshots_by_min(driver):
