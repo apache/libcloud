@@ -27,6 +27,8 @@ from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.dns.types import Provider, RecordType
 from libcloud.utils.py3 import httplib
 
+API_HOST = 'my.rcodezero.at'
+
 __all__ = [
     'RcodeZeroDNSDriver',
 ]
@@ -61,6 +63,8 @@ class RcodeZeroResponse(JsonResponse):
 
 class RcodeZeroConnection(ConnectionKey):
     responseCls = RcodeZeroResponse
+
+    host = API_HOST
 
     def add_default_headers(self, headers):
         headers['Authorization'] = 'Bearer ' + self.key
@@ -104,7 +108,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         RecordType.TXT: 'TXT',
     }
 
-    def __init__(self, key, secret=None, secure=True, host='my.rcodezero.at',
+    def __init__(self, key, secret=None, secure=True, host=None,
                  port=None, api_version='v1', **kwargs):
         """
         :param    key: API token to be used (required)
@@ -117,7 +121,6 @@ class RcodeZeroDNSDriver(DNSDriver):
         :type     secure: ``bool``
 
         :param    host: Hostname used for connections.
-                        Default: ``my.rcodezero.at``.
         :type     host: ``str``
 
         :param    port: Port used for connections.
