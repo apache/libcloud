@@ -182,7 +182,7 @@ class RcodeZeroDNSDriver(DNSDriver):
                                             value=e.message)
             raise e
 
-        if not (extra is None or extra.get('ttl', None) is None):
+        if extra is not None and extra.get('ttl', None) is not None:
             ttl = extra['ttl']
         else:
             ttl = None
