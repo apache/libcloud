@@ -365,7 +365,7 @@ class RcodeZeroDNSDriver(DNSDriver):
                                          type=None, ttl=None, driver=self,
                                          extra=None))
 
-        foundrecords = filter(lambda x: x.id == record_id, records)
+        foundrecords = list(filter(lambda x: x.id == record_id, records))
 
         if len(foundrecords) > 0:
             return(foundrecords[0])

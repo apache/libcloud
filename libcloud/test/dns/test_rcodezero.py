@@ -68,8 +68,8 @@ class RcodeZeroDNSTestCase(LibcloudTestCase):
         self.assertTrue(self.test_zone.delete())
 
     def test_get_record(self):
-        with self.assertRaises(NotImplementedError):
-            self.driver.get_record('example.com.', '12345')
+        record = self.driver.get_record('example.at.', '12345')
+        self.assertEqual(record, None)
 
     def test_get_zone(self):
         zone = self.driver.get_zone('example.at')
@@ -164,6 +164,9 @@ class RcodeZeroDNSMockHttp(MockHttp):
             raise NotImplementedError('Unexpected method: %s' % method)
         return (httplib.OK, body, self.base_headers,
                 httplib.responses[httplib.OK])
+
+    def _api_v1_zones_example_at__rrsets(self, method, *args, **kwargs):
+        return (self._api_v1_zones_example_at_rrsets(method, *args, **kwargs))
 
     def _api_v1_zones_example_at_rrsets(self, method, *args, **kwargs):
         if method == 'GET':
