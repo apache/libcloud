@@ -349,6 +349,28 @@ class RcodeZeroDNSDriver(DNSDriver):
 
         return self._to_zone(response.object)
 
+    def get_record(self, zone_id, record_id):
+        """
+        Return a Record instance.
+
+        :param zone_id: ID of the required zone
+        :type  zone_id: ``str``
+
+        :param record_id: ID of the required record
+        :type  record_id: ``str``
+
+        :rtype: :class:`Record`
+        """
+        records = self.list_records(Zone(id=zone_id, domain=zone_id,
+                    type=None, ttl=None, driver=self, extra=None))
+
+        foundrecords = filter(lambda x: x.id == record_id,records)
+
+        if len(foundrecords) > 0:
+            return(filter(lambda x: x.id == record_id,records)[0])
+        else:
+            return(None)
+
     def list_records(self, zone):
         """
         Return a list of all record objects for the given zone.
