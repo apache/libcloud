@@ -362,12 +362,13 @@ class RcodeZeroDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         records = self.list_records(Zone(id=zone_id, domain=zone_id,
-                    type=None, ttl=None, driver=self, extra=None))
+                                         type=None, ttl=None, driver=self,
+                                         extra=None))
 
-        foundrecords = filter(lambda x: x.id == record_id,records)
+        foundrecords = filter(lambda x: x.id == record_id, records)
 
         if len(foundrecords) > 0:
-            return(filter(lambda x: x.id == record_id,records)[0])
+            return(foundrecords[0])
         else:
             return(None)
 
