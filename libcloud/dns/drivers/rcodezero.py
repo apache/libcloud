@@ -110,6 +110,9 @@ class RcodeZeroDNSDriver(DNSDriver):
         :param    key: API token to be used (required)
         :type     key: ``str``
 
+        :param    secret: Password to be used, ignored by RcodeZero
+        :type     key: ``str``
+
         :param    secure: Whether to use HTTPS (default) or HTTP.
         :type     secure: ``bool``
 
