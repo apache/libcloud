@@ -322,14 +322,19 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         # when ex_node is not provided, volume is detached from all nodes
         failed_nodes = []
         for attachment in volume.extra['attachments']:
-            if not ex_node or ex_node.id == attachment['serverId']:
+            if not ex_node or ex_node.id in filter(None, (attachment.get(
+                'serverId'
+            ), attachment.get('server_id'))):
                 response = self.connection.request(
                     '/servers/%s/os-volume_attachments/%s' %
-                    (attachment['serverId'], attachment['id']),
+                    (attachment.get('serverId') or attachment['server_id'],
+                     attachment['id']),
                     method='DELETE')
 
                 if not response.success():
-                    failed_nodes.append(attachment['serverId'])
+                    failed_nodes.append(
+                        attachment.get('serverId') or attachment['server_id']
+                    )
         if failed_nodes:
             raise OpenStackException(
                 'detach_volume failed for nodes with id: %s' %
