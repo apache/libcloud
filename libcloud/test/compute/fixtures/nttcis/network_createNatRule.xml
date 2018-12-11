@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-06T05:53:37.334-05:00/fb842265-fa06-4ca9-a2af-a8a6815735fc">
+<operation>CREATE_NAT_RULE</operation>
+<responseCode>OK</responseCode>
+<message>NAT Rule with Id d31c2db0-be6b-4d50-8744-9a7a534b5fba has been
+created.</message>
+<info name="natRuleId" value="d31c2db0-be6b-4d50-8744-9a7a534b5fba"/>
+</response>

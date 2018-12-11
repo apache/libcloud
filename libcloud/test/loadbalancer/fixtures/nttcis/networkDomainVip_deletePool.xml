@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response requestId="na9/2015-05-14T13:37:20/62f06368-c3fb-11e3-b29c-
+001517c4643e"
+xmlns="urn:didata.com:api:cloud:types">
+<operation>DELETE_POOL</operation>
+<responseCode>OK</responseCode>
+<message>Pool (id:4d360b1f-bc2c-4ab7-9884-1f03ba2768f7) has been
+deleted.</message>
+</response>

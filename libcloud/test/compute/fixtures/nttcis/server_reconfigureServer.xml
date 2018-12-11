@@ -1,0 +1,5 @@
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na9/2015-1130T12:07:27.838-05:00/1e22a049-d772-4c39-943c-5c773a7ac9ae">
+    <operation>RECONFIGURE_SERVER</operation>
+    <responseCode>OK</responseCode>
+    <message>Request to reconfigure Server 'Production Server' has been accepted and is being processed.</message>
+</response>

@@ -35,13 +35,13 @@ class NsOneTests(unittest.TestCase):
 
         zone = zones[0]
         self.assertEqual(zone.id, '520422af9f782d37dffb588b')
-        self.assertEqual(zone.type, None)
+        self.assertIsNone(zone.type)
         self.assertEqual(zone.domain, 'example.com')
         self.assertEqual(zone.ttl, 3600)
 
         zone = zones[1]
         self.assertEqual(zone.id, '520422c99f782d37dffb5892')
-        self.assertEqual(zone.type, None)
+        self.assertIsNone(zone.type)
         self.assertEqual(zone.domain, 'nsoneisgreat.com')
         self.assertEqual(zone.ttl, 3600)
 
@@ -78,7 +78,7 @@ class NsOneTests(unittest.TestCase):
 
         self.assertEqual(zone.id, '52051b2c9f782d58bb4df41b')
         self.assertEqual(zone.domain, 'newzone.com')
-        self.assertEqual(zone.type, None),
+        self.assertIsNone(zone.type),
         self.assertEqual(zone.ttl, 3600)
 
     def test_create_zone_zone_already_exists(self):

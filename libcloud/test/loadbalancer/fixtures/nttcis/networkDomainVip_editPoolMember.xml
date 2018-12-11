@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-06-09T09:29:46.249-04:00/c128c717-b3b4-480a-ba93-e3fb2e32a9be">
+<operation>EDIT_POOL_MEMBER</operation>
+<responseCode>OK</responseCode>
+<message>Pool Member (10.0.3.13:9889) has been edited.</message>
+<info name="poolMemberId" value="3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0"/>
+</response>

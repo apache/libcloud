@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response requestId="na/2016-06-14T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e" xmlns="urn:didata.com:api:cloud:types">
+<operation>EDIT_SERVER_METADATA</operation>
+<responseCode>OK</responseCode>
+<message>Server 'Production Server' has been edited successfully.</message>
+</response>

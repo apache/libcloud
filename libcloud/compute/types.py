@@ -145,6 +145,7 @@ class Provider(Type):
     NIMBUS = 'nimbus'
     NINEFOLD = 'ninefold'
     NTTA = 'ntta'
+    NTTCIS = 'nttcis'
     ONEANDONE = 'oneandone'
     OPENNEBULA = 'opennebula'
     OPENSTACK = 'openstack'

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response requestId= "na/2016-11-14T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e" xmlns= "urn:didata.com:api:cloud:types" >
+    <operation>CREATE_ANTI_AFFINITY_RULE</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Create Anti-Affinity Rule has been accepted. Please use appropriate Get or List API for status.</message>
+</response>

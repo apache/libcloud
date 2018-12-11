@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<snapshotWindows pageNumber="1" pageCount="1" totalCount="4" pageSize="1" xmlns="urn:didata.com:api:cloud:types">
+<snapshotWindow id="f1d6a564-490e-4166-b91d-feddc1f92025" dayOfWeek="SUNDAY" startHour="12" timeZone="Etc/UTC" availabilityStatus="AVAILABLE" availableSlotCount="3"/>
+<snapshotWindow id="ffd6a564-490e-4166-b91d-feddc1f92022" dayOfWeek="MONDAY" startHour="4" timeZone="Etc/UTC" availabilityStatus="AVAILABLE" availableSlotCount="1"/>
+<snapshotWindow id="fgd6a564-490e-4166-b91d-feddc1f92023" dayOfWeek="FRIDAY" startHour="2" timeZone="Etc/UTC" availabilityStatus="AVAILABLE" availableSlotCount="2"/>
+<snapshotWindow id="fhd6a564-490e-4166-b91d-feddc1f92024" dayOfWeek="FRIDAY" startHour="14" timeZone="Etc/UTC" availabilityStatus="NOT_CURRENTLY_AVAILABLE" availableSlotCount="0"/>
+<snapshotWindow id="f2d6a564-490e-4166-b91d-feddc1f92021" dayOfWeek="FRIDAY" startHour="16" timeZone="Etc/UTC" availabilityStatus="RESERVED_FOR_MAINTENANCE" availableSlotCount="0"/>
+</snapshotWindows>

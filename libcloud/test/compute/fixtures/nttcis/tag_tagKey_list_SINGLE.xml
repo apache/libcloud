@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tagKeys xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="3" totalCount="3" pageSize="250">
+  <tagKey id="5ab77f5f-5aa9-426f-8459-4eab34e03d54">
+    <name>LibcloudTest</name>
+    <valueRequired>true</valueRequired>
+    <displayOnReport>true</displayOnReport>
+  </tagKey>
+</tagKeys>

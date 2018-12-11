@@ -1380,10 +1380,10 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         user = OpenStackIdentityUser(id=data['id'],
                                      domain_id=data['domain_id'],
                                      name=data['name'],
-                                     email=data['email'],
+                                     email=data.get('email'),
                                      description=data.get('description',
                                                           None),
-                                     enabled=data['enabled'])
+                                     enabled=data.get('enabled'))
         return user
 
     def _to_roles(self, data):

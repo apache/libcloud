@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T192343920-0400_d0381407-8141-4ddb-a08e-dae4ddde5cda">
+  <operation>EDIT_TAG_KEY</operation>
+  <responseCode>OK</responseCode>
+  <message>Tag Key 'ChangeNameTest' has been edited.</message>
+</response>

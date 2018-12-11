@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-05-29T11:57:29.793-04:00/9f7191df-de3a-4cf3-a0a1-6321e88b5af5">
+<operation>EDIT_POOL</operation>
+<responseCode>OK</responseCode>
+<message>Pool 'ProductionPool.2' has been updated.</message>
+<info name="name" value="ProductionPool.2"/>
+<info name="poolId" value="4d360b1f-bc2c-4ab7-9884-1f03ba2768f7"/>
+</response>

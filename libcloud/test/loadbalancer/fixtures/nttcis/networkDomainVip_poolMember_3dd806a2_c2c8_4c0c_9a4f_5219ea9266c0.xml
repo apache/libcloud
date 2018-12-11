@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<poolMember
+xmlns="urn:didata.com:api:cloud:types" id="3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-6116f11291d0</networkDomainId>
+<pool id="6f2f5d7b-cdd9-4d84-8ad7-999b64a87978"
+name="myDevelopmentPool.1"/>
+<node id="3c207269-e75e-11e4-811f-005056806999" name="10.0.3.13"
+ipAddress="10.0.3.13" status="ENABLED"/>
+<port>9889</port>
+<status>ENABLED</status>
+<state>NORMAL</state>
+<createTime>2015-06-09T11:02:50.000Z</createTime>
+</poolMember>

@@ -2132,7 +2132,7 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
-    def create_volume_snapshot(self, volume, name=None):
+    def create_volume_snapshot(self, volume, name=None, ex_metadata=None):
         """
         Create snapshot from volume
 
@@ -2141,6 +2141,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      name: Name of snapshot (optional)
         :type       name: ``str``
+
+        :keyword    ex_metadata: The Key/Value metadata to associate
+                                 with a snapshot (optional)
+        :type       ex_metadata: ``dict``
 
         :rtype: :class:`VolumeSnapshot`
         """
@@ -2153,11 +2157,15 @@ class BaseEC2NodeDriver(NodeDriver):
             params.update({
                 'Description': name,
             })
+        if ex_metadata is None:
+            ex_metadata = {}
+
         response = self.connection.request(self.path, params=params).object
         snapshot = self._to_snapshot(response, name)
 
-        if name and self.ex_create_tags(snapshot, {'Name': name}):
-            snapshot.extra['tags']['Name'] = name
+        ex_metadata.update(**{'Name': name} if name else {})
+        if self.ex_create_tags(snapshot, ex_metadata):
+            snapshot.extra['tags'] = ex_metadata
 
         return snapshot
 

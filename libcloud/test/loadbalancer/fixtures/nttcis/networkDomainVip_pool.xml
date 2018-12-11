@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pools
+xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="2"
+totalCount="2" pageSize="250">
+<pool id="4d360b1f-bc2c-4ab7-9884-1f03ba2768f7" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-
+6116f11291d0</networkDomainId>
+<name>myDevelopmentPool.1</name>
+<description>Pool for load balancing development application
+servers.</description>
+<loadBalanceMethod>ROUND_ROBIN</loadBalanceMethod>
+<healthMonitor id="01683574-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Http"/>
+<healthMonitor id="0168546c-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Https"/>
+<serviceDownAction>RESELECT</serviceDownAction>
+<slowRampTime>10</slowRampTime>
+<state>NORMAL</state>
+<createTime>2015-06-04T09:15:07.000Z</createTime>
+</pool>
+<pool id="afb1fb1a-eab9-43f4-95c2-36a4cdda6cb8" datacenterId="NA9">
+<networkDomainId>553f26b6-2a73-42c3-a78b-
+6116f11291d0</networkDomainId>
+<name>myProductionPool.1</name>
+<description>Pool for load balancing production application
+servers.</description>
+<loadBalanceMethod>ROUND_ROBIN</loadBalanceMethod>
+<healthMonitor id="01683574-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Http"/>
+<healthMonitor id="0168546c-d487-11e4-811f-005056806999"
+name="CCDEFAULT.Https"/>
+<serviceDownAction>NONE</serviceDownAction>
+<slowRampTime>10</slowRampTime>
+<state>NORMAL</state>
+<createTime>2015-06-03T14:11:17.000Z</createTime>
+</pool>
+</pools>

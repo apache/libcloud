@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defaultIrules
+ xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="5"
+totalCount="5" pageSize="250">
+ <defaultIrule>
+ <irule id="2b20cb2c-ffdc-11e4-b010-005056806999"
+name="CCDEFAULT.HttpsRedirect"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="HTTP"/>
+ </defaultIrule>
+ <defaultIrule>
+ <irule id="2b20abd9-ffdc-11e4-b010-005056806999"
+name="CCDEFAULT.IpProtocolTimers"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="HTTP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="ANY"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="ANY"/>
+ </defaultIrule>
+ <defaultIrule>
+ <irule id="2b20e790-ffdc-11e4-b010-005056806999"
+name="CCDEFAULT.Ips"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="HTTP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="UDP"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="ANY"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="TCP"/>
+ <virtualListenerCompatibility type="STANDARD" protocol="ANY"/>
+ </defaultIrule>
+ <defaultIrule>
+ <irule id="2b210846-ffdc-11e4-b010-005056806999"
+name="CCDEFAULT.IpsHttp"/>
+ <virtualListenerCompatibility type="PERFORMANCE_LAYER_4"
+protocol="HTTP"/>
+ </defaultIrule>
+ </defaultIrules>

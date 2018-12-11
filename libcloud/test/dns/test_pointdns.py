@@ -278,7 +278,7 @@ class PointDNSTests(unittest.TestCase):
         self.assertEqual(redirect1.name, 'redirect2.domain1.com.')
         self.assertEqual(redirect1.type, '302')
         self.assertEqual(redirect1.data, 'http://other.com')
-        self.assertEqual(redirect1.iframe, None)
+        self.assertIsNone(redirect1.iframe)
         self.assertEqual(redirect1.query, False)
         self.assertEqual(zone, redirect1.zone)
 
@@ -287,7 +287,7 @@ class PointDNSTests(unittest.TestCase):
         self.assertEqual(redirect2.name, 'redirect1.domain1.com.')
         self.assertEqual(redirect2.type, '302')
         self.assertEqual(redirect2.data, 'http://someother.com')
-        self.assertEqual(redirect2.iframe, None)
+        self.assertIsNone(redirect2.iframe)
         self.assertEqual(redirect2.query, False)
         self.assertEqual(zone, redirect1.zone)
 
@@ -377,7 +377,7 @@ class PointDNSTests(unittest.TestCase):
         self.assertEqual(redirect.name, 'redirect2.domain1.com.')
         self.assertEqual(redirect.type, '302')
         self.assertEqual(redirect.data, 'http://other.com')
-        self.assertEqual(redirect.iframe, None)
+        self.assertIsNone(redirect.iframe)
         self.assertEqual(redirect.query, False)
         self.assertEqual(zone.id, redirect.zone.id)
 
@@ -442,7 +442,7 @@ class PointDNSTests(unittest.TestCase):
         self.assertEqual(_redirect.name, 'redirect3.domain1.com.')
         self.assertEqual(_redirect.type, '302')
         self.assertEqual(_redirect.data, 'http://updatedother.com')
-        self.assertEqual(_redirect.iframe, None)
+        self.assertIsNone(_redirect.iframe)
         self.assertEqual(_redirect.query, False)
         self.assertEqual(zone.id, _redirect.zone.id)
 

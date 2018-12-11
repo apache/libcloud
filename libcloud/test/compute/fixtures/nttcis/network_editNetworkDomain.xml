@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-02-24T09:05:41.790-05:00/b24cbc7d-0648-4070-889f-7ab97bf21941">
+<operation>EDIT_NETWORK_DOMAIN</operation>
+<responseCode>OK</responseCode>
+<message>Network Domain 'Development Network Domain' was edited
+successfully.</message>
+</response>

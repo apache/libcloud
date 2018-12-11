@@ -276,10 +276,10 @@ class TestPlanPrice(unittest.TestCase):
 
     def test_plan_not_found_in_zone(self):
         location = NodeLocation(id='no_such_location', name='', country='', driver=None)
-        self.assertEqual(self.pp.get_price('1xCPU-1GB', location), None)
+        self.assertIsNone(self.pp.get_price('1xCPU-1GB', location))
 
     def test_no_location_given(self):
-        self.assertEqual(self.pp.get_price('1xCPU-1GB'), None)
+        self.assertIsNone(self.pp.get_price('1xCPU-1GB'))
 
 
 if __name__ == '__main__':

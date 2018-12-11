@@ -1,0 +1,14 @@
+{
+    "snapshot": {
+        "status": "available",
+        "os-extended-snapshot-attributes:progress": "100%",
+        "description": "Daily backup",
+        "created_at": "2013-02-25T04:13:17.07Z",
+        "metadata": {},
+        "volume_id": "5aa119a8-d25b-45a7-8d1b-88e127885635",
+        "os-extended-snapshot-attributes:project_id": "0c2eba2c5af04d3f9e9d0d410b371fde",
+        "size": 1,
+        "id": "3fbbcccf-d058-4502-8844-6feeffdf4cb5",
+        "name": "test"
+    }
+}

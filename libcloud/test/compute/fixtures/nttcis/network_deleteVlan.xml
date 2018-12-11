@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response requestId="NA9/2014-04-14T13:37:20/62f06368-c3fb-11e3-b29c-001517c4643e"
+xmlns="urn:didata.com:api:cloud:types">
+<operation>DELETE_VLAN</operation>
+<responseCode>IN_PROGRESS</responseCode>
+<message>Request to Delete VLAN (Id:0e56433f-d808-4669-821d-812769517ff8)
+has been accepted and is being processed</message>
+</response>

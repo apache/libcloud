@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+  <osImage xmlns="urn:didata.com:api:cloud:types" id="c14b1a46-2428-44c1-9c1a-b20e6418d08c" datacenterId="NA9">
+    <name>RedHat 6 64-bit 2 CPU</name>
+    <description>RedHat 6.6 Enterprise (Santiago) 64-bit</description>
+    <cpu count="2" speed="STANDARD" coresPerSocket="1" />
+    <memoryGb>4</memoryGb>
+    <disk id="a02b7244-99d8-4889-84a5-5e4373c1bb26" scsiId="0" sizeGb="10" speed="STANDARD" />
+    <createTime>2015-09-17T11:23:48.000Z</createTime>
+    <osImageKey>T-RHEL-6-64-2-4-10</osImageKey>
+    <guest osCustomization="true">
+        <operatingSystem id="REDHAT664" displayName="REDHAT6/64" family="UNIX" />
+    </guest>
+  </osImage>
+

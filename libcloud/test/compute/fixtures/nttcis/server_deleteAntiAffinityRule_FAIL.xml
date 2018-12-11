@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-
+08T05:49:07.774-04:00/f0a53414-e991-4c9b-b52f-5770ff5b606b">
+  <operation>>CREATE_ANTI_AFFINITY_RULE</operation>
+  <responseCode>RESOURCE_NOT_FOUND</responseCode>
+  <message>Anti-Affinity Rule '07e3621a-a920-4a9a-943c-d8021f27f418' not found</message>
+</response>

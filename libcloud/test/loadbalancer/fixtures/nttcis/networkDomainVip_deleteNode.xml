@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response requestId="na9/2015-05-14T13:37:20/62f06368-c3fb-11e3-b29c-
+001517c4643e"
+xmlns="urn:didata.com:api:cloud:types">
+<operation>DELETE_NODE</operation>
+<responseCode>OK</responseCode>
+<message>Node (id:34de6ed6-46a4-4dae-a753-2f8d3840c6f9) has been
+deleted.</message>
+</response>

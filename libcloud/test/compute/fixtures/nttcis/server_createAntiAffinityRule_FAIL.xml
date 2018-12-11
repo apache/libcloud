@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-03-
+08T05:49:07.774-04:00/f0a53414-e991-4c9b-b52f-5770ff5b606b">
+  <operation>>CREATE_ANTI_AFFINITY_RULE</operation>
+  <responseCode>CONFIGURATION_NOT_SUPPORTED</responseCode>
+  <message>Server 'ansible-test-image-rhel6' (id 22f3544a-c874-4930-a31c-e9e513e51114) is already used in another Anti-Affinity Rule (id 07e3621a-a920-4a9a-943c-d8021f27f418)</message>
+</response>

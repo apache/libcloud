@@ -1,0 +1,14 @@
+{
+    "user":
+      {
+          "name": "userwithoutenabled",
+          "links": {
+              "self": "http://192.168.18.100:5000/v3/users/c"
+          },
+          "domain_id": "default",
+          "id": "c",
+          "email": "c@example.com",
+          "password_expires_at": null,
+          "options": {}
+      }
+}

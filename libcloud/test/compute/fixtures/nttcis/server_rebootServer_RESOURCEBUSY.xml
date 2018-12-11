@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-08-
+12T09:52:43.365-04:00/5260a4e5-ea21-49f4-909a-22341d8c39cb">
+<operation>REBOOT_SERVER</operation>
+<responseCode>RESOURCE_BUSY</responseCode>
+<message>Request to reboot Server 'Production Server' did not work, server is busy.</message>
+</response>

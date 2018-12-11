@@ -41,7 +41,7 @@ class DNSPodDNSTests(unittest.TestCase):
         zone = zones[0]
         self.assertEqual(zone.id, '6')
         self.assertEqual(zone.domain, 'dnspod.com')
-        self.assertEqual(zone.type, None)
+        self.assertIsNone(zone.type)
         self.assertEqual(zone.driver, self.driver)
         self.assertEqual(zone.ttl, '600')
 
@@ -61,7 +61,7 @@ class DNSPodDNSTests(unittest.TestCase):
 
         self.assertEqual(zone.id, '6')
         self.assertEqual(zone.domain, 'dnspod.com')
-        self.assertEqual(zone.type, None)
+        self.assertIsNone(zone.type)
         self.assertEqual(zone.ttl, '600')
         self.assertEqual(zone.driver, self.driver)
 
@@ -89,8 +89,8 @@ class DNSPodDNSTests(unittest.TestCase):
 
         self.assertEqual(zone.id, '3')
         self.assertEqual(zone.domain, 'api2.com')
-        self.assertEqual(zone.type, None)
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.type)
+        self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_create_zone_zone_zone_already_exists(self):
@@ -151,7 +151,7 @@ class DNSPodDNSTests(unittest.TestCase):
         self.assertEqual(record.id, '50')
         self.assertEqual(record.name, '@')
         self.assertEqual(record.data, '96.126.115.73')
-        self.assertEqual(record.ttl, None)
+        self.assertIsNone(record.ttl)
 
     def test_create_record_already_exists_error(self):
         DNSPodMockHttp.type = 'RECORD_EXISTS'
