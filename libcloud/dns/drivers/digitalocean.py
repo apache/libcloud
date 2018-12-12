@@ -178,10 +178,9 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                 params['weight'] = extra['weight']
             except KeyError:
                 params['weight'] = 'null'
-            try:
+
+            if 'ttl' in extra:
                 params['ttl'] = extra['ttl']
-            except KeyError:
-                pass
 
         res = self.connection.request('/v2/domains/%s/records' % zone.id,
                                       params=params,
@@ -238,10 +237,9 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                 params['weight'] = extra['weight']
             except KeyError:
                 params['weight'] = 'null'
-            try:
+
+            if 'ttl' in extra:
                 params['ttl'] = extra['ttl']
-            except KeyError:
-                pass
 
         res = self.connection.request('/v2/domains/%s/records/%s' %
                                       (record.zone.id, record.id),
