@@ -1,5 +1,4 @@
 import pytest
-from dateutil.parser import parse
 from types import GeneratorType
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import ET
