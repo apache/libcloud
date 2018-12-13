@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sslDomainCertificates xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1" totalCount="1" pageSize="250">
+    <sslDomainCertificate id="4d2e9792-c986-4f2b-80c9-39e457eed8e8" datacenterId="EU6">
+        <networkDomainId>6aafcf08-cb0b-432c-9c64-7371265db086</networkDomainId>
+        <name>alice</name>
+        <description>test cert</description>
+        <state>NORMAL</state>
+        <createTime>2018-11-16T19:52:20.000Z</createTime>
+        <expiryTime>2019-11-16T18:55:24.000Z</expiryTime>
+    </sslDomainCertificate>
+</sslDomainCertificates>

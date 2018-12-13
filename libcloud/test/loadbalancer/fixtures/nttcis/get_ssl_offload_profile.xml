@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sslOffloadProfile xmlns="urn:didata.com:api:cloud:types" id="b1d3b5a7-75d7-4c44-a2b7-5bfa773dec63" datacenterId="EU6">
+    <networkDomainId>6aafcf08-cb0b-432c-9c64-7371265db086</networkDomainId>
+    <name>ssl_offload</name>
+    <sslDomainCertificate id="4d2e9792-c986-4f2b-80c9-39e457eed8e8" expiryTime="2019-11-16T18:55:24.000Z">
+        <name>alice</name>
+    </sslDomainCertificate>
+    <ciphers>!ECDHE+AES-GCM:</ciphers>
+    <state>NORMAL</state>
+    <createTime>2018-11-20T14:16:04.000Z</createTime>
+</sslOffloadProfile>

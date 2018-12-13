@@ -24,6 +24,7 @@ Provider                      Documentation                                     
 `Amazon S3 (ap-southeast-2)`_                                                     S3_AP_SOUTHEAST2    single region driver         :mod:`libcloud.storage.drivers.s3`                  :class:`S3APSE2StorageDriver`           
 `Amazon S3 (ca-central-1)`_                                                       S3_CA_CENTRAL       single region driver         :mod:`libcloud.storage.drivers.s3`                  :class:`S3CACentralStorageDriver`       
 `Amazon S3 (cn-north-1)`_                                                         S3_CN_NORTH         single region driver         :mod:`libcloud.storage.drivers.s3`                  :class:`S3CNNorthStorageDriver`         
+`Amazon S3 (cn-northwest-1)`_                                                     S3_CN_NORTHWEST     single region driver         :mod:`libcloud.storage.drivers.s3`                  :class:`S3CNNorthWestStorageDriver`     
 `Amazon S3 (eu-central-1)`_                                                       S3_EU_CENTRAL       single region driver         :mod:`libcloud.storage.drivers.s3`                  :class:`S3EUCentralStorageDriver`       
 `Amazon S3 (eu-west-1)`_                                                          S3_EU_WEST          single region driver         :mod:`libcloud.storage.drivers.s3`                  :class:`S3EUWestStorageDriver`          
 `Amazon S3 (eu-west-2)`_                                                          S3_EU_WEST2         single region driver         :mod:`libcloud.storage.drivers.s3`                  :class:`S3EUWest2StorageDriver`         
@@ -57,6 +58,7 @@ Provider                      Documentation                                     
 .. _`Amazon S3 (ap-southeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ca-central-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (cn-north-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (cn-northwest-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-central-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-2)`: http://aws.amazon.com/s3/

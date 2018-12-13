@@ -15,9 +15,17 @@
 """
 NTTCIS Common Components
 """
-
+import xml.etree.ElementTree as etree
+import re
+import functools
+from copy import deepcopy
 from base64 import b64encode
 from time import sleep
+from io import BytesIO
+try:
+    from collections.abc import MutableSequence, Mapping
+except ImportError:
+    from collections import MutableSequence, Mapping
 # TODO: use disutils.version when Travis CI fixed the pylint issue with version
 # from distutils.version import LooseVersion
 from libcloud.utils.py3 import httplib
@@ -283,6 +291,25 @@ BAD_MESSAGE_XML_ELEMENTS = (
     ('message', TYPES_URN),
     ('resultDetail', GENERAL_NS)
 )
+
+
+def get_params(func):
+    @functools.wraps(func)
+    def paramed(*args, **kwargs):
+        if kwargs:
+            for k, v in kwargs.items():
+                old_key = k
+                matches = re.findall(r'_(\w)', k)
+                for match in matches:
+                    k = k.replace('_' + match, match.upper())
+                del kwargs[old_key]
+                kwargs[k] = v
+            params = kwargs
+            result = func(args[0], params)
+        else:
+            result = func(args[0])
+        return result
+    return paramed
 
 
 def dd_object_to_id(obj, obj_type, id_value='id'):
@@ -1691,10 +1718,6 @@ class NttCisTagKey(object):
                 % (self.id, self.name))
 
 
-class NttCisFactory(object):
-    pass
-
-
 class NttCisIpAddressList(object):
     """
     NttCis IP Address list
@@ -1924,3 +1947,302 @@ class NttCisNic(object):
         return ('<NttCisNic: private_ip_v4=%s, vlan=%s,'
                 'network_adapter_name=%s>'
                 % (self.private_ip_v4, self.vlan, self.network_adapter_name))
+
+
+# Dynamically create classes from returned XML. Leaves the API as the
+# single authoritative source.
+
+
+class ClassFactory(object):
+    pass
+
+
+attrs = {}
+
+
+def processor(mapping, name=None):
+    """
+    Closure that keeps the deepcopy of the original dict
+    converted to XML current.
+    :param mapping: The converted XML to dict/lists
+    :type mapping: ``dict``
+    :param name: (Optional) what becomes the class name if provided
+    :type: ``str``
+    :return: Nothing
+    """
+    mapping = mapping
+    # the map_copy will have keys deleted after the key and value are processed
+    map_copy = deepcopy(mapping)
+
+    def add_items(key, value, name=None):
+        """
+        Add items to the global attr dict, then delete key, value from map copy
+        :param key: from the process function becomes the attribute name
+        :type key: ``str``
+        :param value: The value of the property and may be a dict
+        :type value: ``str``
+        :param name: Name of class, often same as key
+        :type: name" ``str``
+        """
+        if name in attrs:
+            attrs[name].update({key: value})
+        elif name is not None:
+            attrs[name] = value
+
+        else:
+            attrs.update({key: value})
+        # trim the copy of the mapping
+        if key in map_copy:
+            del map_copy[key]
+        elif key in map_copy[name]:
+            del map_copy[name][key]
+            if len(map_copy[name]) == 0:
+                del map_copy[name]
+
+    def handle_map(map, name):
+        tmp = {}
+        types = [type(x) for x in map.values()]
+        if XmlListConfig not in types and \
+           XmlDictConfig not in types and dict not in types:
+            return map
+
+        elif XmlListConfig in types:
+            result = handle_seq(map, name)
+            return result
+        else:
+            for k, v in map.items():
+                if isinstance(v, str):
+                    tmp.update({k: v})
+                if isinstance(v, dict):
+                    cls = build_class(k.capitalize(), v)
+                    tmp.update({k: cls})
+                elif isinstance(v, XmlDictConfig):
+                    cls = build_class(k.capitalize(), v)
+                    return (k, cls)
+            return tmp
+
+    def handle_seq(seq, name):
+        tmp = {}
+        if isinstance(seq, list):
+            tmp = []
+            for _ in seq:
+                cls = build_class(name.capitalize(), _)
+                tmp.append(cls)
+            return tmp
+        for k, v in seq.items():
+            if isinstance(v, MutableSequence):
+                for _ in v:
+                    if isinstance(_, Mapping):
+                        types = [type(x) for x in _.values()]
+                        if XmlDictConfig in types:
+                            result = handle_map(_, k)
+                            if isinstance(result, tuple):
+                                tmp.update({result[0]: result[1]})
+                            else:
+                                tmp.update({k: result})
+                        else:
+                            tmp_list = [build_class(k.capitalize(), i)
+                                        for i in v]
+                            tmp[k] = tmp_list
+            elif isinstance(v, str):
+                tmp.update({k: v})
+        return tmp
+
+    def build_class(key, value):
+        klass = class_factory(key.capitalize(), value)
+        return klass(value)
+
+    def process(mapping):
+        """
+        This function is recursive, creating attributes for the class factory.
+        :param mapping: the dictionary converted from XML
+        :return: itself (recursive)
+        """
+        for k1, v1 in mapping.items():
+            if isinstance(v1, Mapping):
+                types = [type(v) for v in v1.values()]
+                if MutableSequence not in types and dict not in types:
+                    result = handle_map(v1, k1)
+                    cls = build_class(k1.capitalize(), result)
+                    add_items(k1, cls)
+                elif XmlListConfig in types:
+                    result = handle_seq(v1, k1)
+                    cls = build_class(list(v1)[0], result)
+                    add_items(k1, cls)
+                elif dict in types:
+                    result = handle_map(v1, k1)
+                    cls = build_class(k1.capitalize(), result)
+                    add_items(k1, cls, k1)
+            elif isinstance(v1, list):
+                tmp1 = {}
+                tmp2 = {}
+                tmp2[k1] = []
+                for i, j in enumerate(v1):
+                    if isinstance(j, dict):
+                        key = list(j)[0]
+                        result = handle_map(j, key)
+                        tmp1[k1 + str(i)] = build_class(k1, result)
+                        tmp2[k1].append(tmp1[k1 + str(i)])
+                if tmp2:
+                    add_items(k1, tmp2[k1], k1)
+            elif isinstance(v1, str):
+                add_items(k1, v1)
+
+    if len(map_copy) == 0:
+        return 1
+    return process(mapping)
+
+
+def class_factory(cls_name, attrs):
+    """
+    This class takes a name and a dictionary to create a class.
+    The clkass has an init method, an iter for retrieving properties,
+    and, finally, a repr for returning the instance
+    :param cls_name: The name to be tacked onto the suffix NttCis
+    :type cls_name: ``str``
+    :param attrs: The attributes and values for an instance
+    :type attrs: ``dict``
+    :return:  a class that inherits from ClassFactory
+    :rtype: ``ClassFactory``
+    """
+    def __init__(self, *args, **kwargs):
+        for key in attrs:
+            setattr(self, key, attrs[key])
+        if cls_name == "NttCisServer":
+            self.state = self._get_state()
+
+    def __iter__(self):
+        for name in self.__dict__:
+            yield getattr(self, name)
+
+    def __repr__(self):
+        values = ', '.join('{}={!r}'.format(*i)
+                           for i in zip(self.__dict__, self))
+        return '{}({})'.format(self.__class__.__name__, values)
+
+    cls_attrs = dict(
+        __init__=__init__,
+        __iter__=__iter__,
+        __repr__=__repr__)
+
+    return type("NttCis{}".format(cls_name), (ClassFactory,), cls_attrs)
+
+
+class XmlListConfig(list):
+    """
+    Creates a class from XML elements that make a list.  If a list of
+    XML elements with attributes, the attributes are passed to XmlDictConfig.
+    """
+    def __init__(self, elem_list):
+        for element in elem_list:
+            if element is not None:
+                # treat like dict
+                if len(element) >= 0 or element[0].tag != element[1].tag:
+                    self.append(XmlDictConfig(element))
+                # treat like list
+                elif element[0].tag == element[1].tag:
+                    # property refers to an element used repeatedly
+                    #  in the XML for data centers only
+                    if 'property' in element.tag:
+                        self.append({element.attrib.get('name'):
+                                     element.attrib.get('value')})
+                    else:
+                        self.append(element.attrib)
+            elif element.text:
+                text = element.text.strip()
+                if text:
+                    self.append(text)
+
+
+class XmlDictConfig(dict):
+    """
+    Inherits from dict.  Looks for XML elements, such as attrib, that
+    can be converted to a dictionary.  Any XML element that contains
+    other XML elements, will be passed to XmlListConfig
+    """
+    def __init__(self, parent_element):
+        if parent_element.items():
+            if 'property' in parent_element.tag:
+                self.update({parent_element.attrib.get('name'):
+                             parent_element.attrib.get('value')})
+            else:
+                self.update(dict(parent_element.items()))
+        for element in parent_element:
+            if len(element) > 0:
+                # treat like dict - we assume that if the first two tags
+                # in a series are different, then they are all different.
+                if len(element) == 1 or element[0].tag != element[1].tag:
+                    elem_dict = XmlDictConfig(element)
+
+                # treat like list - we assume that if the first two tags
+                # in a series are the same, then the rest are the same.
+                else:
+                    # here, we put the list in dictionary; the key is the
+                    # tag name the list elements all share in common, and
+                    # the value is the list itself
+                    elem_dict = {element[0].tag.split('}')[1]:
+                                 XmlListConfig(element)}
+
+                # if the tag has attributes, add those to the dict
+                if element.items():
+                    elem_dict.update(dict(element.items()))
+                self.update({element.tag.split('}')[1]: elem_dict})
+            # this assumes that if you've got an attribute in a tag,
+            # you won't be having any text. This may or may not be a
+            # good idea -- time will tell. It works for the way we are
+            # currently doing XML configuration files...
+            elif element.items():
+                # It is possible to have duplicate element tags.
+                # If so, convert to a dict of lists
+                if element.tag.split('}')[1] in self:
+
+                    if isinstance(self[element.tag.split('}')[1]], list):
+                        self[element.tag.split('}')[1]].\
+                            append(dict(element.items()))
+                    else:
+                        tmp_list = list()
+                        tmp_dict = dict()
+                        for k, v in self[element.tag.split('}')[1]].items():
+                            if isinstance(k, XmlListConfig):
+                                tmp_list.append(k)
+                            else:
+                                tmp_dict.update({k: v})
+                        tmp_list.append(tmp_dict)
+                        tmp_list.append(dict(element.items()))
+                        self[element.tag.split('}')[1]] = tmp_list
+                else:
+                    self.update({element.tag.split('}')[1]:
+                                 dict(element.items())})
+            # finally, if there are no child tags and no attributes, extract
+            # the text
+            else:
+                self.update({element.tag.split('}')[1]: element.text})
+
+
+def process_xml(xml):
+    """
+    Take the xml and put it into a dictionary. The process the dictionary
+    recursively.  This returns a class based on the XML API.  Thus, properties
+    will have the camel case found in the Java XML.  This a trade-off
+    to reduce the number of "static" classes that all have to be synchronized
+    with any changes in the API.
+    :param xml: The serialized version of the XML returned from Cloud Control
+    :return:  a dynamic class that inherits from ClassFactory
+    :rtype: `ClassFactory`
+    """
+    global attrs
+    tree = etree.parse(BytesIO(xml))
+    root = tree.getroot()
+    elem = root.tag.split('}')[1].capitalize()
+    items = dict(root.items())
+
+    if 'pageNumber' in items:
+        converted_xml = XmlListConfig(root)
+        processor(converted_xml[0])
+    else:
+        converted_xml = XmlDictConfig(root)
+        processor(converted_xml)
+    klass = class_factory(elem.capitalize(), attrs)
+    cls = klass(attrs)
+    attrs = {}
+    return cls

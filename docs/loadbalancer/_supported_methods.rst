@@ -12,6 +12,7 @@ Provider                               create balancer list balancers list membe
 `Google Compute Engine Load Balancer`_ yes             yes            yes          yes           yes           yes                
 `GoGrid LB`_                           yes             yes            yes          yes           yes           no                 
 `Ninefold LB`_                         yes             yes            yes          yes           yes           no                 
+`NTTC-CIS Load Balancer`_              yes             yes            yes          yes           yes           no                 
 `Rackspace LB`_                        yes             yes            yes          yes           yes           no                 
 `Softlayer Load Balancing`_            no              yes            yes          yes           yes           no                 
 ====================================== =============== ============== ============ ============= ============= ===================
@@ -25,5 +26,6 @@ Provider                               create balancer list balancers list membe
 .. _`Google Compute Engine Load Balancer`: https://cloud.google.com/
 .. _`GoGrid LB`: http://www.gogrid.com/
 .. _`Ninefold LB`: http://ninefold.com/
+.. _`NTTC-CIS Load Balancer`: https://cloud.nttcis.com/
 .. _`Rackspace LB`: http://www.rackspace.com/
 .. _`Softlayer Load Balancing`: http://www.softlayer.com/

@@ -9,14 +9,17 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.common.nttcis import NttCisAPIException, NetworkDomainServicePlan
 from libcloud.common.nttcis import NttCisServerCpuSpecification, NttCisServerDisk, NttCisServerVMWareTools
 from libcloud.common.nttcis import NttCisTag, NttCisTagKey
+from libcloud.common.nttcis import NttCisServerCpuSpecification
+from libcloud.common.nttcis import NttCisServerDisk
 from libcloud.common.nttcis import NttCisIpAddress, \
     NttCisIpAddressList, NttCisChildIpAddressList, \
     NttCisPortList, NttCisPort, NttCisChildPortList
+from libcloud.common.nttcis import ClassFactory
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
 from libcloud.compute.drivers.nttcis import NttCisNic
 from libcloud.compute.base import Node, NodeAuthPassword, NodeLocation
-from libcloud.test import MockHttp, unittest
+from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import NTTCIS_PARAMS
 from libcloud.utils.xml import fixxpath, findtext, findall
@@ -73,29 +76,29 @@ def test_node_extras(driver):
     assert isinstance(ret[0].extra['cpu'], NttCisServerCpuSpecification)
     assert isinstance(ret[0].extra['disks'], list)
     assert isinstance(ret[0].extra['disks'][0], NttCisServerDisk)
-    assert ret[0].extra['disks'][0].size_gb == 50
+    assert ret[0].extra['disks'][0].size_gb, 10
     assert isinstance(ret[1].extra['disks'], list)
     assert isinstance(ret[1].extra['disks'][0], NttCisServerDisk)
-    assert ret[1].extra['disks'][0].size_gb == 50
+    assert ret[1].extra['disks'][0].size_gb, 10
 
 
 def test_server_states(driver):
     NttCisMockHttp.type = None
     ret = driver.list_nodes()
-    assert (ret[0].state == 'running')
-    assert (ret[1].state == 'starting')
-    assert (ret[2].state == 'stopping')
-    assert (ret[3].state == 'reconfiguring')
-    assert (ret[4].state == 'running')
-    assert (ret[5].state == 'terminated')
-    assert (ret[6].state == 'stopped')
+    assert ret[0].state == 'running'
+    assert ret[1].state == 'starting'
+    assert ret[2].state == 'stopping'
+    assert ret[3].state == 'reconfiguring'
+    assert ret[4].state == 'running'
+    assert ret[5].state == 'terminated'
+    assert ret[6].state == 'stopped'
     assert len(ret) == 7
 
 
 def test_list_nodes_response_PAGINATED(driver):
     NttCisMockHttp.type = 'PAGINATED'
     ret = driver.list_nodes()
-    assert len(ret) == 9
+    assert len(ret) == 7
 
 
 def test_paginated_mcp2_call_EMPTY(driver):
@@ -143,7 +146,6 @@ def test_list_nodes_response_strings_ALLFILTERS(driver):
     node = ret[3]
     assert isinstance(node.extra['disks'], list)
     assert isinstance(node.extra['disks'][0], NttCisServerDisk)
-    assert node.size.id == '1'
     assert node.image.id == '3ebf3c0f-90fe-4a8b-8585-6e65b316592c'
     assert node.image.name == 'WIN2008S/32'
     disk = node.extra['disks'][0]
@@ -182,6 +184,42 @@ def test_list_datacenter_snapshot_windows(driver):
     NttCisMockHttp.type = None
     ret = driver.list_snapshot_windows("f1d6a564-490e-4166-b91d-feddc1f92025", "ADVANCED")
     assert isinstance(ret[0], dict)
+
+
+def test_list_snapshots(driver):
+    NttCisMockHttp.type = None
+    snapshots = driver.list_snapshots('sdk_server_1', page_size=1)
+    assert len(snapshots) == 1
+    assert snapshots[0]['id'] == "d11940a8-1455-43bf-a2de-b51a38c2aa94"
+
+
+def test_enable_snapshot_service(driver):
+    NttCisMockHttp.type = None
+    window_id = 'ea646520-4272-11e8-838c-180373fb68df'
+    node = 'e1eb7d71-93c9-4b9c-807c-e05932dc8143'
+    result = driver.ex_enable_snapshots(node, window_id)
+    assert result is True
+
+
+def test_initiate_manual_snapshot(driver):
+    NttCisMockHttp.type = None
+    result = driver.ex_initiate_manual_snapshot('test', 'e1eb7d71-93c9-4b9c-807c-e05932dc8143')
+    assert result is True
+
+
+def test_create_snapshot_preview_server(driver):
+    snapshot_id = "dd9a9e7e-2de7-4543-adef-bb1fda7ac030"
+    server_name = "test_snapshot"
+    start = "true"
+    nic_connected = "true"
+    result = driver.ex_create_snapshot_preview_server(
+        snapshot_id, server_name, start, nic_connected)
+    assert result is True
+
+
+def test_disable_node_snapshot(driver):
+    node = "e1eb7d71-93c9-4b9c-807c-e05932dc8143"
+    assert driver.ex_disable_snapshots(node) is True
 
 
 def test_reboot_node_response(driver):
@@ -245,6 +283,134 @@ def test_ex_list_customer_images(driver):
     assert images[0].extra['location'].id == 'NA9'
     assert images[0].extra['cpu'].cpu_count == 4
     assert images[0].extra['OS_displayName'] == 'REDHAT6/64'
+
+
+def test_create_mcp1_node_optional_param(driver):
+    root_pw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    network = driver.ex_list_networks()[0]
+    cpu_spec = NttCisServerCpuSpecification(cpu_count='4',
+                                            cores_per_socket='2',
+                                            performance='STANDARD')
+    disks = [NttCisServerDisk(scsi_id='0', speed='HIGHPERFORMANCE')]
+    node = driver.create_node(name='test2', image=image, auth=root_pw,
+                              ex_description='test2 node',
+                              ex_network=network,
+                              ex_is_started=False,
+                              ex_memory_gb=8,
+                              ex_disks=disks,
+                              ex_cpu_specification=cpu_spec,
+                              ex_primary_dns='10.0.0.5',
+                              ex_secondary_dns='10.0.0.6'
+                              )
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+
+
+def test_create_mcp1_node_response_no_pass_random_gen(driver):
+    image = driver.list_images()[0]
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node',
+                              ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_windows(driver):
+    image = driver.ex_list_customer_images()[1]
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_windows_STR(driver):
+    image = driver.ex_list_customer_images()[1].id
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert  node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_linux(driver):
+    image = driver.ex_list_customer_images()[0]
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' not in node.extra
+
+
+def test_create_mcp1_node_response_no_pass_customer_linux_STR(driver):
+    image = driver.ex_list_customer_images()[0].id
+    network = driver.ex_list_networks()[0]
+    node = driver.create_node(name='test2', image=image, auth=None,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert 'password' not in node.extra
+
+
+def test_create_mcp1_node_response_STR(driver):
+    rootPw = 'pass123'
+    image = driver.list_images()[0].id
+    network = driver.ex_list_networks()[0].id
+    node = driver.create_node(name='test2', image=image, auth=rootPw,
+                              ex_description='test2 node', ex_network=network,
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+
+
+def test_create_mcp1_node_no_network(driver):
+    rootPw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    with pytest.raises(InvalidRequestError):
+        driver.create_node(name='test2',
+                           image=image,
+                           auth=rootPw,
+                           ex_description='test2 node',
+                           ex_network=None,
+                           ex_is_started=False)
+
+
+def test_create_node_mcp1_ipv4(driver):
+    rootPw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    node = driver.create_node(name='test2',
+                              image=image,
+                              auth=rootPw,
+                              ex_description='test2 node',
+                              ex_network='fakenetwork',
+                              ex_primary_ipv4='10.0.0.1',
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+
+
+def test_create_node_mcp1_network(driver):
+    rootPw = NodeAuthPassword('pass123')
+    image = driver.list_images()[0]
+    node = driver.create_node(name='test2',
+                              image=image,
+                              auth=rootPw,
+                              ex_description='test2 node',
+                              ex_network='fakenetwork',
+                              ex_is_started=False)
+    assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
 
 
 def test_create_node_response_network_domain(driver):
@@ -549,7 +715,6 @@ def test_create_node_mcp2_additional_nics_legacy(driver):
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
     assert node.extra['status'].action == 'DEPLOY_SERVER'
 
-
 def test_create_node_bad_additional_nics_ipv4(driver):
     rootPw = NodeAuthPassword('pass123')
     image = driver.list_images()[0]
@@ -798,7 +963,7 @@ def test_ex_list_network_domains_ALLFILTERS(driver):
 
 def test_ex_list_vlans(driver):
     vlans = driver.ex_list_vlans()
-    assert vlans[0].name ==  "Primary"
+    assert vlans[0].name == "Primary"
 
 
 def test_ex_list_vlans_ALLFILTERS(driver):
@@ -1705,6 +1870,11 @@ class NttCisMockHttp(MockHttp):
 
     def _oec_0_9_myaccount_ALLFILTERS(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'networkWithLocation.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server(self, method, url, body, headers):
@@ -2894,5 +3064,47 @@ class NttCisMockHttp(MockHttp):
         self, method, url, body, headers):
         body = self.fixtures.load(
             'deploy_customised_server.xml'
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_snapshot(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "list_server_snapshots.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_enableSnapshotService(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "enable_snapshot_service.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_initiateManualSnapshot(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "initiate_manual_snapshot.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_server_server_e1eb7d71_93c9_4b9c_807c_e05932dc8143(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "manual_snapshot_server.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_createSnapshotPreviewServer(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "create_preview_server.xml"
+        )
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_snapshot_disableSnapshotService(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            "disable_server_snapshot_service.xml"
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]

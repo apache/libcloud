@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181121T182526338+0100_e5bbb24b-7971-4273-9563-5faf0f7daed3">
+    <operation>DELETE_SSL_OFFLOAD_PROFILE</operation>
+    <responseCode>OK</responseCode>
+    <message>SSL Offload Profile has been deleted.</message>
+</response>

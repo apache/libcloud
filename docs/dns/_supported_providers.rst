@@ -11,7 +11,7 @@ Provider            Documentation                             Provider Constant 
 `DurableDNS`_       :doc:`Click </dns/drivers/durabledns>`    DURABLEDNS        single region driver :mod:`libcloud.dns.drivers.durabledns`   :class:`DurableDNSDriver`     
 `Gandi DNS`_                                                  GANDI             single region driver :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
 `GoDaddy DNS`_      :doc:`Click </dns/drivers/godaddy>`       GODADDY           single region driver :mod:`libcloud.dns.drivers.godaddy`      :class:`GoDaddyDNSDriver`     
-`Google DNS`_                                                 GOOGLE            single region driver :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
+`Google DNS`_       :doc:`Click </dns/drivers/google>`        GOOGLE            single region driver :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
 `Host Virtual DNS`_ :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       single region driver :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
 `Linode DNS`_                                                 LINODE            single region driver :mod:`libcloud.dns.drivers.linode`       :class:`LinodeDNSDriver`      
 `Liquidweb DNS`_    :doc:`Click </dns/drivers/liquidweb>`     LIQUIDWEB         single region driver :mod:`libcloud.dns.drivers.liquidweb`    :class:`LiquidWebDNSDriver`   

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181121T045948006+0100_fcc86e5b-770a-430c-8593-1b188d3dd393">
+    <operation>EDIT_SSL_OFFLOAD_PROFILE</operation>
+    <responseCode>OK</responseCode>
+    <message>SSL Offload Profile has been edited.</message>
+</response>

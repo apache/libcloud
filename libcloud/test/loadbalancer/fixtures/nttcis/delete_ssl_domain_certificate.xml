@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181121T192344024+0100_06309e7f-c0bb-4034-b960-0b28ad694608">
+    <operation>DELETE_SSL_DOMAIN_CERTIFICATE</operation>
+    <responseCode>OK</responseCode>
+    <message>SSL Domain Certificate has been deleted.</message>
+</response>

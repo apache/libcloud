@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+import os
 import pytest
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.nttcis import NttCisVIPNode, NttCisPool
 from libcloud.common.nttcis import NttCisPoolMember
+from libcloud.common.nttcis import NttCisAPIException
 from libcloud.loadbalancer.base import LoadBalancer, Member, Algorithm
-from libcloud.loadbalancer.drivers.nttcis import NttCisLBDriver as NttCis
+from libcloud.loadbalancer.drivers.nttcis import NttCisLBDriver
 from libcloud.loadbalancer.types import State
 
 from libcloud.test import MockHttp, unittest
@@ -31,16 +33,16 @@ from libcloud.test.secrets import NTTCIS_PARAMS
 
 @pytest.fixture()
 def driver():
-    NttCis.connectionCls.active_api_version = "2.7"
-    NttCis.connectionCls.conn_class = NttCisMockHttp
+    NttCisLBDriver.connectionCls.active_api_version = "2.7"
+    NttCisLBDriver.connectionCls.conn_class = NttCisMockHttp
     NttCisMockHttp.type = None
-    driver = NttCis(*NTTCIS_PARAMS)
+    driver = NttCisLBDriver(*NTTCIS_PARAMS)
     return driver
 
 
 def test_invalid_region(driver):
     with pytest.raises(ValueError):
-        driver = NttCis(*NTTCIS_PARAMS, region='blah')
+        driver = NttCisLBDriver(*NTTCIS_PARAMS, region='blah')
 
 
 def test_invalid_creds(driver):
@@ -518,6 +520,84 @@ def test_ex_get_default_irules(driver):
     assert irules[0].compatible_listeners[0].type == 'PERFORMANCE_LAYER_4'
 
 
+def test_ex_insert_ssl_certificate(driver):
+    net_dom_id = "6aafcf08-cb0b-432c-9c64-7371265db086 "
+    cert = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/loadbalancer/fixtures/nttcis/alice.crt"
+    key = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/loadbalancer/fixtures/nttcis/alice.key"
+    result = driver.ex_import_ssl_domain_certificate(net_dom_id, "alice", cert, key, description="test cert")
+    assert result is True
+
+
+def test_ex_insert_ssl_certificate_FAIL(driver):
+    NttCisMockHttp.type = "FAIL"
+    net_dom_id = "6aafcf08-cb0b-432c-9c64-7371265db086 "
+    cert = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/loadbalancer/fixtures/nttcis/denis.crt"
+    key = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/loadbalancer/fixtures/nttcis/denis.key"
+    with pytest.raises(NttCisAPIException) as excinfo:
+        result = driver.ex_import_ssl_domain_certificate(net_dom_id, "denis", cert, key, description="test cert")
+    assert excinfo.value.msg == "Data Center EU6 requires key length must be one of 512, 1024, 2048."
+
+
+def test_ex_create_ssl_offload_profile(driver):
+    net_domain_id = "6aafcf08-cb0b-432c-9c64-7371265db086"
+    name = "ssl_offload"
+    domain_cert = driver.ex_list_ssl_domain_certs(name="alice")[0]
+    result = driver.ex_create_ssl_offload_profile(net_domain_id, name, domain_cert.id, ciphers="!ECDHE+AES-GCM:")
+    assert result is True
+
+
+def test_ex_list_ssl_offload_profile(driver):
+    NttCisMockHttp.type = "LIST"
+    profiles = driver.ex_list_ssl_offload_profiles()
+    assert profiles[0].sslDomainCertificate.name == "alice"
+
+
+def test_ex_get_ssl_offload_profile(driver):
+    profile_id = "b1d3b5a7-75d7-4c44-a2b7-5bfa773dec63"
+    profile = driver.ex_get_ssl_offload_profile(profile_id)
+    assert profile.name == "ssl_offload"
+
+
+def test_edit_ssl_offload_profile(driver):
+    profile_name = "ssl_offload"
+    datacenter_id = "EU6"
+    NttCisMockHttp.type = "LIST"
+    profile = driver.ex_list_ssl_offload_profiles(name=profile_name, datacenter_id=datacenter_id)[0]
+    NttCisMockHttp.type = None
+    result = driver.ex_edit_ssl_offload_profile(profile.id, profile.name,
+                                                  profile.sslDomainCertificate.id,
+                                                  ciphers=profile.ciphers,
+                                                  description="A test edit of an offload profile")
+    assert result is True
+
+
+def test_delete_ssl_offload_profile(driver):
+    profile_name = "ssl_offload"
+    NttCisMockHttp.type = "LIST"
+    profile = driver.ex_list_ssl_offload_profiles(name=profile_name)[0]
+    NttCisMockHttp.type = None
+    result = driver.ex_delete_ssl_offload_profile(profile.id)
+    assert result is True
+
+
+def test_delete_ssl_certificate_chain(driver):
+    NttCisMockHttp.type = "LIST"
+    chain_name = "ted_carol"
+    cert_chain = driver.ex_list_ssl_certificate_chains(name=chain_name)[0]
+    NttCisMockHttp.type = None
+    result = driver.ex_delete_ssl_certificate_chain(cert_chain.id)
+    assert result is True
+
+
+def test_delete_ssl_domain_certificate(driver):
+    NttCisMockHttp.type = "LIST"
+    cert_name = "alice"
+    cert = driver.ex_list_ssl_domain_certs(name=cert_name)[0]
+    NttCisMockHttp.type = None
+    result = driver.ex_delete_ssl_domain_certificate(cert.id)
+    assert result is True
+
+
 class NttCisMockHttp(MockHttp):
 
     fixtures = LoadBalancerFileFixtures('nttcis')
@@ -529,16 +609,28 @@ class NttCisMockHttp(MockHttp):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _oec_0_9_myaccount_INPROGRESS(self, method, url, body, headers):
+    def _oec_0_9_myaccount_FAIL(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener(self, method, url, body, headers):
+    def _oec_0_9_myaccount_LIST(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener(self,
+                                                                                        method,
+                                                                                        url,
+                                                                                        body,
+                                                                                        headers):
         body = self.fixtures.load(
             'networkDomainVip_virtualListener.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener_6115469d_a8bb_445b_bb23_d23b5283f2b9(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_virtualListener_6115469d_a8bb_445b_bb23_d23b5283f2b9(self,
+                                                                                                                             method,
+                                                                                                                             url,
+                                                                                                                             body,
+                                                                                                                             headers):
         body = self.fixtures.load(
             'networkDomainVip_virtualListener_6115469d_a8bb_445b_bb23_d23b5283f2b9.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -548,7 +640,11 @@ class NttCisMockHttp(MockHttp):
             'networkDomainVip_pool.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7(self,
+                                                                                                                  method,
+                                                                                                                  url,
+                                                                                                                  body,
+                                                                                                                  headers):
         body = self.fixtures.load(
             'networkDomainVip_pool_4d360b1f_bc2c_4ab7_9884_1f03ba2768f7.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -558,7 +654,11 @@ class NttCisMockHttp(MockHttp):
             'networkDomainVip_poolMember.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0(self,
+                                                                                                                        method,
+                                                                                                                        url,
+                                                                                                                        body,
+                                                                                                                        headers):
         body = self.fixtures.load(
             'networkDomainVip_poolMember_3dd806a2_c2c8_4c0c_9a4f_5219ea9266c0.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -578,37 +678,62 @@ class NttCisMockHttp(MockHttp):
             'networkDomainVip_addPoolMember.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createVirtualListener(self,
+                                                                                              method,
+                                                                                              url,
+                                                                                              body,
+                                                                                              headers):
         body = self.fixtures.load(
             'networkDomainVip_createVirtualListener.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_removePoolMember(self,
+                                                                                         method,
+                                                                                         url,
+                                                                                         body,
+                                                                                         headers):
         body = self.fixtures.load(
             'networkDomainVip_removePoolMember.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteVirtualListener(self,
+                                                                                              method,
+                                                                                              url,
+                                                                                              body,
+                                                                                              headers):
         body = self.fixtures.load(
             'networkDomainVip_deleteVirtualListener.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deletePool(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deletePool(self,
+                                                                                   method,
+                                                                                   url,
+                                                                                   body,
+                                                                                   headers):
         body = self.fixtures.load(
             'networkDomainVip_deletePool.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteNode(self,
+                                                                                   method,
+                                                                                   url,
+                                                                                   body,
+                                                                                   headers):
         body = self.fixtures.load(
             'networkDomainVip_deleteNode.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node(self, method, url, body, headers):
+
         body = self.fixtures.load(
             'networkDomainVip_node.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9(self,  method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9(self,
+                                                                                                                  method,
+                                                                                                                  url,
+                                                                                                                  body,
+                                                                                                                  headers):
         body = self.fixtures.load(
             'networkDomainVip_node_34de6ed6_46a4_4dae_a753_2f8d3840c6f9.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -623,17 +748,29 @@ class NttCisMockHttp(MockHttp):
             'networkDomainVip_editPool.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editPoolMember(self,
+                                                                                       method,
+                                                                                       url,
+                                                                                       body,
+                                                                                       headers):
         body = self.fixtures.load(
             'networkDomainVip_editPoolMember.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultHealthMonitor(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultHealthMonitor(self,
+                                                                                             method,
+                                                                                             url,
+                                                                                             body,
+                                                                                             headers):
         body = self.fixtures.load(
             'networkDomainVip_defaultHealthMonitor.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultPersistenceProfile(self, method, url, body, headers):
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_defaultPersistenceProfile(self,
+                                                                                                  method,
+                                                                                                  url,
+                                                                                                  body,
+                                                                                                  headers):
         body = self.fixtures.load(
             'networkDomainVip_defaultPersistenceProfile.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -642,6 +779,127 @@ class NttCisMockHttp(MockHttp):
         body = self.fixtures.load(
             'networkDomainVip_defaultIrule.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_importSslDomainCertificate(self,
+                                                                                                   method,
+                                                                                                   url,
+                                                                                                   body,
+                                                                                                   headers):
+        body = self.fixtures.load(
+            "ssl_import_success.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_importSslDomainCertificate_FAIL(self,
+                                                                                                        method,
+                                                                                                        url,
+                                                                                                        body,
+                                                                                                        headers):
+        body = self.fixtures.load(
+            "ssl_import_fail.xml"
+        )
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslDomainCertificate_LIST(self,
+                                                                                               method,
+                                                                                               url,
+                                                                                               body,
+                                                                                               headers):
+        body = self.fixtures.load(
+            "ssl_cert_by_name.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslCertificateChain_LIST(self,
+                                                                                               method,
+                                                                                               url,
+                                                                                               body,
+                                                                                               headers):
+        body = self.fixtures.load(
+            "ssl_list_cert_chain_by_name.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslDomainCertificate(self,
+                                                                                             method,
+                                                                                             url,
+                                                                                             body,
+                                                                                             headers):
+        body = self.fixtures.load(
+            "ssl_cert_by_name.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_createSslOffloadProfile(self,
+                                                                                                method,
+                                                                                                url,
+                                                                                                body,
+                                                                                                headers):
+        body = self.fixtures.load(
+            "create_ssl_offload_profile.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslOffloadProfile_LIST(self,
+                                                                                               method,
+                                                                                               url,
+                                                                                               body,
+                                                                                               headers):
+        body = self.fixtures.load(
+            "list_ssl_offload_profiles.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_sslOffloadProfile_b1d3b5a7_75d7_4c44_a2b7_5bfa773dec63(self,
+                                                                                                                               method,
+                                                                                                                               url,
+                                                                                                                               body,
+                                                                                                                               headers):
+        body = self.fixtures.load(
+            "get_ssl_offload_profile.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_editSslOffloadProfile(self,
+                                                                                                method,
+                                                                                                url,
+                                                                                                body,
+                                                                                                headers):
+        body = self.fixtures.load(
+            "edit_ssl_offload_profile.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteSslOffloadProfile(self,
+                                                                                                method,
+                                                                                                url,
+                                                                                                body,
+                                                                                                headers):
+        body = self.fixtures.load(
+            "delete_ssl_offload_profile.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteSslCertificateChain(self,
+                                                                                                method,
+                                                                                                url,
+                                                                                                body,
+                                                                                                headers):
+        body = self.fixtures.load(
+            "delete_ssl_certificate_chain.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _caas_2_7_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkDomainVip_deleteSslDomainCertificate(self,
+                                                                                                method,
+                                                                                                url,
+                                                                                                body,
+                                                                                                headers):
+        body = self.fixtures.load(
+            "delete_ssl_domain_certificate.xml"
+        )
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
