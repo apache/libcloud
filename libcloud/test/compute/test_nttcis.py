@@ -8,6 +8,7 @@ from libcloud.common.nttcis import NttCisServerCpuSpecification, NttCisServerDis
 from libcloud.common.nttcis import NttCisTag, NttCisTagKey
 from libcloud.common.nttcis import NttCisServerCpuSpecification
 from libcloud.common.nttcis import NttCisServerDisk
+from libcloud.common.nttcis import ClassFactory
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
 from libcloud.compute.drivers.nttcis import NttCisNic
@@ -1869,6 +1870,7 @@ def test_get_drs_snapshots(driver):
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
     snaps = driver.list_consistency_group_snapshots(cg_id)
     assert hasattr(snaps, 'journalUsageGb')
+    assert isinstance(snaps, ClassFactory)
 
 
 def test_get_drs_snapshots_by_min_max(driver):
@@ -1880,16 +1882,6 @@ def test_get_drs_snapshots_by_min_max(driver):
         create_time_max="2018-11-29T00:00:00.000Z")
     for snap in snaps.snapshot:
         assert "2018-12" not in snap
-
-
-def test_get_drs_snapshots_by_min(driver):
-    cgs = driver.list_consistency_groups()
-    cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
-    snaps = driver.list_consistency_group_snapshots(
-        cg_id,
-        create_time_min="2018-11-29T00:00:00.000-05:00")
-    for snap in snaps.snapshot:
-        assert (parse(snaps.snapshot[0].createTime) < parse(snap.createTime)) is False
 
 
 def test_expand_drs_journal(driver):
@@ -2016,6 +2008,10 @@ class NttCisMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_myaccount_FAIL_NOT_SUPPORTED(self, method, url, body, headers):
+        body = self.fixtures.load('oec_0_9_myaccount.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _oec_0_9_myaccount_DYNAMIC(self, method, url, body, headers):
         body = self.fixtures.load('oec_0_9_myaccount.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
