@@ -4651,8 +4651,8 @@ class NttCisNodeDriver(NodeDriver):
 
     # DRS methods
     def ex_create_consistency_group(self, name, journal_size_gb,
-                                 source_server_id, target_server_id,
-                                 description=None):
+                                    source_server_id, target_server_id,
+                                    description=None):
         """
         Create a consistency group
 
@@ -4727,8 +4727,8 @@ class NttCisNodeDriver(NodeDriver):
         return cg
 
     def ex_list_consistency_group_snapshots(self, consistency_group_id,
-                                         create_time_min=None,
-                                         create_time_max=None):
+                                            create_time_min=None,
+                                            create_time_max=None):
         """
         Optional parameters identify the date of creation of Consistency Group
         snapshots in *XML Schema (XSD) date time format. Best used as a
@@ -4798,7 +4798,8 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def ex_start_drs_failover_preview(self, consistency_group_id, snapshot_id):
+    def ex_start_drs_failover_preview(self, consistency_group_id,
+                                      snapshot_id):
         """
         Brings a Consistency Group into PREVIEWING_SNAPSHOT mode
 
