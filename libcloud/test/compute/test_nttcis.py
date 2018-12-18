@@ -1839,44 +1839,44 @@ def test_ex_list_tags_ALLPARAMS(driver):
 
 
 def test_list_consistency_groups(driver):
-    cgs = driver.list_consistency_groups()
+    cgs = driver.ex_list_consistency_groups()
     assert isinstance(cgs, list)
 
 
 def test_list_cg_by_src_net_domain(driver):
     nd = "f9d6a249-c922-4fa1-9f0f-de5b452c4026"
-    cgs = driver.list_consistency_groups(source_network_domain_id=nd)
+    cgs = driver.ex_list_consistency_groups(source_network_domain_id=nd)
     assert cgs[0].name == "sdk_test2_cg"
 
 
 def test_list_cg_by_name(driver):
     NttCisMockHttp.type = "CG_BY_NAME"
     name = "sdk_test2_cg"
-    cg = driver.list_consistency_groups(name=name)
+    cg = driver.ex_list_consistency_groups(name=name)
     assert cg[0].id == "195a426b-4559-4c79-849e-f22cdf2bfb6e"
 
 
 def test_get_consistency_group_by_id(driver):
     NttCisMockHttp.type = None
-    cgs = driver.list_consistency_groups()
+    cgs = driver.ex_list_consistency_groups()
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
-    cg = driver.get_consistency_group(cg_id)
+    cg = driver.ex_get_consistency_group(cg_id)
     assert hasattr(cg, 'description')
 
 
 def test_get_drs_snapshots(driver):
     NttCisMockHttp.type = None
-    cgs = driver.list_consistency_groups()
+    cgs = driver.ex_list_consistency_groups()
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
-    snaps = driver.list_consistency_group_snapshots(cg_id)
+    snaps = driver.ex_list_consistency_group_snapshots(cg_id)
     assert hasattr(snaps, 'journalUsageGb')
     assert isinstance(snaps, ClassFactory)
 
 
 def test_get_drs_snapshots_by_min_max(driver):
-    cgs = driver.list_consistency_groups()
+    cgs = driver.ex_list_consistency_groups()
     cg_id = [i for i in cgs if i.name == "sdk_test2_cg"][0].id
-    snaps = driver.list_consistency_group_snapshots(
+    snaps = driver.ex_list_consistency_group_snapshots(
         cg_id,
         create_time_min="2018-11-28T00:00:00.000Z",
         create_time_max="2018-11-29T00:00:00.000Z")
@@ -1885,23 +1885,23 @@ def test_get_drs_snapshots_by_min_max(driver):
 
 
 def test_expand_drs_journal(driver):
-    cgs = driver.list_consistency_groups(name="sdk_test2_cg")
+    cgs = driver.ex_list_consistency_groups(name="sdk_test2_cg")
     cg_id = cgs[0].id
     expand_by = "100"
-    result = driver.expand_journal(cg_id, expand_by)
+    result = driver.ex_expand_journal(cg_id, expand_by)
     assert result is True
 
 
 def test_start_drs_snapshot_preview(driver):
     cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
     snapshot_id = "3893"
-    result = driver.start_drs_failover_preview(cg_id, snapshot_id)
+    result = driver.ex_start_drs_failover_preview(cg_id, snapshot_id)
     assert result is True
 
 
 def test_stop_drs_snapshot_preivew(driver):
     cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
-    result = driver.stop_drs_failover_preview(cg_id)
+    result = driver.ex_stop_drs_failover_preview(cg_id)
     assert result is True
 
 
@@ -1909,13 +1909,13 @@ def test_start_drs_failover_invalid_status(driver):
     NttCisMockHttp.type = "INVALID_STATUS"
     cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
     with pytest.raises(NttCisAPIException) as excinfo:
-        result = driver.initiate_drs_failover(cg_id)
+        result = driver.ex_initiate_drs_failover(cg_id)
     assert "INVALID_STATUS" in excinfo.value.code
 
 
 def test_initiate_drs_failover(driver):
     cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
-    result = driver.initiate_drs_failover(cg_id)
+    result = driver.ex_initiate_drs_failover(cg_id)
     assert result is True
 
 
@@ -1924,7 +1924,7 @@ def test_create_drs_fail_not_supported(driver):
     src_id = "032f3967-00e4-4780-b4ef-8587460f9dd4"
     target_id = "aee58575-38e2-495f-89d3-854e6a886411"
     with pytest.raises(NttCisAPIException) as excinfo:
-        result = driver.create_consistency_group(
+        result = driver.ex_create_consistency_group(
             "sdk_cg", "100", src_id, target_id, description="A test consistency group")
     exception_msg = excinfo.value.msg
     assert exception_msg == 'DRS is not supported between source Data Center NA9 and target Data Center NA12.'
@@ -1935,7 +1935,7 @@ def test_create_drs_cg_fail_ineligble(driver):
     src_id = "032f3967-00e4-4780-b4ef-8587460f9dd4"
     target_id = "aee58575-38e2-495f-89d3-854e6a886411"
     with pytest.raises(NttCisAPIException) as excinfo:
-        driver.create_consistency_group(
+        driver.ex_create_consistency_group(
             "sdk_test2_cg", "100", src_id, target_id, description="A test consistency group")
     exception_msg = excinfo.value.msg
     assert exception_msg == 'The drsEligible flag for target Server aee58575-38e2-495f-89d3-854e6a886411 must be set.'
@@ -1944,14 +1944,14 @@ def test_create_drs_cg_fail_ineligble(driver):
 def test_create_drs_cg(driver):
     src_id = "032f3967-00e4-4780-b4ef-8587460f9dd4"
     target_id = "aee58575-38e2-495f-89d3-854e6a886411"
-    result = driver.create_consistency_group(
+    result = driver.ex_create_consistency_group(
         "sdk_test2_cg2", "100", src_id, target_id, description="A test consistency group")
     assert result is True
 
 
 def test_delete_consistency_group(driver):
     cg_id = "fad067be-6ca7-495d-99dc-7921c5f2ca5"
-    result = driver.delete_consistency_group(cg_id)
+    result = driver.ex_delete_consistency_group(cg_id)
     assert result is True
 
 

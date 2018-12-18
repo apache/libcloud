@@ -4650,7 +4650,7 @@ class NttCisNodeDriver(NodeDriver):
         return new_node
 
     # DRS methods
-    def create_consistency_group(self, name, journal_size_gb,
+    def ex_create_consistency_group(self, name, journal_size_gb,
                                  source_server_id, target_server_id,
                                  description=None):
         """
@@ -4690,7 +4690,7 @@ class NttCisNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     @get_params
-    def list_consistency_groups(self, params={}):
+    def ex_list_consistency_groups(self, params={}):
         """
         Functions takes a named parameter that must be one of the following
         :param params: A dictionary composed of one of the following keys
@@ -4712,7 +4712,7 @@ class NttCisNodeDriver(NodeDriver):
         cgs = self._to_consistency_groups(response)
         return cgs
 
-    def get_consistency_group(self, consistency_group_id):
+    def ex_get_consistency_group(self, consistency_group_id):
         """
         Retrieves a Consistency by it's id and is more efficient thatn listing
         all consistency groups and filtering that result.
@@ -4726,7 +4726,7 @@ class NttCisNodeDriver(NodeDriver):
         cg = self._to_process(response)
         return cg
 
-    def list_consistency_group_snapshots(self, consistency_group_id,
+    def ex_list_consistency_group_snapshots(self, consistency_group_id,
                                          create_time_min=None,
                                          create_time_max=None):
         """
@@ -4778,7 +4778,7 @@ class NttCisNodeDriver(NodeDriver):
         snapshots = self._to_process(paged_result)
         return snapshots
 
-    def expand_journal(self, consistency_group_id, size_gb):
+    def ex_expand_journal(self, consistency_group_id, size_gb):
         """
         Expand the consistency group's journhal size in 100Gb increments
         :param consistency_group_id: The consistency group's UUID
@@ -4798,7 +4798,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def start_drs_failover_preview(self, consistency_group_id, snapshot_id):
+    def ex_start_drs_failover_preview(self, consistency_group_id, snapshot_id):
         """
         Brings a Consistency Group into PREVIEWING_SNAPSHOT mode
 
@@ -4822,7 +4822,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def stop_drs_failover_preview(self, consistency_group_id):
+    def ex_stop_drs_failover_preview(self, consistency_group_id):
         """
         Takes a Consistency Group out of PREVIEW_MODE and back to DRS_MODE
 
@@ -4841,7 +4841,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def initiate_drs_failover(self, consistency_group_id):
+    def ex_initiate_drs_failover(self, consistency_group_id):
         """
         This method is irreversible.
         It will failover the Consistency Group while removing it as well.
@@ -4861,7 +4861,7 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, "responseCode", TYPES_URN)
         return response_code in ["IN_PROGRESS", "OK"]
 
-    def delete_consistency_group(self, consistency_group_id):
+    def ex_delete_consistency_group(self, consistency_group_id):
         """
         Delete's a Consistency Group
 
