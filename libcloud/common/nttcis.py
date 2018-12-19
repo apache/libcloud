@@ -17,7 +17,7 @@ NTTCIS Common Components
 """
 import xml.etree.ElementTree as etree
 import re
-import functools
+from functools import wraps
 from copy import deepcopy
 from base64 import b64encode
 from time import sleep
@@ -294,7 +294,7 @@ BAD_MESSAGE_XML_ELEMENTS = (
 
 
 def get_params(func):
-    @functools.wraps(func)
+    @wraps(func)
     def paramed(*args, **kwargs):
         if kwargs:
             for k, v in kwargs.items():
@@ -2054,7 +2054,9 @@ def processor(mapping, name=None):
 
     def process(mapping):
         """
-        This function is recursive, creating attributes for the class factory.
+        This function is recursive, creating attributes for the class factory
+        by taking apart the elements in the  dictionary.  Thus, the calls to
+        handle_seq or handle_map
         :param mapping: the dictionary converted from XML
         :return: itself (recursive)
         """
