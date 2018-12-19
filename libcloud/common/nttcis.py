@@ -85,7 +85,7 @@ API_ENDPOINTS = {
         'host': 'api-ap.dimensiondata.com',
         'vendor': 'NTTC-CIS'
     },
-    'canada': {
+    'ca': {
         'name': 'Canada (CA)',
         'host': 'api-canada.dimensiondata.com',
         'vendor': 'NTTC-CIS'
