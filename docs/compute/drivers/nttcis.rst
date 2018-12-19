@@ -34,7 +34,7 @@ Possible regions:
 * ``af`` : NTTC-CIS Africa
 * ``au`` : NTTC-CIS Australia
 * ``ap`` : NTTC-CIS Asia Pacific
-* ``canada`` : Dimension Data Canada region
+* ``ca`` : Dimension Data Canada region
 
 The base `libcloud` API allows you to:
 
