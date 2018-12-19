@@ -4658,15 +4658,20 @@ class NttCisNodeDriver(NodeDriver):
 
         :param name: Name of consistency group
         :type name: ``str``
+
         :param journal_size_gb: Journal size in GB
         :type journal_size_gb: ``str``
+
         :param source_server_id: Id of the server to copy
         :type source_server_id: ``str``
+
         :param target_server_id: Id of the server to receive the copy
         :type: target_server_id: ``str``
+
         :param description: (Optional) Description of consistency group
         :type: description: ``str``
-        :return: :class: `NttCisConsistenccyGroup`
+
+        :rtype: :class:`NttCisConsistencyGroup`
         """
 
         consistency_group_elm = ET.Element('createConsistencyGroup',
@@ -4704,7 +4709,7 @@ class NttCisNodeDriver(NodeDriver):
         * state=
         * operation_status=
         * drs_infrastructure_status=
-        :return:  `list` of :class: `NttCisConsistencyGroup`
+        :rtype:  `list` of :class: `NttCisConsistencyGroup`
         """
 
         response = self.connection.request_with_orgId_api_2(
@@ -4716,9 +4721,11 @@ class NttCisNodeDriver(NodeDriver):
         """
         Retrieves a Consistency by it's id and is more efficient thatn listing
         all consistency groups and filtering that result.
+
         :param consistency_group_id: An id of a consistency group
         :type consistency_group_id: ``str``
-        :return: :class: `NttCisConsistencygroup`
+
+        :rtype: :class:`NttCisConsistencygroup`
         """
         response = self.connection.request_with_orgId_api_2(
             "consistencyGroup/consistencyGroup/%s" % consistency_group_id
@@ -4743,15 +4750,18 @@ class NttCisNodeDriver(NodeDriver):
 
         :param consistency_group_id: The id of consistency group
         :type consistency_group_id: ``str``
+
         :param create_time_min: (Optional) in form YYYY-MM-DDT00:00.00.00Z or
                                            substitute time offset for Z, i.e,
                                            -05:00
         :type create_time_min: ``str``
+
         :param create_time_max: (Optional) in form YYYY-MM-DDT00:00:00.000Z or
                                            substitute time offset for Z, i.e,
                                            -05:00
         :type create_time_max: ``str``
-        :return: `list` of :class" `NttCisSnapshots`
+
+        :rtype: `list` of :class:`NttCisSnapshots`
         """
 
         if create_time_min is None and create_time_max is None:
@@ -4780,12 +4790,16 @@ class NttCisNodeDriver(NodeDriver):
 
     def ex_expand_journal(self, consistency_group_id, size_gb):
         """
-        Expand the consistency group's journhal size in 100Gb increments
+        Expand the consistency group's journhal size in 100Gb increments.
+
         :param consistency_group_id: The consistency group's UUID
-        :type consistency_group_id: ``str``
+        :type  consistency_group_id: ``str``
+
         :param size_gb: Gb in 100 Gb increments
-        :type size_gb: ``str``
-        :return: True/False
+        :type  size_gb: ``str``
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+            otherwise False
         :rtype: ``bool``
         """
 
@@ -4802,14 +4816,16 @@ class NttCisNodeDriver(NodeDriver):
     def ex_start_drs_failover_preview(self, consistency_group_id,
                                       snapshot_id):
         """
-        Brings a Consistency Group into PREVIEWING_SNAPSHOT mode
+        Brings a Consistency Group into PREVIEWING_SNAPSHOT mode.
 
         :param consistency_group_id: Id of the Consistency Group to put into
                                      PRIEVEW_MODE
         :type consistency_group_id: ``str``
+
         :param snapshot_id: Id of the Snapshot to preview
         :type snapshot_id: ``str``
-        :return: True if response_code contains eiether 'IN_PROGRESS' or 'OK'
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
             otherwise False
         :rtype: ``bool``
         """
@@ -4831,8 +4847,9 @@ class NttCisNodeDriver(NodeDriver):
 
         :param consistency_group_id: Consistency Group's Id
         :type ``str``
-        :return: True if response_code contains eiether 'IN_PROGRESS' or 'OK'
-        otherwise False
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+         otherwise False
         :rtype: ``bool``
         """
         preview_elm = ET.Element("stopPreviewSnapshot",
@@ -4852,8 +4869,9 @@ class NttCisNodeDriver(NodeDriver):
 
         :param consistency_group_id: Consistency Group's Id to failover
         :type consistency_group_id: ``str``
-        :return: :return: True if response_code contains eiether
-        IN_PROGRESS' or 'OK' otherwise False
+
+        :return: True if response_code contains either
+         IN_PROGRESS' or 'OK' otherwise False
         :rtype: ``bool``
         """
         failover_elm = ET.Element("initiateFailover",
@@ -4872,8 +4890,8 @@ class NttCisNodeDriver(NodeDriver):
 
         :param consistency_group_id: Id of Consistency Group to delete
         :type ``str``
-        :return: True if response_code contains eiether
-        IN_PROGRESS' or 'OK' otherwise False
+        :return: True if response_code contains either
+         IN_PROGRESS' or 'OK' otherwise False
         :rtype: ``bool``
         """
         delete_elm = ET.Element("deleteConsistencyGroup",
