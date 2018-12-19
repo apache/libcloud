@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181204T160840695-0500_fef252f1-a72b-4674-85a6-076057f93e16">
+    <operation>CREATE_CONSISTENCY_GROUP</operation>
+    <responseCode>OPERATION_NOT_SUPPORTED</responseCode>
+    <message>DRS is not supported between source Data Center NA9 and target Data Center NA12.</message>
+</response>

@@ -229,7 +229,7 @@ class NttCisLBDriver(Driver):
         """
         List all loadbalancers inside a geography or in given network.
 
-        In Dimension Data terminology these are known as virtual listeners
+        In NTTC-CIS terminology these are known as virtual listeners
 
         :param ex_network_domain_id: UUID of Network Domain
                if not None returns only balancers in the given network
@@ -266,7 +266,7 @@ class NttCisLBDriver(Driver):
         """
         Return a list of supported protocols.
 
-        Since all protocols are support by Dimension Data, this is a list
+        Since all protocols are support by NTTC-CIS, this is a list
         of common protocols.
 
         :rtype: ``list`` of ``str``
@@ -277,7 +277,7 @@ class NttCisLBDriver(Driver):
         """
         Return list of members attached to balancer.
 
-        In Dimension Data terminology these are the members of the pools
+        In NTTC-CIS terminology these are the members of the pools
         within a virtual listener.
 
         :param balancer: LoadBalancer which should be used

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181130T161652068-0500_fff53b78-2dc0-4728-b695-6ad4bb4a8b70">
+    <operation>EXPAND_JOURNAL</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Expand DRS Journal Space has been accepted. Please use appropriate Get or List API for status.</message>
+</response>

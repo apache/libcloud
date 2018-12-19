@@ -79,6 +79,9 @@ Compute
 - [OpenStack] Adapt _to_port function to work with old OpenStack versions (GITHUB-1242)
   [Miguel Caballer]
 
+- [OpenStack] Use SUSPENDED NodeState in OpenStack driver (GITHUB-1269)
+  [Miguel Caballer]
+
 - [UpCloud] Update documentation for UpCloud driver (LIBCLOUD-1026, GITHUB-1259)
   [Ilari Mäkelä]
 

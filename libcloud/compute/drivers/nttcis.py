@@ -23,6 +23,7 @@ from libcloud.common.nttcis import LooseVersion
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.common.nttcis import process_xml, get_params
 from libcloud.common.nttcis import dd_object_to_id
 from libcloud.common.nttcis import NttCisAPIException
 from libcloud.common.nttcis import (NttCisConnection,
@@ -1016,7 +1017,6 @@ class NttCisNodeDriver(NodeDriver):
                         'urn:tag')
                     ET.SubElement(tag_elem,
                                   'urn:tagKeyName').text = k
-
                     if v is not None:
                         ET.SubElement(tag_elem,
                                       'urn:value').text = v
@@ -4648,6 +4648,274 @@ class NttCisNodeDriver(NodeDriver):
         new_node = self.ex_get_node_by_id(node_id)
 
         return new_node
+
+    # DRS methods
+    def ex_create_consistency_group(self, name, journal_size_gb,
+                                    source_server_id, target_server_id,
+                                    description=None):
+        """
+        Create a consistency group
+
+        :param name: Name of consistency group
+        :type name: ``str``
+
+        :param journal_size_gb: Journal size in GB
+        :type journal_size_gb: ``str``
+
+        :param source_server_id: Id of the server to copy
+        :type source_server_id: ``str``
+
+        :param target_server_id: Id of the server to receive the copy
+        :type: target_server_id: ``str``
+
+        :param description: (Optional) Description of consistency group
+        :type: description: ``str``
+
+        :rtype: :class:`NttCisConsistencyGroup`
+        """
+
+        consistency_group_elm = ET.Element('createConsistencyGroup',
+                                           {'xmlns': TYPES_URN})
+        ET.SubElement(consistency_group_elm, "name").text = name
+        if description is not None:
+            ET.SubElement(
+                consistency_group_elm, "description").text = description
+        ET.SubElement(
+            consistency_group_elm, "journalSizeGb").text = journal_size_gb
+        server_pair = ET.SubElement(consistency_group_elm, "serverPair")
+        ET.SubElement(
+            server_pair, "sourceServerId").text = source_server_id
+        ET.SubElement(
+            server_pair, "targetServerId").text = target_server_id
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/createConsistencyGroup",
+            method="POST",
+            data=ET.tostring(consistency_group_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    @get_params
+    def ex_list_consistency_groups(self, params={}):
+        """
+        Functions takes a named parameter that must be one of the following
+        :param params: A dictionary composed of one of the following keys
+        and a value
+        * target_data_center_id=
+        * source_network_domain_id=
+        * target_network_domain_id=
+        * source_server_id=
+        * target_server_id=
+        * name=
+        * state=
+        * operation_status=
+        * drs_infrastructure_status=
+        :rtype:  `list` of :class: `NttCisConsistencyGroup`
+        """
+
+        response = self.connection.request_with_orgId_api_2(
+            'consistencyGroup/consistencyGroup', params=params).object
+        cgs = self._to_consistency_groups(response)
+        return cgs
+
+    def ex_get_consistency_group(self, consistency_group_id):
+        """
+        Retrieves a Consistency by it's id and is more efficient thatn listing
+        all consistency groups and filtering that result.
+
+        :param consistency_group_id: An id of a consistency group
+        :type consistency_group_id: ``str``
+
+        :rtype: :class:`NttCisConsistencygroup`
+        """
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/consistencyGroup/%s" % consistency_group_id
+        ).object
+        cg = self._to_process(response)
+        return cg
+
+    def ex_list_consistency_group_snapshots(self, consistency_group_id,
+                                            create_time_min=None,
+                                            create_time_max=None):
+        """
+        Optional parameters identify the date of creation of Consistency Group
+        snapshots in *XML Schema (XSD) date time format. Best used as a
+        combination of createTime.MIN and createTime.MAX. If neither is
+        provided then all snapshots up to the possible maximum of 1014
+        will be returned. If MIN is provided by itself, all snapshots
+        between the time specified by MIN and the point in time of
+        execution will be returned. If MAX is provided by itself,
+        then all snapshots up to that point in time (up to the
+        maximum number of 1014) will be returned. MIN and MAX are
+        inclusive for this API function
+
+        :param consistency_group_id: The id of consistency group
+        :type consistency_group_id: ``str``
+
+        :param create_time_min: (Optional) in form YYYY-MM-DDT00:00.00.00Z or
+                                           substitute time offset for Z, i.e,
+                                           -05:00
+        :type create_time_min: ``str``
+
+        :param create_time_max: (Optional) in form YYYY-MM-DDT00:00:00.000Z or
+                                           substitute time offset for Z, i.e,
+                                           -05:00
+        :type create_time_max: ``str``
+
+        :rtype: `list` of :class:`NttCisSnapshots`
+        """
+
+        if create_time_min is None and create_time_max is None:
+            params = {"consistencyGroupId": consistency_group_id}
+        elif create_time_min and create_time_max:
+            params = {"consistencyGroupId": consistency_group_id,
+                      "createTime.MIN": create_time_min,
+                      "createTime.MAX": create_time_max
+                      }
+        elif create_time_min or create_time_max:
+            if create_time_max is not None:
+                params = {"consistencyGroupId": consistency_group_id,
+                          "createTime.MAX": create_time_max
+                          }
+            elif create_time_min is not None:
+                params = {"consistencyGroupId": consistency_group_id,
+                          "createTime.MIN": create_time_min
+                          }
+        paged_result = self.connection.request_with_orgId_api_2(
+            'consistencyGroup/snapshot',
+            method='GET',
+            params=params
+        ).object
+        snapshots = self._to_process(paged_result)
+        return snapshots
+
+    def ex_expand_journal(self, consistency_group_id, size_gb):
+        """
+        Expand the consistency group's journhal size in 100Gb increments.
+
+        :param consistency_group_id: The consistency group's UUID
+        :type  consistency_group_id: ``str``
+
+        :param size_gb: Gb in 100 Gb increments
+        :type  size_gb: ``str``
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+            otherwise False
+        :rtype: ``bool``
+        """
+
+        expand_elm = ET.Element("expandJournal", {"id": consistency_group_id,
+                                                  "xmlns": TYPES_URN})
+        ET.SubElement(expand_elm, "sizeGb").text = size_gb
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/expandJournal",
+            method="POST",
+            data=ET.tostring(expand_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_start_drs_failover_preview(self, consistency_group_id,
+                                      snapshot_id):
+        """
+        Brings a Consistency Group into PREVIEWING_SNAPSHOT mode.
+
+        :param consistency_group_id: Id of the Consistency Group to put into
+                                     PRIEVEW_MODE
+        :type consistency_group_id: ``str``
+
+        :param snapshot_id: Id of the Snapshot to preview
+        :type snapshot_id: ``str``
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+            otherwise False
+        :rtype: ``bool``
+        """
+        preview_elm = ET.Element("startPreviewSnapshot",
+                                 {"consistencyGroupId": consistency_group_id,
+                                  "xmlns": TYPES_URN
+                                  })
+        ET.SubElement(preview_elm, "snapshotId").text = snapshot_id
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/startPreviewSnapshot",
+            method="POST",
+            data=ET.tostring(preview_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_stop_drs_failover_preview(self, consistency_group_id):
+        """
+        Takes a Consistency Group out of PREVIEW_MODE and back to DRS_MODE
+
+        :param consistency_group_id: Consistency Group's Id
+        :type ``str``
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+         otherwise False
+        :rtype: ``bool``
+        """
+        preview_elm = ET.Element("stopPreviewSnapshot",
+                                 {"consistencyGroupId": consistency_group_id,
+                                  "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/stopPreviewSnapshot",
+            method="POST",
+            data=ET.tostring(preview_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_initiate_drs_failover(self, consistency_group_id):
+        """
+        This method is irreversible.
+        It will failover the Consistency Group while removing it as well.
+
+        :param consistency_group_id: Consistency Group's Id to failover
+        :type consistency_group_id: ``str``
+
+        :return: True if response_code contains either
+         IN_PROGRESS' or 'OK' otherwise False
+        :rtype: ``bool``
+        """
+        failover_elm = ET.Element("initiateFailover",
+                                  {"consistencyGroupId": consistency_group_id,
+                                   "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/initiateFailover",
+            method="POST",
+            data=ET.tostring(failover_elm)).object
+        response_code = findtext(response, "responseCode", TYPES_URN)
+        return response_code in ["IN_PROGRESS", "OK"]
+
+    def ex_delete_consistency_group(self, consistency_group_id):
+        """
+        Delete's a Consistency Group
+
+        :param consistency_group_id: Id of Consistency Group to delete
+        :type ``str``
+        :return: True if response_code contains either
+         IN_PROGRESS' or 'OK' otherwise False
+        :rtype: ``bool``
+        """
+        delete_elm = ET.Element("deleteConsistencyGroup",
+                                {"id": consistency_group_id,
+                                 "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/deleteConsistencyGroup",
+            method="POST",
+            data=ET.tostring(delete_elm)).object
+        response_code = findtext(response, "responseCode", TYPES_URN)
+        return response_code in ["IN_PROGRESS", "OK"]
+
+    def _to_consistency_groups(self, object):
+        cgs = findall(object, 'consistencyGroup', TYPES_URN)
+        return [self._to_process(el) for el in cgs]
+
+    def _to_drs_snapshots(self, object):
+        snapshots = []
+        for element in object.findall(fixxpath("snapshot", TYPES_URN)):
+            snapshots.append(self._to_process(element))
+        return snapshots
+
+    def _to_process(self, element):
+        return process_xml(ET.tostring(element))
 
     def _format_csv(self, http_response):
         text = http_response.read()

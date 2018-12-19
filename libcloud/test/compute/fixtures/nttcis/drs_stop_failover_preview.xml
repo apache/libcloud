@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181130T174221630-0500_91b9b2e4-5a9b-43be-aad2-4df7f58045ab">
+    <operation>STOP_PREVIEW_SNAPSHOT</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Stop Preview Snapshot has been accepted. Please use appropriate Get or List API for status.</message>
+</response>
