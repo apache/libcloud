@@ -4832,7 +4832,7 @@ class NttCisNodeDriver(NodeDriver):
         :param consistency_group_id: Consistency Group's Id
         :type ``str``
         :return: True if response_code contains eiether 'IN_PROGRESS' or 'OK'
-            otherwise False
+        otherwise False
         :rtype: ``bool``
         """
         preview_elm = ET.Element("stopPreviewSnapshot",
@@ -4853,7 +4853,7 @@ class NttCisNodeDriver(NodeDriver):
         :param consistency_group_id: Consistency Group's Id to failover
         :type consistency_group_id: ``str``
         :return: :return: True if response_code contains eiether
-            'IN_PROGRESS' or 'OK' otherwise False
+        IN_PROGRESS' or 'OK' otherwise False
         :rtype: ``bool``
         """
         failover_elm = ET.Element("initiateFailover",
@@ -4873,7 +4873,7 @@ class NttCisNodeDriver(NodeDriver):
         :param consistency_group_id: Id of Consistency Group to delete
         :type ``str``
         :return: True if response_code contains eiether
-            'IN_PROGRESS' or 'OK' otherwise False
+        IN_PROGRESS' or 'OK' otherwise False
         :rtype: ``bool``
         """
         delete_elm = ET.Element("deleteConsistencyGroup",
