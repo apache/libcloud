@@ -4872,7 +4872,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :param consistency_group_id: Id of Consistency Group to delete
         :type ``str``
-        :return: :return: True if response_code contains eiether
+        :return: True if response_code contains eiether
             'IN_PROGRESS' or 'OK' otherwise False
         :rtype: ``bool``
         """
