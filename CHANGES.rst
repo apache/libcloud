@@ -85,6 +85,9 @@ Compute
 - [UpCloud] Update documentation for UpCloud driver (LIBCLOUD-1026, GITHUB-1259)
   [Ilari Mäkelä]
 
+- [NTT CIS] Fix indenting in ex_initiate_drs_failover docstring (GITHUB-1271)
+  [Rick van de Loo]
+
 Container
 ~~~~~~~~~
 
