@@ -7,7 +7,10 @@ Changes in Apache Libcloud in development
 General
 ~~~~~~~
 
-- Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
+- [NTT CIS] Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
+  [Mitch Raful]
+
+- [NTT CIS] Fix loadbalancer docs (GITHUB-1270)
   [Mitch Raful]
 
 - Use assertIsNone instead of assertEqual with None in tests (GITHUB-1264)
@@ -87,6 +90,9 @@ Compute
 
 - [NTT CIS] Fix indenting in ex_initiate_drs_failover docstring (GITHUB-1271)
   [Rick van de Loo]
+
+- [NTT CIS] Change endpoint 'canada' to 'ca' in libcloud/common/nttcis.py (GITHUB-1270)
+  [Mitch Raful]
 
 Container
 ~~~~~~~~~
