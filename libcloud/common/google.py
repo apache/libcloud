@@ -610,9 +610,12 @@ class GoogleAuthType(object):
     @staticmethod
     def _is_gcs_s3(user_id):
         """
-        Checks S3 key format: 20 alphanumeric chars starting with GOOG.
+        Checks S3 key format: alphanumeric chars starting with GOOG.
         """
-        return len(user_id) == 20 and user_id.startswith('GOOG')
+        return (
+            len(user_id) >= 20 and len(user_id) < 30 and user_id
+            .startswith('GOOG')
+        )
 
     @staticmethod
     def _is_sa(user_id):
