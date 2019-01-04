@@ -22,6 +22,9 @@ Common
 - [OpenStack] Handle missing user enabled attribute (GITHUB-1261)
   [Ken Dreyer]
 
+- [Google Cloud Storage] Handle Interoperability access keys of more than 20 characters (GITHUB-1272)
+  [Yoan Tournade]
+
 Compute
 ~~~~~~~
 
