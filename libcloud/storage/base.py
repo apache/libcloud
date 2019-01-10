@@ -18,7 +18,7 @@ Provides base classes for working with storage
 """
 
 # Backward compatibility for Python 2.5
-from __future__ import with_statement
+
 
 import os.path                          # pylint: disable-msg=W0404
 import hashlib

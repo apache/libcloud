@@ -61,7 +61,7 @@ class DummyIterator(object):
     def get_md5_hash(self):
         return self.hash.hexdigest()
 
-    def next(self):
+    def __next__(self):
         if self._current_item == len(self._data):
             raise StopIteration
 
@@ -71,7 +71,7 @@ class DummyIterator(object):
         return value
 
     def __next__(self):
-        return self.next()
+        return next(self)
 
     def __enter__(self):
         pass
@@ -141,7 +141,7 @@ class DummyStorageDriver(StorageDriver):
         bytes_used = 0
         for container in self._containers:
             objects = self._containers[container]['objects']
-            for _, obj in objects.items():
+            for _, obj in list(objects.items()):
                 bytes_used += obj.size
 
         return {'container_count': int(container_count),

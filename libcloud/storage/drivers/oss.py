@@ -947,7 +947,7 @@ class OSSStorageDriver(StorageDriver):
         if 'last-modified' in headers:
             extra['last_modified'] = headers['last-modified']
 
-        for key, value in headers.items():
+        for key, value in list(headers.items()):
             if not key.lower().startswith(self.http_vendor_prefix + 'meta-'):
                 continue
 

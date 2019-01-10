@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+
 
 import base64
 import os
@@ -246,7 +246,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             'meta_data': {}
         }
 
-        for key, value in response.headers.items():
+        for key, value in list(response.headers.items()):
             if key.startswith('x-ms-meta-'):
                 key = key.split('x-ms-meta-')[1]
                 extra['meta_data'][key] = value
@@ -348,7 +348,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             extra['md5_hash'] = value
 
         meta_data = {}
-        for key, value in response.headers.items():
+        for key, value in list(response.headers.items()):
             if key.startswith('x-ms-meta-'):
                 key = key.split('x-ms-meta-')[1]
                 meta_data[key] = value

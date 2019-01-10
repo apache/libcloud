@@ -17,8 +17,8 @@ from hashlib import sha1
 import hmac
 import os
 from time import time
+from http import HTTPStatus
 
-from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 
 try:
@@ -59,7 +59,7 @@ PUBLIC_ENDPOINT_KEY = 'publicURL'
 
 
 class CloudFilesResponse(Response):
-    valid_response_codes = [httplib.NOT_FOUND, httplib.CONFLICT]
+    valid_response_codes = [HTTPStatus.NOT_FOUND, HTTPStatus.CONFLICT]
 
     def success(self):
         i = int(self.status)
@@ -206,7 +206,7 @@ class CloudFilesConnection(OpenStackSwiftConnection):
                 endpoint_type=endpoint_type)
         else:
             raise LibcloudError(
-                'Auth version "%s" not supported' % (self._auth_version))
+                'Auth version "%s" not supported' % self._auth_version)
 
         # if this is a CDN request, return the cdn url instead
         if self.cdn_request:
@@ -274,26 +274,26 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
     def iterate_containers(self):
         response = self.connection.request('')
 
-        if response.status == httplib.NO_CONTENT:
+        if response.status == HTTPStatus.NO_CONTENT:
             return []
-        elif response.status == httplib.OK:
+        elif response.status == HTTPStatus.OK:
             return self._to_container_list(json.loads(response.body))
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % response.status)
 
     def get_container(self, container_name):
         container_name_encoded = self._encode_container_name(container_name)
-        response = self.connection.request('/%s' % (container_name_encoded),
+        response = self.connection.request('/%s' % container_name_encoded,
                                            method='HEAD')
 
-        if response.status == httplib.NO_CONTENT:
+        if response.status == HTTPStatus.NO_CONTENT:
             container = self._headers_to_container(
                 container_name, response.headers)
             return container
-        elif response.status == httplib.NOT_FOUND:
+        elif response.status == HTTPStatus.NOT_FOUND:
             raise ContainerDoesNotExistError(None, self, container_name)
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % response.status)
 
     def get_object(self, container_name, object_name):
         container = self.get_container(container_name)
@@ -303,34 +303,34 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         response = self.connection.request('/%s/%s' % (container_name_encoded,
                                                        object_name_encoded),
                                            method='HEAD')
-        if response.status in [httplib.OK, httplib.NO_CONTENT]:
+        if response.status in [HTTPStatus.OK, HTTPStatus.NO_CONTENT]:
             obj = self._headers_to_object(
                 object_name, container, response.headers)
             return obj
-        elif response.status == httplib.NOT_FOUND:
+        elif response.status == HTTPStatus.NOT_FOUND:
             raise ObjectDoesNotExistError(None, self, object_name)
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % response.status)
 
-    def get_container_cdn_url(self, container, ex_ssl_uri=False):
+    def get_container_cdn_url(self, container, ex_ssl_uri=True):
         # pylint: disable=unexpected-keyword-arg
         container_name_encoded = self._encode_container_name(container.name)
-        response = self.connection.request('/%s' % (container_name_encoded),
+        response = self.connection.request('/%s' % container_name_encoded,
                                            method='HEAD',
                                            cdn_request=True)
 
-        if response.status == httplib.NO_CONTENT:
+        if response.status == HTTPStatus.NO_CONTENT:
             if ex_ssl_uri:
                 cdn_url = response.headers['x-cdn-ssl-uri']
             else:
                 cdn_url = response.headers['x-cdn-uri']
             return cdn_url
-        elif response.status == httplib.NOT_FOUND:
+        elif response.status == HTTPStatus.NOT_FOUND:
             raise ContainerDoesNotExistError(value='',
                                              container_name=container.name,
                                              driver=self)
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % response.status)
 
     def get_object_cdn_url(self, obj):
         container_cdn_url = self.get_container_cdn_url(container=obj.container)
@@ -350,19 +350,19 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
             headers['X-TTL'] = ex_ttl
 
         # pylint: disable=unexpected-keyword-arg
-        response = self.connection.request('/%s' % (container_name),
+        response = self.connection.request('/%s' % container_name,
                                            method='PUT',
                                            headers=headers,
                                            cdn_request=True)
 
-        return response.status in [httplib.CREATED, httplib.ACCEPTED]
+        return response.status in [HTTPStatus.CREATED, HTTPStatus.ACCEPTED]
 
     def create_container(self, container_name):
         container_name_encoded = self._encode_container_name(container_name)
         response = self.connection.request(
-            '/%s' % (container_name_encoded), method='PUT')
+            '/%s' % container_name_encoded, method='PUT')
 
-        if response.status == httplib.CREATED:
+        if response.status == HTTPStatus.CREATED:
             # Accepted mean that container is not yet created but it will be
             # eventually
             extra = {'object_count': 0}
@@ -370,24 +370,24 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                   extra=extra, driver=self)
 
             return container
-        elif response.status == httplib.ACCEPTED:
+        elif response.status == HTTPStatus.ACCEPTED:
             error = ContainerAlreadyExistsError(None, self, container_name)
             raise error
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % response.status)
 
     def delete_container(self, container):
         name = self._encode_container_name(container.name)
 
         # Only empty container can be deleted
-        response = self.connection.request('/%s' % (name), method='DELETE')
+        response = self.connection.request('/%s' % name, method='DELETE')
 
-        if response.status == httplib.NO_CONTENT:
+        if response.status == HTTPStatus.NO_CONTENT:
             return True
-        elif response.status == httplib.NOT_FOUND:
+        elif response.status == HTTPStatus.NOT_FOUND:
             raise ContainerDoesNotExistError(value='',
                                              container_name=name, driver=self)
-        elif response.status == httplib.CONFLICT:
+        elif response.status == HTTPStatus.CONFLICT:
             # @TODO: Add "delete_all_objects" parameter?
             raise ContainerIsNotEmptyError(value='',
                                            container_name=name, driver=self)
@@ -407,7 +407,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                              'destination_path': destination_path,
                              'overwrite_existing': overwrite_existing,
                              'delete_on_failure': delete_on_failure},
-            success_status_code=httplib.OK)
+            success_status_code=HTTPStatus.OK)
 
     def download_object_as_stream(self, obj, chunk_size=None):
         container_name = obj.container.name
@@ -420,7 +420,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                 response=response,
                                 callback_kwargs={'iterator': response.response,
                                                  'chunk_size': chunk_size},
-                                success_status_code=httplib.OK)
+                                success_status_code=HTTPStatus.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
@@ -451,13 +451,13 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         response = self.connection.request(
             '/%s/%s' % (container_name, object_name), method='DELETE')
 
-        if response.status == httplib.NO_CONTENT:
+        if response.status == HTTPStatus.NO_CONTENT:
             return True
-        elif response.status == httplib.NOT_FOUND:
+        elif response.status == HTTPStatus.NOT_FOUND:
             raise ObjectDoesNotExistError(value='', object_name=object_name,
                                           driver=self)
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % response.status)
 
     def ex_purge_object_from_cdn(self, obj, email=None):
         """
@@ -478,7 +478,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                            headers=headers,
                                            cdn_request=True)
 
-        return response.status == httplib.NO_CONTENT
+        return response.status == HTTPStatus.NO_CONTENT
 
     def ex_get_meta_data(self):
         """
@@ -488,7 +488,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         """
         response = self.connection.request('', method='HEAD')
 
-        if response.status == httplib.NO_CONTENT:
+        if response.status == HTTPStatus.NO_CONTENT:
             container_count = response.headers.get(
                 'x-account-container-count', 'unknown')
             object_count = response.headers.get(
@@ -503,7 +503,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                     'bytes_used': int(bytes_used),
                     'temp_url_key': temp_url_key}
 
-        raise LibcloudError('Unexpected status code: %s' % (response.status))
+        raise LibcloudError('Unexpected status code: %s' % response.status)
 
     def ex_multipart_upload_object(self, file_path, container, object_name,
                                    chunk_size=33554432, extra=None,
@@ -544,12 +544,12 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         headers = {'X-Container-Meta-Web-Index': index_file}
 
         # pylint: disable=unexpected-keyword-arg
-        response = self.connection.request('/%s' % (container_name),
+        response = self.connection.request('/%s' % container_name,
                                            method='POST',
                                            headers=headers,
                                            cdn_request=False)
 
-        return response.status in [httplib.CREATED, httplib.ACCEPTED]
+        return response.status in [HTTPStatus.CREATED, HTTPStatus.ACCEPTED]
 
     def ex_set_error_page(self, container, file_name='error.html'):
         """
@@ -568,12 +568,12 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         headers = {'X-Container-Meta-Web-Error': file_name}
 
         # pylint: disable=unexpected-keyword-arg
-        response = self.connection.request('/%s' % (container_name),
+        response = self.connection.request('/%s' % container_name,
                                            method='POST',
                                            headers=headers,
                                            cdn_request=False)
 
-        return response.status in [httplib.CREATED, httplib.ACCEPTED]
+        return response.status in [HTTPStatus.CREATED, HTTPStatus.ACCEPTED]
 
     def ex_set_account_metadata_temp_url_key(self, key):
         """
@@ -593,8 +593,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                            headers=headers,
                                            cdn_request=False)
 
-        return response.status in [httplib.OK, httplib.NO_CONTENT,
-                                   httplib.CREATED, httplib.ACCEPTED]
+        return response.status in [HTTPStatus.OK, HTTPStatus.NO_CONTENT,
+                                   HTTPStatus.CREATED, HTTPStatus.ACCEPTED]
 
     def ex_get_object_temp_url(self, obj, method='GET', timeout=60):
         """
@@ -685,7 +685,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                           (data_hash, object_hash),
                     object_name=object_name, driver=self)
 
-        obj = Object(name=object_name, size=0, hash=object_hash, extra=None,
+        obj = Object(name=object_name, size=0, hash=object_hash, extra={},
                      meta_data=meta_data, container=container, driver=self)
 
         return obj
@@ -730,10 +730,10 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                                                (container_name_encoded),
                                                params=params)
 
-            if response.status == httplib.NO_CONTENT:
+            if response.status == HTTPStatus.NO_CONTENT:
                 # Empty or non-existent container
                 break
-            elif response.status == httplib.OK:
+            elif response.status == HTTPStatus.OK:
                 objects = self._to_object_list(json.loads(response.body),
                                                container)
 
@@ -760,7 +760,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         headers = headers or {}
         if meta_data:
             for key, value in list(meta_data.items()):
-                key = 'X-Object-Meta-%s' % (key)
+                key = 'X-Object-Meta-%s' % key
                 headers[key] = value
 
         if content_disposition is not None:
@@ -776,7 +776,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         bytes_transferred = result_dict['bytes_transferred']
         server_hash = result_dict['response'].headers.get('etag', None)
 
-        if response.status == httplib.EXPECTATION_FAILED:
+        if response.status == HTTPStatus.EXPECTATION_FAILED:
             raise LibcloudError(value='Missing content-type header',
                                 driver=self)
         elif verify_hash and not server_hash:
@@ -787,16 +787,16 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
                 value=('MD5 hash checksum does not match (expected=%s, ' +
                        'actual=%s)') % (result_dict['data_hash'], server_hash),
                 object_name=object_name, driver=self)
-        elif response.status == httplib.CREATED:
+        elif response.status == HTTPStatus.CREATED:
             obj = Object(
                 name=object_name, size=bytes_transferred, hash=server_hash,
-                extra=None, meta_data=meta_data, container=container,
+                extra={}, meta_data=meta_data, container=container,
                 driver=self)
 
             return obj
         else:
             # @TODO: Add test case for this condition (probably 411)
-            raise LibcloudError('status_code=%s' % (response.status),
+            raise LibcloudError('status_code=%s' % response.status,
                                 driver=self)
 
     def _encode_container_name(self, name):
@@ -911,7 +911,7 @@ class FileChunkReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         if self.stop_iteration:
             raise StopIteration
 
@@ -927,7 +927,7 @@ class FileChunkReader(object):
                                  chunk_size=8192)
 
     def __next__(self):
-        return self.next()
+        return next(self)
 
 
 class ChunkStreamReader(object):
@@ -943,7 +943,7 @@ class ChunkStreamReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         if self.stop_iteration:
             self.fd.close()
             raise StopIteration
@@ -959,4 +959,4 @@ class ChunkStreamReader(object):
         return block
 
     def __next__(self):
-        return self.next()
+        return next(self)

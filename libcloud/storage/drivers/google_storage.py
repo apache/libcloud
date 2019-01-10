@@ -117,7 +117,7 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         params_copy = copy.deepcopy(params)
 
         # Lowercase all headers except 'date' and Google header values
-        for k, v in headers.items():
+        for k, v in list(headers.items()):
             k_lower = k.lower()
             if (k_lower == 'date' or k_lower.startswith(
                     GoogleStorageDriver.http_vendor_prefix) or
