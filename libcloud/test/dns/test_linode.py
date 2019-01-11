@@ -68,6 +68,14 @@ class LinodeTests(unittest.TestCase):
         self.assertHasKeys(arecord.extra, ['protocol', 'ttl_sec', 'port',
                                            'weight'])
 
+        srvrecord = records[1]
+        self.assertEquals(srvrecord.id, '3585141')
+        self.assertEquals(srvrecord.name, '_minecraft._udp')
+        self.assertEquals(srvrecord.type, RecordType.SRV)
+        self.assertEquals(srvrecord.data, 'mc.linode.com')
+        self.assertHasKeys(srvrecord.extra, ['protocol', 'ttl_sec', 'port',
+                                             'priority', 'weight'])
+
     def test_list_records_zone_does_not_exist(self):
         zone = self.driver.list_zones()[0]
 

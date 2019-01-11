@@ -122,7 +122,6 @@ class Algorithm(object):
     """
     Represents a load balancing algorithm.
     """
-
     RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
@@ -130,6 +129,13 @@ class Algorithm(object):
     WEIGHTED_LEAST_CONNECTIONS = 4
     SHORTEST_RESPONSE = 5
     PERSISTENT_IP = 6
+    LEAST_CONNECTIONS_MEMBER = 7
+    LEAST_CONNECTIONS_NODE = 8
+    OBSERVED_MEMBER = 9
+    OBSERVED_NODE = 10
+    PREDICTIVE_MEMBER = 11
+    PREDICTIVE_NODE = 12
+
 
 DEFAULT_ALGORITHM = Algorithm.ROUND_ROBIN
 

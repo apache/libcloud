@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-08-10T09:22:40.684-04:00/c0ca4a5d-3611-417e-8209-fd3046cff1d5">
+<operation>CHANGE_SERVER_MONITORING_PLAN</operation>
+<responseCode>OK</responseCode>
+<message>Monitoring on Server 'Production Server' has been changed to
+Service Plan 'ADVANCED'.</message>
+</response>

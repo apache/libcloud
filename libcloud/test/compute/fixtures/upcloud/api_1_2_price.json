@@ -1,0 +1,683 @@
+{
+   "prices" : {
+      "zone" : [
+         {
+            "firewall" : {
+               "amount" : 1,
+               "price" : 0.56
+            },
+            "io_request_backup" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_maxiops" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "ipv4_address" : {
+               "amount" : 1,
+               "price" : 0.336
+            },
+            "ipv6_address" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "name" : "de-fra1",
+            "public_ipv4_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv4_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "public_ipv6_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv6_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "server_core" : {
+               "amount" : 1,
+               "price" : 1.12
+            },
+            "server_memory" : {
+               "amount" : 256,
+               "price" : 0.14
+            },
+            "server_plan_12xCPU-32GB" : {
+               "amount" : 1,
+               "price" : 47.619
+            },
+            "server_plan_16xCPU-48GB" : {
+               "amount" : 1,
+               "price" : 71.4286
+            },
+            "server_plan_1xCPU-1GB" : {
+               "amount" : 1,
+               "price" : 1.488
+            },
+            "server_plan_20xCPU-64GB" : {
+               "amount" : 1,
+               "price" : 95.2381
+            },
+            "server_plan_2xCPU-2GB" : {
+               "amount" : 1,
+               "price" : 2.976
+            },
+            "server_plan_4xCPU-4GB" : {
+               "amount" : 1,
+               "price" : 5.952
+            },
+            "server_plan_6xCPU-8GB" : {
+               "amount" : 1,
+               "price" : 11.905
+            },
+            "server_plan_8xCPU-16GB" : {
+               "amount" : 1,
+               "price" : 23.8095
+            },
+            "storage_backup" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_maxiops" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_template" : {
+               "amount" : 1,
+               "price" : 0.031
+            }
+         },
+         {
+            "firewall" : {
+               "amount" : 1,
+               "price" : 0.56
+            },
+            "io_request_backup" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_hdd" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_maxiops" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "ipv4_address" : {
+               "amount" : 1,
+               "price" : 0.336
+            },
+            "ipv6_address" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "name" : "fi-dev2",
+            "public_ipv4_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv4_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "public_ipv6_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv6_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "server_core" : {
+               "amount" : 1,
+               "price" : 1.24
+            },
+            "server_memory" : {
+               "amount" : 256,
+               "price" : 0.34
+            },
+            "server_plan_12xCPU-32GB" : {
+               "amount" : 1,
+               "price" : 71.4286
+            },
+            "server_plan_16xCPU-48GB" : {
+               "amount" : 1,
+               "price" : 107.1429
+            },
+            "server_plan_1xCPU-1GB" : {
+               "amount" : 1,
+               "price" : 2.232
+            },
+            "server_plan_20xCPU-64GB" : {
+               "amount" : 1,
+               "price" : 142.8571
+            },
+            "server_plan_2xCPU-2GB" : {
+               "amount" : 1,
+               "price" : 4.464
+            },
+            "server_plan_4xCPU-4GB" : {
+               "amount" : 1,
+               "price" : 8.928
+            },
+            "server_plan_6xCPU-8GB" : {
+               "amount" : 1,
+               "price" : 17.857
+            },
+            "server_plan_8xCPU-16GB" : {
+               "amount" : 1,
+               "price" : 35.7143
+            },
+            "storage_backup" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_hdd" : {
+               "amount" : 1,
+               "price" : 0.0145
+            },
+            "storage_maxiops" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_template" : {
+               "amount" : 1,
+               "price" : 0.031
+            }
+         },
+         {
+            "firewall" : {
+               "amount" : 1,
+               "price" : 0.56
+            },
+            "io_request_backup" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_hdd" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_maxiops" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_ssd" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "ipv4_address" : {
+               "amount" : 1,
+               "price" : 0.336
+            },
+            "ipv6_address" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "name" : "fi-hel1",
+            "public_ipv4_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv4_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "public_ipv6_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv6_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "server_core" : {
+               "amount" : 1,
+               "price" : 1.24
+            },
+            "server_memory" : {
+               "amount" : 256,
+               "price" : 0.34
+            },
+            "server_plan_12xCPU-32GB" : {
+               "amount" : 1,
+               "price" : 71.4286
+            },
+            "server_plan_16xCPU-48GB" : {
+               "amount" : 1,
+               "price" : 107.1429
+            },
+            "server_plan_1xCPU-1GB" : {
+               "amount" : 1,
+               "price" : 2.232
+            },
+            "server_plan_20xCPU-64GB" : {
+               "amount" : 1,
+               "price" : 142.8571
+            },
+            "server_plan_2xCPU-2GB" : {
+               "amount" : 1,
+               "price" : 4.464
+            },
+            "server_plan_4xCPU-4GB" : {
+               "amount" : 1,
+               "price" : 8.928
+            },
+            "server_plan_6xCPU-8GB" : {
+               "amount" : 1,
+               "price" : 17.857
+            },
+            "server_plan_8xCPU-16GB" : {
+               "amount" : 1,
+               "price" : 35.7143
+            },
+            "storage_backup" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_hdd" : {
+               "amount" : 1,
+               "price" : 0.0145
+            },
+            "storage_maxiops" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_ssd" : {
+               "amount" : 1,
+               "price" : 0.056
+            },
+            "storage_template" : {
+               "amount" : 1,
+               "price" : 0.031
+            }
+         },
+         {
+            "firewall" : {
+               "amount" : 1,
+               "price" : 0.56
+            },
+            "io_request_backup" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_maxiops" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "ipv4_address" : {
+               "amount" : 1,
+               "price" : 0.336
+            },
+            "ipv6_address" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "name" : "nl-ams1",
+            "public_ipv4_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv4_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "public_ipv6_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv6_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "server_core" : {
+               "amount" : 1,
+               "price" : 1.12
+            },
+            "server_memory" : {
+               "amount" : 256,
+               "price" : 0.14
+            },
+            "server_plan_12xCPU-32GB" : {
+               "amount" : 1,
+               "price" : 47.619
+            },
+            "server_plan_16xCPU-48GB" : {
+               "amount" : 1,
+               "price" : 71.4286
+            },
+            "server_plan_1xCPU-1GB" : {
+               "amount" : 1,
+               "price" : 1.488
+            },
+            "server_plan_20xCPU-64GB" : {
+               "amount" : 1,
+               "price" : 95.2381
+            },
+            "server_plan_2xCPU-2GB" : {
+               "amount" : 1,
+               "price" : 2.976
+            },
+            "server_plan_4xCPU-4GB" : {
+               "amount" : 1,
+               "price" : 5.952
+            },
+            "server_plan_6xCPU-8GB" : {
+               "amount" : 1,
+               "price" : 11.905
+            },
+            "server_plan_8xCPU-16GB" : {
+               "amount" : 1,
+               "price" : 23.8095
+            },
+            "storage_backup" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_maxiops" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_template" : {
+               "amount" : 1,
+               "price" : 0.031
+            }
+         },
+         {
+            "firewall" : {
+               "amount" : 1,
+               "price" : 0.56
+            },
+            "io_request_backup" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_maxiops" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "ipv4_address" : {
+               "amount" : 1,
+               "price" : 0.336
+            },
+            "ipv6_address" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "name" : "sg-sin1",
+            "public_ipv4_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv4_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "public_ipv6_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv6_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "server_core" : {
+               "amount" : 1,
+               "price" : 1.12
+            },
+            "server_memory" : {
+               "amount" : 256,
+               "price" : 0.14
+            },
+            "server_plan_12xCPU-32GB" : {
+               "amount" : 1,
+               "price" : 47.619
+            },
+            "server_plan_16xCPU-48GB" : {
+               "amount" : 1,
+               "price" : 71.4286
+            },
+            "server_plan_1xCPU-1GB" : {
+               "amount" : 1,
+               "price" : 1.488
+            },
+            "server_plan_20xCPU-64GB" : {
+               "amount" : 1,
+               "price" : 95.2381
+            },
+            "server_plan_2xCPU-2GB" : {
+               "amount" : 1,
+               "price" : 2.976
+            },
+            "server_plan_4xCPU-4GB" : {
+               "amount" : 1,
+               "price" : 5.952
+            },
+            "server_plan_6xCPU-8GB" : {
+               "amount" : 1,
+               "price" : 11.905
+            },
+            "server_plan_8xCPU-16GB" : {
+               "amount" : 1,
+               "price" : 23.8095
+            },
+            "storage_backup" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_maxiops" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_template" : {
+               "amount" : 1,
+               "price" : 0.031
+            }
+         },
+         {
+            "firewall" : {
+               "amount" : 1,
+               "price" : 0.56
+            },
+            "io_request_backup" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_hdd" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_maxiops" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_ssd" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "ipv4_address" : {
+               "amount" : 1,
+               "price" : 0.336
+            },
+            "ipv6_address" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "name" : "uk-lon1",
+            "public_ipv4_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv4_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "public_ipv6_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv6_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "server_core" : {
+               "amount" : 1,
+               "price" : 1.12
+            },
+            "server_memory" : {
+               "amount" : 256,
+               "price" : 0.14
+            },
+            "server_plan_12xCPU-32GB" : {
+               "amount" : 1,
+               "price" : 47.619
+            },
+            "server_plan_16xCPU-48GB" : {
+               "amount" : 1,
+               "price" : 71.4286
+            },
+            "server_plan_1xCPU-1GB" : {
+               "amount" : 1,
+               "price" : 1.488
+            },
+            "server_plan_20xCPU-64GB" : {
+               "amount" : 1,
+               "price" : 95.2381
+            },
+            "server_plan_2xCPU-2GB" : {
+               "amount" : 1,
+               "price" : 2.976
+            },
+            "server_plan_4xCPU-4GB" : {
+               "amount" : 1,
+               "price" : 5.952
+            },
+            "server_plan_6xCPU-8GB" : {
+               "amount" : 1,
+               "price" : 11.905
+            },
+            "server_plan_8xCPU-16GB" : {
+               "amount" : 1,
+               "price" : 23.8095
+            },
+            "storage_backup" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_hdd" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_maxiops" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_ssd" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_template" : {
+               "amount" : 1,
+               "price" : 0.031
+            }
+         },
+         {
+            "firewall" : {
+               "amount" : 1,
+               "price" : 0.56
+            },
+            "io_request_backup" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "io_request_maxiops" : {
+               "amount" : 1000000,
+               "price" : 0
+            },
+            "ipv4_address" : {
+               "amount" : 1,
+               "price" : 0.336
+            },
+            "ipv6_address" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "name" : "us-chi1",
+            "public_ipv4_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv4_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "public_ipv6_bandwidth_in" : {
+               "amount" : 1,
+               "price" : 0
+            },
+            "public_ipv6_bandwidth_out" : {
+               "amount" : 1,
+               "price" : 5.6
+            },
+            "server_core" : {
+               "amount" : 1,
+               "price" : 1.12
+            },
+            "server_memory" : {
+               "amount" : 256,
+               "price" : 0.14
+            },
+            "server_plan_12xCPU-32GB" : {
+               "amount" : 1,
+               "price" : 47.619
+            },
+            "server_plan_16xCPU-48GB" : {
+               "amount" : 1,
+               "price" : 71.4286
+            },
+            "server_plan_1xCPU-1GB" : {
+               "amount" : 1,
+               "price" : 1.488
+            },
+            "server_plan_20xCPU-64GB" : {
+               "amount" : 1,
+               "price" : 95.2381
+            },
+            "server_plan_2xCPU-2GB" : {
+               "amount" : 1,
+               "price" : 2.976
+            },
+            "server_plan_4xCPU-4GB" : {
+               "amount" : 1,
+               "price" : 5.952
+            },
+            "server_plan_6xCPU-8GB" : {
+               "amount" : 1,
+               "price" : 11.905
+            },
+            "server_plan_8xCPU-16GB" : {
+               "amount" : 1,
+               "price" : 23.8095
+            },
+            "storage_backup" : {
+               "amount" : 1,
+               "price" : 0.0078
+            },
+            "storage_maxiops" : {
+               "amount" : 1,
+               "price" : 0.031
+            },
+            "storage_template" : {
+               "amount" : 1,
+               "price" : 0.031
+            }
+         }
+      ]
+   }
+}

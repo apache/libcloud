@@ -1,7 +1,7 @@
 {
     "id": "fwr-1",
     "type": "firewall-rule",
-    "href": "/cloudapi/v3/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules/fwr-1",
+    "href": "/cloudapi/v4/datacenters/dc-1/servers/s-3/nics/nic-2/firewallrules/fwr-1",
     "metadata": {
         "createdDate": "2016-10-19T11:08:04Z",
         "createdBy": "test@test.te",
@@ -11,14 +11,14 @@
         "state": "BUSY"
     },
     "properties": {
-        "name": "Test created firewall rule",
+        "name": "SSH",
         "protocol": "TCP",
-        "sourceMac": null,
+        "sourceMac": "01:23:45:67:89:00",
         "sourceIp": null,
         "targetIp": null,
         "icmpCode": null,
         "icmpType": null,
-        "portRangeStart": 80,
-        "portRangeEnd": 80
+        "portRangeStart": 22,
+        "portRangeEnd": 22
     }
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T194729995-0400_3409863f-ad9c-4381-b841-762e311aaebc">
+  <operation>APPLY_TAGS</operation>
+  <responseCode>OK</responseCode>
+  <message>Tag(s) successfully applied.</message>
+</response>

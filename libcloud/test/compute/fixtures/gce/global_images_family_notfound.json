@@ -4,10 +4,10 @@
     "errors": [
       {
         "domain": "global",
-        "message": "The resource 'projects/project-name/global/images/family/coreos' was not found",
+        "message": "The resource 'projects/project-name/global/images/family/coreos-stable' was not found",
         "reason": "notFound"
       }
     ],
-    "message": "The resource 'projects/project-name/global/images/family/coreos' was not found"
+    "message": "The resource 'projects/project-name/global/images/family/coreos-stable' was not found"
   }
 }

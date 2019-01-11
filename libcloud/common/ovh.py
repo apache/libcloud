@@ -104,13 +104,12 @@ class OvhConnection(ConnectionUserAndKey):
         }
         httpcon = LibcloudConnection(host=self.host, port=443)
         httpcon.request(method='POST', url=action, body=data, headers=headers)
-        response = httpcon.getresponse()
+        response = JsonResponse(httpcon.getresponse(), httpcon)
 
         if response.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
 
-        body = response.read()
-        json_response = json.loads(body)
+        json_response = response.parse_body()
         httpcon.close()
         return json_response
 
@@ -131,8 +130,7 @@ class OvhConnection(ConnectionUserAndKey):
             full_url += '?'
             for key, value in params.items():
                 full_url += '%s=%s&' % (key, value)
-            else:
-                full_url = full_url[:-1]
+            full_url = full_url[:-1]
         sha1 = hashlib.sha1()
         base_signature = "+".join([
             self.key,

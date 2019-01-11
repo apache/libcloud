@@ -102,7 +102,6 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         except Exception:
             e = sys.exc_info()[1]
             raise GandiException(1003, e)
-        return None
 
     def _node_info(self, id):
         return self._resource_info('vm', id)
@@ -436,7 +435,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
     def _to_loc(self, loc):
         return NodeLocation(
             id=loc['id'],
-            name=loc['name'],
+            name=loc['dc_code'],
             country=loc['country'],
             driver=self
         )

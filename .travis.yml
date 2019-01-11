@@ -1,28 +1,30 @@
 language: python
 sudo: false
-# Add or remove version for match with Travis support
-python:
-    - 2.6
-    - 2.7
-    - 3.3
-    - 3.4
-    - 3.5
-    - 3.6
-    - pypy
-    - pypy3
-os:
-  - linux
+dist: trusty
+os: linux
 
 # Note: graphviz is needed for grapgs embedded in the docs
 addons:
   apt:
     packages:
       - graphviz
-      - libvirt-bin
+      - libvirt-dev
 
 matrix:
   fast_finish: true
   include:
+    - python: 2.7
+    - python: 3.4
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+      sudo: required
+    - pypy
+    - pypy3
+    - env: ENV=checks
+      python: 2.7
+      before_script: TOX_ENV=checks
     - env: ENV=lint
       python: 2.7
       before_script: TOX_ENV=lint
@@ -31,9 +33,9 @@ matrix:
       before_script: TOX_ENV=pylint
     - env: ENV=coverage
       python: 2.7
-      before_script: TOX_ENV=coverage
+      before_script: TOX_ENV=coverage-travis
     - env: ENV=docs
-      python: 2.7
+      python: 3.5
       before_script: TOX_ENV=docs-travis
       # Note: graphviz is needed for grapgs embedded in the docs
       addons:
@@ -41,23 +43,16 @@ matrix:
           packages:
             - graphviz
             - gcc
-            - libvirt-bin
+            - libvirt-dev
       # Trigger ReadTheDocs build on docs builder
       after_success:
-        - ./contrib/trigger_rtd_build.py 8284
-  # For now allow failures of all the builds which use lxml
-  allow_failures:
-    - env: ENV=coverage
-    - env:
-      python: pypy3
-    - env:
-      python: pypy
-      # Trigger ReadTheDocs build
+        - pip3 install requests
+        - python3 ./contrib/trigger_rtd_build.py 8284
 
 install:
-  - pip install --upgrade "pip<8.0.0"
-  - pip install "virtualenv<14.0.0"
-  - pip install "tox>=2.3.0,<2.4"
+  - pip install --upgrade "pip==9.0.1"
+  - pip install "virtualenv==15.1.0"
+  - pip install "tox==2.8.2"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:

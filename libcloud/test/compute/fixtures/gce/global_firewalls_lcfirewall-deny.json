@@ -1,0 +1,25 @@
+{
+  "denied": [
+    {
+      "IPProtocol": "tcp",
+      "ports": [
+        "4567"
+      ]
+    }
+  ],
+  "creationTimestamp": "2013-06-26T10:04:43.773-09:00",
+  "description": "Libcloud Deny Firewall",
+  "direction": "INGRESS",
+  "id": "0565629596395414123",
+  "kind": "compute#firewall",
+  "name": "lcfirewall-deny",
+  "network": "https://www.googleapis.com/compute/v1/projects/project_name/global/networks/default",
+  "priority": 900,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/global/firewalls/lcfirewall-deny",
+  "sourceRanges": [
+    "10.240.100.0/24"
+  ],
+  "sourceTags": [
+    "libcloud"
+  ]
+}

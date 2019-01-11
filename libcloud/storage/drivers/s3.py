@@ -16,10 +16,10 @@
 import base64
 import hmac
 import time
-
 from hashlib import sha1
 
 import libcloud.utils.py3
+
 try:
     if libcloud.utils.py3.DEFAULT_LXML:
         from lxml.etree import Element, SubElement
@@ -48,7 +48,6 @@ from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 
-
 # How long before the token expires
 EXPIRATION_SECONDS = 15 * 60
 
@@ -58,6 +57,7 @@ S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
 S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
 S3_US_GOV_WEST_HOST = 's3-us-gov-west-1.amazonaws.com'
 S3_CN_NORTH_HOST = 's3.cn-north-1.amazonaws.com.cn'
+S3_CN_NORTHWEST_HOST = 's3.cn-northwest-1.amazonaws.com.cn'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
 S3_EU_WEST2_HOST = 's3-eu-west-2.amazonaws.com'
 S3_EU_CENTRAL_HOST = 's3-eu-central-1.amazonaws.com'
@@ -89,7 +89,7 @@ class S3Response(AWSBaseResponse):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299 or i in self.valid_response_codes
+        return 200 <= i <= 299 or i in self.valid_response_codes
 
     def parse_error(self):
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
@@ -727,7 +727,6 @@ class BaseS3StorageDriver(StorageDriver):
             # pylint: disable=maybe-no-member
             for node in body.findall(fixxpath(xpath='Upload',
                                               namespace=self.namespace)):
-
                 initiator = node.find(fixxpath(xpath='Initiator',
                                                namespace=self.namespace))
                 owner = node.find(fixxpath(xpath='Owner',
@@ -868,6 +867,10 @@ class BaseS3StorageDriver(StorageDriver):
         content_type = extra.get('content_type', None)
         meta_data = extra.get('meta_data', None)
         acl = extra.get('acl', None)
+
+        if not content_type:
+            content_type, _ = libcloud.utils.files.guess_file_mime_type(
+                object_name)
 
         if content_type:
             headers['Content-Type'] = content_type
@@ -1046,6 +1049,17 @@ class S3USGovWestStorageDriver(S3StorageDriver):
     region_name = 'us-gov-west-1'
 
 
+class S3CNNorthWestConnection(S3SignatureV4Connection):
+    host = S3_CN_NORTHWEST_HOST
+
+
+class S3CNNorthWestStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (cn-northwest-1)'
+    connectionCls = S3CNNorthWestConnection
+    ex_location_name = 'cn-northwest-1'
+    region_name = 'cn-northwest-1'
+
+
 class S3CNNorthConnection(S3SignatureV4Connection):
     host = S3_CN_NORTH_HOST
 
@@ -1115,6 +1129,7 @@ class S3APSE2StorageDriver(S3StorageDriver):
 class S3APNE1Connection(S3SignatureV4Connection):
     host = S3_AP_NORTHEAST1_HOST
 
+
 S3APNEConnection = S3APNE1Connection
 
 
@@ -1123,6 +1138,7 @@ class S3APNE1StorageDriver(S3StorageDriver):
     connectionCls = S3APNEConnection
     ex_location_name = 'ap-northeast-1'
     region_name = 'ap-northeast-1'
+
 
 S3APNEStorageDriver = S3APNE1StorageDriver
 

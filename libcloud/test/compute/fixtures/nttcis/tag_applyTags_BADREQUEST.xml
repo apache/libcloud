@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160421T194841441-0400_567f2bdf-88a5-4460-87be-1cc972eeb34c">
+  <operation>APPLY_TAGS</operation>
+  <responseCode>RESOURCE_NOT_FOUND</responseCode>
+  <message>Tag Key(s) (ChangeNameTes) not found.</message>
+</response>

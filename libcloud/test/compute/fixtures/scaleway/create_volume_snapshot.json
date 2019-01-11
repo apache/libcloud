@@ -1,0 +1,15 @@
+{
+  "snapshot": {
+    "base_volume": {
+      "id": "f929fe39-63f8-4be8-a80e-1e9c8ae22a76",
+      "name": "vol simple snapshot"
+    },
+    "creation_date": "2014-05-22T12:10:05.596769+00:00",
+    "id": "f0361e7b-cbe4-4882-a999-945192b7171b",
+    "name": "snapshot-0-1",
+    "organization": "000a115d-2852-4b0a-9ce8-47f1134ba95a",
+    "size": 10000000000,
+    "state": "snapshotting",
+    "volume_type": "l_ssd"
+  }
+}

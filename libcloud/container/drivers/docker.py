@@ -151,11 +151,6 @@ class DockertlsConnection(KeyCertificateConnection):
             self.cert_file = cert_file
 
     def add_default_headers(self, headers):
-        """
-        Add parameters that are necessary for every request
-        If user and password are specified, include a base http auth
-        header
-        """
         headers['Content-Type'] = 'application/json'
         return headers
 
@@ -454,7 +449,7 @@ class DockerContainerDriver(ContainerDriver):
 
         data = json.dumps(payload)
         if start:
-            if float(self.version) > 1.22:
+            if float(self._get_api_version()) > 1.22:
                 result = self.connection.request(
                     '/v%s/containers/%s/start' %
                     (self.version, id_),
@@ -491,10 +486,7 @@ class DockerContainerDriver(ContainerDriver):
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container`
         """
-        # TODO docstring
-        # starting container with non-empty request body
-        # was deprecated since v1.10 and removed in v1.12
-        if float(self.version) > 1.22:
+        if float(self._get_api_version()) > 1.22:
             result = self.connection.request(
                 '/v%s/containers/%s/start' %
                 (self.version, container.id),

@@ -145,12 +145,18 @@ DRIVERS = {
     ('libcloud.compute.drivers.cloudscale', 'CloudscaleNodeDriver'),
     Provider.ONEANDONE:
     ('libcloud.compute.drivers.oneandone', 'OneAndOneNodeDriver'),
+    Provider.UPCLOUD:
+    ('libcloud.compute.drivers.upcloud', 'UpcloudDriver'),
+    Provider.NTTCIS:
+    ('libcloud.compute.drivers.nttcis', 'NttCisNodeDriver'),
+    Provider.SCALEWAY:
+    ('libcloud.compute.drivers.scaleway', 'ScalewayNodeDriver'),
     Provider.SOLUSVM:
     ('libcloud.compute.drivers.solusvm', 'SolusVMNodeDriver'),
     Provider.CLEARCENTER:
     ('libcloud.compute.drivers.clearcenter', 'ClearCenterNodeDriver'),
     Provider.CLEARAPI:
-    ('libcloud.compute.drivers.clearapi', 'ClearAPINodeDriver')
+    ('libcloud.compute.drivers.clearapi', 'ClearAPINodeDriver'),
 }
 
 

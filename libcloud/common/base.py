@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import sys
 import ssl
@@ -23,16 +24,10 @@ import time
 
 from libcloud.utils.py3 import ET
 
-try:
-    import simplejson as json
-except:
-    import json
-
 import requests
 
 import libcloud
 
-from libcloud.utils.py3 import PY25
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
@@ -154,7 +149,8 @@ class Response(object):
 
         if not self.success():
             raise exception_from_message(code=self.status,
-                                         message=self.parse_error())
+                                         message=self.parse_error(),
+                                         headers=self.headers)
 
         self.object = self.parse_body()
 
@@ -278,10 +274,15 @@ class RawResponse(Response):
         if not self._response:
             response = self.connection.connection.getresponse()
             self._response = HttpLibResponseProxy(response)
-            self.body = response.content
             if not self.success():
                 self.parse_error()
         return self._response
+
+    @property
+    def body(self):
+        # Note: We use property to avoid saving whole response body into RAM
+        # See https://github.com/apache/libcloud/pull/1132 for details
+        return self.response.body
 
     @property
     def reason(self):
@@ -438,9 +439,7 @@ class Connection(object):
         if not hasattr(kwargs, 'cert_file') and hasattr(self, 'cert_file'):
             kwargs.update({'cert_file': getattr(self, 'cert_file')})
 
-        # Timeout is only supported in Python 2.6 and later
-        # http://docs.python.org/library/httplib.html#httplib.HTTPConnection
-        if self.timeout and not PY25:
+        if self.timeout:
             kwargs.update({'timeout': self.timeout})
 
         if self.proxy_url:
@@ -587,6 +586,7 @@ class Connection(object):
                     url=url,
                     body=data,
                     headers=headers,
+                    raw=raw,
                     stream=stream)
             else:
                 if retry_enabled:
@@ -867,10 +867,12 @@ class CertificateConnection(Connection):
 
 class KeyCertificateConnection(CertificateConnection):
     """
-    Base connection class which accepts both ``key_file and cert_file``
+    Base connection class which accepts both ``key_file`` and ``cert_file``
     argument.
     """
+
     key_file = None
+
     def __init__(self, key_file, cert_file, secure=True, host=None, port=None,
                  url=None, proxy_url=None, timeout=None, backoff=None,
                  retry_delay=None):

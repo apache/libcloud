@@ -41,6 +41,7 @@ from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
     StorageVolumeState, VolumeSnapshotState
+from libcloud.compute.constants import INSTANCE_TYPES, REGION_DETAILS
 
 __all__ = [
     'API_VERSION',
@@ -88,1873 +89,18 @@ EUCA_NAMESPACE = 'http://msgs.eucalyptus.com/%s' % (DEFAULT_EUCA_API_VERSION)
 DEFAULT_OUTSCALE_API_VERSION = '2016-04-01'
 OUTSCALE_NAMESPACE = 'http://api.outscale.com/wsdl/fcuext/2014-04-15/'
 
-"""
-Sizes must be hardcoded, because Amazon doesn't provide an API to fetch them.
-From http://aws.amazon.com/ec2/instance-types/
-and <http://aws.amazon.com/ec2/previous-generation/>
-ram = [MiB], disk = [GB]
-"""
-
-
-def GiB(value):
-    return int(value * 1024)
-
-
-INSTANCE_TYPES = {
-    't1.micro': {
-        'id': 't1.micro',
-        'name': 'Micro Instance',
-        'ram': GiB(0.613),
-        'disk': 15,  # GB
-        'bandwidth': None,
-        'extra': {
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm1.small': {
-        'id': 'm1.small',
-        'name': 'Small Instance',
-        'ram': GiB(1.7),
-        'disk': 160,  # GB
-        'bandwidth': None,
-        'extra': {
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm1.medium': {
-        'id': 'm1.medium',
-        'name': 'Medium Instance',
-        'ram': GiB(3.75),
-        'disk': 410,  # GB
-        'bandwidth': None,
-        'extra': {
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm1.large': {
-        'id': 'm1.large',
-        'name': 'Large Instance',
-        'ram': GiB(7.5),
-        'disk': 2 * 420,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm1.xlarge': {
-        'id': 'm1.xlarge',
-        'name': 'Extra Large Instance',
-        'ram': GiB(15),
-        'disk': 4 * 420,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'c1.medium': {
-        'id': 'c1.medium',
-        'name': 'High-CPU Medium Instance',
-        'ram': GiB(1.7),
-        'disk': 350,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'c1.xlarge': {
-        'id': 'c1.xlarge',
-        'name': 'High-CPU Extra Large Instance',
-        'ram': GiB(7),
-        'disk': 4 * 420,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm2.xlarge': {
-        'id': 'm2.xlarge',
-        'name': 'High-Memory Extra Large Instance',
-        'ram': GiB(17.1),
-        'disk': 420,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm2.2xlarge': {
-        'id': 'm2.2xlarge',
-        'name': 'High-Memory Double Extra Large Instance',
-        'ram': GiB(34.2),
-        'disk': 850,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm2.4xlarge': {
-        'id': 'm2.4xlarge',
-        'name': 'High-Memory Quadruple Extra Large Instance',
-        'ram': GiB(68.4),
-        'disk': 2 * 840,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'm3.medium': {
-        'id': 'm3.medium',
-        'name': 'Medium Instance',
-        'ram': GiB(3.75),
-        'disk': 4,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 1,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'm3.large': {
-        'id': 'm3.large',
-        'name': 'Large Instance',
-        'ram': GiB(7.5),
-        'disk': 32,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'm3.xlarge': {
-        'id': 'm3.xlarge',
-        'name': 'Extra Large Instance',
-        'ram': GiB(15),
-        'disk': 2 * 40,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'm3.2xlarge': {
-        'id': 'm3.2xlarge',
-        'name': 'Double Extra Large Instance',
-        'ram': GiB(30),
-        'disk': 2 * 80,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'm4.large': {
-        'id': 'm4.large',
-        'name': 'Large Instance',
-        'ram': GiB(8),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'm4.xlarge': {
-        'id': 'm4.xlarge',
-        'name': 'Extra Large Instance',
-        'ram': GiB(16),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'm4.2xlarge': {
-        'id': 'm4.2xlarge',
-        'name': 'Double Extra Large Instance',
-        'ram': GiB(32),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'm4.4xlarge': {
-        'id': 'm4.4xlarge',
-        'name': 'Quadruple Extra Large Instance',
-        'ram': GiB(64),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'm4.10xlarge': {
-        'id': 'm4.10xlarge',
-        'name': '10 Extra Large Instance',
-        'ram': GiB(160),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 40,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'm4.16xlarge': {
-        'id': 'm4.16xlarge',
-        'name': '16 Extra Large Instance',
-        'ram': GiB(256),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 64,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'cg1.4xlarge': {
-        'id': 'cg1.4xlarge',
-        'name': 'Cluster GPU Quadruple Extra Large Instance',
-        'ram': GiB(22.5),
-        'disk': 2 * 840,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'g2.2xlarge': {
-        'id': 'g2.2xlarge',
-        'name': 'Cluster GPU G2 Double Extra Large Instance',
-        'ram': GiB(15),
-        'disk': 60,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'g2.8xlarge': {
-        'id': 'g2.8xlarge',
-        'name': 'Cluster GPU G2 Eight Extra Large Instance',
-        'ram': GiB(60),
-        'disk': 2 * 120,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'p2.xlarge': {
-        'id': 'p2.xlarge',
-        'name': 'Cluster GPU P2 Large Instance',
-        'ram': GiB(61),
-        'disk': 4,
-        'bandwidth': None
-    },
-    'p2.8xlarge': {
-        'id': 'p2.8xlarge',
-        'name': 'Cluster GPU P2 Large Instance',
-        'ram': GiB(488),
-        'disk': 32,
-        'bandwidth': None
-    },
-    'p2.16xlarge': {
-        'id': 'p2.16xlarge',
-        'name': 'Cluster GPU P2 Large Instance',
-        'ram': GiB(732),
-        'disk': 64,
-        'bandwidth': None
-    },
-    'cc1.4xlarge': {
-        'id': 'cc1.4xlarge',
-        'name': 'Cluster Compute Quadruple Extra Large Instance',
-        'ram': 23552,
-        'disk': 1690,
-        'bandwidth': None,
-        'extra': {
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'cc2.8xlarge': {
-        'id': 'cc2.8xlarge',
-        'name': 'Cluster Compute Eight Extra Large Instance',
-        'ram': GiB(60.5),
-        'disk': 4 * 840,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    # c3 instances have 2 SSDs of the specified disk size
-    'c3.large': {
-        'id': 'c3.large',
-        'name': 'Compute Optimized Large Instance',
-        'ram': GiB(3.75),
-        'disk': 2 * 16,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'c3.xlarge': {
-        'id': 'c3.xlarge',
-        'name': 'Compute Optimized Extra Large Instance',
-        'ram': GiB(7.5),
-        'disk': 2 * 40,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'c3.2xlarge': {
-        'id': 'c3.2xlarge',
-        'name': 'Compute Optimized Double Extra Large Instance',
-        'ram': GiB(15),
-        'disk': 2 * 80,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'c3.4xlarge': {
-        'id': 'c3.4xlarge',
-        'name': 'Compute Optimized Quadruple Extra Large Instance',
-        'ram': GiB(30),
-        'disk': 2 * 160,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'c3.8xlarge': {
-        'id': 'c3.8xlarge',
-        'name': 'Compute Optimized Eight Extra Large Instance',
-        'ram': GiB(60),
-        'disk': 2 * 320,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'c4.large': {
-        'id': 'c4.large',
-        'name': 'Compute Optimized Large Instance',
-        'ram': GiB(3.75),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'c4.xlarge': {
-        'id': 'c4.xlarge',
-        'name': 'Compute Optimized Extra Large Instance',
-        'ram': GiB(7.5),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'c4.2xlarge': {
-        'id': 'c4.2xlarge',
-        'name': 'Compute Optimized Double Large Instance',
-        'ram': GiB(15),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'c4.4xlarge': {
-        'id': 'c4.4xlarge',
-        'name': 'Compute Optimized Quadruple Extra Large Instance',
-        'ram': GiB(30),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'c4.8xlarge': {
-        'id': 'c4.8xlarge',
-        'name': 'Compute Optimized Eight Extra Large Instance',
-        'ram': GiB(60),
-        'disk': 0,  # EBS only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'cr1.8xlarge': {
-        'id': 'cr1.8xlarge',
-        'name': 'High Memory Cluster Eight Extra Large',
-        'ram': GiB(244),
-        'disk': 2 * 120,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'hs1.4xlarge': {
-        'id': 'hs1.4xlarge',
-        'name': 'High Storage Quadruple Extra Large Instance',
-        'ram': GiB(64),
-        'disk': 2 * 1024,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['paravirtual']
-        }
-    },
-    'hi1.4xlarge': {
-        'id': 'hi1.4xlarge',
-        'name': 'High Storage Four Extra Large Instance',
-        'ram': GiB(117),
-        'disk': 2 * 1024,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    'hs1.8xlarge': {
-        'id': 'hs1.8xlarge',
-        'name': 'High Storage Eight Extra Large Instance',
-        'ram': GiB(117),
-        'disk': 24 * 2000,
-        'bandwidth': None,
-        'extra': {
-            'cpu': 17,
-            'virtualizationTypes': ['paravirtual', 'hvm']
-        }
-    },
-    # i2 instances have up to eight SSD drives
-    'i2.xlarge': {
-        'id': 'i2.xlarge',
-        'name': 'High I/O Storage Optimized Extra Large Instance',
-        'ram': GiB(30.5),
-        'disk': 800,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'i2.2xlarge': {
-        'id': 'i2.2xlarge',
-        'name': 'High I/O Storage Optimized Double Extra Large Instance',
-        'ram': GiB(61),
-        'disk': 2 * 800,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'i2.4xlarge': {
-        'id': 'i2.4xlarge',
-        'name': 'High I/O Storage Optimized Quadruple Large Instance',
-        'ram': GiB(122),
-        'disk': 4 * 800,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'i2.8xlarge': {
-        'id': 'i2.8xlarge',
-        'name': 'High I/O Storage Optimized Eight Extra Large Instance',
-        'ram': GiB(244),
-        'disk': 8 * 800,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'i3.large': {
-        'id': 'i3.large',
-        'name': 'High I/O Instances',
-        'ram': GiB(15.25),
-        'disk': 1 * 475,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2
-        }
-    },
-    'i3.xlarge': {
-        'id': 'i3.xlarge',
-        'name': 'High I/O Instances',
-        'ram': GiB(30.5),
-        'disk': 1 * 950,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4
-        }
-    },
-    'i3.2xlarge': {
-        'id': 'i3.2xlarge',
-        'name': 'High I/O Instances',
-        'ram': GiB(61),
-        'disk': 1 * 1900,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8
-        }
-    },
-    'i3.4xlarge': {
-        'id': 'i3.4xlarge',
-        'name': 'High I/O Instances',
-        'ram': GiB(122),
-        'disk': 2 * 1900,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16
-        }
-    },
-    'i3.8xlarge': {
-        'id': 'i3.8xlarge',
-        'name': 'High I/O Instances',
-        'ram': GiB(244),
-        'disk': 4 * 1900,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32
-        }
-    },
-    'i3.16xlarge': {
-        'id': 'i3.16xlarge',
-        'name': 'High I/O Instances',
-        'ram': GiB(488),
-        'disk': 8 * 1900,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 64
-        }
-    },
-    'd2.xlarge': {
-        'id': 'd2.xlarge',
-        'name': 'Dense Storage Optimized Extra Large Instance',
-        'ram': GiB(30.5),
-        'disk': 3 * 2000,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'd2.2xlarge': {
-        'id': 'd2.2xlarge',
-        'name': 'Dense Storage Optimized Double Extra Large Instance',
-        'ram': GiB(61),
-        'disk': 6 * 2000,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'd2.4xlarge': {
-        'id': 'd2.4xlarge',
-        'name': 'Dense Storage Optimized Quadruple Extra Large Instance',
-        'ram': GiB(122),
-        'disk': 12 * 2000,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'd2.8xlarge': {
-        'id': 'd2.8xlarge',
-        'name': 'Dense Storage Optimized Eight Extra Large Instance',
-        'ram': GiB(244),
-        'disk': 24 * 2000,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 36,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    # 1x SSD
-    'r3.large': {
-        'id': 'r3.large',
-        'name': 'Memory Optimized Large instance',
-        'ram': GiB(15.25),
-        'disk': 32,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'r3.xlarge': {
-        'id': 'r3.xlarge',
-        'name': 'Memory Optimized Extra Large instance',
-        'ram': GiB(30.5),
-        'disk': 80,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'r3.2xlarge': {
-        'id': 'r3.2xlarge',
-        'name': 'Memory Optimized Double Extra Large instance',
-        'ram': GiB(61),
-        'disk': 160,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'r3.4xlarge': {
-        'id': 'r3.4xlarge',
-        'name': 'Memory Optimized Quadruple Extra Large instance',
-        'ram': GiB(122),
-        'disk': 320,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'r3.8xlarge': {
-        'id': 'r3.8xlarge',
-        'name': 'Memory Optimized Eight Extra Large instance',
-        'ram': GiB(244),
-        'disk': 2 * 320,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'r4.large': {
-        'id': 'r4.large',
-        'name': 'Memory Optimized Large instance',
-        'ram': GiB(15.25),
-        'disk': 0,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2
-        }
-    },
-    'r4.xlarge': {
-        'id': 'r4.xlarge',
-        'name': 'Memory Optimized Extra Large instance',
-        'ram': GiB(30.5),
-        'disk': 0,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 4
-        }
-    },
-    'r4.2xlarge': {
-        'id': 'r4.2xlarge',
-        'name': 'Memory Optimized Double Extra Large instance',
-        'ram': GiB(61),
-        'disk': 0,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 8
-        }
-    },
-    'r4.4xlarge': {
-        'id': 'r4.4xlarge',
-        'name': 'Memory Optimized Quadruple Extra Large instance',
-        'ram': GiB(122),
-        'disk': 0,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 16
-        }
-    },
-    'r4.8xlarge': {
-        'id': 'r4.8xlarge',
-        'name': 'Memory Optimized Eight Extra Large instance',
-        'ram': GiB(244),
-        'disk': 0,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 32
-        }
-    },
-    'r4.16xlarge': {
-        'id': 'r4.16xlarge',
-        'name': 'Memory Optimized Sixteen Extra Large instance',
-        'ram': GiB(488),
-        'disk': 0,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 64
-        }
-    },
-    # Burstable Performance General Purpose
-    't2.nano': {
-        'id': 't2.nano',
-        'name': 'Burstable Performance Nano Instance',
-        'ram': 512,
-        'disk': 0,  # EBS Only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 1,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    't2.micro': {
-        'id': 't2.micro',
-        'name': 'Burstable Performance Micro Instance',
-        'ram': GiB(1),
-        'disk': 0,  # EBS Only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 1,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    't2.small': {
-        'id': 't2.small',
-        'name': 'Burstable Performance Small Instance',
-        'ram': GiB(2),
-        'disk': 0,  # EBS Only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 11,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    't2.medium': {
-        'id': 't2.medium',
-        'name': 'Burstable Performance Medium Instance',
-        'ram': GiB(4),
-        'disk': 0,  # EBS Only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    't2.large': {
-        'id': 't2.large',
-        'name': 'Burstable Performance Medium Instance',
-        'ram': GiB(8),
-        'disk': 0,  # EBS Only
-        'bandwidth': None,
-        'extra': {
-            'cpu': 2,
-            'virtualizationTypes': ['hvm']
-        }
-    },
-    'x1.32xlarge': {
-        'id': 'x1.32xlarge',
-        'name': 'Memory Optimized ThirtyTwo Extra Large instance',
-        'ram': GiB(1952),
-        'disk': 2 * 1920,  # GB
-        'bandwidth': None,
-        'extra': {
-            'cpu': 128,
-            'virtualizationTypes': ['hvm']
-        }
-    }
+# Add Nimbus region
+REGION_DETAILS['nimbus'] = {
+    # Nimbus clouds have 3 EC2-style instance types but their particular
+    # RAM allocations are configured by the admin
+    'country': 'custom',
+    'signature_version': '2',
+    'instance_types': [
+        'm1.small',
+        'm1.large',
+        'm1.xlarge'
+    ]
 }
-
-#  From <https://aws.amazon.com/marketplace/help/200777880>
-REGION_DETAILS = {
-    # US East (Northern Virginia) Region
-    'us-east-1': {
-        'endpoint': 'ec2.us-east-1.amazonaws.com',
-        'api_name': 'ec2_us_east',
-        'country': 'USA',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'cc2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'cg1.4xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'cr1.8xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # US West (Northern California) Region
-    'us-west-1': {
-        'endpoint': 'ec2.us-west-1.amazonaws.com',
-        'api_name': 'ec2_us_west',
-        'country': 'USA',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large'
-        ]
-    },
-    # US East (Ohio) Region
-    'us-east-2': {
-        'endpoint': 'ec2.us-east-2.amazonaws.com',
-        'api_name': 'ec2_us_east_ohio',
-        'country': 'USA',
-        'signature_version': '4',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'cc2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'cg1.4xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'cr1.8xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # US West (Oregon) Region
-    'us-west-2': {
-        'endpoint': 'ec2.us-west-2.amazonaws.com',
-        'api_name': 'ec2_us_west_oregon',
-        'country': 'US',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'p2.xlarge',
-            'p2.8xlarge',
-            'p2.16xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'cc2.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # EU (Ireland) Region
-    'eu-west-1': {
-        'endpoint': 'ec2.eu-west-1.amazonaws.com',
-        'api_name': 'ec2_eu_west',
-        'country': 'Ireland',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'cc2.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # EU (London) Region
-    'eu-west-2': {
-        'endpoint': 'ec2.eu-west-2.amazonaws.com',
-        'api_name': 'ec2_eu_west_london',
-        'country': 'United Kingdom',
-        'signature_version': '4',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'cc2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'cg1.4xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'cr1.8xlarge',
-            'hs1.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # EU (Frankfurt) Region
-    'eu-central-1': {
-        'endpoint': 'ec2.eu-central-1.amazonaws.com',
-        'api_name': 'ec2_eu_central',
-        'country': 'Frankfurt',
-        'signature_version': '4',
-        'instance_types': [
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c3.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # Asia Pacific (Mumbai, India) Region
-    'ap-south-1': {
-        'endpoint': 'ec2.ap-south-1.amazonaws.com',
-        'api_name': 'ec2_ap_south_1',
-        'country': 'India',
-        'signature_version': '4',
-        'instance_types': [
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge'
-        ]
-    },
-    # Asia Pacific (Singapore) Region
-    'ap-southeast-1': {
-        'endpoint': 'ec2.ap-southeast-1.amazonaws.com',
-        'api_name': 'ec2_ap_southeast',
-        'country': 'Singapore',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            'x1.32xlarge'
-        ]
-    },
-    # Asia Pacific (Tokyo) Region
-    'ap-northeast-1': {
-        'endpoint': 'ec2.ap-northeast-1.amazonaws.com',
-        'api_name': 'ec2_ap_northeast',
-        'country': 'Japan',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'c1.medium',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'c1.xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # Asia Pacific (Seoul) Region
-    'ap-northeast-2': {
-        'endpoint': 'ec2.ap-northeast-2.amazonaws.com',
-        'api_name': 'ec2_ap_northeast',
-        'country': 'South Korea',
-        'signature_version': '4',
-        'instance_types': [
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # South America (Sao Paulo) Region
-    'sa-east-1': {
-        'endpoint': 'ec2.sa-east-1.amazonaws.com',
-        'api_name': 'ec2_sa_east',
-        'country': 'Brazil',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large'
-        ]
-    },
-    # Asia Pacific (Sydney) Region
-    'ap-southeast-2': {
-        'endpoint': 'ec2.ap-southeast-2.amazonaws.com',
-        'api_name': 'ec2_ap_southeast_2',
-        'country': 'Australia',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    # Canada (Central) Region
-    'ca-central-1': {
-        'endpoint': 'ec2.ca-central-1.amazonaws.com',
-        'api_name': 'ec2_ca_central_1',
-        'country': 'Canada',
-        'signature_version': '4',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'cc2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'cg1.4xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'cr1.8xlarge',
-            'hs1.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            'x1.32xlarge'
-        ]
-    },
-    'us-gov-west-1': {
-        'endpoint': 'ec2.us-gov-west-1.amazonaws.com',
-        'api_name': 'ec2_us_govwest',
-        'country': 'US',
-        'signature_version': '2',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'g2.2xlarge',
-            'g2.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'hs1.4xlarge',
-            'hs1.8xlarge',
-            'hi1.4xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large'
-        ]
-    },
-    # China (North) Region
-    'cn-north-1': {
-        'endpoint': 'ec2.cn-north-1.amazonaws.com.cn',
-        'api_name': 'ec2_cn_north',
-        'country': 'China',
-        'signature_version': '4',
-        'instance_types': [
-            't1.micro',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            't2.xlarge',
-            't2.2xlarge',
-            'm4.large',
-            'm4.xlarge',
-            'm4.2xlarge',
-            'm4.4xlarge',
-            'm4.10xlarge',
-            'm4.16xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'm1.small',
-            'c4.large',
-            'c4.xlarge',
-            'c4.2xlarge',
-            'c4.4xlarge',
-            'c4.8xlarge',
-            'c3.large',
-            'c3.xlarge',
-            'c3.2xlarge',
-            'c3.4xlarge',
-            'c3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
-            'r4.2xlarge',
-            'r4.4xlarge',
-            'r4.8xlarge',
-            'r4.16xlarge',
-            'r3.large',
-            'r3.xlarge',
-            'r3.2xlarge',
-            'r3.4xlarge',
-            'r3.8xlarge',
-            'd2.xlarge',
-            'd2.2xlarge',
-            'd2.4xlarge',
-            'd2.8xlarge',
-            'i2.xlarge',
-            'i2.2xlarge',
-            'i2.4xlarge',
-            'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
-            'i3.2xlarge',
-            'i3.4xlarge',
-            'i3.8xlarge',
-            'i3.16xlarge',
-        ]
-    },
-
-    'nimbus': {
-        # Nimbus clouds have 3 EC2-style instance types but their particular
-        # RAM allocations are configured by the admin
-        'country': 'custom',
-        'signature_version': '2',
-        'instance_types': [
-            'm1.small',
-            'm1.large',
-            'm1.xlarge'
-        ]
-    }
-}
-
 
 """
 Sizes must be hardcoded because Outscale doesn't provide an API to fetch them.
@@ -2339,90 +485,6 @@ OUTSCALE_SAS_REGION_DETAILS = {
             'cr1.8xlarge',
             'os1.8xlarge'
         ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'p2.xlarge',
-            'p2.8xlarge',
-            'p2.16xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
-    },
-    'us-east-2': {
-        'endpoint': 'fcu.us-east-2.outscale.com',
-        'api_name': 'osc_sas_us_east_2',
-        'country': 'USA',
-        'instance_types': [
-            't1.micro',
-            'm1.small',
-            'm1.medium',
-            'm1.large',
-            'm1.xlarge',
-            'c1.medium',
-            'c1.xlarge',
-            'm2.xlarge',
-            'm2.2xlarge',
-            'm2.4xlarge',
-            'nv1.small',
-            'nv1.medium',
-            'nv1.large',
-            'nv1.xlarge',
-            'cc1.4xlarge',
-            'cc2.8xlarge',
-            'm3.xlarge',
-            'm3.2xlarge',
-            'cr1.8xlarge',
-            'os1.8xlarge'
-        ]
     }
 }
 
@@ -2573,6 +635,24 @@ OUTSCALE_INC_REGION_DETAILS = {
 Define the extra dictionary for specific resources
 """
 RESOURCE_EXTRA_ATTRIBUTES_MAP = {
+    'ebs_instance_block_device': {
+        'attach_time': {
+            'xpath': 'ebs/attachTime',
+            'transform_func': parse_date
+        },
+        'delete': {
+            'xpath': 'ebs/deleteOnTermination',
+            'transform_func': str
+        },
+        'status': {
+            'xpath': 'ebs/status',
+            'transform_func': str
+        },
+        'volume_id': {
+            'xpath': 'ebs/volumeId',
+            'transform_func': str
+        }
+    },
     'ebs_volume': {
         'snapshot_id': {
             'xpath': 'ebs/snapshotId',
@@ -2892,6 +972,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'start',
             'transform_func': str
         },
+        'end': {
+            'xpath': 'end',
+            'transform_func': str
+        },
         'duration': {
             'xpath': 'duration',
             'transform_func': int
@@ -3007,6 +1091,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'state': {
             'xpath': 'status',
             'transform_func': str
+        },
+        'encrypted': {
+            'xpath': 'encrypted',
+            'transform_func': lambda x: {'true': True, 'false': False}.get(x)
         },
         'attach_time': {
             'xpath': 'attachmentSet/item/attachTime',
@@ -3598,8 +1686,11 @@ class BaseEC2NodeDriver(NodeDriver):
         for instance_type in available_types:
             attributes = INSTANCE_TYPES[instance_type]
             attributes = copy.deepcopy(attributes)
-            price = self._get_size_price(size_id=instance_type)
-            attributes.update({'price': price})
+            try:
+                price = self._get_size_price(size_id=instance_type)
+                attributes['price'] = price
+            except KeyError:
+                attributes['price'] = None  # pricing not available
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
 
@@ -3894,19 +1985,23 @@ class BaseEC2NodeDriver(NodeDriver):
             if subnet_id:
                 params['SubnetId'] = subnet_id
 
+        # Specify tags at instance creation time
+        tags = {'Name': kwargs['name']}
+        if 'ex_metadata' in kwargs:
+            tags.update(kwargs['ex_metadata'])
+        tagspec_root = 'TagSpecification.1.'
+        params[tagspec_root + 'ResourceType'] = 'instance'
+        tag_nr = 1
+        for k, v in tags.items():
+            tag_root = tagspec_root + 'Tag.%d.' % tag_nr
+            params[tag_root + 'Key'] = k
+            params[tag_root + 'Value'] = v
+            tag_nr += 1
+
         object = self.connection.request(self.path, params=params).object
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         for node in nodes:
-            tags = {'Name': kwargs['name']}
-            if 'ex_metadata' in kwargs:
-                tags.update(kwargs['ex_metadata'])
-
-            try:
-                self.ex_create_tags(resource=node, tags=tags)
-            except Exception:
-                continue
-
             node.name = kwargs['name']
             node.extra.update({'tags': tags})
 
@@ -3929,7 +2024,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=None, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None):
         """
         Create a new volume.
 
@@ -3995,11 +2090,11 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type == 'io1' and ex_iops:
             params['Iops'] = ex_iops
 
-        if ex_encrypted is not None:
+        if ex_encrypted:
             params['Encrypted'] = 1
 
-        if ex_kms_key_id is not None:
-            params['KmsKeyId'] = ex_kms_key_id
+            if ex_kms_key_id is not None:
+                params['KmsKeyId'] = ex_kms_key_id
 
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,
@@ -4037,7 +2132,7 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
-    def create_volume_snapshot(self, volume, name=None):
+    def create_volume_snapshot(self, volume, name=None, ex_metadata=None):
         """
         Create snapshot from volume
 
@@ -4046,6 +2141,10 @@ class BaseEC2NodeDriver(NodeDriver):
 
         :param      name: Name of snapshot (optional)
         :type       name: ``str``
+
+        :keyword    ex_metadata: The Key/Value metadata to associate
+                                 with a snapshot (optional)
+        :type       ex_metadata: ``dict``
 
         :rtype: :class:`VolumeSnapshot`
         """
@@ -4058,11 +2157,15 @@ class BaseEC2NodeDriver(NodeDriver):
             params.update({
                 'Description': name,
             })
+        if ex_metadata is None:
+            ex_metadata = {}
+
         response = self.connection.request(self.path, params=params).object
         snapshot = self._to_snapshot(response, name)
 
-        if name and self.ex_create_tags(snapshot, {'Name': name}):
-            snapshot.extra['tags']['Name'] = name
+        ex_metadata.update(**{'Name': name} if name else {})
+        if self.ex_create_tags(snapshot, ex_metadata):
+            snapshot.extra['tags'] = ex_metadata
 
         return snapshot
 
@@ -4875,7 +2978,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def ex_authorize_security_group_ingress(self, id, from_port, to_port,
                                             cidr_ips=None, group_pairs=None,
-                                            protocol='tcp'):
+                                            protocol='tcp', description=None):
         """
         Edit a Security Group to allow specific ingress traffic using
         CIDR blocks or either a group ID, group name or user ID (account).
@@ -4909,6 +3012,9 @@ class BaseEC2NodeDriver(NodeDriver):
         :param      protocol: tcp/udp/icmp
         :type       protocol: ``str``
 
+        :param      description: description to be added to the rules inserted
+        :type       description: ``str``
+
         :rtype: ``bool``
         """
 
@@ -4917,7 +3023,8 @@ class BaseEC2NodeDriver(NodeDriver):
                                                         from_port,
                                                         to_port,
                                                         cidr_ips,
-                                                        group_pairs)
+                                                        group_pairs,
+                                                        description)
 
         params["Action"] = 'AuthorizeSecurityGroupIngress'
 
@@ -6414,8 +4521,8 @@ class BaseEC2NodeDriver(NodeDriver):
         Modify volume parameters.
         A list of valid parameters can be found at https://goo.gl/N0rPEQ
 
-        :param      Volume: Volume instance
-        :type       Volume: :class:`Volume`
+        :param      volume: Volume instance
+        :type       volume: :class:`Volume`
 
         :param      parameters: Dictionary with updated volume parameters
         :type       parameters: ``dict``
@@ -6520,7 +4627,8 @@ class BaseEC2NodeDriver(NodeDriver):
             element, RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
 
         # Add additional properties to our extra dictionary
-        extra['block_device_mapping'] = self._to_device_mappings(element)
+        extra['block_device_mapping'] = self._to_instance_device_mappings(
+            element)
         extra['groups'] = self._get_security_groups(element)
         extra['network_interfaces'] = self._to_interfaces(element)
         extra['product_codes'] = product_codes
@@ -7042,6 +5150,29 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return mapping
 
+    def _to_instance_device_mappings(self, object):
+        return [self._to_instance_device_mapping(el) for el in object.findall(
+            fixxpath(xpath='blockDeviceMapping/item', namespace=NAMESPACE))
+        ]
+
+    def _to_instance_device_mapping(self, element):
+        """
+        Parse the XML element and return a dictionary of device properties.
+        Additional information can be found at https://goo.gl/OGK88a.
+
+        :rtype:     ``dict``
+        """
+        mapping = {}
+
+        mapping['device_name'] = findattr(element=element,
+                                          xpath='deviceName',
+                                          namespace=NAMESPACE)
+        mapping['ebs'] = self._get_extra_dict(
+            element,
+            RESOURCE_EXTRA_ATTRIBUTES_MAP['ebs_instance_block_device'])
+
+        return mapping
+
     def _to_internet_gateways(self, object, xpath):
         return [self._to_internet_gateway(el)
                 for el in object.findall(fixxpath(xpath=xpath,
@@ -7346,6 +5477,8 @@ class BaseEC2NodeDriver(NodeDriver):
             idx += 1  # We want 1-based indexes
             params['BillingProduct.%d' % (idx)] = str(v)
 
+        return params
+
     def _get_disk_container_params(self, disk_container):
         """
         Return a list of dictionaries with query parameters for
@@ -7413,7 +5546,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _get_common_security_group_params(self, group_id, protocol,
                                           from_port, to_port, cidr_ips,
-                                          group_pairs):
+                                          group_pairs, description=None):
         """
         Return a dictionary with common query parameters which are used when
         operating on security groups.
@@ -7432,6 +5565,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
                 ip_ranges['IpPermissions.1.IpRanges.%s.CidrIp'
                           % (index)] = cidr_ip
+                if description is not None:
+                    ip_ranges['IpPermissions.1.IpRanges.%s.Description'
+                              % (index)] = description
 
             params.update(ip_ranges)
 

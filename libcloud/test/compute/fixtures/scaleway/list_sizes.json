@@ -1,0 +1,76 @@
+{
+  "servers": {
+    "X64-120GB": {
+      "baremetal": false,
+      "monthly_price": null,
+      "volumes_constraint": {
+        "min_size": 500000000000,
+        "max_size": 1000000000000
+      },
+      "network": {
+        "interfaces": [
+          {
+            "internal_bandwidth": null,
+            "internet_bandwidth": 1073741824
+          }
+        ],
+        "sum_internal_bandwidth": null,
+        "sum_internet_bandwidth": 1073741824,
+        "ipv6_support": true
+      },
+      "hourly_price": null,
+      "ncpus": 12,
+      "ram": 128849018880,
+      "arch": "x86_64",
+      "alt_names": []
+    },
+    "START1-XS": {
+      "baremetal": false,
+      "monthly_price": 1.99,
+      "volumes_constraint": {
+        "min_size": 25000000000,
+        "max_size": 25000000000
+      },
+      "network": {
+        "interfaces": [
+          {
+            "internal_bandwidth": null,
+            "internet_bandwidth": 104857600
+          }
+        ],
+        "sum_internal_bandwidth": null,
+        "sum_internet_bandwidth": 104857600,
+        "ipv6_support": true
+      },
+      "hourly_price": 0.004,
+      "ncpus": 1,
+      "ram": 1073741824,
+      "arch": "x86_64",
+      "alt_names": []
+    },
+    "ARM64-4GB": {
+      "baremetal": false,
+      "monthly_price": 5.99,
+      "volumes_constraint": {
+        "min_size": 100000000000,
+        "max_size": 100000000000
+      },
+      "network": {
+        "interfaces": [
+          {
+            "internal_bandwidth": null,
+            "internet_bandwidth": 209715200
+          }
+        ],
+        "sum_internal_bandwidth": null,
+        "sum_internet_bandwidth": 209715200,
+        "ipv6_support": true
+      },
+      "hourly_price": 0.012,
+      "ncpus": 6,
+      "ram": 4294967296,
+      "arch": "arm64",
+      "alt_names": []
+    }
+  }
+}

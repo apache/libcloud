@@ -158,6 +158,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version
 
+        self.base_url = ex_force_base_url
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._ex_force_auth_token = ex_force_auth_token
@@ -347,7 +348,7 @@ class OpenStackResponse(Response):
 
     def success(self):
         i = int(self.status)
-        return i >= 200 and i <= 299
+        return 200 <= i <= 299
 
     def has_content_type(self, content_type):
         content_type_value = self.headers.get('content-type') or ''
@@ -438,6 +439,7 @@ class OpenStackDriverMixin(object):
 
     def openstack_connection_kwargs(self):
         """
+        Returns certain ``ex_*`` parameters for this connection.
 
         :rtype: ``dict``
         """

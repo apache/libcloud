@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response
+xmlns="urn:didata.com:api:cloud:types" requestId="NA9/2015-06-10T09:19:48.692-04:00/929c91ac-5377-4dcf-aac6-a89610971139">
+<operation>DISABLE_SERVER_MONITORING</operation>
+<responseCode>OK</responseCode>
+<message>Monitoring on Server 5783e93f-5370-44fc-a772-cd3c29a2ecaa has
+been disabled.</message>
+</response>

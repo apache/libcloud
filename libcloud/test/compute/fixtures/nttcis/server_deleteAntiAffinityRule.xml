@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response requestId="na9_20160621T074626030-0400_7e9fffe7-190b-46f2-9107-9d52fe57d0ad"
+xmlns="urn:didata.com:api:cloud:types">
+  <operation>DELETE_ANTI_AFFINITY_RULE</operation>
+  <responseCode>IN_PROGRESS</responseCode>
+  <message>Request to Delete Anti-Affinity Rule has been accepted. Please use appropriate Get or List API for status.</message>
+</response>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<antiAffinityRules xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="2" totalCount="2" pageSize="2">
+  <antiAffinityRule id="07e3621a-a920-4a9a-943c-d8021f27f418" state="NORMAL" created="2016-03-24T00:03:27.000Z" datacenterId="NA9">
+    <serverSummary id="22f3544a-c874-4930-a31c-e9e513e51114">
+      <name>ansible-test-image-rhel6</name>
+      <description>my new node</description>
+      <networkingDetails>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="aafffb27-f16b-4757-9b63-ef7d8acd9c7f" privateIpv4="172.16.1.8" ipv6="2607:f480:111:1423:1b57:e47a:c212:257d" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>        </networkInfo>
+      </networkingDetails>
+    </serverSummary>
+    <serverSummary id="5718d174-31d4-4d49-b1c6-fcb0d782f233">
+      <name>ansible-custom-image-test-UAT</name>
+      <description>my new node</description>
+      <networkingDetails>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="b359cea3-4452-46fe-b30b-b3ce839cde9b" privateIpv4="172.16.1.9" ipv6="2607:f480:111:1423:7fa7:9a9b:ecb9:882e" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>
+        </networkInfo>
+      </networkingDetails>
+    </serverSummary>
+  </antiAffinityRule>
+  <antiAffinityRule id="5e10b1ab-68f2-4a8b-a49c-d88d623db665" state="NORMAL" created="2016-03-24T00:07:39.000Z" datacenterId="NA9">
+    <serverSummary id="9f8b5428-bac3-4cf9-adda-62f57fb38671">
+      <name>rhel-ansible-full-test</name>
+      <description>RHEL Ansible Test</description>
+      <networkingDetails>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="e081e784-5768-472c-b7f3-353e1646edc8" privateIpv4="172.16.1.15" ipv6="2607:f480:111:1423:70c9:9216:f7bf:dcf6" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>
+        </networkInfo>
+      </networkingDetails>
+    </serverSummary>
+    <serverSummary id="feee5cd2-d83b-4b80-913d-0bf26c838a33">
+      <name>rhel-ansible-full-test</name>
+      <description>RHEL Ansible Test</description>
+      <networkingDetails>
+        <networkInfo networkDomainId="423c4386-87b4-43c4-9604-88ae237bfc7f" networkDomainName="Jeff Test">
+          <primaryNic id="3278f833-9535-405c-91b8-0a0470f58aae" privateIpv4="172.16.1.17" ipv6="2607:f480:111:1423:3081:71a8:4c52:a8a" vlanId="bd6fbee5-17db-49f8-b1f5-3b213cea3061" vlanName="jeff-test"/>
+        </networkInfo>
+      </networkingDetails>
+    </serverSummary>
+  </antiAffinityRule>
+</antiAffinityRules>

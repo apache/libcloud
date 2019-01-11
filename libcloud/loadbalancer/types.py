@@ -51,6 +51,7 @@ class Provider(object):
     GCE = 'gce'
     GOGRID = 'gogrid'
     NINEFOLD = 'ninefold'
+    NTTCIS = 'nttcis'
     RACKSPACE = 'rackspace'
     SOFTLAYER = 'softlayer'
 

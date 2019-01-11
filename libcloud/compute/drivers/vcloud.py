@@ -2361,6 +2361,9 @@ class VCloud_5_1_NodeDriver(VCloud_1_5_NodeDriver):
 
 
 class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
+    """Use 5.5 Connection class to explicitly set 5.5 for the version in
+    Accept headers
+    """
     connectionCls = VCloud_5_5_Connection
 
 

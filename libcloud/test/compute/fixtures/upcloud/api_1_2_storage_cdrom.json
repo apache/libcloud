@@ -1,0 +1,411 @@
+{
+   "storages" : {
+      "storage" : [
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Standard (CD 1)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Standard (CD 2)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010010102"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Standard (CD 1)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010010201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Standard (CD 2)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010010202"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Enterprise (CD 1)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010020101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Enterprise (CD 2)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010020102"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Enterprise (CD 1)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010020201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Enterprise (CD 2)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010020202"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 3,
+            "state" : "online",
+            "title" : "Windows Server 2008 R2 Datacenter",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010030101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Datacenter",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010040101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Windows Server 2003 R2 Datacenter",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010040201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 4,
+            "state" : "online",
+            "title" : "Windows Server 2012",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000010050101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 5,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 6.0.1 (Squeeze) (DVD)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 6.0.1 (Squeeze) (netinst)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020010201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 6.0.1 (Squeeze) (netinst)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020010301"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 6.0.1 (Squeeze) (live)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020010401"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 6.0.1 (Squeeze) (live)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020010501"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 7.8 (Wheezy)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020020201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 8.6.0 (Jessie)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020030101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Debian GNU/Linux 9.0.0 (Stretch) Installation CD",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000020040101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Ubuntu Server 10.04",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000030010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Ubuntu Server 10.04",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000030010201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Ubuntu Server 11.04",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000030020101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Ubuntu Server 11.04",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000030020201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Ubuntu Server 12.04",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000030030101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Ubuntu Server 14.04 LTS",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000030040101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Ubuntu Server 16.04 LTS (Xenial Xerus), 64-bit",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000030060101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 4,
+            "state" : "online",
+            "title" : "Fedora 16 (DVD)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000040010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Fedora 16 (live)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000040010201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Fedora 19",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000040020101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 4,
+            "state" : "online",
+            "title" : "CentOS 6.0 (DVD 1)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000050010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "CentOS 6.0 (DVD 2)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000050010102"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 4,
+            "state" : "online",
+            "title" : "CentOS 6.8 (DVD 1)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000050010103"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 3,
+            "state" : "online",
+            "title" : "CentOS 6.8 (DVD 2)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000050010104"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 4,
+            "state" : "online",
+            "title" : "CentOS 6.8 (DVD 1)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000050010105"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 2,
+            "state" : "online",
+            "title" : "CentOS 6.8 (DVD 2)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000050010106"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 5,
+            "state" : "online",
+            "title" : "CentOS 7.3-1611 DVD",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000050010301"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 4,
+            "state" : "online",
+            "title" : "Knoppix 6.4.4",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000060010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Arch Linux 2010.05",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000070010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "CoreOS 607.0.0",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000080010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "CoreOS 845.0.0",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000080010201"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "CoreOS Alpha (1032.1.0)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000080010501"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "CoreOS Stable (1068.8.0)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000080020101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "Gentoo Linux Minimal Installation CD (64bit)",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000090010101"
+         },
+         {
+            "access" : "public",
+            "license" : 0,
+            "size" : 1,
+            "state" : "online",
+            "title" : "FreeBSD 11.0-RELEASE amd64 Installation CD",
+            "type" : "cdrom",
+            "uuid" : "01000000-0000-4000-8000-000100010101"
+         }
+      ]
+   }
+}

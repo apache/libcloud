@@ -1130,6 +1130,20 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         result = self._to_domain(data=response.object['domain'])
         return result
 
+    def get_user(self, user_id):
+        """
+        Get a user account by ID.
+
+        :param user_id: User's id.
+        :type name: ``str``
+
+        :return: Located user.
+        :rtype: :class:`.OpenStackIdentityUser`
+        """
+        response = self.authenticated_request('/v3/users/%s' % user_id)
+        user = self._to_user(data=response.object['user'])
+        return user
+
     def list_user_projects(self, user):
         """
         Retrieve all the projects user belongs to.
@@ -1366,7 +1380,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         user = OpenStackIdentityUser(id=data['id'],
                                      domain_id=data['domain_id'],
                                      name=data['name'],
-                                     email=data['email'],
+                                     email=data.get('email'),
                                      description=data.get('description',
                                                           None),
                                      enabled=data['enabled'])
@@ -1518,17 +1532,29 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                                              driver=self.driver)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _get_project_id(self, token):
         """
         Get the first project ID accessible with the specified access token
         """
-        path = '/v3/OS-FEDERATION/projects'
+        # Try new path first (from ver 1.1)
+        path = '/v3/auth/projects'
         response = self.request(path,
                                 headers={'Content-Type': 'application/json',
                                          'X-Auth-Token': token},
                                 method='GET')
+
+        if response.status not in [httplib.UNAUTHORIZED, httplib.OK,
+                                   httplib.CREATED]:
+            # In case of error try old one
+            path = '/v3/OS-FEDERATION/projects'
+            response = self.request(path,
+                                    headers={'Content-Type':
+                                             'application/json',
+                                             'X-Auth-Token': token},
+                                    method='GET')
 
         if response.status == httplib.UNAUTHORIZED:
             # Invalid credentials
@@ -1542,7 +1568,8 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
 
 class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
@@ -1622,7 +1649,8 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _get_tenant_name(self, token):
         """
@@ -1645,7 +1673,8 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
-                                         driver=self.driver)
+                                         driver=self.driver,
+                                         body=response.body)
 
     def _authenticate_2_0_with_body(self, reqbody):
         resp = self.request('/v2.0/tokens', data=reqbody,

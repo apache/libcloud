@@ -1,0 +1,17 @@
+{
+ "kind": "compute#image",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/coreos-cloud/global/images/coreos-beta-522-3-0-v20141226",
+ "id": "14171939663085407486",
+ "creationTimestamp": "2014-12-26T15:04:01.237-08:00",
+ "name": "coreos-beta-522-3-0-v20141226",
+ "description": "CoreOS beta 522.3.0",
+ "family": "coreos-beta",
+ "sourceType": "RAW",
+ "rawDisk": {
+  "source": "",
+  "containerType": "TAR"
+ },
+ "status": "READY",
+ "archiveSizeBytes": "220932284",
+ "diskSizeGb": "9"
+}

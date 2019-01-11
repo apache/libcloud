@@ -98,6 +98,7 @@ class Provider(Type):
     :cvar RACKSPACE_FIRST_GEN: Rackspace First Gen Cloud Servers
     :cvar RIMUHOSTING: RimuHosting.com
     :cvar TERREMARK: Terremark
+    :cvar UPCLOUD: UpCloud
     :cvar VCL: VCL driver
     :cvar VCLOUD: vmware vCloud
     :cvar VPSNET: VPS.net
@@ -144,6 +145,7 @@ class Provider(Type):
     NIMBUS = 'nimbus'
     NINEFOLD = 'ninefold'
     NTTA = 'ntta'
+    NTTCIS = 'nttcis'
     ONEANDONE = 'oneandone'
     OPENNEBULA = 'opennebula'
     OPENSTACK = 'openstack'
@@ -157,10 +159,12 @@ class Provider(Type):
     RACKSPACE_FIRST_GEN = 'rackspace_first_gen'
     RIMUHOSTING = 'rimuhosting'
     RUNABOVE = 'runabove'
+    SCALEWAY = 'scaleway'
     SERVERLOVE = 'serverlove'
     SKALICLOUD = 'skalicloud'
     SOFTLAYER = 'softlayer'
     TERREMARK = 'terremark'
+    UPCLOUD = 'upcloud'
     VCL = 'vcl'
     VCLOUD = 'vcloud'
     VOXEL = 'voxel'
@@ -243,7 +247,6 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
     Provider.EC2_AP_NORTHEAST2: Provider.EC2,
     Provider.EC2_US_WEST_OREGON: Provider.EC2,
     Provider.EC2_SA_EAST: Provider.EC2,
-    Provider.EC2_AP_SOUTHEAST: Provider.EC2,
     Provider.EC2_CA_CENTRAL1: Provider.EC2,
 
     # ElasticHosts
@@ -290,6 +293,7 @@ class NodeState(Type):
     RECONFIGURING = 'reconfiguring'
     MIGRATING = 'migrating'
     NORMAL = 'normal'
+    UPDATING = 'updating'
     OFF = 'off'
 
 
@@ -307,6 +311,7 @@ class StorageVolumeState(Type):
     ATTACHING = 'attaching'
     UNKNOWN = 'unknown'
     MIGRATING = 'migrating'
+    UPDATING = 'updating'
 
 
 class VolumeSnapshotState(Type):
@@ -319,6 +324,16 @@ class VolumeSnapshotState(Type):
     DELETING = 'deleting'
     RESTORING = 'restoring'
     UNKNOWN = 'unknown'
+    UPDATING = 'updating'
+
+
+class NodeImageMemberState(Type):
+    """
+    Standard states of VolumeSnapshots
+    """
+    ACCEPTED = 'accepted'
+    PENDING = 'pending'
+    REJECTED = 'rejected'
 
 
 class Architecture(object):

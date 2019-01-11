@@ -1,9 +1,9 @@
 {
-    "id": "de/fkb",
+    "id": "us/las",
     "type": "location",
-    "href": "/cloudapi/v3/locations/de/fkb",
+    "href": "/cloudapi/v4/locations/us/las",
     "properties": {
-        "name": "karlsruhe",
+        "name": "lasvegas",
         "features": [
             "SSD",
             "MULTIPLE_CPU"

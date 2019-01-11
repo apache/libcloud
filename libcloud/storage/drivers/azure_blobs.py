@@ -381,7 +381,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             if not params['marker']:
                 break
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, ex_prefix=None):
         """
         @inherits: :class:`StorageDriver.iterate_container_objects`
         """
@@ -389,6 +389,9 @@ class AzureBlobsStorageDriver(StorageDriver):
                   'comp': 'list',
                   'maxresults': RESPONSES_PER_REQUEST,
                   'include': 'metadata'}
+
+        if ex_prefix:
+            params['prefix'] = ex_prefix
 
         container_path = self._get_container_path(container)
 
@@ -415,6 +418,22 @@ class AzureBlobsStorageDriver(StorageDriver):
             params['marker'] = body.findtext('NextMarker')
             if not params['marker']:
                 break
+
+    def list_container_objects(self, container, ex_prefix=None):
+        """
+        Return a list of objects for the given container.
+
+        :param container: Container instance.
+        :type container: :class:`Container`
+
+        :param ex_prefix: Only return objects starting with ex_prefix
+        :type ex_prefix: ``str``
+
+        :return: A list of Object instances.
+        :rtype: ``list`` of :class:`Object`
+        """
+        return list(self.iterate_container_objects(container,
+                                                   ex_prefix=ex_prefix))
 
     def get_container(self, container_name):
         """
@@ -560,11 +579,14 @@ class AzureBlobsStorageDriver(StorageDriver):
         @inherits: :class:`StorageDriver.download_object_as_stream`
         """
         obj_path = self._get_object_path(obj.container, obj.name)
-        response = self.connection.request(obj_path, raw=True, data=None)
+        response = self.connection.request(obj_path, method='GET',
+                                           stream=True, raw=True)
+        iterator = response.iter_content(AZURE_CHUNK_SIZE)
 
-        return self._get_object(obj=obj, callback=read_in_chunks,
+        return self._get_object(obj=obj,
+                                callback=read_in_chunks,
                                 response=response,
-                                callback_kwargs={'iterator': response.response,
+                                callback_kwargs={'iterator': iterator,
                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
@@ -634,7 +656,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             chunk_hash = base64.b64encode(b(chunk_hash.digest()))
 
             headers['Content-MD5'] = chunk_hash.decode('utf-8')
-            headers['Content-Length'] = content_length
+            headers['Content-Length'] = str(content_length)
 
             if blob_type == 'BlockBlob':
                 # Block id can be any unique string that is base64 encoded
@@ -791,11 +813,27 @@ class AzureBlobsStorageDriver(StorageDriver):
         if ex_blob_type is None:
             ex_blob_type = self.ex_blob_type
 
+        """
+        Azure requires that for page blobs that a maximum size that the page
+        can grow to.  For block blobs, it is required that the Content-Length
+        header be set.  The size of the block blob will be the total size of
+        the stream minus the current position, so in this case
+        ex_page_blob_size should be 0 (and will be checked in
+        self._check_values).
+        Source:
+        https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob
+        """
         self._check_values(ex_blob_type, ex_page_blob_size)
+        if ex_blob_type == "BlockBlob":
+            iterator.seek(0, os.SEEK_END)
+            blob_size = iterator.tell()
+            iterator.seek(0)
+        else:
+            blob_size = ex_page_blob_size
 
         return self._put_object(container=container,
                                 object_name=object_name,
-                                object_size=ex_page_blob_size,
+                                object_size=blob_size,
                                 extra=extra, verify_hash=verify_hash,
                                 blob_type=ex_blob_type,
                                 use_lease=ex_use_lease,
@@ -861,11 +899,11 @@ class AzureBlobsStorageDriver(StorageDriver):
         self._update_metadata(headers, meta_data)
 
         if object_size is not None:
-            headers['Content-Length'] = object_size
+            headers['Content-Length'] = str(object_size)
 
         if blob_type == 'PageBlob':
-            headers['Content-Length'] = 0
-            headers['x-ms-blob-content-length'] = object_size
+            headers['Content-Length'] = str('0')
+            headers['x-ms-blob-content-length'] = str(object_size)
 
         return headers
 

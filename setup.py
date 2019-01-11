@@ -36,11 +36,9 @@ libcloud.utils.SHOW_DEPRECATION_WARNING = False
 # installed / available
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
-PY2_pre_25 = PY2 and sys.version_info < (2, 5)
-PY2_pre_26 = PY2 and sys.version_info < (2, 6)
+PY3_pre_34 = PY3 and sys.version_info < (3, 4)
 PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
-PY3_pre_32 = PY3 and sys.version_info < (3, 2)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
@@ -54,24 +52,20 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.container.drivers.dummy',
                     'libcloud.backup.drivers.dummy']
 
-SUPPORTED_VERSIONS = ['2.6', '2.7', 'PyPy', '3.x']
+SUPPORTED_VERSIONS = ['2.7', 'PyPy', '3.3+']
 
 TEST_REQUIREMENTS = [
     'mock',
     'requests',
+    'requests_mock',
     'pytest',
     'pytest-runner'
 ]
 
-if PY2_pre_279 or PY3_pre_32:
+if PY2_pre_279:
     TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
 
-if PY2_pre_27:
-    unittest2_required = True
-else:
-    unittest2_required = False
-
-if PY2_pre_25:
+if PY2_pre_27 or PY3_pre_34:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are ' +
           ', '.join(SUPPORTED_VERSIONS))
@@ -126,11 +120,12 @@ class ApiDocsCommand(Command):
 forbid_publish()
 
 install_requires = ['requests']
-if PY2_pre_26:
-    install_requires.extend(['ssl', 'simplejson'])
 
-if PY2_pre_279 or PY3_pre_32:
+if PY2_pre_279:
     install_requires.append('backports.ssl_match_hostname')
+
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 setup(
     name='apache-libcloud',
@@ -138,9 +133,11 @@ setup(
     description='A standard Python library that abstracts away differences' +
                 ' among multiple cloud provider APIs. For more information' +
                 ' and documentation, please see http://libcloud.apache.org',
+    long_description=open('README.rst').read(),
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     install_requires=install_requires,
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4",
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
@@ -148,7 +145,7 @@ setup(
     package_data={'libcloud': get_data_files('libcloud', parent='libcloud')},
     license='Apache License (2.0)',
     url='http://libcloud.apache.org/',
-    setup_requires=['pytest-runner'],
+    setup_requires=pytest_runner,
     tests_require=TEST_REQUIREMENTS,
     cmdclass={
         'apidocs': ApiDocsCommand,
@@ -163,13 +160,13 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy']
-    )
+        'Programming Language :: Python :: Implementation :: PyPy'
+    ]
+)

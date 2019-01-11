@@ -1,0 +1,21 @@
+{
+  "image": {
+    "arch": "arm",
+    "creation_date": "2014-05-22T12:56:56.984011+00:00",
+    "extra_volumes": "[]",
+    "from_image": null,
+    "from_server": null,
+    "id": "98bf3ac2-a1f5-471d-8c8f-1b706ab57ef0",
+    "marketplace_key": null,
+    "modification_date": "2014-05-22T12:56:56.984011+00:00",
+    "name": "my_image",
+    "organization": "000a115d-2852-4b0a-9ce8-47f1134ba95a",
+    "public": false,
+    "root_volume": {
+      "size": 25000000000,
+      "id": "f0361e7b-cbe4-4882-a999-945192b7171b",
+      "volume_type": "l_ssd",
+      "name": "vol-0-1"
+    }
+  }
+}

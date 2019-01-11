@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20160422T181236250-0400_0aca7bf9-2a5c-4650-b648-d9356cb3309b">
+  <operation>REMOVE_TAGS</operation>
+  <responseCode>RESOURCE_NOT_FOUND</responseCode>
+  <message>Tag Key(s) (AaronTestModified) not applied to Server eb222a4a-fffd-4e4a-8346-1279ef621ab0.</message>
+</response>

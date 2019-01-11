@@ -47,6 +47,8 @@ DRIVERS = {
     ('libcloud.loadbalancer.drivers.dimensiondata', 'DimensionDataLBDriver'),
     Provider.ALIYUN_SLB:
     ('libcloud.loadbalancer.drivers.slb', 'SLBDriver'),
+    Provider.NTTCIS:
+    ('libcloud.loadbalancer.drivers.nttcis', 'NttCisLBDriver'),
 }
 
 
