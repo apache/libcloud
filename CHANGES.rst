@@ -103,6 +103,11 @@ Container
 - [Docker] Improve docstring for RegistryClient (GITHUB-1254)
   [Ken Dreyer]
 
+DNS
+~~~
+
+- Add new driver for RcodeZero DNS (GITHUB-1256, LIBCLOUD-1025) [MikeAT]
+
 Changes in Apache Libcloud 2.4.0
 --------------------------------
 
