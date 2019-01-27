@@ -15,6 +15,8 @@ General
 
 - Use assertIsNone instead of assertEqual with None in tests (GITHUB-1264)
   [Ken Dreyer]
+  
+- Updating command line arguments to current version in Azure examples (GITHUB-1273) [mitar]
 
 Common
 ~~~~~~
