@@ -108,6 +108,11 @@ DNS
 
 - Add new driver for RcodeZero DNS (GITHUB-1256, LIBCLOUD-1025) [MikeAT]
 
+Storage
+~~~~~~~
+
+- Adds missing docs for param ex_prefix & adds to DummyStore. Add ex_prefix kwarg to the `list_container_objects` methods in the base and dummy classes. (GITHUB-1275) [RichardARPANET]
+
 Changes in Apache Libcloud 2.4.0
 --------------------------------
 
