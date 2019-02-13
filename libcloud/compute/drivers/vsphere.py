@@ -388,7 +388,7 @@ class VSphereNodeDriver(NodeDriver):
                     source_template_vm = event.srcTemplate.vm
                     image_id = source_template_vm.config.instanceUuid
                     node.extra['image_id'] = image_id
-                except AttributeError:
+                except Exception:
                     logger.error('Cannot get instanceUuid from source template')
                 try:  # Get creation date
                     node.created_at = event.createdTime
