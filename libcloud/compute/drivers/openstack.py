@@ -3106,14 +3106,15 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                                   driver=self,
                                   extra=extra)
 
-    def ex_list_subnets(self):
+    def ex_list_subnets(self, filters=None):
         """
         Get a list of Subnet that are available.
 
         :rtype: ``list`` of :class:`OpenStack_2_SubNet`
         """
+        params = filters or {}
         response = self.network_connection.request(
-            self._subnets_url_prefix).object
+            self._subnets_url_prefix, params=params).object
         return self._to_subnets(response)
 
     def ex_list_ports(self):
