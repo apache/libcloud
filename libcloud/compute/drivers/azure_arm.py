@@ -434,10 +434,20 @@ class AzureNodeDriver(NodeDriver):
                      % (self.subscription_id)
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
+
+        nodes_data = r.object["value"]
+        # get paginated results
+        # remove host from nextLink
+        while r.object.get("nextLink"):
+            next_url = r.object.get("nextLink").split(self.connection.host)[1]
+            r = self.connection.request(next_url,
+                                        params={"api-version": "2015-06-15"})
+            nodes_data.extend(r.object["value"])
+
         return [self._to_node(n,
                               fetch_nic=ex_fetch_nic,
                               fetch_power_state=ex_fetch_power_state)
-                for n in r.object["value"]]
+                for n in nodes_data]
 
     def create_node(self,
                     name,
