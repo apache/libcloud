@@ -856,7 +856,7 @@ class VSphereNodeDriver(NodeDriver):
 
         vmconf = vim.vm.ConfigSpec(
             numCPUs=int(size.extra.get('cpu', 1)),
-            memoryMB=long(size.ram),
+            memoryMB=int(size.ram),
             deviceChange=devices
         )
 
