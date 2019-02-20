@@ -926,7 +926,7 @@ class VSphereNodeDriver(NodeDriver):
 
         spec.deviceChange = dev_changes
         output = vm.ReconfigVM_Task(spec=spec)
-        print output.info
+        print(output.info)
 
     def ex_open_console(self, vm_uuid, console_port = '9443'):
         import OpenSSL
