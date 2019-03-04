@@ -2899,7 +2899,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                 port_security_enabled=element['port_security_enabled'],
                 revision_number=element['revision_number'],
                 security_groups=element['security_groups'],
-                tags=element['tags'],
+                tags=element.get('tags'),
                 tenant_id=element['tenant_id'],
                 updated=updated,
             )
@@ -3331,8 +3331,9 @@ class OpenStack_1_1_FloatingIpAddress(object):
 
     def __repr__(self):
         return ('<OpenStack_1_1_FloatingIpAddress: id=%s, ip_addr=%s,'
-                ' pool=%s, driver=%s>'
-                % (self.id, self.ip_address, self.pool, self.driver))
+                ' network=%s, status=%s>'
+                % (self.id, self.floating_ip_address,
+                   self.floating_network_id, self.status))
 
 
 class OpenStack_2_SubNet(object):
