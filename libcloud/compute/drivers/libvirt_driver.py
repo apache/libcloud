@@ -41,6 +41,7 @@ from libcloud.compute.base import NodeState
 from libcloud.compute.types import Provider
 from libcloud.utils.networking import is_public_subnet
 from libcloud.utils.networking import is_valid_ip_address
+from libcloud.utils.py3 import basestring
 
 try:
     import libvirt
