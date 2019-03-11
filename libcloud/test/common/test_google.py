@@ -40,9 +40,9 @@ from libcloud.test import MockHttp, LibcloudTestCase
 from libcloud.utils.py3 import httplib
 
 
-# Skip some tests if PyCrypto is unavailable
+# Skip some tests if cryptography is unavailable
 try:
-    from Crypto.Hash import SHA256
+    from cryptography.hazmat.primitives.hashes import SHA256
 except ImportError:
     SHA256 = None
 
