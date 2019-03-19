@@ -402,11 +402,11 @@ class TestPublicKeyUtils(unittest.TestCase):
 
     def test_pubkey_openssh_fingerprint(self):
         fp = get_pubkey_openssh_fingerprint(self.PUBKEY)
-        assert fp == '35:22:13:5b:82:e2:5d:e1:90:8c:73:74:9f:ef:3b:d8'
+        self.assertEqual(fp, '35:22:13:5b:82:e2:5d:e1:90:8c:73:74:9f:ef:3b:d8')
 
     def test_pubkey_ssh2_fingerprint(self):
         fp = get_pubkey_ssh2_fingerprint(self.PUBKEY)
-        assert fp == '11:ad:5d:4c:5b:99:c9:80:7e:81:03:76:5a:25:9d:8c'
+        self.assertEqual(fp, '11:ad:5d:4c:5b:99:c9:80:7e:81:03:76:5a:25:9d:8c')
 
 
 def test_decorator():
