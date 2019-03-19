@@ -177,7 +177,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEqual(expires.isoformat(), "2031-11-23T21:00:14-06:00")
+        self.assertEqual(expires.isoformat(), "2999-11-23T21:00:14-06:00")
 
     def test_auth(self):
         if self.driver.connection._auth_version == '2.0':
@@ -686,7 +686,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEqual(expires.isoformat(), "2031-11-23T21:00:14-06:00")
+        self.assertEqual(expires.isoformat(), "2999-11-23T21:00:14-06:00")
 
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can
