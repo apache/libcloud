@@ -16,7 +16,8 @@
 import base64
 import hashlib
 
-from libcloud.utils.py3 import hexadigits, bchr, b
+from libcloud.utils.py3 import hexadigits
+from libcloud.utils.py3 import b
 
 __all__ = [
     'get_pubkey_openssh_fingerprint',
@@ -31,8 +32,6 @@ try:
 except ImportError:
     cryptography_available = False
 
-from hashlib import sha1
-
 
 def _to_md5_fingerprint(data):
     hashed = hashlib.md5(data).digest()
@@ -43,7 +42,8 @@ def get_pubkey_openssh_fingerprint(pubkey):
     # We import and export the key to make sure it is in OpenSSH format
     if not cryptography_available:
         raise RuntimeError('cryptography is not available')
-    public_key = serialization.load_ssh_public_key(b(pubkey), backend=default_backend())
+    public_key = serialization.load_ssh_public_key(b(pubkey),
+                                                   backend=default_backend())
     pub_openssh = public_key.public_bytes(
         encoding=serialization.Encoding.OpenSSH,
         format=serialization.PublicFormat.OpenSSH,
@@ -56,7 +56,8 @@ def get_pubkey_ssh2_fingerprint(pubkey):
     # KeyPair mgmt API
     if not cryptography_available:
         raise RuntimeError('cryptography is not available')
-    public_key = serialization.load_ssh_public_key(b(pubkey), backend=default_backend())
+    public_key = serialization.load_ssh_public_key(b(pubkey),
+                                                   backend=default_backend())
     pub_der = public_key.public_bytes(
         encoding=serialization.Encoding.DER,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
