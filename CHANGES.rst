@@ -18,6 +18,13 @@ General
   
 - Updating command line arguments to current version in Azure examples (GITHUB-1273) [mitar]
 
+- [GCE, SoftLayer] Update GCE and Softlayer drivers to utilize crypto
+  primitives from the ``cryptography`` library instead of deprecated and
+  unmaintained ``PyCrypto`` library.
+  
+  (GITHUB-1280)
+  [Ryan Petrello]
+
 Common
 ~~~~~~
 
