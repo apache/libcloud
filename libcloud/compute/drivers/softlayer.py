@@ -18,7 +18,9 @@ Softlayer driver
 
 import time
 try:
-    from Crypto.PublicKey import RSA
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import serialization
     crypto = True
 except ImportError:
     crypto = False
@@ -386,17 +388,29 @@ class SoftLayerNodeDriver(NodeDriver):
     def create_key_pair(self, name, ex_size=4096):
         if crypto is False:
             raise NotImplementedError('create_key_pair needs'
-                                      'the pycrypto library')
-        key = RSA.generate(ex_size)
+                                      'the cryptography library')
+        key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=4096,
+            backend=default_backend()
+        )
+        public_key = key.public_key().public_bytes(
+            encoding=serialization.Encoding.OpenSSH,
+            format=serialization.PublicFormat.OpenSSH
+        )
         new_key = {
-            'key': key.publickey().exportKey('OpenSSH'),
+            'key': public_key,
             'label': name,
             'notes': '',
         }
         result = self.connection.request(
             'SoftLayer_Security_Ssh_Key', 'createObject', new_key
         ).object
-        result['private'] = key.exportKey('PEM')
+        result['private'] = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        )
         return self._to_key_pair(result)
 
     def import_key_pair_from_string(self, name, key_material):
