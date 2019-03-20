@@ -31,6 +31,9 @@ Common
 - [OpenStack] Handle missing user enabled attribute (GITHUB-1261)
   [Ken Dreyer]
 
+- [OpenStack] Remove unused variable in parse_error (GITHUB-1260)
+  [Rick van de Loo]
+
 - [Google Cloud Storage] Handle Interoperability access keys of more than 20 characters (GITHUB-1272)
   [Yoan Tournade]
 
