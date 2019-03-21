@@ -1989,6 +1989,22 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertFalse("display_name" in kwargs["data"]["snapshot"])
         self.assertFalse("display_description" in kwargs["data"]["snapshot"])
 
+    def test_ex_list_routers(self):
+        routers = self.driver.ex_list_routers()
+        router = routers[0]
+
+        self.assertEqual(len(routers), 2)
+        self.assertEqual(router.name, 'router2')
+        self.assertEqual(router.status, 'ACTIVE')
+
+    def test_ex_create_router(self):
+        router = self.driver.ex_create_router('name', 'router1', admin_state_up = True)
+
+        self.assertEqual(router.name, 'router1')
+
+    def test_ex_delete_router(self):
+        router = self.driver.ex_list_router()[0]
+        self.assertTrue(self.driver.ex_delete_router(router=router))
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -2572,6 +2588,21 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__router.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__router.json')
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load('_v2_0__routers.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 

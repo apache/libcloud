@@ -2979,7 +2979,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._subnets_url_prefix).object
         return self._to_subnets(response)
 
-    def ex_create_subnet(self, name, network, cidr, ip_version=4):
+    def ex_create_subnet(self, name, network, cidr, ip_version=4, **kwargs):
         """
         Create a new Subnet
 
@@ -2995,10 +2995,16 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param ip_version: ip_version of subnet which should be used
         :type ip_version: ``int``
 
+        :param ip_version: ip_version of subnet which should be used
+        :type ip_version: ``int``
+
         :rtype: :class:`OpenStack_2_SubNet`
         """
         data = {'subnet': {'cidr': cidr, 'network_id': network.id,
                            'ip_version': ip_version, 'name': name}}
+        # Add optional values
+        for key, value in kwargs.items():
+            data['subnet'][key] = value
         response = self.network_connection.request(
             self._subnets_url_prefix, method='POST', data=data).object
         return self._to_subnet(response['subnet'])
@@ -3416,6 +3422,56 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                                             '=True&fields=id&fields='
                                             'name').object)
 
+    def _to_routers(self, obj):
+        routers = obj['routers']
+        return [self._to_router(router) for router in routers]
+
+    def _to_router(self, obj):
+        return OpenStack_2_Router(id=obj['id'],
+                                  name=obj['name'],
+                                  status=obj['status'],
+                                  driver=self,
+                                  extra={})
+
+    def ex_list_routers(self):
+        """
+        Get a list of Routers that are available.
+
+        :rtype: ``list`` of :class:`OpenStack_2_Router`
+        """
+        response = self.network_connection.request(
+            '/v2.0/routers').object
+        return self._to_routers(response)
+
+    def ex_create_router(self, name, **kwargs):
+        """
+        Create a new Router
+
+        :param name: Name of router which should be used
+        :type name: ``str``
+
+        :rtype: :class:`OpenStack_2_Router`
+        """
+        data = {'router': {'name': name}}
+        # Add optional values
+        for key, value in kwargs.items():
+            data['router'][key] = value
+        response = self.network_connection.request(
+            '/v2.0/routers', method='POST', data=data).object
+        return self._to_router(response['router'])
+
+    def ex_delete_router(self, router):
+        """
+        Delete a Router
+
+        :param router: Router which should be deleted
+        :type router: :class:`OpenStack_2_Router`
+
+        :rtype: ``bool``
+        """
+        resp = self.network_connection.request('%s/%s' % (
+            '/v2.0/routers', router.id), method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -3637,6 +3693,20 @@ class OpenStack_2_SubNet(object):
                                                                      self.name,
                                                                      self.cidr)
 
+class OpenStack_2_Router(object):
+    """
+    A Virtual Router.
+    """
+
+    def __init__(self, id, name, status, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.status = status
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<OpenStack_2_Router id="%s" name="%s">' % (self.id,
+                                                           self.name)
 
 class OpenStack_2_PortInterface(UuidMixin):
     """
