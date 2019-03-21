@@ -2005,7 +2005,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(router.name, 'router1')
 
     def test_ex_delete_router(self):
-        router = self.driver.ex_list_router()[0]
+        router = self.driver.ex_list_routers()[0]
         self.assertTrue(self.driver.ex_delete_router(router=router))
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
