@@ -2616,6 +2616,18 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             body = self.fixtures.load('_v2_0__routers.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95_add_router_interface(self, method, url,
+                                                                                        body, headers):
+        if method == 'PUT':
+            body = self.fixtures.load('_v2_0__router_interface.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95_remove_router_interface(self, method, url,
+                                                                                           body, headers):
+        if method == 'PUT':
+            body = self.fixtures.load('_v2_0__router_interface.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 
