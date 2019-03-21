@@ -2010,6 +2010,15 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         router = self.driver.ex_list_routers()[1]
         self.assertTrue(self.driver.ex_delete_router(router=router))
 
+    def test_manage_router_interfaces(self):
+        router = self.driver.ex_list_routers()[1]
+        port = self.driver.ex_list_ports()[0]
+        subnet = self.driver.ex_list_subnets()[0]
+        self.assertTrue(self.driver.ex_add_router_port(router, port))
+        self.assertTrue(self.driver.ex_del_router_port(router, port))
+        self.assertTrue(self.driver.ex_add_router_subnet(router, subnet))
+        self.assertTrue(self.driver.ex_del_router_subnet(router, subnet))
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
     should_list_volumes = True

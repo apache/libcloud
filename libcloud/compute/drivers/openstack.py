@@ -3473,6 +3473,94 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             '/v2.0/routers', router.id), method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
+    def _manage_router_interface(self, router, op, subnet=None, port=None):
+        """
+        Add/Remove interface to router
+
+        :param router: Router to add/remove the interface
+        :type router: :class:`OpenStack_2_Router`
+
+        :param      op: Operation to perform: 'add' or 'remove'
+        :type       op: ``str``
+
+        :param subnet: Subnet object to be added to the router
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :param port: Port object to be added to the router
+        :type port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        data = {}
+        if subnet:
+            data['subnet_id'] = subnet.id
+        elif port:
+            data['port_id'] = port.id
+        else:
+            raise OpenStackException("Error in router interface: "
+                                     "port or subnet are None.", 500,
+                                      driver)
+
+        resp = self.network_connection.request('%s/%s/%s_router_interface' % (
+            '/v2.0/routers', router.id, op), method='PUT', data=data)
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
+    def ex_add_router_port(self, router, port):
+        """
+        Add port to a router
+
+        :param router: Router to add the port
+        :type router: :class:`OpenStack_2_Router`
+
+        :param port: Port object to be added to the router
+        :type port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'add', port=port)
+
+    def ex_del_router_port(self, router, port):
+        """
+        Remove port to a router
+
+        :param router: Router to remove the port
+        :type router: :class:`OpenStack_2_Router`
+
+        :param port: Port object to be added to the router
+        :type port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'remove', port=port)
+
+    def ex_add_router_subnet(self, router, subnet):
+        """
+        Add subnet to a router
+
+        :param router: Router to add the subnet
+        :type router: :class:`OpenStack_2_Router`
+
+        :param subnet: Subnet object to be added to the router
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'add', subnet=subnet)
+
+    def ex_del_router_subnet(self, router, subnet):
+        """
+        Remove subnet to a router
+
+        :param router: Router to remove the subnet
+        :type router: :class:`OpenStack_2_Router`
+
+        :param subnet: Subnet object to be added to the router
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'remove', subnet=subnet)
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
