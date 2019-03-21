@@ -3698,10 +3698,11 @@ class OpenStack_2_Router(object):
     A Virtual Router.
     """
 
-    def __init__(self, id, name, status, extra=None):
+    def __init__(self, id, name, status, driver, extra=None):
         self.id = str(id)
         self.name = name
         self.status = status
+        self.driver = driver
         self.extra = extra or {}
 
     def __repr__(self):
