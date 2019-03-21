@@ -1998,7 +1998,8 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(len(routers), 2)
         self.assertEqual(router.name, 'router2')
         self.assertEqual(router.status, 'ACTIVE')
-        self.assertEqual(router.extra['routes'], [])
+        self.assertEqual(router.extra['routes'], [{'destination': '179.24.1.0/24',
+                                                   'nexthop': '172.24.3.99'}])
 
     def test_ex_create_router(self):
         router = self.driver.ex_create_router('router1', admin_state_up = True)
