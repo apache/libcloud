@@ -3503,7 +3503,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         resp = self.network_connection.request('%s/%s/%s_router_interface' % (
             '/v2.0/routers', router.id, op), method='PUT', data=data)
-        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+        return resp.status == httplib.OK
 
     def ex_add_router_port(self, router, port):
         """
