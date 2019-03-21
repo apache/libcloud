@@ -2995,9 +2995,6 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param ip_version: ip_version of subnet which should be used
         :type ip_version: ``int``
 
-        :param ip_version: ip_version of subnet which should be used
-        :type ip_version: ``int``
-
         :rtype: :class:`OpenStack_2_SubNet`
         """
         data = {'subnet': {'cidr': cidr, 'network_id': network.id,
