@@ -3499,7 +3499,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         else:
             raise OpenStackException("Error in router interface: "
                                      "port or subnet are None.", 500,
-                                      driver)
+                                     self)
 
         resp = self.network_connection.request('%s/%s/%s_router_interface' % (
             '/v2.0/routers', router.id, op), method='PUT', data=data)
