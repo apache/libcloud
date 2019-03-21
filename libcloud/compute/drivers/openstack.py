@@ -3424,7 +3424,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return [self._to_router(router) for router in routers]
 
     def _to_router(self, obj):
-        extra={}
+        extra = {}
         extra['external_gateway_info'] = obj['external_gateway_info']
         extra['routes'] = obj['routes']
         return OpenStack_2_Router(id=obj['id'],
@@ -3472,6 +3472,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         resp = self.network_connection.request('%s/%s' % (
             '/v2.0/routers', router.id), method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -3693,6 +3694,7 @@ class OpenStack_2_SubNet(object):
                                                                      self.name,
                                                                      self.cidr)
 
+
 class OpenStack_2_Router(object):
     """
     A Virtual Router.
@@ -3708,6 +3710,7 @@ class OpenStack_2_Router(object):
     def __repr__(self):
         return '<OpenStack_2_Router id="%s" name="%s">' % (self.id,
                                                            self.name)
+
 
 class OpenStack_2_PortInterface(UuidMixin):
     """
