@@ -3424,11 +3424,14 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return [self._to_router(router) for router in routers]
 
     def _to_router(self, obj):
+        extra={}
+        extra['external_gateway_info'] = obj['external_gateway_info']
+        extra['routes'] = obj['routes']
         return OpenStack_2_Router(id=obj['id'],
                                   name=obj['name'],
                                   status=obj['status'],
                                   driver=self,
-                                  extra={})
+                                  extra=extra)
 
     def ex_list_routers(self):
         """
