@@ -1788,7 +1788,9 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_ex_create_subnet(self):
         network = self.driver.ex_list_networks()[0]
-        subnet = self.driver.ex_create_subnet('name', network, '10.0.0.0/24')
+        subnet = self.driver.ex_create_subnet('name', network, '10.0.0.0/24',
+                                              ip_version=4,
+                                              dns_nameservers=["10.0.0.01"])
 
         self.assertEqual(subnet.name, 'name')
         self.assertEqual(subnet.cidr, '10.0.0.0/24')
@@ -1998,7 +2000,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(router.status, 'ACTIVE')
 
     def test_ex_create_router(self):
-        router = self.driver.ex_create_router('name', 'router1', admin_state_up = True)
+        router = self.driver.ex_create_router('router1', admin_state_up = True)
 
         self.assertEqual(router.name, 'router1')
 
