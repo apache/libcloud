@@ -47,6 +47,10 @@ from libcloud.utils.networking import join_ipv4_segments
 from libcloud.utils.networking import increment_ipv4_segments
 from libcloud.utils.decorators import wrap_non_libcloud_exceptions
 from libcloud.utils.connection import get_response_object
+from libcloud.utils.publickey import (
+    get_pubkey_openssh_fingerprint,
+    get_pubkey_ssh2_fingerprint,
+)
 from libcloud.common.types import LibcloudError
 from libcloud.storage.drivers.dummy import DummyIterator
 
@@ -383,6 +387,26 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             result = increment_ipv4_segments(segments=segments)
             result = join_ipv4_segments(segments=result)
             self.assertEqual(result, incremented_ip)
+
+
+class TestPublicKeyUtils(unittest.TestCase):
+
+    PUBKEY = (
+        'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOfbWSXOlqvYjZmRO84/lIoV4gvuX+'
+        'P1lLg50MMg6jZjLZIlYY081XPRmuom0xY0+BO++J2KgLl7gxJ6xMsKK2VQ+TakdfAH20'
+        'XfMcTohd/zVCeWsbqZQvEhVXBo4hPIktcfNz0u9Ez3EtInO+kb7raLcRhOVi9QmOkOrC'
+        'WtQU9mS71AWJuqI9H0YAnTiI8Hs5bn2tpMIqmTXT3g2bwywC25x1Nx9Hy0/FP+KUL6Ag'
+        'vDXv47l+TgSDfTBEkvq+IF1ITrnaOG+nRE02oZC6cwHYTifM/IOollkujxIQmi2Z+j66'
+        'OHSrjnEQugr0FqGJF2ygKfIh/i2u3fVLM60qE2NN user@example'
+    )
+
+    def test_pubkey_openssh_fingerprint(self):
+        fp = get_pubkey_openssh_fingerprint(self.PUBKEY)
+        self.assertEqual(fp, '35:22:13:5b:82:e2:5d:e1:90:8c:73:74:9f:ef:3b:d8')
+
+    def test_pubkey_ssh2_fingerprint(self):
+        fp = get_pubkey_ssh2_fingerprint(self.PUBKEY)
+        self.assertEqual(fp, '11:ad:5d:4c:5b:99:c9:80:7e:81:03:76:5a:25:9d:8c')
 
 
 def test_decorator():

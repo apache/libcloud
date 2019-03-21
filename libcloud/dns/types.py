@@ -56,6 +56,7 @@ class Provider(object):
     POINTDNS = 'pointdns'
     POWERDNS = 'powerdns'
     RACKSPACE = 'rackspace'
+    RCODEZERO = 'rcodezero'
     ROUTE53 = 'route53'
     SOFTLAYER = 'softlayer'
     VULTR = 'vultr'

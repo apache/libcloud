@@ -32,7 +32,7 @@ through a unified and easy to use API.
 
 :Code:          https://github.com/apache/libcloud
 :License:       Apache 2.0; see LICENSE file
-:Issues:        https://github.com/apache/libcloud/issues
+:Issues:        https://issues.apache.org/jira/projects/LIBCLOUD/issues
 :Website:       https://libcloud.apache.org/
 :Documentation: https://libcloud.readthedocs.io
 

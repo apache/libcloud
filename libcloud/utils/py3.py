@@ -126,7 +126,7 @@ if PY3:
 
     def hexadigits(s):
         # s needs to be a byte string.
-        return [format(x, "x") for x in s]
+        return [format(x, "02x") for x in s]
 
 else:
     import httplib  # NOQA

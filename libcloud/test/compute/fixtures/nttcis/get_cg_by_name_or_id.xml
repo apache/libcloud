@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<consistencyGroups xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1" totalCount="1" pageSize="250">
+    <consistencyGroup id="195a426b-4559-4c79-849e-f22cdf2bfb6e">
+        <name>sdk_test2_cg</name>
+        <description>A test consistency group</description>
+        <journal sizeGb="100" extentCount="1"/>
+        <source datacenterId="NADRAASLAB01" networkDomainId="f9d6a249-c922-4fa1-9f0f-de5b452c4026">
+            <networkDomainName>DRS-ProdEng-East-ND1</networkDomainName>
+        </source>
+        <target datacenterId="NADRAASLAB02" networkDomainId="e46c8815-193f-402d-b8a5-682eaa646fb2">
+            <networkDomainName>DRS-ProdEng-West-ND1</networkDomainName>
+        </target>
+        <serverPair id="55416e8c-d198-4d33-a7f9-df7f30b8813b" state="NORMAL">
+            <sourceServer id="032f3967-00e4-4780-b4ef-8587460f9dd4" primaryNicIpv4="192.168.12.8" primaryNicIpv6="2607:f480:111:1426:3dc9:25dc:4985:81b2">
+                <name>src-sdk-test</name>
+            </sourceServer>
+            <targetServer id="aee58575-38e2-495f-89d3-854e6a886411" primaryNicIpv4="192.168.22.7" primaryNicIpv6="2607:f480:211:1159:2dff:40ed:ee7c:4738">
+                <name>tgt-sdk-test</name>
+            </targetServer>
+        </serverPair>
+        <createTime>2018-11-12T20:53:10.000Z</createTime>
+        <operationStatus>DRS_MODE</operationStatus>
+        <drsInfrastructure enabled="true" status="ACTIVE" updateTime="2018-11-29T17:55:02.000Z"/>
+        <drsStatusCheckFailureCount>0</drsStatusCheckFailureCount>
+        <state>NORMAL</state>
+    </consistencyGroup>
+</consistencyGroups>

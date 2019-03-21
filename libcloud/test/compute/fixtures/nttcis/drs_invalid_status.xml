@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181202T120424113-0500_b4d3b67b-08f4-432b-8e88-48625180ff32">
+    <operation>INITIATE_FAILOVER</operation>
+    <responseCode>INVALID_STATUS</responseCode>
+    <message>You cannot Initiate Failover because Consistency Group with id 195a426b-4559-4c79-849e-f22cdf2bfb6e is not in PREVIEWING_SNAPSHOT Operation Status.</message>
+</response>

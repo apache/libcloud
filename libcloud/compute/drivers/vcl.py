@@ -122,7 +122,10 @@ class VCLNodeDriver(NodeDriver):
         """
 
         image = kwargs["image"]
-        start = kwargs.get('start', int(time.time()))
+
+        # Special case for xmlrpclib not handling 64 bit integers when writting
+        # XML - we always  cast value to string.
+        start = str(kwargs.get('start', str(time.time())))
         length = kwargs.get('length', '60')
 
         res = self._vcl_request(

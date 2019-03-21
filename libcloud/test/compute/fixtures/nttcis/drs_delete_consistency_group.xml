@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181204T172637824-0500_811c25d4-69f6-4a33-a0fc-1594eb014d9f">
+    <operation>DELETE_CONSISTENCY_GROUP</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Delete Consistency Group has been accepted. Please use appropriate Get or List API for status.</message>
+</response>

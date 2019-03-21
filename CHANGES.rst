@@ -7,17 +7,32 @@ Changes in Apache Libcloud in development
 General
 ~~~~~~~
 
-- Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
+- [NTT CIS] Add loadbalancer and compute drivers for NTT-CIS, rename dimensiondata modules to NTT-CIS (GITHUB-1250)
+  [Mitch Raful]
+
+- [NTT CIS] Fix loadbalancer docs (GITHUB-1270)
   [Mitch Raful]
 
 - Use assertIsNone instead of assertEqual with None in tests (GITHUB-1264)
   [Ken Dreyer]
+  
+- Updating command line arguments to current version in Azure examples (GITHUB-1273) [mitar]
+
+- [GCE, SoftLayer] Update GCE and Softlayer drivers to utilize crypto
+  primitives from the ``cryptography`` library instead of deprecated and
+  unmaintained ``PyCrypto`` library.
+  
+  (GITHUB-1280)
+  [Ryan Petrello]
 
 Common
 ~~~~~~
 
 - [OpenStack] Handle missing user enabled attribute (GITHUB-1261)
   [Ken Dreyer]
+
+- [Google Cloud Storage] Handle Interoperability access keys of more than 20 characters (GITHUB-1272)
+  [Yoan Tournade]
 
 Compute
 ~~~~~~~
@@ -79,14 +94,33 @@ Compute
 - [OpenStack] Adapt _to_port function to work with old OpenStack versions (GITHUB-1242)
   [Miguel Caballer]
 
+- [OpenStack] Use SUSPENDED NodeState in OpenStack driver (GITHUB-1269)
+  [Miguel Caballer]
+
 - [UpCloud] Update documentation for UpCloud driver (LIBCLOUD-1026, GITHUB-1259)
   [Ilari Mäkelä]
+
+- [NTT CIS] Fix indenting in ex_initiate_drs_failover docstring (GITHUB-1271)
+  [Rick van de Loo]
+
+- [NTT CIS] Change endpoint 'canada' to 'ca' in libcloud/common/nttcis.py (GITHUB-1270)
+  [Mitch Raful]
 
 Container
 ~~~~~~~~~
 
 - [Docker] Improve docstring for RegistryClient (GITHUB-1254)
   [Ken Dreyer]
+
+DNS
+~~~
+
+- Add new driver for RcodeZero DNS (GITHUB-1256, LIBCLOUD-1025) [MikeAT]
+
+Storage
+~~~~~~~
+
+- Adds missing docs for param ex_prefix & adds to DummyStore. Add ex_prefix kwarg to the `list_container_objects` methods in the base and dummy classes. (GITHUB-1275) [RichardARPANET]
 
 Changes in Apache Libcloud 2.4.0
 --------------------------------

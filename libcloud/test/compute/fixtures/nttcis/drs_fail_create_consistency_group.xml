@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181202T181715908-0500_f5fe1a96-ba61-449a-a33f-36b7d92375c1">
+    <operation>CREATE_CONSISTENCY_GROUP</operation>
+    <responseCode>NAME_NOT_UNIQUE</responseCode>
+    <message>Another Consistency Group named 'sdk_test2_cg' already exists.</message>
+</response>
