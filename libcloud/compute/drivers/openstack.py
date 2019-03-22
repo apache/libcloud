@@ -2953,6 +2953,38 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._networks_url_prefix).object
         return self._to_networks(response)
 
+    def ex_create_network(self, name, **kwargs):
+        """
+        Create a new Network
+
+        :param name: Name of network which should be used
+        :type name: ``str``
+
+        :rtype: :class:`OpenStackNetwork`
+        """
+        data = {'network': {'name': name}}
+        # Add optional values
+        for key, value in kwargs.items():
+            data['network'][key] = value
+        response = self.network_connection.request(self._networks_url_prefix,
+                                                   method='POST',
+                                                   data=data).object
+        return self._to_network(response['network'])
+
+    def ex_delete_network(self, network):
+        """
+        Delete a Network
+
+        :param network: Network which should be used
+        :type network: :class:`OpenStackNetwork`
+
+        :rtype: ``bool``
+        """
+        resp = self.network_connection.request(
+            '%s/%s' % (self._networks_url_prefix,
+                       network.id), method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
     def _to_subnets(self, obj):
         subnets = obj['subnets']
         return [self._to_subnet(subnet) for subnet in subnets]
