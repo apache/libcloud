@@ -350,7 +350,8 @@ class PacketNodeDriver(NodeDriver):
             disk += disks['count'] * int(disk_size)
         name = "%s - %s RAM" % (data.get('name'), ram)
         price = data['pricing'].get('hour')
-        return NodeSize(id=data['slug'], name=name, ram=int(ram.replace('GB',''))*1024, disk=disk,
+        return NodeSize(id=data['slug'], name=name,
+                        ram=int(ram.replace('GB', ''))*1024, disk=disk,
                         bandwidth=0, price=price, extra=extra, driver=self)
 
     def _to_key_pairs(self, data):
@@ -414,7 +415,8 @@ class PacketNodeDriver(NodeDriver):
             projects = [p.id for p in self.projects]
         retval = []
         for p in projects:
-            retval.extend(self.ex_list_bgp_sessions_for_project(p)['bgp_sessions'])
+            retval.extend(self.ex_list_bgp_sessions_for_project(
+                p)['bgp_sessions'])
         return retval
 
     def ex_create_bgp_session(self, node, address_family='ipv4'):
@@ -437,7 +439,8 @@ class PacketNodeDriver(NodeDriver):
         }
         return self.connection.request(path, params=params).object
 
-    def ex_list_events_for_project(self, project, include=None, page=1, per_page=10):
+    def ex_list_events_for_project(self, project, include=None, page=1,
+                                   per_page=10):
         path = '/projects/%s/events' % project.id
         params = {
             'include': include,
@@ -445,6 +448,7 @@ class PacketNodeDriver(NodeDriver):
             'per_page': per_page
         }
         return self.connection.request(path, params=params).object
+
 
 class Project(object):
     def __init__(self, project):
