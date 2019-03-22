@@ -351,7 +351,7 @@ class PacketNodeDriver(NodeDriver):
         name = "%s - %s RAM" % (data.get('name'), ram)
         price = data['pricing'].get('hour')
         return NodeSize(id=data['slug'], name=name,
-                        ram=int(ram.replace('GB', ''))*1024, disk=disk,
+                        ram=int(ram.replace('GB', '')) * 1024, disk=disk,
                         bandwidth=0, price=price, extra=extra, driver=self)
 
     def _to_key_pairs(self, data):
