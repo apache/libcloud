@@ -2998,6 +2998,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return OpenStack_2_SubNet(id=obj['id'],
                                   name=obj['name'],
                                   cidr=obj['cidr'],
+                                  network_id=obj['network_id'],
                                   driver=self,
                                   extra=extra)
 
@@ -3802,10 +3803,11 @@ class OpenStack_2_SubNet(object):
     A Virtual SubNet.
     """
 
-    def __init__(self, id, name, cidr, driver, extra=None):
+    def __init__(self, id, name, cidr, network_id, driver, extra=None):
         self.id = str(id)
         self.name = name
         self.cidr = cidr
+        self.network_id = network_id
         self.driver = driver
         self.extra = extra or {}
 
