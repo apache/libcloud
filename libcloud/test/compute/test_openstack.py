@@ -1799,6 +1799,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         subnet = self.driver.ex_list_subnets()[0]
         self.assertTrue(self.driver.ex_delete_subnet(subnet=subnet))
 
+    def test_ex_update_subnet(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        subnet = self.driver.ex_update_subnet(subnet, name='net2')
+        self.assertEqual(subnet.name, 'name')
+
     def test_ex_list_network(self):
         networks = self.driver.ex_list_networks()
         network = networks[0]
@@ -2504,7 +2509,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__networks_POST.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-        if method == 'DELETE':
+        elif method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
@@ -2515,6 +2520,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == 'PUT':
+            body = self.fixtures.load('_v2_0__subnet.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_v2_0_subnets(self, method, url, body, headers):
         if method == 'POST':

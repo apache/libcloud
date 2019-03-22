@@ -3052,6 +3052,23 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._subnets_url_prefix, subnet.id), method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
+    def ex_update_subnet(self, subnet, **kwargs):
+        """
+        Update data of an existing SubNet
+
+        :param subnet: Subnet which should be updated
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :rtype: :class:`OpenStack_2_SubNet`
+        """
+        data = {'subnet': {}}
+        for key, value in kwargs.items():
+            data['subnet'][key] = value
+        response = self.network_connection.request(
+            "%s/%s" % (self._subnets_url_prefix, subnet.id),
+            method='PUT', data=data).object
+        return self._to_subnet(response['subnet'])
+
     def ex_list_ports(self):
         """
         List all OpenStack_2_PortInterfaces
