@@ -22,7 +22,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.providers import Provider, get_driver
+from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import KeyPair
 
@@ -133,7 +133,7 @@ class PacketNodeDriver(NodeDriver):
                     driver = get_driver(self.type)(self.key)
                     try:
                         return driver.list_nodes_for_project(project)
-                    except:
+                    except Exception:
                         return []
                 pool = multiprocessing.pool.ThreadPool(8)
                 results = pool.map(_list_one, projects)
@@ -143,12 +143,17 @@ class PacketNodeDriver(NodeDriver):
                     nodes.extend(result)
                 return nodes
 
-    def list_nodes_for_project(self, ex_project_id):
-            data = self.connection.request('/projects/%s/devices' %
-                                           (ex_project_id),
-                                           params={'include': 'plan'}
-                                           ).object['devices']
-            return list(map(self._to_node, data))
+    def list_nodes_for_project(self, ex_project_id, include='plan', page=1,
+                               per_page=1000):
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        data = self.connection.request(
+            '/projects/%s/devices' % (ex_project_id),
+            params=params).object['devices']
+        return list(map(self._to_node, data))
 
     def list_locations(self):
         data = self.connection.request('/facilities')\
@@ -166,7 +171,7 @@ class PacketNodeDriver(NodeDriver):
                 size.get('line') == 'baremetal']
 
     def create_node(self, name, size, image, location,
-                    ex_project_id=None, cloud_init=None):
+                    ex_project_id=None, cloud_init=None, **kwargs):
         """
         Create a node.
 
@@ -185,6 +190,7 @@ class PacketNodeDriver(NodeDriver):
         params = {'hostname': name, 'plan': size.id,
                   'operating_system': image.id, 'facility': location.id,
                   'include': 'plan', 'billing_cycle': 'hourly'}
+        params.update(kwargs)
         if cloud_init:
             params["userdata"] = cloud_init
         data = self.connection.request('/projects/%s/devices' %
@@ -220,6 +226,33 @@ class PacketNodeDriver(NodeDriver):
         res = self.connection.request('/devices/%s' % (node.id),
                                       method='DELETE')
         return res.status == httplib.OK
+
+    def ex_reinstall_node(self, node):
+        params = {'type': 'reinstall'}
+        res = self.connection.request('/devices/%s/actions' % (node.id),
+                                      params=params, method='POST')
+        return res.status == httplib.OK
+
+    def ex_rescue_node(self, node):
+        params = {'type': 'rescue'}
+        res = self.connection.request('/devices/%s/actions' % (node.id),
+                                      params=params, method='POST')
+        return res.status == httplib.OK
+
+    def ex_update_node(self, node, **kwargs):
+        path = '/devices/%s' % node.id
+        res = self.connection.request(path, params=kwargs, method='PUT')
+        return res.status == httplib.OK
+
+    def ex_get_node_bandwidth(self, node, from_time, until_time):
+        path = '/devices/%s/bandwidth' % node.id
+        params = {'from': from_time, 'until': until_time}
+        return self.connection.request(path, params=params).object
+
+    def ex_list_ip_assignments_for_node(self, node, include=''):
+        path = '/devices/%s/ips' % node.id
+        params = {'include': include}
+        return self.connection.request(path, params=params).object
 
     def list_key_pairs(self):
         """
@@ -274,10 +307,14 @@ class PacketNodeDriver(NodeDriver):
         if 'operating_system' in data and data['operating_system'] is not None:
             image = self._to_image(data['operating_system'])
             extra['operating_system'] = data['operating_system'].get('name')
+        else:
+            image = None
 
         if 'plan' in data and data['plan'] is not None:
             size = self._to_size(data['plan'])
             extra['plan'] = data['plan'].get('slug')
+        else:
+            size = None
         if 'facility' in data:
             extra['facility'] = data['facility'].get('code')
 
@@ -287,7 +324,7 @@ class PacketNodeDriver(NodeDriver):
 
         node = Node(id=data['id'], name=data['hostname'], state=state,
                     public_ips=ips['public'], private_ips=ips['private'],
-                    extra=extra, driver=self)
+                    size=size, image=image, extra=extra, driver=self)
         return node
 
     def _to_image(self, data):
@@ -313,7 +350,7 @@ class PacketNodeDriver(NodeDriver):
             disk += disks['count'] * int(disk_size)
         name = "%s - %s RAM" % (data.get('name'), ram)
         price = data['pricing'].get('hour')
-        return NodeSize(id=data['slug'], name=name, ram=ram, disk=disk,
+        return NodeSize(id=data['slug'], name=name, ram=int(ram.replace('GB',''))*1024, disk=disk,
                         bandwidth=0, price=price, extra=extra, driver=self)
 
     def _to_key_pairs(self, data):
@@ -338,6 +375,76 @@ class PacketNodeDriver(NodeDriver):
                     private_ips.append(address['address'])
         return {'public': public_ips, 'private': private_ips}
 
+    def ex_get_bgp_config_for_project(self, ex_project_id):
+        path = '/projects/%s/bgp-config' % ex_project_id
+        return self.connection.request(path).object
+
+    def ex_get_bgp_config(self, ex_project_id=None):
+        if ex_project_id:
+            projects = [ex_project_id]
+        elif self.project_id:
+            projects = [self.project_id]
+        else:
+            projects = [p.id for p in self.projects]
+        retval = []
+        for p in projects:
+            config = self.ex_get_bgp_config_for_project(p)
+            if config:
+                retval.append(config)
+        return retval
+
+    def ex_get_bgp_session(self, session_uuid):
+        path = '/bgp/sessions/%s' % session_uuid
+        return self.connection.request(path).object
+
+    def ex_list_bgp_sessions_for_node(self, node):
+        path = '/devices/%s/bgp/sessions' % node.id
+        return self.connection.request(path).object
+
+    def ex_list_bgp_sessions_for_project(self, ex_project_id):
+        path = '/projects/%s/bgp/sessions' % ex_project_id
+        return self.connection.request(path).object
+
+    def ex_list_bgp_sessions(self, ex_project_id=None):
+        if ex_project_id:
+            projects = [ex_project_id]
+        elif self.project_id:
+            projects = [self.project_id]
+        else:
+            projects = [p.id for p in self.projects]
+        retval = []
+        for p in projects:
+            retval.extend(self.ex_list_bgp_sessions_for_project(p)['bgp_sessions'])
+        return retval
+
+    def ex_create_bgp_session(self, node, address_family='ipv4'):
+        path = '/devices/%s/bgp/sessions' % node.id
+        params = {'address_family': address_family}
+        res = self.connection.request(path, params=params, method='POST')
+        return res.object
+
+    def ex_delete_bgp_session(self, session_uuid):
+        path = '/bgp/sessions/%s' % session_uuid
+        res = self.connection.request(path, method='DELETE')
+        return res.status == httplib.OK  # or res.status == httplib.NO_CONTENT
+
+    def ex_list_events_for_node(self, node, include=None, page=1, per_page=10):
+        path = '/devices/%s/events' % node.id
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        return self.connection.request(path, params=params).object
+
+    def ex_list_events_for_project(self, project, include=None, page=1, per_page=10):
+        path = '/projects/%s/events' % project.id
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        return self.connection.request(path, params=params).object
 
 class Project(object):
     def __init__(self, project):

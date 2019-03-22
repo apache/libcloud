@@ -51,7 +51,7 @@ class PacketTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['billing_cycle'], 'hourly')
         self.assertEqual(node.extra['locked'], False)
         self.assertEqual(node.size.id, 'baremetal_1')
-        self.assertEqual(node.size.name, 'Type 1')
+        self.assertEqual(node.size.name, 'Type 1 - 16GB RAM')
         self.assertEqual(node.size.ram, 16384)
         self.assertEqual(node.size.disk, 240)
         self.assertEqual(node.size.price, 0.4)
@@ -115,6 +115,14 @@ class PacketTest(unittest.TestCase, TestCaseMixin):
         node = self.driver.list_nodes('project-id')[0]
         self.driver.destroy_node(node)
 
+    def test_reinstall_node(self):
+        node = self.driver.list_nodes('project-id')[0]
+        self.driver.ex_reinstall_node(node)
+
+    def test_rescue_node(self):
+        node = self.driver.list_nodes('project-id')[0]
+        self.driver.ex_rescue_node(node)
+
     def test_list_key_pairs(self):
         keys = self.driver.list_key_pairs()
         self.assertEqual(len(keys), 3)
@@ -133,6 +141,63 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
         key = self.driver.list_key_pairs()[0]
         self.driver.delete_key_pair(key)
 
+    def test_ex_list_projects(self):
+        projects = self.driver.ex_list_projects()
+        self.assertEqual(len(projects), 3)
+
+    def test_ex_get_bgp_config_for_project(self):
+        config = self.driver.ex_get_bgp_config_for_project(ex_project_id='4b653fce-6405-4300-9f7d-c587b7888fe5')
+        self.assertEqual(config.get('status'), 'enabled')
+
+    def test_ex_get_bgp_config(self):
+        config = self.driver.ex_get_bgp_config()
+        self.assertEqual(len(config), 2)
+
+    def test_list_nodes_for_project(self):
+        nodes = self.driver.list_nodes_for_project(ex_project_id='4b653fce-6405-4300-9f7d-c587b7888fe5')
+        self.assertEqual(nodes[0].public_ips, ['147.75.102.193', '2604:1380:2000:c100::3'])
+
+    def test_ex_create_bgp_session(self):
+        node = self.driver.list_nodes('project-id')[0]
+        session = self.driver.ex_create_bgp_session(node, 'ipv4')
+        self.assertEqual(session['status'], 'unknown')
+
+    def test_ex_get_bgp_session(self):
+        node = self.driver.list_nodes('project-id')[0]
+        session = self.driver.ex_get_bgp_session(self.driver.ex_list_bgp_sessions()[0]['id'])
+        self.assertEqual(session['status'], 'down')
+
+    def test_ex_list_bgp_sessions_for_project(self):
+        sessions = self.driver.ex_list_bgp_sessions_for_project(ex_project_id='4b653fce-6405-4300-9f7d-c587b7888fe5')
+        self.assertEqual(sessions['bgp_sessions'][0]['status'], 'down')
+
+    def test_ex_list_bgp_sessions_for_node(self):
+        sessions = self.driver.ex_list_bgp_sessions_for_node(self.driver.list_nodes()[0])
+        self.assertEqual(sessions['bgp_sessions'][0]['status'], 'down')
+
+    def test_ex_list_bgp_sessions(self):
+        sessions = self.driver.ex_list_bgp_sessions()
+        self.assertEqual(sessions[0]['status'], 'down')
+
+    def test_ex_delete_bgp_session(self):
+        self.driver.ex_delete_bgp_session(session_uuid='08f6b756-758b-4f1f-bfaf-b9b5479822d7')
+
+    def test_ex_list_events_for_node(self):
+        events = self.driver.ex_list_events_for_node(self.driver.list_nodes()[0])
+        self.assertEqual(events['events'][0]['ip'], '157.52.105.28')
+
+    def test_ex_list_events_for_project(self):
+        events = self.driver.ex_list_events_for_project(self.driver.ex_list_projects()[0])
+        self.assertEqual(events['meta']['total'], len(events['events']))
+
+    def test_ex_get_node_bandwidth(self):
+        node = self.driver.list_nodes('project-id')[0]
+        bw = self.driver.ex_get_node_bandwidth(node, 1553194476, 1553198076)
+        self.assertTrue(len(bw['bandwidth'][0]['datapoints'][0]) > 0)
+
+    def test_ex_update_node(self):
+        node = self.driver.list_nodes('project-id')[0]
+        self.driver.ex_update_node(node, description='new_description')
 
 class PacketMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('packet')
@@ -143,6 +208,26 @@ class PacketMockHttp(MockHttp):
 
     def _plans(self, method, url, body, headers):
         body = self.fixtures.load('plans.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects(self, method, url, body, headers):
+        body = self.fixtures.load('projects.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_4b653fce_6405_4300_9f7d_c587b7888fe5_devices(self, method, url, body, headers):
+        body = self.fixtures.load('devices_for_project.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_4b653fce_6405_4300_9f7d_c587b7888fe5_bgp_config(self, method, url, body, headers):
+        body = self.fixtures.load('bgp_config_project_1.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_bgp_config(self, method, url, body, headers):
+        body = self.fixtures.load('bgp_config_project_1.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_4a4bce6b_d2ef_41f8_95cf_0e2f32996440_bgp_config(self, method, url, body, headers):
+        body = self.fixtures.load('bgp_config_project_3.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _operating_systems(self, method, url, body, headers):
@@ -172,12 +257,66 @@ class PacketMockHttp(MockHttp):
 
     def _devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb(self, method, url,
                                                       body, headers):
-        if method == 'DELETE':
+        if method in ['DELETE', 'PUT']:
             return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb_actions(
             self, method, url, body, headers):
             return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+
+    def _devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb_bgp_sessions(self,
+            method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('bgp_session_create.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _bgp_sessions_08f6b756_758b_4f1f_bfaf_b9b5479822d7(self, method, url,
+            body, headers):
+        body = self.fixtures.load('bgp_session_get.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_4b653fce_6405_4300_9f7d_c587b7888fe5_bgp_sessions(self,
+            method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('bgp_sessions.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _devices_905037a4_967c_4e81_b364_3a0603aa071b_bgp_sessions(self,
+            method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('bgp_sessions.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_4a4bce6b_d2ef_41f8_95cf_0e2f32996440_bgp_sessions(self,
+            method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('bgp_sessions.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+
+    def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_bgp_sessions(self,
+            method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('bgp_sessions.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_events(self, method,
+            url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('project_events.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _devices_905037a4_967c_4e81_b364_3a0603aa071b_events(self, method,
+            url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('device_events.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb_bandwidth(self, method,
+            url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('node_bandwidth.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
