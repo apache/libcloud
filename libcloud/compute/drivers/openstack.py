@@ -3184,6 +3184,23 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         return self._to_port(response.object['port'])
 
+    def ex_update_port(self, port, **kwargs):
+        """
+        Update a OpenStack_2_PortInterface
+
+        :param      port: port interface to remove
+        :type       port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: :class:`OpenStack_2_PortInterface`
+        """
+        data = {'port': {}}
+        for key, value in kwargs.items():
+            data['port'][key] = value
+        response = self.network_connection.request(
+            '/v2.0/ports/{}'.format(port.id), method='PUT'
+        )
+        return self._to_port(response.object['port'])
+
     def list_volumes(self):
         """
         Get a list of Volumes that are available.

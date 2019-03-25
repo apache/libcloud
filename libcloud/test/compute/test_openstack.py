@@ -1894,6 +1894,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
         self.assertTrue(ret)
 
+    def test_ex_update_port(self):
+        port = self.driver.ex_get_port('126da55e-cfcb-41c8-ae39-a26cb8a7e723')
+        ret = self.driver.ex_update_port(port, port_security_enabled=False)
+        self.assertEqual(port.extra['name'], 'Some port name')
+
     def test_detach_port_interface(self):
         node = Node(id='1c01300f-ef97-4937-8f03-ac676d6234be', name=None,
                     state=None, public_ips=None, private_ips=None,
@@ -2250,6 +2255,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         elif method == "GET":
+            body = self.fixtures.load('_port_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "PUT":
             body = self.fixtures.load('_port_v2.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
