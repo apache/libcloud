@@ -114,6 +114,8 @@ def parse_date(datestring, default_timezone=UTC):
     default timezone specified in default_timezone is used. This is UTC by
     default.
     """
+    if datestring is None:
+        datestring = "9999-01-01T12:00:00+00:00"
     m = ISO8601_REGEX.match(datestring)
     if not m:
         raise ParseError("Unable to parse date string %r" % datestring)
