@@ -2325,7 +2325,7 @@ Compute
   (GITHUB-338)
   [Anthony Monthe]
 
-- Add new driver for Packet (https://www.packet.net/) provider.
+- Add new driver for Packet (https://www.packet.com/) provider.
   (LIBCLOUD-703, GITHUB-527)
   [Aaron Welch]
 
