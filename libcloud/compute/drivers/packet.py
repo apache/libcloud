@@ -15,7 +15,10 @@
 """
 Packet Driver
 """
-import multiprocessing.pool
+try:
+    import asyncio
+except ImportError:
+    asyncio = None
 
 from libcloud.utils.py3 import httplib
 
@@ -78,7 +81,7 @@ class PacketNodeDriver(NodeDriver):
     connectionCls = PacketConnection
     type = Provider.PACKET
     name = 'Packet'
-    website = 'http://www.packet.net/'
+    website = 'http://www.packet.com/'
 
     NODE_STATE_MAP = {'queued': NodeState.PENDING,
                       'provisioning': NodeState.PENDING,
@@ -93,7 +96,7 @@ class PacketNodeDriver(NodeDriver):
                       'active': NodeState.RUNNING}
 
     def __init__(self, key, project=None):
-        # initialize a NodeDriver for packet.net using the API token
+        # initialize a NodeDriver for Packet using the API token
         # and optionally the project (name or id)
         # If project specified we need to be sure this is a valid project
         # so we create the variable self.project_id
@@ -121,27 +124,46 @@ class PacketNodeDriver(NodeDriver):
         if ex_project_id:
             return self.list_nodes_for_project(ex_project_id=ex_project_id)
         else:
-            # if project has been specified on initialization of driver, then
+            # if project has been specified during driver initialization, then
             # return nodes for this project only
             if self.project_id:
                 return self.list_nodes_for_project(
                     ex_project_id=self.project_id)
-            else:
-                projects = [project.id for project in self.projects]
 
-                def _list_one(project):
-                    driver = get_driver(self.type)(self.key)
-                    try:
-                        return driver.list_nodes_for_project(project)
-                    except Exception:
-                        return []
-                pool = multiprocessing.pool.ThreadPool(8)
-                results = pool.map(_list_one, projects)
-                pool.terminate()
+            # In case of Python2 perform requests serially
+            if asyncio == None:
                 nodes = []
-                for result in results:
-                    nodes.extend(result)
+                for project in self.projects:
+                    nodes.extend(
+                        self.list_nodes_for_project(ex_project_id=project.id)
+                    )
                 return nodes
+
+            # In case of Python3 use asyncio to perform requests in parallel
+            # The _list_nodes function is defined dynamically using exec in
+            # order to prevent a SyntaxError in Python2 due to "yield from".
+            # This cruft can be removed once Python2 support is no longer
+            # required.
+            glob = globals()
+            loc = locals()
+            exec("""
+import asyncio
+@asyncio.coroutine
+def _list_nodes(driver):
+    projects = [project.id for project in driver.projects]
+    loop = asyncio.get_event_loop()
+    futures = [
+        loop.run_in_executor(None, driver.list_nodes_for_project, p)
+        for p in projects
+    ]
+    nodes = []
+    for future in futures:
+        result = yield from future
+        nodes.extend(result)
+    return nodes""", glob , loc)
+            loop = asyncio.get_event_loop()
+            nodes = loop.run_until_complete(loc['_list_nodes'](loc['self']))
+            return nodes
 
     def list_nodes_for_project(self, ex_project_id, include='plan', page=1,
                                per_page=1000):
