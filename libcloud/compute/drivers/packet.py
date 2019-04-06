@@ -25,7 +25,6 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.providers import get_driver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import KeyPair
 
@@ -131,7 +130,7 @@ class PacketNodeDriver(NodeDriver):
                     ex_project_id=self.project_id)
 
             # In case of Python2 perform requests serially
-            if asyncio == None:
+            if asyncio is None:
                 nodes = []
                 for project in self.projects:
                     nodes.extend(
@@ -160,7 +159,7 @@ def _list_nodes(driver):
     for future in futures:
         result = yield from future
         nodes.extend(result)
-    return nodes""", glob , loc)
+    return nodes""", glob, loc)
             loop = asyncio.get_event_loop()
             nodes = loop.run_until_complete(loc['_list_nodes'](loc['self']))
             return nodes
