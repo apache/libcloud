@@ -451,7 +451,8 @@ def _list_nodes(driver):
         res = self.connection.request(path, method='DELETE')
         return res.status == httplib.OK  # or res.status == httplib.NO_CONTENT
 
-    def ex_list_events_for_node(self, node, include=None, page=1, per_page=10):
+    def ex_list_events_for_node(self, node, include=None,
+                                page=1, per_page=10):
         path = '/devices/%s/events' % node.id
         params = {
             'include': include,
@@ -469,6 +470,7 @@ def _list_nodes(driver):
             'per_page': per_page
         }
         return self.connection.request(path, params=params).object
+
 
 class Project(object):
     def __init__(self, project):
