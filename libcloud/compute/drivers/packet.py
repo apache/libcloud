@@ -469,6 +469,91 @@ def _list_nodes(driver):
         }
         return self.connection.request(path, params=params).object
 
+    def ex_describe_all_addresses(self, ex_project_id=None,
+                                  only_associated=False):
+        if ex_project_id:
+            projects = [ex_project_id]
+        elif self.project_id:
+            projects = [self.project_id]
+        else:
+            projects = [p.id for p in self.projects]
+        retval = []
+        for project in projects:
+            retval.extend(self.ex_describe_all_addresses_for_project(
+                project, only_associated))
+        return retval
+
+    def ex_describe_all_addresses_for_project(self, ex_project_id,
+                                              include=None,
+                                              only_associated=False):
+        """
+        Returns all the reserved IP addresses for this project
+        optionally, returns only addresses associated with nodes.
+
+        :param    only_associated: If true, return only the addresses
+                                   that are associated with an instance.
+        :type     only_associated: ``bool``
+
+        :return:  List of IP addresses.
+        :rtype:   ``list`` of :class:`dict`
+        """
+        path = '/projects/%s/ips' % ex_project_id
+        params = {
+            'include': include,
+        }
+        ip_addresses = self.connection.request(path, params=params).object
+        result = [a for a in ip_addresses.get('ip_addresses', [])
+                  if not only_associated or len(a.get('assignments', [])) > 0]
+        return result
+
+    def ex_describe_address(self, ex_address_id, include=None):
+        path = '/ips/%s' % ex_address_id
+        params = {
+            'include': include,
+        }
+        result = self.connection.request(path, params=params).object
+        return result
+
+    def ex_request_address_reservation(self, ex_project_id, location_id=None,
+                                       address_family='global_ipv4',
+                                       quantity=1, comments='',
+                                       customdata=''):
+        path = '/projects/%s/ips' % ex_project_id
+        params = {
+            'type': address_family,
+            'quantity': quantity,
+        }
+        if location_id:
+            params['facility'] = location_id
+        if comments:
+            params['comments'] = comments
+        if customdata:
+            params['customdata'] = customdata
+        result = self.connection.request(
+            path, params=params, method='POST').object
+        return result
+
+    def ex_associate_address_with_node(self, node, address, manageable=False,
+                                       customdata=''):
+        path = '/devices/%s/ips' % node.id
+        params = {
+            'address': address,
+            'manageable': manageable,
+            'customdata': customdata
+        }
+        result = self.connection.request(
+            path, params=params, method='POST').object
+        return result
+
+    def ex_disassociate_address(self, address_uuid, include=None):
+        path = '/ips/%s' % address_uuid
+        params = {}
+        if include:
+            params['include'] = include
+        result = self.connection.request(
+            path, params=params, method='DELETE').object
+        return result
+
 
 class Project(object):
     def __init__(self, project):

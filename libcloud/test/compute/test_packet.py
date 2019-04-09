@@ -199,6 +199,35 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
         node = self.driver.list_nodes('project-id')[0]
         self.driver.ex_update_node(node, description='new_description')
 
+    def test_ex_describe_all_addresses_for_project(self):
+        addresses = self.driver.ex_describe_all_addresses_for_project(
+            '4b653fce-6405-4300-9f7d-c587b7888fe5')
+        self.assertEqual(len(addresses), 5)
+
+    def test_ex_describe_address(self):
+        address = self.driver.ex_describe_address(
+            ex_address_id='01c184f5-1413-4b0b-9f6d-ac993f6c9241')
+        self.assertEqual(address['network'], '147.75.33.32')
+
+    def test_ex_request_address_reservation(self):
+        response = self.driver.ex_request_address_reservation(
+            ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
+        assert response['global_ip']
+
+    def test_ex_associate_address_with_node(self):
+        node = self.driver.list_nodes('project-id')[0]
+        response = self.driver.ex_associate_address_with_node(node, '147.75.40.2/32')
+        assert response['enabled']
+
+    def test_ex_disassociate_address_with_node(self):
+        node = self.driver.list_nodes('project-id')[0]
+        assignments = self.driver.ex_list_ip_assignments_for_node(node)
+        for ip_assignment in assignments['ip_addresses']:
+            if ip_assignment['gateway'] == '147.75.40.2':
+                response = self.driver.ex_disassociate_address(
+                    ip_assignment['id'])
+                break
+
 class PacketMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('packet')
 
@@ -217,6 +246,23 @@ class PacketMockHttp(MockHttp):
     def _projects_4b653fce_6405_4300_9f7d_c587b7888fe5_devices(self, method, url, body, headers):
         body = self.fixtures.load('devices_for_project.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_4a4bce6b_d2ef_41f8_95cf_0e2f32996440_devices(self, method, url, body, headers):
+        body = self.fixtures.load('devices_for_project.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_devices(self, method, url, body, headers):
+        body = self.fixtures.load('devices_for_project.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_4b653fce_6405_4300_9f7d_c587b7888fe5_ips(self, method, url, body, headers):
+        body = self.fixtures.load('project_ips.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_ips(self, method, url, body, headers):
+        if method =='POST':
+            body = self.fixtures.load('reserve_ip.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _projects_4b653fce_6405_4300_9f7d_c587b7888fe5_bgp_config(self, method, url, body, headers):
         body = self.fixtures.load('bgp_config_project_1.json')
@@ -317,6 +363,24 @@ class PacketMockHttp(MockHttp):
         if method == 'GET':
             body = self.fixtures.load('node_bandwidth.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ips_01c184f5_1413_4b0b_9f6d_ac993f6c9241(self, method, url, body,
+            headers):
+        body = self.fixtures.load('ip_address.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb_ips(self, method, url,
+            body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('ip_assignments.json')
+        elif method == 'POST':
+            body = self.fixtures.load('associate_ip.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ips_aea4ee0c_675f_4b77_8337_8e13b868dd9c(self, method, url, body,
+            headers):
+        if method == 'DELETE':
+            return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
