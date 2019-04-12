@@ -322,7 +322,7 @@ class ScalewayNodeDriver(NodeDriver):
         extra = {
             'arch': image['arch'],
             'size': _to_lib_size(image.get('root_volume', {})
-                                      .get('size', 0)) or 50,
+                                 .get('size', 0)) or 50,
             'creation_date': parse_date(image['creation_date']),
             'modification_date': parse_date(image['modification_date']),
             'organization': image['organization'],
@@ -367,7 +367,7 @@ class ScalewayNodeDriver(NodeDriver):
                     created_at=parse_date(server['creation_date']))
 
     def create_node(self, name, size, image, ex_volumes=None, ex_tags=None,
-                    region=None):
+                    region=None, **kwargs):
         """
         Create a new node.
 
@@ -659,6 +659,17 @@ class ScalewayNodeDriver(NodeDriver):
                         public_key=' '.join(key['key'].split(' ')[:2]),
                         fingerprint=key['fingerprint'],
                         driver=self) for key in keys]
+
+    def get_key_pair(self, name):
+        """
+        Retrieve a single key pair.
+
+        :param name: Name of the key pair to retrieve.
+        :type name: ``str``
+
+        :rtype: :class:`.KeyPair`
+        """
+        return [k for k in self.list_key_pairs() if k.name == name][0]
 
     def import_key_pair_from_string(self, name, key_material):
         """
