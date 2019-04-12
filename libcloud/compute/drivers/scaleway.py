@@ -104,7 +104,7 @@ class ScalewayConnection(ConnectionUserAndKey):
         while links and 'next' in links:
             next = self.request(links['next']['url'], data=data,
                                 headers=headers, method=method,
-                                raw=raw, stream=stream).object
+                                raw=raw, stream=stream, region=region).object
             links = self.connection.getresponse().links
             merged = {root: child + next[root]
                       for root, child in list(results.items())}
@@ -169,6 +169,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: list of node size objects
         :rtype: ``list`` of :class:`.NodeSize`
         """
+        if region is None:
+            region = self.region
         response = self.connection._request_paged('/products/servers',
                                                   region=region)
         sizes = response['servers']
@@ -222,6 +224,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: list of image objects
         :rtype: ``list`` of :class:`.NodeImage`
         """
+        if region is None:
+            region = self.region
         response = self.connection._request_paged('/images', region=region)
         images = response['images']
         return [self._to_image(image) for image in images]
@@ -243,6 +247,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: the newly created image object
         :rtype: :class:`.NodeImage`
         """
+        if region is None:
+            region = self.region
         data = {
             'organization': self.key,
             'name': name,
@@ -269,6 +275,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: True if the image was deleted, otherwise False
         :rtype: ``bool``
         """
+        if region is None:
+            region = self.region
         return self.connection.request('/images/%s' % node_image.id,
                                        region=region,
                                        method='DELETE').success()
@@ -287,6 +295,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: the requested image object
         :rtype: :class:`.NodeImage`
         """
+        if region is None:
+            region = self.region
         response = self.connection.request('/images/%s' % image_id,
                                            region=region)
         image = response.object['image']
@@ -317,6 +327,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: list of node objects
         :rtype: ``list`` of :class:`.Node`
         """
+        if region is None:
+            region = self.region
         response = self.connection._request_paged('/servers', region=region)
         servers = response['servers']
         return [self._to_node(server) for server in servers]
@@ -403,6 +415,9 @@ class ScalewayNodeDriver(NodeDriver):
                        (size.id, range, allocate_space)),
                 http_code=400, driver=self)
 
+        # no volumes in API
+        data.pop('volumes')
+
         response = self.connection.request('/servers', data=json.dumps(data),
                                            region=region, method='POST')
         server = response.object['server']
@@ -416,6 +431,8 @@ class ScalewayNodeDriver(NodeDriver):
         return node
 
     def _action(self, server_id, action, region=None):
+        if region is None:
+            region = self.region
         return self.connection.request('/servers/%s/action' % server_id,
                                        region=region,
                                        data=json.dumps({'action': action}),
@@ -456,6 +473,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: A list of volume objects.
         :rtype: ``list`` of :class:`StorageVolume`
         """
+        if region is None:
+            region = self.region
         response = self.connection._request_paged('/volumes', region=region)
         volumes = response['volumes']
         return [self._to_volume(volume) for volume in volumes]
@@ -483,6 +502,8 @@ class ScalewayNodeDriver(NodeDriver):
         (if None, use default region specified in __init__)
         :type region: :class:`.NodeLocation`
         """
+        if region is None:
+            region = self.region
         response = self.connection._request_paged('/snapshots', region=region)
         snapshots = filter(lambda s: s['base_volume']['id'] == volume.id,
                            response['snapshots'])
@@ -519,6 +540,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
+        if region is None:
+            region = self.region
         data = {
             'name': name,
             'organization': self.key,
@@ -549,6 +572,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: The newly created snapshot.
         :rtype: :class:`VolumeSnapshot`
         """
+        if region is None:
+            region = self.region
         data = {
             'name': name,
             'organization': self.key,
@@ -575,6 +600,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: True if the destroy was successful, otherwise False
         :rtype: ``bool``
         """
+        if region is None:
+            region = self.region
         return self.connection.request('/volumes/%s' % volume.id,
                                        region=region,
                                        method='DELETE').success()
@@ -593,6 +620,8 @@ class ScalewayNodeDriver(NodeDriver):
         :return: True if the destroy was successful, otherwise False
         :rtype: ``bool``
         """
+        if region is None:
+            region = self.region
         return self.connection.request('/snapshots/%s' % snapshot.id,
                                        region=region,
                                        method='DELETE').success()
