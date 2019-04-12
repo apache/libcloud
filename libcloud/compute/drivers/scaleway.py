@@ -17,6 +17,7 @@ Scaleway Driver
 """
 
 import copy
+
 try:
     import simplejson as json
 except ImportError:
@@ -230,6 +231,21 @@ class ScalewayNodeDriver(NodeDriver):
         images = response['images']
         return [self._to_image(image) for image in images]
 
+    def list_organizations(self):
+        """
+        List available organizations for user.
+
+        :param region: The region in which to list organizations
+        (if None, use default region specified in __init__)
+        :type region: :class:`.NodeLocation`
+
+        :return: list of organization UUIDs
+        :rtype: ``list`` of :class:`str`
+        """
+        response = self.connection.request('/organizations', region='account')
+        organizations = response.object['organizations']
+        return [organization['id'] for organization in organizations]
+
     def create_image(self, node, name, region=None):
         """
         Create a VM image from an existing node's root volume.
@@ -377,9 +393,12 @@ class ScalewayNodeDriver(NodeDriver):
         :return: the newly created node object
         :rtype: :class:`.Node`
         """
+        if region is None:
+            region = self.region
+        organization = self.list_organizations()[0]
         data = {
             'name': name,
-            'organization': self.key,
+            'organization': organization,
             'image': image.id,
             'volumes': ex_volumes or {},
             'commercial_type': size.id,
@@ -399,7 +418,7 @@ class ScalewayNodeDriver(NodeDriver):
             vol_num = len(data['volumes']) + 1
             data['volumes'][str(vol_num)] = {
                 "name": "%s-%d" % (name, vol_num),
-                "organization": self.key,
+                "organization": organization,
                 "size": _to_api_size(bump),
                 "volume_type": "l_ssd"
             }
