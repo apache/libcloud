@@ -15,10 +15,12 @@
 """
 Packet Driver
 """
-try:
+try:  # Try to use asyncio to perform requests in parallel across projects
     import asyncio
-except ImportError:
+except ImportError: # If not available will do things serially
     asyncio = None
+
+import dateutil.parser
 
 from libcloud.utils.py3 import httplib
 
@@ -27,6 +29,7 @@ from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver, Node
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import KeyPair
+from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
 PACKET_ENDPOINT = "api.packet.net"
 
@@ -122,47 +125,49 @@ class PacketNodeDriver(NodeDriver):
     def list_nodes(self, ex_project_id=None):
         if ex_project_id:
             return self.list_nodes_for_project(ex_project_id=ex_project_id)
-        else:
-            # if project has been specified during driver initialization, then
-            # return nodes for this project only
-            if self.project_id:
-                return self.list_nodes_for_project(
-                    ex_project_id=self.project_id)
 
-            # In case of Python2 perform requests serially
-            if asyncio is None:
-                nodes = []
-                for project in self.projects:
-                    nodes.extend(
-                        self.list_nodes_for_project(ex_project_id=project.id)
-                    )
-                return nodes
+        # if project has been specified during driver initialization, then
+        # return nodes for this project only
+        if self.project_id:
+            return self.list_nodes_for_project(
+                ex_project_id=self.project_id)
 
-            # In case of Python3 use asyncio to perform requests in parallel
-            # The _list_nodes function is defined dynamically using exec in
-            # order to prevent a SyntaxError in Python2 due to "yield from".
-            # This cruft can be removed once Python2 support is no longer
-            # required.
-            glob = globals()
-            loc = locals()
-            exec("""
+        # In case of Python2 perform requests serially
+        if asyncio is None:
+            nodes = []
+            for project in self.projects:
+                nodes.extend(
+                    self.list_nodes_for_project(ex_project_id=project.id)
+                )
+            return nodes
+        # In case of Python3 use asyncio to perform requests in parallel
+        return self.list_resources_async('nodes')
+
+    def list_resources_async(self, resource_type):
+        # The _list_nodes function is defined dynamically using exec in
+        # order to prevent a SyntaxError in Python2 due to "yield from".
+        # This cruft can be removed once Python2 support is no longer
+        # required.
+        assert resource_type in ['nodes', 'volumes']
+        glob = globals()
+        loc = locals()
+        exec("""
 import asyncio
 @asyncio.coroutine
-def _list_nodes(driver):
+def _list_async(driver):
     projects = [project.id for project in driver.projects]
     loop = asyncio.get_event_loop()
     futures = [
-        loop.run_in_executor(None, driver.list_nodes_for_project, p)
+        loop.run_in_executor(None, driver.list_%s_for_project, p)
         for p in projects
     ]
-    nodes = []
+    retval = []
     for future in futures:
         result = yield from future
-        nodes.extend(result)
-    return nodes""", glob, loc)
-            loop = asyncio.get_event_loop()
-            nodes = loop.run_until_complete(loc['_list_nodes'](loc['self']))
-            return nodes
+        retval.extend(result)
+    return retval""" % resource_type, glob, loc)
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(loc['_list_async'](loc['self']))
 
     def list_nodes_for_project(self, ex_project_id, include='plan', page=1,
                                per_page=1000):
@@ -556,6 +561,182 @@ def _list_nodes(driver):
             path, params=params, method='DELETE').object
         return result
 
+    def list_volumes(self, ex_project_id=None):
+        if ex_project_id:
+            return self.list_volumes_for_project(ex_project_id=ex_project_id)
+
+        # if project has been specified during driver initialization, then
+        # return nodes for this project only
+        if self.project_id:
+            return self.list_volumes_for_project(
+                ex_project_id=self.project_id)
+
+        # In case of Python2 perform requests serially
+        if asyncio is None:
+            nodes = []
+            for project in self.projects:
+                nodes.extend(
+                    self.list_volumes_for_project(ex_project_id=project.id)
+                )
+            return nodes
+        # In case of Python3 use asyncio to perform requests in parallel
+        return self.list_resources_async('volumes')
+
+    def list_volumes_for_project(self, ex_project_id, include='plan', page=1,
+                               per_page=1000):
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        data = self.connection.request(
+            '/projects/%s/storage' % (ex_project_id),
+            params=params).object['volumes']
+        return list(map(self._to_volume, data))
+
+    def _to_volume(self, data):
+        return StorageVolume(id=data['id'], name=data['name'],
+                             size=data['size'], driver=self,
+                             extra=data)
+
+    def create_volume(self, size, location, plan='storage_1', description='',
+                      ex_project_id=None, locked=False, billing_cycle=None,
+                      customdata='', snapshot_policies=None):
+        """
+        Create a new volume.
+
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
+
+        :param name: Name of the volume to be created
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
+        """
+        path = '/projects/%s/storage' % (ex_project_id or self.projects[0].id)
+        params = {
+            'facility': location.id,
+            'plan': plan,
+            'size': size,
+            'locked': locked
+        }
+        if description:
+            params['description'] = description
+        if customdata:
+            params['customdata'] = customdata
+        if billing_cycle:
+            params['billing_cycle'] = billing_cycle
+        if snapshot_policies:
+            params['snapshot_policies'] = snapshot_policies
+        data = self.connection.request(path, params=params, method='POST').object
+        return self._to_volume(data)
+
+    def destroy_volume(self, volume):
+        """
+        Destroys a storage volume.
+
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
+        """
+        path = '/storage/%s' % volume.id
+        res = self.connection.request(path, method='DELETE')
+        return res.status == httplib.NO_CONTENT
+
+    def create_volume_snapshot(self, volume, name=''):
+        """
+        Create a new volume snapshot.
+
+        :param volume: Volume to create a snapshot for
+        :type volume: class:`StorageVolume`
+
+        :return: The newly created volume snapshot.
+        :rtype: :class:`VolumeSnapshot`
+        """
+        path = '/storage/%s/snapshots' % volume.id
+        res = self.connection.request(path, method='POST')
+        assert res.status == httplib.ACCEPTED
+        return volume.list_snapshots()[-1]
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Delete a volume snapshot
+
+        :param snapshot: volume snapshot to delete
+        :type snapshot: class:`VolumeSnapshot`
+
+        :rtype: ``bool``
+        """
+        volume_id = snapshot.extra['volume']['href'].split('/')[-1]
+        path = '/storage/%s/snapshots/%s' % (volume_id, snapshot.id)
+        res = self.connection.request(path, method='DELETE')
+        return res.status == httplib.NO_CONTENT
+
+    def list_volume_snapshots(self, volume, include=''):
+        """
+        List snapshots for a volume.
+
+        :param volume: Volume to list snapshots for
+        :type volume: class:`StorageVolume`
+
+        :return: List of volume snapshots.
+        :rtype: ``list`` of :class: `VolumeSnapshot`
+        """
+        path = '/storage/%s/snapshots' % volume.id
+        params = {}
+        if include:
+            params['include'] = include
+        data = self.connection.request(path, params=params).object['snapshots']
+        return list(map(self._to_volume_snapshot, data))
+
+    def _to_volume_snapshot(self, data):
+        created = dateutil.parser.parse(data['created_at'])
+        return VolumeSnapshot(id=data['id'],
+                              name=data['id'],
+                              created=created,
+                              state=data['status'],
+                              driver=self, extra=data)
+
+    def ex_modify_volume(self, volume, description=None, size=None,
+                         locked=None, billing_cycle=None,
+                         customdata=None):
+        path = '/storage/%s' % volume.id
+        params = {}
+        if description:
+            params['description'] = description
+        if size:
+            params['size'] = size
+        if locked != None:
+            params['locked'] = locked
+        if billing_cycle:
+            params['billing_cycle'] = billing_cycle
+        res = self.connection.request(path, params=params, method='PUT')
+        return self._to_volume(res.object)
+
+    def ex_restore_volume(self, snapshot):
+        volume_id = snapshot.extra['volume']['href'].split('/')[-1]
+        ts = snapshot.extra['timestamp']
+        path = '/storage/%s/restore?restore_point=%s' % (volume_id, ts)
+        res = self.connection.request(path, method='POST')
+        return res.status == httplib.NO_CONTENT
+
+    def ex_clone_volume(self, volume, snapshot=None):
+        path = '/storage/%s/clone' % volume.id
+        if snapshot:
+            path += '?snapshot_timestamp=%s' % snapshot.extra['timestamp']
+        res = self.connection.request(path, method='POST')
+        return res.status == httplib.NO_CONTENT
+
+    def ex_describe_volume(self, volume_id):
+        path = '/storage/%s' % volume_id
+        data = self.connection.request(path).object
+        return self._to_volume(data)
 
 class Project(object):
     def __init__(self, project):
