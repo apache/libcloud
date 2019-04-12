@@ -74,14 +74,15 @@ class ScalewayConnection(ConnectionUserAndKey):
 
     def request(self, action, params=None, data=None, headers=None,
                 method='GET', raw=False, stream=False, region=None):
-        if region:
-            old_host = self.host
+        old_host = self.host
+        if region is None:
+            self.host = SCALEWAY_API_HOSTS['default']
+        else:
             self.host = SCALEWAY_API_HOSTS[region.id
                                            if isinstance(region, NodeLocation)
                                            else region]
-            if not self.host == old_host:
-                self.connect()
-
+        if not self.host == old_host:
+            self.connect()
         return super(ScalewayConnection, self).request(action, params, data,
                                                        headers, method, raw,
                                                        stream)
