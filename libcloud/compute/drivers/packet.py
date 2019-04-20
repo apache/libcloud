@@ -690,8 +690,8 @@ def _list_async(driver):
         result = None
         for attachment in attachments:
             if not ex_attachment_id or ex_attachment_id in attachment['href']:
-                path = '/storage/attachments/%s' % (ex_attachment_id or
-                    attachment['href'].split('/')[-1])
+                path = '/storage/attachments/%s' % (
+                    ex_attachment_id or attachment['href'].split('/')[-1])
                 result = self.connection.request(path, method='DELETE')
                 success = success and result.status == httplib.NO_CONTENT
 
