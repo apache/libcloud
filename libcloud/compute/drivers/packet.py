@@ -17,10 +17,11 @@ Packet Driver
 """
 try:  # Try to use asyncio to perform requests in parallel across projects
     import asyncio
-except ImportError: # If not available will do things serially
+except ImportError:  # If not available will do things serially
     asyncio = None
 
-import dateutil.parser
+
+import datetime
 
 from libcloud.utils.py3 import httplib
 
@@ -581,7 +582,7 @@ def _list_async(driver):
         return self.list_resources_async('volumes')
 
     def list_volumes_for_project(self, ex_project_id, include='plan', page=1,
-                               per_page=1000):
+                                 per_page=1000):
         params = {
             'include': include,
             'page': page,
@@ -631,7 +632,8 @@ def _list_async(driver):
             params['billing_cycle'] = billing_cycle
         if snapshot_policies:
             params['snapshot_policies'] = snapshot_policies
-        data = self.connection.request(path, params=params, method='POST').object
+        data = self.connection.request(
+            path, params=params, method='POST').object
         return self._to_volume(data)
 
     def destroy_volume(self, volume):
@@ -646,6 +648,52 @@ def _list_async(driver):
         path = '/storage/%s' % volume.id
         res = self.connection.request(path, method='DELETE')
         return res.status == httplib.NO_CONTENT
+
+    def attach_volume(self, node, volume):
+        """
+        Attaches volume to node.
+
+        :param node: Node to attach volume to.
+        :type node: :class:`.Node`
+
+        :param volume: Volume to attach.
+        :type volume: :class:`.StorageVolume`
+
+        :rytpe: ``bool``
+        """
+        path = '/storage/%s/attachments' % volume.id
+        params = {
+            'device_id': node.id
+        }
+        res = self.connection.request(path, params=params, method='POST')
+        return res.status == httplib.OK
+
+    def detach_volume(self, volume, ex_attachment_id=''):
+        """
+        Detaches a volume from a node.
+
+        :param volume: Volume to be detached
+        :type volume: :class:`.StorageVolume`
+
+        :param ex_attachment_id: Attachment id to be detached, if empty detach
+                                        all attachments
+        :type name: ``str``
+
+        :rtype: ``bool``
+        """
+        path = '/storage/%s/attachments' % volume.id
+        attachments = volume.extra['attachments']
+        assert len(attachments) > 0, "Volume is not attached to any node"
+        success = True
+        result = None
+        for attachment in attachments:
+            if not ex_attachment_id or ex_attachment_id in attachment['href']:
+                path = '/storage/attachments/%s' % (ex_attachment_id or
+                    attachment['href'].split('/')[-1])
+                result = self.connection.request(path, method='DELETE')
+                success = success and result.status == httplib.NO_CONTENT
+
+        return result and success
 
     def create_volume_snapshot(self, volume, name=''):
         """
@@ -694,7 +742,8 @@ def _list_async(driver):
         return list(map(self._to_volume_snapshot, data))
 
     def _to_volume_snapshot(self, data):
-        created = dateutil.parser.parse(data['created_at'])
+        created = datetime.datetime.strptime(
+            data['created_at'], "%Y-%m-%dT%H:%M:%S")
         return VolumeSnapshot(id=data['id'],
                               name=data['id'],
                               created=created,
@@ -710,7 +759,7 @@ def _list_async(driver):
             params['description'] = description
         if size:
             params['size'] = size
-        if locked != None:
+        if locked is not None:
             params['locked'] = locked
         if billing_cycle:
             params['billing_cycle'] = billing_cycle
@@ -735,6 +784,7 @@ def _list_async(driver):
         path = '/storage/%s' % volume_id
         data = self.connection.request(path).object
         return self._to_volume(data)
+
 
 class Project(object):
     def __init__(self, project):

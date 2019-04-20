@@ -1,0 +1,38 @@
+{
+    "id": "a08aaf76-e0ce-43aa-b9cd-cce0d4ae4f4c",
+    "name": "volume-a08aaf76",
+    "description": "test volume",
+    "size": 10,
+    "locked": false,
+    "billing_cycle": "hourly",
+    "state": "queued",
+    "customdata": {},
+    "access": {},
+    "created_at": "2019-04-20T16:16:44Z",
+    "updated_at": "2019-04-20T16:16:44Z",
+    "project": {
+        "href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df"
+    },
+    "facility": {
+        "href": "/facilities/8e6470b3-b75e-47d1-bb93-45b225750975"
+    },
+    "snapshot_policies": [],
+    "attachments": [],
+    "snapshots": [],
+    "plan": {
+        "id": "87728148-3155-4992-a730-8d1e6aca8a32",
+        "slug": "storage_1",
+        "name": "Standard",
+        "description": "TBD",
+        "line": "storage",
+        "specs": {},
+        "legacy": true,
+        "deployment_types": [],
+        "available_in": [],
+        "class": "storage_1",
+        "pricing": {
+            "hour": 0.000104
+        }
+    },
+    "href": "/storage/a08aaf76-e0ce-43aa-b9cd-cce0d4ae4f4c"
+}
