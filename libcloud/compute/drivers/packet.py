@@ -214,8 +214,9 @@ def _list_async(driver):
             if not ex_project_id:
                 raise Exception('ex_project_id needs to be specified')
 
+        facility = location.extra['code']
         params = {'hostname': name, 'plan': size.id,
-                  'operating_system': image.id, 'facility': location.id,
+                  'operating_system': image.id, 'facility': facility,
                   'include': 'plan', 'billing_cycle': 'hourly'}
         params.update(kwargs)
         if cloud_init:
@@ -360,8 +361,9 @@ def _list_async(driver):
                          driver=self)
 
     def _to_location(self, data):
-        return NodeLocation(id=data['code'], name=data['name'], country=None,
-                            driver=self)
+        extra = data
+        return NodeLocation(id=data['id'], name=data['name'], country=None,
+                            driver=self, extra=extra)
 
     def _to_size(self, data):
         cpus = data['specs']['cpus'][0].get('count')
@@ -602,7 +604,7 @@ def _list_async(driver):
 
     def create_volume(self, size, location, plan='storage_1', description='',
                       ex_project_id=None, locked=False, billing_cycle=None,
-                      customdata='', snapshot_policies=None):
+                      customdata='', snapshot_policies=None,  **kwargs):
         """
         Create a new volume.
 
@@ -621,11 +623,12 @@ def _list_async(driver):
         """
         path = '/projects/%s/storage' % (ex_project_id or self.projects[0].id)
         params = {
-            'facility': location.id,
+            'facility': location.extra['code'],
             'plan': plan,
             'size': size,
             'locked': locked
         }
+        params.update(kwargs)
         if description:
             params['description'] = description
         if customdata:
@@ -787,6 +790,10 @@ def _list_async(driver):
         data = self.connection.request(path).object
         return self._to_volume(data)
 
+    def ex_describe_attachment(self, attachment_id):
+        path = '/storage/attachments/%s' % attachment_id
+        data = self.connection.request(path).object
+        return data
 
 class Project(object):
     def __init__(self, project):
