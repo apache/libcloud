@@ -344,7 +344,7 @@ def _list_async(driver):
         else:
             size = None
         if 'facility' in data:
-            extra['facility'] = data['facility'].get('code')
+            extra['facility'] = data['facility']
 
         for key in extra_keys:
             if key in data:
@@ -602,7 +602,7 @@ def _list_async(driver):
 
     def create_volume(self, size, location, plan='storage_1', description='',
                       ex_project_id=None, locked=False, billing_cycle=None,
-                      customdata='', snapshot_policies=None,  **kwargs):
+                      customdata='', snapshot_policies=None, **kwargs):
         """
         Create a new volume.
 
@@ -620,8 +620,12 @@ def _list_async(driver):
         :rtype: :class:`StorageVolume`
         """
         path = '/projects/%s/storage' % (ex_project_id or self.projects[0].id)
+        try:
+            facility = location.extra['code']
+        except AttributeError:
+            facility = location
         params = {
-            'facility': location.extra['code'],
+            'facility': facility,
             'plan': plan,
             'size': size,
             'locked': locked
@@ -671,7 +675,7 @@ def _list_async(driver):
         res = self.connection.request(path, params=params, method='POST')
         return res.status == httplib.OK
 
-    def detach_volume(self, volume, ex_attachment_id=''):
+    def detach_volume(self, volume, ex_node=None, ex_attachment_id=''):
         """
         Detaches a volume from a node.
 
@@ -691,8 +695,14 @@ def _list_async(driver):
         result = None
         for attachment in attachments:
             if not ex_attachment_id or ex_attachment_id in attachment['href']:
+                attachment_id = attachment['href'].split('/')[-1]
+                if ex_node:
+                    node_id = self.ex_describe_attachment(
+                        attachment_id)['device']['href'].split('/')[-1]
+                    if node_id != ex_node.id:
+                        continue
                 path = '/storage/attachments/%s' % (
-                    ex_attachment_id or attachment['href'].split('/')[-1])
+                    ex_attachment_id or attachment_id)
                 result = self.connection.request(path, method='DELETE')
                 success = success and result.status == httplib.NO_CONTENT
 
@@ -792,6 +802,7 @@ def _list_async(driver):
         path = '/storage/attachments/%s' % attachment_id
         data = self.connection.request(path).object
         return data
+
 
 class Project(object):
     def __init__(self, project):
