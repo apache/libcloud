@@ -15,16 +15,22 @@
 """
 Packet Driver
 """
-import multiprocessing.pool
+try:  # Try to use asyncio to perform requests in parallel across projects
+    import asyncio
+except ImportError:  # If not available will do things serially
+    asyncio = None
+
+
+import datetime
 
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.types import Provider, NodeState, InvalidCredsError
 from libcloud.compute.base import NodeDriver, Node
-from libcloud.compute.providers import Provider, get_driver
 from libcloud.compute.base import NodeImage, NodeSize, NodeLocation
 from libcloud.compute.base import KeyPair
+from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
 PACKET_ENDPOINT = "api.packet.net"
 
@@ -78,7 +84,7 @@ class PacketNodeDriver(NodeDriver):
     connectionCls = PacketConnection
     type = Provider.PACKET
     name = 'Packet'
-    website = 'http://www.packet.net/'
+    website = 'http://www.packet.com/'
 
     NODE_STATE_MAP = {'queued': NodeState.PENDING,
                       'provisioning': NodeState.PENDING,
@@ -93,7 +99,7 @@ class PacketNodeDriver(NodeDriver):
                       'active': NodeState.RUNNING}
 
     def __init__(self, key, project=None):
-        # initialize a NodeDriver for packet.net using the API token
+        # initialize a NodeDriver for Packet using the API token
         # and optionally the project (name or id)
         # If project specified we need to be sure this is a valid project
         # so we create the variable self.project_id
@@ -120,35 +126,61 @@ class PacketNodeDriver(NodeDriver):
     def list_nodes(self, ex_project_id=None):
         if ex_project_id:
             return self.list_nodes_for_project(ex_project_id=ex_project_id)
-        else:
-            # if project has been specified on initialization of driver, then
-            # return nodes for this project only
-            if self.project_id:
-                return self.list_nodes_for_project(
-                    ex_project_id=self.project_id)
-            else:
-                projects = [project.id for project in self.projects]
 
-                def _list_one(project):
-                    driver = get_driver(self.type)(self.key)
-                    try:
-                        return driver.list_nodes_for_project(project)
-                    except:
-                        return []
-                pool = multiprocessing.pool.ThreadPool(8)
-                results = pool.map(_list_one, projects)
-                pool.terminate()
-                nodes = []
-                for result in results:
-                    nodes.extend(result)
-                return nodes
+        # if project has been specified during driver initialization, then
+        # return nodes for this project only
+        if self.project_id:
+            return self.list_nodes_for_project(
+                ex_project_id=self.project_id)
 
-    def list_nodes_for_project(self, ex_project_id):
-            data = self.connection.request('/projects/%s/devices' %
-                                           (ex_project_id),
-                                           params={'include': 'plan'}
-                                           ).object['devices']
-            return list(map(self._to_node, data))
+        # In case of Python2 perform requests serially
+        if asyncio is None:
+            nodes = []
+            for project in self.projects:
+                nodes.extend(
+                    self.list_nodes_for_project(ex_project_id=project.id)
+                )
+            return nodes
+        # In case of Python3 use asyncio to perform requests in parallel
+        return self.list_resources_async('nodes')
+
+    def list_resources_async(self, resource_type):
+        # The _list_nodes function is defined dynamically using exec in
+        # order to prevent a SyntaxError in Python2 due to "yield from".
+        # This cruft can be removed once Python2 support is no longer
+        # required.
+        assert resource_type in ['nodes', 'volumes']
+        glob = globals()
+        loc = locals()
+        exec("""
+import asyncio
+@asyncio.coroutine
+def _list_async(driver):
+    projects = [project.id for project in driver.projects]
+    loop = asyncio.get_event_loop()
+    futures = [
+        loop.run_in_executor(None, driver.list_%s_for_project, p)
+        for p in projects
+    ]
+    retval = []
+    for future in futures:
+        result = yield from future
+        retval.extend(result)
+    return retval""" % resource_type, glob, loc)
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(loc['_list_async'](loc['self']))
+
+    def list_nodes_for_project(self, ex_project_id, include='plan', page=1,
+                               per_page=1000):
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        data = self.connection.request(
+            '/projects/%s/devices' % (ex_project_id),
+            params=params).object['devices']
+        return list(map(self._to_node, data))
 
     def list_locations(self):
         data = self.connection.request('/facilities')\
@@ -166,7 +198,7 @@ class PacketNodeDriver(NodeDriver):
                 size.get('line') == 'baremetal']
 
     def create_node(self, name, size, image, location,
-                    ex_project_id=None, cloud_init=None):
+                    ex_project_id=None, cloud_init=None, **kwargs):
         """
         Create a node.
 
@@ -182,9 +214,11 @@ class PacketNodeDriver(NodeDriver):
             if not ex_project_id:
                 raise Exception('ex_project_id needs to be specified')
 
+        facility = location.extra['code']
         params = {'hostname': name, 'plan': size.id,
-                  'operating_system': image.id, 'facility': location.id,
+                  'operating_system': image.id, 'facility': facility,
                   'include': 'plan', 'billing_cycle': 'hourly'}
+        params.update(kwargs)
         if cloud_init:
             params["userdata"] = cloud_init
         data = self.connection.request('/projects/%s/devices' %
@@ -220,6 +254,33 @@ class PacketNodeDriver(NodeDriver):
         res = self.connection.request('/devices/%s' % (node.id),
                                       method='DELETE')
         return res.status == httplib.OK
+
+    def ex_reinstall_node(self, node):
+        params = {'type': 'reinstall'}
+        res = self.connection.request('/devices/%s/actions' % (node.id),
+                                      params=params, method='POST')
+        return res.status == httplib.OK
+
+    def ex_rescue_node(self, node):
+        params = {'type': 'rescue'}
+        res = self.connection.request('/devices/%s/actions' % (node.id),
+                                      params=params, method='POST')
+        return res.status == httplib.OK
+
+    def ex_update_node(self, node, **kwargs):
+        path = '/devices/%s' % node.id
+        res = self.connection.request(path, params=kwargs, method='PUT')
+        return res.status == httplib.OK
+
+    def ex_get_node_bandwidth(self, node, from_time, until_time):
+        path = '/devices/%s/bandwidth' % node.id
+        params = {'from': from_time, 'until': until_time}
+        return self.connection.request(path, params=params).object
+
+    def ex_list_ip_assignments_for_node(self, node, include=''):
+        path = '/devices/%s/ips' % node.id
+        params = {'include': include}
+        return self.connection.request(path, params=params).object
 
     def list_key_pairs(self):
         """
@@ -274,12 +335,16 @@ class PacketNodeDriver(NodeDriver):
         if 'operating_system' in data and data['operating_system'] is not None:
             image = self._to_image(data['operating_system'])
             extra['operating_system'] = data['operating_system'].get('name')
+        else:
+            image = None
 
         if 'plan' in data and data['plan'] is not None:
             size = self._to_size(data['plan'])
             extra['plan'] = data['plan'].get('slug')
+        else:
+            size = None
         if 'facility' in data:
-            extra['facility'] = data['facility'].get('code')
+            extra['facility'] = data['facility']
 
         for key in extra_keys:
             if key in data:
@@ -287,7 +352,7 @@ class PacketNodeDriver(NodeDriver):
 
         node = Node(id=data['id'], name=data['hostname'], state=state,
                     public_ips=ips['public'], private_ips=ips['private'],
-                    extra=extra, driver=self)
+                    size=size, image=image, extra=extra, driver=self)
         return node
 
     def _to_image(self, data):
@@ -296,8 +361,9 @@ class PacketNodeDriver(NodeDriver):
                          driver=self)
 
     def _to_location(self, data):
-        return NodeLocation(id=data['code'], name=data['name'], country=None,
-                            driver=self)
+        extra = data
+        return NodeLocation(id=data['id'], name=data['name'], country=None,
+                            driver=self, extra=extra)
 
     def _to_size(self, data):
         cpus = data['specs']['cpus'][0].get('count')
@@ -313,7 +379,8 @@ class PacketNodeDriver(NodeDriver):
             disk += disks['count'] * int(disk_size)
         name = "%s - %s RAM" % (data.get('name'), ram)
         price = data['pricing'].get('hour')
-        return NodeSize(id=data['slug'], name=name, ram=ram, disk=disk,
+        return NodeSize(id=data['slug'], name=name,
+                        ram=int(ram.replace('GB', '')) * 1024, disk=disk,
                         bandwidth=0, price=price, extra=extra, driver=self)
 
     def _to_key_pairs(self, data):
@@ -337,6 +404,404 @@ class PacketNodeDriver(NodeDriver):
                 else:
                     private_ips.append(address['address'])
         return {'public': public_ips, 'private': private_ips}
+
+    def ex_get_bgp_config_for_project(self, ex_project_id):
+        path = '/projects/%s/bgp-config' % ex_project_id
+        return self.connection.request(path).object
+
+    def ex_get_bgp_config(self, ex_project_id=None):
+        if ex_project_id:
+            projects = [ex_project_id]
+        elif self.project_id:
+            projects = [self.project_id]
+        else:
+            projects = [p.id for p in self.projects]
+        retval = []
+        for p in projects:
+            config = self.ex_get_bgp_config_for_project(p)
+            if config:
+                retval.append(config)
+        return retval
+
+    def ex_get_bgp_session(self, session_uuid):
+        path = '/bgp/sessions/%s' % session_uuid
+        return self.connection.request(path).object
+
+    def ex_list_bgp_sessions_for_node(self, node):
+        path = '/devices/%s/bgp/sessions' % node.id
+        return self.connection.request(path).object
+
+    def ex_list_bgp_sessions_for_project(self, ex_project_id):
+        path = '/projects/%s/bgp/sessions' % ex_project_id
+        return self.connection.request(path).object
+
+    def ex_list_bgp_sessions(self, ex_project_id=None):
+        if ex_project_id:
+            projects = [ex_project_id]
+        elif self.project_id:
+            projects = [self.project_id]
+        else:
+            projects = [p.id for p in self.projects]
+        retval = []
+        for p in projects:
+            retval.extend(self.ex_list_bgp_sessions_for_project(p)['bgp_sessions'])
+        return retval
+
+    def ex_create_bgp_session(self, node, address_family='ipv4'):
+        path = '/devices/%s/bgp/sessions' % node.id
+        params = {'address_family': address_family}
+        res = self.connection.request(path, params=params, method='POST')
+        return res.object
+
+    def ex_delete_bgp_session(self, session_uuid):
+        path = '/bgp/sessions/%s' % session_uuid
+        res = self.connection.request(path, method='DELETE')
+        return res.status == httplib.OK  # or res.status == httplib.NO_CONTENT
+
+    def ex_list_events_for_node(self, node, include=None,
+                                page=1, per_page=10):
+        path = '/devices/%s/events' % node.id
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        return self.connection.request(path, params=params).object
+
+    def ex_list_events_for_project(self, project, include=None, page=1, per_page=10):
+        path = '/projects/%s/events' % project.id
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        return self.connection.request(path, params=params).object
+
+    def ex_describe_all_addresses(self, ex_project_id=None,
+                                  only_associated=False):
+        if ex_project_id:
+            projects = [ex_project_id]
+        elif self.project_id:
+            projects = [self.project_id]
+        else:
+            projects = [p.id for p in self.projects]
+        retval = []
+        for project in projects:
+            retval.extend(self.ex_describe_all_addresses_for_project(
+                project, only_associated))
+        return retval
+
+    def ex_describe_all_addresses_for_project(self, ex_project_id,
+                                              include=None,
+                                              only_associated=False):
+        """
+        Returns all the reserved IP addresses for this project
+        optionally, returns only addresses associated with nodes.
+
+        :param    only_associated: If true, return only the addresses
+                                   that are associated with an instance.
+        :type     only_associated: ``bool``
+
+        :return:  List of IP addresses.
+        :rtype:   ``list`` of :class:`dict`
+        """
+        path = '/projects/%s/ips' % ex_project_id
+        params = {
+            'include': include,
+        }
+        ip_addresses = self.connection.request(path, params=params).object
+        result = [a for a in ip_addresses.get('ip_addresses', [])
+                  if not only_associated or len(a.get('assignments', [])) > 0]
+        return result
+
+    def ex_describe_address(self, ex_address_id, include=None):
+        path = '/ips/%s' % ex_address_id
+        params = {
+            'include': include,
+        }
+        result = self.connection.request(path, params=params).object
+        return result
+
+    def ex_request_address_reservation(self, ex_project_id, location_id=None,
+                                       address_family='global_ipv4',
+                                       quantity=1, comments='',
+                                       customdata=''):
+        path = '/projects/%s/ips' % ex_project_id
+        params = {
+            'type': address_family,
+            'quantity': quantity,
+        }
+        if location_id:
+            params['facility'] = location_id
+        if comments:
+            params['comments'] = comments
+        if customdata:
+            params['customdata'] = customdata
+        result = self.connection.request(
+            path, params=params, method='POST').object
+        return result
+
+    def ex_associate_address_with_node(self, node, address, manageable=False,
+                                       customdata=''):
+        path = '/devices/%s/ips' % node.id
+        params = {
+            'address': address,
+            'manageable': manageable,
+            'customdata': customdata
+        }
+        result = self.connection.request(
+            path, params=params, method='POST').object
+        return result
+
+    def ex_disassociate_address(self, address_uuid, include=None):
+        path = '/ips/%s' % address_uuid
+        params = {}
+        if include:
+            params['include'] = include
+        result = self.connection.request(
+            path, params=params, method='DELETE').object
+        return result
+
+    def list_volumes(self, ex_project_id=None):
+        if ex_project_id:
+            return self.list_volumes_for_project(ex_project_id=ex_project_id)
+
+        # if project has been specified during driver initialization, then
+        # return nodes for this project only
+        if self.project_id:
+            return self.list_volumes_for_project(
+                ex_project_id=self.project_id)
+
+        # In case of Python2 perform requests serially
+        if asyncio is None:
+            nodes = []
+            for project in self.projects:
+                nodes.extend(
+                    self.list_volumes_for_project(ex_project_id=project.id)
+                )
+            return nodes
+        # In case of Python3 use asyncio to perform requests in parallel
+        return self.list_resources_async('volumes')
+
+    def list_volumes_for_project(self, ex_project_id, include='plan', page=1,
+                                 per_page=1000):
+        params = {
+            'include': include,
+            'page': page,
+            'per_page': per_page
+        }
+        data = self.connection.request(
+            '/projects/%s/storage' % (ex_project_id),
+            params=params).object['volumes']
+        return list(map(self._to_volume, data))
+
+    def _to_volume(self, data):
+        return StorageVolume(id=data['id'], name=data['name'],
+                             size=data['size'], driver=self,
+                             extra=data)
+
+    def create_volume(self, size, location, plan='storage_1', description='',
+                      ex_project_id=None, locked=False, billing_cycle=None,
+                      customdata='', snapshot_policies=None, **kwargs):
+        """
+        Create a new volume.
+
+        :param size: Size of volume in gigabytes (required)
+        :type size: ``int``
+
+        :param name: Name of the volume to be created
+        :type name: ``str``
+
+        :param location: Which data center to create a volume in. If
+                               empty, undefined behavior will be selected.
+                               (optional)
+        :type location: :class:`.NodeLocation`
+        :return: The newly created volume.
+        :rtype: :class:`StorageVolume`
+        """
+        path = '/projects/%s/storage' % (ex_project_id or self.projects[0].id)
+        try:
+            facility = location.extra['code']
+        except AttributeError:
+            facility = location
+        params = {
+            'facility': facility,
+            'plan': plan,
+            'size': size,
+            'locked': locked
+        }
+        params.update(kwargs)
+        if description:
+            params['description'] = description
+        if customdata:
+            params['customdata'] = customdata
+        if billing_cycle:
+            params['billing_cycle'] = billing_cycle
+        if snapshot_policies:
+            params['snapshot_policies'] = snapshot_policies
+        data = self.connection.request(
+            path, params=params, method='POST').object
+        return self._to_volume(data)
+
+    def destroy_volume(self, volume):
+        """
+        Destroys a storage volume.
+
+        :param volume: Volume to be destroyed
+        :type volume: :class:`StorageVolume`
+
+        :rtype: ``bool``
+        """
+        path = '/storage/%s' % volume.id
+        res = self.connection.request(path, method='DELETE')
+        return res.status == httplib.NO_CONTENT
+
+    def attach_volume(self, node, volume):
+        """
+        Attaches volume to node.
+
+        :param node: Node to attach volume to.
+        :type node: :class:`.Node`
+
+        :param volume: Volume to attach.
+        :type volume: :class:`.StorageVolume`
+
+        :rytpe: ``bool``
+        """
+        path = '/storage/%s/attachments' % volume.id
+        params = {
+            'device_id': node.id
+        }
+        res = self.connection.request(path, params=params, method='POST')
+        return res.status == httplib.OK
+
+    def detach_volume(self, volume, ex_node=None, ex_attachment_id=''):
+        """
+        Detaches a volume from a node.
+
+        :param volume: Volume to be detached
+        :type volume: :class:`.StorageVolume`
+
+        :param ex_attachment_id: Attachment id to be detached, if empty detach
+                                        all attachments
+        :type name: ``str``
+
+        :rtype: ``bool``
+        """
+        path = '/storage/%s/attachments' % volume.id
+        attachments = volume.extra['attachments']
+        assert len(attachments) > 0, "Volume is not attached to any node"
+        success = True
+        result = None
+        for attachment in attachments:
+            if not ex_attachment_id or ex_attachment_id in attachment['href']:
+                attachment_id = attachment['href'].split('/')[-1]
+                if ex_node:
+                    node_id = self.ex_describe_attachment(
+                        attachment_id)['device']['href'].split('/')[-1]
+                    if node_id != ex_node.id:
+                        continue
+                path = '/storage/attachments/%s' % (
+                    ex_attachment_id or attachment_id)
+                result = self.connection.request(path, method='DELETE')
+                success = success and result.status == httplib.NO_CONTENT
+
+        return result and success
+
+    def create_volume_snapshot(self, volume, name=''):
+        """
+        Create a new volume snapshot.
+
+        :param volume: Volume to create a snapshot for
+        :type volume: class:`StorageVolume`
+
+        :return: The newly created volume snapshot.
+        :rtype: :class:`VolumeSnapshot`
+        """
+        path = '/storage/%s/snapshots' % volume.id
+        res = self.connection.request(path, method='POST')
+        assert res.status == httplib.ACCEPTED
+        return volume.list_snapshots()[-1]
+
+    def destroy_volume_snapshot(self, snapshot):
+        """
+        Delete a volume snapshot
+
+        :param snapshot: volume snapshot to delete
+        :type snapshot: class:`VolumeSnapshot`
+
+        :rtype: ``bool``
+        """
+        volume_id = snapshot.extra['volume']['href'].split('/')[-1]
+        path = '/storage/%s/snapshots/%s' % (volume_id, snapshot.id)
+        res = self.connection.request(path, method='DELETE')
+        return res.status == httplib.NO_CONTENT
+
+    def list_volume_snapshots(self, volume, include=''):
+        """
+        List snapshots for a volume.
+
+        :param volume: Volume to list snapshots for
+        :type volume: class:`StorageVolume`
+
+        :return: List of volume snapshots.
+        :rtype: ``list`` of :class: `VolumeSnapshot`
+        """
+        path = '/storage/%s/snapshots' % volume.id
+        params = {}
+        if include:
+            params['include'] = include
+        data = self.connection.request(path, params=params).object['snapshots']
+        return list(map(self._to_volume_snapshot, data))
+
+    def _to_volume_snapshot(self, data):
+        created = datetime.datetime.strptime(
+            data['created_at'], "%Y-%m-%dT%H:%M:%S")
+        return VolumeSnapshot(id=data['id'],
+                              name=data['id'],
+                              created=created,
+                              state=data['status'],
+                              driver=self, extra=data)
+
+    def ex_modify_volume(self, volume, description=None, size=None,
+                         locked=None, billing_cycle=None,
+                         customdata=None):
+        path = '/storage/%s' % volume.id
+        params = {}
+        if description:
+            params['description'] = description
+        if size:
+            params['size'] = size
+        if locked is not None:
+            params['locked'] = locked
+        if billing_cycle:
+            params['billing_cycle'] = billing_cycle
+        res = self.connection.request(path, params=params, method='PUT')
+        return self._to_volume(res.object)
+
+    def ex_restore_volume(self, snapshot):
+        volume_id = snapshot.extra['volume']['href'].split('/')[-1]
+        ts = snapshot.extra['timestamp']
+        path = '/storage/%s/restore?restore_point=%s' % (volume_id, ts)
+        res = self.connection.request(path, method='POST')
+        return res.status == httplib.NO_CONTENT
+
+    def ex_clone_volume(self, volume, snapshot=None):
+        path = '/storage/%s/clone' % volume.id
+        if snapshot:
+            path += '?snapshot_timestamp=%s' % snapshot.extra['timestamp']
+        res = self.connection.request(path, method='POST')
+        return res.status == httplib.NO_CONTENT
+
+    def ex_describe_volume(self, volume_id):
+        path = '/storage/%s' % volume_id
+        data = self.connection.request(path).object
+        return self._to_volume(data)
+
+    def ex_describe_attachment(self, attachment_id):
+        path = '/storage/attachments/%s' % attachment_id
+        data = self.connection.request(path).object
+        return data
 
 
 class Project(object):

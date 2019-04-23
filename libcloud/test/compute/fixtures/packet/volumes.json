@@ -1,0 +1,122 @@
+{
+	"volumes": [
+		{
+			"id": "a08aaf76-e0ce-43aa-b9cd-cce0d4ae4f4c",
+			"name": "volume-a08aaf76",
+			"description": "test volume",
+			"size": 10,
+			"locked": false,
+			"billing_cycle": "hourly",
+			"state": "active",
+			"customdata": {},
+			"access": {
+				"ips": [
+					"10.144.136.81",
+					"10.144.140.205"
+				],
+				"iqn": "iqn.2013-05.com.daterainc:tc:01:sn:a0fe42b1c3d239bc"
+			},
+			"created_at": "2019-04-20T16:16:44Z",
+			"updated_at": "2019-04-20T17:00:35Z",
+			"project": {
+				"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df"
+			},
+			"facility": {
+				"href": "/facilities/8e6470b3-b75e-47d1-bb93-45b225750975"
+			},
+			"snapshot_policies": [],
+			"attachments": [],
+			"snapshots": [],
+			"plan": {
+				"id": "87728148-3155-4992-a730-8d1e6aca8a32",
+				"slug": "storage_1",
+				"name": "Standard",
+				"description": "TBD",
+				"line": "storage",
+				"specs": {},
+				"legacy": true,
+				"deployment_types": [],
+				"available_in": [],
+				"class": "storage_1",
+				"pricing": {
+					"hour": 0.000104
+				}
+			},
+			"href": "/storage/a08aaf76-e0ce-43aa-b9cd-cce0d4ae4f4c"
+		},
+		{
+			"id": "74f11291-fde8-4abf-8150-e51cda7308c3",
+			"name": "volume-74f11291",
+			"description": null,
+			"size": 10,
+			"locked": false,
+			"billing_cycle": "hourly",
+			"state": "active",
+			"customdata": {},
+			"access": {
+				"ips": [
+					"10.144.136.49",
+					"10.144.140.22"
+				],
+				"iqn": "iqn.2013-05.com.daterainc:tc:01:sn:aeb3ffc6a28aa5a8"
+			},
+			"created_at": "2019-04-12T16:11:49Z",
+			"updated_at": "2019-04-20T17:23:51Z",
+			"project": {
+				"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df"
+			},
+			"facility": {
+				"href": "/facilities/8e6470b3-b75e-47d1-bb93-45b225750975"
+			},
+			"snapshot_policies": [],
+			"attachments": [
+				{
+					"href": "/storage/attachments/2c16a96f-bb4f-471b-8e2e-b5820b9e1603"
+				}
+			],
+			"snapshots": [
+				{
+					"href": "#07e762ee-9441-4bce-aad1-400572396ef0"
+				},
+				{
+					"href": "#b3e5bad7-a219-46d8-8835-b332e9aa4cd9"
+				},
+				{
+					"href": "#a6176d93-03d1-4a53-a2f3-58f01f48ee95"
+				}
+			],
+			"plan": {
+				"id": "87728148-3155-4992-a730-8d1e6aca8a32",
+				"slug": "storage_1",
+				"name": "Standard",
+				"description": "TBD",
+				"line": "storage",
+				"specs": {},
+				"legacy": true,
+				"deployment_types": [],
+				"available_in": [],
+				"class": "storage_1",
+				"pricing": {
+					"hour": 0.000104
+				}
+			},
+			"href": "/storage/74f11291-fde8-4abf-8150-e51cda7308c3"
+		}
+	],
+	"meta": {
+		"first": {
+			"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df/storage?page=1"
+		},
+		"previous": null,
+		"self": {
+			"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df/storage?page=1"
+		},
+		"next": null,
+		"last": {
+			"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df/storage?page=1"
+		},
+		"current_page": 1,
+		"last_page": 1,
+		"total": 2
+	}
+}
