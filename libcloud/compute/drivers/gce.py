@@ -1456,6 +1456,26 @@ class GCEInstanceGroupManager(UuidMixin):
         return self.driver.ex_instancegroup_set_named_ports(
             instancegroup=self.instance_group, named_ports=named_ports)
 
+    def set_autoHealingPolicies(self, healthcheck, initialdelaysec):
+        """
+        Sets the autohealing policies for the instance for the instance group
+        controlled by this manager.
+
+        :param  healthcheck: Healthcheck to add
+        :type   healthcheck: :class:`GCEHealthCheck`
+
+        :param  initialdelaysec:  The time to allow an instance to boot and
+                                  applications to fully start before the first
+                                  health check
+        :type   initialdelaysec:  ``int``
+
+        :return:  Return True if successful.
+        :rtype: ``bool``
+        """
+        return self.driver.ex_instancegroupmanager_set_autohealingpolicies(
+            manager=self, healthcheck=healthcheck,
+            initialdelaysec=initialdelaysec)
+
     def __repr__(self):
         return '<GCEInstanceGroupManager name="%s" zone="%s" size="%d">' % (
             self.name, self.zone.name, self.size)
@@ -5979,6 +5999,35 @@ class GCENodeDriver(NodeDriver):
 
         return instance_data
 
+    def ex_instancegroupmanager_set_autohealingpolicies(self, manager,
+                                                        healthcheck,
+                                                        initialdelaysec):
+        """
+        Set the Autohealing Policies for this Instance Group.
+
+        :param  healthcheck: Healthcheck to add
+        :type   healthcheck: :class:`GCEHealthCheck`
+
+        :param  initialdelaysec:  The time to allow an instance to boot and
+                                  applications to fully start before the first
+                                  health check
+        :type   initialdelaysec:  ``int``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request_data = {}
+        request_data['autoHealingPolicies'] = [{
+            'healthCheck': healthcheck.path,
+            'initialDelaySec': initialdelaysec
+        }]
+
+        request = "/zones/%s/instanceGroupManagers/%s/" % (
+            manager.zone.name, manager.name)
+        self.connection.async_request(request, method='PATCH',
+                                      data=request_data)
+        return True
+
     def ex_instancegroupmanager_set_instancetemplate(self, manager,
                                                      instancetemplate):
         """
@@ -9126,6 +9175,7 @@ class GCENodeDriver(NodeDriver):
         extra['currentActions'] = manager.get('currentActions')
         extra['baseInstanceName'] = manager.get('baseInstanceName')
         extra['namedPorts'] = manager.get('namedPorts', [])
+        extra['autoHealingPolicies'] = manager.get('autoHealingPolicies', [])
         template_name = self._get_components_from_path(manager[
             'instanceTemplate'])['name']
         template = self.ex_get_instancetemplate(template_name)
