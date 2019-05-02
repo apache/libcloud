@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181116T205220817+0100_5bbea1ac-0643-4c92-a67d-7258706ec9bf">
+    <operation>IMPORT_SSL_DOMAIN_CERTIFICATE</operation>
+    <responseCode>OK</responseCode>
+    <message>SSL Domain Certificate has been imported.</message>
+    <info name="sslDomainCertificateId" value="4d2e9792-c986-4f2b-80c9-39e457eed8e8"/>
+</response>

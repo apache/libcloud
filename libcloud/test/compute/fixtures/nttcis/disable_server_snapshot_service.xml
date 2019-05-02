@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181129T033624848+0100_8c78e514-872a-4bb9-bfb9-b02fb33a7713">
+    <operation>DISABLE_SNAPSHOT_SERVICE</operation>
+    <responseCode>OK</responseCode>
+    <message>Snapshot Service has been disabled.</message>
+</response>

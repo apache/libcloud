@@ -53,25 +53,25 @@ class VultrTests(unittest.TestCase):
         self.assertEqual(zone.id, 'example.com')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'example.com')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
         zone = zones[1]
         self.assertEqual(zone.id, 'zupo.com')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'zupo.com')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
         zone = zones[2]
         self.assertEqual(zone.id, 'oltjano.com')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'oltjano.com')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
         zone = zones[3]
         self.assertEqual(zone.id, '13.com')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, '13.com')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
     def test_get_zone_zone_does_not_exist(self):
         VultrMockHttp.type = 'GET_ZONE_ZONE_DOES_NOT_EXIST'
@@ -90,7 +90,7 @@ class VultrTests(unittest.TestCase):
         self.assertEqual(zone.id, 'zupo.com')
         self.assertEqual(zone.domain, 'zupo.com')
         self.assertEqual(zone.type, 'master')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
     def test_delete_zone_zone_does_not_exist(self):
         VultrMockHttp.type = 'DELETE_ZONE_ZONE_DOES_NOT_EXIST'
@@ -116,7 +116,7 @@ class VultrTests(unittest.TestCase):
         self.assertEqual(zone.id, 'test.com')
         self.assertEqual(zone.domain, 'test.com')
         self.assertEqual(zone.type, 'master'),
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
     def test_create_zone_zone_already_exists(self):
         VultrMockHttp.type = 'CREATE_ZONE_ZONE_ALREADY_EXISTS'

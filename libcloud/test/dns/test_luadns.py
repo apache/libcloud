@@ -44,16 +44,16 @@ class LuadnsTests(unittest.TestCase):
         zone = zones[0]
         self.assertEqual(zone.id, '1')
         self.assertEqual(zone.domain, 'example.com')
-        self.assertEqual(zone.type, None)
+        self.assertIsNone(zone.type)
         self.assertEqual(zone.driver, self.driver)
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
         second_zone = zones[1]
         self.assertEqual(second_zone.id, '2')
         self.assertEqual(second_zone.domain, 'example.net')
-        self.assertEqual(second_zone.type, None)
+        self.assertIsNone(second_zone.type)
         self.assertEqual(second_zone.driver, self.driver)
-        self.assertEqual(second_zone.ttl, None)
+        self.assertIsNone(second_zone.ttl)
 
     def test_get_zone_zone_does_not_exist(self):
         LuadnsMockHttp.type = 'ZONE_DOES_NOT_EXIST'
@@ -71,8 +71,8 @@ class LuadnsTests(unittest.TestCase):
 
         self.assertEqual(zone.id, '31')
         self.assertEqual(zone.domain, 'example.org')
-        self.assertEqual(zone.type, None)
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.type)
+        self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_delete_zone_success(self):
@@ -99,8 +99,8 @@ class LuadnsTests(unittest.TestCase):
 
         self.assertEqual(zone.id, '3')
         self.assertEqual(zone.domain, 'example.org')
-        self.assertEqual(zone.type, None)
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.type)
+        self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_create_zone_zone_zone_already_exists(self):
@@ -189,7 +189,7 @@ class LuadnsTests(unittest.TestCase):
         self.assertEqual(record.id, '31')
         self.assertEqual(record.name, 'test.com.')
         self.assertEqual(record.data, '127.0.0.1')
-        self.assertEqual(record.ttl, None)
+        self.assertIsNone(record.ttl)
 
     def test_record_already_exists_error(self):
         pass

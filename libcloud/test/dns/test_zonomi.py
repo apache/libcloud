@@ -64,21 +64,21 @@ class ZonomiTests(unittest.TestCase):
         self.assertEqual(zone.id, 'thegamertest.com')
         self.assertEqual(zone.domain, 'thegamertest.com')
         self.assertEqual(zone.type, 'master')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
         second_zone = zones[1]
         self.assertEqual(second_zone.id, 'lonelygamer.com')
         self.assertEqual(second_zone.domain, 'lonelygamer.com')
         self.assertEqual(second_zone.type, 'master')
-        self.assertEqual(second_zone.ttl, None)
+        self.assertIsNone(second_zone.ttl)
         self.assertEqual(second_zone.driver, self.driver)
 
         third_zone = zones[2]
         self.assertEqual(third_zone.id, 'gamertest.com')
         self.assertEqual(third_zone.domain, 'gamertest.com')
         self.assertEqual(third_zone.type, 'master')
-        self.assertEqual(third_zone.ttl, None)
+        self.assertIsNone(third_zone.ttl)
         self.assertEqual(third_zone.driver, self.driver)
 
     def test_get_zone_GET_ZONE_DOES_NOT_EXIST(self):
@@ -98,7 +98,7 @@ class ZonomiTests(unittest.TestCase):
         self.assertEqual(zone.id, 'gamertest.com')
         self.assertEqual(zone.domain, 'gamertest.com')
         self.assertEqual(zone.type, 'master')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_delete_zone_DELETE_ZONE_DOES_NOT_EXIST(self):
@@ -135,7 +135,7 @@ class ZonomiTests(unittest.TestCase):
         self.assertEqual(zone.id, 'myzone.com')
         self.assertEqual(zone.domain, 'myzone.com')
         self.assertEqual(zone.type, 'master')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
     def test_list_records_empty_list(self):
         ZonomiMockHttp.type = 'LIST_RECORDS_EMPTY_LIST'

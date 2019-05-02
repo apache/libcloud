@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="na_20181130T170150308-0500_cff36582-f930-4cd5-8909-17f447060707">
+    <operation>START_PREVIEW_SNAPSHOT</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Start Preview Snapshot has been accepted. Please use appropriate Get or List API for status.</message>
+</response>

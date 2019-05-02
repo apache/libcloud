@@ -48,8 +48,8 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(result[0], 'http')
         self.assertEqual(result[1], '127.0.0.1')
         self.assertEqual(result[2], 3128)
-        self.assertEqual(result[3], None)
-        self.assertEqual(result[4], None)
+        self.assertIsNone(result[3])
+        self.assertIsNone(result[4])
 
         proxy_url = 'http://user1:pass1@127.0.0.1:3128'
         result = conn._parse_proxy_url(proxy_url=proxy_url)
@@ -93,9 +93,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
         _ = os.environ.pop('http_proxy', None)
         conn = LibcloudConnection(host='localhost', port=80)
-        self.assertEqual(conn.proxy_scheme, None)
-        self.assertEqual(conn.proxy_host, None)
-        self.assertEqual(conn.proxy_port, None)
+        self.assertIsNone(conn.proxy_scheme)
+        self.assertIsNone(conn.proxy_host)
+        self.assertIsNone(conn.proxy_port)
 
         proxy_url = 'http://127.0.0.3:3128'
         conn.set_http_proxy(proxy_url=proxy_url)
@@ -120,9 +120,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
     def test_connection_to_unusual_port(self):
         conn = LibcloudConnection(host='localhost', port=8080)
-        self.assertEqual(conn.proxy_scheme, None)
-        self.assertEqual(conn.proxy_host, None)
-        self.assertEqual(conn.proxy_port, None)
+        self.assertIsNone(conn.proxy_scheme)
+        self.assertIsNone(conn.proxy_host)
+        self.assertIsNone(conn.proxy_port)
         self.assertEqual(conn.host, 'http://localhost:8080')
 
         conn = LibcloudConnection(host='localhost', port=80)

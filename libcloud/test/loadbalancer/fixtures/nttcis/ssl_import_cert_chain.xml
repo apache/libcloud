@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181119T183847180+0100_4adcc201-ef53-4756-a115-7cfa5291e87d">
+    <operation>IMPORT_SSL_CERTIFICATE_CHAIN</operation>
+    <responseCode>OK</responseCode>
+    <message>SSL Certificate Chain has been imported.</message>
+    <info name="sslCertificateChainId" value="14613439-c24b-45c2-bd53-af4ef6fabd43"/>
+</response>

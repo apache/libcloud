@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181121T191226618+0100_ae13e9b2-6ac4-4da5-8bff-2e3b4377ec2f">
+    <operation>DELETE_SSL_CERTIFICATE_CHAIN</operation>
+    <responseCode>OK</responseCode>
+    <message>SSL Certificate Chain has been deleted.</message>
+</response>

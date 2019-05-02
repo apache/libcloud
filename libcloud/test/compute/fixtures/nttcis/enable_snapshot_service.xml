@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181128T191755488+0100_fa87fa5e-43bb-46b0-a16c-cb860d311ca2">
+    <operation>ENABLE_SNAPSHOT_SERVICE</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Enable Snapshot Service has been accepted. Please use appropriate Get or List API for status.</message>
+    <info name="manualSnapshotId" value="dce63d38-1dcf-4b64-9166-341b7085f3f1"/>
+</response>

@@ -2,7 +2,7 @@
     "access": {
         "token": {
             "id": "aaaaaaaaaaaa-bbb-cccccccccccccc",
-            "expires": "2031-11-23T21:00:14.000-06:00"
+            "expires": "2999-11-23T21:00:14.000-06:00"
         },
         "serviceCatalog": [
             {
@@ -119,6 +119,28 @@
                 ],
                 "name": "neutron",
                 "type": "network"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region": "RegionOne",
+                        "tenantId": "1337",
+                        "publicURL": "https://test_endpoint.com/v2/1337",
+                        "versionInfo": "https://test_endpoint.com/v2/",
+                        "versionList": "https://test_endpoint.com/",
+                        "versionId": "2"
+                    },
+                    {
+                        "region": "fr1",
+                        "tenantId": "1337",
+                        "publicURL": "https://test_endpoint.com/v2/1337",
+                        "versionInfo": "https://test_endpoint.com/v2/",
+                        "versionList": "https://test_endpoint.com/",
+                        "versionId": "2"
+                    }
+                ],
+                "name": "cinderv2",
+                "type": "volumev2"
             },
             {
                 "endpoints": [
