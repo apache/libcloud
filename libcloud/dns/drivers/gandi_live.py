@@ -20,6 +20,8 @@ from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import RecordError
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
+from libcloud.common.gandi_live import GandiLiveException, GandiLiveResponse,\
+    GandiLiveConnection, BaseGandiLiveDriver
 
 
 __all__ = [
@@ -117,19 +119,19 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         raw_zone_data = {
             'name': zone_name,
         }
-        post_zone_data = json.dumps(raw_data)
+        post_zone_data = json.dumps(raw_zone_data)
         new_zone = self.connection.request(action='zones', method='POST',
                                            data=post_zone_data)
-        new_zone_uuid = new_zone.headers['Location'].lstrip('/zones/')
+        new_zone_uuid = new_zone.headers['location'].lstrip('/zones/')
 
         raw_domain_data = {
             'fqdn': domain,
             'zone_uuid': new_zone_uuid,
         }
         post_domain_data = json.dumps(raw_domain_data)
-        new_domain = self.connection.request(action='domains', method='POST',
-                                             data=post_domain_data)
-        return self._to_zone(new_domain.object)
+        self.connection.request(action='domains', method='POST',
+                                data=post_domain_data)
+        return self._to_zone({'fqdn': domain})
 
     """
     :param extra: (optional) Extra attributes ('zone_uuid') to change which
@@ -143,9 +145,9 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                 'zone_uuid': extra['zone_uuid'],
             }
             patch_data = json.dumps(raw_data)
-            zone = self.connection.request(action=action, method='PATCH',
-                                           data=patch_data)
-            return self._to_zone(zone.object)
+            self.connection.request(action=action, method='PATCH',
+                                    data=patch_data)
+            return zone
         return None
 
     # There is no concept of deleting domains in this API, not even to
@@ -156,23 +158,13 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     # @@@ implement it as always returning an exception?
     # def delete_zone(self, zone):
 
-    # @@@ rrset_values is an array, so getting MX for instance may return all
-    #     MX records for the domain instead of one MX record at a time;
-    #     unclear exactly how to handle that, other than using a different
-    #     _to_records paradigm or a different Record paradigm (value=[] for some)
-    """
-    Returns only the first value from a values array.
-    """
     def _to_record(self, record, zone):
         extra = {'ttl': int(record['rrset_ttl'])}
-        value = record['rrset_values'][0]
-        if record['rrset_type'] == 'MX':
-            # Record is in the following form:
-            # <priority> <value>
-            # e.g. 15 aspmx.l.google.com
-            split = record['rrset_values'][0].split(' ')
-            extra['priority'] = int(split[0])
-            value = split[1]
+        # Since this returns all values per type, something like
+        # extra['priority'] for MX doesn't make a whole lot of sense to set -
+        # one priority, an array of values.  Currently do nothing other than
+        # return array as received.
+        value = record['rrset_values']
         return Record(
             id='%s:%s' % (record['rrset_type'], record['rrset_name']),
             name=record['rrset_name'],
@@ -197,13 +189,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     def get_record(self, zone_id, record_id):
         record_type, name = record_id.split(':', 1)
         action = 'domains/%s/records/%s/%s' % (zone_id, name, record_type)
-        records = self.connection.request(action=action, method='GET')
-
-        if len(records) == 0:
-            raise RecordDoesNotExistError(value='', driver=self,
-                                          record_id=record_id)
-
-        return self._to_record(records[0], self.get_zone(zone_id))
+        record = self.connection.request(action=action, method='GET')
+        return self._to_record(record.object, self.get_zone(zone_id))
 
     def _validate_record(self, record_id, name, record_type, data, extra):
         if len(data) > 1024:
@@ -222,23 +209,25 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
         action = 'domains/%s/records' % zone.id
 
+        if isinstance(data, list):
+            rvalue = data
+        else:
+            rvalue = [data]
         raw_data = {
             'rrset_name': name,
             'rrset_type': self.RECORD_TYPE_MAP[type],
-            'rrset_values': [
-                data,
-            ],
+            'rrset_values': rvalue,
         }
 
         if 'ttl' in extra:
-            raw_data['ttl'] = extra['ttl']
+            raw_data['rrset_ttl'] = extra['ttl']
 
         post_data = json.dumps(raw_data)
         
-        record = self.connection.request(action=action, method='POST',
+        self.connection.request(action=action, method='POST',
                                          data=post_data)
 
-        return self._to_record(record.object, zone)
+        return self._to_record(raw_data, zone)
 
     def update_record(self, record, name, type, data, extra):
         self._validate_record(record.id, name, type, data, extra)
@@ -249,21 +238,25 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             self.RECORD_TYPE_MAP[record.type]
         )
         
+        if isinstance(data, list):
+            rvalue = data
+        else:
+            rvalue = [data]
         raw_data = {
-            'rrset_values': [
-                data,
-            ]
+            'rrset_values': rvalue
         }
 
         if 'ttl' in extra:
-            raw_data['ttl'] = extra['ttl']
+            raw_data['rrset_ttl'] = extra['ttl']
 
         put_data = json.dumps(raw_data)
+        raw_data['rrset_name'] = record.name
+        raw_data['rrset_type'] = self.RECORD_TYPE_MAP[record.type]
 
         updated = self.connection.request(action=action, method='PUT',
                                           data=put_data)
 
-        return self._to_record(updated, record.zone)
+        return self._to_record(raw_data, record.zone)
 
     def delete_record(self, record):
         action = 'domains/%s/records/%s/%s' % (
@@ -285,6 +278,6 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         headers = {
             'Accept': 'text/plain'
         }
-        resp = self.connection(action=action, method='GET',
-                               headers=headers, raw=True)
-        return resp.body()
+        resp = self.connection.request(action=action, method='GET',
+                                       headers=headers, raw=True)
+        return resp.body

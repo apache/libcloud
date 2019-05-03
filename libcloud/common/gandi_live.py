@@ -22,6 +22,7 @@ __all__ = [
     'API_HOST',
     'GandiLiveException',
     'GandiLiveResponse',
+    'GandiLiveConnection',
     'BaseGandiLiveDriver',
 ]
 

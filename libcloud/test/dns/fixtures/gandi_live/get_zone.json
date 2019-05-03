@@ -1,0 +1,5 @@
+{
+    "zonedata": "/zones/12345/records",
+    "fqdn": "example.com",
+    "zone": "/zones/12345"
+}
