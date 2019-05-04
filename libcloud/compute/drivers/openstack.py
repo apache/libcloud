@@ -3219,6 +3219,10 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``list`` of :class:`OpenStackNetwork`
         """
+        # FIXME Use ex_list_neutron_networks to preserve backwards
+        # compatibility in Mist
+        if self.connectionCls is OpenStack_2_Connection:
+            return self.ex_list_neutron_networks()
         response = self.network_connection.request(
             self._networks_url_prefix).object
         return self._to_networks(response)
@@ -3227,7 +3231,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         subnets = obj['subnets']
         return [self._to_subnet(subnet) for subnet in subnets]
 
-    def _to_subnet(self, obj):
+    def _to_subnet_new(self, obj):  # FIXME
+        # Renamed function for backwards compatibility in Mist
         extra = {}
         if obj.get('router:external', None):
             extra['router:external'] = obj.get('router:external')
