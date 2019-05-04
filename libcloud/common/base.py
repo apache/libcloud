@@ -232,7 +232,6 @@ class XmlResponse(Response):
                                          body=self.body,
                                          driver=self.connection.driver)
         return body
-
     parse_error = parse_body
 
 

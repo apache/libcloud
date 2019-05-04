@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181128T194011598+0100_fe475eac-01df-44ee-99c1-a1322eff3195">
+    <operation>INITIATE_MANUAL_SNAPSHOT</operation>
+    <responseCode>IN_PROGRESS</responseCode>
+    <message>Request to Initiate Manual Snapshot has been accepted. Please use appropriate Get or List API for status.</message>
+    <info name="manualSnapshotId" value="dd9a9e7e-2de7-4543-adef-bb1fda7ac030"/>
+</response>

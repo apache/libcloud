@@ -52,7 +52,7 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(zone.id, '5093')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'linode.com')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
         self.assertHasKeys(zone.extra, ['description', 'SOA_Email', 'status'])
 
     def test_list_records_success(self):
@@ -95,7 +95,7 @@ class LinodeTests(unittest.TestCase):
         self.assertEqual(zone.id, '5093')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'linode.com')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
         self.assertHasKeys(zone.extra, ['description', 'SOA_Email', 'status'])
 
     def test_get_zone_does_not_exist(self):

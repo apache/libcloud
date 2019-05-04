@@ -1,8 +1,7 @@
 NTTC-CIS Load Balancer Driver Documentation
 =================================================
 
-Dimension Data are a global IT Services company and form part of the NTT Group.
-Dimension Data provide IT-as-a-Service to customers around the globe on their
+NTT Communications provide IT-as-a-Service to customers around the globe on their
 cloud platform (Compute as a Service). The CaaS service is available either on
 one of the public cloud instances or as a private instance on premises.
 
@@ -28,12 +27,12 @@ driver constructor:
 
 Possible regions:
 
-* ``na`` : Dimension Data North America (USA)
-* ``eu`` : Dimension Data Europe
-* ``af`` : Dimension Data Africa
-* ``au`` : Dimension Data Australia
-* ``ap`` : Dimension Data Asia Pacific
-* ``canada`` : Dimension Data Canada region
+* ``na`` : NTTC-CIS North America (USA)
+* ``eu`` : NTTC-CIS Europe
+* ``af`` : NTTC-CIS Africa
+* ``au`` : NTTC-CIS Australia
+* ``ap`` : NTTC-CIS Asia Pacific
+* ``ca`` : Dimension Data Canada region
 
 The base `libcloud` API allows you to:
 
@@ -42,7 +41,7 @@ The base `libcloud` API allows you to:
 Non-standard functionality and extension methods
 ------------------------------------------------
 
-The Dimension Data driver exposes some `libcloud` non-standard
+The NTTC-CIS driver exposes some `libcloud` non-standard
 functionalities through extension methods and arguments.
 
 These functionalities include:

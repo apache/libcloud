@@ -32,15 +32,15 @@ class BuddyNSDNSTests(unittest.TestCase):
 
         zone = zones[0]
         self.assertEqual(zone.id, 'microsoft.com')
-        self.assertEqual(zone.type, None)
+        self.assertIsNone(zone.type)
         self.assertEqual(zone.domain, 'microsoft.com')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
         zone = zones[1]
         self.assertEqual(zone.id, 'google.de')
-        self.assertEqual(zone.type, None)
+        self.assertIsNone(zone.type)
         self.assertEqual(zone.domain, 'google.de')
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.ttl)
 
     def test_delete_zone_zone_does_not_exist(self):
         BuddyNSMockHttp.type = 'DELETE_ZONE_ZONE_DOES_NOT_EXIST'
@@ -75,8 +75,8 @@ class BuddyNSDNSTests(unittest.TestCase):
 
         self.assertEqual(zone.id, 'myexample.com')
         self.assertEqual(zone.domain, 'myexample.com')
-        self.assertEqual(zone.type, None)
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.type)
+        self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_create_zone_success(self):
@@ -85,8 +85,8 @@ class BuddyNSDNSTests(unittest.TestCase):
 
         self.assertEqual(zone.id, 'microsoft.com')
         self.assertEqual(zone.domain, 'microsoft.com')
-        self.assertEqual(zone.type, None),
-        self.assertEqual(zone.ttl, None)
+        self.assertIsNone(zone.type),
+        self.assertIsNone(zone.ttl)
 
     def test_create_zone_zone_already_exists(self):
         BuddyNSMockHttp.type = 'CREATE_ZONE_ZONE_ALREADY_EXISTS'

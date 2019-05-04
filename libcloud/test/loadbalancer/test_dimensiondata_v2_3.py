@@ -81,7 +81,7 @@ class DimensionData_v2_3_Tests(unittest.TestCase):
         self.assertEqual(balancer.name, 'test')
         self.assertEqual(balancer.id, '8334f461-0df0-42d5-97eb-f4678eb26bea')
         self.assertEqual(balancer.ip, '165.180.12.22')
-        self.assertEqual(balancer.port, None)
+        self.assertIsNone(balancer.port)
         self.assertEqual(balancer.extra['pool_id'], '9e6b496d-5261-4542-91aa-b50c7f569c54')
         self.assertEqual(balancer.extra['network_domain_id'], '1234')
 
@@ -186,7 +186,7 @@ class DimensionData_v2_3_Tests(unittest.TestCase):
             extra=None)
         member = self.driver.balancer_attach_member(balancer, member)
         self.assertEqual(member.id, '3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0')
-        self.assertEqual(member.port, None)
+        self.assertIsNone(member.port)
 
     def test_balancer_detach_member(self):
         extra = {'pool_id': '4d360b1f-bc2c-4ab7-9884-1f03ba2768f7',

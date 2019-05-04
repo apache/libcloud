@@ -1,0 +1,29 @@
+{
+    "security_groups": [
+        {
+            "description": "default", 
+            "id": 2, 
+            "name": "default", 
+            "security_group_rules": [], 
+            "tenant_id": "68"
+        }, 
+        {
+            "description": "FTP Client-Server - Open 20-21 ports", 
+            "id": 4, 
+            "name": "ftp", 
+            "security_group_rules": [
+                {
+                    "security_group_id": 4,
+                    "direction": "ingress",
+                    "port_range_max": 21, 
+                    "port_range_min": 20, 
+                    "remote_ip_prefix": "0.0.0.0/0", 
+                    "id": 1, 
+                    "protocol": "tcp"
+                }
+            ], 
+            "tenant_id": "68"
+        }
+    ]
+}
+

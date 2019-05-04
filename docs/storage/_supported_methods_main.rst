@@ -24,6 +24,7 @@ Provider                      list containers list objects create container dele
 `Amazon S3 (ap-southeast-2)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (ca-central-1)`_   yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (cn-north-1)`_     yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
+`Amazon S3 (cn-northwest-1)`_ yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (eu-central-1)`_   yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (eu-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (eu-west-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
@@ -57,6 +58,7 @@ Provider                      list containers list objects create container dele
 .. _`Amazon S3 (ap-southeast-2)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (ca-central-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (cn-north-1)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (cn-northwest-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-central-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (eu-west-2)`: http://aws.amazon.com/s3/

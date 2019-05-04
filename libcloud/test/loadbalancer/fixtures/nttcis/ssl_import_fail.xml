@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response xmlns="urn:didata.com:api:cloud:types" requestId="eu_20181116T181425004+0100_b6be08f0-30ae-4acd-8f25-1d7a5ce3f42a">
+    <operation>IMPORT_SSL_DOMAIN_CERTIFICATE</operation>
+    <responseCode>CONFIGURATION_NOT_SUPPORTED</responseCode>
+    <message>Data Center EU6 requires key length must be one of 512, 1024, 2048.</message>
+</response>

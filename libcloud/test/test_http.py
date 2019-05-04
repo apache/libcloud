@@ -80,7 +80,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.httplib_object.verify = False
         self.httplib_object._setup_ca_cert()
 
-        self.assertEqual(self.httplib_object.ca_cert, None)
+        self.assertIsNone(self.httplib_object.ca_cert)
 
         # verify = True, a valid path is provided, self.ca_cert should be set to
         # a valid path

@@ -444,7 +444,8 @@ def _list_async(driver):
             projects = [p.id for p in self.projects]
         retval = []
         for p in projects:
-            retval.extend(self.ex_list_bgp_sessions_for_project(p)['bgp_sessions'])
+            retval.extend(self.ex_list_bgp_sessions_for_project(
+                p)['bgp_sessions'])
         return retval
 
     def ex_create_bgp_session(self, node, address_family='ipv4'):
@@ -468,7 +469,8 @@ def _list_async(driver):
         }
         return self.connection.request(path, params=params).object
 
-    def ex_list_events_for_project(self, project, include=None, page=1, per_page=10):
+    def ex_list_events_for_project(self, project, include=None, page=1,
+                                   per_page=10):
         path = '/projects/%s/events' % project.id
         params = {
             'include': include,

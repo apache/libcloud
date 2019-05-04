@@ -23,6 +23,7 @@ from libcloud.common.nttcis import LooseVersion
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeDriver, Node, NodeAuthPassword
 from libcloud.compute.base import NodeSize, NodeImage, NodeLocation
+from libcloud.common.nttcis import process_xml, get_params
 from libcloud.common.nttcis import dd_object_to_id
 from libcloud.common.nttcis import NttCisAPIException
 from libcloud.common.nttcis import (NttCisConnection,
@@ -202,6 +203,7 @@ class NttCisNodeDriver(NodeDriver):
             :return: The newly created :class:`Node`.
             :rtype: :class:`Node`
             """
+
         password = None
         image_needs_auth = self._image_needs_auth(image)
         if image_needs_auth:
@@ -703,6 +705,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request_elm = ET.Element('deleteServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -722,6 +725,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request_elm = ET.Element('rebootServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -780,7 +784,11 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of `Node` objects
         :rtype: ``list`` of :class:`Node`
         """
+
         node_list = []
+        # This is a generator so we changed from the original
+        # and if nodes is not empty, ie, the stop iteration confdition
+        # Then set node_list to nodes and retrn.
         for nodes in self.ex_list_nodes_paginated(
                 location=ex_location,
                 name=ex_name, ipv6=ex_ipv6,
@@ -788,8 +796,8 @@ class NttCisNodeDriver(NodeDriver):
                 image=ex_image, deployed=ex_deployed,
                 started=ex_started, state=ex_state,
                 network_domain=ex_network_domain):
-            node_list.extend(nodes)
-
+            if nodes:
+                node_list = nodes
         return node_list
 
     def list_images(self, location=None):
@@ -807,6 +815,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: List of images available
         :rtype: ``list`` of :class:`NodeImage`
         """
+
         params = {}
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
@@ -825,6 +834,7 @@ class NttCisNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.list_sizes`
         """
+
         return [
             NodeSize(id=1,
                      name="default",
@@ -863,8 +873,9 @@ class NttCisNodeDriver(NodeDriver):
         :type    ex_id: ``str``
 
         :return:  List of locations
-        :rtype:  ``list`` of :class:`NodeLocation`
+        :rtype:  ``list`` of :class:`NttCisDatacenter`
         """
+
         params = {}
         if ex_id is not None:
             params['id'] = ex_id
@@ -877,25 +888,6 @@ class NttCisNodeDriver(NodeDriver):
             ).object
         )
 
-    def ex_get_datacneter(self, ex_id):
-        """
-        List locations (datacenters) available for instantiating servers and
-        networks.
-
-        :keyword ex_id: Filters the location list to this id
-        :type    ex_id: ``str``
-
-        :return:  List of locations
-        :rtype:  ``list`` of :class:`NodeLocation`
-        """
-        params = {}
-        if ex_id is not None:
-            params['id'] = ex_id
-
-        return self.connection.\
-            request_with_orgId_api_2('infrastructure/datacenter',
-                                     params=params)
-
     def list_snapshot_windows(self, location, plan):
         """
         List snapshot windows in a given location
@@ -904,6 +896,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: dictionary with keys id, day_of_week, start_hour, availability
         :rtype: dict
         """
+
         params = {}
         params['datacenterId'] = self._location_to_location_id(location)
         params['servicePlan'] = plan
@@ -923,13 +916,14 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of NttCisNetwork objects
         :rtype: ``list`` of :class:`NttCisNetwork`
         """
+
         url_ext = ''
         if location is not None:
             url_ext = '/' + self._location_to_location_id(location)
 
         return self._to_networks(
             self.connection
-            .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
+            .request_with_orgId_api_2('networkWithLocation%s' % url_ext)
             .object)
 
     def import_image(self, ovf_package_name, name,
@@ -1023,7 +1017,6 @@ class NttCisNodeDriver(NodeDriver):
                         'urn:tag')
                     ET.SubElement(tag_elem,
                                   'urn:tagKeyName').text = k
-
                     if v is not None:
                         ET.SubElement(tag_elem,
                                       'urn:value').text = v
@@ -1071,11 +1064,9 @@ class NttCisNodeDriver(NodeDriver):
         :keyword started: Filters the node list to nodes that are
                           started or not
         :type    started: ``bool``
-
         :keyword state: Filters the node list to nodes that are in
                         this state
         :type    state: ``str``
-
         :keyword network: Filters the node list to nodes in this network
         :type    network: :class:`NttCisNetwork` or ``str``
 
@@ -1083,9 +1074,9 @@ class NttCisNodeDriver(NodeDriver):
                                  network domain
         :type    network_domain: :class:`NttCisNetworkDomain`
                                  or ``str``
-
         :return: a list of `Node` objects
         :rtype: ``generator`` of `list` of :class:`Node`
+
         """
 
         params = {}
@@ -1149,6 +1140,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request_elm = ET.Element('startServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -1170,6 +1162,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request_elm = ET.Element('shutdownServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -1191,6 +1184,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request_elm = ET.Element('powerOffServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
 
@@ -1218,6 +1212,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request_elm = ET.Element('resetServer',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -1237,6 +1232,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request_elm = ET.Element('updateVmwareTools',
                                  {'xmlns': TYPES_URN, 'id': node.id})
         body = self.connection.request_with_orgId_api_2(
@@ -1268,6 +1264,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         data = {}
         if name is not None:
             data['name'] = name
@@ -1322,17 +1319,23 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(result, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def list_snapshots(self, node):
+    def list_snapshots(self, node, page_size=None):
         """
-        List snapshots of a server
+        List snapshots of a server. The list of snapshots can get large.
+        Therefore, page_size is optional to limit this if desired.
 
-        :param      node: Node nameof the node on which to enable snapshots.
-        :type       node: ``str``
-
-        :rtype: ``list``
+        :param node: Node nameof the node on which to enable snapshots.
+        :type node: ``str``
+        :param page_size: (Optional) Limit the number of records returned
+        :return snapshots
+        :rtype: ``list`` of `dictionaries`
         """
+
         params = {}
         params['serverId'] = self.list_nodes(ex_name=node)[0].id
+        if page_size is not None:
+            params["pageSize"] = page_size
+
         return self._to_snapshots(self.connection.request_with_orgId_api_2(
             'snapshot/snapshot',
             params=params).object)
@@ -1341,11 +1344,12 @@ class NttCisNodeDriver(NodeDriver):
         """
         Get snapshot of a server by snapshot id.
 
-        :param      snapshot_id: ID of snapshot to retrieve.
-        :type       snapshot_id: ``str``
-
+        :param snapshot_id: ID of snapshot to retrieve.
+        :type  snapshot_id: ``str``
+        :return a snapshot
         :rtype: ``dict``
         """
+
         return self._to_snapshot(self.connection.request_with_orgId_api_2(
                                  'snapshot/snapshot/%s' % snapshot_id).object)
 
@@ -1353,11 +1357,12 @@ class NttCisNodeDriver(NodeDriver):
         """
         Disable snapshots on a server.  This also deletes current snapshots.
 
-        :param      node: Node ID of the node on which to enable snapshots.
-        :type       node: ``str``
-
-        :rtype: ``list``
+        :param node: Node ID of the node on which to enable snapshots.
+        :type node: ``str``
+        :return True or False
+        :rtype: ``bool``
         """
+
         update_node = ET.Element('disableSnapshotService',
                                  {'xmlns': TYPES_URN})
 
@@ -1373,14 +1378,16 @@ class NttCisNodeDriver(NodeDriver):
     def ex_initiate_manual_snapshot(self, name=None, server_id=None):
         """
         Initiate a manual snapshot of server on the fly
+
         :param name: optional name of server
-        :type ``str``
+        :type name: ``str``
 
         :param server_id: optinal parameter to use instead of name
-        :type ``str``
+        :type `server_id`str``
 
         :return: True of False
         :rtype: ``bool``
+
         """
 
         if server_id is None:
@@ -1449,6 +1456,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``str``
         """
+
         create_preview = ET.Element('createSnapshotPreviewServer',
                                     {'xmlns': TYPES_URN,
                                      'snapshotId': snapshot_id})
@@ -1478,9 +1486,8 @@ class NttCisNodeDriver(NodeDriver):
             'snapshot/createSnapshotPreviewServer',
             method='POST',
             data=ET.tostring(create_preview)).object
-        for info in findall(result, 'info', TYPES_URN):
-            if info.get('name') == 'serverId':
-                return info.get('value')
+        response_code = findtext(result, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_migrate_preview_server(self, preview_id):
         migrate_preview = ET.Element('migrateSnapshotPreviewServer',
@@ -1506,6 +1513,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         if not isinstance(node_list, (list, tuple)):
             raise TypeError("Node list must be a list or a tuple.")
         anti_affinity_xml_request = ET.Element('createAntiAffinityRule',
@@ -1530,6 +1538,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         rule_id = anti_affinity_rule
 
         update_node = ET.Element('deleteAntiAffinityRule',
@@ -1571,6 +1580,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:NttCisAntiAffinityRule`
         """
+
         not_none_arguments = [key
                               for key in (network, network_domain, node)
                               if key is not None]
@@ -1625,6 +1635,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request = ET.Element('addNic',
                              {'xmlns': TYPES_URN})
         ET.SubElement(request, 'serverId').text = node.id
@@ -1654,6 +1665,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         request = ET.Element('removeNic',
                              {'xmlns': TYPES_URN,
                               'id': nic_id})
@@ -1676,6 +1688,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of NttCisNetwork objects
         :rtype: ``list`` of :class:`NttCisNetwork`
         """
+
         return self.list_networks(location=location)
 
     def ex_create_network(self, location, name, description=None):
@@ -1694,6 +1707,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: A new instance of `NttCisNetwork`
         :rtype:  Instance of :class:`NttCisNetwork`
         """
+
         network_location = self._location_to_location_id(location)
 
         create_node = ET.Element('NewNetworkWithLocation',
@@ -1724,6 +1738,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         response = self.connection.request_with_orgId_api_1(
             'network/%s?delete' % network.id,
             method='GET').object
@@ -1742,6 +1757,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         response = self.connection.request_with_orgId_api_1(
             'network/%s' % network.id,
             method='POST',
@@ -1758,6 +1774,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NttCisNetworkDomain`
         """
+
         locations = self.list_locations()
         net = self.connection.request_with_orgId_api_2(
             'network/networkDomain/%s' % network_domain_id).object
@@ -1785,6 +1802,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of `NttCisNetwork` objects
         :rtype: ``list`` of :class:`NttCisNetwork`
         """
+
         params = {}
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
@@ -1822,6 +1840,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: an instance of `NttCisNetworkDomain`
         :rtype: :class:`NttCisNetworkDomain`
         """
+
         create_node = ET.Element('deployNetworkDomain', {'xmlns': TYPES_URN})
         ET.SubElement(
             create_node,
@@ -1863,6 +1882,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: an instance of `NttCisNetworkDomain`
         :rtype: :class:`NttCisNetworkDomain`
         """
+
         edit_node = ET.Element('editNetworkDomain', {'xmlns': TYPES_URN})
         edit_node.set('id', network_domain.id)
         ET.SubElement(edit_node, "name").text = network_domain.name
@@ -1887,6 +1907,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         delete_node = ET.Element('deleteNetworkDomain', {'xmlns': TYPES_URN})
         delete_node.set('id', network_domain.id)
         result = self.connection.request_with_orgId_api_2(
@@ -1926,6 +1947,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: an instance of `NttCisVlan`
         :rtype: :class:`NttCisVlan`
         """
+
         create_node = ET.Element('deployVlan', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, "networkDomainId").text = network_domain.id
         ET.SubElement(create_node, "name").text = name
@@ -1959,6 +1981,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: an instance of `NttCisVlan`
         :rtype: :class:`NttCisVlan`
         """
+
         locations = self.list_locations()
         vlan = self.connection.request_with_orgId_api_2(
             'network/vlan/%s' % vlan_id).object
@@ -1975,6 +1998,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: an instance of `NttCisVlan`
         :rtype: :class:`NttCisVlan`
         """
+
         edit_node = ET.Element('editVlan', {'xmlns': TYPES_URN})
         edit_node.set('id', vlan.id)
         ET.SubElement(edit_node, "name").text = vlan.name
@@ -2002,6 +2026,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: an instance of `NttCisVlan`
         :rtype: :class:`NttCisVlan`
         """
+
         edit_node = ET.Element('expandVlan', {'xmlns': TYPES_URN})
         edit_node.set('id', vlan.id)
         ET.SubElement(edit_node, "privateIpv4PrefixSize").text =\
@@ -2023,6 +2048,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         delete_node = ET.Element('deleteVlan', {'xmlns': TYPES_URN})
         delete_node.set('id', vlan.id)
         result = self.connection.request_with_orgId_api_2(
@@ -2059,6 +2085,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of NttCisVlan objects
         :rtype: ``list`` of :class:`NttCisVlan`
         """
+
         params = {}
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
@@ -2220,115 +2247,6 @@ class NttCisNodeDriver(NodeDriver):
                                       params=params).object
         return self._to_firewall_rules(response, network_domain)
 
-    """
-    def ex_create_firewall_rule(self, network_domain, rule, position,
-                                position_relative_to_rule=None):
-        Creates a firewall rule
-        :param network_domain: The network domain in which to create
-                                the firewall rule
-        :type  network_domain: :class:`NttCisNetworkDomain` or ``str``
-        :param rule: The rule in which to create
-        :type  rule: :class:`NttCisFirewallRule`
-        :param position: The position in which to create the rule
-                         There are two types of positions
-                         with position_relative_to_rule arg and without it
-                         With: 'BEFORE' or 'AFTER'
-                         Without: 'FIRST' or 'LAST'
-        :type  position: ``str``
-        :param position_relative_to_rule: The rule or rule name in
-                                          which to decide positioning by
-        :type  position_relative_to_rule:
-             :class:`NttCisFirewallRule` or ``str``
-        :rtype: ``bool``
-        positions_without_rule = ('FIRST', 'LAST')
-        positions_with_rule = ('BEFORE', 'AFTER')
-        create_node = ET.Element('createFirewallRule', {'xmlns': TYPES_URN})
-        ET.SubElement(create_node, "networkDomainId").text = \
-            self._network_domain_to_network_domain_id(network_domain)
-        ET.SubElement(create_node, "name").text = rule.name
-        ET.SubElement(create_node, "action").text = rule.action
-        ET.SubElement(create_node, "ipVersion").text = rule.ip_version
-        ET.SubElement(create_node, "protocol").text = rule.protocol
-        # Setup source port rule
-        source = ET.SubElement(create_node, "source")
-        if rule.source.address_list_id is not None:
-            source_ip = ET.SubElement(source, 'ipAddressListId')
-            source_ip.text = rule.source.address_list_id
-        else:
-            source_ip = ET.SubElement(source, 'ip')
-            if rule.source.any_ip:
-                source_ip.set('address', 'ANY')
-            else:
-                source_ip.set('address', rule.source.ip_address)
-                if rule.source.ip_prefix_size is not None:
-                    source_ip.set('prefixSize',
-                                  str(rule.source.ip_prefix_size))
-        if rule.source.port_list_id is not None:
-            source_port = ET.SubElement(source, 'portListId')
-            source_port.text = rule.source.port_list_id
-        else:
-            if rule.source.port_begin is not None:
-                source_port = ET.SubElement(source, 'port')
-                source_port.set('begin', rule.source.port_begin)
-            if rule.source.port_end is not None:
-                source_port.set('end', rule.source.port_end)
-        # Setup destination port rule
-        dest = ET.SubElement(create_node, "destination")
-        if rule.destination.address_list_id is not None:
-            dest_ip = ET.SubElement(dest, 'ipAddressListId')
-            dest_ip.text = rule.destination.address_list_id
-        else:
-            dest_ip = ET.SubElement(dest, 'ip')
-            if rule.destination.any_ip:
-                dest_ip.set('address', 'ANY')
-            else:
-                dest_ip.set('address', rule.destination.ip_address)
-                if rule.destination.ip_prefix_size is not None:
-                    dest_ip.set('prefixSize',
-                                 rule.destination.ip_prefix_size)
-        if rule.destination.port_list_id is not None:
-            dest_port = ET.SubElement(dest, 'portListId')
-            dest_port.text = rule.destination.port_list_id
-        else:
-            if rule.destination.port_begin is not None:
-                dest_port = ET.SubElement(dest, 'port')
-                dest_port.set('begin', rule.destination.port_begin)
-            if rule.destination.port_end is not None:
-                dest_port.set('end', rule.destination.port_end)
-        # Set up positioning of rule
-        ET.SubElement(create_node, "enabled").text = str(rule.enabled).lower()
-        placement = ET.SubElement(create_node, "placement")
-        if position_relative_to_rule is not None:
-            if position not in positions_with_rule:
-                raise ValueError("When position_relative_to_rule is specified"
-                                 " position must be %s"
-                                 % ', '.join(positions_with_rule))
-            if isinstance(position_relative_to_rule,
-                          NttCisFirewallRule):
-                rule_name = position_relative_to_rule.name
-            else:
-                rule_name = position_relative_to_rule
-            placement.set('relativeToRule', rule_name)
-        else:
-            if position not in positions_without_rule:
-                raise ValueError("When position_relative_to_rule is not"
-                                 " specified position must be %s"
-                                 % ', '.join(positions_without_rule))
-        placement.set('position', position)
-
-        response = self.connection.request_with_orgId_api_2(
-            'network/createFirewallRule',
-            method='POST',
-            data=ET.tostring(create_node)).object
-
-        rule_id = None
-        for info in findall(response, 'info', TYPES_URN):
-            if info.get('name') == 'firewallRuleId':
-                rule_id = info.get('value')
-        rule.id = rule_id
-        return rule
-    """
-
     def ex_create_firewall_rule(self, network_domain, name, action,
                                 ip_version, protocol,
                                 source_addr, dest_addr,
@@ -2342,24 +2260,24 @@ class NttCisNodeDriver(NodeDriver):
         :type  network_domain: :class:`NttCisNetworkDomain` or ``str``
 
         :param name: The rule's name
-        :type  ``str``
+        :type  name: ``str``
 
         :param action: 'ACCEPT_DECISIVELY' or 'DROP'
-        :type ``str``
+        :type action: ``str``
 
         :param ip_version:  'IPV4' or 'IPV6'
-        :type ``str``
+        :type ip_version: ``str``
 
         :param protocol: One of 'IP', 'ICMP', 'TCP', or 'UDP'
-        :type ``str``
+        :type protocol: ``str``
 
         :param source_addr:  The source address, which must be an
                              NttCisFirewallAddress instance
-        :type ``NttCisFirewallAddress``
+        :type source_addr: ``NttCisFirewallAddress``
 
         :param dest_addr: The destination address, which must be an
                           NttCisFirewallAddress instance
-        :type `NttCisFirewallAddress``
+        :type dest_addr: `NttCisFirewallAddress``
 
         :param position: The position in which to create the rule
                          There are two types of positions
@@ -2370,7 +2288,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :param enabled: Firewall rule is enabled upon creation.
                         Set to 1 for true or 0 for false.
-        :type ``int``
+        :type enabled: ``int``
 
         :param position_relative_to_rule: The rule or rule name in
                                           which to decide positioning by
@@ -2379,6 +2297,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         positions_without_rule = ('FIRST', 'LAST')
         positions_with_rule = ('BEFORE', 'AFTER')
 
@@ -2633,6 +2552,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         update_node = ET.Element('editFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         ET.SubElement(update_node, 'enabled').text = str(state).lower()
@@ -2653,6 +2573,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         update_node = ET.Element('deleteFirewallRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
@@ -2678,6 +2599,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NttCisNatRule`
         """
+
         create_node = ET.Element('createNatRule', {'xmlns': TYPES_URN})
         ET.SubElement(create_node, 'networkDomainId').text = network_domain.id
         ET.SubElement(create_node, 'internalIp').text = internal_ip
@@ -2709,6 +2631,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NttCisNatRule`
         """
+
         params = {}
         params['networkDomainId'] = network_domain.id
 
@@ -2729,6 +2652,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NttCisNatRule`
         """
+
         rule = self.connection.request_with_orgId_api_2(
             'network/natRule/%s' % rule_id).object
         return self._to_nat_rule(rule, network_domain)
@@ -2742,6 +2666,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         update_node = ET.Element('deleteNatRule', {'xmlns': TYPES_URN})
         update_node.set('id', rule.id)
         result = self.connection.request_with_orgId_api_2(
@@ -2761,6 +2686,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NodeLocation`
         """
+
         location = None
         if id is not None:
             location = self.list_locations(ex_id=id)[0]
@@ -2792,6 +2718,7 @@ class NttCisNodeDriver(NodeDriver):
         :param  kwargs: The arguments for func
         :type   kwargs: Keyword arguments
         """
+
         return self.connection.wait_for_state(state, func, poll_interval,
                                               timeout, *args, **kwargs)
 
@@ -2808,6 +2735,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         update_node = ET.Element('enableServerMonitoring',
                                  {'xmlns': TYPES_URN})
         update_node.set('id', node.id)
@@ -2833,6 +2761,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         update_node = ET.Element('changeServerMonitoringPlan',
                                  {'xmlns': TYPES_URN})
         update_node.set('id', node.id)
@@ -2854,6 +2783,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         update_node = ET.Element('disableServerMonitoring',
                                  {'xmlns': TYPES_URN})
         update_node.set('id', node.id)
@@ -2875,6 +2805,7 @@ class NttCisNodeDriver(NodeDriver):
         :param bus_number: optional number of server's bus
         :return: whether addition is in progress or 'OK' otherwise false
         """
+
         update_node = ET.Element('addScsiController',
                                  {'xmlns': TYPES_URN})
         ET.SubElement(update_node, 'serverId').text = server_id
@@ -2895,6 +2826,7 @@ class NttCisNodeDriver(NodeDriver):
         :param controller_id: Scsi controller's id
         :return: whether addition is in progress or 'OK' otherwise false
         """
+
         update_node = ET.Element('removeScsiController', {'xmlns': TYPES_URN})
         update_node.set('id', controller_id)
         result = self.connection.request_with_orgId_api_2(
@@ -2970,6 +2902,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         disk = [disk for disk in node.extra['disks']
                 if disk.scsi_id == scsi_id][0]
         return self.ex_remove_storage(disk.id)
@@ -2986,6 +2919,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         remove_disk = ET.Element('removeDisk',
                                  {'xmlns': TYPES_URN})
         remove_disk.set('id', disk_id)
@@ -3011,6 +2945,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         create_node = ET.Element('changeDiskSpeed', {'xmlns': TYPES_URN})
         create_node.set('id', disk_id)
         ET.SubElement(create_node, 'speed').text = speed
@@ -3038,6 +2973,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         create_node = ET.Element('expandDisk', {'xmlns': TYPES_URN,
                                                 'id': disk_id})
         ET.SubElement(create_node, 'newSizeGb').text = str(size)
@@ -3078,6 +3014,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         update = ET.Element('reconfigureServer', {'xmlns': TYPES_URN})
         update.set('id', node.id)
         if memory_gb is not None:
@@ -3114,6 +3051,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         if image_description is None:
             image_description = ''
 
@@ -3177,6 +3115,7 @@ class NttCisNodeDriver(NodeDriver):
         :param  node: The failed node to clean
         :type   node: :class:`Node` or ``str``
         """
+
         node_id = self._node_to_node_id(node)
         request_elm = ET.Element('cleanServer',
                                  {'xmlns': TYPES_URN, 'id': node_id})
@@ -3196,6 +3135,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeImage`
         """
+
         params = {}
         if location is not None:
             params['datacenterId'] = self._location_to_location_id(location)
@@ -3215,6 +3155,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NodeImage`
         """
+
         image = self.connection.request_with_orgId_api_2(
             'image/osImage/%s' % id).object
         return self._to_image(image)
@@ -3228,6 +3169,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NodeImage`
         """
+
         image = self.connection.request_with_orgId_api_2(
             'image/customerImage/%s' % id).object
         return self._to_image(image)
@@ -3246,6 +3188,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NodeImage`
         """
+
         try:
             return self.ex_get_base_image_by_id(id)
         except NttCisAPIException as e:
@@ -3274,6 +3217,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         create_tag_key = ET.Element('createTagKey', {'xmlns': TYPES_URN})
         ET.SubElement(create_tag_key, 'name').text = name
         if description is not None:
@@ -3310,6 +3254,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NttCisTagKey`
         """
+
         params = {}
         if id is not None:
             params['id'] = id
@@ -3340,6 +3285,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: :class:`NttCisTagKey`
         """
+
         tag_key = self.connection.request_with_orgId_api_2(
             'tag/tagKey/%s' % id).object
         return self._to_tag_key(tag_key)
@@ -3349,13 +3295,14 @@ class NttCisNodeDriver(NodeDriver):
         NOTICE: Tag key is one of those instances where Libloud
                 handles the search of a list for the client code.
                 This behavior exists inconsistently across libcloud.
-        Get a specific tag key by Name
+                Get a specific tag key by Name
 
         :param name: Name of the tag key you want (required)
         :type  name: ``str``
 
         :rtype: :class:`NttCisTagKey`
         """
+
         tag_keys = self.ex_list_tag_keys(name=name)
         if len(tag_keys) != 1:
             raise ValueError("No tags found with name %s" % name)
@@ -3386,6 +3333,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         tag_key_id = self._tag_key_to_tag_key_id(tag_key)
         modify_tag_key = ET.Element('editTagKey',
                                     {'xmlns': TYPES_URN, 'id': tag_key_id})
@@ -3416,6 +3364,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         tag_key_id = self._tag_key_to_tag_key_id(tag_key)
         remove_tag_key = ET.Element('deleteTagKey',
                                     {'xmlns': TYPES_URN, 'id': tag_key_id})
@@ -3446,6 +3395,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         asset_type = self._get_tagging_asset_type(asset)
         tag_key_name = self._tag_key_to_tag_key_name(tag_key)
 
@@ -3480,6 +3430,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
+
         asset_type = self._get_tagging_asset_type(asset)
         tag_key_name = self._tag_key_to_tag_key_name(tag_key)
 
@@ -3528,6 +3479,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NttCisTag`
         """
+
         params = {}
         if asset_id is not None:
             params['assetId'] = asset_id
@@ -3569,6 +3521,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of ``list``
         """
+
         result = self.connection.raw_request_with_orgId_api_1(
             'report/usage?startDate=%s&endDate=%s' % (
                 start_date, end_date))
@@ -3586,6 +3539,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of ``list``
         """
+
         result = self.connection.raw_request_with_orgId_api_1(
             'report/usageDetailed?startDate=%s&endDate=%s' % (
                 start_date, end_date))
@@ -3603,6 +3557,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of ``list``
         """
+
         result = self.connection.raw_request_with_orgId_api_1(
             'report/usageSoftwareUnits?startDate=%s&endDate=%s' % (
                 start_date, end_date))
@@ -3620,6 +3575,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of ``list``
         """
+
         result = self.connection.raw_request_with_orgId_api_1(
             'auditlog?startDate=%s&endDate=%s' % (
                 start_date, end_date))
@@ -3641,6 +3597,7 @@ class NttCisNodeDriver(NodeDriver):
 
         :rtype: ``list`` of ``list``
         """
+
         datacenter_id = self._location_to_location_id(location)
         result = self.connection.raw_request_with_orgId_api_1(
             'backup/detailedUsageReport?datacenterId=%s&fromDate=%s&toDate=%s'
@@ -3681,6 +3638,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of NttCisIpAddressList objects
         :rtype: ``list`` of :class:`NttCisIpAddressList`
         """
+
         params = {'networkDomainId': self._network_domain_to_network_domain_id(
             ex_network_domain)}
         response = self.connection.request_with_orgId_api_2(
@@ -3811,6 +3769,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of NttCisIpAddressList objects
         :rtype: ``list`` of :class:`NttCisIpAddressList`
         """
+
         if (ip_address_collection is None and
                 child_ip_address_list is None):
             raise ValueError("At least one ipAddress element or one "
@@ -4051,6 +4010,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: a list of NttCisPortList objects
         :rtype: ``list`` of :class:`NttCisPortList`
         """
+
         params = {'networkDomainId':
                   self._network_domain_to_network_domain_id(ex_network_domain)}
         response = self.connection.request_with_orgId_api_2(
@@ -4082,6 +4042,7 @@ class NttCisNodeDriver(NodeDriver):
         :return:  NttCisPortList object
         :rtype:  :class:`NttCisPort`
         """
+
         url_path = ('network/portList/%s' % ex_portlist_id)
         response = self.connection.request_with_orgId_api_2(
             url_path).object
@@ -4149,6 +4110,7 @@ class NttCisNodeDriver(NodeDriver):
         :return: result of operation
         :rtype: ``bool``
         """
+
         new_port_list = ET.Element('createPortList', {'xmlns': TYPES_URN})
         ET.SubElement(
             new_port_list,
@@ -4687,6 +4649,274 @@ class NttCisNodeDriver(NodeDriver):
 
         return new_node
 
+    # DRS methods
+    def ex_create_consistency_group(self, name, journal_size_gb,
+                                    source_server_id, target_server_id,
+                                    description=None):
+        """
+        Create a consistency group
+
+        :param name: Name of consistency group
+        :type name: ``str``
+
+        :param journal_size_gb: Journal size in GB
+        :type journal_size_gb: ``str``
+
+        :param source_server_id: Id of the server to copy
+        :type source_server_id: ``str``
+
+        :param target_server_id: Id of the server to receive the copy
+        :type: target_server_id: ``str``
+
+        :param description: (Optional) Description of consistency group
+        :type: description: ``str``
+
+        :rtype: :class:`NttCisConsistencyGroup`
+        """
+
+        consistency_group_elm = ET.Element('createConsistencyGroup',
+                                           {'xmlns': TYPES_URN})
+        ET.SubElement(consistency_group_elm, "name").text = name
+        if description is not None:
+            ET.SubElement(
+                consistency_group_elm, "description").text = description
+        ET.SubElement(
+            consistency_group_elm, "journalSizeGb").text = journal_size_gb
+        server_pair = ET.SubElement(consistency_group_elm, "serverPair")
+        ET.SubElement(
+            server_pair, "sourceServerId").text = source_server_id
+        ET.SubElement(
+            server_pair, "targetServerId").text = target_server_id
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/createConsistencyGroup",
+            method="POST",
+            data=ET.tostring(consistency_group_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    @get_params
+    def ex_list_consistency_groups(self, params={}):
+        """
+        Functions takes a named parameter that must be one of the following
+        :param params: A dictionary composed of one of the following keys
+        and a value
+        * target_data_center_id=
+        * source_network_domain_id=
+        * target_network_domain_id=
+        * source_server_id=
+        * target_server_id=
+        * name=
+        * state=
+        * operation_status=
+        * drs_infrastructure_status=
+        :rtype:  `list` of :class: `NttCisConsistencyGroup`
+        """
+
+        response = self.connection.request_with_orgId_api_2(
+            'consistencyGroup/consistencyGroup', params=params).object
+        cgs = self._to_consistency_groups(response)
+        return cgs
+
+    def ex_get_consistency_group(self, consistency_group_id):
+        """
+        Retrieves a Consistency by it's id and is more efficient thatn listing
+        all consistency groups and filtering that result.
+
+        :param consistency_group_id: An id of a consistency group
+        :type consistency_group_id: ``str``
+
+        :rtype: :class:`NttCisConsistencygroup`
+        """
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/consistencyGroup/%s" % consistency_group_id
+        ).object
+        cg = self._to_process(response)
+        return cg
+
+    def ex_list_consistency_group_snapshots(self, consistency_group_id,
+                                            create_time_min=None,
+                                            create_time_max=None):
+        """
+        Optional parameters identify the date of creation of Consistency Group
+        snapshots in *XML Schema (XSD) date time format. Best used as a
+        combination of createTime.MIN and createTime.MAX. If neither is
+        provided then all snapshots up to the possible maximum of 1014
+        will be returned. If MIN is provided by itself, all snapshots
+        between the time specified by MIN and the point in time of
+        execution will be returned. If MAX is provided by itself,
+        then all snapshots up to that point in time (up to the
+        maximum number of 1014) will be returned. MIN and MAX are
+        inclusive for this API function
+
+        :param consistency_group_id: The id of consistency group
+        :type consistency_group_id: ``str``
+
+        :param create_time_min: (Optional) in form YYYY-MM-DDT00:00.00.00Z or
+                                           substitute time offset for Z, i.e,
+                                           -05:00
+        :type create_time_min: ``str``
+
+        :param create_time_max: (Optional) in form YYYY-MM-DDT00:00:00.000Z or
+                                           substitute time offset for Z, i.e,
+                                           -05:00
+        :type create_time_max: ``str``
+
+        :rtype: `list` of :class:`NttCisSnapshots`
+        """
+
+        if create_time_min is None and create_time_max is None:
+            params = {"consistencyGroupId": consistency_group_id}
+        elif create_time_min and create_time_max:
+            params = {"consistencyGroupId": consistency_group_id,
+                      "createTime.MIN": create_time_min,
+                      "createTime.MAX": create_time_max
+                      }
+        elif create_time_min or create_time_max:
+            if create_time_max is not None:
+                params = {"consistencyGroupId": consistency_group_id,
+                          "createTime.MAX": create_time_max
+                          }
+            elif create_time_min is not None:
+                params = {"consistencyGroupId": consistency_group_id,
+                          "createTime.MIN": create_time_min
+                          }
+        paged_result = self.connection.request_with_orgId_api_2(
+            'consistencyGroup/snapshot',
+            method='GET',
+            params=params
+        ).object
+        snapshots = self._to_process(paged_result)
+        return snapshots
+
+    def ex_expand_journal(self, consistency_group_id, size_gb):
+        """
+        Expand the consistency group's journhal size in 100Gb increments.
+
+        :param consistency_group_id: The consistency group's UUID
+        :type  consistency_group_id: ``str``
+
+        :param size_gb: Gb in 100 Gb increments
+        :type  size_gb: ``str``
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+            otherwise False
+        :rtype: ``bool``
+        """
+
+        expand_elm = ET.Element("expandJournal", {"id": consistency_group_id,
+                                                  "xmlns": TYPES_URN})
+        ET.SubElement(expand_elm, "sizeGb").text = size_gb
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/expandJournal",
+            method="POST",
+            data=ET.tostring(expand_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_start_drs_failover_preview(self, consistency_group_id,
+                                      snapshot_id):
+        """
+        Brings a Consistency Group into PREVIEWING_SNAPSHOT mode.
+
+        :param consistency_group_id: Id of the Consistency Group to put into
+                                     PRIEVEW_MODE
+        :type consistency_group_id: ``str``
+
+        :param snapshot_id: Id of the Snapshot to preview
+        :type snapshot_id: ``str``
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+            otherwise False
+        :rtype: ``bool``
+        """
+        preview_elm = ET.Element("startPreviewSnapshot",
+                                 {"consistencyGroupId": consistency_group_id,
+                                  "xmlns": TYPES_URN
+                                  })
+        ET.SubElement(preview_elm, "snapshotId").text = snapshot_id
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/startPreviewSnapshot",
+            method="POST",
+            data=ET.tostring(preview_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_stop_drs_failover_preview(self, consistency_group_id):
+        """
+        Takes a Consistency Group out of PREVIEW_MODE and back to DRS_MODE
+
+        :param consistency_group_id: Consistency Group's Id
+        :type ``str``
+
+        :return: True if response_code contains either 'IN_PROGRESS' or 'OK'
+         otherwise False
+        :rtype: ``bool``
+        """
+        preview_elm = ET.Element("stopPreviewSnapshot",
+                                 {"consistencyGroupId": consistency_group_id,
+                                  "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/stopPreviewSnapshot",
+            method="POST",
+            data=ET.tostring(preview_elm)).object
+        response_code = findtext(response, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def ex_initiate_drs_failover(self, consistency_group_id):
+        """
+        This method is irreversible.
+        It will failover the Consistency Group while removing it as well.
+
+        :param consistency_group_id: Consistency Group's Id to failover
+        :type consistency_group_id: ``str``
+
+        :return: True if response_code contains either
+        IN_PROGRESS' or 'OK' otherwise False
+        :rtype: ``bool``
+        """
+        failover_elm = ET.Element("initiateFailover",
+                                  {"consistencyGroupId": consistency_group_id,
+                                   "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/initiateFailover",
+            method="POST",
+            data=ET.tostring(failover_elm)).object
+        response_code = findtext(response, "responseCode", TYPES_URN)
+        return response_code in ["IN_PROGRESS", "OK"]
+
+    def ex_delete_consistency_group(self, consistency_group_id):
+        """
+        Delete's a Consistency Group
+
+        :param consistency_group_id: Id of Consistency Group to delete
+        :type ``str``
+        :return: True if response_code contains either
+        IN_PROGRESS' or 'OK' otherwise False
+        :rtype: ``bool``
+        """
+        delete_elm = ET.Element("deleteConsistencyGroup",
+                                {"id": consistency_group_id,
+                                 "xmlns": TYPES_URN})
+        response = self.connection.request_with_orgId_api_2(
+            "consistencyGroup/deleteConsistencyGroup",
+            method="POST",
+            data=ET.tostring(delete_elm)).object
+        response_code = findtext(response, "responseCode", TYPES_URN)
+        return response_code in ["IN_PROGRESS", "OK"]
+
+    def _to_consistency_groups(self, object):
+        cgs = findall(object, 'consistencyGroup', TYPES_URN)
+        return [self._to_process(el) for el in cgs]
+
+    def _to_drs_snapshots(self, object):
+        snapshots = []
+        for element in object.findall(fixxpath("snapshot", TYPES_URN)):
+            snapshots.append(self._to_process(element))
+        return snapshots
+
+    def _to_process(self, element):
+        return process_xml(ET.tostring(element))
+
     def _format_csv(self, http_response):
         text = http_response.read()
         lines = str.splitlines(ensure_string(text))
@@ -4846,6 +5076,8 @@ class NttCisNodeDriver(NodeDriver):
         location_id = element.get('datacenterId')
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
+        # For future dynamic rule creation
+        # return process_xml(ET.tostring(element))
 
         return NttCisFirewallRule(
             id=element.get('id'),
@@ -5076,6 +5308,7 @@ class NttCisNodeDriver(NodeDriver):
                  type of snapshot
                  state
         """
+
         snapshot_elements = object.findall(fixxpath('snapshot', TYPES_URN))
         return [self._to_snapshot(el) for el in snapshot_elements]
 
@@ -5122,6 +5355,9 @@ class NttCisNodeDriver(NodeDriver):
         return [self._to_node(el) for el in node_elements]
 
     def _to_node(self, element):
+        # Get all information at once and process in common/nttcis
+        # Below, future to dynamically generate classes
+        # return process_xml(ET.tostring(element))
         started = findtext(element, 'started', TYPES_URN)
         status = self._to_status(element.find(fixxpath('progress', TYPES_URN)))
         dd_state = findtext(element, 'state', TYPES_URN)

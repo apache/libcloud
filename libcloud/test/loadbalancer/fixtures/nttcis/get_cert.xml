@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sslDomainCertificate xmlns="urn:didata.com:api:cloud:types" id="352146be-0d6a-40cf-b935-808ab504a868" datacenterId="EU6">
+    <networkDomainId>6aafcf08-cb0b-432c-9c64-7371265db086</networkDomainId>
+    <name>bob</name>
+    <description>test cert</description>
+    <state>NORMAL</state>
+    <createTime>2018-11-17T02:15:04.000Z</createTime>
+    <expiryTime>2019-11-17T02:05:54.000Z</expiryTime>
+</sslDomainCertificate>

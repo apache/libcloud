@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<snapshots xmlns="urn:didata.com:api:cloud:types" pageNumber="1" pageCount="1" totalCount="43" pageSize="1">
+    <snapshot id="d11940a8-1455-43bf-a2de-b51a38c2aa94">
+        <startTime>2018-08-15T12:00:47.000Z</startTime>
+        <expiryTime>2019-08-15T12:00:47.000Z</expiryTime>
+        <type>SYSTEM</type>
+        <consistencyLevel>CRASH_CONSISTENT</consistencyLevel>
+        <indexState>INDEX_VALID</indexState>
+        <serverConfig>
+            <cluster id="EU6-01" name="Default Cluster"/>
+            <cpu count="2" speed="STANDARD" coresPerSocket="1"/>
+            <memoryGb>4</memoryGb>
+            <scsiController busNumber="0" id="3e27b3ff-f34c-4b50-abac-c4dbf17c46d3" adapterType="LSI_LOGIC_PARALLEL" state="NORMAL">
+                <disk scsiId="0" id="0bb10086-9691-4cd7-9ae3-914c79890250" sizeGb="20" speed="STANDARD" driveType="DISK" state="NORMAL"/>
+            </scsiController>
+            <networkInfo networkDomainId="6aafcf08-cb0b-432c-9c64-7371265db086" networkDomainName="sdk_test_1">
+                <primaryNic id="29ccc441-9972-41df-b918-b9c93a1b46e9" privateIpv4="10.1.1.6" ipv6="2a00:47c0:111:1331:6140:e432:729b:eef6" vlanId="eb05a24e-85a6-46e3-a7c9-f1765737476d" vlanName="sdk_vlan1" networkAdapter="VMXNET3" connected="true" key="4000" state="NORMAL"/>
+            </networkInfo>
+            <guest osCustomization="true">
+                <operatingSystem id="UBUNTU1664" displayName="UBUNTU16/64" family="UNIX"/>
+            </guest>
+            <virtualHardwareVersion>vmx-10</virtualHardwareVersion>
+        </serverConfig>
+        <state>NORMAL</state>
+        <createTime>2018-08-15T12:30:50.000Z</createTime>
+    </snapshot>
+</snapshots>

@@ -22,6 +22,7 @@ Provider            list zones list records create zone update zone create recor
 `Point DNS`_        yes        yes          yes         yes         yes           yes           yes         yes          
 `PowerDNS`_         yes        yes          yes         no          yes           yes           yes         yes          
 `Rackspace DNS`_    yes        yes          yes         yes         yes           yes           yes         yes          
+`RcodeZero DNS`_    yes        yes          yes         yes         yes           yes           yes         yes          
 `Route53 DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
 `Softlayer DNS`_    yes        yes          yes         no          yes           yes           yes         yes          
 `Vultr DNS`_        yes        yes          yes         no          yes           no            yes         yes          
@@ -49,6 +50,7 @@ Provider            list zones list records create zone update zone create recor
 .. _`Point DNS`: https://pointhq.com/
 .. _`PowerDNS`: https://www.powerdns.com/
 .. _`Rackspace DNS`: http://www.rackspace.com/
+.. _`RcodeZero DNS`: https://www.rcodezero.at/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
 .. _`Softlayer DNS`: https://www.softlayer.com
 .. _`Vultr DNS`: http://www.vultr.com/
