@@ -22,15 +22,19 @@ try:
 except ImportError:
     import json
 import time
+import base64
 
 from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize, \
-    StorageVolume, VolumeSnapshot, NodeLocation
+    StorageVolume, VolumeSnapshot, NodeLocation, KeyPair
 from libcloud.compute.types import NodeState, StorageVolumeState, \
     VolumeSnapshotState
 from libcloud.utils.py3 import _real_unicode as u
+from libcloud.utils.py3 import ensure_string, b
 from libcloud.utils.xml import findall, findattr, findtext
+from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
+from libcloud.utils.publickey import get_pubkey_comment
 
 __all__ = [
     'DiskCategory',
@@ -485,7 +489,7 @@ class ECSDriver(NodeDriver):
     name = 'Aliyun ECS'
     website = 'https://www.aliyun.com/product/ecs'
     connectionCls = ECSConnection
-    features = {'create_node': ['password']}
+    features = {'create_node': ['password', 'ssh_key']}
     namespace = None
     path = '/'
 
@@ -577,7 +581,7 @@ class ECSDriver(NodeDriver):
                     ex_hostname=None, ex_io_optimized=None,
                     ex_system_disk=None, ex_data_disks=None,
                     ex_vswitch_id=None, ex_private_ip_address=None,
-                    ex_client_token=None, **kwargs):
+                    ex_client_token=None, ex_keyname=None, **kwargs):
         """
         @inherits: :class:`NodeDriver.create_node`
 
@@ -670,7 +674,14 @@ class ECSDriver(NodeDriver):
 
         if auth:
             auth = self._get_and_check_auth(auth)
-            params['Password'] = auth.password
+            try:
+                key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey, kwargs.get('ex_keyname'))
+                params['KeyName'] = key['keyName']
+            except AttributeError:
+                params['Password'] = auth.password
+
+        if 'ex_keyname' in kwargs:
+            params['KeyName'] = kwargs['ex_keyname']
 
         if ex_io_optimized is not None:
             optimized = ex_io_optimized
@@ -1357,21 +1368,21 @@ class ECSDriver(NodeDriver):
         return self.get_image(image_id=image_id)
 
     def create_public_ip(self, instance_id):
-            """
-            Create public ip.
+        """
+        Create public ip.
 
-            :keyword instance_id: instance id for allocating public ip.
-            :type    instance_id: ``str``
+        :keyword instance_id: instance id for allocating public ip.
+        :type    instance_id: ``str``
 
-            :return public ip
-            :rtype ``str``
-            """
-            params = {'Action': 'AllocatePublicIpAddress',
-                      'InstanceId': instance_id}
+        :return public ip
+        :rtype ``str``
+        """
+        params = {'Action': 'AllocatePublicIpAddress',
+                  'InstanceId': instance_id}
 
-            resp = self.connection.request(self.path, params=params)
-            return findtext(resp.object, 'IpAddress',
-                            namespace=self.namespace)
+        resp = self.connection.request(self.path, params=params)
+        return findtext(resp.object, 'IpAddress',
+                        namespace=self.namespace)
 
     def _to_nodes(self, object):
         """
@@ -1726,3 +1737,115 @@ class ECSDriver(NodeDriver):
                 break
             params.update(pagination.to_dict())
         return results
+
+    # Key pair management methods
+
+    def list_key_pairs(self):
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'RegionId': self.region
+        }
+        import ipdb;ipdb.set_trace()
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='keySet/item',
+                        namespace=self.namespace)
+
+        key_pairs = self._to_key_pairs(elems=elems)
+        return key_pairs
+
+    def get_key_pair(self, name):
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'KeyName': name,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='keySet/item',
+                        namespace=self.namespace)
+
+        key_pair = self._to_key_pairs(elems=elems)[0]
+        return key_pair
+
+    def create_key_pair(self, name):
+        params = {
+            'Action': 'CreateKeyPair',
+            'KeyName': name,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def import_key_pair_from_string(self, name, key_material):
+        params = {
+            'Action': 'ImportKeyPair',
+            'KeyPairName': name,
+            'PublicKeyBody': key_material,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def delete_key_pair(self, key_pair):
+        params = {
+            'Action': 'DeleteKeyPair',
+            'KeyName': key_pair.name,
+            'RegionId': self.region
+        }
+        res = self.connection.request(self.path, params=params).object
+
+        return self._get_boolean(res)
+
+    def ex_find_or_import_keypair_by_key_material(self, pubkey, key_name=None):
+        """
+        Given a public key, look it up in the EC2 KeyPair database. If it
+        exists, return any information we have about it. Otherwise, create it.
+
+        Keys that are created are named based on their comment and fingerprint.
+
+        :rtype: ``dict``
+        """
+        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default='unnamed')
+        if not key_name:
+            key_name = '%s-%s' % (key_comment, key_fingerprint)
+
+        key_pairs = self.list_key_pairs()
+        key_pairs = [key_pair for key_pair in key_pairs if
+                     key_pair.fingerprint == key_fingerprint]
+
+        if len(key_pairs) >= 1:
+            key_pair = key_pairs[0]
+        else:
+            key_pair = self.import_key_pair_from_string(key_name, pubkey)
+
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+
+        return result
+
+    def _to_key_pairs(self, elems):
+        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
+        return key_pairs
+
+    def _to_key_pair(self, elem):
+        name = findtext(element=elem, xpath='keyName', namespace=self.namespace)
+        fingerprint = findtext(element=elem, xpath='keyFingerprint',
+                               namespace=self.namespace).strip()
+        private_key = findtext(element=elem, xpath='keyMaterial',
+                               namespace=self.namespace)
+
+        key_pair = KeyPair(name=name,
+                           public_key=None,
+                           fingerprint=fingerprint,
+                           private_key=private_key,
+                           driver=self)
+        return key_pair
