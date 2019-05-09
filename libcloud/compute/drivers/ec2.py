@@ -1922,7 +1922,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'auth' in kwargs:
             auth = self._get_and_check_auth(kwargs['auth'])
-            key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+            key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey, kwargs.get('ex_keyname'))
             params['KeyName'] = key['keyName']
 
         if 'ex_keyname' in kwargs:
@@ -4099,7 +4099,7 @@ class BaseEC2NodeDriver(NodeDriver):
         }
         return result
 
-    def ex_find_or_import_keypair_by_key_material(self, pubkey):
+    def ex_find_or_import_keypair_by_key_material(self, pubkey, key_name=None):
         """
         Given a public key, look it up in the EC2 KeyPair database. If it
         exists, return any information we have about it. Otherwise, create it.
@@ -4110,7 +4110,8 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
         key_comment = get_pubkey_comment(pubkey, default='unnamed')
-        key_name = '%s-%s' % (key_comment, key_fingerprint)
+        if not key_name:
+            key_name = '%s-%s' % (key_comment, key_fingerprint)
 
         key_pairs = self.list_key_pairs()
         key_pairs = [key_pair for key_pair in key_pairs if
