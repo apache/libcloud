@@ -23,6 +23,7 @@ except ImportError:
     import json
 import time
 import base64
+import hashlib
 
 from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
 from libcloud.common.types import LibcloudError
@@ -581,7 +582,7 @@ class ECSDriver(NodeDriver):
                     ex_hostname=None, ex_io_optimized=None,
                     ex_system_disk=None, ex_data_disks=None,
                     ex_vswitch_id=None, ex_private_ip_address=None,
-                    ex_client_token=None, ex_keyname=None, **kwargs):
+                    ex_client_token=None, **kwargs):
         """
         @inherits: :class:`NodeDriver.create_node`
 
@@ -675,13 +676,14 @@ class ECSDriver(NodeDriver):
         if auth:
             auth = self._get_and_check_auth(auth)
             try:
-                key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey, kwargs.get('ex_keyname'))
+                key = self.ex_find_or_import_keypair_by_key_material(
+                    auth.pubkey, kwargs.get('ex_keyname'))
                 params['KeyName'] = key['keyName']
             except AttributeError:
                 params['Password'] = auth.password
 
         if 'ex_keyname' in kwargs:
-            params['KeyName'] = kwargs['ex_keyname']
+            params['KeyPairName'] = kwargs['ex_keyname']
 
         if ex_io_optimized is not None:
             optimized = ex_io_optimized
@@ -1740,14 +1742,15 @@ class ECSDriver(NodeDriver):
 
     # Key pair management methods
 
-    def list_key_pairs(self):
+    def list_key_pairs(self, fingerprint=None):
         params = {
             'Action': 'DescribeKeyPairs',
             'RegionId': self.region
         }
-        import ipdb;ipdb.set_trace()
+        if fingerprint:
+            params['KeyPairFingerPrint'] = fingerprint
         response = self.connection.request(self.path, params=params)
-        elems = findall(element=response.object, xpath='keySet/item',
+        elems = findall(element=response.object, xpath='KeyPairs/KeyPair',
                         namespace=self.namespace)
 
         key_pairs = self._to_key_pairs(elems=elems)
@@ -1761,9 +1764,8 @@ class ECSDriver(NodeDriver):
         }
 
         response = self.connection.request(self.path, params=params)
-        elems = findall(element=response.object, xpath='keySet/item',
+        elems = findall(element=response.object, xpath='KeyPairs/KeyPair',
                         namespace=self.namespace)
-
         key_pair = self._to_key_pairs(elems=elems)[0]
         return key_pair
 
@@ -1794,13 +1796,17 @@ class ECSDriver(NodeDriver):
 
     def delete_key_pair(self, key_pair):
         params = {
-            'Action': 'DeleteKeyPair',
-            'KeyName': key_pair.name,
+            'Action': 'DeleteKeyPairs',
+            'KeyPairNames': '["%s"]' % key_pair.name,
             'RegionId': self.region
         }
-        res = self.connection.request(self.path, params=params).object
+        res = self.connection.request(self.path, params=params)
 
-        return self._get_boolean(res)
+        return res.status == 200
+
+    def _get_pubkey_ssh2_fingerprint(self, pubkey):
+        key = base64.b64decode(pubkey.strip().split()[1].encode('ascii'))
+        return hashlib.md5(key).hexdigest()
 
     def ex_find_or_import_keypair_by_key_material(self, pubkey, key_name=None):
         """
@@ -1811,14 +1817,13 @@ class ECSDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
-        key_comment = get_pubkey_comment(pubkey, default='unnamed')
+        key_fingerprint = self._get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default=(
+            key_name or 'unnamed'))
         if not key_name:
             key_name = '%s-%s' % (key_comment, key_fingerprint)
 
-        key_pairs = self.list_key_pairs()
-        key_pairs = [key_pair for key_pair in key_pairs if
-                     key_pair.fingerprint == key_fingerprint]
+        key_pairs = self.list_key_pairs(fingerprint=key_fingerprint)
 
         if len(key_pairs) >= 1:
             key_pair = key_pairs[0]
@@ -1837,15 +1842,12 @@ class ECSDriver(NodeDriver):
         return key_pairs
 
     def _to_key_pair(self, elem):
-        name = findtext(element=elem, xpath='keyName', namespace=self.namespace)
-        fingerprint = findtext(element=elem, xpath='keyFingerprint',
+        name = findtext(element=elem, xpath='KeyPairName', namespace=self.namespace)
+        fingerprint = findtext(element=elem, xpath='KeyPairFingerPrint',
                                namespace=self.namespace).strip()
-        private_key = findtext(element=elem, xpath='keyMaterial',
-                               namespace=self.namespace)
 
         key_pair = KeyPair(name=name,
                            public_key=None,
                            fingerprint=fingerprint,
-                           private_key=private_key,
                            driver=self)
         return key_pair
