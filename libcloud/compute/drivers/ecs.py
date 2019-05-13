@@ -629,7 +629,7 @@ class ECSDriver(NodeDriver):
         :type ex_hostname: ``str``
 
         :keyword ex_io_optimized: Whether the node is IO optimized (optional)
-        :type ex_io_optimized: ``boll``
+        :type ex_io_optimized: ``bool``
 
         :keyword ex_system_disk: The system disk for the node (optional)
         :type ex_system_disk: ``dict``
@@ -725,6 +725,9 @@ class ECSDriver(NodeDriver):
         node = nodes[0]
         self.ex_start_node(node)
         self._wait_until_state(nodes, NodeState.RUNNING)
+
+        if 'ex_allocate_public_ip_address' in kwargs:
+            self.ex_allocate_public_ip(node)
         return node
 
     def reboot_node(self, node, ex_force_stop=False):
@@ -858,6 +861,89 @@ class ECSDriver(NodeDriver):
             params["SecurityGroupName"] = name
         if description:
             params["Description"] = description
+
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+    def ex_modify_security_group_rule(
+            self, group_id, description, ip_protocol, port_range,
+            source_port_range=None, nic_type=None, policy='accept',
+            dest_cidr_ip='0.0.0.0/0', source_cidr_ip='0.0.0.0/0', priority=None
+    ):
+        """
+        Modify a security group rule.
+        :keyword group_id: id of the security group
+        :type group_id: ``str``
+        :keyword description: new description of the security group
+        :type description: ``unicode``
+        :keyword ip_protocol: IP protocol (icmp, gre, tcp, udl, all)
+        :type ip_protocol: ``unicode``
+        :keyword: port_range: Range of the port numbers of a specific protocol
+        """
+
+        params = {
+            'Action': 'ModifySecurityGroupRule',
+            'RegionId': self.region,
+            'SecurityGroupId': group_id,
+            'Description': description,
+            'IpProtocol': ip_protocol,
+            'PortRange': port_range,
+            'Policy': policy,
+            'DestCidrIp': dest_cidr_ip,
+            'SourceCidrIp': source_cidr_ip
+        }
+
+        if not group_id:
+            raise AttributeError('group_id is required')
+
+        if source_port_range:
+            params["SourcePortRange"] = source_port_range
+        if nic_type:
+            params["Nictype"] = nic_type
+        if priority:
+            params['Priority'] = priority
+
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+    def ex_authorize_security_group(
+            self, group_id, description, ip_protocol, port_range,
+            source_port_range=None, nic_type=None, policy='accept',
+            dest_cidr_ip=None, source_cidr_ip='0.0.0.0/0', priority=None
+    ):
+        """
+        Modify a security group rule.
+        :keyword group_id: id of the security group
+        :type group_id: ``str``
+        :keyword description: new description of the security group
+        :type description: ``unicode``
+        :keyword ip_protocol: IP protocol (icmp, gre, tcp, udl, all)
+        :type ip_protocol: ``unicode``
+        :keyword: port_range: Range of the port numbers of a specific protocol
+        """
+
+        params = {
+            'Action': 'AuthorizeSecurityGroup',
+            'RegionId': self.region,
+            'SecurityGroupId': group_id,
+            'Description': description,
+            'IpProtocol': ip_protocol,
+            'PortRange': port_range,
+            'Policy': policy,
+            'SourceCidrIp': source_cidr_ip
+        }
+
+        if not group_id:
+            raise AttributeError('group_id is required')
+
+        if source_port_range:
+            params["SourcePortRange"] = source_port_range
+        if nic_type:
+            params["Nictype"] = nic_type
+        if priority:
+            params['Priority'] = priority
+        if dest_cidr_ip:
+            params['DestCidrIp'] = dest_cidr_ip
 
         resp = self.connection.request(self.path, params)
         return resp.success()
@@ -1851,3 +1937,13 @@ class ECSDriver(NodeDriver):
                            fingerprint=fingerprint,
                            driver=self)
         return key_pair
+
+    def ex_allocate_public_ip(self, node):
+        params = {
+            'Action': 'AllocatePublicIpAddress',
+            'InstanceId': node.id,
+            'RegionId': self.region
+        }
+        res = self.connection.request(self.path, params=params)
+
+        return res.status == 200
