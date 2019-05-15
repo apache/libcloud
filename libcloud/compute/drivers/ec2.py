@@ -1917,9 +1917,6 @@ class BaseEC2NodeDriver(NodeDriver):
                                          % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
 
-        if 'auth' in kwargs and 'ex_keyname' in kwargs:
-            raise AttributeError('Cannot specify auth and ex_keyname together')
-
         if 'auth' in kwargs:
             auth = self._get_and_check_auth(kwargs['auth'])
             key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey, kwargs.get('ex_keyname'))
