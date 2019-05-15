@@ -675,11 +675,11 @@ class ECSDriver(NodeDriver):
 
         if auth:
             auth = self._get_and_check_auth(auth)
-            try:
+            if getattr(auth, 'pubkey'):
                 key = self.ex_find_or_import_keypair_by_key_material(
                     auth.pubkey, kwargs.get('ex_keyname'))
                 params['KeyName'] = key['keyName']
-            except AttributeError:
+            else:
                 params['Password'] = auth.password
 
         if 'ex_keyname' in kwargs:
@@ -723,6 +723,7 @@ class ECSDriver(NodeDriver):
                                 'with id %s. ' % node_id,
                                 driver=self)
         node = nodes[0]
+        self._wait_until_state([node], NodeState.STOPPED)
         self.ex_start_node(node)
         self._wait_until_state(nodes, NodeState.RUNNING)
 
