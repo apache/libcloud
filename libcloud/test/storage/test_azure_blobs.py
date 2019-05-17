@@ -874,6 +874,24 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(obj.size, 3)
         self.mock_response_klass.use_param = None
 
+    def test_upload_blob_object_via_stream_from_iterable(self):
+        self.mock_response_klass.use_param = 'comp'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+
+        object_name = 'foo_test_upload'
+        iterator = iter([b('34'), b('5')])
+        extra = {'content_type': 'text/plain'}
+        obj = self.driver.upload_object_via_stream(container=container,
+                                                   object_name=object_name,
+                                                   iterator=iterator,
+                                                   extra=extra,
+                                                   ex_blob_type='BlockBlob')
+
+        self.assertEqual(obj.name, object_name)
+        self.assertEqual(obj.size, 3)
+        self.mock_response_klass.use_param = None
+
     def test_upload_blob_object_via_stream_with_lease(self):
         self.mock_response_klass.use_param = 'comp'
         container = Container(name='foo_bar_container', extra={},
