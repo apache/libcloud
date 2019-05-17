@@ -22,15 +22,20 @@ try:
 except ImportError:
     import json
 import time
+import base64
+import hashlib
 
 from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize, \
-    StorageVolume, VolumeSnapshot, NodeLocation
+    StorageVolume, VolumeSnapshot, NodeLocation, KeyPair
 from libcloud.compute.types import NodeState, StorageVolumeState, \
     VolumeSnapshotState
 from libcloud.utils.py3 import _real_unicode as u
+from libcloud.utils.py3 import ensure_string, b
 from libcloud.utils.xml import findall, findattr, findtext
+from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
+from libcloud.utils.publickey import get_pubkey_comment
 
 __all__ = [
     'DiskCategory',
@@ -485,7 +490,7 @@ class ECSDriver(NodeDriver):
     name = 'Aliyun ECS'
     website = 'https://www.aliyun.com/product/ecs'
     connectionCls = ECSConnection
-    features = {'create_node': ['password']}
+    features = {'create_node': ['password', 'ssh_key']}
     namespace = None
     path = '/'
 
@@ -624,7 +629,7 @@ class ECSDriver(NodeDriver):
         :type ex_hostname: ``str``
 
         :keyword ex_io_optimized: Whether the node is IO optimized (optional)
-        :type ex_io_optimized: ``boll``
+        :type ex_io_optimized: ``bool``
 
         :keyword ex_system_disk: The system disk for the node (optional)
         :type ex_system_disk: ``dict``
@@ -670,7 +675,15 @@ class ECSDriver(NodeDriver):
 
         if auth:
             auth = self._get_and_check_auth(auth)
-            params['Password'] = auth.password
+            if getattr(auth, 'pubkey'):
+                key = self.ex_find_or_import_keypair_by_key_material(
+                    auth.pubkey, kwargs.get('ex_keyname'))
+                params['KeyName'] = key['keyName']
+            else:
+                params['Password'] = auth.password
+
+        if 'ex_keyname' in kwargs:
+            params['KeyPairName'] = kwargs['ex_keyname']
 
         if ex_io_optimized is not None:
             optimized = ex_io_optimized
@@ -710,8 +723,12 @@ class ECSDriver(NodeDriver):
                                 'with id %s. ' % node_id,
                                 driver=self)
         node = nodes[0]
+        self._wait_until_state([node], NodeState.STOPPED)
         self.ex_start_node(node)
         self._wait_until_state(nodes, NodeState.RUNNING)
+
+        if 'ex_allocate_public_ip_address' in kwargs:
+            self.ex_allocate_public_ip(node)
         return node
 
     def reboot_node(self, node, ex_force_stop=False):
@@ -845,6 +862,89 @@ class ECSDriver(NodeDriver):
             params["SecurityGroupName"] = name
         if description:
             params["Description"] = description
+
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+    def ex_modify_security_group_rule(
+            self, group_id, description, ip_protocol, port_range,
+            source_port_range=None, nic_type=None, policy='accept',
+            dest_cidr_ip='0.0.0.0/0', source_cidr_ip='0.0.0.0/0', priority=None
+    ):
+        """
+        Modify a security group rule.
+        :keyword group_id: id of the security group
+        :type group_id: ``str``
+        :keyword description: new description of the security group
+        :type description: ``unicode``
+        :keyword ip_protocol: IP protocol (icmp, gre, tcp, udl, all)
+        :type ip_protocol: ``unicode``
+        :keyword: port_range: Range of the port numbers of a specific protocol
+        """
+
+        params = {
+            'Action': 'ModifySecurityGroupRule',
+            'RegionId': self.region,
+            'SecurityGroupId': group_id,
+            'Description': description,
+            'IpProtocol': ip_protocol,
+            'PortRange': port_range,
+            'Policy': policy,
+            'DestCidrIp': dest_cidr_ip,
+            'SourceCidrIp': source_cidr_ip
+        }
+
+        if not group_id:
+            raise AttributeError('group_id is required')
+
+        if source_port_range:
+            params["SourcePortRange"] = source_port_range
+        if nic_type:
+            params["Nictype"] = nic_type
+        if priority:
+            params['Priority'] = priority
+
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+    def ex_authorize_security_group(
+            self, group_id, description, ip_protocol, port_range,
+            source_port_range=None, nic_type=None, policy='accept',
+            dest_cidr_ip=None, source_cidr_ip='0.0.0.0/0', priority=None
+    ):
+        """
+        Modify a security group rule.
+        :keyword group_id: id of the security group
+        :type group_id: ``str``
+        :keyword description: new description of the security group
+        :type description: ``unicode``
+        :keyword ip_protocol: IP protocol (icmp, gre, tcp, udl, all)
+        :type ip_protocol: ``unicode``
+        :keyword: port_range: Range of the port numbers of a specific protocol
+        """
+
+        params = {
+            'Action': 'AuthorizeSecurityGroup',
+            'RegionId': self.region,
+            'SecurityGroupId': group_id,
+            'Description': description,
+            'IpProtocol': ip_protocol,
+            'PortRange': port_range,
+            'Policy': policy,
+            'SourceCidrIp': source_cidr_ip
+        }
+
+        if not group_id:
+            raise AttributeError('group_id is required')
+
+        if source_port_range:
+            params["SourcePortRange"] = source_port_range
+        if nic_type:
+            params["Nictype"] = nic_type
+        if priority:
+            params['Priority'] = priority
+        if dest_cidr_ip:
+            params['DestCidrIp'] = dest_cidr_ip
 
         resp = self.connection.request(self.path, params)
         return resp.success()
@@ -1357,21 +1457,21 @@ class ECSDriver(NodeDriver):
         return self.get_image(image_id=image_id)
 
     def create_public_ip(self, instance_id):
-            """
-            Create public ip.
+        """
+        Create public ip.
 
-            :keyword instance_id: instance id for allocating public ip.
-            :type    instance_id: ``str``
+        :keyword instance_id: instance id for allocating public ip.
+        :type    instance_id: ``str``
 
-            :return public ip
-            :rtype ``str``
-            """
-            params = {'Action': 'AllocatePublicIpAddress',
-                      'InstanceId': instance_id}
+        :return public ip
+        :rtype ``str``
+        """
+        params = {'Action': 'AllocatePublicIpAddress',
+                  'InstanceId': instance_id}
 
-            resp = self.connection.request(self.path, params=params)
-            return findtext(resp.object, 'IpAddress',
-                            namespace=self.namespace)
+        resp = self.connection.request(self.path, params=params)
+        return findtext(resp.object, 'IpAddress',
+                        namespace=self.namespace)
 
     def _to_nodes(self, object):
         """
@@ -1726,3 +1826,125 @@ class ECSDriver(NodeDriver):
                 break
             params.update(pagination.to_dict())
         return results
+
+    # Key pair management methods
+
+    def list_key_pairs(self, fingerprint=None):
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'RegionId': self.region
+        }
+        if fingerprint:
+            params['KeyPairFingerPrint'] = fingerprint
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='KeyPairs/KeyPair',
+                        namespace=self.namespace)
+
+        key_pairs = self._to_key_pairs(elems=elems)
+        return key_pairs
+
+    def get_key_pair(self, name):
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'KeyName': name,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='KeyPairs/KeyPair',
+                        namespace=self.namespace)
+        key_pair = self._to_key_pairs(elems=elems)[0]
+        return key_pair
+
+    def create_key_pair(self, name):
+        params = {
+            'Action': 'CreateKeyPair',
+            'KeyName': name,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def import_key_pair_from_string(self, name, key_material):
+        params = {
+            'Action': 'ImportKeyPair',
+            'KeyPairName': name,
+            'PublicKeyBody': key_material,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def delete_key_pair(self, key_pair):
+        params = {
+            'Action': 'DeleteKeyPairs',
+            'KeyPairNames': '["%s"]' % key_pair.name,
+            'RegionId': self.region
+        }
+        res = self.connection.request(self.path, params=params)
+
+        return res.status == 200
+
+    def _get_pubkey_ssh2_fingerprint(self, pubkey):
+        key = base64.b64decode(pubkey.strip().split()[1].encode('ascii'))
+        return hashlib.md5(key).hexdigest()
+
+    def ex_find_or_import_keypair_by_key_material(self, pubkey, key_name=None):
+        """
+        Given a public key, look it up in the EC2 KeyPair database. If it
+        exists, return any information we have about it. Otherwise, create it.
+
+        Keys that are created are named based on their comment and fingerprint.
+
+        :rtype: ``dict``
+        """
+        key_fingerprint = self._get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default=(
+            key_name or 'unnamed'))
+        if not key_name:
+            key_name = '%s-%s' % (key_comment, key_fingerprint)
+
+        key_pairs = self.list_key_pairs(fingerprint=key_fingerprint)
+
+        if len(key_pairs) >= 1:
+            key_pair = key_pairs[0]
+        else:
+            key_pair = self.import_key_pair_from_string(key_name, pubkey)
+
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+
+        return result
+
+    def _to_key_pairs(self, elems):
+        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
+        return key_pairs
+
+    def _to_key_pair(self, elem):
+        name = findtext(element=elem, xpath='KeyPairName', namespace=self.namespace)
+        fingerprint = findtext(element=elem, xpath='KeyPairFingerPrint',
+                               namespace=self.namespace).strip()
+
+        key_pair = KeyPair(name=name,
+                           public_key=None,
+                           fingerprint=fingerprint,
+                           driver=self)
+        return key_pair
+
+    def ex_allocate_public_ip(self, node):
+        params = {
+            'Action': 'AllocatePublicIpAddress',
+            'InstanceId': node.id,
+            'RegionId': self.region
+        }
+        res = self.connection.request(self.path, params=params)
+
+        return res.status == 200
