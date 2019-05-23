@@ -1535,7 +1535,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 name = security_group.name
                 server_params['security_groups'].append({'name': name})
 
-        if 'ex_blockdevicemappings' in kwargs:
+        if 'ex_blockdevicemappings' in kwargs \
+                and kwargs['ex_blockdevicemappings']:
             if kwargs['ex_blockdevicemappings'][0].get('volume_id'):
                 server_params['block_device_mapping'] = \
                     kwargs['ex_blockdevicemappings']
