@@ -109,6 +109,11 @@ Compute
 - [OpenStack] Fix ``detach_volume`` method so it works with v2 volumes. (GITHUB-1267)
   [Rick van de Loo]
 
+- [CloudSigma] Fix CloudSigma driver so it correctly handles subscription
+  objects without the ``start_time`` and / or ``end_time`` attribute. (GITHUB-1284)
+  (LIBCLOUD-1040)
+  [aki-k, Tomaz Muraus]
+
 Container
 ~~~~~~~~~
 
