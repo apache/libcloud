@@ -29,7 +29,7 @@ import os
 import json
 
 import requests
-import ijson
+import ijson  # pylint: disable=import-error
 
 FILEPATH = os.environ.get('TMP_JSON', '/tmp/ec.json')
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"

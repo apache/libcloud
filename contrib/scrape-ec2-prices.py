@@ -24,7 +24,7 @@ import time
 from collections import defaultdict, OrderedDict
 
 import requests
-import demjson
+import demjson  # pylint: disable=import-error
 
 LINUX_PRICING_URLS = [
     # Deprecated instances (JSON format)
