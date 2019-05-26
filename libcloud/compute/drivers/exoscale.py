@@ -24,8 +24,8 @@ __all__ = [
 class ExoscaleNodeDriver(CloudStackNodeDriver):
     type = Provider.EXOSCALE
     name = 'Exoscale'
-    website = 'https://www.exoscale.ch/'
+    website = 'https://www.exoscale.com/'
 
     # API endpoint info
-    host = 'api.exoscale.ch'
+    host = 'api.exoscale.com'
     path = '/compute'
