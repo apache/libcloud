@@ -124,6 +124,10 @@ DNS
 ~~~
 
 - Add new driver for RcodeZero DNS (GITHUB-1256, LIBCLOUD-1025) [MikeAT]
+- [DigitalOcean] Update DigitalOcean driver so it supports ``ttl`` attribute for
+  ``Record`` objects. This includes support for specifying a record ttl via
+  ``extra['ttl']`` attribute when creating and updating a record. (GITHUB-1252
+  LIBCLOUD-1022) [Kevin Roy]
 
 Storage
 ~~~~~~~
