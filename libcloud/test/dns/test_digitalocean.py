@@ -46,6 +46,8 @@ class DigitalOceanDNSTests(LibcloudTestCase):
         zone = self.driver.get_zone('testdomain')
         records = self.driver.list_records(zone)
         self.assertTrue(len(records) >= 1)
+        self.assertEqual(records[1].ttl, 1800)
+        self.assertEqual(records[4].ttl, None)
 
     def test_get_record(self):
         record = self.driver.get_record('testdomain', '1234564')

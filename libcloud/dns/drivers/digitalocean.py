@@ -189,7 +189,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         return Record(id=res.object['domain_record']['id'],
                       name=res.object['domain_record']['name'],
                       type=type, data=data, zone=zone,
-                      ttl=res.object['domain_record']['ttl'],
+                      ttl=res.object['domain_record'].get('ttl', None),
                       driver=self, extra=extra)
 
     def update_record(self, record, name=None, type=None,
@@ -249,7 +249,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         return Record(id=res.object['domain_record']['id'],
                       name=res.object['domain_record']['name'],
                       type=record.type, data=data, zone=record.zone,
-                      ttl=res.object['domain_record']['ttl'],
+                      ttl=res.object['domain_record'].get('ttl', None),
                       driver=self, extra=extra)
 
     def delete_zone(self, zone):
@@ -292,7 +292,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                  'weight': data['weight']}
         return Record(id=data['id'], name=data['name'],
                       type=self._string_to_record_type(data['type']),
-                      data=data['data'], zone=zone, ttl=data['ttl'],
+                      data=data['data'], zone=zone, ttl=data.get('ttl', None),
                       driver=self, extra=extra)
 
     def _to_zone(self, data):
