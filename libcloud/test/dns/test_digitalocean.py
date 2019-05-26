@@ -46,12 +46,15 @@ class DigitalOceanDNSTests(LibcloudTestCase):
         zone = self.driver.get_zone('testdomain')
         records = self.driver.list_records(zone)
         self.assertTrue(len(records) >= 1)
+        self.assertEqual(records[1].ttl, 1800)
+        self.assertEqual(records[4].ttl, None)
 
     def test_get_record(self):
         record = self.driver.get_record('testdomain', '1234564')
         self.assertEqual(record.id, '1234564')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '123.45.67.89')
+        self.assertEqual(record.ttl, 1800)
 
     def test_get_record_not_found(self):
         DigitalOceanDNSMockHttp.type = 'NOT_FOUND'
@@ -67,18 +70,22 @@ class DigitalOceanDNSTests(LibcloudTestCase):
 
         DigitalOceanDNSMockHttp.type = 'CREATE'
         record = self.driver.create_record('sub', zone,
-                                           RecordType.A, '234.56.78.90')
+                                           RecordType.A, '234.56.78.90',
+                                           extra={'ttl': 60})
         self.assertEqual(record.id, '1234565')
         self.assertEqual(record.type, RecordType.A)
         self.assertEqual(record.data, '234.56.78.90')
+        self.assertEqual(record.ttl, 60)
 
     def test_update_record(self):
         record = self.driver.get_record('testdomain', '1234564')
 
         DigitalOceanDNSMockHttp.type = 'UPDATE'
-        record = self.driver.update_record(record, data="234.56.78.90")
+        record = self.driver.update_record(record, data="234.56.78.90",
+                                           extra={'ttl': 60})
         self.assertEqual(record.id, '1234564')
         self.assertEqual(record.data, "234.56.78.90")
+        self.assertEqual(record.ttl, 60)
 
     def test_delete_zone(self):
         zone = self.driver.get_zone('testdomain')
