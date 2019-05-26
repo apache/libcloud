@@ -118,7 +118,7 @@ class ScriptDeployment(Deployment):
     Runs an arbitrary shell script on the server.
 
     This step works by first writing the content of the shell script (script
-    argument) in a \*.sh file on a remote server and then running that file.
+    argument) in a *.sh file on a remote server and then running that file.
 
     If you are running a non-shell script, make sure to put the appropriate
     shebang to the top of the script. You are also advised to do that even if

@@ -1208,7 +1208,7 @@ class EC2Response(AWSBaseResponse):
 
         try:
             body = ET.XML(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError("Failed to parse XML",
                                          body=self.body, driver=EC2NodeDriver)
 
@@ -1774,12 +1774,13 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def list_locations(self):
         locations = []
-        for index, availability_zone in \
-                enumerate(self.ex_list_availability_zones()):
-                    locations.append(EC2NodeLocation(
-                        index, availability_zone.name, self.country, self,
-                        availability_zone)
-                    )
+
+        iterator = enumerate(self.ex_list_availability_zones())
+        for index, availability_zone in iterator:
+            locations.append(EC2NodeLocation(
+                index, availability_zone.name, self.country, self,
+                availability_zone)
+            )
         return locations
 
     def list_volumes(self, node=None):

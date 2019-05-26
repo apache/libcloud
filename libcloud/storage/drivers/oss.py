@@ -91,7 +91,7 @@ class OSSResponse(XmlResponse):
                 body = ET.XML(self.body.encode('utf-8'), parser=parser)
             else:
                 body = ET.XML(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
                                          driver=self.connection.driver)

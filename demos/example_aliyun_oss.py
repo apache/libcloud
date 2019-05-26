@@ -68,6 +68,7 @@ def data_iter(limit):
         if i >= limit:
             break
 
+
 print('Starting to upload 1MB using multipart api')
 one_mb = 1024 * 1024
 obj = oss.upload_object_via_stream(data_iter(one_mb), c1, upload_object_name)

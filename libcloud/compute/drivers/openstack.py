@@ -2204,7 +2204,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
                 try:
                     is_public_ip = is_public_subnet(ip)
-                except:
+                except Exception:
                     # IPv6
 
                     # Openstack Icehouse sets 'OS-EXT-IPS:type' to 'floating'

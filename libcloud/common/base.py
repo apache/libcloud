@@ -202,7 +202,7 @@ class JsonResponse(Response):
 
         try:
             body = json.loads(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError(
                 'Failed to parse JSON',
                 body=self.body,
@@ -227,7 +227,7 @@ class XmlResponse(Response):
             except ValueError:
                 # lxml wants a bytes and tests are basically hard-coded to str
                 body = ET.XML(self.body.encode('utf-8'))
-        except:
+        except Exception:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
                                          driver=self.connection.driver)

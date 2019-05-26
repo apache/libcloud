@@ -48,7 +48,7 @@ import time
 
 try:
     import argparse
-except:
+except Exception:
     print('This script uses the python "argparse" module. Please use Python '
           '2.7 or greater.')
     raise
@@ -329,7 +329,7 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
             except ResourceNotFoundError:
                 display('   Not found: %s (%s)' % (resrc.name,
                                                    resrc.__class__.__name__))
-            except:
+            except Exception:
                 class_name = resrc.__class__.__name__
                 display('   Failed to Delete %s (%s)' % (resrc.name,
                                                          class_name))

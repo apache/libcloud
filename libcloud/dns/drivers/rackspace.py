@@ -82,8 +82,8 @@ class RackspaceDNSConnection(OpenStack_1_1_Connection, PollingConnection):
     _auth_version = '2.0'
 
     def __init__(self, *args, **kwargs):
-            self.region = kwargs.pop('region', None)
-            super(RackspaceDNSConnection, self).__init__(*args, **kwargs)
+        self.region = kwargs.pop('region', None)
+        super(RackspaceDNSConnection, self).__init__(*args, **kwargs)
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
         job_id = response.object['jobId']
