@@ -170,6 +170,7 @@ class BaseS3Connection(ConnectionUserAndKey):
         return params
 
     def pre_connect_hook(self, params, headers):
+        # pylint: disable=no-member
         params['Signature'] = self.get_auth_signature(
             method=self.method, headers=headers, params=params,
             expires=params['Expires'], secret_key=self.key, path=self.action,

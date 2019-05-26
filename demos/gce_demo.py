@@ -78,7 +78,8 @@ from libcloud.dns.providers import get_driver as get_driver_dns
 from libcloud.dns.base import Record, Zone
 from libcloud.utils.py3 import PY3
 if PY3:
-    import urllib.request as url_req  # pylint: disable=no-name-in-module
+    # pylint: disable=no-name-in-module,import-error
+    import urllib.request as url_req
 else:
     import urllib2 as url_req
 

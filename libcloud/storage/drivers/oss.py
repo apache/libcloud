@@ -207,6 +207,8 @@ class OSSConnection(ConnectionUserAndKey):
             path = '/%s%s' % (self._container.name, self.action)
         else:
             path = self.action
+
+        # pylint: disable=no-member
         params['Signature'] = self._get_auth_signature(
             method=self.method, headers=headers, params=params,
             expires=params['Expires'], secret_key=self.key, path=path,
