@@ -15,13 +15,13 @@ General
 
 - Use assertIsNone instead of assertEqual with None in tests (GITHUB-1264)
   [Ken Dreyer]
-  
+
 - Updating command line arguments to current version in Azure examples (GITHUB-1273) [mitar]
 
 - [GCE, SoftLayer] Update GCE and Softlayer drivers to utilize crypto
   primitives from the ``cryptography`` library instead of deprecated and
   unmaintained ``PyCrypto`` library.
-  
+
   (GITHUB-1280)
   [Ryan Petrello]
 
@@ -105,6 +105,9 @@ Compute
 
 - [NTT CIS] Change endpoint 'canada' to 'ca' in libcloud/common/nttcis.py (GITHUB-1270)
   [Mitch Raful]
+
+- [OpenStack] Fix ``detach_volume`` method so it works with v2 volumes. (GITHUB-1267)
+  [Rick van de Loo]
 
 Container
 ~~~~~~~~~
