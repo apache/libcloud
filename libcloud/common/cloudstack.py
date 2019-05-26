@@ -152,6 +152,7 @@ class CloudStackConnection(ConnectionUserAndKey, PollingConnection):
             params = {}
 
         params['command'] = command
+        # pylint: disable=maybe-no-member
         result = self.request(action=self.driver.path, params=params,
                               data=data, headers=headers, method=method)
 

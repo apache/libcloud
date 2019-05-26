@@ -125,7 +125,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         params = {'name': domain}
         try:
             params['ip_address'] = extra['ip']
-        except:
+        except Exception:
             params['ip_address'] = '127.0.0.1'
 
         res = self.connection.request('/v2/domains', params=params,

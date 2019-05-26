@@ -307,8 +307,7 @@ def generate_providers_table(api):
                 features = getattr(cls, 'features', {}).get('create_node', [])
                 is_implemented = len(features) >= 1
             else:
-                is_implemented = (id(driver_method) !=
-                                  id(base_method))
+                is_implemented = (id(driver_method) != id(base_method))
 
             result[name]['methods'][method_name] = is_implemented
 
@@ -467,5 +466,6 @@ def generate_tables():
         with open(supported_methods_path, 'w') as fp:
             fp.write(HEADER + '\n\n')
             fp.write(supported_methods)
+
 
 generate_tables()

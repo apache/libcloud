@@ -312,11 +312,11 @@ class DummyNodeDriver(NodeDriver):
 
         @inherits: :class:`NodeDriver.create_node`
         """
-        l = len(self.nl) + 1
-        n = Node(id=l,
-                 name='dummy-%d' % l,
+        num = len(self.nl) + 1
+        n = Node(id=num,
+                 name='dummy-%d' % (num),
                  state=NodeState.RUNNING,
-                 public_ips=['127.0.0.%d' % l],
+                 public_ips=['127.0.0.%d' % (num)],
                  private_ips=[],
                  driver=self,
                  size=NodeSize(id='s1', name='foo', ram=2048,
@@ -342,6 +342,7 @@ def _ip_to_int(ip):
 
 def _int_to_ip(ip):
     return socket.inet_ntoa(struct.pack('I', socket.ntohl(ip)))
+
 
 if __name__ == "__main__":
     import doctest

@@ -24,7 +24,7 @@ import time
 from collections import defaultdict, OrderedDict
 
 import requests
-import demjson
+import demjson  # pylint: disable=import-error
 
 LINUX_PRICING_URLS = [
     # Deprecated instances (JSON format)
@@ -163,11 +163,11 @@ def scrape_ec2_pricing():
     for url in LINUX_PRICING_URLS:
         response = requests.get(url)
 
-        if re.match('.*?\.json$', url):
+        if re.match(r'.*?\.json$', url):
             data = response.json()
-        elif re.match('.*?\.js$', url):
+        elif re.match(r'.*?\.js$', url):
             data = response.content
-            match = re.match('^.*callback\((.*?)\);?$', data,
+            match = re.match(r'^.*callback\((.*?)\);?$', data,
                              re.MULTILINE | re.DOTALL)
             data = match.group(1)
             # demjson supports non-strict mode and can parse unquoted objects

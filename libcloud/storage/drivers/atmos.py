@@ -91,8 +91,9 @@ class AtmosConnection(ConnectionUserAndKey):
 
     def _calculate_signature(self, params, headers):
         pathstring = urlunquote(self.action)
-        if pathstring.startswith(self.driver.path):
-            pathstring = pathstring[len(self.driver.path):]
+        driver_path = self.driver.path  # pylint: disable=no-member
+        if pathstring.startswith(driver_path):
+            pathstring = pathstring[len(driver_path):]
         if params:
             if type(params) is dict:
                 params = list(params.items())

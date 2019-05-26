@@ -56,6 +56,7 @@ class AzureAuthJsonResponse(JsonResponse):
         else:
             return str(b)
 
+
 # Based on
 # https://github.com/Azure/azure-xplat-cli/blob/master/lib/util/profile/environment.js
 publicEnvironments = {

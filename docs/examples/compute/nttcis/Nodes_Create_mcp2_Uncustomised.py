@@ -14,8 +14,8 @@ location = driver.ex_get_location_by_id(id='EU7')
 # Get network domain by location
 networkDomainName = "Test Apache Libcloud"
 network_domains = driver.ex_list_network_domains(location=location)
-my_network_domain = [d for d in network_domains if d.name ==
-                     networkDomainName][0]
+my_network_domain = [d for d in network_domains if
+                     d.name == networkDomainName][0]
 
 vlan = driver.ex_list_vlans(name='Libcloud Test VLAN')[0]
 
