@@ -1357,21 +1357,21 @@ class ECSDriver(NodeDriver):
         return self.get_image(image_id=image_id)
 
     def create_public_ip(self, instance_id):
-            """
-            Create public ip.
+        """
+        Create public ip.
 
-            :keyword instance_id: instance id for allocating public ip.
-            :type    instance_id: ``str``
+        :keyword instance_id: instance id for allocating public ip.
+        :type    instance_id: ``str``
 
-            :return public ip
-            :rtype ``str``
-            """
-            params = {'Action': 'AllocatePublicIpAddress',
-                      'InstanceId': instance_id}
+        :return public ip
+        :rtype ``str``
+        """
+        params = {'Action': 'AllocatePublicIpAddress',
+                  'InstanceId': instance_id}
 
-            resp = self.connection.request(self.path, params=params)
-            return findtext(resp.object, 'IpAddress',
-                            namespace=self.namespace)
+        resp = self.connection.request(self.path, params=params)
+        return findtext(resp.object, 'IpAddress',
+                        namespace=self.namespace)
 
     def _to_nodes(self, object):
         """

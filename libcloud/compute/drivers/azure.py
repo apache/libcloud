@@ -1351,7 +1351,7 @@ class AzureNodeDriver(NodeDriver):
         _affinity_group = res.hosted_service_properties.affinity_group
         _cloud_service_location = res.hosted_service_properties.location
 
-        if _affinity_group is not None and _affinity_group is not '':
+        if _affinity_group is not None and _affinity_group != '':
             return self.service_location(True, _affinity_group)
         elif _cloud_service_location is not None:
             return self.service_location(False, _cloud_service_location)
@@ -1932,6 +1932,7 @@ class AzureNodeDriver(NodeDriver):
             values = (response.error, response.body, response.status)
             message = 'Message: %s, Body: %s, Status code: %s' % (values)
             raise LibcloudError(message, driver=self)
+
 
 """
 XML Serializer
@@ -2867,6 +2868,7 @@ class AzureXmlSerializer(object):
 
             return xml
 
+
 """
 Data Classes
 
@@ -3501,6 +3503,7 @@ class AzureHTTPResponse(object):
         self.message = message
         self.headers = headers
         self.body = body
+
 
 """
 Helper classes and functions.

@@ -99,6 +99,7 @@ class VoxelConnection(ConnectionUserAndKey):
         params['api_sig'] = md5.hexdigest()
         return params
 
+
 VOXEL_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
 

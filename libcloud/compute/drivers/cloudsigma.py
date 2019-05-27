@@ -25,7 +25,7 @@ import base64
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from libcloud.utils.py3 import b
@@ -1961,8 +1961,16 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         return subscriptions
 
     def _to_subscription(self, data):
-        start_time = parse_date(data['start_time'])
-        end_time = parse_date(data['end_time'])
+        if data.get('start_time', None):
+            start_time = parse_date(data['start_time'])
+        else:
+            start_time = None
+
+        if data.get('end_time', None):
+            end_time = parse_date(data['end_time'])
+        else:
+            end_time = None
+
         obj_uuid = data['subscribed_object']
 
         subscription = CloudSigmaSubscription(id=data['id'],

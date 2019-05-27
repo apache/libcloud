@@ -81,7 +81,7 @@ class BaseEC2Tests(LibcloudTestCase):
                 sizes = driver.list_sizes()
                 if no_pricing:
                     self.assertTrue(all([s.price is None for s in sizes]))
-            except:
+            except Exception:
                 unsupported_regions.append(region)
 
         if unsupported_regions:

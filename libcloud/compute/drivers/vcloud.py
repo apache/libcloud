@@ -1735,7 +1735,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 "%s the VM script file does not exist" % vm_script)
         try:
             open(vm_script).read()
-        except:
+        except Exception:
             raise
         return vm_script
 
@@ -1915,7 +1915,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vms = self._get_vm_elements(vapp_or_vm_id)
         try:
             script = open(vm_script).read()
-        except:
+        except Exception:
             return
 
         # ElementTree escapes script characters automatically. Escape
@@ -1931,7 +1931,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             try:
                 res.object.find(
                     fixxpath(res.object, 'CustomizationScript')).text = script
-            except:
+            except Exception:
                 # CustomizationScript section does not exist, insert it just
                 # before ComputerName
                 for i, e in enumerate(res.object):
@@ -1993,7 +1993,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         try:
             res.object.find(
                 fixxpath(res.object, section)).text = text
-        except:
+        except Exception:
             # "section" section does not exist, insert it just
             # before "prev_section"
             for i, e in enumerate(res.object):
@@ -2334,5 +2334,5 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
                 "port": res.object.find(fixxpath(res.object, 'Port')).text,
             }
             return output
-        except:
+        except Exception:
             return None

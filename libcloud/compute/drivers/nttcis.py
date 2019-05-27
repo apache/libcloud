@@ -5188,7 +5188,7 @@ class NttCisNodeDriver(NodeDriver):
         location = list(filter(lambda x: x.id == location_id,
                                locations))[0]
         plan = findtext(element, 'type', TYPES_URN)
-        if plan is 'ESSENTIALS':
+        if plan == 'ESSENTIALS':
             plan_type = NetworkDomainServicePlan.ESSENTIALS
         else:
             plan_type = NetworkDomainServicePlan.ADVANCED
@@ -5247,11 +5247,11 @@ class NttCisNodeDriver(NodeDriver):
         return locations
 
     def _to_location(self, element):
-        l = NodeLocation(id=element.get('id'),
-                         name=findtext(element, 'displayName', TYPES_URN),
-                         country=findtext(element, 'country', TYPES_URN),
-                         driver=self)
-        return l
+        loc = NodeLocation(id=element.get('id'),
+                           name=findtext(element, 'displayName', TYPES_URN),
+                           country=findtext(element, 'country', TYPES_URN),
+                           driver=self)
+        return loc
 
     def _to_cpu_spec(self, element):
         return NttCisServerCpuSpecification(

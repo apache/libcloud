@@ -92,6 +92,7 @@ class DigitalOcean_v2_Connection(ConnectionKey):
         This method adds ``per_page`` to the request to reduce the total
         number of paginated requests to the API.
         """
+        # pylint: disable=maybe-no-member
         params['per_page'] = self.driver.ex_per_page
         return params
 
@@ -111,6 +112,7 @@ class DigitalOceanBaseDriver(BaseDriver):
     """
     DigitalOcean BaseDriver
     """
+
     name = 'DigitalOcean'
     website = 'https://www.digitalocean.com'
 

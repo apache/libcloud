@@ -1076,13 +1076,13 @@ class OpenNebula_3_2_NodeDriver(OpenNebula_3_0_NodeDriver):
         values = {}
 
         for attribute_name, attribute_type, alias in attributes:
-                key = alias if alias else attribute_name.upper()
-                value = element.findtext(key)
+            key = alias if alias else attribute_name.upper()
+            value = element.findtext(key)
 
-                if value is not None:
-                    value = attribute_type(value)
+            if value is not None:
+                value = attribute_type(value)
 
-                values[attribute_name] = value
+            values[attribute_name] = value
 
         return values
 

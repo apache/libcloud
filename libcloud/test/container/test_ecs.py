@@ -188,9 +188,13 @@ class ECSMockHttp(MockHttp):
         'GetAuthorizationToken': 'getauthorizationtoken.json'
     }
 
-    def root(
-            self, method, url, body, headers):
+    def root(self, method, url, body, headers):
         target = headers['x-amz-target']
+
+        # Workaround for host not being correctly set for the tests
+        if '%s' in self.host:
+            self.host = self.host % ('region')
+
         if target is not None:
             type = target.split('.')[-1]
             if type is None or self.fixture_map.get(type) is None:

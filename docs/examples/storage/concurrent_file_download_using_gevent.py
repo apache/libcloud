@@ -23,6 +23,7 @@ def download_obj(container, obj):
     print 'Downloading: %s to %s' % (obj.name, path)
     obj.download(destination_path=path)
 
+
 containers = driver.list_containers()
 
 jobs = []

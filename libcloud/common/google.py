@@ -237,7 +237,7 @@ class GoogleResponse(JsonResponse):
         json_error = False
         try:
             body = json.loads(self.body)
-        except:
+        except Exception:
             # If there is both a JSON parsing error and an unsuccessful http
             # response (like a 404), we want to raise the http error and not
             # the JSON one, so don't raise JsonParseError here.
@@ -721,7 +721,7 @@ class GoogleOAuth2Credential(object):
             with os.fdopen(os.open(filename, write_flags,
                                    int('600', 8)), 'w') as f:
                 f.write(data)
-        except:
+        except Exception:
             # Note: Failure to write (cache) token in a file is not fatal. It
             # simply means degraded performance since we will need to acquire a
             # new token each time script runs.

@@ -29,13 +29,13 @@ import os
 import json
 
 import requests
-import ijson
+import ijson  # pylint: disable=import-error
 
 FILEPATH = os.environ.get('TMP_JSON', '/tmp/ec.json')
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"
 IGNORED_FIELDS = ['locationType', 'operatingSystem']
-REG_STORAGE = re.compile('(\d+) x ([0-9,]+)')
-REG_BANDWIDTH = re.compile('\D*(\d+)\D*')
+REG_STORAGE = re.compile(r'(\d+) x ([0-9,]+)')
+REG_BANDWIDTH = re.compile(r'\D*(\d+)\D*')
 #  From <https://aws.amazon.com/marketplace/help/200777880>
 REGION_DETAILS = {
     # America

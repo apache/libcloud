@@ -17,7 +17,7 @@ import sys
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from libcloud.utils.py3 import httplib
@@ -355,14 +355,20 @@ class CloudSigmaAPI20BaseTestCase(object):
     def test_ex_list_subscriptions(self):
         subscriptions = self.driver.ex_list_subscriptions()
 
+        self.assertEqual(len(subscriptions), 6)
+
         subscription = subscriptions[0]
-        self.assertEqual(len(subscriptions), 5)
         self.assertEqual(subscription.id, '7272')
         self.assertEqual(subscription.resource, 'vlan')
         self.assertEqual(subscription.amount, 1)
         self.assertEqual(subscription.period, '345 days, 0:00:00')
         self.assertEqual(subscription.status, 'active')
         self.assertEqual(subscription.price, '0E-20')
+
+        subscription = subscriptions[-1]
+        self.assertEqual(subscription.id, '5555')
+        self.assertEqual(subscription.start_time, None)
+        self.assertEqual(subscription.end_time, None)
 
     def test_ex_create_subscription(self):
         CloudSigmaMockHttp.type = 'CREATE_SUBSCRIPTION'
