@@ -3017,7 +3017,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._subnets_url_prefix).object
         return self._to_subnets(response)
 
-    def ex_create_subnet(self, name, network, cidr, ip_version=4, **kwargs):
+    def ex_create_subnet(self, name, network, cidr, ip_version=4,
+                         description='', dns_nameservers=None,
+                         host_routes=None):
         """
         Create a new Subnet
 
@@ -3033,13 +3035,29 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param ip_version: ip_version of subnet which should be used
         :type ip_version: ``int``
 
+        :param description: Description for the resource.
+        :type description: ``str``
+
+        :param dns_nameservers: List of dns name servers.
+        :type dns_nameservers: ``list`` of ``str``
+
+        :param host_routes: Additional routes for the subnet.
+        :type host_routes: ``list`` of ``str``
+
         :rtype: :class:`OpenStack_2_SubNet`
         """
-        data = {'subnet': {'cidr': cidr, 'network_id': network.id,
-                           'ip_version': ip_version, 'name': name}}
-        # Add optional values
-        for key, value in kwargs.items():
-            data['subnet'][key] = value
+        data = {
+            'subnet':
+                {
+                    'cidr': cidr,
+                    'network_id': network.id,
+                    'ip_version': ip_version,
+                    'name': name or '',
+                    'description': description or '',
+                    'dns_nameservers': dns_nameservers or [],
+                    'host_routes': host_routes or []
+                }
+        }
         response = self.network_connection.request(
             self._subnets_url_prefix, method='POST', data=data).object
         return self._to_subnet(response['subnet'])
@@ -3057,18 +3075,37 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._subnets_url_prefix, subnet.id), method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
-    def ex_update_subnet(self, subnet, **kwargs):
+    def ex_update_subnet(self, subnet, name=None, description=None,
+                         dns_nameservers=None, host_routes=None):
         """
         Update data of an existing SubNet
 
         :param subnet: Subnet which should be updated
         :type subnet: :class:`OpenStack_2_SubNet`
 
+        :param name: Name of subnet which should be used
+        :type name: ``str``
+
+        :param description: Description for the resource.
+        :type description: ``str``
+
+        :param dns_nameservers: List of dns name servers.
+        :type dns_nameservers: ``list`` of ``str``
+
+        :param host_routes: Additional routes for the subnet.
+        :type host_routes: ``list`` of ``str``
+
         :rtype: :class:`OpenStack_2_SubNet`
         """
         data = {'subnet': {}}
-        for key, value in kwargs.items():
-            data['subnet'][key] = value
+        if name is not None:
+            data['subnet']['name'] = name
+        if description is not None:
+            data['subnet']['description'] = description
+        if dns_nameservers is not None:
+            data['subnet']['dns_nameservers'] = dns_nameservers
+        if host_routes is not None:
+            data['subnet']['host_routes'] = host_routes
         response = self.network_connection.request(
             "%s/%s" % (self._subnets_url_prefix, subnet.id),
             method='PUT', data=data).object
@@ -3189,18 +3226,50 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         return self._to_port(response.object['port'])
 
-    def ex_update_port(self, port, **kwargs):
+    def ex_update_port(self, port, description=None,
+                       admin_state_up=None, name=None,
+                       port_security_enabled=None,
+                       qos_policy_id=None, security_groups=None):
         """
         Update a OpenStack_2_PortInterface
 
         :param      port: port interface to remove
         :type       port: :class:`OpenStack_2_PortInterface`
 
+        :param      description: Description of the port
+        :type       description: ``str``
+
+        :param      admin_state_up: The administrative state of the
+                    resource, which is up or down
+        :type       admin_state_up: ``bool``
+
+        :param      name: Human-readable name of the resource
+        :type       name: ``str``
+
+        :param      port_security_enabled: 	The port security status
+        :type       port_security_enabled: ``bool``
+
+        :param      qos_policy_id: QoS policy associated with the port
+        :type       qos_policy_id: ``str``
+
+        :param      security_groups: The IDs of security groups applied
+        :type       security_groups: ``list`` of ``str``
+
         :rtype: :class:`OpenStack_2_PortInterface`
         """
         data = {'port': {}}
-        for key, value in kwargs.items():
-            data['port'][key] = value
+        if description is not None:
+            data['port']['description'] = description
+        if admin_state_up is not None:
+            data['port']['admin_state_up'] = admin_state_up
+        if name is not None:
+            data['port']['name'] = name
+        if port_security_enabled is not None:
+            data['port']['port_security_enabled'] = port_security_enabled
+        if qos_policy_id is not None:
+            data['port']['qos_policy_id'] = qos_policy_id
+        if security_groups is not None:
+            data['port']['security_groups'] = security_groups
         response = self.network_connection.request(
             '/v2.0/ports/{}'.format(port.id), method='PUT'
         )
@@ -3515,19 +3584,30 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             '/v2.0/routers').object
         return self._to_routers(response)
 
-    def ex_create_router(self, name, **kwargs):
+    def ex_create_router(self, name, description='', admin_state_up=True):
         """
         Create a new Router
 
         :param name: Name of router which should be used
         :type name: ``str``
 
+        :param      description: Description of the port
+        :type       description: ``str``
+
+        :param      admin_state_up: The administrative state of the
+                    resource, which is up or down
+        :type       admin_state_up: ``bool``
+
         :rtype: :class:`OpenStack_2_Router`
         """
-        data = {'router': {'name': name}}
-        # Add optional values
-        for key, value in kwargs.items():
-            data['router'][key] = value
+        data = {
+            'router':
+                {
+                    'name': name or '',
+                    'description': description or '',
+                    'admin_state_up': admin_state_up
+                }
+        }
         response = self.network_connection.request(
             '/v2.0/routers', method='POST', data=data).object
         return self._to_router(response['router'])
@@ -3593,7 +3673,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
     def ex_del_router_port(self, router, port):
         """
-        Remove port to a router
+        Remove port from a router
 
         :param router: Router to remove the port
         :type router: :class:`OpenStack_2_Router`
