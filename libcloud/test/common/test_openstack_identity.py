@@ -93,7 +93,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 
                 try:
                     osa = osa.authenticate()
-                except:
+                except Exception:
                     pass
 
                 if (should_append_default_path == APPEND):

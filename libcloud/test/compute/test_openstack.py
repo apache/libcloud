@@ -2029,6 +2029,15 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertTrue(self.driver.ex_add_router_subnet(router, subnet))
         self.assertTrue(self.driver.ex_del_router_subnet(router, subnet))
 
+    def test_detach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume(
+            'abc6a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(
+            self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+        self.assertEqual(self.driver.detach_volume(volume), True)
+
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
     should_list_volumes = True
@@ -2556,7 +2565,15 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
-    
+
+    def _v2_1337_volumes_abc6a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__volume_abc6a3a1_c4ce_40f6_9b9f_07a61508938d.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
     def _v2_1337_snapshots_detail(self, method, url, body, headers):
         if ('unit_test=paginate' in url and 'marker' not in url) or \
                 'unit_test=pagination_loop' in url:

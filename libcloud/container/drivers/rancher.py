@@ -17,7 +17,7 @@ import base64
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from libcloud.utils.py3 import httplib, urlparse

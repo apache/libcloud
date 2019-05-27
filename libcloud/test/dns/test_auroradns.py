@@ -167,7 +167,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneDoesNotExistError')
         except ZoneDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_delete_zone_non_exist(self):
@@ -178,7 +178,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneDoesNotExistError')
         except ZoneDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_create_zone_already_exist(self):
@@ -187,7 +187,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneAlreadyExistsError')
         except ZoneAlreadyExistsError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_list_records_non_exist(self):
@@ -198,7 +198,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneDoesNotExistError')
         except ZoneDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_get_record_non_exist(self):
@@ -207,7 +207,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a RecordDoesNotExistError')
         except RecordDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_create_health_check(self):

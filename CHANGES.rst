@@ -15,13 +15,13 @@ General
 
 - Use assertIsNone instead of assertEqual with None in tests (GITHUB-1264)
   [Ken Dreyer]
-  
+
 - Updating command line arguments to current version in Azure examples (GITHUB-1273) [mitar]
 
 - [GCE, SoftLayer] Update GCE and Softlayer drivers to utilize crypto
   primitives from the ``cryptography`` library instead of deprecated and
   unmaintained ``PyCrypto`` library.
-  
+
   (GITHUB-1280)
   [Ryan Petrello]
 
@@ -106,6 +106,14 @@ Compute
 - [NTT CIS] Change endpoint 'canada' to 'ca' in libcloud/common/nttcis.py (GITHUB-1270)
   [Mitch Raful]
 
+- [OpenStack] Fix ``detach_volume`` method so it works with v2 volumes. (GITHUB-1267)
+  [Rick van de Loo]
+
+- [CloudSigma] Fix CloudSigma driver so it correctly handles subscription
+  objects without the ``start_time`` and / or ``end_time`` attribute. (GITHUB-1284)
+  (LIBCLOUD-1040)
+  [aki-k, Tomaz Muraus]
+
 Container
 ~~~~~~~~~
 
@@ -116,6 +124,10 @@ DNS
 ~~~
 
 - Add new driver for RcodeZero DNS (GITHUB-1256, LIBCLOUD-1025) [MikeAT]
+- [DigitalOcean] Update DigitalOcean driver so it supports ``ttl`` attribute for
+  ``Record`` objects. This includes support for specifying a record ttl via
+  ``extra['ttl']`` attribute when creating and updating a record. (GITHUB-1252
+  LIBCLOUD-1022) [Kevin Roy]
 
 Storage
 ~~~~~~~

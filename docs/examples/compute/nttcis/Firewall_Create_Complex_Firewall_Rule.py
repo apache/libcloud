@@ -14,8 +14,8 @@ location = driver.ex_get_location_by_id(id='EU6')
 # Get network domain by location
 networkDomainName = "sdk_test_1"
 network_domains = driver.ex_list_network_domains(location=location.id)
-my_network_domain = [d for d in network_domains if d.name ==
-                     networkDomainName][0]
+my_network_domain = [d for d in network_domains if
+                     d.name == networkDomainName][0]
 
 # Create an instance of NttCisFirewallAddress for source
 source_firewall_address = NttCisFirewallAddress(any_ip='ANY')

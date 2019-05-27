@@ -125,7 +125,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         params = {'name': domain}
         try:
             params['ip_address'] = extra['ip']
-        except:
+        except Exception:
             params['ip_address'] = '127.0.0.1'
 
         res = self.connection.request('/v2/domains', params=params,
@@ -179,6 +179,9 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
             except KeyError:
                 params['weight'] = 'null'
 
+            if 'ttl' in extra:
+                params['ttl'] = extra['ttl']
+
         res = self.connection.request('/v2/domains/%s/records' % zone.id,
                                       params=params,
                                       method='POST')
@@ -186,6 +189,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         return Record(id=res.object['domain_record']['id'],
                       name=res.object['domain_record']['name'],
                       type=type, data=data, zone=zone,
+                      ttl=res.object['domain_record'].get('ttl', None),
                       driver=self, extra=extra)
 
     def update_record(self, record, name=None, type=None,
@@ -234,6 +238,9 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
             except KeyError:
                 params['weight'] = 'null'
 
+            if 'ttl' in extra:
+                params['ttl'] = extra['ttl']
+
         res = self.connection.request('/v2/domains/%s/records/%s' %
                                       (record.zone.id, record.id),
                                       params=params,
@@ -242,6 +249,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         return Record(id=res.object['domain_record']['id'],
                       name=res.object['domain_record']['name'],
                       type=record.type, data=data, zone=record.zone,
+                      ttl=res.object['domain_record'].get('ttl', None),
                       driver=self, extra=extra)
 
     def delete_zone(self, zone):
@@ -284,7 +292,8 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                  'weight': data['weight']}
         return Record(id=data['id'], name=data['name'],
                       type=self._string_to_record_type(data['type']),
-                      data=data['data'], zone=zone, driver=self, extra=extra)
+                      data=data['data'], zone=zone, ttl=data.get('ttl', None),
+                      driver=self, extra=extra)
 
     def _to_zone(self, data):
         extra = {'zone_file': data['zone_file']}

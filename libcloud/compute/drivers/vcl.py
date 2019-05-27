@@ -300,6 +300,6 @@ class VCLNodeDriver(NodeDriver):
         )
         time = 0
         for i in res['requests']:
-                if i['requestid'] == node.id:
-                        time = i['end']
+            if i['requestid'] == node.id:
+                time = i['end']
         return time

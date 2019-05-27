@@ -355,7 +355,7 @@ class SoftlayerLBDriver(Driver):
     def _to_lb_package(self, pkg):
         try:
             price_id = pkg['prices'][0]['id']
-        except:
+        except Exception:
             price_id = -1
 
         capacity = int(pkg.get('capacity', 0))
@@ -404,7 +404,7 @@ class SoftlayerLBDriver(Driver):
                 try:
                     extra['algorithm'] = self.\
                         _value_to_algorithm(routing_method)
-                except:
+                except Exception:
                     pass
                 extra['protocol'] = routing_type.lower()
 

@@ -90,7 +90,7 @@ class GridspotNodeDriver(NodeDriver):
         if data[field]:
             try:
                 params[field] = int(data[field])
-            except:
+            except Exception:
                 pass
 
     def _to_node(self, data):
