@@ -802,6 +802,20 @@ class ECSDriver(NodeDriver):
         return resp.success() and \
             self._wait_until_state([node], NodeState.STOPPED)
 
+    def ex_resize_node(self, node, size):
+        """
+        Resize a node
+
+        :param node: The node to resize
+        :param size: The new size of the node
+        """
+        params = {'Action': 'ModifyInstanceSpec',
+                  'InstanceId': node.id,
+                  'InstanceType': size}
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+
     def ex_create_security_group(self, description=None, client_token=None):
         """
         Create a new security group.
