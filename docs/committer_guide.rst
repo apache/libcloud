@@ -105,7 +105,7 @@ preparing a release.
 * Make sure tests pass on all the supported Python versions (``tox``)
 * Remove the ``tox`` directory with ``rm -rf .tox``
 * Remove the _secrets_ file with ``rm libcloud/test/secrets.py``
-* Remove leftover builds from previous releases. ``rm -f dist/apache*``
+* Remove leftover builds from previous releases. ``rm -f dist/apache* ; rm -rf apache_libcloud.egg-info``
 
 2. Update JIRA
 ~~~~~~~~~~~~~~
