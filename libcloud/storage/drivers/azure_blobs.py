@@ -18,6 +18,7 @@ from __future__ import with_statement
 import base64
 import os
 import binascii
+from io import BytesIO
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
@@ -799,6 +800,9 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         @inherits: :class:`StorageDriver.upload_object_via_stream`
 
+        Note that if ``iterator`` does not support ``seek``, the
+        entire generator will be buffered in memory.
+
         :param ex_blob_type: Storage class
         :type ex_blob_type: ``str``
 
@@ -825,7 +829,12 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         self._check_values(ex_blob_type, ex_page_blob_size)
         if ex_blob_type == "BlockBlob":
-            iterator.seek(0, os.SEEK_END)
+            try:
+                iterator.seek(0, os.SEEK_END)
+            except AttributeError:
+                buffer = BytesIO()
+                buffer.writelines(iterator)
+                iterator = buffer
             blob_size = iterator.tell()
             iterator.seek(0)
         else:
