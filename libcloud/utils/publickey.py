@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import hashlib
 
 from libcloud.utils.py3 import hexadigits
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import base64_decode_string
 
 __all__ = [
     'get_pubkey_openssh_fingerprint',
@@ -50,7 +50,7 @@ def get_pubkey_openssh_fingerprint(pubkey):
         encoding=serialization.Encoding.OpenSSH,
         format=serialization.PublicFormat.OpenSSH,
     )[7:]  # strip ssh-rsa prefix
-    return _to_md5_fingerprint(base64.decodestring(pub_openssh))
+    return _to_md5_fingerprint(base64_decode_string(pub_openssh))
 
 
 def get_pubkey_ssh2_fingerprint(pubkey):
