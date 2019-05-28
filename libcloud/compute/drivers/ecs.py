@@ -50,6 +50,13 @@ ECS_API_VERSION = '2014-05-26'
 ECS_API_ENDPOINT = 'ecs.aliyuncs.com'
 DEFAULT_SIGNATURE_VERSION = '1.0'
 
+COST_REGIONS = ['ecs-ap-northeast-1', 'ecs-ap-south-1', 'ecs-ap-southeast-1',
+                'ecs-ap-southeast-2', 'ecs-ap-southeast-3', 'ecs-ap-southeast-5',
+                'ecs-cn-beijing', 'ecs-cn-chengdu', 'ecs-cn-hangzhou', 'ecs-cn-hongkong',
+                'ecs-cn-huhehaote', 'ecs-cn-qingdao', 'ecs-cn-shanghai', 'ecs-cn-shenzhen',
+                'ecs-cn-zhangjiakou', 'ecs-eu-central-1', 'ecs-eu-west-1', 'ecs-me-east-1',
+                'ecs-us-east-1', 'ecs-us-west-1']
+
 
 def _parse_bool(value):
     if isinstance(value, bool):
