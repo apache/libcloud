@@ -927,19 +927,22 @@ class DimensionData_v2_4_Tests(unittest.TestCase):
     def test_ex_wait_for_state(self):
         self.driver.ex_wait_for_state('NORMAL',
                                       self.driver.ex_get_vlan,
-                                      vlan_id='0e56433f-d808-4669-821d-812769517ff8')
+                                      vlan_id='0e56433f-d808-4669-821d-812769517ff8',
+                                      poll_interval=0.1)
 
     def test_ex_wait_for_state_NODE(self):
         self.driver.ex_wait_for_state('running',
                                       self.driver.ex_get_node_by_id,
-                                      id='e75ead52-692f-4314-8725-c8a4f4d13a87')
+                                      id='e75ead52-692f-4314-8725-c8a4f4d13a87',
+                                      poll_interval=0.1)
 
     def test_ex_wait_for_state_FAIL(self):
         with self.assertRaises(DimensionDataAPIException) as context:
             self.driver.ex_wait_for_state('starting',
                                           self.driver.ex_get_node_by_id,
                                           id='e75ead52-692f-4314-8725-c8a4f4d13a87',
-                                          timeout=2
+                                          poll_interval=0.1,
+                                          timeout=0.1
                                           )
         self.assertEqual(context.exception.code, 'running')
         self.assertTrue('timed out' in context.exception.msg)
