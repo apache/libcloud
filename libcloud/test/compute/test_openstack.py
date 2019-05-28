@@ -1299,7 +1299,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = 'key3'
         path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
-        pub_key = open(path, 'r').read()
+
+        with open(path, 'r') as fp:
+            pub_key = fp.read()
+
         keypair = self.driver.import_key_pair_from_file(name=name,
                                                         key_file_path=path)
         self.assertEqual(keypair.name, name)
@@ -1312,7 +1315,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = 'key3'
         path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
-        pub_key = open(path, 'r').read()
+
+        with open(path, 'r') as fp:
+            pub_key = fp.read()
+
         keypair = self.driver.import_key_pair_from_string(name=name,
                                                           key_material=pub_key)
         self.assertEqual(keypair.name, name)
