@@ -136,10 +136,10 @@ if PY3:
     if sys.version_info >= (3, 1, 0):
         # encodestring and decodestring has been deprecated since 3.1.0
         def base64_encode_string(*args, **kwargs):
-            return base64.encodebytes(*args, **kwargs)
+            return base64.encodebytes(*args, **kwargs)  # NOQA
 
         def base64_decode_string(*args, **kwargs):
-            return base64.decodebytes(*args, **kwargs)
+            return base64.decodebytes(*args, **kwargs)  # NOQA
     else:
         def base64_encode_string(*args, **kwargs):
             return base64.encodestring(*args, **kwargs)

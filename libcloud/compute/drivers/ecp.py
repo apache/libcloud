@@ -17,7 +17,6 @@
 Enomaly ECP driver
 """
 import time
-import base64
 import os
 import socket
 import binascii
