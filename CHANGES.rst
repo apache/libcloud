@@ -28,6 +28,14 @@ General
   (GITHUB-1280)
   [Ryan Petrello]
 
+- Fix ``libcloud.enable_debug`` function so it doesn't leak open file handle
+  and closes the open file when the program exits when a debug mode is used.
+  [Tomaz Muraus]
+
+* Update various drivers (CloudFiles, NTT CIS etc.) so they don't leak open
+  file handles in some situations.
+  [Tomaz Muraus]
+
 Common
 ~~~~~~
 
