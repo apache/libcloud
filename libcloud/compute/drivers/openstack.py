@@ -3584,7 +3584,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             '/v2.0/routers').object
         return self._to_routers(response)
 
-    def ex_create_router(self, name, description='', admin_state_up=True):
+    def ex_create_router(self, name, description='', admin_state_up=True,
+                         external_gateway_info=None):
         """
         Create a new Router
 
@@ -3598,6 +3599,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                     resource, which is up or down
         :type       admin_state_up: ``bool``
 
+        :param      external_gateway_info: The external gateway information
+        :type       external_gateway_info: ``dict``
+
         :rtype: :class:`OpenStack_2_Router`
         """
         data = {
@@ -3605,9 +3609,11 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                 {
                     'name': name or '',
                     'description': description or '',
-                    'admin_state_up': admin_state_up
+                    'admin_state_up': admin_state_up,
                 }
         }
+        if external_gateway_info:
+            data['router']['external_gateway_info'] = external_gateway_info
         response = self.network_connection.request(
             '/v2.0/routers', method='POST', data=data).object
         return self._to_router(response['router'])
