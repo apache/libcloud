@@ -62,6 +62,7 @@ cache:
   apt: true
   directories:
     - $HOME/.cache/pip # pip cache
+    - .tox
 
 notifications:
   # Disabled until ASF switches to new mailing list software

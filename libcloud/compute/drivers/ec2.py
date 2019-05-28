@@ -1213,7 +1213,7 @@ class EC2Response(AWSBaseResponse):
                                          body=self.body, driver=EC2NodeDriver)
 
         for err in body.findall('Errors/Error'):
-            code, message = err.getchildren()
+            code, message = list(err)
             err_list.append('%s: %s' % (code.text, message.text))
             if code.text == 'InvalidClientTokenId':
                 raise InvalidCredsError(err_list[-1])

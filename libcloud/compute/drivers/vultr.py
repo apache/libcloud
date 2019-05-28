@@ -39,7 +39,7 @@ class rate_limited:
     :param int retries: Number of retries.
     """
 
-    def __init__(self, sleep=1, retries=1):
+    def __init__(self, sleep=0.5, retries=1):
         self.sleep = sleep
         self.retries = retries
 

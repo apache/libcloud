@@ -219,7 +219,7 @@ class DeploymentTests(unittest.TestCase):
 
     def test_wait_until_running_running_instantly(self):
         node2, ips = self.driver.wait_until_running(
-            nodes=[self.node], wait_period=1,
+            nodes=[self.node], wait_period=0.1,
             timeout=0.5)[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['67.23.21.33'], ips)
@@ -229,11 +229,11 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             node2, ips = self.driver.wait_until_running(
-                nodes=[self.node], wait_period=1,
-                timeout=0.5)[0]
+                nodes=[self.node], wait_period=0.1,
+                timeout=0.2)[0]
         except LibcloudError:
             e = sys.exc_info()[1]
-            self.assertTrue(e.value.find('Timed out after 0.5 second') != -1)
+            self.assertTrue(e.value.find('Timed out after 0.2 second') != -1)
         else:
             self.fail('Exception was not thrown')
 
@@ -242,11 +242,11 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             node2, ips = self.driver.wait_until_running(
-                nodes=[self.node], wait_period=1,
-                timeout=0.5)[0]
+                nodes=[self.node], wait_period=0.1,
+                timeout=0.2)[0]
         except LibcloudError:
             e = sys.exc_info()[1]
-            self.assertTrue(e.value.find('Timed out after 0.5 second') != -1)
+            self.assertTrue(e.value.find('Timed out after 0.2 second') != -1)
         else:
             self.fail('Exception was not thrown')
 
@@ -258,19 +258,19 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['2001:DB8::1'], ips)
 
-    def test_wait_until_running_running_after_1_second(self):
+    def test_wait_until_running_running_after_0_2_second(self):
         RackspaceMockHttp.type = '05_SECOND_DELAY'
         node2, ips = self.driver.wait_until_running(
-            nodes=[self.node], wait_period=1,
-            timeout=0.5)[0]
+            nodes=[self.node], wait_period=0.2,
+            timeout=0.1)[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['67.23.21.33'], ips)
 
-    def test_wait_until_running_running_after_1_second_private_ips(self):
+    def test_wait_until_running_running_after_0_2_second_private_ips(self):
         RackspaceMockHttp.type = '05_SECOND_DELAY'
         node2, ips = self.driver.wait_until_running(
-            nodes=[self.node], wait_period=1,
-            timeout=0.5, ssh_interface='private_ips')[0]
+            nodes=[self.node], wait_period=0.2,
+            timeout=0.1, ssh_interface='private_ips')[0]
         self.assertEqual(self.node.uuid, node2.uuid)
         self.assertEqual(['10.176.168.218'], ips)
 
@@ -288,7 +288,7 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.1,
-                                           timeout=0.5)
+                                           timeout=0.2)
         except LibcloudError:
             e = sys.exc_info()[1]
             self.assertTrue(e.value.find('Timed out') != -1)
@@ -300,10 +300,10 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.1,
-                                           timeout=0.5)
+                                           timeout=0.2)
         except LibcloudError:
             e = sys.exc_info()[1]
-            self.assertTrue(e.value.find('Timed out after 0.5 second') != -1)
+            self.assertTrue(e.value.find('Timed out after 0.2 second') != -1)
         else:
             self.fail('Exception was not thrown')
 
@@ -312,7 +312,7 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.1,
-                                           timeout=0.5)
+                                           timeout=0.2)
         except LibcloudError:
             e = sys.exc_info()[1]
             self.assertTrue(
@@ -347,7 +347,8 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver._ssh_client_connect(ssh_client=mock_ssh_client,
-                                            timeout=0.5)
+                                            wait_period=0.1,
+                                            timeout=0.2)
         except LibcloudError:
             e = sys.exc_info()[1]
             self.assertTrue(e.value.find('Giving up') != -1)

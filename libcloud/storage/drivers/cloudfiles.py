@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hashlib import sha1
+import atexit
 import hmac
 import os
 from time import time
+from hashlib import sha1
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
@@ -943,6 +944,16 @@ class ChunkStreamReader(object):
         self.chunk_size = chunk_size
         self.bytes_read = 0
         self.stop_iteration = False
+
+        # Work around to make sure file description is closed even if the
+        # iterator is never read from or if it's not fully exhausted
+        def close_file(fd):
+            try:
+                fd.close()
+            except Exception:
+                pass
+
+        atexit.register(close_file, self.fd)
 
     def __iter__(self):
         return self

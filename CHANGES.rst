@@ -28,6 +28,14 @@ General
   (GITHUB-1280)
   [Ryan Petrello]
 
+- Fix ``libcloud.enable_debug`` function so it doesn't leak open file handle
+  and closes the open file when the program exits when a debug mode is used.
+  [Tomaz Muraus]
+
+* Update various drivers (CloudFiles, NTT CIS etc.) so they don't leak open
+  file handles in some situations.
+  [Tomaz Muraus]
+
 Common
 ~~~~~~
 
@@ -151,6 +159,13 @@ Storage
   code to ``requests``.
   (LIBCLOUD-1039, GITHUB-1283)
   [Matt Seymour]
+- [CloudFiles] Fix a bug with ``ChunkStreamReader`` class and make sure file
+  descriptor is also closed if the iterator isn't fully exhausted or if the
+  iterator is never read from.
+
+  NOTE: This potential open file descriptor leakage only affected code which
+  utilized ``ex_multipart_upload_object`` method.
+  [Tomaz Muraus]
 
 Container
 ~~~~~~~~~

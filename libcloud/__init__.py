@@ -18,9 +18,11 @@ libcloud provides a unified interface to the cloud computing resources.
 
 :var __version__: Current version of libcloud
 """
+
 import logging
 import os
 import codecs
+import atexit
 
 from libcloud.base import DriverType  # NOQA
 from libcloud.base import DriverTypeFactoryMap  # NOQA
@@ -53,6 +55,15 @@ def enable_debug(fo):
 
     LoggingConnection.log = fo
     Connection.conn_class = LoggingConnection
+
+    # Ensure the file handle is closed on exit
+    def close_file(fd):
+        try:
+            fd.close()
+        except Exception:
+            pass
+
+    atexit.register(close_file, fo)
 
 
 def _init_once():

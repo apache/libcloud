@@ -92,7 +92,7 @@ class DurableDNSDriver(DNSDriver):
                                     schema_params.get('method'),
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -128,7 +128,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone.id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -173,7 +173,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone_id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -216,7 +216,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone_id, 'recordid': record_id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -278,7 +278,7 @@ class DurableDNSDriver(DNSDriver):
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': domain, 'ttl': ttl or DEFAULT_TTL}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -353,7 +353,7 @@ class DurableDNSDriver(DNSDriver):
                   'zonename': zone.id, 'name': name, 'type': type,
                   'data': data}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -434,7 +434,7 @@ class DurableDNSDriver(DNSDriver):
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': domain, 'ttl': ttl}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -511,7 +511,7 @@ class DurableDNSDriver(DNSDriver):
                   'zonename': zone.id, 'id': record.id, 'name': name,
                   'data': data}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -568,7 +568,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone.id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -605,7 +605,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': record.zone.id, 'id': record.id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:

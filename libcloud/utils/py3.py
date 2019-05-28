@@ -18,12 +18,13 @@
 # clause BSD license
 # https://bitbucket.org/loewis/django-3k
 
-# pylint: disable=import-error
+# pylint: disable=import-error,no-member
 
 from __future__ import absolute_import
 
 import sys
 import types
+import unittest
 
 DEFAULT_LXML = False
 
@@ -67,6 +68,7 @@ if PY3:
     from io import StringIO
     import urllib
     import urllib as urllib2
+    import base64
     # pylint: disable=no-name-in-module
     import urllib.parse as urlparse
     import xmlrpc.client as xmlrpclib
@@ -76,7 +78,10 @@ if PY3:
     from urllib.parse import urlencode as urlencode
     from os.path import relpath
 
-    from imp import reload
+    if sys.version_info >= (3, 5, 0):
+        from importlib import reload
+    else:
+        from imp import reload
 
     from builtins import bytes
     from builtins import next
@@ -128,6 +133,32 @@ if PY3:
         # s needs to be a byte string.
         return [format(x, "02x") for x in s]
 
+    if sys.version_info >= (3, 1, 0):
+        # encodestring and decodestring has been deprecated since 3.1.0
+        def base64_encode_string(*args, **kwargs):
+            return base64.encodebytes(*args, **kwargs)  # NOQA
+
+        def base64_decode_string(*args, **kwargs):
+            return base64.decodebytes(*args, **kwargs)  # NOQA
+    else:
+        def base64_encode_string(*args, **kwargs):
+            return base64.encodestring(*args, **kwargs)
+
+        def base64_decode_string(*args, **kwargs):
+            return base64.decodestring(*args, **kwargs)
+
+    def assertRaisesRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+        return getattr(self, 'assertRaisesRegex')(*args, **kwargs)
+
+    def assertRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+
+        return getattr(self, 'assertRegex')(*args, **kwargs)
 else:
     import httplib  # NOQA
     from StringIO import StringIO  # NOQA
@@ -135,6 +166,7 @@ else:
     import urllib2  # NOQA
     import urlparse  # NOQA
     import xmlrpclib  # NOQA
+    import base64  # NOQA
     from urllib import quote as _urlquote  # NOQA
     from urllib import unquote as urlunquote  # NOQA
     from urllib import urlencode as urlencode  # NOQA
@@ -188,3 +220,23 @@ else:
     def hexadigits(s):
         # s needs to be a string.
         return [x.encode("hex") for x in s]
+
+    def base64_encode_string(*args, **kwargs):
+        return base64.encodestring(*args, **kwargs)
+
+    def base64_decode_string(*args, **kwargs):
+        return base64.decodestring(*args, **kwargs)
+
+    def assertRaisesRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+
+        return getattr(self, 'assertRaisesRegexp')(*args, **kwargs)
+
+    def assertRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+
+        return getattr(self, 'assertRegexpMatches')(*args, **kwargs)

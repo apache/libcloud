@@ -2292,7 +2292,7 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
     def _perform_snapshot_operation(self, node, operation, xml_data, headers):
         res = self.connection.request(
             '%s/action/%s' % (get_url_path(node.id), operation),
-            data=ET.tostring(xml_data) if xml_data else None,
+            data=ET.tostring(xml_data) if xml_data is not None else None,
             method='POST',
             headers=headers)
         self._wait_for_task_completion(res.object.get('href'))
