@@ -342,7 +342,7 @@ class ConnectionClassTestCase(unittest.TestCase):
             mock_connect.__name__ = 'mock_connect'
             with self.assertRaises(socket.gaierror):
                 mock_connect.side_effect = socket.gaierror('')
-                retry_request = retry(timeout=1, retry_delay=.1,
+                retry_request = retry(timeout=0.5, retry_delay=.1,
                                       backoff=1)
                 retry_request(con.request)(action='/')
 
@@ -358,7 +358,7 @@ class ConnectionClassTestCase(unittest.TestCase):
             mock_connect.__name__ = 'mock_connect'
             with self.assertRaises(socket.gaierror):
                 mock_connect.side_effect = socket.gaierror('')
-                retry_request = retry(timeout=2, retry_delay=.1,
+                retry_request = retry(timeout=0.5, retry_delay=.1,
                                       backoff=1)
                 retry_request(con.request)(action='/')
 
@@ -374,7 +374,7 @@ class ConnectionClassTestCase(unittest.TestCase):
             mock_connect.__name__ = 'mock_connect'
             with self.assertRaises(socket.gaierror):
                 mock_connect.side_effect = socket.gaierror('')
-                retry_request = retry(timeout=2, retry_delay=.1,
+                retry_request = retry(timeout=0.5, retry_delay=.1,
                                       backoff=1)
                 retry_request(con.request)(action='/')
 
