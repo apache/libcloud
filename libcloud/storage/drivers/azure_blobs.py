@@ -214,7 +214,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             'meta_data': {}
         }
 
-        for meta in metadata.getchildren():
+        for meta in list(metadata):
             extra['meta_data'][meta.tag] = meta.text
 
         return Container(name=name, extra=extra, driver=self)
@@ -299,7 +299,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             extra['md5_hash'] = value
 
         meta_data = {}
-        for meta in metadata.getchildren():
+        for meta in list(metadata):
             meta_data[meta.tag] = meta.text
 
         return Object(name=name, size=size, hash=etag, meta_data=meta_data,
