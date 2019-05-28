@@ -31,6 +31,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import PY3
 from libcloud.utils.files import exhaust_iterator
 
 from libcloud.common.types import InvalidCredsError
@@ -666,7 +667,10 @@ class S3Tests(unittest.TestCase):
         self.assertTrue(result)
 
     def test_download_object_as_stream_data_is_not_buffered_in_memory(self):
-        # If content is consumed and response.content attribute accessed execption
+        # Test case which verifies that response.response attribute is not accessed
+        # and as such, whole body response is not buffered into RAM
+
+        # If content is consumed and response.content attribute accessed exception
         # will be thrown and test will fail
         mock_response = Mock(name='mock response')
         mock_response.headers = {}
@@ -690,7 +694,12 @@ class S3Tests(unittest.TestCase):
                      driver=self.driver_type)
         destination_path = self._file_path
         result = self.driver.download_object_as_stream(obj=obj)
-        self.assertEqual(exhaust_iterator(result), 'a' * 1000)
+        result = exhaust_iterator(result)
+
+        if PY3:
+            result = result.decode('utf-8')
+
+        self.assertEqual(result, 'a' * 1000)
 
     def test_download_object_invalid_file_size(self):
         self.mock_response_klass.type = 'INVALID_SIZE'

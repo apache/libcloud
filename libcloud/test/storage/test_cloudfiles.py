@@ -33,6 +33,7 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import PY3
 from libcloud.utils.files import exhaust_iterator
 
 from libcloud.common.types import MalformedResponseError
@@ -392,7 +393,12 @@ class CloudFilesTests(unittest.TestCase):
                      container=container, meta_data=None,
                      driver=self.driver)
         result = self.driver.download_object_as_stream(obj=obj)
-        self.assertEqual(exhaust_iterator(result), 'a' * 1000)
+        result = exhaust_iterator(result)
+
+        if PY3:
+            result = result.decode('utf-8')
+
+        self.assertEqual(result, 'a' * 1000)
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
