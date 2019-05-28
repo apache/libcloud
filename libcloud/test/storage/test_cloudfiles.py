@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from hashlib import sha1
+
 import hmac
 import os
 import os.path                          # pylint: disable-msg=W0404
@@ -21,13 +21,18 @@ import math
 import sys
 import copy
 from io import BytesIO
+from hashlib import sha1
+
 import mock
+from mock import Mock
+from mock import PropertyMock
 
 import libcloud.utils.files
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import StringIO
 
 from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import CHUNK_SIZE, Container, Object
@@ -359,6 +364,35 @@ class CloudFilesTests(unittest.TestCase):
         stream = self.driver.download_object_as_stream(
             obj=obj, chunk_size=None)
         self.assertTrue(hasattr(stream, '__iter__'))
+
+    def test_download_object_data_is_not_buffered_in_memory(self):
+        # Test case which verifies that response.body attribute is not accessed
+        # and as such, whole body response is not buffered into RAM
+
+        # If content is consumed and response.content attribute accessed execption
+        # will be thrown and test will fail
+        mock_response = Mock(name='mock response')
+        mock_response.headers = {}
+        mock_response.status_code = 200
+        msg = '"content" attribute was accessed but it shouldn\'t have been'
+        type(mock_response).content = PropertyMock(name='mock content attribute',
+                                                   side_effect=Exception(msg))
+        mock_response.iter_content.return_value = StringIO('a' * 1000)
+
+        self.driver.connection.connection.getresponse = Mock()
+        self.driver.connection.connection.getresponse.return_value = mock_response
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object(obj=obj,
+                                             destination_path=destination_path,
+                                             overwrite_existing=False,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
@@ -1183,6 +1217,19 @@ class CloudFilesMockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_NO_BUFFER(
+            self, method, url, body, headers):
+        # test_download_object_data_is_not_buffered_in_memory
+        headers = {}
+        headers.update(self.base_headers)
+        headers['etag'] = '577ef1154f3240ad5b9b413aa7346a1e'
+        body = generate_random_data(1000)
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
