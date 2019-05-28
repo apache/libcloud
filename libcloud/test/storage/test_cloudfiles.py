@@ -33,6 +33,7 @@ from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.files import exhaust_iterator
 
 from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import CHUNK_SIZE, Container, Object
@@ -365,34 +366,33 @@ class CloudFilesTests(unittest.TestCase):
             obj=obj, chunk_size=None)
         self.assertTrue(hasattr(stream, '__iter__'))
 
-    def test_download_object_data_is_not_buffered_in_memory(self):
-        # Test case which verifies that response.body attribute is not accessed
+    def test_download_object_as_stream_data_is_not_buffered_in_memory(self):
+        # Test case which verifies that response.response attribute is not accessed
         # and as such, whole body response is not buffered into RAM
 
-        # If content is consumed and response.content attribute accessed execption
+        # If content is consumed and response.content attribute accessed exception
         # will be thrown and test will fail
         mock_response = Mock(name='mock response')
         mock_response.headers = {}
-        mock_response.status_code = 200
-        msg = '"content" attribute was accessed but it shouldn\'t have been'
+        mock_response.status = 200
+        msg1 = '"response" attribute was accessed but it shouldn\'t have been'
+        msg2 = '"content" attribute was accessed but it shouldn\'t have been'
+        type(mock_response).response = PropertyMock(name='mock response attribute',
+                                                    side_effect=Exception(msg1))
         type(mock_response).content = PropertyMock(name='mock content attribute',
-                                                   side_effect=Exception(msg))
+                                                   side_effect=Exception(msg2))
         mock_response.iter_content.return_value = StringIO('a' * 1000)
 
-        self.driver.connection.connection.getresponse = Mock()
-        self.driver.connection.connection.getresponse.return_value = mock_response
+        self.driver.connection.request = Mock()
+        self.driver.connection.request.return_value = mock_response
 
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
         obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver)
-        destination_path = os.path.abspath(__file__) + '.temp'
-        result = self.driver.download_object(obj=obj,
-                                             destination_path=destination_path,
-                                             overwrite_existing=False,
-                                             delete_on_failure=True)
-        self.assertTrue(result)
+        result = self.driver.download_object_as_stream(obj=obj)
+        self.assertEqual(exhaust_iterator(result), 'a' * 1000)
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,

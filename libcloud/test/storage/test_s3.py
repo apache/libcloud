@@ -31,6 +31,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qs
 from libcloud.utils.py3 import StringIO
+from libcloud.utils.files import exhaust_iterator
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError, MalformedResponseError
@@ -641,7 +642,6 @@ class S3Tests(unittest.TestCase):
 
         # If content is consumed and response.content attribute accessed execption
         # will be thrown and test will fail
-
         mock_response = Mock(name='mock response')
         mock_response.headers = {}
         mock_response.status_code = 200
@@ -664,6 +664,33 @@ class S3Tests(unittest.TestCase):
                                              overwrite_existing=False,
                                              delete_on_failure=True)
         self.assertTrue(result)
+
+    def test_download_object_as_stream_data_is_not_buffered_in_memory(self):
+        # If content is consumed and response.content attribute accessed execption
+        # will be thrown and test will fail
+        mock_response = Mock(name='mock response')
+        mock_response.headers = {}
+        mock_response.status = 200
+
+        msg1 = '"response" attribute was accessed but it shouldn\'t have been'
+        msg2 = '"content" attribute was accessed but it shouldn\'t have been'
+        type(mock_response).response = PropertyMock(name='mock response attribute',
+                                                    side_effect=Exception(msg1))
+        type(mock_response).content = PropertyMock(name='mock content attribute',
+                                                   side_effect=Exception(msg2))
+        mock_response.iter_content.return_value = StringIO('a' * 1000)
+
+        self.driver.connection.request = Mock()
+        self.driver.connection.request.return_value = mock_response
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = self._file_path
+        result = self.driver.download_object_as_stream(obj=obj)
+        self.assertEqual(exhaust_iterator(result), 'a' * 1000)
 
     def test_download_object_invalid_file_size(self):
         self.mock_response_klass.type = 'INVALID_SIZE'
