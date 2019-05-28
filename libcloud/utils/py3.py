@@ -77,7 +77,10 @@ if PY3:
     from urllib.parse import urlencode as urlencode
     from os.path import relpath
 
-    from imp import reload
+    if sys.version_info >= (3, 5, 0):
+        from importlib import reload
+    else:
+        from imp import reload
 
     from builtins import bytes
     from builtins import next
