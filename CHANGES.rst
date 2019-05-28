@@ -146,6 +146,11 @@ Storage
   support seek, entire iterator content will be buffered in memory.
   (LIBCLOUD-1043, GITHUB-1287)
   [Clemens Wolff]
+- [CloudFiles] Fix ``download_object_as_stream`` method in the CloudFiles
+  driver. This regression / bug was inadvertently introduced when migrating
+  code to ``requests``.
+  (LIBCLOUD-1039, GITHUB-1283)
+  [Matt Seymour]
 
 Container
 ~~~~~~~~~
