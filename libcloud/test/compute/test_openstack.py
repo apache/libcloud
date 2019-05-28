@@ -19,6 +19,7 @@ import os
 import sys
 import unittest
 import datetime
+import mock
 import pytest
 
 from libcloud.utils.iso8601 import UTC
@@ -1655,6 +1656,8 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(snapshots[0]['name'], 'snap-101')
         self.assertEqual(snapshots[3]['name'], 'snap-001')
 
+    # NOTE: We use a smaller limit to speed tests up.
+    @mock.patch('libcloud.compute.drivers.openstack.PAGINATION_LIMIT', 10)
     def test__paginated_request_raises_if_stuck_in_a_loop(self):
         with pytest.raises(OpenStackException):
             self.driver._paginated_request(
