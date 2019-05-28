@@ -56,7 +56,7 @@ install:
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:
-  - tox -vvv -e $TOX_ENV
+  - tox -e $TOX_ENV
 
 cache:
   apt: true
