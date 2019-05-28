@@ -102,6 +102,8 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     # data: e.g. we have data for google_asia-east instead of google_asia-east1
     if driver_name not in pricing_data[driver_type] and driver_name[:-1] in pricing_data[driver_type]:
         size_pricing = pricing_data[driver_type][driver_name[:-1]]
+    elif driver_name not in pricing_data[driver_type] and driver_name[:-2] in pricing_data[driver_type]:
+        size_pricing = pricing_data[driver_type][driver_name[:-2]]
     else:
         size_pricing = pricing_data[driver_type][driver_name]
 
