@@ -15,6 +15,7 @@
 
 import sys
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.compute.base import Node
 from libcloud.compute.drivers.elasticstack import ElasticStackException
@@ -173,8 +174,8 @@ class ElasticHostsTestCase(ElasticStackTestCase, unittest.TestCase):
 
     def test_invalid_region(self):
         expected_msg = r'Invalid region.+'
-        self.assertRaisesRegexp(ValueError, expected_msg, ElasticHosts,
-                                'foo', 'bar', region='invalid')
+        assertRaisesRegex(self, ValueError, expected_msg, ElasticHosts,
+                          'foo', 'bar', region='invalid')
 
 
 class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):

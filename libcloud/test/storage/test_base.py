@@ -25,6 +25,7 @@ from mock import Mock
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import PY2
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.storage.base import StorageDriver
 from libcloud.storage.base import DEFAULT_CONTENT_TYPE
@@ -126,14 +127,14 @@ class BaseStorageTests(unittest.TestCase):
         self.driver1.strict_mode = True
         expected_msg = ('File content-type could not be guessed and no'
                         ' content_type value is provided')
-        self.assertRaisesRegexp(AttributeError, expected_msg,
-                                self.driver1._upload_object,
-                                object_name='test',
-                                content_type=None,
-                                upload_func=upload_func,
-                                upload_func_kwargs={},
-                                request_path='/',
-                                stream=iterator)
+        assertRaisesRegex(self, AttributeError, expected_msg,
+                          self.driver1._upload_object,
+                          object_name='test',
+                          content_type=None,
+                          upload_func=upload_func,
+                          upload_func_kwargs={},
+                          request_path='/',
+                          stream=iterator)
 
     @mock.patch('libcloud.utils.files.exhaust_iterator')
     @mock.patch('libcloud.utils.files.read_in_chunks')

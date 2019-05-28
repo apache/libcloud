@@ -33,6 +33,7 @@ from libcloud.compute.types import LibcloudError, Provider, InvalidCredsError
 from libcloud.compute.types import KeyPairDoesNotExistError
 from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.test import unittest
 from libcloud.test import MockHttp
@@ -67,9 +68,9 @@ class CloudStackCommonTestCase(TestCaseMixin):
         key_material = ''
 
         expected_msg = 'Public key is invalid'
-        self.assertRaisesRegexp(ProviderError, expected_msg,
-                                self.driver.import_key_pair_from_string,
-                                name=name, key_material=key_material)
+        assertRaisesRegex(self, ProviderError, expected_msg,
+                          self.driver.import_key_pair_from_string,
+                          name=name, key_material=key_material)
 
     def test_create_node_immediate_failure(self):
         size = self.driver.list_sizes()[0]
@@ -1263,8 +1264,8 @@ class CloudStackTestCase(CloudStackCommonTestCase, unittest.TestCase):
                         'argument')
         cls = get_driver(Provider.CLOUDSTACK)
 
-        self.assertRaisesRegexp(Exception, expected_msg, cls,
-                                'key', 'secret')
+        assertRaisesRegex(self, Exception, expected_msg, cls,
+                          'key', 'secret')
 
         try:
             cls('key', 'secret', True, 'localhost', '/path')

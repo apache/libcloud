@@ -24,6 +24,7 @@ from __future__ import absolute_import
 
 import sys
 import types
+import unittest
 
 DEFAULT_LXML = False
 
@@ -128,6 +129,18 @@ if PY3:
         # s needs to be a byte string.
         return [format(x, "02x") for x in s]
 
+    def assertRaisesRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+        return getattr(self, 'assertRaisesRegex')(*args, **kwargs)
+
+    def assertRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+
+        return getattr(self, 'assertRegex')(*args, **kwargs)
 else:
     import httplib  # NOQA
     from StringIO import StringIO  # NOQA
@@ -188,3 +201,17 @@ else:
     def hexadigits(s):
         # s needs to be a string.
         return [x.encode("hex") for x in s]
+
+    def assertRaisesRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+
+        return getattr(self, 'assertRaisesRegexp')(*args, **kwargs)
+
+    def assertRegex(self, *args, **kwargs):
+        if not isinstance(self, unittest.TestCase):
+            raise ValueError('First argument "self" needs to be an instance '
+                             'of unittest.TestCase')
+
+        return getattr(self, 'assertRegexpMatches')(*args, **kwargs)
