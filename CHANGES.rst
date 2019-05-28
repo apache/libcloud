@@ -114,6 +114,15 @@ Compute
   (LIBCLOUD-1040)
   [aki-k, Tomaz Muraus]
 
+Storage
+~~~~~~~
+
+- [Azure] Fix ``upload_object_via_stream`` method so it also works with
+  iterators which don't implement ``seek()`` method. If the iterator doesn't
+  support seek, entire iterator content will be buffered in memory.
+  (LIBCLOUD-1043, GITHUB-1287)
+  [Clemens Wolff]
+
 Container
 ~~~~~~~~~
 
