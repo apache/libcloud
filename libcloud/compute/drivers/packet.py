@@ -230,7 +230,11 @@ def _list_async(driver):
             message = data.object.get('message', None)
             error_message = data.object.get('error_message', message)
             raise ValueError('Failed to create node: %s' % (error_message))
-        return self._to_node(data=data.object)
+        node = self._to_node(data=data.object)
+
+        if kwargs.get('disk'):
+            self.attach_volume(node, kwargs.get('disk'))
+        return node
 
     def reboot_node(self, node):
         params = {'type': 'reboot'}
