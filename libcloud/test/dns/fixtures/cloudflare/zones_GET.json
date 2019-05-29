@@ -1,0 +1,102 @@
+{
+  "result": [
+    {
+      "id": "1234",
+      "name": "example.com",
+      "status": "active",
+      "paused": false,
+      "type": "full",
+      "development_mode": 0,
+      "name_servers": [
+        "anna.ns.cloudflare.com",
+        "john.ns.cloudflare.com"
+      ],
+      "original_name_servers": [
+        "amir.ns.cloudflare.com",
+        "dee.ns.cloudflare.com"
+      ],
+      "original_registrar": null,
+      "original_dnshost": null,
+      "modified_on": "2019-05-30T01:43:01.509188Z",
+      "created_on": "2018-12-22T20:29:41.313041Z",
+      "activated_on": "2018-12-22T21:14:27.799913Z",
+      "meta": {
+        "step": 3,
+        "wildcard_proxiable": false,
+        "custom_certificate_quota": 0,
+        "page_rule_quota": 3,
+        "phishing_detected": false,
+        "multiple_railguns_allowed": false
+      },
+      "owner": {
+        "id": "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu",
+        "type": "user",
+        "email": "cloudflare@test.com"
+      },
+      "account": {
+        "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "cloudflare@test.com"
+      },
+      "permissions": [
+        "#access:edit",
+        "#access:read",
+        "#analytics:read",
+        "#app:edit",
+        "#auditlogs:read",
+        "#billing:edit",
+        "#billing:read",
+        "#cache_purge:edit",
+        "#dns_records:edit",
+        "#dns_records:read",
+        "#lb:edit",
+        "#lb:read",
+        "#legal:edit",
+        "#legal:read",
+        "#logs:edit",
+        "#logs:read",
+        "#member:edit",
+        "#member:read",
+        "#organization:edit",
+        "#organization:read",
+        "#ssl:edit",
+        "#ssl:read",
+        "#stream:edit",
+        "#stream:read",
+        "#subscription:edit",
+        "#subscription:read",
+        "#waf:edit",
+        "#waf:read",
+        "#webhooks:edit",
+        "#webhooks:read",
+        "#worker:edit",
+        "#worker:read",
+        "#zone:edit",
+        "#zone:read",
+        "#zone_settings:edit",
+        "#zone_settings:read"
+      ],
+      "plan": {
+        "id": "0feeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "name": "Free Website",
+        "price": 0,
+        "currency": "USD",
+        "frequency": "",
+        "is_subscribed": true,
+        "can_subscribe": false,
+        "legacy_id": "free",
+        "legacy_discount": false,
+        "externally_managed": false
+      }
+    }
+  ],
+  "result_info": {
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 1,
+    "count": 1,
+    "total_count": 1
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}

@@ -1,0 +1,11 @@
+{
+  "success": false,
+  "errors": [
+    {
+      "code": 1001,
+      "message": "Invalid zone identifier"
+    }
+  ],
+  "messages": [],
+  "result": null
+}
