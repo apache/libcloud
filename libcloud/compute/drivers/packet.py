@@ -231,9 +231,11 @@ def _list_async(driver):
             error_message = data.object.get('error_message', message)
             raise ValueError('Failed to create node: %s' % (error_message))
         node = self._to_node(data=data.object)
-
         if kwargs.get('disk'):
             self.attach_volume(node, kwargs.get('disk'))
+        if kwargs.get('disk_size'):
+            volume = self.create_volume(size=kwargs.get('disk_size'), location=location)
+            self.attach_volume(node, volume)
         return node
 
     def reboot_node(self, node):
@@ -614,9 +616,6 @@ def _list_async(driver):
 
         :param size: Size of volume in gigabytes (required)
         :type size: ``int``
-
-        :param name: Name of the volume to be created
-        :type name: ``str``
 
         :param location: Which data center to create a volume in. If
                                empty, undefined behavior will be selected.
