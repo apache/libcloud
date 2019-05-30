@@ -453,8 +453,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
         self.auth_instance = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
                                                                                 user_id='idp',
                                                                                 key='token',
-                                                                                tenant_name='oidc',
-                                                                                domain_name='test_domain')
+                                                                                tenant_name='oidc')
         self.auth_instance.auth_token = 'mock'
 
     def test_authenticate(self):
@@ -462,8 +461,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
                                                                   user_id='idp',
                                                                   key='token',
                                                                   token_scope='project',
-                                                                  tenant_name="oidc",
-                                                                  domain_name='test_domain')
+                                                                  tenant_name="oidc")
         auth.authenticate()
 
 
@@ -478,7 +476,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
                                                                                 user_id='idp',
                                                                                 key='token',
                                                                                 tenant_name='oidc',
-                                                                                domain_name='test_domain')
+                                                                                domain_name='project_name2')
         self.auth_instance.auth_token = 'mock'
 
     def test_authenticate(self):
@@ -487,7 +485,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
                                                                   key='token',
                                                                   token_scope='project',
                                                                   tenant_name="oidc",
-                                                                  domain_name='test_domain')
+                                                                  domain_name='project_name2')
         auth.authenticate()
 
 
@@ -789,14 +787,16 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
     def _v3_OS_FEDERATION_projects(self, method, url, body, headers):
         if method == 'GET':
             # get user projects
-            body = json.dumps({"projects": [{"id": "project_id"}]})
+            body = json.dumps({"projects": [{"id": "project_id", "name": "project_name"},
+                                            {"id": "project_id2", "name": "project_name2"}]})
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
     def _v3_auth_projects(self, method, url, body, headers):
         if method == 'GET':
             # get user projects
-            body = json.dumps({"projects": [{"id": "project_id"}]})
+            body = json.dumps({"projects": [{"id": "project_id", "name": "project_name"},
+                                            {"id": "project_id2", "name": "project_name2"}]})
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
