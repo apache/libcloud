@@ -21,5 +21,5 @@ import requests
 token = os.environ['RTD_TOKEN']
 
 url = 'https://readthedocs.org/api/v2/webhook/libcloud/87656/'
-r = requests.post(url, data={'token': token})
+r = requests.post(url, data={'token': token, 'branches': 'trunk'})
 print(r.text)

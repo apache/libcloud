@@ -49,7 +49,7 @@ matrix:
       # Trigger ReadTheDocs build on docs builder
       after_success:
         - pip3 install requests
-        - python3 ./contrib/trigger_rtd_build.py 8284
+        - python3 ./contrib/trigger_rtd_build.py
 
 install:
   - pip install --upgrade "pip==9.0.1"
