@@ -14,11 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import os
+
 import requests
 
+token = os.environ['RTD_TOKEN']
 
-key = sys.argv[1]
-url = 'https://readthedocs.org/build/%s' % (key)
-r = requests.post(url)
+url = 'https://readthedocs.org/api/v2/webhook/libcloud/87656/'
+r = requests.post(url, data={'token': token})
 print(r.text)
