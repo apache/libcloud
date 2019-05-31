@@ -24,7 +24,6 @@ except ImportError:
 from mock import Mock
 
 from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import assertRaisesRegex
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack_identity import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
 from libcloud.common.openstack_identity import get_class_for_auth_version
@@ -259,31 +258,31 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
     def test_token_scope_argument(self):
         # Invalid token_scope value
         expected_msg = 'Invalid value for "token_scope" argument: foo'
-        assertRaisesRegex(self, ValueError, expected_msg,
-                          OpenStackIdentity_3_0_Connection,
-                          auth_url='http://none',
-                          user_id='test',
-                          key='test',
-                          token_scope='foo')
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                OpenStackIdentity_3_0_Connection,
+                                auth_url='http://none',
+                                user_id='test',
+                                key='test',
+                                token_scope='foo')
 
         # Missing tenant_name
         expected_msg = 'Must provide tenant_name and domain_name argument'
-        assertRaisesRegex(self, ValueError, expected_msg,
-                          OpenStackIdentity_3_0_Connection,
-                          auth_url='http://none',
-                          user_id='test',
-                          key='test',
-                          token_scope='project')
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                OpenStackIdentity_3_0_Connection,
+                                auth_url='http://none',
+                                user_id='test',
+                                key='test',
+                                token_scope='project')
 
         # Missing domain_name
         expected_msg = 'Must provide domain_name argument'
-        assertRaisesRegex(self, ValueError, expected_msg,
-                          OpenStackIdentity_3_0_Connection,
-                          auth_url='http://none',
-                          user_id='test',
-                          key='test',
-                          token_scope='domain',
-                          domain_name=None)
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                OpenStackIdentity_3_0_Connection,
+                                auth_url='http://none',
+                                user_id='test',
+                                key='test',
+                                token_scope='domain',
+                                domain_name=None)
 
         # Scope to project all ok
         OpenStackIdentity_3_0_Connection(auth_url='http://none',
@@ -454,8 +453,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
         self.auth_instance = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
                                                                                 user_id='idp',
                                                                                 key='token',
-                                                                                tenant_name='oidc',
-                                                                                domain_name='test_domain')
+                                                                                tenant_name='oidc')
         self.auth_instance.auth_token = 'mock'
 
     def test_authenticate(self):
@@ -463,8 +461,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
                                                                   user_id='idp',
                                                                   key='token',
                                                                   token_scope='project',
-                                                                  tenant_name="oidc",
-                                                                  domain_name='test_domain')
+                                                                  tenant_name="oidc")
         auth.authenticate()
 
 
@@ -479,7 +476,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
                                                                                 user_id='idp',
                                                                                 key='token',
                                                                                 tenant_name='oidc',
-                                                                                domain_name='test_domain')
+                                                                                domain_name='project_name2')
         self.auth_instance.auth_token = 'mock'
 
     def test_authenticate(self):
@@ -488,7 +485,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
                                                                   key='token',
                                                                   token_scope='project',
                                                                   tenant_name="oidc",
-                                                                  domain_name='test_domain')
+                                                                  domain_name='project_name2')
         auth.authenticate()
 
 
@@ -790,14 +787,16 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
     def _v3_OS_FEDERATION_projects(self, method, url, body, headers):
         if method == 'GET':
             # get user projects
-            body = json.dumps({"projects": [{"id": "project_id"}]})
+            body = json.dumps({"projects": [{"id": "project_id", "name": "project_name"},
+                                            {"id": "project_id2", "name": "project_name2"}]})
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
     def _v3_auth_projects(self, method, url, body, headers):
         if method == 'GET':
             # get user projects
-            body = json.dumps({"projects": [{"id": "project_id"}]})
+            body = json.dumps({"projects": [{"id": "project_id", "name": "project_name"},
+                                            {"id": "project_id2", "name": "project_name2"}]})
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
