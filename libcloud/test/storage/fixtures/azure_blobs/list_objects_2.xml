@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<EnumerationResults ContainerName="https://account.blob.core.windows.net/test_container">
+<EnumerationResults ServiceEndpoint="https://account.blob.core.windows.net/" ContainerName="test_container">
     <Marker>object3.txt</Marker>
     <MaxResults>2</MaxResults>
     <Blobs>
         <Blob>
             <Name>object3.txt</Name>
-            <Url>https://account.blob.core.windows.net/test_container/object3.txt</Url>
             <Properties>
                 <Last-Modified>Sat, 05 Jan 2013 03:52:08 GMT</Last-Modified>
                 <Etag>0x8CFB90F2B6FC022</Etag>
@@ -23,7 +22,6 @@
         </Blob>
         <Blob>
             <Name>object4.txt</Name>
-            <Url>https://account.blob.core.windows.net/test_container/object4.txt</Url>
             <Properties>
                 <Last-Modified>Fri, 04 Jan 2013 10:20:14 GMT</Last-Modified>
                 <Etag>0x8CFB87C38717450</Etag>

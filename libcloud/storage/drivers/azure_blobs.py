@@ -157,6 +157,10 @@ class AzureBlobsConnection(AzureConnection):
     Represents a single connection to Azure Blobs
     """
 
+    # this is the minimum api version supported by storage accounts of kinds
+    # StorageV2, Storage and BlobStorage
+    API_VERSION = '2014-02-14'
+
 
 class AzureBlobsStorageDriver(StorageDriver):
     name = 'Microsoft Azure (blobs)'
