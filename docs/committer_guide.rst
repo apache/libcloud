@@ -97,7 +97,7 @@ preparing a release.
 * Make sure ``CHANGES`` file is up to date
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 * Make sure ``version`` and ``release`` in ``docs/conf.py`` are up to date
-* Update constants: ``python contrib/scrap-ec2-sizes.py > libcloud/compute/constants.py``
+* Update constants: ``python contrib/scrape-ec2-sizes.py > libcloud/compute/constants.py``
 
 1. Pre-release check list
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -105,7 +105,7 @@ preparing a release.
 * Make sure tests pass on all the supported Python versions (``tox``)
 * Remove the ``tox`` directory with ``rm -rf .tox``
 * Remove the _secrets_ file with ``rm libcloud/test/secrets.py``
-* Remove leftover builds from previous releases. ``rm -f dist/apache*``
+* Remove leftover builds from previous releases. ``rm -f dist/apache* ; rm -rf apache_libcloud.egg-info``
 
 2. Update JIRA
 ~~~~~~~~~~~~~~

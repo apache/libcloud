@@ -17,13 +17,13 @@
 Enomaly ECP driver
 """
 import time
-import base64
 import os
 import socket
 import binascii
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
+from libcloud.utils.py3 import base64_encode_string
 
 # JSON is included in the standard library starting with Python 2.6.  For 2.5
 # and 2.4, there's a simplejson egg at: http://pypi.python.org/pypi/simplejson
@@ -86,7 +86,7 @@ class ECPConnection(ConnectionUserAndKey):
         # Authentication
         username = self.user_id
         password = self.key
-        base64string = base64.encodestring(
+        base64string = base64_encode_string(
             b('%s:%s' % (username, password)))[:-1]
         authheader = "Basic %s" % base64string
         headers['Authorization'] = authheader

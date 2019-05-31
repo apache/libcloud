@@ -69,10 +69,10 @@ class LinodeTests(unittest.TestCase):
                                            'weight'])
 
         srvrecord = records[1]
-        self.assertEquals(srvrecord.id, '3585141')
-        self.assertEquals(srvrecord.name, '_minecraft._udp')
-        self.assertEquals(srvrecord.type, RecordType.SRV)
-        self.assertEquals(srvrecord.data, 'mc.linode.com')
+        self.assertEqual(srvrecord.id, '3585141')
+        self.assertEqual(srvrecord.name, '_minecraft._udp')
+        self.assertEqual(srvrecord.type, RecordType.SRV)
+        self.assertEqual(srvrecord.data, 'mc.linode.com')
         self.assertHasKeys(srvrecord.extra, ['protocol', 'ttl_sec', 'port',
                                              'priority', 'weight'])
 

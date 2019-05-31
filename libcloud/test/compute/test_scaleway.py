@@ -24,6 +24,7 @@ except ImportError:
     import json  # NOQA
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.base import NodeImage
@@ -44,8 +45,8 @@ class Scaleway_Tests(LibcloudTestCase):
 
     def test_authentication(self):
         ScalewayMockHttp.type = 'UNAUTHORIZED'
-        self.assertRaisesRegexp(BaseHTTPError, 'Authentication error',
-                                self.driver.list_nodes)
+        assertRaisesRegex(self, BaseHTTPError, 'Authentication error',
+                          self.driver.list_nodes)
 
     def test_list_locations_success(self):
         locations = self.driver.list_locations()
@@ -136,10 +137,10 @@ class Scaleway_Tests(LibcloudTestCase):
 
         ScalewayMockHttp.type = 'INVALID_IMAGE'
         expected_msg = '" not found'
-        self.assertRaisesRegexp(Exception, expected_msg,
-                                self.driver.create_node,
-                                name='test', size=size, image=image,
-                                region=location)
+        assertRaisesRegex(self, Exception, expected_msg,
+                          self.driver.create_node,
+                          name='test', size=size, image=image,
+                          region=location)
 
     def test_reboot_node_success(self):
         node = self.driver.list_nodes()[0]

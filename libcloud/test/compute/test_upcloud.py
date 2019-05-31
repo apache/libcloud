@@ -120,11 +120,11 @@ class UpcloudDriverTests(LibcloudTestCase):
         node = self.driver.create_node(name='test_server', size=size, image=image, location=location, ex_hostname='myhost.somewhere')
 
         self.assertTrue(re.match('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$', node.id))
-        self.assertEquals(node.name, 'test_server')
-        self.assertEquals(node.state, NodeState.STARTING)
+        self.assertEqual(node.name, 'test_server')
+        self.assertEqual(node.state, NodeState.STARTING)
         self.assertTrue(len(node.public_ips) > 0)
         self.assertTrue(len(node.private_ips) > 0)
-        self.assertEquals(node.driver, self.driver)
+        self.assertEqual(node.driver, self.driver)
         self.assertTrue(len(node.extra['password']) > 0)
         self.assertTrue(len(node.extra['vnc_password']) > 0)
 
@@ -140,22 +140,22 @@ class UpcloudDriverTests(LibcloudTestCase):
         auth = NodeAuthSSHKey('publikey')
         node = self.driver.create_node(name='test_server', size=size, image=image, location=location, auth=auth)
         self.assertTrue(re.match('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$', node.id))
-        self.assertEquals(node.name, 'test_server')
-        self.assertEquals(node.state, NodeState.STARTING)
+        self.assertEqual(node.name, 'test_server')
+        self.assertEqual(node.state, NodeState.STARTING)
         self.assertTrue(len(node.public_ips) > 0)
         self.assertTrue(len(node.private_ips) > 0)
-        self.assertEquals(node.driver, self.driver)
+        self.assertEqual(node.driver, self.driver)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
 
         self.assertTrue(len(nodes) >= 1)
         node = nodes[0]
-        self.assertEquals(node.name, 'test_server')
-        self.assertEquals(node.state, NodeState.RUNNING)
+        self.assertEqual(node.name, 'test_server')
+        self.assertEqual(node.state, NodeState.RUNNING)
         self.assertTrue(len(node.public_ips) > 0)
         self.assertTrue(len(node.private_ips) > 0)
-        self.assertEquals(node.driver, self.driver)
+        self.assertEqual(node.driver, self.driver)
 
     def test_reboot_node(self):
         nodes = self.driver.list_nodes()

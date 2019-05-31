@@ -109,11 +109,14 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
     def test_upload_object_via_stream(self):
         container = self.driver.list_containers()[0]
         file_path = os.path.abspath(__file__)
-        file = open(file_path, 'rb')
-        iterator = iter(file)
-        obj = self.driver.upload_object_via_stream(iterator=iterator,
-                                                   container=container,
-                                                   object_name='test0007.txt')
+
+        with open(file_path, 'rb') as fp:
+            iterator = iter(fp)
+
+            obj = self.driver.upload_object_via_stream(iterator=iterator,
+                                                       container=container,
+                                                       object_name='test0007.txt')
+
         self.assertEqual(obj.name, 'test0007.txt')
         self.assertEqual(obj.size, 24)
         self.assertEqual(obj.extra['fileId'], 'abcde')

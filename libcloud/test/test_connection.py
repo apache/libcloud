@@ -29,6 +29,7 @@ from libcloud.http import LibcloudBaseConnection
 from libcloud.http import LibcloudConnection
 from libcloud.http import SignedHTTPSAdapter
 from libcloud.utils.misc import retry
+from libcloud.utils.py3 import assertRaisesRegex
 
 
 class BaseConnectionClassTestCase(unittest.TestCase):
@@ -61,27 +62,27 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
         proxy_url = 'https://127.0.0.1:3128'
         expected_msg = 'Only http proxies are supported'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                conn._parse_proxy_url,
-                                proxy_url=proxy_url)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          conn._parse_proxy_url,
+                          proxy_url=proxy_url)
 
         proxy_url = 'http://127.0.0.1'
         expected_msg = 'proxy_url must be in the following format'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                conn._parse_proxy_url,
-                                proxy_url=proxy_url)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          conn._parse_proxy_url,
+                          proxy_url=proxy_url)
 
         proxy_url = 'http://@127.0.0.1:3128'
         expected_msg = 'URL is in an invalid format'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                conn._parse_proxy_url,
-                                proxy_url=proxy_url)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          conn._parse_proxy_url,
+                          proxy_url=proxy_url)
 
         proxy_url = 'http://user@127.0.0.1:3128'
         expected_msg = 'URL is in an invalid format'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                conn._parse_proxy_url,
-                                proxy_url=proxy_url)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          conn._parse_proxy_url,
+                          proxy_url=proxy_url)
 
     def test_constructor(self):
         proxy_url = 'http://127.0.0.2:3128'
@@ -246,9 +247,9 @@ class ConnectionClassTestCase(unittest.TestCase):
         Connection.allow_insecure = False
 
         expected_msg = (r'Non https connections are not allowed \(use '
-                        'secure=True\)')
-        self.assertRaisesRegexp(ValueError, expected_msg, Connection,
-                                secure=False)
+                        r'secure=True\)')
+        assertRaisesRegex(self, ValueError, expected_msg, Connection,
+                          secure=False)
 
     def test_cache_busting(self):
         params1 = {'foo1': 'bar1', 'foo2': 'bar2'}
@@ -341,7 +342,7 @@ class ConnectionClassTestCase(unittest.TestCase):
             mock_connect.__name__ = 'mock_connect'
             with self.assertRaises(socket.gaierror):
                 mock_connect.side_effect = socket.gaierror('')
-                retry_request = retry(timeout=1, retry_delay=.1,
+                retry_request = retry(timeout=0.2, retry_delay=0.1,
                                       backoff=1)
                 retry_request(con.request)(action='/')
 
@@ -357,7 +358,7 @@ class ConnectionClassTestCase(unittest.TestCase):
             mock_connect.__name__ = 'mock_connect'
             with self.assertRaises(socket.gaierror):
                 mock_connect.side_effect = socket.gaierror('')
-                retry_request = retry(timeout=2, retry_delay=.1,
+                retry_request = retry(timeout=0.2, retry_delay=0.1,
                                       backoff=1)
                 retry_request(con.request)(action='/')
 
@@ -373,7 +374,7 @@ class ConnectionClassTestCase(unittest.TestCase):
             mock_connect.__name__ = 'mock_connect'
             with self.assertRaises(socket.gaierror):
                 mock_connect.side_effect = socket.gaierror('')
-                retry_request = retry(timeout=2, retry_delay=.1,
+                retry_request = retry(timeout=0.2, retry_delay=0.1,
                                       backoff=1)
                 retry_request(con.request)(action='/')
 

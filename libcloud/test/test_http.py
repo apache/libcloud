@@ -21,6 +21,7 @@ import warnings
 import libcloud.security
 
 from libcloud.utils.py3 import reload
+from libcloud.utils.py3 import assertRaisesRegex
 from libcloud.http import LibcloudConnection
 
 from libcloud.test import unittest
@@ -52,8 +53,8 @@ class TestHttpLibSSLTests(unittest.TestCase):
         os.environ['SSL_CERT_FILE'] = file_path
 
         expected_msg = 'Certificate file can\'t be a directory'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                reload, libcloud.security)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          reload, libcloud.security)
 
     def test_custom_ca_path_using_env_var_exist(self):
         # When setting a path we don't actually check that a valid CA file is

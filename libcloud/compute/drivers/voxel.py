@@ -40,7 +40,7 @@ class VoxelResponse(XmlResponse):
     def parse_body(self):
         if not self.body:
             return None
-        if not self.parsed:
+        if self.parsed is None:
             self.parsed = super(VoxelResponse, self).parse_body()
         return self.parsed
 
@@ -48,7 +48,7 @@ class VoxelResponse(XmlResponse):
         err_list = []
         if not self.body:
             return None
-        if not self.parsed:
+        if self.parsed is None:
             self.parsed = super(VoxelResponse, self).parse_body()
         for err in self.parsed.findall('err'):
             code = err.get('code')

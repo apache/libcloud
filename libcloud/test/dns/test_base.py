@@ -23,6 +23,8 @@ from libcloud.test import unittest
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.dns.types import RecordType
 
+from libcloud.utils.py3 import assertRegex
+
 
 MOCK_RECORDS_VALUES = [
     {'id': 1, 'name': 'www', 'type': RecordType.A, 'data': '127.0.0.1'},
@@ -91,17 +93,17 @@ class BaseTestCase(unittest.TestCase):
 
         for lines in [lines1, lines2]:
             self.assertEqual(len(lines), 2 + 1 + 9)
-            self.assertRegexpMatches(lines[1], r'\$ORIGIN example\.com\.')
-            self.assertRegexpMatches(lines[2], r'\$TTL 900')
+            assertRegex(self, lines[1], r'\$ORIGIN example\.com\.')
+            assertRegex(self, lines[2], r'\$TTL 900')
 
-            self.assertRegexpMatches(lines[4], r'www.example.com\.\s+900\s+IN\s+A\s+127\.0\.0\.1')
-            self.assertRegexpMatches(lines[5], r'www.example.com\.\s+900\s+IN\s+AAAA\s+2a01:4f8:121:3121::2')
-            self.assertRegexpMatches(lines[6], r'www.example.com\.\s+123\s+IN\s+A\s+127\.0\.0\.1')
-            self.assertRegexpMatches(lines[7], r'example.com\.\s+900\s+IN\s+A\s+127\.0\.0\.1')
-            self.assertRegexpMatches(lines[8], r'test1.example.com\.\s+900\s+IN\s+TXT\s+"test foo bar"')
-            self.assertRegexpMatches(lines[9], r'test2.example.com\.\s+900\s+IN\s+TXT\s+"test \\"foo\\" \\"bar\\""')
-            self.assertRegexpMatches(lines[10], r'example.com\.\s+900\s+IN\s+MX\s+10\s+mx.example.com')
-            self.assertRegexpMatches(lines[11], r'example.com\.\s+900\s+IN\s+SRV\s+20\s+10 3333 example.com')
+            assertRegex(self, lines[4], r'www.example.com\.\s+900\s+IN\s+A\s+127\.0\.0\.1')
+            assertRegex(self, lines[5], r'www.example.com\.\s+900\s+IN\s+AAAA\s+2a01:4f8:121:3121::2')
+            assertRegex(self, lines[6], r'www.example.com\.\s+123\s+IN\s+A\s+127\.0\.0\.1')
+            assertRegex(self, lines[7], r'example.com\.\s+900\s+IN\s+A\s+127\.0\.0\.1')
+            assertRegex(self, lines[8], r'test1.example.com\.\s+900\s+IN\s+TXT\s+"test foo bar"')
+            assertRegex(self, lines[9], r'test2.example.com\.\s+900\s+IN\s+TXT\s+"test \\"foo\\" \\"bar\\""')
+            assertRegex(self, lines[10], r'example.com\.\s+900\s+IN\s+MX\s+10\s+mx.example.com')
+            assertRegex(self, lines[11], r'example.com\.\s+900\s+IN\s+SRV\s+20\s+10 3333 example.com')
 
 
 if __name__ == '__main__':
