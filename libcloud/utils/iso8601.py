@@ -46,6 +46,7 @@ TIMEZONE_REGEX = re.compile("(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-
 class ParseError(Exception):
     """Raised when there is a problem parsing a date string"""
 
+
 # Yoinked from python docs
 ZERO = timedelta(0)
 
@@ -62,6 +63,8 @@ class Utc(tzinfo):
 
     def dst(self, dt):
         return ZERO
+
+
 UTC = Utc()
 
 
@@ -114,6 +117,9 @@ def parse_date(datestring, default_timezone=UTC):
     default timezone specified in default_timezone is used. This is UTC by
     default.
     """
+    if not datestring:
+        raise ValueError('datestring must be valid date string and not None')
+
     m = ISO8601_REGEX.match(datestring)
     if not m:
         raise ParseError("Unable to parse date string %r" % datestring)

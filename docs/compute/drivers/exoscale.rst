@@ -1,13 +1,13 @@
 Exoscale Computer Driver Documentation
 ======================================
 
-`Exoscale`_ is a public cloud provider based in Switzerland with data centers
-in Geneva, Switzerland.
+`Exoscale`_ is a public European cloud provider with data centers in Germany,
+Austria, and Switzerland.
 
 .. figure:: /_static/images/provider_logos/exoscale.png
     :align: center
     :width: 300
-    :target: https://www.exoscale.ch
+    :target: https://www.exoscale.com
 
 Exoscale driver is based on the CloudStack one and uses basic zones. For more
 information and CloudStack specific documentation, please refer to

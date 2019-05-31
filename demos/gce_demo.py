@@ -48,7 +48,7 @@ import time
 
 try:
     import argparse
-except:
+except Exception:
     print('This script uses the python "argparse" module. Please use Python '
           '2.7 or greater.')
     raise
@@ -78,7 +78,8 @@ from libcloud.dns.providers import get_driver as get_driver_dns
 from libcloud.dns.base import Record, Zone
 from libcloud.utils.py3 import PY3
 if PY3:
-    import urllib.request as url_req  # pylint: disable=no-name-in-module
+    # pylint: disable=no-name-in-module,import-error
+    import urllib.request as url_req
 else:
     import urllib2 as url_req
 
@@ -329,7 +330,7 @@ def clean_up(gce, base_name, node_list=None, resource_list=None):
             except ResourceNotFoundError:
                 display('   Not found: %s (%s)' % (resrc.name,
                                                    resrc.__class__.__name__))
-            except:
+            except Exception:
                 class_name = resrc.__class__.__name__
                 display('   Failed to Delete %s (%s)' % (resrc.name,
                                                          class_name))

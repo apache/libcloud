@@ -8,6 +8,7 @@ except ImportError:
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import parse_qsl
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.loadbalancer.types import Provider
 from libcloud.loadbalancer.providers import get_driver
@@ -38,8 +39,8 @@ class CloudStackLBTests(unittest.TestCase):
                        'you also need to provide host and path argument'
         cls = get_driver(Provider.CLOUDSTACK)
 
-        self.assertRaisesRegexp(Exception, expected_msg, cls,
-                                'key', 'secret')
+        assertRaisesRegex(self, Exception, expected_msg, cls,
+                          'key', 'secret')
 
         try:
             cls('key', 'secret', True, 'localhost', '/path')

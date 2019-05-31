@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hashlib import sha1
+import atexit
 import hmac
 import os
 from time import time
+from hashlib import sha1
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
@@ -83,7 +84,7 @@ class CloudFilesResponse(Response):
         if content_type == 'application/json':
             try:
                 data = json.loads(self.body)
-            except:
+            except Exception:
                 raise MalformedResponseError('Failed to parse JSON',
                                              body=self.body,
                                              driver=CloudFilesStorageDriver)
@@ -418,8 +419,12 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
-                                callback_kwargs={'iterator': response.response,
-                                                 'chunk_size': chunk_size},
+                                callback_kwargs={
+                                    'iterator': response.iter_content(
+                                        chunk_size
+                                    ),
+                                    'chunk_size': chunk_size
+                                },
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
@@ -939,6 +944,16 @@ class ChunkStreamReader(object):
         self.chunk_size = chunk_size
         self.bytes_read = 0
         self.stop_iteration = False
+
+        # Work around to make sure file description is closed even if the
+        # iterator is never read from or if it's not fully exhausted
+        def close_file(fd):
+            try:
+                fd.close()
+            except Exception:
+                pass
+
+        atexit.register(close_file, self.fd)
 
     def __iter__(self):
         return self

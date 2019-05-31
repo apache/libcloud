@@ -24,6 +24,7 @@ except ImportError:
 from mock import Mock
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import assertRaisesRegex
 from libcloud.common.openstack import OpenStackBaseConnection
 from libcloud.common.openstack_identity import AUTH_TOKEN_EXPIRES_GRACE_SECONDS
 from libcloud.common.openstack_identity import get_class_for_auth_version
@@ -93,7 +94,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 
                 try:
                     osa = osa.authenticate()
-                except:
+                except Exception:
                     pass
 
                 if (should_append_default_path == APPEND):
@@ -258,31 +259,31 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
     def test_token_scope_argument(self):
         # Invalid token_scope value
         expected_msg = 'Invalid value for "token_scope" argument: foo'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                OpenStackIdentity_3_0_Connection,
-                                auth_url='http://none',
-                                user_id='test',
-                                key='test',
-                                token_scope='foo')
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          OpenStackIdentity_3_0_Connection,
+                          auth_url='http://none',
+                          user_id='test',
+                          key='test',
+                          token_scope='foo')
 
         # Missing tenant_name
         expected_msg = 'Must provide tenant_name and domain_name argument'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                OpenStackIdentity_3_0_Connection,
-                                auth_url='http://none',
-                                user_id='test',
-                                key='test',
-                                token_scope='project')
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          OpenStackIdentity_3_0_Connection,
+                          auth_url='http://none',
+                          user_id='test',
+                          key='test',
+                          token_scope='project')
 
         # Missing domain_name
         expected_msg = 'Must provide domain_name argument'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                OpenStackIdentity_3_0_Connection,
-                                auth_url='http://none',
-                                user_id='test',
-                                key='test',
-                                token_scope='domain',
-                                domain_name=None)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          OpenStackIdentity_3_0_Connection,
+                          auth_url='http://none',
+                          user_id='test',
+                          key='test',
+                          token_scope='domain',
+                          domain_name=None)
 
         # Scope to project all ok
         OpenStackIdentity_3_0_Connection(auth_url='http://none',

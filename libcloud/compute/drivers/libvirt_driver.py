@@ -403,7 +403,7 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary from the parsing funtion
         :rtype: ``dict``
         """
-        arp_regex = re.compile('.*?\((.*?)\) at (.*?)\s+')
+        arp_regex = re.compile(r'.*?\((.*?)\) at (.*?)\s+')
         return self._parse_mac_addr_table(arp_output, arp_regex)
 
     def _parse_ip_table_neigh(self, ip_output):
@@ -414,7 +414,7 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary from the parsing function
         :rtype: ``dict``
         """
-        ip_regex = re.compile('(.*?)\s+.*lladdr\s+(.*?)\s+')
+        ip_regex = re.compile(r'(.*?)\s+.*lladdr\s+(.*?)\s+')
         return self._parse_mac_addr_table(ip_output, ip_regex)
 
     def _parse_mac_addr_table(self, cmd_output, mac_regex):

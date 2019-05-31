@@ -19,6 +19,7 @@ import os
 import sys
 import unittest
 import datetime
+import mock
 import pytest
 
 from libcloud.utils.iso8601 import UTC
@@ -177,7 +178,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEqual(expires.isoformat(), "2031-11-23T21:00:14-06:00")
+        self.assertEqual(expires.isoformat(), "2999-11-23T21:00:14-06:00")
 
     def test_auth(self):
         if self.driver.connection._auth_version == '2.0':
@@ -686,7 +687,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.driver.connection._populate_hosts_and_request_paths()
 
         expires = self.driver.connection.auth_token_expires
-        self.assertEqual(expires.isoformat(), "2031-11-23T21:00:14-06:00")
+        self.assertEqual(expires.isoformat(), "2999-11-23T21:00:14-06:00")
 
     def test_ex_force_base_url(self):
         # change base url and trash the current auth token so we can
@@ -1299,7 +1300,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = 'key3'
         path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
-        pub_key = open(path, 'r').read()
+
+        with open(path, 'r') as fp:
+            pub_key = fp.read()
+
         keypair = self.driver.import_key_pair_from_file(name=name,
                                                         key_file_path=path)
         self.assertEqual(keypair.name, name)
@@ -1312,7 +1316,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = 'key3'
         path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
-        pub_key = open(path, 'r').read()
+
+        with open(path, 'r') as fp:
+            pub_key = fp.read()
+
         keypair = self.driver.import_key_pair_from_string(name=name,
                                                           key_material=pub_key)
         self.assertEqual(keypair.name, name)
@@ -1649,6 +1656,8 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(snapshots[0]['name'], 'snap-101')
         self.assertEqual(snapshots[3]['name'], 'snap-001')
 
+    # NOTE: We use a smaller limit to speed tests up.
+    @mock.patch('libcloud.compute.drivers.openstack.PAGINATION_LIMIT', 10)
     def test__paginated_request_raises_if_stuck_in_a_loop(self):
         with pytest.raises(OpenStackException):
             self.driver._paginated_request(
@@ -1988,6 +1997,14 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         name, args, kwargs = mock_request.mock_calls[0]
         self.assertFalse("display_name" in kwargs["data"]["snapshot"])
         self.assertFalse("display_description" in kwargs["data"]["snapshot"])
+
+    def test_detach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume(
+            'abc6a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(
+            self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+        self.assertEqual(self.driver.detach_volume(volume), True)
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
@@ -2511,7 +2528,15 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
-    
+
+    def _v2_1337_volumes_abc6a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__volume_abc6a3a1_c4ce_40f6_9b9f_07a61508938d.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
     def _v2_1337_snapshots_detail(self, method, url, body, headers):
         if ('unit_test=paginate' in url and 'marker' not in url) or \
                 'unit_test=pagination_loop' in url:

@@ -330,7 +330,7 @@ class LocalStorageDriver(StorageDriver):
             try:
                 obj_file = open(path, 'w')
                 obj_file.close()
-            except:
+            except Exception:
                 return False
 
         return True

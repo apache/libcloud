@@ -17,7 +17,7 @@ from __future__ import absolute_import
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from pipes import quote as pquote
@@ -70,7 +70,7 @@ class LoggingConnection(LibcloudConnection):
             try:
                 body = json.loads(body.decode('utf-8'))
                 body = json.dumps(body, sort_keys=True, indent=4)
-            except:
+            except Exception:
                 # Invalid JSON or server is lying about content-type
                 pass
         elif pretty_print and content_type == 'text/xml':

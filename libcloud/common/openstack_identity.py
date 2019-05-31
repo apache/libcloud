@@ -553,7 +553,7 @@ class OpenStackAuthResponse(Response):
         if content_type == 'application/json':
             try:
                 data = json.loads(self.body)
-            except:
+            except Exception:
                 driver = OpenStackIdentityConnection
                 raise MalformedResponseError('Failed to parse JSON',
                                              body=self.body,
