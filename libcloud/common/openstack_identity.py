@@ -1416,9 +1416,9 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
     The protocol name required to get the full path
     must be set in the self.tenant_name attribute.
 
-    The self.domain_name attribute can be used to select the domain name
-    in case of domain scoped token or to select the project name in case
-    of project scoped token
+    The self.domain_name attribute can be used either to select the
+    domain name in case of domain scoped token or to select the project
+    name in case of project scoped token
     """
 
     responseCls = OpenStackAuthResponse
