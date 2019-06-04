@@ -209,7 +209,6 @@ def _list_async(driver):
         # if project has been specified on initialization of driver, then
         # create on this project
 
-        import ipdb; ipdb.set_trace();
         if self.project_id:
             ex_project_id = self.project_id
         else:
