@@ -22,6 +22,7 @@ except ImportError:  # If not available will do things serially
 
 
 import datetime
+import json
 
 from libcloud.utils.py3 import httplib
 
@@ -198,7 +199,7 @@ def _list_async(driver):
                 size.get('line') == 'baremetal']
 
     def create_node(self, name, size, image, location,
-                    ex_project_id=None, cloud_init=None, **kwargs):
+                    ex_project_id=None, ip_addresses=[], cloud_init=None, **kwargs):
         """
         Create a node.
 
@@ -208,6 +209,7 @@ def _list_async(driver):
         # if project has been specified on initialization of driver, then
         # create on this project
 
+        import ipdb; ipdb.set_trace();
         if self.project_id:
             ex_project_id = self.project_id
         else:
@@ -217,13 +219,14 @@ def _list_async(driver):
         facility = location.extra['code']
         params = {'hostname': name, 'plan': size.id,
                   'operating_system': image.id, 'facility': facility,
-                  'include': 'plan', 'billing_cycle': 'hourly'}
+                  'include': 'plan', 'billing_cycle': 'hourly',
+                  'ip_addresses': ip_addresses}
         params.update(kwargs)
         if cloud_init:
             params["userdata"] = cloud_init
         data = self.connection.request('/projects/%s/devices' %
                                        (ex_project_id),
-                                       params=params, method='POST')
+                                       data=json.dumps(params), method='POST')
 
         status = data.object.get('status', 'OK')
         if status == 'ERROR':
