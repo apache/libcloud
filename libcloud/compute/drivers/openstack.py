@@ -3556,7 +3556,7 @@ class OpenStack_2_FloatingIpPool(object):
 
         if 'port_details' in obj and obj['port_details']:
             if obj['port_details']['device_owner'] in ['compute:nova',
-                                                       'compute:Nona']:
+                                                       'compute:None']:
                 instance_id = obj['port_details']['device_id']
 
         ip_address = obj['floating_ip_address']
