@@ -1,6 +1,22 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [Google Compute Engine] Fix the driver so ``list_nodes()`` method doesn't
+  throw if there is a node in a ``SUSPENDED`` state.
+
+  Also update the code so it doesn't crash if an unknown node state which is
+  not defined locally is returned by the API when listing nodes. Such states
+  are now mapped to ``UNKNOWN``. (GITHUB-1296, LIBCLOUD-1045)
+
+  Reported by rafa alistair.
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud 2.5.0
 --------------------------------
 

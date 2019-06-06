@@ -1730,6 +1730,7 @@ class GCENodeDriver(NodeDriver):
         "STAGING": NodeState.PENDING,
         "RUNNING": NodeState.RUNNING,
         "STOPPING": NodeState.PENDING,
+        "SUSPENDED": NodeState.SUSPENDED,
         "TERMINATED": NodeState.STOPPED,
         "UNKNOWN": NodeState.UNKNOWN
     }
@@ -8805,8 +8806,10 @@ class GCENodeDriver(NodeDriver):
             extra['image'] = image
         size = self._get_components_from_path(node['machineType'])['name']
 
+        state = self.NODE_STATE_MAP.get(node['status'], NodeState.UNKNOWN)
+
         return Node(id=node['id'], name=node['name'],
-                    state=self.NODE_STATE_MAP[node['status']],
+                    state=state,
                     public_ips=public_ips, private_ips=private_ips,
                     driver=self, size=size, image=image, extra=extra)
 
