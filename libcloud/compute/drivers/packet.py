@@ -22,6 +22,7 @@ except ImportError:  # If not available will do things serially
 
 
 import datetime
+import json
 
 from libcloud.utils.py3 import httplib
 
@@ -198,7 +199,7 @@ def _list_async(driver):
                 size.get('line') == 'baremetal']
 
     def create_node(self, name, size, image, location,
-                    ex_project_id=None, cloud_init=None, **kwargs):
+                    ex_project_id=None, ip_addresses=[], cloud_init=None, **kwargs):
         """
         Create a node.
 
@@ -217,20 +218,27 @@ def _list_async(driver):
         facility = location.extra['code']
         params = {'hostname': name, 'plan': size.id,
                   'operating_system': image.id, 'facility': facility,
-                  'include': 'plan', 'billing_cycle': 'hourly'}
+                  'include': 'plan', 'billing_cycle': 'hourly',
+                  'ip_addresses': ip_addresses}
         params.update(kwargs)
         if cloud_init:
             params["userdata"] = cloud_init
         data = self.connection.request('/projects/%s/devices' %
                                        (ex_project_id),
-                                       params=params, method='POST')
+                                       data=json.dumps(params), method='POST')
 
         status = data.object.get('status', 'OK')
         if status == 'ERROR':
             message = data.object.get('message', None)
             error_message = data.object.get('error_message', message)
             raise ValueError('Failed to create node: %s' % (error_message))
-        return self._to_node(data=data.object)
+        node = self._to_node(data=data.object)
+        if kwargs.get('disk'):
+            self.attach_volume(node, kwargs.get('disk'))
+        if kwargs.get('disk_size'):
+            volume = self.create_volume(size=kwargs.get('disk_size'), location=location)
+            self.attach_volume(node, volume)
+        return node
 
     def reboot_node(self, node):
         params = {'type': 'reboot'}
@@ -610,9 +618,6 @@ def _list_async(driver):
 
         :param size: Size of volume in gigabytes (required)
         :type size: ``int``
-
-        :param name: Name of the volume to be created
-        :type name: ``str``
 
         :param location: Which data center to create a volume in. If
                                empty, undefined behavior will be selected.
