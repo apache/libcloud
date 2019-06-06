@@ -32,6 +32,7 @@ from libcloud.common.google import (GoogleBaseAuthConnection,
                                     GoogleBaseError)
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
+from libcloud.compute.types import NodeState
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
@@ -618,6 +619,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
         names = [n.name for n in nodes_all]
         self.assertTrue('node-name' in names)
+        self.assertEqual(nodes_all[-1].state, NodeState.SUSPENDED)
 
     def test_ex_list_regions(self):
         regions = self.driver.ex_list_regions()
