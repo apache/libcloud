@@ -617,9 +617,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(len(nodes_uc1a), 1)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
+
         names = [n.name for n in nodes_all]
         self.assertTrue('node-name' in names)
-        self.assertEqual(nodes_all[-1].state, NodeState.SUSPENDED)
+
+        states = [n.state for n in nodes_all]
+        self.assertTrue(NodeState.SUSPENDED in states)
 
     def test_ex_list_regions(self):
         regions = self.driver.ex_list_regions()
