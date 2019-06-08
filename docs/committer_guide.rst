@@ -44,14 +44,14 @@ populate `PGP Key ID` field with your PGP key ID.
 Merging user contributions
 --------------------------
 
-When a pull request with user contribution / changes has been reviewed and
-all the criteria for merging has been meet (tests and code coverage, Travis
+When a pull request with user contribution (changes) has been reviewed and
+all the criteria for merging has been met (tests and code coverage, Travis
 build is passing, user signed an ICLA, etc.), you can directly merge those
-changes into trunk either by using Github web interface or doing it on the
-command line.
+changes into trunk either by using Github web interface or doing it manually
+on the command line.
 
 It's also important that you update changelog in ``CHANGES.rst`` file after
-you have merged the changes.
+you merged the changes.
 
 Making a release (for release managers)
 ---------------------------------------
@@ -81,7 +81,7 @@ preparing a release.
 * Create a new Github milestone for the release in question (if one doesn't exist
   yet)
 * Update affected issues and pull requests and add the corresponding release
-  milestone
+  milestone to them
 
 3. Creating release artifacts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
