@@ -141,6 +141,7 @@ class Provider(Type):
     KTUCLOUD = 'ktucloud'
     LIBVIRT = 'libvirt'
     LINODE = 'linode'
+    MAXIHOST = 'maxihost'
     MEDONE = 'medone'
     NEPHOSCALE = 'nephoscale'
     NIMBUS = 'nimbus'
@@ -211,6 +212,8 @@ class Provider(Type):
     ELASTICHOSTS_CN1 = 'elastichosts_cn1'
 
     CLOUDSIGMA_US = 'cloudsigma_us'
+
+    MAXIHOST = "maxihost"
 
     # Removed
     # SLICEHOST = 'slicehost'

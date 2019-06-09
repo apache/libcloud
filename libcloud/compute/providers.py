@@ -151,6 +151,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.nttcis', 'NttCisNodeDriver'),
     Provider.SCALEWAY:
     ('libcloud.compute.drivers.scaleway', 'ScalewayNodeDriver'),
+    Provider.MAXIHOST:
+    ('libcloud.compute.drivers.maxihost', 'MaxihostNodeDriver')
 }
 
 
