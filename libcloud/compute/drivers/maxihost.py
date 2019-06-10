@@ -1,19 +1,18 @@
-from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize, NodeImage
+import json
+
+from libcloud.compute.base import Node, NodeDriver, NodeLocation
+from libcloud.compute.base import NodeSize, NodeImage
 from libcloud.compute.base import KeyPair
 from libcloud.common.maxihost import MaxihostConnection
 from libcloud.compute.types import Provider, NodeState
-
-from  libcloud.common.exceptions import BaseHTTPError
-
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.py3 import httplib
-
-
-import json
 
 
 __all__ = [
     "MaxihostNodeDriver"
 ]
+
 
 class MaxihostNodeDriver(NodeDriver):
     """
@@ -32,12 +31,13 @@ class MaxihostNodeDriver(NodeDriver):
         :return: The newly created node.
         :rtype: :class:`Node`
         """
-        attr = {'hostname': name, 'plan': size.id, 'operating_system': image.id,
+        attr = {'hostname': name, 'plan': size.id,
+                'operating_system': image.id,
                 'facility': location.id.lower(), 'billing_cycle': 'monthly',
                 'ex_ssh_key_ids': ex_ssh_key_ids}
         try:
             res = self.connection.request('/devices',
-                                        params=attr, method='POST')
+                                          params=attr, method='POST')
         except BaseHTTPError as exc:
             error_message = exc.message.get('error_messages', '')
             raise ValueError('Failed to create node: %s' % (error_message))
@@ -49,7 +49,8 @@ class MaxihostNodeDriver(NodeDriver):
         Start a node.
         """
         params = {"type": "power_on"}
-        res = self.connection.request('/devices/%s/actions' % node.id, params=params, method='PUT')
+        res = self.connection.request('/devices/%s/actions' % node.id,
+                                      params=params, method='PUT')
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -58,7 +59,8 @@ class MaxihostNodeDriver(NodeDriver):
         Stop a node.
         """
         params = {"type": "power_off"}
-        res = self.connection.request('/devices/%s/actions' % node.id, params=params, method='PUT')
+        res = self.connection.request('/devices/%s/actions' % node.id,
+                                      params=params, method='PUT')
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -67,7 +69,8 @@ class MaxihostNodeDriver(NodeDriver):
         Reboot a node.
         """
         params = {"type": "power_cycle"}
-        res = self.connection.request('/devices/%s/actions' % node.id, params=params, method='PUT')
+        res = self.connection.request('/devices/%s/actions' % node.id,
+                                      params=params, method='PUT')
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -104,7 +107,7 @@ class MaxihostNodeDriver(NodeDriver):
                     private_ips=private_ips, public_ips=public_ips,
                     driver=self, extra=extra)
         return node
-        
+
     def list_locations(self, available=True):
         """
         List locations
@@ -120,12 +123,12 @@ class MaxihostNodeDriver(NodeDriver):
             else:
                 locations.append(self._to_location(location))
         return locations
-    
+
     def _to_location(self, data):
         name = data.get('location').get('city', '')
         extra = {'features': data.get('features', [])}
         country = data.get('location').get('country', '')
-        return NodeLocation(id=data['slug'], name=name, country=None,
+        return NodeLocation(id=data['slug'], name=name, country=country,
                             extra=extra, driver=self)
 
     def list_sizes(self):
@@ -142,7 +145,8 @@ class MaxihostNodeDriver(NodeDriver):
         extra = {'specs': data['specs'],
                  'regions': data['regions'],
                  'pricing': data['pricing']}
-        return NodeSize(id=data['slug'], name=data['name'], ram=data['specs']['memory']['total'],
+        ram = data['specs']['memory']['total']
+        return NodeSize(id=data['slug'], name=data['name'], ram=ram,
                         disk=None, bandwidth=None,
                         price=data['pricing'], driver=self, extra=extra)
 
