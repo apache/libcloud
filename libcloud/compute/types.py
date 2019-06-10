@@ -213,8 +213,6 @@ class Provider(Type):
 
     CLOUDSIGMA_US = 'cloudsigma_us'
 
-    MAXIHOST = "maxihost"
-
     # Removed
     # SLICEHOST = 'slicehost'
 
