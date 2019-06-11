@@ -22,6 +22,7 @@ class MaxihostNodeDriver(NodeDriver):
     connectionCls = MaxihostConnection
     type = Provider.MAXIHOST
     name = 'Maxihost'
+    website = 'https://www.maxihost.com/'
 
     def create_node(self, name, size, image, location,
                     ex_ssh_key_ids=None):
@@ -138,7 +139,7 @@ class MaxihostNodeDriver(NodeDriver):
         sizes = []
         data = self.connection.request('/plans')
         for size in data.object['servers']:
-                sizes.append(self._to_size(size))
+            sizes.append(self._to_size(size))
         return sizes
 
     def _to_size(self, data):
@@ -157,7 +158,7 @@ class MaxihostNodeDriver(NodeDriver):
         images = []
         data = self.connection.request('/plans/operating-systems')
         for image in data.object['operating-systems']:
-                images.append(self._to_image(image))
+            images.append(self._to_image(image))
         return images
 
     def _to_image(self, data):
