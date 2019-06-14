@@ -1,4 +1,5 @@
 import json
+import re
 
 from libcloud.compute.base import Node, NodeDriver, NodeLocation
 from libcloud.compute.base import NodeSize, NodeImage
@@ -58,6 +59,17 @@ class MaxihostNodeDriver(NodeDriver):
     def ex_stop_node(self, node):
         """
         Stop a node.
+        """
+        params = {"type": "power_off"}
+        res = self.connection.request('/devices/%s/actions' % node.id,
+                                      params=params, method='PUT')
+
+        return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
+
+    def destroy_node(self, node):
+        """
+        Destroy a node. Currently just stop the node since
+        there is no API implementation for destroying a node
         """
         params = {"type": "power_off"}
         res = self.connection.request('/devices/%s/actions' % node.id,
@@ -146,9 +158,11 @@ class MaxihostNodeDriver(NodeDriver):
                  'regions': data['regions'],
                  'pricing': data['pricing']}
         ram = data['specs']['memory']['total']
-        return NodeSize(id=data['slug'], name=data['name'], ram=ram,
+        ram = re.sub("[^0-9]", "", ram)
+        return NodeSize(id=data['slug'], name=data['name'], ram=int(ram),
                         disk=None, bandwidth=None,
-                        price=data['pricing'], driver=self, extra=extra)
+                        price=data['pricing']['usd_month'],
+                        driver=self, extra=extra)
 
     def list_images(self):
         """
