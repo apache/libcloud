@@ -37,6 +37,12 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
         self.assertEqual(node.name, 'tester')
 
+    def test_list_key_pairs(self):
+        keys = self.driver.list_key_pairs()
+        self.assertEqual(len(keys), 1)
+        key = keys[0]
+        self.assertEqual(key.name, 'test_key')
+        self.assertEqual(key.fingerprint, '77:08:a7:a5:f9:8c:e1:ab:7b:c3:d8:0c:cd:ac:8b:dd')
 
 
 class MaxihostMockHttp(MockHttp):
@@ -56,6 +62,14 @@ class MaxihostMockHttp(MockHttp):
 
     def _devices(self, method, url, body, headers):
         body = self.fixtures.load('nodes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _devices_1319_actions(self, method, url, body, headers):
+        body = self.fixtures.load('node.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _account_keys(self, method, url, body, headers):
+        body = self.fixtures.load('keys.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
