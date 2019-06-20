@@ -40,5 +40,5 @@ class MaxihostConnection(ConnectionKey):
         """
         headers['Authorization'] = 'Bearer %s' % (self.key)
         headers['Content-Type'] = 'application/json'
-        headers['Accept']: 'application/vnd.maxihost.v1.1+json'
+        headers['Accept'] = 'application/vnd.maxihost.v1.1+json'
         return headers
