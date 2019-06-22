@@ -21,6 +21,15 @@ Compute
   ``device_owner`` of a port is ``compute:None``. (GITHUB-1295)
   [Miguel Caballer - @micafer]
 
+Storage
+~~~~~~~
+
+- [Azure Blobs] Fix a bug with Azure storage driver works when used against a
+  storage account that was created using ``kind=BlobStrage``. The includes
+  updating minimum API version used / supported by storage driver from
+  ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
+  [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
+
 Changes in Apache Libcloud 2.5.0
 --------------------------------
 
