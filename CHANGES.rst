@@ -17,6 +17,10 @@ Compute
   Reported by rafa alistair.
   [Tomaz Muraus]
 
+- [OpenStack] Fix a bug with retrieving floating IP address when a
+  ``device_owner`` of a port is ``compute:None``. (GITHUB-1295)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 2.5.0
 --------------------------------
 
