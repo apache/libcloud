@@ -4,6 +4,15 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+OpenStack
+~~~~~~~
+
+- [OpenStack] Update OpenStack identity driver so a custom project can be
+  selected using ``domain_name`` keyword argument. Previously, that wasn't
+  possible and the first project which was returned by the API was always
+  selected. (GITHUB-1293)
+  [Miguel Caballer - @micafer]
+
 Compute
 ~~~~~~~
 
