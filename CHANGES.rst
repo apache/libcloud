@@ -4,7 +4,7 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
-OpenStack
+General
 ~~~~~~~
 
 - [OpenStack] Update OpenStack identity driver so a custom project can be
