@@ -55,6 +55,11 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
                                        location=location)
         self.assertTrue(isinstance(node, Node))
 
+    def test_destroy_node_response(self):
+        node = self.driver.list_nodes()[0]
+        ret = self.driver.destroy_node(node)
+        self.assertTrue(ret)
+
 
 class MaxihostMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('maxihost')
