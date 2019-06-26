@@ -1,5 +1,5 @@
 Maxihost Compute Driver Documentation
-==================================
+=====================================
 
 `Maxihost` is a cloud platform for bare metal servers.
 .. figure:: /_static/images/provider_logos/maxihost.png
