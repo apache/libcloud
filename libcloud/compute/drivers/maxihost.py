@@ -68,12 +68,10 @@ class MaxihostNodeDriver(NodeDriver):
 
     def destroy_node(self, node):
         """
-        Destroy a node. Currently just stop the node since
-        there is no API implementation for destroying a node
+        Destroy a node.
         """
-        params = {"type": "power_off"}
-        res = self.connection.request('/devices/%s/actions' % node.id,
-                                      params=params, method='PUT')
+        res = self.connection.request('/devices/%s' % node.id,
+                                      method='DELETE')
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
