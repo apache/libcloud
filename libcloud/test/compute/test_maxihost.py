@@ -3,8 +3,7 @@ import unittest
 from libcloud.utils.py3 import httplib
 
 from libcloud.compute.drivers.maxihost import MaxihostNodeDriver
-from libcloud.compute.base import Node, KeyPair
-from libcloud.compute.types import NodeState
+from libcloud.compute.base import Node
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
@@ -15,7 +14,6 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         MaxihostNodeDriver.connectionCls.conn_class = MaxihostMockHttp
         self.driver = MaxihostNodeDriver('foo')
-
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -79,6 +77,13 @@ class MaxihostMockHttp(MockHttp):
     def _devices(self, method, url, body, headers):
         body = self.fixtures.load('nodes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _devices_1319(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = '{}'
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        else:
+            raise ValueError('Unsupported method: %s' % (method))
 
     def _devices_1319_actions(self, method, url, body, headers):
         body = self.fixtures.load('node.json')
