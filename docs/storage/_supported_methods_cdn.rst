@@ -3,38 +3,38 @@
 ============================= ==================== ================= ===================== ==================
 Provider                      enable container cdn enable object cdn get container cdn URL get object cdn URL
 ============================= ==================== ================= ===================== ==================
-`Aliyun OSS`_                 yes                  yes               yes                   yes               
+`Aliyun OSS`_                 no                   no                no                    no                
 `PCextreme AuroraObjects`_    yes                  yes               yes                   yes               
-`Microsoft Azure (blobs)`_    yes                  yes               yes                   yes               
-`Backblaze B2`_               yes                  yes               yes                   yes               
-`CloudFiles`_                 yes                  yes               yes                   yes               
-`DigitalOcean Spaces`_        yes                  yes               yes                   yes               
-`Google Cloud Storage`_       yes                  yes               yes                   yes               
-`KTUCloud Storage`_           yes                  yes               yes                   yes               
+`Microsoft Azure (blobs)`_    no                   no                no                    no                
+`Backblaze B2`_               no                   no                no                    no                
+`CloudFiles`_                 yes                  no                yes                   yes               
+`DigitalOcean Spaces`_        no                   no                no                    no                
+`Google Cloud Storage`_       no                   no                no                    no                
+`KTUCloud Storage`_           yes                  no                yes                   yes               
 `Local Storage`_              yes                  yes               yes                   yes               
-`Nimbus.io`_                  yes                  yes               yes                   yes               
-`Ninefold`_                   yes                  yes               yes                   yes               
-`OpenStack Swift`_            yes                  yes               yes                   yes               
-`Amazon S3 (us-east-1)`_      yes                  yes               yes                   yes               
-`Amazon S3 (ap-northeast-1)`_ yes                  yes               yes                   yes               
-`Amazon S3 (ap-northeast-1)`_ yes                  yes               yes                   yes               
-`Amazon S3 (ap-northeast-2)`_ yes                  yes               yes                   yes               
-`Amazon S3 (ap-south-1)`_     yes                  yes               yes                   yes               
-`Amazon S3 (ap-southeast-1)`_ yes                  yes               yes                   yes               
-`Amazon S3 (ap-southeast-2)`_ yes                  yes               yes                   yes               
-`Amazon S3 (ca-central-1)`_   yes                  yes               yes                   yes               
-`Amazon S3 (cn-north-1)`_     yes                  yes               yes                   yes               
-`Amazon S3 (cn-northwest-1)`_ yes                  yes               yes                   yes               
-`Amazon S3 (eu-central-1)`_   yes                  yes               yes                   yes               
-`Amazon S3 (eu-west-1)`_      yes                  yes               yes                   yes               
-`Amazon S3 (eu-west-2)`_      yes                  yes               yes                   yes               
-`Ceph RGW`_                   yes                  yes               yes                   yes               
-`RGW Outscale`_               yes                  yes               yes                   yes               
-`Amazon S3 (sa-east-1)`_      yes                  yes               yes                   yes               
-`Amazon S3 (us-east-2)`_      yes                  yes               yes                   yes               
-`Amazon S3 (us-gov-west-1)`_  yes                  yes               yes                   yes               
-`Amazon S3 (us-west-1)`_      yes                  yes               yes                   yes               
-`Amazon S3 (us-west-2)`_      yes                  yes               yes                   yes               
+`Nimbus.io`_                  no                   no                no                    no                
+`Ninefold`_                   no                   yes               no                    yes               
+`OpenStack Swift`_            yes                  no                yes                   yes               
+`Amazon S3 (us-east-1)`_      no                   no                no                    no                
+`Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
+`Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
+`Amazon S3 (ap-northeast-2)`_ no                   no                no                    no                
+`Amazon S3 (ap-south-1)`_     no                   no                no                    no                
+`Amazon S3 (ap-southeast-1)`_ no                   no                no                    no                
+`Amazon S3 (ap-southeast-2)`_ no                   no                no                    no                
+`Amazon S3 (ca-central-1)`_   no                   no                no                    no                
+`Amazon S3 (cn-north-1)`_     no                   no                no                    no                
+`Amazon S3 (cn-northwest-1)`_ no                   no                no                    no                
+`Amazon S3 (eu-central-1)`_   no                   no                no                    no                
+`Amazon S3 (eu-west-1)`_      no                   no                no                    no                
+`Amazon S3 (eu-west-2)`_      no                   no                no                    no                
+`Ceph RGW`_                   no                   no                no                    no                
+`RGW Outscale`_               no                   no                no                    no                
+`Amazon S3 (sa-east-1)`_      no                   no                no                    no                
+`Amazon S3 (us-east-2)`_      no                   no                no                    no                
+`Amazon S3 (us-gov-west-1)`_  no                   no                no                    no                
+`Amazon S3 (us-west-1)`_      no                   no                no                    no                
+`Amazon S3 (us-west-2)`_      no                   no                no                    no                
 ============================= ==================== ================= ===================== ==================
 
 .. _`Aliyun OSS`: http://www.aliyun.com/product/oss

@@ -3,67 +3,66 @@
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 Provider                              list volumes create volume destroy volume attach volume detach volume list snapshots create snapshot
 ===================================== ============ ============= ============== ============= ============= ============== ===============
-`Abiquo`_                             yes          yes           yes            yes           yes           yes            yes            
+`Abiquo`_                             no           no            no             no            no            no             no             
 `Aliyun ECS`_                         yes          yes           yes            yes           yes           yes            yes            
-`PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           yes            yes            
+`PCextreme AuroraCompute`_            yes          yes           yes            yes           yes           no             yes            
+`Azure Virtual machines`_             yes          yes           yes            yes           yes           no             yes            
 `Azure Virtual machines`_             yes          yes           yes            yes           yes           yes            yes            
-`Azure Virtual machines`_             yes          yes           yes            yes           yes           yes            yes            
-`Bluebox Blocks`_                     yes          yes           yes            yes           yes           yes            yes            
-`Brightbox`_                          yes          yes           yes            yes           yes           yes            yes            
-`BSNL`_                               yes          yes           yes            yes           yes           yes            yes            
-`Cloudscale`_                         yes          yes           yes            yes           yes           yes            yes            
-`CloudSigma (API v2.0)`_              yes          yes           yes            yes           yes           yes            yes            
-`CloudStack`_                         yes          yes           yes            yes           yes           yes            yes            
+`Bluebox Blocks`_                     no           no            no             no            no            no             no             
+`Brightbox`_                          no           no            no             no            no            no             no             
+`BSNL`_                               no           no            no             no            no            no             no             
+`Cloudscale`_                         no           no            no             no            no            no             no             
+`CloudSigma (API v2.0)`_              no           no            no             no            no            no             no             
+`CloudStack`_                         yes          yes           yes            yes           yes           no             yes            
 `Cloudwatt`_                          yes          yes           yes            yes           yes           yes            yes            
 `DigitalOcean`_                       yes          yes           yes            yes           yes           yes            yes            
-`DimensionData`_                      yes          yes           yes            yes           yes           yes            yes            
+`DimensionData`_                      no           no            no             no            no            no             no             
 `Amazon EC2`_                         yes          yes           yes            yes           yes           yes            yes            
-`Enomaly Elastic Computing Platform`_ yes          yes           yes            yes           yes           yes            yes            
-`ElasticHosts`_                       yes          yes           yes            yes           yes           yes            yes            
+`Enomaly Elastic Computing Platform`_ no           no            no             no            no            no             no             
+`ElasticHosts`_                       no           no            no             no            no            no             no             
 `Eucalyptus`_                         yes          yes           yes            yes           yes           yes            yes            
-`Exoscale`_                           yes          yes           yes            yes           yes           yes            yes            
-`Gandi`_                              yes          yes           yes            yes           yes           yes            yes            
+`Exoscale`_                           yes          yes           yes            yes           yes           no             yes            
+`Gandi`_                              yes          yes           yes            yes           yes           no             no             
 `Google Compute Engine`_              yes          yes           yes            yes           yes           yes            yes            
-`GoGrid`_                             yes          yes           yes            yes           yes           yes            yes            
-`HostVirtual`_                        yes          yes           yes            yes           yes           yes            yes            
-`Ikoula`_                             yes          yes           yes            yes           yes           yes            yes            
-`Indosat`_                            yes          yes           yes            yes           yes           yes            yes            
-`InternetSolutions`_                  yes          yes           yes            yes           yes           yes            yes            
-`Joyent`_                             yes          yes           yes            yes           yes           yes            yes            
+`GoGrid`_                             no           no            no             no            no            no             no             
+`HostVirtual`_                        no           no            no             no            no            no             no             
+`Ikoula`_                             yes          yes           yes            yes           yes           no             yes            
+`Indosat`_                            no           no            no             no            no            no             no             
+`InternetSolutions`_                  no           no            no             no            no            no             no             
+`Joyent`_                             no           no            no             no            no            no             no             
 `Kili Public Cloud`_                  yes          yes           yes            yes           yes           yes            yes            
-`KTUCloud`_                           yes          yes           yes            yes           yes           yes            yes            
-`Libvirt`_                            yes          yes           yes            yes           yes           yes            yes            
-`Linode`_                             yes          yes           yes            yes           yes           yes            yes            
-`Maxihost`_                           yes          yes           yes            yes           yes           yes            yes            
-`MedOne`_                             yes          yes           yes            yes           yes           yes            yes            
-`NephoScale`_                         yes          yes           yes            yes           yes           yes            yes            
+`KTUCloud`_                           yes          yes           yes            yes           yes           no             yes            
+`Libvirt`_                            no           no            no             no            no            no             no             
+`Linode`_                             no           no            yes            no            no            no             no             
+`Maxihost`_                           no           no            no             no            no            no             no             
+`MedOne`_                             no           no            no             no            no            no             no             
+`NephoScale`_                         no           no            no             no            no            no             no             
 `Nimbus`_                             yes          yes           yes            yes           yes           yes            yes            
-`NTTAmerica`_                         yes          yes           yes            yes           yes           yes            yes            
-`NTTC-CIS`_                           yes          yes           yes            yes           yes           yes            yes            
-`OnApp`_                              yes          yes           yes            yes           yes           yes            yes            
-`1and1`_                              yes          yes           yes            yes           yes           yes            yes            
-`OpenNebula (v3.8)`_                  yes          yes           yes            yes           yes           yes            yes            
-`OpenStack`_                          yes          yes           yes            yes           yes           yes            yes            
+`NTTAmerica`_                         no           no            no             no            no            no             no             
+`NTTC-CIS`_                           no           no            no             no            no            no             no             
+`OnApp`_                              no           no            no             no            no            no             no             
+`1and1`_                              no           no            no             no            no            no             no             
+`OpenNebula (v3.8)`_                  yes          yes           yes            yes           yes           no             no             
+`OpenStack`_                          yes          yes           yes            yes           yes           no             no             
 `Outscale INC`_                       yes          yes           yes            yes           yes           yes            yes            
 `Outscale SAS`_                       yes          yes           yes            yes           yes           yes            yes            
 `Ovh`_                                yes          yes           yes            yes           yes           yes            yes            
-`Packet`_                             yes          yes           yes            yes           yes           yes            yes            
-`ProfitBricks`_                       yes          yes           yes            yes           yes           yes            yes            
+`Packet`_                             no           no            no             no            no            no             no             
+`ProfitBricks`_                       yes          yes           yes            yes           yes           no             yes            
 `Rackspace Cloud (Next Gen)`_         yes          yes           yes            yes           yes           yes            yes            
-`Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           yes            yes            
-`RimuHosting`_                        yes          yes           yes            yes           yes           yes            yes            
-`Scaleway`_                           yes          yes           yes            yes           yes           yes            yes            
-`ServerLove`_                         yes          yes           yes            yes           yes           yes            yes            
-`skalicloud`_                         yes          yes           yes            yes           yes           yes            yes            
-`SoftLayer`_                          yes          yes           yes            yes           yes           yes            yes            
-`vCloud`_                             yes          yes           yes            yes           yes           yes            yes            
-`Upcloud`_                            yes          yes           yes            yes           yes           yes            yes            
-`VCL`_                                yes          yes           yes            yes           yes           yes            yes            
-`vCloud`_                             yes          yes           yes            yes           yes           yes            yes            
-`Voxel VoxCLOUD`_                     yes          yes           yes            yes           yes           yes            yes            
-`vps.net`_                            yes          yes           yes            yes           yes           yes            yes            
-`VMware vSphere`_                     yes          yes           yes            yes           yes           yes            yes            
-`Vultr`_                              yes          yes           yes            yes           yes           yes            yes            
+`Rackspace Cloud (First Gen)`_        yes          yes           yes            yes           yes           no             no             
+`RimuHosting`_                        no           no            no             no            no            no             no             
+`Scaleway`_                           yes          yes           yes            no            no            yes            yes            
+`ServerLove`_                         no           no            no             no            no            no             no             
+`skalicloud`_                         no           no            no             no            no            no             no             
+`SoftLayer`_                          no           no            no             no            no            no             no             
+`vCloud`_                             no           no            no             no            no            no             no             
+`Upcloud`_                            no           no            no             no            no            no             no             
+`VCL`_                                no           no            no             no            no            no             no             
+`vCloud`_                             no           no            no             no            no            no             no             
+`Voxel VoxCLOUD`_                     no           no            no             no            no            no             no             
+`vps.net`_                            no           no            no             no            no            no             no             
+`Vultr`_                              no           no            no             no            no            no             no             
 ===================================== ============ ============= ============== ============= ============= ============== ===============
 
 .. _`Abiquo`: http://www.abiquo.com/
@@ -125,5 +124,4 @@ Provider                              list volumes create volume destroy volume 
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
-.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com

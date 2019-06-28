@@ -9,10 +9,10 @@ Provider                              list nodes create node reboot node destroy
 `Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes        
 `Azure Virtual machines`_             yes        yes         yes         yes          yes         yes        yes        
 `Bluebox Blocks`_                     yes        yes         yes         yes          yes         yes        yes        
-`Brightbox`_                          yes        yes         yes         yes          yes         yes        no         
+`Brightbox`_                          yes        yes         no          yes          yes         yes        no         
 `BSNL`_                               yes        yes         yes         yes          yes         yes        yes        
 `Cloudscale`_                         yes        yes         yes         yes          yes         yes        no         
-`CloudSigma (API v2.0)`_              yes        yes         yes         yes          yes         yes        no         
+`CloudSigma (API v2.0)`_              yes        yes         no          yes          yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          yes         yes        yes        
 `Cloudwatt`_                          yes        yes         yes         yes          yes         yes        yes        
 `DigitalOcean`_                       yes        yes         yes         yes          yes         yes        no         
@@ -32,7 +32,7 @@ Provider                              list nodes create node reboot node destroy
 `Joyent`_                             yes        yes         yes         yes          yes         yes        yes        
 `Kili Public Cloud`_                  yes        yes         yes         yes          yes         yes        yes        
 `KTUCloud`_                           yes        yes         yes         yes          yes         yes        yes        
-`Libvirt`_                            yes        yes         yes         yes          yes         yes        no         
+`Libvirt`_                            yes        no          yes         yes          no          no         no         
 `Linode`_                             yes        yes         yes         yes          yes         yes        yes        
 `Maxihost`_                           yes        yes         yes         yes          yes         yes        no         
 `MedOne`_                             yes        yes         yes         yes          yes         yes        yes        
@@ -40,13 +40,13 @@ Provider                              list nodes create node reboot node destroy
 `Nimbus`_                             yes        yes         yes         yes          yes         yes        yes        
 `NTTAmerica`_                         yes        yes         yes         yes          yes         yes        yes        
 `NTTC-CIS`_                           yes        yes         yes         yes          yes         yes        yes        
-`OnApp`_                              yes        yes         yes         yes          yes         yes        no         
+`OnApp`_                              yes        yes         no          yes          yes         no         no         
 `1and1`_                              yes        yes         yes         yes          yes         yes        no         
 `OpenNebula (v3.8)`_                  yes        yes         yes         yes          yes         yes        no         
-`OpenStack`_                          yes        yes         yes         yes          yes         yes        no         
+`OpenStack`_                          yes        no          yes         yes          yes         yes        no         
 `Outscale INC`_                       yes        yes         yes         yes          yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes         yes        yes        
-`Ovh`_                                yes        yes         yes         yes          yes         yes        yes        
+`Ovh`_                                yes        yes         no          yes          yes         yes        yes        
 `Packet`_                             yes        yes         yes         yes          yes         yes        no         
 `ProfitBricks`_                       yes        yes         yes         yes          yes         yes        no         
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes         yes        yes        
@@ -58,11 +58,10 @@ Provider                              list nodes create node reboot node destroy
 `SoftLayer`_                          yes        yes         yes         yes          yes         yes        yes        
 `vCloud`_                             yes        yes         yes         yes          yes         yes        yes        
 `Upcloud`_                            yes        yes         yes         yes          yes         yes        yes        
-`VCL`_                                yes        yes         yes         yes          yes         yes        no         
+`VCL`_                                yes        yes         no          yes          yes         yes        no         
 `vCloud`_                             yes        yes         yes         yes          yes         yes        yes        
 `Voxel VoxCLOUD`_                     yes        yes         yes         yes          yes         yes        no         
 `vps.net`_                            yes        yes         yes         yes          yes         yes        no         
-`VMware vSphere`_                     yes        yes         yes         yes          yes         yes        no         
 `Vultr`_                              yes        yes         yes         yes          yes         yes        no         
 ===================================== ========== =========== =========== ============ =========== ========== ===========
 
@@ -125,5 +124,4 @@ Provider                              list nodes create node reboot node destroy
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
-.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com
