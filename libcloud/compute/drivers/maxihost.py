@@ -190,14 +190,14 @@ class MaxihostNodeDriver(NodeDriver):
         data = self.connection.request('/account/keys')
         return list(map(self._to_key_pair, data.object['ssh_keys']))
 
-    def create_key_pair(self, name, public_key=''):
+    def create_key_pair(self, name, public_key):
         """
         Create a new SSH key.
 
         :param      name: Key name (required)
         :type       name: ``str``
 
-        :param      public_key: Valid public key string (required)
+        :param      public_key: base64 encoded public key string (required)
         :type       public_key: ``str``
         """
         attr = {'name': name, 'public_key': public_key}
