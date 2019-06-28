@@ -35,8 +35,11 @@ class MaxihostNodeDriver(NodeDriver):
         """
         attr = {'hostname': name, 'plan': size.id,
                 'operating_system': image.id,
-                'facility': location.id.lower(), 'billing_cycle': 'monthly',
-                'ex_ssh_key_ids': ex_ssh_key_ids}
+                'facility': location.id.lower(), 'billing_cycle': 'monthly'}
+
+        if ex_ssh_key_ids:
+            attr['ssh_keys'] = ex_ssh_key_ids
+
         try:
             res = self.connection.request('/devices',
                                           params=attr, method='POST')
@@ -123,7 +126,7 @@ class MaxihostNodeDriver(NodeDriver):
         """
         List locations
 
-        If ex_available is True, show only locations which are available.
+        If ex_available is True, show only locations which are available
         """
         locations = []
         data = self.connection.request('/regions')
