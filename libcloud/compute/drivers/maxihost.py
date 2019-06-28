@@ -119,16 +119,16 @@ class MaxihostNodeDriver(NodeDriver):
                     driver=self, extra=extra)
         return node
 
-    def list_locations(self, available=True):
+    def list_locations(self, ex_available=True):
         """
         List locations
 
-        If available is True, show only locations which are available
+        If ex_available is True, show only locations which are available.
         """
         locations = []
         data = self.connection.request('/regions')
         for location in data.object['regions']:
-            if available:
+            if ex_available:
                 if location.get('available'):
                     locations.append(self._to_location(location))
             else:
