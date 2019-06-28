@@ -30,6 +30,10 @@ Compute
   ``device_owner`` of a port is ``compute:None``. (GITHUB-1295)
   [Miguel Caballer - @micafer]
 
+- [Maxihost] Add new compute driver for Maxihost provider
+  (https://www.maxihost.com/). (GITHUB-1298)
+  [Spyros Tzavaras - @mpempekos]
+
 Storage
 ~~~~~~~
 
