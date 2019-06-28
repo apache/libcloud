@@ -288,9 +288,9 @@ def generate_providers_table(api):
             continue
 
         driver_methods = dict(inspect.getmembers(cls,
-                                                 predicate=inspect.isfunction))
+                                                 predicate=inspect.ismethod))
         base_methods = dict(inspect.getmembers(driver,
-                                               predicate=inspect.isfunction))
+                                               predicate=inspect.ismethod))
         base_api_methods = BASE_API_METHODS[api]
 
         result[name] = {'name': cls.name, 'website': cls.website,
