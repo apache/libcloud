@@ -1,0 +1,17 @@
+{
+    "ssh_keys": [{
+        "id": 68,
+        "fingerprint": "77:08:a7:a5:f9:8c:e1:ab:7b:c3:d8:0c:cd:ac:8b:dd",
+        "public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDllWt8eNqRWZeEVMXLOJsjs3rMmqwBbvEqTkpklPPMycMxYlTSOwrhQ47d1Fknt+/9PWEAYWB9YigP/HMv7wJfMgAaa9cmDivBFX31NIZYBjmgGXSqnpLsHeLGf7htAhGVu7hE+WYz+J04LnMKYLEv23DVqGaG1R6buKGJEbHVGlvJJ6SO0omTvB6r5xhRO8jgXq53Ubzvq2e8at73Htf/9c8lg6iC/iDTgZ8cGPUUj2b8YoUWY0g0rp3ljbngnjbUErF2LnlexiOrjWNLeVxLc9glkW1AkR06LgQmuouqEdmT98vPVZE8QMrdK5WZJkpxQzja3tMh3t7b1eAY6FaH",
+        "name": "test_key"
+    }],
+    "links": {
+        "self": "https://api.maxihost.com/account/keys?limit=1&page=1"
+    },
+    "meta": {
+        "pages": {
+            "total": 1,
+            "count": 1
+        }
+    }
+}

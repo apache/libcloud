@@ -1,0 +1,46 @@
+{
+    "id": 1419,
+    "description": "tester",
+    "type": "Bare Metal",
+    "type_id": 1,
+    "label": "1826823414",
+    "service_id": 6230,
+    "power_status": null,
+    "specs": {
+        "cpu": "Dual Intel Xeon E5-2680v3",
+        "disk": "2 x 1TB SSD",
+        "ram": "128GB"
+    },
+    "location": {
+        "facility_name": "Equinix CH3",
+        "facility_code": "CH3",
+        "row_name": "314550",
+        "rack_name": "Default Rack",
+        "rack_position": "27"
+    },
+    "operating_system": {
+        "name": "Ubuntu (18.04 x64 LTS)",
+        "slug": "ubuntu_18_04_x64_lts"
+    },
+    "ips": [{
+        "id": 9043,
+        "ip_address": "10.223.156.11",
+        "ip_description": "Private IPMI",
+        "device_id": 1379,
+        "device_hostname": "tester",
+        "device_label": "1826825814",
+        "service_id": 0,
+        "created_at": 1557343637,
+        "updated_at": 1557343666
+    }, {
+        "id": 9042,
+        "ip_address": "185.233.186.01",
+        "ip_description": "Public IPv4",
+        "device_id": 1379,
+        "device_hostname": "tester",
+        "device_label": "1826825814",
+        "service_id": 0,
+        "created_at": 1557343657,
+        "updated_at": 1557343657
+    }]
+}
