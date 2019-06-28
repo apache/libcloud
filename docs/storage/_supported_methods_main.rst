@@ -12,7 +12,7 @@ Provider                      list containers list objects create container dele
 `Google Cloud Storage`_       yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `KTUCloud Storage`_           yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Local Storage`_              yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
-`Nimbus.io`_                  yes             no           yes              no               no            no                      no              no                        no           
+`Nimbus.io`_                  yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Ninefold`_                   yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `OpenStack Swift`_            yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
 `Amazon S3 (us-east-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                       yes          
