@@ -12,16 +12,17 @@ driver constructor:
 
 * ``api_key`` - Your API key. Can be obtained from https://control.maxihost.com/api
 
-
 Example
 -------
 
-from libcloud.compute.types import Provider
-from libcloud.compute.providers import get_driver
+.. code-block:: python
 
-cls = get_driver(Provider.MAXIHOST)
+    from libcloud.compute.types import Provider
+    from libcloud.compute.providers import get_driver
 
-driver = cls('api token')
+    cls = get_driver(Provider.MAXIHOST)
+
+    driver = cls('api token')
 
 API Docs
 --------
