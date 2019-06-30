@@ -869,6 +869,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('snap-30d37269', volumes[2].extra['snapshot_id'])
         self.assertEqual(StorageVolumeState.UNKNOWN, volumes[2].state)
 
+        EC2MockHttp.type = 'filters'
+        node = Node('i-d334b4b3', None, None, None, None, self.driver)
+        self.driver.list_volumes(node=node)
+        self.driver.list_volumes(ex_filters={'status': 'available'})
+
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
         vol = self.driver.create_volume(10, 'vol', location)
@@ -1545,6 +1550,26 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DescribeVolumes(self, method, url, body, headers):
+        body = self.fixtures.load('describe_volumes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _filters_DescribeVolumes(self, method, url, body, headers):
+        expected_params_1 = {
+            'Filter.1.Name': 'attachment.instance-id',
+            'Filter.1.Value.1': 'i-d334b4b3',
+        }
+
+        expected_params_2 = {
+            'Filter.1.Name': 'status',
+            'Filter.1.Value.1': 'available'
+        }
+
+        try:
+            self.assertUrlContainsQueryParams(url, expected_params_1)
+        except AssertionError:
+            # dict ordering is not guaranteed
+            self.assertUrlContainsQueryParams(url, expected_params_2)
+
         body = self.fixtures.load('describe_volumes.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

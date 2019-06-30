@@ -1783,13 +1783,29 @@ class BaseEC2NodeDriver(NodeDriver):
             )
         return locations
 
-    def list_volumes(self, node=None):
+    def list_volumes(self, node=None, ex_filters=None):
+        """
+        List volumes that are attached to a node, if specified and those that
+        satisfy the filters, if specified.
+
+        :param node: The node to which the volumes are attached.
+        :type node: :class:`Node`
+
+        :param ex_filters: The dictionary of additional filters.
+        :type ex_filters: ``dict``
+
+        :return: The list of volumes that match the criteria.
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
         params = {
             'Action': 'DescribeVolumes',
         }
+        if not ex_filters:
+            ex_filters = {}
         if node:
-            filters = {'attachment.instance-id': node.id}
-            params.update(self._build_filters(filters))
+            ex_filters['attachment.instance-id'] = node.id
+        if node or ex_filters:
+            params.update(self._build_filters(ex_filters))
 
         response = self.connection.request(self.path, params=params).object
         volumes = [self._to_volume(el) for el in response.findall(
