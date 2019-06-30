@@ -141,7 +141,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         return list(map(self._to_volume, data))
 
     def create_node(self, name, size, image, location, ex_create_attr=None,
-                    ex_ssh_key_ids=None, ex_user_data=None):
+                    ex_ssh_key_ids=None, ex_user_data=None, volumes=[]):
         """
         Create a node.
 
@@ -181,6 +181,11 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                           " favor of the ex_create_attr parameter.")
             attr['ssh_keys'] = ex_ssh_key_ids
 
+        ex_volumes = []
+        if volumes and volumes[0].get('volume_id'):
+            ex_volumes.append(volumes[0].get('volume_id'))
+            attr['volumes'] = ex_volumes
+
         ex_create_attr = ex_create_attr or {}
         for key in ex_create_attr.keys():
             if key in self.EX_CREATE_ATTRIBUTES:
@@ -192,12 +197,30 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = res.object['droplet']
         # TODO: Handle this in the response class
         status = res.object.get('status', 'OK')
+        node = self._to_node(data=data)
         if status == 'ERROR':
             message = res.object.get('message', None)
             error_message = res.object.get('error_message', message)
             raise ValueError('Failed to create node: %s' % (error_message))
 
-        return self._to_node(data=data)
+        else:
+            if volumes and volumes[0].get('size'):
+                volume = self.create_volume(size=volumes[0].get('size'),
+                                            name=name+'-disk',
+                                            location=location.id)
+                from time import sleep
+                i = 0
+                # try for 30 secs, as in the beginning get the error
+                # that Droplet already has a pending event
+                while (i < 30):
+                    try:
+                        self.attach_volume(node, volume)
+                        break
+                    except Exception:
+                        sleep(3)
+                    i+=1
+
+        return node
 
     def ex_start_node(self, node):
         params = {"type": "power_on"}
