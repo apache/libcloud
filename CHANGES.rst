@@ -34,6 +34,13 @@ Compute
   (https://www.maxihost.com/). (GITHUB-1298)
   [Spyros Tzavaras - @mpempekos]
 
+- [Azure ARM] Add various improvements to the Azure ARM driver:
+  - Add functionality to resize a volume in Azure
+  - Add functionality to update the network profile of a node
+  - Add functionality to update a network interface's properties
+  - Add functionality to check IP address availability (GITHUB-1244)
+  [Palash Gandhi - @palashgandhi]
+
 Storage
 ~~~~~~~
 
