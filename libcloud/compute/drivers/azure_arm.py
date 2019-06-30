@@ -997,7 +997,7 @@ class AzureNodeDriver(NodeDriver):
             })
         return True
 
-    def ex_resize_volume(self, volume, new_size, ex_resource_group):
+    def ex_resize_volume(self, volume, new_size, resource_group):
         """
         Resize a volume.
 
@@ -1007,9 +1007,9 @@ class AzureNodeDriver(NodeDriver):
         :param new_size: The new size to resize the volume to in Gib.
         :type new_size: ``int``
 
-        :param ex_resource_group: The name of the resource group in which to
+        :param resource_group: The name of the resource group in which to
             create the volume.
-        :type ex_resource_group: ``str``
+        :type resource_group: ``str``
 
         """
         action = (
@@ -1017,7 +1017,7 @@ class AzureNodeDriver(NodeDriver):
             u'/providers/Microsoft.Compute/disks/{volume_name}'
         ).format(
             subscription_id=self.subscription_id,
-            resource_group=ex_resource_group,
+            resource_group=resource_group,
             volume_name=volume.name,
         )
 
@@ -1041,7 +1041,7 @@ class AzureNodeDriver(NodeDriver):
         return self._to_volume(
             response.object,
             name=volume.name,
-            ex_resource_group=ex_resource_group
+            ex_resource_group=resource_group
         )
 
     def detach_volume(self, volume, ex_node=None):
