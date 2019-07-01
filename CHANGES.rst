@@ -41,6 +41,11 @@ Compute
   - Add functionality to check IP address availability (GITHUB-1244)
   [Palash Gandhi - @palashgandhi]
 
+- [EC2] Allow user to pass arbitrary filters to ``list_volumes`` method by
+  passing a dictionary with filters as ``ex_filters`` method argument value.
+  (GITHUB-1300)
+  [Palash Gandhi - @palashgandhi]
+
 Storage
 ~~~~~~~
 
