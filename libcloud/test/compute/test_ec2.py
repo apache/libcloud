@@ -869,9 +869,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('snap-30d37269', volumes[2].extra['snapshot_id'])
         self.assertEqual(StorageVolumeState.UNKNOWN, volumes[2].state)
 
-        EC2MockHttp.type = 'filters'
+        EC2MockHttp.type = 'filters_nodes'
         node = Node('i-d334b4b3', None, None, None, None, self.driver)
         self.driver.list_volumes(node=node)
+
+        EC2MockHttp.type = 'filters_status'
         self.driver.list_volumes(ex_filters={'status': 'available'})
 
     def test_create_volume(self):
@@ -1553,22 +1555,24 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('describe_volumes.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _filters_DescribeVolumes(self, method, url, body, headers):
-        expected_params_1 = {
+    def _filters_nodes_DescribeVolumes(self, method, url, body, headers):
+        expected_params = {
             'Filter.1.Name': 'attachment.instance-id',
             'Filter.1.Value.1': 'i-d334b4b3',
         }
 
-        expected_params_2 = {
+        self.assertUrlContainsQueryParams(url, expected_params)
+
+        body = self.fixtures.load('describe_volumes.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _filters_status_DescribeVolumes(self, method, url, body, headers):
+        expected_params = {
             'Filter.1.Name': 'status',
             'Filter.1.Value.1': 'available'
         }
 
-        try:
-            self.assertUrlContainsQueryParams(url, expected_params_1)
-        except AssertionError:
-            # dict ordering is not guaranteed
-            self.assertUrlContainsQueryParams(url, expected_params_2)
+        self.assertUrlContainsQueryParams(url, expected_params)
 
         body = self.fixtures.load('describe_volumes.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -1629,25 +1633,14 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _filters_DescribeVpcs(self, method, url, body, headers):
-        expected_params_1 = {
+        expected_params = {
             'Filter.1.Name': 'dhcp-options-id',
             'Filter.1.Value.1': 'dopt-7eded312',
             'Filter.2.Name': 'cidr',
             'Filter.2.Value.1': '192.168.51.0/24'
         }
 
-        expected_params_2 = {
-            'Filter.1.Name': 'cidr',
-            'Filter.1.Value.1': '192.168.51.0/24',
-            'Filter.2.Name': 'dhcp-options-id',
-            'Filter.2.Value.1': 'dopt-7eded312'
-        }
-
-        try:
-            self.assertUrlContainsQueryParams(url, expected_params_1)
-        except AssertionError:
-            # dict ordering is not guaranteed
-            self.assertUrlContainsQueryParams(url, expected_params_2)
+        self.assertUrlContainsQueryParams(url, expected_params)
 
         body = self.fixtures.load('describe_vpcs.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
