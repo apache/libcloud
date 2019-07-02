@@ -15,6 +15,8 @@
 
 from __future__ import with_statement
 
+from collections import OrderedDict
+
 import os
 import sys
 from datetime import datetime
@@ -1113,8 +1115,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_ex_list_networks_filters(self):
         EC2MockHttp.type = 'filters'
-        filters = {'dhcp-options-id': 'dopt-7eded312',  # matches two networks
-                   'cidr': '192.168.51.0/24'}  # matches one network
+
+        filters = OrderedDict([
+            ('dhcp-options-id', 'dopt-7eded312'),  # matches two networks
+            ('cidr', '192.168.51.0/24')  # matches two networks
+        ])
 
         # We assert in the mock http method
         self.driver.ex_list_networks(filters=filters)
