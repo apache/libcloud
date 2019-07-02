@@ -46,6 +46,13 @@ Compute
   (GITHUB-1300)
   [Palash Gandhi - @palashgandhi]
 
+- [GCE] Add new ``ex_instancegroupmanager_set_autohealingpolicies`` method to
+  the GCE driver.
+
+  This method allows user to set the auto healing policies (health check to
+  use and initial delay) on GCE instance group. (GITHUB-1286)
+  [Kenta Morris - @kentamorris]
+
 Storage
 ~~~~~~~
 
