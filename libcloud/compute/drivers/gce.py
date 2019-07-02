@@ -1456,7 +1456,7 @@ class GCEInstanceGroupManager(UuidMixin):
         return self.driver.ex_instancegroup_set_named_ports(
             instancegroup=self.instance_group, named_ports=named_ports)
 
-    def set_autoHealingPolicies(self, healthcheck, initialdelaysec):
+    def set_autohealingpolicies(self, healthcheck, initialdelaysec):
         """
         Sets the autohealing policies for the instance for the instance group
         controlled by this manager.
