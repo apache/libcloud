@@ -1,0 +1,15 @@
+{
+  "id": "4992266504414588438",
+  "insertTime": "2019-07-02T14:47:37.095-07:00",
+  "kind": "compute#operation",
+  "name": "operation-zones_us-central1-a_disks_lcdisk_resize_post",
+  "operationType": "resizeDisk",
+  "progress": 0,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-zones_us-central1-a_disks_lcdisk_resize_post",
+  "startTime": "2019-07-02T14:47:37.111-07:00",
+  "status": "PENDING",
+  "targetId": "904434546113910404",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/disks/lcdisk",
+  "user": "487551519631-t6qvu2na6p4u9ptm46bsdujf0ohbdro7@developer.gserviceaccount.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a"
+}

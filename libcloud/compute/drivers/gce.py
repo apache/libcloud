@@ -6417,6 +6417,28 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=volume_data)
         return True
 
+    def ex_resize_volume(self, volume, size):
+        """
+        Resize a volume to the specified size.
+
+        :param volume: Volume object to resize
+        :type  volume: :class:`StorageVolume`
+
+        :param size: The size in GB of the volume to resize to.
+        :type size: ``int``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/disks/%s/resize' % (
+            volume.extra['zone'].name, volume.name)
+        request_data = {'sizeGb': int(size)}
+
+        self.connection.async_request(
+            request, method='POST', data=request_data
+        )
+        return True
+
     def detach_volume(self, volume, ex_node=None):
         """
         Detach a volume from a node.
