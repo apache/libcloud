@@ -449,6 +449,29 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           {'name': 'foo',
                            'port': 4444})
 
+    def test_ex_instancegroupmanager_set_autohealing_policies(self):
+        kwargs = {'host': 'lchost',
+                  'path': '/lc',
+                  'port': 8000,
+                  'interval': 10,
+                  'timeout': 10,
+                  'unhealthy_threshold': 4,
+                  'healthy_threshold': 3,
+                  'description': 'test healthcheck'}
+        healthcheck_name = 'lchealthcheck'
+        hc = self.driver.ex_create_healthcheck(healthcheck_name, **kwargs)
+
+        ig_name = 'myinstancegroup'
+        ig_zone = 'us-central1-a'
+        manager = self.driver.ex_get_instancegroupmanager(ig_name, ig_zone)
+
+        res = self.driver.ex_instancegroupmanager_set_autohealingpolicies(
+            manager=manager, healthcheck=hc, initialdelaysec=2)
+        self.assertTrue(res)
+
+        res = manager.set_autohealingpolicies(healthcheck=hc, initialdelaysec=2)
+        self.assertTrue(res)
+
     def test_ex_create_instancegroupmanager(self):
         name = 'myinstancegroup'
         zone = 'us-central1-a'
@@ -3567,8 +3590,13 @@ class GCEMockHttp(MockHttp):
 
     def _zones_us_central1_a_instanceGroupManagers_myinstancegroup(
             self, method, url, body, headers):
-        body = self.fixtures.load(
-            'zones_us-central1-a_instanceGroupManagers_myinstancegroup.json')
+        if method == 'PATCH':
+            # test_ex_instancegroupmanager_set_autohealing_policies
+            body = self.fixtures.load(
+                'zones_us-central1-a_operations_operation_zones_us-central1-a_instanceGroupManagers_insert_post.json')
+        else:
+            body = self.fixtures.load(
+                'zones_us-central1-a_instanceGroupManagers_myinstancegroup.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instanceGroupManagers_myinstancegroup_shared_network(
