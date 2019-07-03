@@ -39,8 +39,8 @@ IRC
 Issue Tracker
 -------------
 
-For bug and issue tracking we use Github issues located at
-https://github.com/apache/libcloud/issues.
+For bug and issue tracking we use Apache Libcloud JIRA located at
+https://issues.apache.org/jira/projects/LIBCLOUD/issues.
 
 Testing
 -------
