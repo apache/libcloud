@@ -57,6 +57,9 @@ Compute
   Ubuntu 18.04, RHEL 8, etc. (GITHUB-1304)
   [Christopher Lambert - @XN137]
 
+- [GCE] Add new ``ex_resize_volume`` method to the driver. (GITHUB-1301)
+  [Palash Gandhi - @palashgandhi]
+
 Storage
 ~~~~~~~
 
