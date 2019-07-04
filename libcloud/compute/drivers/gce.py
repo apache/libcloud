@@ -1630,7 +1630,7 @@ class GCEZone(NodeLocation):
         self.extra = extra
         country = name.split('-')[0]
         super(GCEZone, self).__init__(id=str(id), name=name, country=country,
-                                      driver=driver)
+                                      driver=driver, extra=extra)
 
     @property
     def time_until_mw(self):
