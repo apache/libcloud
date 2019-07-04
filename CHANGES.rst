@@ -53,6 +53,10 @@ Compute
   use and initial delay) on GCE instance group. (GITHUB-1286)
   [Kenta Morris - @kentamorris]
 
+- [GCE] Update GCE driver to include new operating system images such as
+  Ubuntu 18.04, RHEL 8, etc. (GITHUB-1304)
+  [Christopher Lambert - @XN137]
+
 Storage
 ~~~~~~~
 
