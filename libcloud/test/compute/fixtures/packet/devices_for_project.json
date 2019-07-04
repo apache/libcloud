@@ -1,0 +1,440 @@
+{
+	"devices": [
+		{
+			"id": "905037a4-967c-4e81-b364-3a0603aa071b",
+			"short_id": "905037a4",
+			"hostname": "mistopenstack",
+			"description": null,
+			"state": "active",
+			"tags": [],
+			"image_url": null,
+			"billing_cycle": "hourly",
+			"user": "root",
+			"iqn": "iqn.2018-04.net.packet:device.905037a4",
+			"locked": false,
+			"bonding_mode": 4,
+			"created_at": "2018-04-02T18:02:39Z",
+			"updated_at": "2019-03-21T15:35:18Z",
+			"ipxe_script_url": null,
+			"always_pxe": false,
+			"storage": {},
+			"customdata": {},
+			"operating_system": {
+				"id": "68bad60d-f5a7-45c2-ad09-573edaad3a3c",
+				"slug": "centos_7",
+				"name": "CentOS 7",
+				"distro": "centos",
+				"version": "7",
+				"provisionable_on": [
+					"c1.large.arm",
+					"baremetal_2a",
+					"c1.small.x86",
+					"baremetal_1",
+					"c1.xlarge.x86",
+					"baremetal_3",
+					"c2.medium.x86",
+					"d1f.optane.x86",
+					"d1p.optane.x86",
+					"g2.large.x86",
+					"m1.xlarge.x86",
+					"baremetal_2",
+					"m2.xlarge.x86",
+					"s1.large.x86",
+					"baremetal_s",
+					"t1.small.x86",
+					"baremetal_0",
+					"x1.small.x86",
+					"baremetal_1e"
+				],
+				"preinstallable": true,
+				"pricing": {},
+				"licensed": false
+			},
+			"facility": {
+				"id": "8e6470b3-b75e-47d1-bb93-45b225750975",
+				"name": "Amsterdam, NL",
+				"code": "ams1",
+				"features": [
+					"baremetal",
+					"storage",
+					"global_ipv4",
+					"backend_transfer",
+					"layer_2"
+				],
+				"address": {
+					"href": "#0688e909-647e-4b21-bdf2-fc056d993fc5"
+				},
+				"ip_ranges": [
+					"2604:1380:2000::/36",
+					"147.75.204.0/23",
+					"147.75.100.0/22",
+					"147.75.80.0/22",
+					"147.75.32.0/23"
+				]
+			},
+			"project": {
+				"href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5"
+			},
+			"ssh_keys": [
+				{
+					"href": "/ssh-keys/54b6c270-b37f-4740-a06f-8287d7c7375a"
+				},
+				{
+					"href": "/ssh-keys/6a641836-f622-40a3-9156-a88112ee2e03"
+				},
+				{
+					"href": "/ssh-keys/7b982d07-0ea3-415e-a35c-3dfb6b358267"
+				},
+				{
+					"href": "/ssh-keys/23640808-0983-4b5c-b251-2f7715f5450a"
+				},
+				{
+					"href": "/ssh-keys/410f8090-8d2d-4bce-8855-43142503f3a4"
+				},
+				{
+					"href": "/ssh-keys/d8c9bfc1-0201-4e18-b70d-67333847f804"
+				},
+				{
+					"href": "/ssh-keys/2b361661-efaa-429e-8d22-30e64853efe4"
+				},
+				{
+					"href": "/ssh-keys/94a4d3d4-672a-4670-948b-feda8127758c"
+				},
+				{
+					"href": "/ssh-keys/632d69f1-52f4-435b-9424-3b1e8c725812"
+				},
+				{
+					"href": "/ssh-keys/733852c6-8cd0-41c3-bf2e-6aac7c7a7a35"
+				},
+				{
+					"href": "/ssh-keys/bfc69d73-c8c7-4027-8aed-7c6bd88eb278"
+				},
+				{
+					"href": "/ssh-keys/2b38c95c-02dc-4ce8-961c-9d2ce8763647"
+				},
+				{
+					"href": "/ssh-keys/97898a92-7df8-4e1f-8f87-9631f7de4a81"
+				},
+				{
+					"href": "/ssh-keys/22f9fd4c-ab3d-47f5-92ac-7d5703084d3d"
+				},
+				{
+					"href": "/ssh-keys/4dcb7264-25d2-42db-b25f-d5ebaa8b6410"
+				},
+				{
+					"href": "/ssh-keys/944bb692-3aa8-449e-9d29-3b4e1028b148"
+				},
+				{
+					"href": "/ssh-keys/cf8abbdd-a484-43c3-ba62-627a16594594"
+				},
+				{
+					"href": "/ssh-keys/2af51313-c514-4145-907f-f7445ca2e5ad"
+				},
+				{
+					"href": "/ssh-keys/e0af33d3-0e2c-456a-a4d6-206558de66d6"
+				},
+				{
+					"href": "/ssh-keys/502178f5-b985-466b-980e-f01ba028e5fc"
+				},
+				{
+					"href": "/ssh-keys/a46796e6-ee03-4aa5-bf71-f54344a1d1f9"
+				},
+				{
+					"href": "/ssh-keys/9af94154-e38f-4a77-8cd2-8e6455fc8129"
+				},
+				{
+					"href": "/ssh-keys/56b9d292-8ed8-43c5-8687-a436979d1ac0"
+				},
+				{
+					"href": "/ssh-keys/1fd6e5a9-966d-4937-89b2-e269ff1d447a"
+				}
+			],
+			"project_lite": {
+				"href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5"
+			},
+			"volumes": [],
+			"ip_addresses": [
+				{
+					"id": "f73172c4-4955-4376-8089-aad2daaf16eb",
+					"address_family": 4,
+					"netmask": "255.255.255.254",
+					"created_at": "2018-04-02T18:02:40Z",
+					"details": null,
+					"public": true,
+					"cidr": 31,
+					"management": true,
+					"manageable": true,
+					"enabled": true,
+					"global_ip": null,
+					"customdata": {},
+					"project": {},
+					"project_lite": {},
+					"facility": {
+						"id": "8e6470b3-b75e-47d1-bb93-45b225750975",
+						"name": "Amsterdam, NL",
+						"code": "ams1",
+						"features": [
+							"baremetal",
+							"storage",
+							"global_ipv4",
+							"backend_transfer",
+							"layer_2"
+						],
+						"address": {
+							"href": "#0688e909-647e-4b21-bdf2-fc056d993fc5"
+						},
+						"ip_ranges": [
+							"2604:1380:2000::/36",
+							"147.75.204.0/23",
+							"147.75.100.0/22",
+							"147.75.80.0/22",
+							"147.75.32.0/23"
+						]
+					},
+					"assigned_to": {
+						"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b"
+					},
+					"interface": {
+						"href": "/ports/115bb6c2-325d-4a70-ad07-c81f4d094000"
+					},
+					"network": "147.75.102.192",
+					"address": "147.75.102.193",
+					"gateway": "147.75.102.192",
+					"href": "/ips/f73172c4-4955-4376-8089-aad2daaf16eb"
+				},
+				{
+					"id": "366abb1f-3f79-42d7-8b0b-fab4950eca57",
+					"address_family": 6,
+					"netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:fffe",
+					"created_at": "2018-04-02T18:02:40Z",
+					"details": null,
+					"public": true,
+					"cidr": 127,
+					"management": true,
+					"manageable": true,
+					"enabled": true,
+					"global_ip": null,
+					"customdata": {},
+					"project": {},
+					"project_lite": {},
+					"facility": {
+						"id": "8e6470b3-b75e-47d1-bb93-45b225750975",
+						"name": "Amsterdam, NL",
+						"code": "ams1",
+						"features": [
+							"baremetal",
+							"storage",
+							"global_ipv4",
+							"backend_transfer",
+							"layer_2"
+						],
+						"address": {
+							"href": "#0688e909-647e-4b21-bdf2-fc056d993fc5"
+						},
+						"ip_ranges": [
+							"2604:1380:2000::/36",
+							"147.75.204.0/23",
+							"147.75.100.0/22",
+							"147.75.80.0/22",
+							"147.75.32.0/23"
+						]
+					},
+					"assigned_to": {
+						"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b"
+					},
+					"interface": {
+						"href": "/ports/115bb6c2-325d-4a70-ad07-c81f4d094000"
+					},
+					"network": "2604:1380:2000:c100::2",
+					"address": "2604:1380:2000:c100::3",
+					"gateway": "2604:1380:2000:c100::2",
+					"href": "/ips/366abb1f-3f79-42d7-8b0b-fab4950eca57"
+				},
+				{
+					"id": "9addbf38-5c0c-47d6-b485-f8364b5b37c0",
+					"address_family": 4,
+					"netmask": "255.255.255.254",
+					"created_at": "2018-04-02T18:02:40Z",
+					"details": null,
+					"public": false,
+					"cidr": 31,
+					"management": true,
+					"manageable": true,
+					"enabled": true,
+					"global_ip": null,
+					"customdata": {},
+					"project": {},
+					"project_lite": {},
+					"facility": {
+						"id": "8e6470b3-b75e-47d1-bb93-45b225750975",
+						"name": "Amsterdam, NL",
+						"code": "ams1",
+						"features": [
+							"baremetal",
+							"storage",
+							"global_ipv4",
+							"backend_transfer",
+							"layer_2"
+						],
+						"address": {
+							"href": "#0688e909-647e-4b21-bdf2-fc056d993fc5"
+						},
+						"ip_ranges": [
+							"2604:1380:2000::/36",
+							"147.75.204.0/23",
+							"147.75.100.0/22",
+							"147.75.80.0/22",
+							"147.75.32.0/23"
+						]
+					},
+					"assigned_to": {
+						"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b"
+					},
+					"interface": {
+						"href": "/ports/115bb6c2-325d-4a70-ad07-c81f4d094000"
+					},
+					"network": "10.80.144.130",
+					"address": "10.80.144.131",
+					"gateway": "10.80.144.130",
+					"href": "/ips/9addbf38-5c0c-47d6-b485-f8364b5b37c0"
+				}
+			],
+			"plan": {
+				"id": "6d1f1ffa-7912-4b78-b50d-88cc7c8ab40f",
+				"slug": "baremetal_1",
+				"name": "c1.small.x86",
+				"description": "Our Type 1 configuration is a zippy general use server, with an Intel E3-1240 v3 processor and 32GB of RAM.",
+				"line": "baremetal",
+				"specs": {
+					"cpus": [
+						{
+							"count": 1,
+							"type": "Intel E3-1240 v3"
+						}
+					],
+					"memory": {
+						"total": "32GB"
+					},
+					"drives": [
+						{
+							"count": 2,
+							"size": "120GB",
+							"type": "SSD"
+						}
+					],
+					"nics": [
+						{
+							"count": 2,
+							"type": "1Gbps"
+						}
+					],
+					"features": {
+						"raid": true,
+						"txt": true
+					}
+				},
+				"legacy": false,
+				"deployment_types": [
+					"on_demand",
+					"spot_market"
+				],
+				"available_in": [
+					{
+						"href": "/facilities/2b70eb8f-fa18-47c0-aba7-222a842362fd"
+					},
+					{
+						"href": "/facilities/8ea03255-89f9-4e62-9d3f-8817db82ceed"
+					},
+					{
+						"href": "/facilities/8e6470b3-b75e-47d1-bb93-45b225750975"
+					}
+				],
+				"class": "c1.small.x86",
+				"pricing": {
+					"hour": 0.4
+				}
+			},
+			"userdata": "",
+			"switch_uuid": "d67ca07f",
+			"network_ports": [
+				{
+					"id": "115bb6c2-325d-4a70-ad07-c81f4d094000",
+					"type": "NetworkBondPort",
+					"name": "bond0",
+					"data": {
+						"bonded": true
+					},
+					"network_type": "layer3",
+					"native_virtual_network": null,
+					"hardware": {
+						"href": "/hardware/137a9e9b-3173-4372-b13c-e61b710adfeb"
+					},
+					"virtual_networks": [],
+					"connected_port": null,
+					"href": "/ports/115bb6c2-325d-4a70-ad07-c81f4d094000"
+				},
+				{
+					"id": "458e6773-408e-4697-a289-11c19bd7e4cb",
+					"type": "NetworkPort",
+					"name": "eth0",
+					"data": {
+						"mac": "0c:c4:7a:b2:11:78",
+						"bonded": true
+					},
+					"bond": {
+						"id": "115bb6c2-325d-4a70-ad07-c81f4d094000",
+						"name": "bond0"
+					},
+					"native_virtual_network": null,
+					"hardware": {
+						"href": "/hardware/137a9e9b-3173-4372-b13c-e61b710adfeb"
+					},
+					"virtual_networks": [],
+					"connected_port": {
+						"href": "/ports/486ce54d-61ba-491e-b772-8e521060d802"
+					},
+					"href": "/ports/458e6773-408e-4697-a289-11c19bd7e4cb"
+				},
+				{
+					"id": "ed4090dc-a08c-4f3d-8d4b-03c46cf84ef0",
+					"type": "NetworkPort",
+					"name": "eth1",
+					"data": {
+						"mac": "0c:c4:7a:b2:11:79",
+						"bonded": true
+					},
+					"bond": {
+						"id": "115bb6c2-325d-4a70-ad07-c81f4d094000",
+						"name": "bond0"
+					},
+					"native_virtual_network": null,
+					"hardware": {
+						"href": "/hardware/137a9e9b-3173-4372-b13c-e61b710adfeb"
+					},
+					"virtual_networks": [],
+					"connected_port": {
+						"href": "/ports/0b4e5127-7536-41d1-887f-6ec797204ed8"
+					},
+					"href": "/ports/ed4090dc-a08c-4f3d-8d4b-03c46cf84ef0"
+				}
+			],
+			"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b"
+		}
+	],
+	"meta": {
+		"first": {
+			"href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5/devices?page=1"
+		},
+		"previous": null,
+		"self": {
+			"href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5/devices?page=1"
+		},
+		"next": null,
+		"last": {
+			"href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5/devices?page=1"
+		},
+		"current_page": 1,
+		"last_page": 1,
+		"total": 1
+	}
+}
