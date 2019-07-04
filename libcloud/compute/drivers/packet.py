@@ -172,7 +172,7 @@ def _list_async(driver):
         return loop.run_until_complete(loc['_list_async'](loc['self']))
 
     def ex_list_nodes_for_project(self, ex_project_id, include='plan', page=1,
-                               per_page=1000):
+                                  per_page=1000):
         params = {
             'include': include,
             'page': page,
@@ -199,7 +199,8 @@ def _list_async(driver):
                 size.get('line') == 'baremetal']
 
     def create_node(self, name, size, image, location,
-                    ex_project_id=None, ip_addresses=[], cloud_init=None, **kwargs):
+                    ex_project_id=None, ip_addresses=[], cloud_init=None,
+                    **kwargs):
         """
         Create a node.
 
@@ -236,7 +237,8 @@ def _list_async(driver):
         if kwargs.get('disk'):
             self.attach_volume(node, kwargs.get('disk'))
         if kwargs.get('disk_size'):
-            volume = self.create_volume(size=kwargs.get('disk_size'), location=location)
+            volume = self.create_volume(size=kwargs.get('disk_size'),
+                                        location=location)
             self.attach_volume(node, volume)
         return node
 
@@ -574,7 +576,8 @@ def _list_async(driver):
 
     def list_volumes(self, ex_project_id=None):
         if ex_project_id:
-            return self.ex_list_volumes_for_project(ex_project_id=ex_project_id)
+            return self.ex_list_volumes_for_project(
+                ex_project_id=ex_project_id)
 
         # if project has been specified during driver initialization, then
         # return nodes for this project only
@@ -593,8 +596,8 @@ def _list_async(driver):
         # In case of Python3 use asyncio to perform requests in parallel
         return self.list_resources_async('volumes')
 
-    def ex_list_volumes_for_project(self, ex_project_id, include='plan', page=1,
-                                 per_page=1000):
+    def ex_list_volumes_for_project(self, ex_project_id, include='plan',
+                                    page=1, per_page=1000):
         params = {
             'include': include,
             'page': page,
