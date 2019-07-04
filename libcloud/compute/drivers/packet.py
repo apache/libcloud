@@ -100,21 +100,53 @@ class PacketNodeDriver(NodeDriver):
                       'active': NodeState.RUNNING}
 
     def __init__(self, key, project=None):
-        # initialize a NodeDriver for Packet using the API token
-        # and optionally the project (name or id)
-        # If project specified we need to be sure this is a valid project
-        # so we create the variable self.project_id
+        """
+        Initialize a NodeDriver for Packet using the API token
+        and optionally the project (name or id).
+
+        If project name is specified we validate it lazily and populate
+        self.project_id during the first access of self.projects variable
+        """
         super(PacketNodeDriver, self).__init__(key=key)
+
         self.project_name = project
         self.project_id = None
-        self.projects = self.ex_list_projects()
-        if project:
-            for project_obj in self.projects:
-                if project in [project_obj.name, project_obj.id]:
-                    self.project_id = project_obj.id
-                    break
-            if not self.project_id:
-                self.project_name = None
+
+        # Lazily populated on first access to self.project
+        self._project = project
+
+        # Variable which indicates if self._projects has been populated yet and
+        # has been called self._project validated
+        self._projects_populated = False
+        self._projects = None
+
+    @property
+    def projects(self):
+        """
+        Lazily retrieve projects and set self.project_id variable on initial
+        access to self.projects variable.
+        """
+        if not self._projects_populated:
+            # NOTE: Each Packet account needs at least one project, but to be
+            # on the safe side and avoid infinite loop in case there are no
+            # projects on the account, we don't use a more robust way to
+            # determine if project list has been populated yet
+            self._projects = self.ex_list_projects()
+            self._projects_populated = True
+
+            # If project name is specified, verify it's valid and populate
+            # self.project_id
+            if self._project:
+                for project_obj in self._projects:
+                    if self._project in [project_obj.name, project_obj.id]:
+                        self.project_id = project_obj.id
+                        break
+
+                if not self.project_id:
+                    # Invalid project name
+                    self.project_name = None
+
+        return self._projects
 
     def ex_list_projects(self):
         projects = []
