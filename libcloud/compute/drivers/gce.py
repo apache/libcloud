@@ -1785,16 +1785,38 @@ class GCENodeDriver(NodeDriver):
         "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
         "debian-cloud": ["debian-8", "debian-9"],
         "opensuse-cloud": ["opensuse-leap"],
-        "rhel-cloud": ["rhel-6", "rhel-7"],
-        "suse-cloud": ["sles-11", "sles-12"],
+        "rhel-cloud": [
+            "rhel-6",
+            "rhel-7",
+            "rhel-8",
+        ],
+        "suse-cloud": [
+            "sles-11",
+            "sles-12",
+            "sles-15",
+        ],
         "suse-byos-cloud": [
             "sles-11-byos", "sles-12-byos",
             "sles-12-sp2-sap-byos", "sles-12-sp3-sap-byos",
             "suse-manager-proxy-byos", "suse-manager-server-byos"
         ],
-        "suse-sap-cloud": ["sles-12-sp2-sap", "sles-12-sp3-sap"],
+        "suse-sap-cloud": [
+            "sles-12-sp2-sap",
+            "sles-12-sp3-sap",
+            "sles-12-sp4-sap",
+            "sles-15-sap",
+        ],
         "ubuntu-os-cloud": [
-            "ubuntu-1404-lts", "ubuntu-1604-lts", "ubuntu-1710"
+            "ubuntu-1404-lts",
+            "ubuntu-1604-lts",
+            "ubuntu-minimal-1604-lts",
+            "ubuntu-1710",
+            "ubuntu-1804-lts",
+            "ubuntu-minimal-1804-lts",
+            "ubuntu-1810",
+            "ubuntu-minimal-1810",
+            "ubuntu-1904",
+            "ubuntu-minimal-1904",
         ],
         "windows-cloud": [
             "windows-1709-core-for-containers", "windows-1709-core",
@@ -7253,6 +7275,8 @@ class GCENodeDriver(NodeDriver):
                     if image_family.startswith(short_name):
                         image = _try_image_family(image_family,
                                                   project=img_proj)
+                        if image:
+                            break
 
         if not image:
             raise ResourceNotFoundError('Could not find image for family '
