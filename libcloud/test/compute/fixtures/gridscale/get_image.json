@@ -1,0 +1,23 @@
+{
+  "templates":{
+	"capacity": 20,
+	"name": "Plesk",
+	"license_product_no": null,
+	"ostype": "1click",
+	"object_uuid": "12345",
+	"distro": "Plesk",
+	"change_time": "2019-01-03T17:06:49Z",
+	"location_country": "de",
+	"location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+	"usage_in_minutes": 23795240,
+	"create_time": "2017-03-26T17:51:54Z",
+	"status": "active",
+	"labels": ["karl"],
+	"current_price": 104.699056,
+	"location_iata": "fra",
+	"location_name": "de/fra",
+	"version": "Ubuntu 16.04 LTS & Plesk Onyx",
+	"description": "Plesk",
+	"private": false
+}
+}
