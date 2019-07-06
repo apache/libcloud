@@ -67,6 +67,10 @@ Compute
 - [GCE] Add new ``ex_resize_volume`` method to the driver. (GITHUB-1301)
   [Palash Gandhi - @palashgandhi]
 
+- [OpenStack] Add various router management methods to the OpenStack
+  driver. (GITHUB-1281)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
