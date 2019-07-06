@@ -1802,7 +1802,9 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_ex_create_subnet(self):
         network = self.driver.ex_list_networks()[0]
-        subnet = self.driver.ex_create_subnet('name', network, '10.0.0.0/24')
+        subnet = self.driver.ex_create_subnet('name', network, '10.0.0.0/24',
+                                              ip_version=4,
+                                              dns_nameservers=["10.0.0.01"])
 
         self.assertEqual(subnet.name, 'name')
         self.assertEqual(subnet.cidr, '10.0.0.0/24')
@@ -1810,6 +1812,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_ex_delete_subnet(self):
         subnet = self.driver.ex_list_subnets()[0]
         self.assertTrue(self.driver.ex_delete_subnet(subnet=subnet))
+
+    def test_ex_update_subnet(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        subnet = self.driver.ex_update_subnet(subnet, name='net2')
+        self.assertEqual(subnet.name, 'name')
 
     def test_ex_list_network(self):
         networks = self.driver.ex_list_networks()
@@ -1900,6 +1907,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         ret = self.driver.ex_delete_port(port)
 
         self.assertTrue(ret)
+
+    def test_ex_update_port(self):
+        port = self.driver.ex_get_port('126da55e-cfcb-41c8-ae39-a26cb8a7e723')
+        ret = self.driver.ex_update_port(port, port_security_enabled=False)
+        self.assertEqual(port.extra['name'], 'Some port name')
 
     def test_detach_port_interface(self):
         node = Node(id='1c01300f-ef97-4937-8f03-ac676d6234be', name=None,
@@ -2002,6 +2014,34 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         name, args, kwargs = mock_request.mock_calls[0]
         self.assertFalse("display_name" in kwargs["data"]["snapshot"])
         self.assertFalse("display_description" in kwargs["data"]["snapshot"])
+
+    def test_ex_list_routers(self):
+        routers = self.driver.ex_list_routers()
+        router = routers[0]
+
+        self.assertEqual(len(routers), 2)
+        self.assertEqual(router.name, 'router2')
+        self.assertEqual(router.status, 'ACTIVE')
+        self.assertEqual(router.extra['routes'], [{'destination': '179.24.1.0/24',
+                                                   'nexthop': '172.24.3.99'}])
+
+    def test_ex_create_router(self):
+        router = self.driver.ex_create_router('router1', admin_state_up = True)
+
+        self.assertEqual(router.name, 'router1')
+
+    def test_ex_delete_router(self):
+        router = self.driver.ex_list_routers()[1]
+        self.assertTrue(self.driver.ex_delete_router(router=router))
+
+    def test_manage_router_interfaces(self):
+        router = self.driver.ex_list_routers()[1]
+        port = self.driver.ex_list_ports()[0]
+        subnet = self.driver.ex_list_subnets()[0]
+        self.assertTrue(self.driver.ex_add_router_port(router, port))
+        self.assertTrue(self.driver.ex_del_router_port(router, port))
+        self.assertTrue(self.driver.ex_add_router_subnet(router, subnet))
+        self.assertTrue(self.driver.ex_del_router_subnet(router, subnet))
 
     def test_detach_volume(self):
         node = self.driver.list_nodes()[0]
@@ -2238,6 +2278,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         elif method == "GET":
+            body = self.fixtures.load('_port_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "PUT":
             body = self.fixtures.load('_port_v2.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
@@ -2497,7 +2540,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__networks_POST.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-        if method == 'DELETE':
+        elif method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
@@ -2508,6 +2551,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == 'PUT':
+            body = self.fixtures.load('_v2_0__subnet.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_v2_0_subnets(self, method, url, body, headers):
         if method == 'POST':
@@ -2602,6 +2648,33 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__router.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__router.json')
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load('_v2_0__routers.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95_add_router_interface(self, method, url,
+                                                                                        body, headers):
+        if method == 'PUT':
+            body = self.fixtures.load('_v2_0__router_interface.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95_remove_router_interface(self, method, url,
+                                                                                           body, headers):
+        if method == 'PUT':
+            body = self.fixtures.load('_v2_0__router_interface.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 
