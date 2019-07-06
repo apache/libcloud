@@ -12,6 +12,8 @@ General
   possible and the first project which was returned by the API was always
   selected. (GITHUB-1293)
   [Miguel Caballer - @micafer]
+- Add new ``extra`` attribute to the base ``NodeLocation`` class. (GITHUB-1282)
+  [Dimitris Moraitis - @d-mo]
 
 Compute
 ~~~~~~~
@@ -29,6 +31,11 @@ Compute
 - [OpenStack] Fix a bug with retrieving floating IP address when a
   ``device_owner`` of a port is ``compute:None``. (GITHUB-1295)
   [Miguel Caballer - @micafer]
+- [Packet] Add various new extension methods to Packet.net driver
+  (``ex_reinstall_node``, ``ex_list_projects``,
+  ``ex_get_bgp_config_for_project``, ``ex_get_bgp_config``,
+  ``ex_list_nodes_for_project``, etc.). (GITHUB-1282)
+  [Dimitris Moraitis - @d-mo]
 
 - [Maxihost] Add new compute driver for Maxihost provider
   (https://www.maxihost.com/). (GITHUB-1298)
@@ -2484,7 +2491,7 @@ Compute
   (GITHUB-338)
   [Anthony Monthe]
 
-- Add new driver for Packet (https://www.packet.net/) provider.
+- Add new driver for Packet (https://www.packet.com/) provider.
   (LIBCLOUD-703, GITHUB-527)
   [Aaron Welch]
 

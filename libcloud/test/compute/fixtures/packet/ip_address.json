@@ -1,0 +1,38 @@
+{
+    "facility": {
+        "code": "ams1",
+        "features": ["baremetal", "storage", "global_ipv4", "backend_transfer", "layer_2"],
+        "ip_ranges": ["2604:1380:2000::/36", "147.75.204.0/23", "147.75.100.0/22", "147.75.80.0/22", "147.75.32.0/23"],
+        "address": {
+            "href": "#0688e909-647e-4b21-bdf2-fc056d993fc5"
+        },
+        "id": "8e6470b3-b75e-47d1-bb93-45b225750975",
+        "name": "Amsterdam, NL"
+    },
+    "href": "/ips/01c184f5-1413-4b0b-9f6d-ac993f6c9241",
+    "id": "01c184f5-1413-4b0b-9f6d-ac993f6c9241",
+    "management": false,
+    "address_family": 4,
+    "customdata": {},
+    "gateway": "147.75.33.33",
+    "details": null,
+    "addon": true,
+    "public": true,
+    "available": "/ips/01c184f5-1413-4b0b-9f6d-ac993f6c9241/available",
+    "project_lite": {
+        "href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5"
+    },
+    "netmask": "255.255.255.240",
+    "address": "147.75.33.34",
+    "cidr": 28,
+    "manageable": true,
+    "network": "147.75.33.32",
+    "created_at": "2017-12-29T10:59:59Z",
+    "bill": true,
+    "enabled": true,
+    "project": {
+        "href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5"
+    },
+    "assignments": [],
+    "global_ip": false
+}

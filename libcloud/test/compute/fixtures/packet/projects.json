@@ -1,0 +1,125 @@
+{
+	"projects": [
+		{
+			"id": "3d27fd13-0466-4878-be22-9a4b5595a3df",
+			"name": "Packet Integration Testing [Sponsored]",
+			"created_at": "2019-02-07T17:33:22Z",
+			"updated_at": "2019-02-07T17:33:51Z",
+			"backend_transfer_enabled": false,
+			"customdata": {},
+			"event_alert_configuration": null,
+			"memberships": [],
+			"invitations": [],
+			"devices": [],
+			"ssh_keys": [],
+			"volumes": [],
+			"members": [
+				{
+					"href": "/users/446476b8-a835-414a-8e9c-84925cc72705"
+				},
+				{
+					"href": "/users/4b36e749-9218-4bf2-a64d-b47e0170e2ec"
+				},
+				{
+					"href": "/users/bd4f24f3-33f0-46a6-9528-4e31e2ba6074"
+				}
+			],
+			"transfers": [],
+			"organization": {
+				"href": "/organizations/1432653f-f993-47c5-949e-af3c0de48d70"
+			},
+			"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df"
+		},
+		{
+			"id": "4a4bce6b-d2ef-41f8-95cf-0e2f32996440",
+			"name": "Docker Cloud",
+			"created_at": "2016-03-07T14:34:05Z",
+			"updated_at": "2019-02-07T14:25:46Z",
+			"backend_transfer_enabled": false,
+			"customdata": {},
+			"event_alert_configuration": {
+				"href": "#5bfd51ac-a8f3-4c96-af56-4d952e53f204"
+			},
+			"memberships": [],
+			"invitations": [],
+			"devices": [],
+			"ssh_keys": [],
+			"volumes": [],
+			"members": [
+				{
+					"href": "/users/446476b8-a835-414a-8e9c-84925cc72705"
+				},
+				{
+					"href": "/users/4b36e749-9218-4bf2-a64d-b47e0170e2ec"
+				},
+				{
+					"href": "/users/bd4f24f3-33f0-46a6-9528-4e31e2ba6074"
+				}
+			],
+			"transfers": [],
+			"organization": {
+				"href": "/organizations/1432653f-f993-47c5-949e-af3c0de48d70"
+			},
+			"href": "/projects/4a4bce6b-d2ef-41f8-95cf-0e2f32996440"
+		},
+		{
+			"id": "4b653fce-6405-4300-9f7d-c587b7888fe5",
+			"name": "mist.io Integration [Sponsored]",
+			"created_at": "2015-11-10T14:53:29Z",
+			"updated_at": "2019-02-07T17:34:26Z",
+			"backend_transfer_enabled": false,
+			"customdata": {},
+			"event_alert_configuration": {
+				"href": "#04a29153-a740-423f-a129-7134468797b9"
+			},
+			"memberships": [],
+			"invitations": [],
+			"devices": [
+				{
+					"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b"
+				}
+			],
+			"ssh_keys": [
+				{
+					"href": "/ssh-keys/4dcb7264-25d2-42db-b25f-d5ebaa8b6410"
+				},
+				{
+					"href": "/ssh-keys/944bb692-3aa8-449e-9d29-3b4e1028b148"
+				}
+			],
+			"volumes": [],
+			"members": [
+				{
+					"href": "/users/446476b8-a835-414a-8e9c-84925cc72705"
+				},
+				{
+					"href": "/users/4b36e749-9218-4bf2-a64d-b47e0170e2ec"
+				},
+				{
+					"href": "/users/bd4f24f3-33f0-46a6-9528-4e31e2ba6074"
+				}
+			],
+			"transfers": [],
+			"organization": {
+				"href": "/organizations/1432653f-f993-47c5-949e-af3c0de48d70"
+			},
+			"href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5"
+		}
+	],
+	"meta": {
+		"first": {
+			"href": "/projects?page=1"
+		},
+		"previous": null,
+		"self": {
+			"href": "/projects?page=1"
+		},
+		"next": null,
+		"last": {
+			"href": "/projects?page=1"
+		},
+		"current_page": 1,
+		"last_page": 1,
+		"total": 3
+	}
+}

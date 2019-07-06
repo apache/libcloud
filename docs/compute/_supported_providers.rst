@@ -109,7 +109,7 @@ Provider                              Documentation                             
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`Packet`: http://www.packet.net/
+.. _`Packet`: http://www.packet.com/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
