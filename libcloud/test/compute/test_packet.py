@@ -155,8 +155,8 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
         config = self.driver.ex_get_bgp_config()
         self.assertEqual(len(config), 2)
 
-    def test_list_nodes_for_project(self):
-        nodes = self.driver.list_nodes_for_project(ex_project_id='4b653fce-6405-4300-9f7d-c587b7888fe5')
+    def test_ex_list_nodes_for_project(self):
+        nodes = self.driver.ex_list_nodes_for_project(ex_project_id='4b653fce-6405-4300-9f7d-c587b7888fe5')
         self.assertEqual(nodes[0].public_ips, ['147.75.102.193', '2604:1380:2000:c100::3'])
 
     def test_ex_create_bgp_session(self):
@@ -245,8 +245,8 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
 
     def test_attach_volume(self):
         attached = False
-        volumes = self.driver.list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
-        node = self.driver.list_nodes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')[0]
+        volumes = self.driver.ex_list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
+        node = self.driver.ex_list_nodes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')[0]
         for vol in volumes:
             if len(vol.extra['attachments']) == 0:
                 attached = self.driver.attach_volume(node, vol)
@@ -255,7 +255,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
 
     def test_detach_volume(self):
         detached = False
-        volumes = self.driver.list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
+        volumes = self.driver.ex_list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
         for vol in volumes:
             if len(vol.extra['attachments']) > 0:
                 detached = self.driver.detach_volume(vol)
@@ -264,7 +264,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
 
     def test_destroy_volume(self):
         destroyed = False
-        volumes = self.driver.list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
+        volumes = self.driver.ex_list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
         for vol in volumes:
             if len(vol.extra['attachments']) == 0:
                 destroyed = self.driver.destroy_volume(vol)

@@ -553,7 +553,7 @@ class OpenStackAuthResponse(Response):
         if content_type == 'application/json':
             try:
                 data = json.loads(self.body)
-            except:
+            except Exception:
                 driver = OpenStackIdentityConnection
                 raise MalformedResponseError('Failed to parse JSON',
                                              body=self.body,
@@ -1416,8 +1416,9 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
     The protocol name required to get the full path
     must be set in the self.tenant_name attribute.
 
-    The user must be scoped to the first project accessible with the
-    specified access token (usually there are only one)
+    The self.domain_name attribute can be used either to select the
+    domain name in case of domain scoped token or to select the project
+    name in case of project scoped token
     """
 
     responseCls = OpenStackAuthResponse
@@ -1432,7 +1433,6 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
             return self
 
         subject_token = self._get_unscoped_token_from_oidc_token()
-        project_id = self._get_project_id(token=subject_token)
 
         data = {
             'auth': {
@@ -1447,6 +1447,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
 
         if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
             # Scope token to project (tenant)
+            project_id = self._get_project_id(token=subject_token)
             data['auth']['scope'] = {
                 'project': {
                     'id': project_id
@@ -1562,7 +1563,15 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
         elif response.status in [httplib.OK, httplib.CREATED]:
             try:
                 body = json.loads(response.body)
-                return body["projects"][0]["id"]
+                # We use domain_name in both cases of the scoped tokens
+                # as we have used tenant as the protocol
+                if self.domain_name and self.domain_name != 'Default':
+                    for project in body['projects']:
+                        if project['name'] == self.domain_name:
+                            return project['id']
+                    raise ValueError('Project %s not found' % self.domain_name)
+                else:
+                    return body['projects'][0]['id']
             except Exception:
                 e = sys.exc_info()[1]
                 raise MalformedResponseError('Failed to parse JSON', e)

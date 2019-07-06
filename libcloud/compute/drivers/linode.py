@@ -272,7 +272,7 @@ class LinodeNodeDriver(NodeDriver):
         # Swap size
         try:
             swap = 128 if "ex_swap" not in kwargs else int(kwargs["ex_swap"])
-        except:
+        except Exception:
             raise LinodeException(0xFB, "Need an integer swap size")
 
         # Root partition size

@@ -168,7 +168,7 @@ class GCELBDriver(Driver):
             forwarding_rule = self.gce.ex_create_forwarding_rule(
                 name, targetpool, region=ex_region, protocol=protocol,
                 port_range=port, address=ex_address)
-        except:
+        except Exception:
             targetpool.destroy()
             raise
 

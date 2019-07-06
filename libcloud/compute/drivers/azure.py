@@ -1418,7 +1418,7 @@ class AzureNodeDriver(NodeDriver):
         _affinity_group = res.hosted_service_properties.affinity_group
         _cloud_service_location = res.hosted_service_properties.location
 
-        if _affinity_group is not None and _affinity_group is not u'':
+        if _affinity_group is not None and _affinity_group != '':
             return self.service_location(True, _affinity_group)
         elif _cloud_service_location is not None:
             return self.service_location(False, _cloud_service_location)
@@ -1965,9 +1965,13 @@ class AzureNodeDriver(NodeDriver):
 
     #    return connection
 
-"""XML Serializer
 
-Borrowed from the Azure SDK for Python.
+"""
+XML Serializer
+
+Borrowed from the Azure SDK for Python which is licensed under Apache 2.0.
+
+https://github.com/Azure/azure-sdk-for-python
 """
 
 
@@ -2500,7 +2504,9 @@ class AzureXmlSerializer():
         return xml
 
 
-"""Data Classes
+
+"""
+Data Classes
 
 Borrowed from the Azure SDK for Python.
 """
@@ -3167,7 +3173,9 @@ class AzureHTTPResponse(object):
         self.headers = headers
         self.body = body
 
-"""Helper Functions
+
+"""
+Helper classes and functions.
 """
 
 

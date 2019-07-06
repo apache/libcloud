@@ -443,7 +443,7 @@ class HostVirtualNodeDriver(NodeDriver):
             return False
         if fqdn[-1] == ".":
             fqdn = fqdn[:-1]
-        valid = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+        valid = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
         if len(fqdn.split(".")) > 1:
             return all(valid.match(x) for x in fqdn.split("."))
         else:

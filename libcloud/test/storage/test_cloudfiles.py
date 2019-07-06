@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from hashlib import sha1
+
 import hmac
 import os
 import os.path                          # pylint: disable-msg=W0404
@@ -21,13 +21,20 @@ import math
 import sys
 import copy
 from io import BytesIO
+from hashlib import sha1
+
 import mock
+from mock import Mock
+from mock import PropertyMock
 
 import libcloud.utils.files
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
+from libcloud.utils.py3 import StringIO
+from libcloud.utils.py3 import PY3
+from libcloud.utils.files import exhaust_iterator
 
 from libcloud.common.types import MalformedResponseError
 from libcloud.storage.base import CHUNK_SIZE, Container, Object
@@ -72,7 +79,7 @@ class CloudFilesTests(unittest.TestCase):
 
         try:
             driver.list_containers()
-        except:
+        except Exception:
             e = sys.exc_info()[1]
             self.assertEqual(e.value, 'Could not find specified endpoint')
         else:
@@ -359,6 +366,39 @@ class CloudFilesTests(unittest.TestCase):
         stream = self.driver.download_object_as_stream(
             obj=obj, chunk_size=None)
         self.assertTrue(hasattr(stream, '__iter__'))
+
+    def test_download_object_as_stream_data_is_not_buffered_in_memory(self):
+        # Test case which verifies that response.response attribute is not accessed
+        # and as such, whole body response is not buffered into RAM
+
+        # If content is consumed and response.content attribute accessed exception
+        # will be thrown and test will fail
+        mock_response = Mock(name='mock response')
+        mock_response.headers = {}
+        mock_response.status = 200
+        msg1 = '"response" attribute was accessed but it shouldn\'t have been'
+        msg2 = '"content" attribute was accessed but it shouldn\'t have been'
+        type(mock_response).response = PropertyMock(name='mock response attribute',
+                                                    side_effect=Exception(msg1))
+        type(mock_response).content = PropertyMock(name='mock content attribute',
+                                                   side_effect=Exception(msg2))
+        mock_response.iter_content.return_value = StringIO('a' * 1000)
+
+        self.driver.connection.request = Mock()
+        self.driver.connection.request.return_value = mock_response
+
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver)
+        result = self.driver.download_object_as_stream(obj=obj)
+        result = exhaust_iterator(result)
+
+        if PY3:
+            result = result.decode('utf-8')
+
+        self.assertEqual(result, 'a' * 1000)
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
@@ -1183,6 +1223,19 @@ class CloudFilesMockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_NO_BUFFER(
+            self, method, url, body, headers):
+        # test_download_object_data_is_not_buffered_in_memory
+        headers = {}
+        headers.update(self.base_headers)
+        headers['etag'] = '577ef1154f3240ad5b9b413aa7346a1e'
+        body = generate_random_data(1000)
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

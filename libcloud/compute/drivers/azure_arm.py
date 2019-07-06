@@ -406,19 +406,19 @@ class AzureNodeDriver(NodeDriver):
         """
         List all nodes.
 
-        :param ex_resource_group: List nodes in a specific resource group.
-        :type ex_urn: ``str``
+        :param ex_resource_group: The resource group to list all nodes from.
+        :type ex_resource_group: ``str``
 
         :param ex_fetch_nic: Fetch NIC resources in order to get
         IP address information for nodes.  If True, requires an extra API
         call for each NIC of each node.  If False, IP addresses will not
         be returned.
-        :type ex_urn: ``bool``
+        :type ex_fetch_nic: ``bool``
 
         :param ex_fetch_power_state: Fetch node power state.  If True, requires
         an extra API call for each node.  If False, node state
         will be returned based on provisioning state only.
-        :type ex_urn: ``bool``
+        :type ex_fetch_power_state: ``bool``
 
         :return:  list of node objects
         :rtype: ``list`` of :class:`.Node`
@@ -1045,6 +1045,53 @@ class AzureNodeDriver(NodeDriver):
             })
         return True
 
+    def ex_resize_volume(self, volume, new_size, resource_group):
+        """
+        Resize a volume.
+
+        :param volume: A volume to resize.
+        :type volume: :class:`StorageVolume`
+
+        :param new_size: The new size to resize the volume to in Gib.
+        :type new_size: ``int``
+
+        :param resource_group: The name of the resource group in which to
+            create the volume.
+        :type resource_group: ``str``
+
+        """
+        action = (
+            u'/subscriptions/{subscription_id}/resourceGroups/{resource_group}'
+            u'/providers/Microsoft.Compute/disks/{volume_name}'
+        ).format(
+            subscription_id=self.subscription_id,
+            resource_group=resource_group,
+            volume_name=volume.name,
+        )
+
+        data = {
+            'location': volume.extra['location'],
+            'properties': {
+                'diskSizeGB': new_size,
+                'creationData': volume.extra['properties']['creationData']
+            }
+        }
+
+        response = self.connection.request(
+            action,
+            method='PUT',
+            params={
+                'api-version': '2018-06-01',
+            },
+            data=data
+        )
+
+        return self._to_volume(
+            response.object,
+            name=volume.name,
+            ex_resource_group=resource_group
+        )
+
     def detach_volume(self, volume, ex_node=None):
         """
         Detach a managed volume from a node.
@@ -1349,7 +1396,7 @@ class AzureNodeDriver(NodeDriver):
         :type locale: ``str``
 
         :param region: Region (two-letter code) (default: "US")
-        :type regions: ``str``
+        :type region: ``str``
 
         :return: A dictionary of rates whose ID's correspond to nothing at all
         :rtype: ``dict``
@@ -1416,14 +1463,14 @@ class AzureNodeDriver(NodeDriver):
 
         :param offer: The complete resource path to an offer (as returned by
         `ex_list_offers`)
-        :type publisher: ``str``
+        :type offer: ``str``
 
         :return: A list of tuples in the form
         ("sku id", "sku name")
         :rtype: ``list``
         """
 
-        action = "%s/skus" % (offer)
+        action = "%s/skus" % offer
         r = self.connection.request(action,
                                     params={"api-version": "2015-06-15"})
         return [(sku["id"], sku["name"]) for sku in r.object]
@@ -1737,12 +1784,77 @@ class AzureNodeDriver(NodeDriver):
         r = self.connection.request(id, params={"api-version": "2015-06-15"})
         return self._to_nic(r.object)
 
+    def ex_update_nic_properties(self, network_interface,
+                                 resource_group, properties):
+        """
+        Update the properties of an already existing virtual network
+        interface (NIC).
+
+        :param network_interface: The NIC to update.
+        :type network_interface: :class:`.AzureNic`
+
+        :param resource_group: The resource group to check the ip address in.
+        :type resource_group: ``str``
+
+        :param properties: The dictionary of the NIC's properties
+        :type properties: ``dict``
+
+        :return: The NIC object
+        :rtype: :class:`.AzureNic`
+        """
+
+        target = "/subscriptions/%s/resourceGroups/%s/providers" \
+                 "/Microsoft.Network/networkInterfaces/%s" \
+                 % (self.subscription_id, resource_group,
+                    network_interface.name)
+
+        data = {
+            "properties": properties,
+            "location": network_interface.location,
+        }
+
+        r = self.connection.request(target,
+                                    params={"api-version": '2018-06-01'},
+                                    data=data,
+                                    method='PUT')
+        return AzureNic(r.object["id"], r.object["name"], r.object["location"],
+                        r.object["properties"])
+
+    def ex_update_network_profile_of_node(self, node, network_profile):
+        """
+        Update the network profile of a node. This method can be used to
+        attach or detach a NIC to a node.
+
+        :param node: A node to attach the network interface to.
+        :type node: :class:`Node`
+
+        :param network_profile: The new network profile to update.
+        :type network_profile: ``dict``
+        """
+        action = node.extra['id']
+        location = node.extra['location']
+        self.connection.request(
+            action,
+            method='PUT',
+            params={
+                'api-version': '2018-06-01'
+            },
+            data={
+                "id": node.id,
+                "name": node.name,
+                "type": "Microsoft.Compute/virtualMachines",
+                "location": location,
+                'properties': {
+                    'networkProfile': network_profile
+                }
+            })
+
     def ex_destroy_nic(self, nic):
         """
         Destroy a NIC.
 
-        :param id: The NIC to destroy.
-        :type id: ``.AzureNic``
+        :param nic: The NIC to destroy.
+        :type nic: ``.AzureNic``
 
         :return: True on success
         :rtype: ``bool``
@@ -1761,6 +1873,33 @@ class AzureNodeDriver(NodeDriver):
                 return True
             else:
                 raise
+
+    def ex_check_ip_address_availability(self, resource_group, network,
+                                         ip_address):
+        """
+        Checks whether a private IP address is available for use. Also
+        returns an object that contains the available IPs in the subnet.
+
+        :param resource_group: The resource group to check the ip address in.
+        :type resource_group: ``str``
+
+        :param network: The virtual network.
+        :type network: :class:`.AzureNetwork`
+
+        :param ip_address: The private IP address to be verified.
+        :type ip_address: ``str``
+        """
+        params = {"api-version": '2018-06-01'}
+        action = "/subscriptions/%s/resourceGroups/%s/providers" \
+                 "/Microsoft.Network/virtualNetworks/%s/" \
+                 "CheckIPAddressAvailability" % \
+                 (self.subscription_id, resource_group, network.name)
+        if ip_address is not None:
+            params["ipAddress"] = ip_address
+        r = self.connection.request(
+            action,
+            params=params)
+        return r.object
 
     def ex_get_node(self, id):
         """
@@ -1970,7 +2109,7 @@ class AzureNodeDriver(NodeDriver):
             resource = resource.id
         r = self.connection.request(
             resource,
-            params={"api-version": RESOURCE_API_VERSION})
+            params={"api-version": '2018-06-01'})
         if replace:
             r.object["tags"] = tags
         else:
@@ -1978,7 +2117,7 @@ class AzureNodeDriver(NodeDriver):
         self.connection.request(
             resource,
             data={"tags": r.object["tags"]},
-            params={"api-version": RESOURCE_API_VERSION},
+            params={"api-version": '2018-06-01'},
             method="PATCH")
 
     def ex_start_node(self, node):

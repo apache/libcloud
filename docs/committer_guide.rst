@@ -18,8 +18,7 @@ First congratulations and welcome to the team!
 
 If you haven't yet, subscribe to {dev,users,notifications}@libcloud.apache.org
 mailing lists. Notifications mailing list is especially important because all of
-the JIRA notification, Github Pull Request notifications and build notifications
-are sent there.
+Github Issue, Pull Request and build notifications are sent there.
 
 2. Subscribe to the private mailing list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,48 +41,17 @@ After you have registered go to
 "`Your details <https://pypi.python.org/pypi?%3Aaction=user_form>`_" page and
 populate `PGP Key ID` field with your PGP key ID.
 
-Applying a patch
-----------------
+Merging user contributions
+--------------------------
 
-When applying a third-party patch created using ``git format-patch`` or
-``git diff`` command, use the following command:
+When a pull request with user contribution (changes) has been reviewed and
+all the criteria for merging has been met (tests and code coverage, Travis
+build is passing, user signed an ICLA, etc.), you can directly merge those
+changes into trunk either by using Github web interface or doing it manually
+on the command line.
 
-.. sourcecode:: bash
-
-    git am --signoff < patch_name.patch
-
-``--signoff`` argument signs the patch and lets others know that you have
-reviewed and merged a patch.
-
-If you are working with a Github pull request, you can obtain a patch file
-by appending ``.patch`` to the end of the pull request URL. For example:
-
-.. sourcecode:: bash
-
-    wget https://github.com/apache/libcloud/pull/<pr number>.patch
-    git am --signoff < <pr number>.patch
-    # rebase to squash commits / ammend
-    ...
-
-When working with a Github pull request, also don't forget to
-update the commit message during rebase (or use ``git commit --amend`` if the
-rebase was not necessary) to include the "Closes #prnumber" message. This way,
-the corresponding Github pull request will get automatically closed once the
-Github mirror is updated.
-
-For example::
-
-    ...
-    Original message
-    ...
-
-    Closes #prnumber
-
-If the original patch author didn't squash all of the commits into one and you
-think this is needed, you should squash all the commits yourself using
-``git rebase`` after you have merged / applied the patch.
-
-After the patch has been applied, make sure to update ``CHANGES.rst`` file.
+It's also important that you update changelog in ``CHANGES.rst`` file after
+you merged the changes.
 
 Making a release (for release managers)
 ---------------------------------------
@@ -97,7 +65,7 @@ preparing a release.
 * Make sure ``CHANGES`` file is up to date
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 * Make sure ``version`` and ``release`` in ``docs/conf.py`` are up to date
-* Update constants: ``python contrib/scrap-ec2-sizes.py > libcloud/compute/constants.py``
+* Update constants: ``python contrib/scrape-ec2-sizes.py > libcloud/compute/constants.py``
 
 1. Pre-release check list
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -105,16 +73,15 @@ preparing a release.
 * Make sure tests pass on all the supported Python versions (``tox``)
 * Remove the ``tox`` directory with ``rm -rf .tox``
 * Remove the _secrets_ file with ``rm libcloud/test/secrets.py``
-* Remove leftover builds from previous releases. ``rm -f dist/apache*``
+* Remove leftover builds from previous releases. ``rm -f dist/apache* ; rm -rf apache_libcloud.egg-info``
 
-2. Update JIRA
-~~~~~~~~~~~~~~
+2. Update Github
+~~~~~~~~~~~~~~~~~
 
-* Create a new JIRA version for the release in question (if one doesn't exist
+* Create a new Github milestone for the release in question (if one doesn't exist
   yet)
-* Close all the corresponding JIRA tickets and set ``Fix Version/s`` field
-  to the current version
-* Release the JIRA version
+* Update affected issues and pull requests and add the corresponding release
+  milestone to them
 
 3. Creating release artifacts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -395,7 +362,7 @@ Body::
     Bugs / Issues
 
     If you find any bug or issue, please report it on our issue tracker
-    <https://issues.apache.org/jira/browse/LIBCLOUD>.
+    <https://github.com/apache/libcloud/issues>.
     Don't forget to attach an example and / or test which reproduces your problem.
 
     Thanks
@@ -456,7 +423,7 @@ Body::
     Bugs / Issues
 
     If you find any bug or issue, please report it on our issue tracker
-    <https://issues.apache.org/jira/browse/LIBCLOUD>.
+    <https://github.com/apache/libcloud/issues>.
     Don't forget to attach an example and / or test which reproduces your problem.
 
     Thanks

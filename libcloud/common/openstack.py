@@ -362,7 +362,7 @@ class OpenStackResponse(Response):
         if self.has_content_type('application/xml'):
             try:
                 return ET.XML(self.body)
-            except:
+            except Exception:
                 raise MalformedResponseError(
                     'Failed to parse XML',
                     body=self.body,
@@ -371,7 +371,7 @@ class OpenStackResponse(Response):
         elif self.has_content_type('application/json'):
             try:
                 return json.loads(self.body)
-            except:
+            except Exception:
                 raise MalformedResponseError(
                     'Failed to parse JSON',
                     body=self.body,

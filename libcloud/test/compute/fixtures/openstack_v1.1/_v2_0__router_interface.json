@@ -1,0 +1,12 @@
+{
+    "id": "915a14a6-867b-4af7-83d1-70efceb146f9",
+    "network_id": "91c013e2-d65a-474e-9177-c3e1799ca726",
+    "port_id": "2dc46bcc-d1f2-4077-b99e-91ee28afaff0",
+    "subnet_id": "a2f1f29d-571b-4533-907f-5803ab96ead1",
+    "subnet_ids": [
+        "a2f1f29d-571b-4533-907f-5803ab96ead1"
+    ],
+    "project_id": "0bd18306d801447bb457a46252d82d13",
+    "tenant_id": "0bd18306d801447bb457a46252d82d13",
+    "tags": ["tag1,tag2"]
+}

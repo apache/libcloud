@@ -34,6 +34,7 @@ Provider                              list nodes create node reboot node destroy
 `KTUCloud`_                           yes        yes         yes         yes          yes         yes        yes        
 `Libvirt`_                            yes        no          yes         yes          no          no         no         
 `Linode`_                             yes        yes         yes         yes          yes         yes        yes        
+`Maxihost`_                           yes        yes         yes         yes          yes         yes        no         
 `MedOne`_                             yes        yes         yes         yes          yes         yes        yes        
 `NephoScale`_                         yes        yes         yes         yes          yes         yes        yes        
 `Nimbus`_                             yes        yes         yes         yes          yes         yes        yes        
@@ -82,7 +83,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
-.. _`Exoscale`: https://www.exoscale.ch/
+.. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
@@ -95,6 +96,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
+.. _`Maxihost`: https://www.maxihost.com/
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/

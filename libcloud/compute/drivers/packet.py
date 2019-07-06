@@ -100,21 +100,53 @@ class PacketNodeDriver(NodeDriver):
                       'active': NodeState.RUNNING}
 
     def __init__(self, key, project=None):
-        # initialize a NodeDriver for Packet using the API token
-        # and optionally the project (name or id)
-        # If project specified we need to be sure this is a valid project
-        # so we create the variable self.project_id
-        super(PacketNodeDriver, self).__init__(key=key, project=None)
+        """
+        Initialize a NodeDriver for Packet using the API token
+        and optionally the project (name or id).
+
+        If project name is specified we validate it lazily and populate
+        self.project_id during the first access of self.projects variable
+        """
+        super(PacketNodeDriver, self).__init__(key=key)
+
         self.project_name = project
         self.project_id = None
-        self.projects = self.ex_list_projects()
-        if project:
-            for project_obj in self.projects:
-                if project in [project_obj.name, project_obj.id]:
-                    self.project_id = project_obj.id
-                    break
-            if not self.project_id:
-                self.project_name = None
+
+        # Lazily populated on first access to self.project
+        self._project = project
+
+        # Variable which indicates if self._projects has been populated yet and
+        # has been called self._project validated
+        self._projects_populated = False
+        self._projects = None
+
+    @property
+    def projects(self):
+        """
+        Lazily retrieve projects and set self.project_id variable on initial
+        access to self.projects variable.
+        """
+        if not self._projects_populated:
+            # NOTE: Each Packet account needs at least one project, but to be
+            # on the safe side and avoid infinite loop in case there are no
+            # projects on the account, we don't use a more robust way to
+            # determine if project list has been populated yet
+            self._projects = self.ex_list_projects()
+            self._projects_populated = True
+
+            # If project name is specified, verify it's valid and populate
+            # self.project_id
+            if self._project:
+                for project_obj in self._projects:
+                    if self._project in [project_obj.name, project_obj.id]:
+                        self.project_id = project_obj.id
+                        break
+
+                if not self.project_id:
+                    # Invalid project name
+                    self.project_name = None
+
+        return self._projects
 
     def ex_list_projects(self):
         projects = []
@@ -126,12 +158,12 @@ class PacketNodeDriver(NodeDriver):
 
     def list_nodes(self, ex_project_id=None):
         if ex_project_id:
-            return self.list_nodes_for_project(ex_project_id=ex_project_id)
+            return self.ex_list_nodes_for_project(ex_project_id=ex_project_id)
 
         # if project has been specified during driver initialization, then
         # return nodes for this project only
         if self.project_id:
-            return self.list_nodes_for_project(
+            return self.ex_list_nodes_for_project(
                 ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
@@ -139,7 +171,7 @@ class PacketNodeDriver(NodeDriver):
             nodes = []
             for project in self.projects:
                 nodes.extend(
-                    self.list_nodes_for_project(ex_project_id=project.id)
+                    self.ex_list_nodes_for_project(ex_project_id=project.id)
                 )
             return nodes
         # In case of Python3 use asyncio to perform requests in parallel
@@ -160,7 +192,7 @@ def _list_async(driver):
     projects = [project.id for project in driver.projects]
     loop = asyncio.get_event_loop()
     futures = [
-        loop.run_in_executor(None, driver.list_%s_for_project, p)
+        loop.run_in_executor(None, driver.ex_list_%s_for_project, p)
         for p in projects
     ]
     retval = []
@@ -171,8 +203,8 @@ def _list_async(driver):
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(loc['_list_async'](loc['self']))
 
-    def list_nodes_for_project(self, ex_project_id, include='plan', page=1,
-                               per_page=1000):
+    def ex_list_nodes_for_project(self, ex_project_id, include='plan', page=1,
+                                  per_page=1000):
         params = {
             'include': include,
             'page': page,
@@ -199,7 +231,8 @@ def _list_async(driver):
                 size.get('line') == 'baremetal']
 
     def create_node(self, name, size, image, location,
-                    ex_project_id=None, ip_addresses=[], cloud_init=None, **kwargs):
+                    ex_project_id=None, ip_addresses=[], cloud_init=None,
+                    **kwargs):
         """
         Create a node.
 
@@ -236,7 +269,8 @@ def _list_async(driver):
         if kwargs.get('disk'):
             self.attach_volume(node, kwargs.get('disk'))
         if kwargs.get('disk_size'):
-            volume = self.create_volume(size=kwargs.get('disk_size'), location=location)
+            volume = self.create_volume(size=kwargs.get('disk_size'),
+                                        location=location)
             self.attach_volume(node, volume)
         return node
 
@@ -574,12 +608,13 @@ def _list_async(driver):
 
     def list_volumes(self, ex_project_id=None):
         if ex_project_id:
-            return self.list_volumes_for_project(ex_project_id=ex_project_id)
+            return self.ex_list_volumes_for_project(
+                ex_project_id=ex_project_id)
 
         # if project has been specified during driver initialization, then
         # return nodes for this project only
         if self.project_id:
-            return self.list_volumes_for_project(
+            return self.ex_list_volumes_for_project(
                 ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
@@ -587,14 +622,14 @@ def _list_async(driver):
             nodes = []
             for project in self.projects:
                 nodes.extend(
-                    self.list_volumes_for_project(ex_project_id=project.id)
+                    self.ex_list_volumes_for_project(ex_project_id=project.id)
                 )
             return nodes
         # In case of Python3 use asyncio to perform requests in parallel
         return self.list_resources_async('volumes')
 
-    def list_volumes_for_project(self, ex_project_id, include='plan', page=1,
-                                 per_page=1000):
+    def ex_list_volumes_for_project(self, ex_project_id, include='plan',
+                                    page=1, per_page=1000):
         params = {
             'include': include,
             'page': page,

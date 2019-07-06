@@ -34,6 +34,7 @@ class IntegrationTest(unittest.TestCase):
         data = self.instance.ex_report_data()
         self.assertEqual(data, REPORT_DATA)
 
+
 if __name__ == '__main__':
     import libcloud
     with open('/tmp/testing.log', 'w') as f:

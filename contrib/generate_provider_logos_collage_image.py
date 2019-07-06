@@ -110,6 +110,7 @@ def main(input_path, output_path):
     assemble_final_image(resized_images=resized_images,
                          output_path=output_path)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Assemble provider logos '
                                                  ' in a single image')

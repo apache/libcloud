@@ -122,7 +122,7 @@ class LinodeResponse(JsonResponse):
                 ret.append(obj["DATA"])
                 errs.extend(self._make_excp(e) for e in obj["ERRORARRAY"])
             return (ret, errs)
-        except:
+        except Exception:
             return (None, [self.invalid])
 
     def success(self):

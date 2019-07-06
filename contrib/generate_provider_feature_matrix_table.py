@@ -287,10 +287,14 @@ def generate_providers_table(api):
         if name.lower() in IGNORED_PROVIDERS:
             continue
 
+        def is_function_or_method(*args, **kwargs):
+            return (inspect.isfunction(*args, **kwargs) or
+                    inspect.ismethod(*args, **kwargs))
+
         driver_methods = dict(inspect.getmembers(cls,
-                                                 predicate=inspect.isfunction))
+                                                 predicate=is_function_or_method))
         base_methods = dict(inspect.getmembers(driver,
-                                               predicate=inspect.isfunction))
+                                               predicate=is_function_or_method))
         base_api_methods = BASE_API_METHODS[api]
 
         result[name] = {'name': cls.name, 'website': cls.website,
@@ -298,6 +302,8 @@ def generate_providers_table(api):
                         'class': drivers[enum][1],
                         'cls': cls,
                         'methods': {}}
+
+        print('Generating tables for provider: %s' % (name))
 
         for method_name in base_api_methods:
             base_method = base_methods[method_name]
@@ -307,8 +313,7 @@ def generate_providers_table(api):
                 features = getattr(cls, 'features', {}).get('create_node', [])
                 is_implemented = len(features) >= 1
             else:
-                is_implemented = (id(driver_method) !=
-                                  id(base_method))
+                is_implemented = (id(driver_method) != id(base_method))
 
             result[name]['methods'][method_name] = is_implemented
 
@@ -467,5 +472,6 @@ def generate_tables():
         with open(supported_methods_path, 'w') as fp:
             fp.write(HEADER + '\n\n')
             fp.write(supported_methods)
+
 
 generate_tables()

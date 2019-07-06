@@ -449,7 +449,7 @@
             "onHostMaintenance": "MIGRATE"
           },
           "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central2-a/instances/libcloud-demo-multiple-nodes-001",
-          "status": "RUNNING",
+          "status": "SUSPENDED",
           "tags": {
             "fingerprint": "W7t6ZyTyIrc=",
             "items": [

@@ -252,7 +252,7 @@ class OnAppDNSDriver(DNSDriver):
     #
 
     def _format_record(self, name, type, data, extra):
-        if name is '':
+        if name == '':
             name = '@'
         if extra is None:
             extra = {}

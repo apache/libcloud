@@ -34,6 +34,7 @@ Provider                              Documentation                             
 `KTUCloud`_                                                                             KTUCLOUD            single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.ktucloud`          :class:`KTUCloudNodeDriver`         
 `Libvirt`_                            :doc:`Click </compute/drivers/libvirt>`           LIBVIRT             single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.libvirt_driver`    :class:`LibvirtNodeDriver`          
 `Linode`_                                                                               LINODE              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.linode`            :class:`LinodeNodeDriver`           
+`Maxihost`_                           :doc:`Click </compute/drivers/maxihost>`          MAXIHOST            single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.maxihost`          :class:`MaxihostNodeDriver`         
 `MedOne`_                             :doc:`Click </compute/drivers/medone>`            MEDONE              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.medone`            :class:`MedOneNodeDriver`           
 `NephoScale`_                                                                           NEPHOSCALE          single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.nephoscale`        :class:`NephoscaleNodeDriver`       
 `Nimbus`_                             :doc:`Click </compute/drivers/nimbus>`            NIMBUS              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.ec2`               :class:`NimbusNodeDriver`           
@@ -82,7 +83,7 @@ Provider                              Documentation                             
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
-.. _`Exoscale`: https://www.exoscale.ch/
+.. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
@@ -95,6 +96,7 @@ Provider                              Documentation                             
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
+.. _`Maxihost`: https://www.maxihost.com/
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/

@@ -492,6 +492,7 @@ class DummyStorageDriver(StorageDriver):
         self._containers[container.name]['objects'][object_name] = obj
         return obj
 
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

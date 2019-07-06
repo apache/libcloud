@@ -114,5 +114,6 @@ def main(argv):
         print("A fatal error occurred: " + e)
         return 1
 
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

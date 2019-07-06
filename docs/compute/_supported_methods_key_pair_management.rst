@@ -34,6 +34,7 @@ Provider                              list key pairs get key pair create key pai
 `KTUCloud`_                           yes            yes          yes             yes                           no                          yes            
 `Libvirt`_                            no             no           no              no                            no                          no             
 `Linode`_                             no             no           no              no                            no                          no             
+`Maxihost`_                           yes            no           yes             no                            no                          no             
 `MedOne`_                             no             no           no              no                            no                          no             
 `NephoScale`_                         no             no           no              no                            no                          no             
 `Nimbus`_                             yes            yes          yes             yes                           no                          yes            
@@ -82,7 +83,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
-.. _`Exoscale`: https://www.exoscale.ch/
+.. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
@@ -95,6 +96,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
+.. _`Maxihost`: https://www.maxihost.com/
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/

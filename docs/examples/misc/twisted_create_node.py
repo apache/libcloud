@@ -28,6 +28,7 @@ def _thread_create_node(name):
 def stop(*args, **kwargs):
     reactor.stop()
 
+
 d = create_node(name='my-lc-node')
 d.addCallback(stop)  # pylint: disable=no-member
 d.addErrback(stop)  # pylint: disable=no-member

@@ -282,10 +282,11 @@ For more information and examples, please refer to the following links:
 Contribution workflow
 ---------------------
 
-1. Start a discussion on the mailing list
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Start a discussion on our Github repository or on the mailing list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are implementing a big feature or a change, start a discussion on the
+:ref:`issue tracker <issue-tracker>` or the
 :ref:`mailing list <mailing-lists>` first.
 
 2. Open a new issue on our issue tracker
@@ -307,7 +308,7 @@ For example:
 
 .. sourcecode:: bash
 
-    git checkout -b <jira_issue_id>_<change_name>
+    git checkout -b <change_name>
 
 5. Make your changes
 ~~~~~~~~~~~~~~~~~~~~
@@ -327,14 +328,13 @@ For more information on how to write and run tests, please see
 7. Commit your changes
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Make a single commit for your changes. If a corresponding JIRA ticket exists,
-make sure the commit message contains the ticket number.
+Commit your changes.
 
 For example:
 
 .. sourcecode:: bash
 
-    git commit -a -m "[LIBCLOUD-123] Add a new compute driver for CloudStack based providers."
+    git commit -m "Add a new compute driver for CloudStack based providers."
 
 8. Open a pull request with your changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -342,105 +342,10 @@ For example:
 Go to https://github.com/apache/libcloud/ and open a new pull request with your
 changes. Your pull request will appear at https://github.com/apache/libcloud/pulls.
 
-Make sure the pull request name is prefixed with a JIRA ticket number, e.g.
-``[LIBCLOUD-436] Improvements to DigitalOcean compute driver`` and that the
-pull request description contains link to the JIRA ticket.
-
 9. Wait for the review
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Wait for your changes to be reviewed and address any outstanding comments.
-
-10. Squash the commits and generate the patch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Once the changes has been reviewed, all the outstanding issues have been
-addressed and the pull request has been +1'ed, close the pull request, squash
-the commits (if necessary) and generate a patch.
-
-.. sourcecode:: bash
-
-    git format-patch --stdout trunk > patch_name.patch
-
-Make sure to use ``git format-patch`` and not ``git diff`` so we can preserve
-the commit authorship.
-
-Note #1: Before you generate the patch and squash the commits, make sure to
-synchronize your branch with the latest trunk (run ``git pull upstream trunk``
-in your branch), otherwise we might have problems applying it cleanly.
-
-Note #2: If you have never used rebase and squashed the commits before, you can
-find instructions on how to do that in the following guide:
-`squashing commits with rebase`_.
-
-11. Attach a final patch with your changes to the corresponding JIRA ticket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Attach the generated patch to the JIRA issue you have created earlier.
-
-Note about Github
-~~~~~~~~~~~~~~~~~
-
-Github repository is a read-only mirror of the official Apache git repository
-(``https://git-wip-us.apache.org/repos/asf/libcloud.git``). This mirror script
-runs only a couple of times per day which means this mirror can be slightly out
-of date.
-
-You are advised to add a separate remote for the official upstream repository:
-
-.. sourcecode:: bash
-
-    git remote add upstream https://git-wip-us.apache.org/repos/asf/libcloud.git
-
-Github read-only mirror is used only for pull requests and code review. Once a
-pull request has been reviewed, all the comments have been addresses and it's
-ready to be merged, user who submitted the pull request must close the pull
-request, create a patch and attach it to the original JIRA ticket.
-
-Syncing your git(hub) repository with an official upstream git repository
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This section describes how to synchronize your git clone / Github fork with
-an official upstream repository.
-
-It's important that your repository is in-sync with the upstream one when you
-start working on a new branch and before you generate a final patch. If the
-repository is not in-sync, generated patch will be out of sync and we won't be
-able to cleanly merge it into trunk.
-
-To synchronize it, follow the steps below in your git clone:
-
-1. Add upstream remote if you haven't added it yet
-
-.. sourcecode:: bash
-
-    git remote add upstream https://git-wip-us.apache.org/repos/asf/libcloud.git
-
-2. Synchronize your ``trunk`` branch with an upstream one
-
-.. sourcecode:: bash
-
-    git checkout trunk
-    git pull upstream trunk
-
-3. Create a branch for your changes and start working on it
-
-.. sourcecode:: bash
-
-    git checkout -b my_new_branch
-
-4. Before generating a final patch which is to be attached to the JIRA ticket,
-   make sure your repository and branch is still in-sync
-
-.. sourcecode:: bash
-
-    git pull upstream trunk
-
-5. Generate a patch which can be attached to the JIRA ticket
-
-.. sourcecode:: bash
-
-    git format-patch --stdout remotes/upstream/trunk > patch_name.patch
 
 Contributing Bigger Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -499,7 +404,7 @@ code work with multiple versions on the following link -
 `Lessons learned while porting Libcloud to Python 3`_
 
 .. _`PEP8 Python Style Guide`: http://www.python.org/dev/peps/pep-0008/
-.. _`Issue tracker`: https://issues.apache.org/jira/browse/LIBCLOUD
+.. _`Issue tracker`: https://github.com/apache/libcloud/issues
 .. _`Github git repository`: https://github.com/apache/libcloud
 .. _`Apache website`: https://www.apache.org/licenses/#clas
 .. _`Lessons learned while porting Libcloud to Python 3`: http://www.tomaz.me/2011/12/03/lessons-learned-while-porting-libcloud-to-python-3.html

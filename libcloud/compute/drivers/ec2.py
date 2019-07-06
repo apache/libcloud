@@ -1208,12 +1208,12 @@ class EC2Response(AWSBaseResponse):
 
         try:
             body = ET.XML(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError("Failed to parse XML",
                                          body=self.body, driver=EC2NodeDriver)
 
         for err in body.findall('Errors/Error'):
-            code, message = err.getchildren()
+            code, message = list(err)
             err_list.append('%s: %s' % (code.text, message.text))
             if code.text == 'InvalidClientTokenId':
                 raise InvalidCredsError(err_list[-1])
@@ -1774,21 +1774,38 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def list_locations(self):
         locations = []
-        for index, availability_zone in \
-                enumerate(self.ex_list_availability_zones()):
-                    locations.append(EC2NodeLocation(
-                        index, availability_zone.name, self.country, self,
-                        availability_zone)
-                    )
+
+        iterator = enumerate(self.ex_list_availability_zones())
+        for index, availability_zone in iterator:
+            locations.append(EC2NodeLocation(
+                index, availability_zone.name, self.country, self,
+                availability_zone)
+            )
         return locations
 
-    def list_volumes(self, node=None):
+    def list_volumes(self, node=None, ex_filters=None):
+        """
+        List volumes that are attached to a node, if specified and those that
+        satisfy the filters, if specified.
+
+        :param node: The node to which the volumes are attached.
+        :type node: :class:`Node`
+
+        :param ex_filters: The dictionary of additional filters.
+        :type ex_filters: ``dict``
+
+        :return: The list of volumes that match the criteria.
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
         params = {
             'Action': 'DescribeVolumes',
         }
+        if not ex_filters:
+            ex_filters = {}
         if node:
-            filters = {'attachment.instance-id': node.id}
-            params.update(self._build_filters(filters))
+            ex_filters['attachment.instance-id'] = node.id
+        if node or ex_filters:
+            params.update(self._build_filters(ex_filters))
 
         response = self.connection.request(self.path, params=params).object
         volumes = [self._to_volume(el) for el in response.findall(
