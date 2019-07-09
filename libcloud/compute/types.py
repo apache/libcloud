@@ -16,6 +16,8 @@
 Base types used by other parts of libcloud
 """
 
+from enum import Enum
+
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.types import InvalidCredsError, InvalidCredsException
 
@@ -35,9 +37,10 @@ __all__ = [
 ]
 
 
-class Type(object):
+class Type(Enum):
     @classmethod
     def tostring(cls, value):
+        # type: (str) -> str
         """Return the string representation of the state object attribute
         :param str value: the state object to turn into string
         :return: the uppercase string that represents the state object
@@ -47,6 +50,7 @@ class Type(object):
 
     @classmethod
     def fromstring(cls, value):
+        # type: (str) -> str
         """Return the state object attribute that matches the string
         :param str value: the string to look up
         :return: the state object attribute that matches the string
@@ -111,7 +115,6 @@ class Provider(Type):
     ABIQUO = 'abiquo'
     ALIYUN_ECS = 'aliyun_ecs'
     AURORACOMPUTE = 'aurora_compute'
-    AZURE = 'azure'
     BLUEBOX = 'bluebox'
     BRIGHTBOX = 'brightbox'
     BSNL = 'bsnl'
@@ -120,7 +123,6 @@ class Provider(Type):
     CLOUDSIGMA = 'cloudsigma'
     CLOUDSCALE = 'cloudscale'
     CLOUDSTACK = 'cloudstack'
-    CLOUDWATT = 'cloudwatt'
     DIGITAL_OCEAN = 'digitalocean'
     DIMENSIONDATA = 'dimensiondata'
     EC2 = 'ec2'

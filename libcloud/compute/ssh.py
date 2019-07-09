@@ -17,6 +17,8 @@
 Wraps multiple ways to communicate over SSH.
 """
 
+from typing import Type
+
 have_paramiko = False
 
 try:
@@ -564,6 +566,6 @@ class MockSSHClient(BaseSSHClient):
     pass
 
 
-SSHClient = ParamikoSSHClient
+SSHClient = ParamikoSSHClient # type: Type[BaseSSHClient]
 if not have_paramiko:
-    SSHClient = MockSSHClient
+    SSHClient = MockSSHClient  # type: ignore

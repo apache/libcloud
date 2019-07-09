@@ -12,7 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import with_statement
+
+from typing import Dict
 
 """
 A class which handles loading the pricing files.
@@ -27,10 +30,10 @@ try:
         JSONDecodeError = json.JSONDecodeError
     except AttributeError:
         # simplejson < 2.1.0 does not have the JSONDecodeError exception class
-        JSONDecodeError = ValueError
+        JSONDecodeError = ValueError  # type: ignore
 except ImportError:
-    import json
-    JSONDecodeError = ValueError
+    import json  # type: ignore
+    JSONDecodeError = ValueError  # type: ignore
 
 from libcloud.utils.connection import get_response_object
 
@@ -53,7 +56,7 @@ CUSTOM_PRICING_FILE_PATH = os.path.expanduser('~/.libcloud/pricing.json')
 PRICING_DATA = {
     'compute': {},
     'storage': {}
-}
+}  # type: Dict[str, Dict]
 
 VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
 

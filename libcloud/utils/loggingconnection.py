@@ -16,9 +16,9 @@
 from __future__ import absolute_import
 
 try:
-    import simplejson as json
+    import simplejson as json  # type: ignore
 except Exception:
-    import json
+    import json  # type: ignore
 
 from pipes import quote as pquote
 from xml.dom.minidom import parseString

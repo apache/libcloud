@@ -19,6 +19,10 @@ Provides base classes for working with drivers
 
 from __future__ import with_statement
 
+from typing import Dict
+from typing import List
+from typing import Type
+
 import sys
 import time
 import hashlib
@@ -33,7 +37,9 @@ import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, StorageVolumeState,\
     DeploymentError
+from libcloud.compute.types import Provider
 from libcloud.compute.ssh import SSHClient
+from libcloud.common.base import Connection
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
 from libcloud.common.types import LibcloudError
@@ -49,7 +55,7 @@ if have_paramiko:
     SSH_TIMEOUT_EXCEPTION_CLASSES = (AuthenticationException, SSHException,
                                      IOError, socket.gaierror, socket.error)
 else:
-    SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror, socket.error)
+    SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror, socket.error)  # type: ignore
 
 # How long to wait for the node to come online after creating it
 NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
@@ -86,7 +92,7 @@ class UuidMixin(object):
     """
 
     def __init__(self):
-        self._uuid = None
+        self._uuid = None  # type: str
 
     def get_uuid(self):
         """
@@ -710,11 +716,12 @@ class NodeDriver(BaseDriver):
 
     """
 
-    connectionCls = ConnectionKey
-    name = None
-    type = None
-    port = None
-    features = {'create_node': []}
+    connectionCls = ConnectionKey  # type: Type[Connection]
+    name = None  # type: str
+    website = None  # type: str
+    type = None  # type: Provider
+    port = None  # type: int
+    features = {'create_node': []}  # type: Dict[str, List[str]]
 
     """
     List of available features for a driver.
@@ -728,7 +735,7 @@ class NodeDriver(BaseDriver):
               object returned from creation.
     """
 
-    NODE_STATE_MAP = {}
+    NODE_STATE_MAP = {}  # type: Dict[str, NodeState]
 
     def list_nodes(self):
         """

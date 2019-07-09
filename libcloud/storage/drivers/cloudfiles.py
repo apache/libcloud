@@ -25,7 +25,7 @@ from libcloud.utils.py3 import urlencode
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import b

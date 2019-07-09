@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
+
 import os
 import sys
 import binascii
@@ -257,7 +259,7 @@ class ReprMixin(object):
     specified on the class.
     """
 
-    _repr_attributes = []
+    _repr_attributes = []  # type: List[str]
 
     def __repr__(self):
         attributes = []
