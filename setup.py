@@ -39,6 +39,7 @@ PY3 = sys.version_info[0] == 3
 PY3_pre_34 = PY3 and sys.version_info < (3, 4)
 PY2_pre_27 = PY2 and sys.version_info < (2, 7)
 PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
+PY2_or_3_pre_34 = sys.version_info < (3, 4, 0)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'http://libcloud.apache.org'
@@ -124,7 +125,7 @@ install_requires = ['requests']
 if PY2_pre_279:
     install_requires.append('backports.ssl_match_hostname')
 
-if PY2:
+if PY2_or_3_pre_34:
     install_requires.append('typing')
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
