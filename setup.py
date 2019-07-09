@@ -124,6 +124,9 @@ install_requires = ['requests']
 if PY2_pre_279:
     install_requires.append('backports.ssl_match_hostname')
 
+if PY2:
+    install_requires.append('typing')
+
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
