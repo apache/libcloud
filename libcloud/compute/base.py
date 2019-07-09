@@ -21,7 +21,10 @@ from __future__ import with_statement
 
 from typing import Dict
 from typing import List
+from typing import Tuple
 from typing import Type
+from typing import Optional
+from typing import Any
 
 import sys
 import time
@@ -30,6 +33,7 @@ import os
 import socket
 import random
 import binascii
+import datetime
 
 from libcloud.utils.py3 import b
 
@@ -38,6 +42,7 @@ from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, StorageVolumeState,\
     DeploymentError
 from libcloud.compute.types import Provider
+from libcloud.compute.types import NodeImageMemberState
 from libcloud.compute.ssh import SSHClient
 from libcloud.common.base import Connection
 from libcloud.common.base import ConnectionKey
@@ -55,7 +60,8 @@ if have_paramiko:
     SSH_TIMEOUT_EXCEPTION_CLASSES = (AuthenticationException, SSHException,
                                      IOError, socket.gaierror, socket.error)
 else:
-    SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror, socket.error)  # type: ignore
+    SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror,  # type: ignore
+                                     socket.error)  # type: ignore
 
 # How long to wait for the node to come online after creating it
 NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
@@ -125,6 +131,7 @@ class UuidMixin(object):
 
     @property
     def uuid(self):
+        # type: () -> str
         return self.get_uuid()
 
 
@@ -173,8 +180,18 @@ class Node(UuidMixin):
     {'foo': 'bar'}
     """
 
-    def __init__(self, id, name, state, public_ips, private_ips,
-                 driver, size=None, image=None, extra=None, created_at=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 state,  # type: NodeState
+                 public_ips,  # type: List[str]
+                 private_ips,  # type: List[str]
+                 driver,
+                 size=None,  # type: NodeSize
+                 image=None,  # type: NodeImage
+                 extra=None,  # type: dict
+                 created_at=None  # type: datetime.datetime
+                 ):
         """
         :param id: Node ID.
         :type id: ``str``
@@ -298,8 +315,16 @@ class NodeSize(UuidMixin):
     4
     """
 
-    def __init__(self, id, name, ram, disk, bandwidth, price,
-                 driver, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 ram,  # type: int
+                 disk,  # type: int
+                 bandwidth,  # type: Optional[int]
+                 price,  # type: float
+                 driver,  # type: Type[NodeDriver]
+                 extra=None  # type: Optional[dict]
+                 ):
         """
         :param id: Size ID.
         :type  id: ``str``
@@ -365,7 +390,12 @@ class NodeImage(UuidMixin):
     >>> node = driver.create_node(image=image)
     """
 
-    def __init__(self, id, name, driver, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 driver,  # type: Type[NodeDriver]
+                 extra=None  # type: Optional[dict]
+                 ):
         """
         :param id: Image ID.
         :type id: ``str``
@@ -405,7 +435,14 @@ class NodeImageMember(UuidMixin):
     cloud provider in response to the list_image_members method
     """
 
-    def __init__(self, id, image_id, state, driver, created=None, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 image_id,  # type: str
+                 state,  # type: NodeImageMemberState
+                 driver,  # type: Type[NodeDriver]
+                 created=None,  # type: datetime.datetime
+                 extra=None  # type: Optional[dict]
+                 ):
         """
         :param id: Image member ID.
         :type id: ``str``
@@ -453,7 +490,13 @@ class NodeLocation(object):
     'US'
     """
 
-    def __init__(self, id, name, country, driver, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 country,  # type: str
+                 driver,  # type: Type[NodeDriver]
+                 extra=None  # type: Optional[dict]
+                 ):
         """
         :param id: Location ID.
         :type id: ``str``
@@ -493,6 +536,7 @@ class NodeAuthSSHKey(object):
     """
 
     def __init__(self, pubkey):
+        # type: (str) -> None
         """
         :param pubkey: Public key matetiral.
         :type pubkey: ``str``
@@ -737,7 +781,8 @@ class NodeDriver(BaseDriver):
 
     NODE_STATE_MAP = {}  # type: Dict[str, NodeState]
 
-    def list_nodes(self):
+    def list_nodes(self, *args, **kwargs):
+        # type: (Any, Any) -> List[Node]
         """
         List all nodes.
 
@@ -748,6 +793,7 @@ class NodeDriver(BaseDriver):
             'list_nodes not implemented for this driver')
 
     def list_sizes(self, location=None):
+        # type: (Optional[NodeLocation]) -> List[NodeSize]
         """
         List sizes on a provider
 
@@ -761,6 +807,7 @@ class NodeDriver(BaseDriver):
             'list_sizes not implemented for this driver')
 
     def list_locations(self):
+        # type: () -> List[NodeLocation]
         """
         List data centers for a provider
 
@@ -771,6 +818,7 @@ class NodeDriver(BaseDriver):
             'list_locations not implemented for this driver')
 
     def create_node(self, **kwargs):
+        # type: (...) -> Node
         """
         Create a new node instance. This instance will be started
         automatically.
@@ -854,6 +902,7 @@ class NodeDriver(BaseDriver):
             'create_node not implemented for this driver')
 
     def deploy_node(self, **kwargs):
+        # type: (...) -> Node
         """
         Create a new node, and start deployment.
 
@@ -1019,6 +1068,7 @@ class NodeDriver(BaseDriver):
         return node
 
     def reboot_node(self, node):
+        # type: (Node) -> bool
         """
         Reboot a node.
 
@@ -1032,6 +1082,7 @@ class NodeDriver(BaseDriver):
             'reboot_node not implemented for this driver')
 
     def destroy_node(self, node):
+        # type: (Node) -> bool
         """
         Destroy a node.
 
@@ -1052,6 +1103,7 @@ class NodeDriver(BaseDriver):
     ##
 
     def list_volumes(self):
+        # type: () -> List[StorageVolume]
         """
         List storage volumes.
 
@@ -1061,6 +1113,7 @@ class NodeDriver(BaseDriver):
             'list_volumes not implemented for this driver')
 
     def list_volume_snapshots(self, volume):
+        # type: (StorageVolume) -> List[VolumeSnapshot]
         """
         List snapshots for a storage volume.
 
@@ -1069,7 +1122,13 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'list_volume_snapshots not implemented for this driver')
 
-    def create_volume(self, size, name, location=None, snapshot=None):
+    def create_volume(self,
+                      size,  # type: int
+                      name,  # type: str
+                      location=None,  # Optional[NodeLocation]
+                      snapshot=None  # Optional[VolumeSnapshot]
+                      ):
+        # type: (...) -> StorageVolume
         """
         Create a new volume.
 
@@ -1095,11 +1154,12 @@ class NodeDriver(BaseDriver):
             'create_volume not implemented for this driver')
 
     def create_volume_snapshot(self, volume, name=None):
+        # type: (StorageVolume, Optional[str]) -> VolumeSnapshot
         """
         Creates a snapshot of the storage volume.
 
         :param volume: The StorageVolume to create a VolumeSnapshot from
-        :type volume: :class:`.VolumeSnapshot`
+        :type volume: :class:`.StorageVolume`
 
         :param name: Name of created snapshot (optional)
         :type name: `str`
@@ -1110,6 +1170,7 @@ class NodeDriver(BaseDriver):
             'create_volume_snapshot not implemented for this driver')
 
     def attach_volume(self, node, volume, device=None):
+        # type: (Node, StorageVolume, Optional[str]) -> bool
         """
         Attaches volume to node.
 
@@ -1127,6 +1188,7 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError('attach not implemented for this driver')
 
     def detach_volume(self, volume):
+        # type: (StorageVolume) -> bool
         """
         Detaches a volume from a node.
 
@@ -1139,6 +1201,7 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError('detach not implemented for this driver')
 
     def destroy_volume(self, volume):
+        # type: (StorageVolume) -> bool
         """
         Destroys a storage volume.
 
@@ -1152,6 +1215,7 @@ class NodeDriver(BaseDriver):
             'destroy_volume not implemented for this driver')
 
     def destroy_volume_snapshot(self, snapshot):
+        # type: (VolumeSnapshot) -> bool
         """
         Destroys a snapshot.
 
@@ -1168,6 +1232,7 @@ class NodeDriver(BaseDriver):
     ##
 
     def list_images(self, location=None):
+        # type: (Optional[NodeLocation]) -> List[NodeImage]
         """
         List images on a provider.
 
@@ -1181,6 +1246,7 @@ class NodeDriver(BaseDriver):
             'list_images not implemented for this driver')
 
     def create_image(self, node, name, description=None):
+        # type: (Node, str, Optional[str]) -> List[NodeImage]
         """
         Creates an image from a node object.
 
@@ -1201,6 +1267,7 @@ class NodeDriver(BaseDriver):
             'create_image not implemented for this driver')
 
     def delete_image(self, node_image):
+        # type: (NodeImage) -> bool
         """
         Deletes a node image from a provider.
 
@@ -1215,6 +1282,7 @@ class NodeDriver(BaseDriver):
             'delete_image not implemented for this driver')
 
     def get_image(self, image_id):
+        # type: (str) -> NodeImage
         """
         Returns a single node image from a provider.
 
@@ -1228,6 +1296,7 @@ class NodeDriver(BaseDriver):
             'get_image not implemented for this driver')
 
     def copy_image(self, source_region, node_image, name, description=None):
+        # type: (str, NodeImage, str, Optional[str]) -> NodeImage
         """
         Copies an image from a source region to the current region.
 
@@ -1254,6 +1323,7 @@ class NodeDriver(BaseDriver):
     ##
 
     def list_key_pairs(self):
+        # type: () -> List[KeyPair]
         """
         List all the available key pair objects.
 
@@ -1263,6 +1333,7 @@ class NodeDriver(BaseDriver):
             'list_key_pairs not implemented for this driver')
 
     def get_key_pair(self, name):
+        # type: (str) -> KeyPair
         """
         Retrieve a single key pair.
 
@@ -1275,16 +1346,20 @@ class NodeDriver(BaseDriver):
             'get_key_pair not implemented for this driver')
 
     def create_key_pair(self, name):
+        # type: (str) -> KeyPair
         """
         Create a new key pair object.
 
         :param name: Key pair name.
         :type name: ``str``
+
+        :rtype: :class:`.KeyPair` object
         """
         raise NotImplementedError(
             'create_key_pair not implemented for this driver')
 
     def import_key_pair_from_string(self, name, key_material):
+        # type: (str, str) -> KeyPair
         """
         Import a new public key from string.
 
@@ -1300,6 +1375,7 @@ class NodeDriver(BaseDriver):
             'import_key_pair_from_string not implemented for this driver')
 
     def import_key_pair_from_file(self, name, key_file_path):
+        # type: (str, str) -> KeyPair
         """
         Import a new public key from string.
 
@@ -1320,11 +1396,14 @@ class NodeDriver(BaseDriver):
                                                 key_material=key_material)
 
     def delete_key_pair(self, key_pair):
+        # type: (KeyPair) -> bool
         """
         Delete an existing key pair.
 
         :param key_pair: Key pair object.
         :type key_pair: :class:`.KeyPair`
+
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'delete_key_pair not implemented for this driver')
@@ -1332,6 +1411,7 @@ class NodeDriver(BaseDriver):
     def wait_until_running(self, nodes, wait_period=3,
                            timeout=600, ssh_interface='public_ips',
                            force_ipv4=True, ex_list_nodes_kwargs=None):
+        # type: (...) -> List[Tuple[Node, List[str]]]
         """
         Block until the provided nodes are considered running.
 
@@ -1369,6 +1449,7 @@ class NodeDriver(BaseDriver):
         ex_list_nodes_kwargs = ex_list_nodes_kwargs or {}
 
         def is_supported(address):
+            # type: (str) -> bool
             """
             Return True for supported address.
             """
@@ -1378,6 +1459,7 @@ class NodeDriver(BaseDriver):
             return True
 
         def filter_addresses(addresses):
+            # type: (List[str]) -> List[str]
             """
             Return list of supported addresses.
             """
