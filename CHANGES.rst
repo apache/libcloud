@@ -14,6 +14,10 @@ General
   [Miguel Caballer - @micafer]
 - Add new ``extra`` attribute to the base ``NodeLocation`` class. (GITHUB-1282)
   [Dimitris Moraitis - @d-mo]
+- Remove various code patterns which were in place for supporting multiple
+  Python versions, including 2.5 and 2.6. Libcloud hasn't supported Python <
+  2.7 for a while now, so we can remove that code. (GITHUB-1307)
+  [Tomaz Muraus]
 
 Compute
 ~~~~~~~
