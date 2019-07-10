@@ -3519,8 +3519,7 @@ class GCENodeDriver(NodeDriver):
                 self.connection.request(request, method='POST',
                                         data=image_data)
 
-        except ResourceExistsError:
-            e = sys.exc_info()[1]
+        except ResourceExistsError as e:
             if not use_existing:
                 raise e
 
@@ -5410,8 +5409,7 @@ class GCENodeDriver(NodeDriver):
         try:
             self.connection.async_request(request, method='POST',
                                           data=volume_data, params=params)
-        except ResourceExistsError:
-            e = sys.exc_info()[1]
+        except ResourceExistsError as e:
             if not use_existing:
                 raise e
 

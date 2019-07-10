@@ -1,5 +1,3 @@
-import sys
-
 try:
     import simplejson as json
 except ImportError:
@@ -69,8 +67,7 @@ class LuadnsDNSDriver(DNSDriver):
         action = '/v1/zones/%s' % zone_id
         try:
             response = self.connection.request(action=action)
-        except LuadnsException:
-            e = sys.exc_info()[1]
+        except LuadnsException as e:
             if e.message in ['Zone not found.', 'Resource not found.']:
                 raise ZoneDoesNotExistError(zone_id=zone_id,
                                             value='', driver=self)
@@ -96,8 +93,7 @@ class LuadnsDNSDriver(DNSDriver):
         try:
             response = self.connection.request(action=action,
                                                method='DELETE')
-        except LuadnsException:
-            e = sys.exc_info()[1]
+        except LuadnsException as e:
             if e.message in ['Resource not found.', 'Zone not found.']:
                 raise ZoneDoesNotExistError(zone_id=zone.id,
                                             value='', driver=self)
@@ -132,8 +128,7 @@ class LuadnsDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except LuadnsException:
-            e = sys.exc_info()[1]
+        except LuadnsException as e:
             if e.message == "Zone '%s' is taken already." % domain:
                 raise ZoneAlreadyExistsError(zone_id=domain,
                                              value='',
@@ -175,8 +170,7 @@ class LuadnsDNSDriver(DNSDriver):
         action = '/v1/zones/%s/records/%s' % (zone_id, record_id)
         try:
             response = self.connection.request(action=action)
-        except LuadnsException:
-            e = sys.exc_info()[1]
+        except LuadnsException as e:
             if e.message == 'Record not found.':
                 raise RecordDoesNotExistError(record_id=record_id, driver=self,
                                               value='')
@@ -200,8 +194,7 @@ class LuadnsDNSDriver(DNSDriver):
         try:
             response = self.connection.request(action=action,
                                                method='DELETE')
-        except LuadnsException:
-            e = sys.exc_info()[1]
+        except LuadnsException as e:
             if e.message == 'Record not found.':
                 raise RecordDoesNotExistError(record_id=record.id, driver=self,
                                               value='')
@@ -247,8 +240,7 @@ class LuadnsDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except LuadnsException:
-            e = sys.exc_info()[1]
+        except LuadnsException as e:
             raise e
 
         record = self._to_record(response.parse_body(), zone=zone)

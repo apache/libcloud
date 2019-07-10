@@ -16,7 +16,6 @@
 VMware vCloud driver.
 """
 import copy
-import sys
 import re
 import base64
 import os
@@ -590,10 +589,9 @@ class VCloudNodeDriver(NodeDriver):
                                  'application/vnd.vmware.vcloud.vApp+xml'}
                     )
                     nodes.append(self._to_node(res.object))
-                except Exception:
+                except Exception as e:
                     # The vApp was probably removed since the previous vDC
                     # query, ignore
-                    e = sys.exc_info()[1]
                     if not (e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') ==
                             'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 from functools import wraps
 
 from libcloud.common.types import LibcloudError
@@ -35,8 +34,7 @@ def wrap_non_libcloud_exceptions(func):
     def decorated_function(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
 
             if isinstance(e, LibcloudError):
                 raise e

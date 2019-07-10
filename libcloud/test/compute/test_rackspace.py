@@ -49,8 +49,7 @@ class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
         for provider in DEPRECATED_RACKSPACE_PROVIDERS:
             try:
                 get_driver(provider)
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 self.assertTrue(str(e).find('has been removed') != -1)
             else:
                 self.fail('Exception was not thrown')

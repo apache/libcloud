@@ -188,8 +188,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -202,8 +201,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -216,8 +214,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -226,8 +223,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         OpenStackMockHttp.type = 'NO_MESSAGE_IN_ERROR_BODY'
         try:
             self.driver.list_images()
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertEqual(True, isinstance(e, Exception))
         else:
             self.fail('test should have thrown')
@@ -1070,22 +1066,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                         driver=self.driver)
         try:
             self.driver.ex_resize(self.node, size)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_confirm_resize(self):
         try:
             self.driver.ex_confirm_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_revert_resize(self):
         try:
             self.driver.ex_revert_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_create_image(self):

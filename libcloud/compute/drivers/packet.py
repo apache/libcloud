@@ -15,11 +15,11 @@
 """
 Packet Driver
 """
+
 try:  # Try to use asyncio to perform requests in parallel across projects
     import asyncio
 except ImportError:  # If not available will do things serially
     asyncio = None
-
 
 import datetime
 import json
@@ -34,6 +34,13 @@ from libcloud.compute.base import KeyPair
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
 
 PACKET_ENDPOINT = "api.packet.net"
+
+# True to use async io if available (aka running under Python 3)
+USE_ASYNC_IO_IF_AVAILABLE = True
+
+
+def use_asyncio():
+    return asyncio is not None and USE_ASYNC_IO_IF_AVAILABLE
 
 
 class PacketResponse(JsonResponse):
@@ -167,7 +174,7 @@ class PacketNodeDriver(NodeDriver):
                 ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
-        if asyncio is None:
+        if not use_asyncio():
             nodes = []
             for project in self.projects:
                 nodes.extend(
@@ -618,7 +625,7 @@ def _list_async(driver):
                 ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
-        if asyncio is None:
+        if not use_asyncio():
             nodes = []
             for project in self.projects:
                 nodes.extend(

@@ -216,8 +216,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.driver.create_node(name='foo', image=image, size=size,
                                     ex_mincount='2', ex_maxcount='2',
                                     ex_clienttoken=token)
-        except IdempotentParamError:
-            e = sys.exc_info()[1]
+        except IdempotentParamError as e:
             idem_error = e
         self.assertTrue(idem_error is not None)
 

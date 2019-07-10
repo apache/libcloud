@@ -22,7 +22,6 @@ more information, please refer to the official documentation.
 """
 
 import os
-import sys
 import atexit
 
 try:
@@ -90,8 +89,7 @@ class VSphereConnection(ConnectionUserAndKey):
                                 password=self.key,
                                 sock_timeout=DEFAULT_CONNECTION_TIMEOUT,
                                 trace_file=trace_file)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             message = e.message
             if hasattr(e, 'strerror'):
                 message = e.strerror

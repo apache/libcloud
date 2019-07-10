@@ -376,23 +376,6 @@ Context managers aren't available in Python 2.5 by default. If you want to use
 them make sure to put from ``__future__ import with_statement`` on top of the
 file where you use them.
 
-Exception Handling
-~~~~~~~~~~~~~~~~~~
-
-There is no unified way to handle exceptions and extract the exception object
-in Python 2.5 and Python 3.x. This means you need to use a
-``sys.exc_info()[1]`` approach to extract the raised exception object.
-
-For example:
-
-.. sourcecode:: python
-
-    try:
-        some code
-    except Exception:
-        e = sys.exc_info()[1]
-        print e
-
 Utility functions for cross-version compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
