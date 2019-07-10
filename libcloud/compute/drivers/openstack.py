@@ -2267,7 +2267,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
-                 # pylint: disable=no-member
+                # pylint: disable=no-member
                 service_name=self.connection.get_service_name(),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass', None),
