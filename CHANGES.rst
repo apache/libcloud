@@ -18,6 +18,9 @@ General
   Python versions, including 2.5 and 2.6. Libcloud hasn't supported Python <
   2.7 for a while now, so we can remove that code. (GITHUB-1307)
   [Tomaz Muraus]
+- Also run pylint on ``libcloud/compute/`` directory and fix various pylint
+  violations. (GITHUB-1308)
+  [Tomaz Muraus]
 
 Compute
 ~~~~~~~
