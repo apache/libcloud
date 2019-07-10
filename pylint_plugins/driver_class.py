@@ -18,8 +18,9 @@ Pylint plugin which tells Pylint how to work with driver classes.
 
 At the moment, it supports the following scenarios:
 
-1. It dynamically assigns "connection" class attribute based on the value
-   of "connectionCls" class variable
+1. It dynamically assigns "connection" class attribute on the NodeDriver
+   class instance based on the value of "connectionCls" NodeDriver class
+   attribute.
 """
 
 from astroid import MANAGER
@@ -56,7 +57,6 @@ def transform(cls):
                 # Connection class is defined directly in the driver module
                 cls.instance_attrs['connection'] = [connection_cls_node[0].instantiate_class()]
             return
-
 
 
 MANAGER.register_transform(scoped_nodes.Class, transform)

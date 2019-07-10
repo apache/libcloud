@@ -334,7 +334,7 @@ class LibvirtNodeDriver(NodeDriver):
                 child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
                 stdout, _ = child.communicate()
-                arp_table = self._parse_ip_table_neigh(arp_output=stdout)
+                arp_table = self._parse_ip_table_neigh(ip_output=stdout)
 
         for mac_address in mac_addresses:
             if mac_address in arp_table:
