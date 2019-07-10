@@ -22,7 +22,6 @@ from __future__ import with_statement
 import errno
 import os
 import shutil
-import sys
 
 try:
     import lockfile
@@ -101,7 +100,7 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             os.makedirs(path)
-        except OSError as e:
+        except OSError as exp:
             if exp.errno == errno.EEXIST and not ignore_existing:
                 raise exp
 
@@ -519,7 +518,7 @@ class LocalStorageDriver(StorageDriver):
         while path != container_url:
             try:
                 os.rmdir(path)
-            except OSError as e:
+            except OSError as exp:
                 if exp.errno == errno.ENOTEMPTY:
                     break
                 raise exp
@@ -545,7 +544,7 @@ class LocalStorageDriver(StorageDriver):
 
         try:
             self._make_path(path, ignore_existing=False)
-        except OSError as e:
+        except OSError as exp:
             if exp.errno == errno.EEXIST:
                 raise ContainerAlreadyExistsError(
                     value='Container with this name already exists. The name '
