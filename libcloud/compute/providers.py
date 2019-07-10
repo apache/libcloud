@@ -19,6 +19,7 @@ Provider related utilities
 from __future__ import absolute_import
 
 from typing import Type
+from typing import Union
 from types import ModuleType
 
 from libcloud.compute.types import Provider
@@ -163,7 +164,7 @@ DRIVERS = {
 
 
 def get_driver(provider):
-    # type: (Provider) -> Type[NodeDriver]
+    # type: (Union[Provider, str]) -> Type[NodeDriver]
     deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
     return _get_provider_driver(drivers=DRIVERS, provider=provider,
                                 deprecated_providers=DEPRECATED_DRIVERS,
@@ -171,6 +172,6 @@ def get_driver(provider):
 
 
 def set_driver(provider, module, klass):
-    # type: (Provider, ModuleType, type) -> Type[NodeDriver]
+    # type: (Union[Provider, str], ModuleType, type) -> Type[NodeDriver]
     return _set_provider_driver(drivers=DRIVERS, provider=provider,
                                 module=module, klass=klass)
