@@ -3848,10 +3848,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             params['ostypeid'] = os_type_id
 
         return self._sync_request(command='registerIso',
-                                  name=name,
-                                  displaytext=name,
-                                  url=url,
-                                  zoneid=location.id,
                                   params=params)
 
     def ex_limits(self):

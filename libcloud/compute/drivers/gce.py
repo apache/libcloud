@@ -28,7 +28,7 @@ from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import GoogleBaseError
 from libcloud.common.google import ResourceNotFoundError
 from libcloud.common.google import ResourceExistsError
-from libcloud.common.types import ProviderError
+from libcloud.common.types import LibcloudError
 
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
@@ -346,7 +346,7 @@ class GCELicense(UuidMixin, LazyObject):
         self.charges_use_fee = response['chargesUseFee']
 
     def destroy(self):
-        raise ProviderError("Can not destroy a License resource.")
+        raise LibcloudError("Can not destroy a License resource.")
 
     def __repr__(self):
         return '<GCELicense id="%s" name="%s" charges_use_fee="%s">' % (
@@ -365,7 +365,7 @@ class GCEDiskType(UuidMixin):
         UuidMixin.__init__(self)
 
     def destroy(self):
-        raise ProviderError("Can not destroy a DiskType resource.")
+        raise LibcloudError("Can not destroy a DiskType resource.")
 
     def __repr__(self):
         return '<GCEDiskType id="%s" name="%s" zone="%s">' % (
@@ -384,7 +384,7 @@ class GCEAcceleratorType(UuidMixin):
         UuidMixin.__init__(self)
 
     def destroy(self):
-        raise ProviderError("Can not destroy an AcceleratorType resource.")
+        raise LibcloudError("Can not destroy an AcceleratorType resource.")
 
     def __repr__(self):
         return '<GCEAcceleratorType id="%s" name="%s" zone="%s">' % (
@@ -848,10 +848,9 @@ class GCERoute(UuidMixin):
         return self.driver.ex_destroy_route(route=self)
 
     def __repr__(self):
+        network_name = getattr(self.network, 'name', self.network)
         return '<GCERoute id="%s" name="%s" dest_range="%s" network="%s">' % (
-            self.id, self.name, self.dest_range,
-            hasattr(self.network, 'name') and self.network.name or
-            self.network)
+            self.id, self.name, self.dest_range, network_name)
 
 
 class GCENodeSize(NodeSize):
@@ -4497,7 +4496,7 @@ class GCENodeDriver(NodeDriver):
                                  "and 'nic_gce_struct'. Use one or the "
                                  "other.")
             if hasattr(network, 'name'):
-                if network.name == 'default':
+                if network.name == 'default':  # pylint: disable=no-member
                     # assume this is just the default value from create_node()
                     # and since the user specified ex_nic_gce_struct, the
                     # struct should take precedence
@@ -6122,7 +6121,7 @@ class GCENodeDriver(NodeDriver):
                     instance_uris.append(i)
                 else:
                     instance_uris.append(
-                        self.ex_get_node(i, manager.zone)['selfLink'])
+                        self.ex_get_node(i, manager.zone).extra['selfLink'])
         else:
             raise ValueError("instances must be 'None or "
                              "a list of instance URIs, instance names, or"
@@ -8445,6 +8444,7 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
         if hasattr(ex_disk_type, 'name'):
+            # pylint: disable=no-member
             volume_data['type'] = ex_disk_type.extra['selfLink']
         elif ex_disk_type.startswith('https'):
             volume_data['type'] = ex_disk_type

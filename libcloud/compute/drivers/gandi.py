@@ -92,7 +92,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         @inherits: :class:`NodeDriver.__init__`
         """
-        super(BaseGandiDriver, self).__init__(*args, **kwargs)
+        super(GandiNodeDriver, self).__init__(*args, **kwargs)
 
     def _resource_info(self, type, id):
         try:

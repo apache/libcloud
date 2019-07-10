@@ -2308,8 +2308,8 @@ class AzureXmlSerializer(object):
         )
 
         if configuration.domain_join is not None:
-            domain = ET.xml("DomainJoin")
-            creds = ET.xml("Credentials")
+            domain = ET.xml("DomainJoin")  # pylint: disable=no-member
+            creds = ET.xml("Credentials")  # pylint: disable=no-member
             domain.appemnd(creds)
             xml.append(domain)
 

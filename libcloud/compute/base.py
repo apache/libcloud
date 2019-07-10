@@ -713,6 +713,8 @@ class NodeDriver(BaseDriver):
     name = None
     type = None
     port = None
+    website = None
+    api_name = None
     features = {'create_node': []}
 
     """
