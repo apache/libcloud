@@ -32,6 +32,11 @@ from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
+# This is causing test failures inder Python 3.5
+import libcloud.compute.drivers.packet
+libcloud.compute.drivers.packet.USE_ASYNC_IO_IF_AVAILABLE = False
+
+
 
 class PacketTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):

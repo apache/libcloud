@@ -174,7 +174,7 @@ class PacketNodeDriver(NodeDriver):
                 ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
-        if use_asyncio():
+        if not use_asyncio():
             nodes = []
             for project in self.projects:
                 nodes.extend(
@@ -625,7 +625,7 @@ def _list_async(driver):
                 ex_project_id=self.project_id)
 
         # In case of Python2 perform requests serially
-        if use_asyncio():
+        if not use_asyncio():
             nodes = []
             for project in self.projects:
                 nodes.extend(
