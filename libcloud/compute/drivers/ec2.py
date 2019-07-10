@@ -18,7 +18,6 @@ Amazon EC2, Eucalyptus, Nimbus and Outscale drivers.
 """
 
 import re
-import sys
 import base64
 import copy
 import warnings
@@ -3001,8 +3000,7 @@ class BaseEC2NodeDriver(NodeDriver):
             res = self.connection.request(
                 self.path, params=params.copy()).object
             return self._get_boolean(res)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if e.args[0].find('InvalidPermission.Duplicate') == -1:
                 raise e
 
@@ -3245,8 +3243,7 @@ class BaseEC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         params['IpProtocol'] = 'udp'
@@ -3255,8 +3252,7 @@ class BaseEC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
 
@@ -3266,8 +3262,7 @@ class BaseEC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
 
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e

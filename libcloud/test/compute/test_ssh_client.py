@@ -348,8 +348,7 @@ class ShellOutSSHClientTests(LibcloudTestCase):
         try:
             ShellOutSSHClient(hostname='localhost', username='foo',
                               password='bar')
-        except ValueError:
-            e = sys.exc_info()[1]
+        except ValueError as e:
             msg = str(e)
             self.assertTrue('ShellOutSSHClient only supports key auth' in msg)
         else:
@@ -368,8 +367,7 @@ class ShellOutSSHClientTests(LibcloudTestCase):
         with patch('subprocess.Popen', mock_popen):
             try:
                 ShellOutSSHClient(hostname='localhost', username='foo')
-            except ValueError:
-                e = sys.exc_info()[1]
+            except ValueError as e:
                 msg = str(e)
                 self.assertTrue('ssh client is not available' in msg)
             else:

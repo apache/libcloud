@@ -16,8 +16,6 @@
 Base classes for working with xmlrpc APIs
 """
 
-import sys
-
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import httplib
 from libcloud.common.base import Response, Connection
@@ -64,8 +62,7 @@ class XMLRPCResponse(ErrorCodeMixin, Response):
             if len(params) == 1:
                 params = params[0]
             return params
-        except xmlrpclib.Fault:
-            e = sys.exc_info()[1]
+        except xmlrpclib.Fault as e:
             self.raise_exception_for_error(e.faultCode, e.faultString)
             error_string = '%s: %s' % (e.faultCode, e.faultString)
             raise self.defaultExceptionCls(error_string)

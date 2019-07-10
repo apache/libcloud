@@ -19,7 +19,6 @@ Provides base classes for working with drivers
 
 from __future__ import with_statement
 
-import sys
 import time
 import hashlib
 import os
@@ -973,8 +972,7 @@ class NodeDriver(BaseDriver):
                 wait_period=3,
                 timeout=kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT),
                 ssh_interface=ssh_interface)[0]
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             raise DeploymentError(node=node, original_exception=e, driver=self)
 
         ssh_username = kwargs.get('ssh_username', 'root')
@@ -994,11 +992,10 @@ class NodeDriver(BaseDriver):
                     ssh_username=username, ssh_password=password,
                     ssh_key_file=ssh_key_file, ssh_timeout=ssh_timeout,
                     timeout=timeout, max_tries=max_tries)
-            except Exception:
+            except Exception as e:
                 # Try alternate username
                 # Todo: Need to fix paramiko so we can catch a more specific
                 # exception
-                e = sys.exc_info()[1]
                 deploy_error = e
             else:
                 # Script successfully executed, don't try alternate username
@@ -1494,8 +1491,7 @@ class NodeDriver(BaseDriver):
         while time.time() < end:
             try:
                 ssh_client.connect()
-            except SSH_TIMEOUT_EXCEPTION_CLASSES:
-                e = sys.exc_info()[1]
+            except SSH_TIMEOUT_EXCEPTION_CLASSES as e:
                 message = str(e).lower()
                 expected_msg = 'no such file or directory'
 
@@ -1566,11 +1562,10 @@ class NodeDriver(BaseDriver):
         while tries < max_tries:
             try:
                 node = task.run(node, ssh_client)
-            except Exception:
+            except Exception as e:
                 tries += 1
 
                 if tries >= max_tries:
-                    e = sys.exc_info()[1]
                     raise LibcloudError(value='Failed after %d tries: %s'
                                         % (max_tries, str(e)), driver=self)
             else:

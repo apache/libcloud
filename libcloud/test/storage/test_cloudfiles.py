@@ -79,8 +79,7 @@ class CloudFilesTests(unittest.TestCase):
 
         try:
             driver.list_containers()
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertEqual(e.value, 'Could not find specified endpoint')
         else:
             self.fail('Exception was not thrown')

@@ -47,8 +47,7 @@ class BuddyNSDNSTests(unittest.TestCase):
 
         try:
             self.driver.delete_zone(zone=self.test_zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, self.test_zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -63,8 +62,7 @@ class BuddyNSDNSTests(unittest.TestCase):
         BuddyNSMockHttp.type = 'GET_ZONE_ZONE_DOES_NOT_EXIST'
         try:
             self.driver.get_zone(zone_id='zonedoesnotexist.com')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, 'zonedoesnotexist.com')
         else:
             self.fail('Exception was not thrown')
@@ -94,8 +92,7 @@ class BuddyNSDNSTests(unittest.TestCase):
         try:
             self.driver.create_zone(domain='newzone.com',
                                     extra={'master': '13.0.0.1'})
-        except ZoneAlreadyExistsError:
-            e = sys.exc_info()[1]
+        except ZoneAlreadyExistsError as e:
             self.assertEqual(e.zone_id, 'newzone.com')
         else:
             self.fail('Exception was not thrown')

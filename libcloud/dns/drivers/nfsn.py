@@ -15,7 +15,6 @@
 NFSN DNS Driver
 """
 import re
-import sys
 
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.common.nfsn import NFSNConnection
@@ -83,8 +82,7 @@ class NFSNDNSDriver(DNSDriver):
         # then the zone exists.
         try:
             self.connection.request(action='/dns/%s/serial' % zone_id)
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.NOT_FOUND:
                 raise ZoneDoesNotExistError(zone_id=None, driver=self,
                                             value=e.message)
@@ -153,8 +151,7 @@ class NFSNDNSDriver(DNSDriver):
             payload['ttl'] = extra['ttl']
         try:
             self.connection.request(action=action, data=payload, method='POST')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             exists_re = re.compile(r'That RR already exists on the domain')
             if e.code == httplib.BAD_REQUEST and \
                re.search(exists_re, e.message) is not None:
@@ -178,8 +175,7 @@ class NFSNDNSDriver(DNSDriver):
                    'type': record.type}
         try:
             self.connection.request(action=action, data=payload, method='POST')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.NOT_FOUND:
                 raise RecordDoesNotExistError(value=e.message, driver=self,
                                               record_id=None)

@@ -395,8 +395,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.mock_response_klass.type = 'UNAUTHORIZED'
         try:
             self.driver.list_containers()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('Exception was not thrown')
@@ -663,8 +662,7 @@ class AzureBlobsTests(unittest.TestCase):
                                       object_name=object_name,
                                       verify_hash=True,
                                       ex_blob_type='invalid-blob')
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(str(e).lower().find('invalid blob type') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -774,8 +772,7 @@ class AzureBlobsTests(unittest.TestCase):
                                       extra=extra,
                                       verify_hash=False,
                                       ex_blob_type='PageBlob')
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(str(e).lower().find('not aligned') != -1)
 
         os.remove(file_path)

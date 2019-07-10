@@ -18,7 +18,6 @@ Gandi driver base classes
 
 import time
 import hashlib
-import sys
 
 from libcloud.utils.py3 import b
 
@@ -99,8 +98,7 @@ class BaseGandiDriver(object):
                     return False
             except (KeyError, IndexError):
                 pass
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 raise GandiException(1002, e)
 
             time.sleep(check_interval)

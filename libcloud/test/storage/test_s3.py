@@ -409,8 +409,7 @@ class S3Tests(unittest.TestCase):
         self.mock_response_klass.type = 'UNAUTHORIZED'
         try:
             self.driver.list_containers()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('Exception was not thrown')
@@ -767,8 +766,7 @@ class S3Tests(unittest.TestCase):
                                       object_name=object_name,
                                       verify_hash=True,
                                       ex_storage_class='invalid-class')
-        except ValueError:
-            e = sys.exc_info()[1]
+        except ValueError as e:
             self.assertTrue(str(e).lower().find('invalid storage class') != -1)
         else:
             self.fail('Exception was not thrown')

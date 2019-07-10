@@ -1478,8 +1478,7 @@ class AzureNodeDriver(NodeDriver):
                 headers=request.headers,
                 method=request.method
             )
-        except AzureRedirectException:
-            e = sys.exc_info()[1]
+        except AzureRedirectException as e:
             parsed_url = urlparse.urlparse(e.location)
             request.host = parsed_url.netloc
             return self._perform_request(request)

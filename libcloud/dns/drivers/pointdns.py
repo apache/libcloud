@@ -23,8 +23,6 @@ __all__ = [
     'PointDNSDriver'
 ]
 
-import sys
-
 try:
     import simplejson as json
 except ImportError:
@@ -199,8 +197,7 @@ class PointDNSDriver(DNSDriver):
         """
         try:
             response = self.connection.request('/zones/%s' % zone_id)
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             if e.body == 'Not found':
                 raise ZoneDoesNotExistError(driver=self,
                                             value="The zone doesn't exists",
@@ -225,8 +222,7 @@ class PointDNSDriver(DNSDriver):
         try:
             response = self.connection.request('/zones/%s/records/%s' %
                                                (zone_id, record_id))
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             if e.body == 'Not found':
                 raise RecordDoesNotExistError(value="Record doesn't exists",
                                               driver=self,
@@ -263,8 +259,7 @@ class PointDNSDriver(DNSDriver):
         try:
             response = self.connection.request('/zones', method='POST',
                                                data=r_data)
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             raise PointDNSException(value=e.message, http_code=e.code,
                                     driver=self)
         zone = self._to_zone(response.object)
@@ -301,8 +296,7 @@ class PointDNSDriver(DNSDriver):
         try:
             response = self.connection.request('/zones/%s/records' % zone.id,
                                                method='POST', data=r_data)
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             raise PointDNSException(value=e.message, http_code=e.code,
                                     driver=self)
         record = self._to_record(response.object, zone=zone)
@@ -336,8 +330,7 @@ class PointDNSDriver(DNSDriver):
         try:
             response = self.connection.request('/zones/%s' % zone.id,
                                                method='PUT', data=r_data)
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise ZoneDoesNotExistError(value="Zone doesn't exists",
                                             driver=self,
@@ -380,8 +373,7 @@ class PointDNSDriver(DNSDriver):
             response = self.connection.request('/zones/%s/records/%s' %
                                                (zone.id, record.id),
                                                method='PUT', data=r_data)
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise RecordDoesNotExistError(value="Record doesn't exists",
                                               driver=self,
@@ -404,8 +396,7 @@ class PointDNSDriver(DNSDriver):
         """
         try:
             self.connection.request('/zones/%s' % zone.id, method='DELETE')
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             if e.body == 'Not found':
                 raise ZoneDoesNotExistError(driver=self,
                                             value="The zone doesn't exists",
@@ -428,8 +419,7 @@ class PointDNSDriver(DNSDriver):
             self.connection.request('/zones/%s/records/%s' % (zone_id,
                                                               record_id),
                                     method='DELETE')
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             if e.body == 'Not found':
                 raise RecordDoesNotExistError(value="Record doesn't exists",
                                               driver=self,
@@ -495,8 +485,7 @@ class PointDNSDriver(DNSDriver):
         try:
             response = self.connection.request('/zones/%s/redirects' % zone.id,
                                                method='POST', data=r_data)
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             raise PointDNSException(value=e.message, http_code=e.code,
                                     driver=self)
         redirect = self._to_redirect(response.object, zone=zone)
@@ -521,8 +510,7 @@ class PointDNSDriver(DNSDriver):
             response = self.connection.request('/zones/%s/mail_redirects' %
                                                zone.id, method='POST',
                                                data=r_data)
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             raise PointDNSException(value=e.message, http_code=e.code,
                                     driver=self)
         mail_redirect = self._to_mail_redirect(response.object, zone=zone)
@@ -541,8 +529,7 @@ class PointDNSDriver(DNSDriver):
         try:
             response = self.connection.request('/zones/%s/redirects/%s' %
                                                (zone_id, redirect_id))
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise PointDNSException(value='Couldn\'t found redirect',
                                         http_code=httplib.NOT_FOUND,
@@ -565,8 +552,7 @@ class PointDNSDriver(DNSDriver):
         try:
             response = self.connection.request('/zones/%s/mail_redirects/%s' %
                                                (zone_id, mail_r_id))
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise PointDNSException(value='Couldn\'t found mail redirect',
                                         http_code=httplib.NOT_FOUND,
@@ -619,8 +605,7 @@ class PointDNSDriver(DNSDriver):
             response = self.connection.request('/zones/%s/redirects/%s' %
                                                (zone_id, redirect.id),
                                                method='PUT', data=r_data)
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise PointDNSException(value='Couldn\'t found redirect',
                                         http_code=httplib.NOT_FOUND,
@@ -652,8 +637,7 @@ class PointDNSDriver(DNSDriver):
             response = self.connection.request('/zones/%s/mail_redirects/%s' %
                                                (zone_id, mail_r.id),
                                                method='PUT', data=r_data)
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise PointDNSException(value='Couldn\'t found mail redirect',
                                         http_code=httplib.NOT_FOUND,
@@ -676,8 +660,7 @@ class PointDNSDriver(DNSDriver):
         try:
             self.connection.request('/zones/%s/redirects/%s' % (zone_id,
                                     redirect_id), method='DELETE')
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise PointDNSException(value='Couldn\'t found redirect',
                                         http_code=httplib.NOT_FOUND,
@@ -698,8 +681,7 @@ class PointDNSDriver(DNSDriver):
         try:
             self.connection.request('/zones/%s/mail_redirects/%s' % (zone_id,
                                     mail_r_id), method='DELETE')
-        except (BaseHTTPError, MalformedResponseError):
-            e = sys.exc_info()[1]
+        except (BaseHTTPError, MalformedResponseError) as e:
             if isinstance(e, MalformedResponseError) and e.body == 'Not found':
                 raise PointDNSException(value='Couldn\'t found mail redirect',
                                         http_code=httplib.NOT_FOUND,
