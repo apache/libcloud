@@ -3958,8 +3958,8 @@ class GCENodeDriver(NodeDriver):
     def create_node(
             self, name, size, image, location=None, ex_network='default',
             ex_subnetwork=None, ex_tags=None, ex_metadata=None,
-            ex_boot_disk=None, use_existing_disk=True, external_ip='ephemeral',
-            internal_ip=None, ex_disk_type='pd-standard',
+            ex_boot_disk=None, disk_size=10, use_existing_disk=True,
+            external_ip='ephemeral', internal_ip=None, ex_disk_type='pd-standard',
             ex_disk_auto_delete=True, ex_service_accounts=None,
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
@@ -4161,7 +4161,8 @@ class GCENodeDriver(NodeDriver):
                 'initializeParams': {
                     'diskName': name,
                     'diskType': ex_disk_type.extra['selfLink'],
-                    'sourceImage': image.extra['selfLink']
+                    'sourceImage': image.extra['selfLink'],
+                    'diskSizeGb': disk_size
                 }
             }]
 
