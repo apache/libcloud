@@ -81,6 +81,11 @@ Compute
 - [OpenStack] Fix ``ex_resize`` method. (GITHUB-1311)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] For consistency, rename ``ex_resize`` method to
+  ``ex_resize_node``. For backward compatibility reasons, leave ``ex_resize``
+  alias in place.
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 

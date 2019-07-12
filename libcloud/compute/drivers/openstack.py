@@ -643,7 +643,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         return self._change_password_or_name(node, name=name)
 
-    def ex_resize(self, node, size):
+    def ex_resize_node(self, node, size):
         """
         Change an existing server flavor / scale the server up or down.
 
@@ -665,6 +665,14 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                                        method='POST',
                                        data=ET.tostring(elm))
         return resp.status == httplib.ACCEPTED
+
+    def ex_resize(self, node, size):
+        """
+        NOTE: This method is here for backward compatibility reasons.
+
+        You should use ``ex_resize_node`` instead.
+        """
+        return self.ex_resize_node(node=node, size=size)
 
     def ex_confirm_resize(self, node):
         """
