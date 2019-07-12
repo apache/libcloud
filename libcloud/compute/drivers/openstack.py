@@ -1602,7 +1602,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        server_params = self._create_args_to_params(node, size=size)
+        server_params = {'flavorRef': size.id}
         resp = self._node_action(node, 'resize', **server_params)
         return resp.status == httplib.ACCEPTED
 

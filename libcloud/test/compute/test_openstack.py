@@ -598,7 +598,10 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         body = u(body)
         if body.find('resize') != -1:
             # test_ex_resize_server
-            return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
+            if body.find('personality') != -1:
+                return httplib.BAD_REQUEST
+            else:
+                return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
         elif body.find('confirmResize') != -1:
             # test_ex_confirm_resize
             return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
