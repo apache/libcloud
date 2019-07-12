@@ -78,6 +78,9 @@ Compute
   driver. (GITHUB-1281)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Fix ``ex_resize`` method. (GITHUB-1311)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
