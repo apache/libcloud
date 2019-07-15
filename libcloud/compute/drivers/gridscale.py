@@ -529,7 +529,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                     method='DELETE')
         return result.status == 204
 
-    def patch_node(self, node, name=None):
+    def ex_rename_node(self, node, name=None):
         """
         change node name
 
@@ -548,7 +548,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                     method='PATCH')
         return result.status == 204
 
-    def patch_storage(self, storage, name=None):
+    def ex_rename_storage(self, storage, name=None):
         """
         modify storage name
 
@@ -567,7 +567,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                     method='PATCH')
         return result.status == 204
 
-    def ex_patch_networks(self, network, name=None):
+    def ex_rename_network(self, network, name=None):
         """
         Modify networks name.
 
