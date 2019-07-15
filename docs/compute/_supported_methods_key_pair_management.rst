@@ -25,6 +25,7 @@ Provider                              list key pairs get key pair create key pai
 `Gandi`_                              yes            yes          no              yes                           no                          yes            
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
+`Gridscale`_                          yes            no           no              no                            no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
 `Ikoula`_                             yes            yes          yes             yes                           no                          yes            
 `Indosat`_                            no             no           no              no                            no                          no             
@@ -87,6 +88,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
+.. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
