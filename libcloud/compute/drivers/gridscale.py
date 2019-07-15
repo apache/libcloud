@@ -587,7 +587,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                     method='PATCH')
         return result.status == 204
 
-    def reboot_node(self, node):
+    def reboot_node(self, node, ex_sleep_interval=3):
         """
         Reboot a node.
 
@@ -597,6 +597,9 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: True if the reboot was successful, otherwise False.
         :rtype: ``bool``
 
+        :keyword ex_sleep_interval: time to let the shutdown process finish
+        :type ex_sleep_interval: ``int``
+
         """
 
         if node.extra['power'] is True:
@@ -605,7 +608,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                endpoint='objects/servers/{}/power'
                                .format(node.id),
                                method='PATCH')
-            time.sleep(3)
+            time.sleep(ex_sleep_interval)
 
             data = dict({'power': True})
             self._sync_request(data=json.dumps(data),
