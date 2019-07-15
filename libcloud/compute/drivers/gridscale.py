@@ -107,7 +107,6 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         for key, value in self._get_response_dict(result).items():
             node = self._to_node(value)
             nodes.append(node)
-            continue
 
         return sorted(nodes, key=lambda sort: sort.created_at)
 
@@ -123,7 +122,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         for key, value in self._get_response_dict(result).items():
             location = self._to_location(value)
             locations.append(location)
-            continue
+
         return sorted(locations, key=lambda nod: nod.id)
 
     def list_volumes(self):
