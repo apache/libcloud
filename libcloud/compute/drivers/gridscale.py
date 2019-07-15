@@ -563,7 +563,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :rtype: ``bool``
         """
         result = self._sync_request(data=json.dumps({'name': name}),
-                                    endpoint='objects/servers/{}'
+                                    endpoint='objects/storages/{}'
                                     .format(storage.id),
                                     method='PATCH')
         return result.status == 204
