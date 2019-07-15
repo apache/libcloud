@@ -41,7 +41,7 @@ class Gridscale_Tests(LibcloudTestCase):
         sshkey = ["b1682d3a-1869-4bdc-8ffe-e74a261d300c"]
         GridscaleMockHttp.type = 'POST'
         node = self.driver.create_node(name='test', size=size, image=image,
-                                        location=location, auth=sshkey)
+                                        location=location, ex_ssh_key_ids=sshkey)
 
         self.assertEqual(node.name, 'test.test')
         self.assertEqual(node.public_ips, ['185.102.95.236', '2a06:2380:0:1::211'])

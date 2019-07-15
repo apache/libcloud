@@ -217,8 +217,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :param location: The data center to create a node in.
         :type location: :class:`.NodeLocation`
 
-        :keyword ex_ssh_key_ids: sshkey uuid.
-        :type ex_ssh_key_ids: ``str``
+        :keyword ex_ssh_key_ids: List of SSH key IDs to add to the server.
+        :type ex_ssh_key_ids: ``list`` of ``str``
 
         :return: The newly created Node.
         :rtype: :class:`.Node`
