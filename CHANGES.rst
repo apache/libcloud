@@ -86,6 +86,9 @@ Compute
   alias in place.
   [Tomaz Muraus]
 
+- [Gridscale] Add new driver for Gridscale provider (https://gridscale.io).
+  [Sydney Weber - @PrinceSydney]
+
 Storage
 ~~~~~~~
 
