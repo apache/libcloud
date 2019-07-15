@@ -18,7 +18,7 @@ import time
 from libcloud.common.gridscale import GridscaleBaseDriver
 from libcloud.common.gridscale import GridscaleConnection
 from libcloud.compute.base import NodeImage, NodeLocation, VolumeSnapshot, \
-    Node, StorageVolume, KeyPair, NodeState, StorageVolumeState, NodeAuthSSHKey
+    Node, StorageVolume, KeyPair, NodeState, StorageVolumeState
 from libcloud.compute.providers import Provider
 from libcloud.utils.iso8601 import parse_date
 
