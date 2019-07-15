@@ -172,7 +172,7 @@ class CloudFlareDNSDriver(DNSDriver):
             items = response.object['result']
             zones = [self._to_zone(item) for item in items]
 
-            return zones
+            return response, zones
 
         return self._paginate(_iterate_zones, self.ZONES_PAGE_SIZE)
 
@@ -186,7 +186,7 @@ class CloudFlareDNSDriver(DNSDriver):
             items = response.object['result']
             records = [self._to_record(zone, item) for item in items]
 
-            return records
+            return response, records
 
         return self._paginate(_iterate_records, self.RECORDS_PAGE_SIZE)
 
@@ -364,7 +364,7 @@ class CloudFlareDNSDriver(DNSDriver):
             url = '{}/memberships'.format(API_BASE)
 
             response = self.connection.request(url, params=params)
-            return response.object['result']
+            return response, response.object['result']
 
         return self._paginate(_ex_get_user_account_memberships,
                               self.MEMBERSHIPS_PAGE_SIZE)
@@ -404,10 +404,23 @@ class CloudFlareDNSDriver(DNSDriver):
         for page in itertools.count(start=1):
             params = {'page': page, 'per_page': page_size}
 
-            items = get_page(params)
+            response, items = get_page(params)
 
             for item in items:
                 yield item
 
+            if self._is_last_page(response):
+                break
+
             if len(items) < page_size:
                 break
+
+    def _is_last_page(self, response):
+        try:
+            result_info = response.object['result_info']
+            last_page = result_info['total_pages']
+            current_page = result_info['page']
+        except KeyError:
+            return False
+
+        return current_page == last_page
