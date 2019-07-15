@@ -1,0 +1,83 @@
+{
+    "1479405e-d46c-47a2-91e8-eb43951c899f": {
+      "hardware_profile": "default",
+      "relations": {
+        "storages": [
+          {
+            "storage_type": "storage",
+            "last_used_template": "a5112c72-c9fa-4a23-8115-5f6303eb047b",
+            "create_time": "2019-06-24T10:10:51Z",
+            "capacity": 50,
+            "lun": 0,
+            "controller": 0,
+            "target": 0,
+            "object_uuid": "e66bb753-4a03-4ee2-a069-a601f393c9ee",
+            "bootdevice": true,
+            "object_name": "linux",
+            "license_product_no": null,
+            "bus": 0
+          }
+        ],
+        "networks": [
+          {
+            "mac": "16:63:95:5d:1f:01",
+            "network_uuid": "1196529b-a8de-417f-ac95-0e13ef4fdfd7",
+            "network_type": "network",
+            "mcast": null,
+            "create_time": "2019-06-07T14:59:47Z",
+            "public_net": true,
+            "partner_uuid": "95a2980b-7012-43dd-81f2-07577cfcb9f0",
+            "ordering": 0,
+            "vlan": null,
+            "firewall": null,
+            "l2security": true,
+            "firewall_template_uuid": null,
+            "vxlan": null,
+            "object_uuid": "1196529b-a8de-417f-ac95-0e13ef4fdfd7",
+            "bootdevice": false,
+            "object_name": "network",
+            "l3security": [
+              "185.102.95.236/32"
+            ]
+          }
+        ],
+        "isoimages": [],
+        "public_ips": [
+          {
+            "object_uuid": "56b8d161-325b-4fd4-a453-6101cf563713",
+            "ip": "185.102.95.236",
+            "family": 4,
+            "create_time": "2019-06-07T12:57:30Z",
+            "prefix": "185.102.95.236/32"
+          },
+          {
+            "object_uuid": "0235e7c4-18c9-4b2f-a3c3-2d9624a67498",
+            "ip": "2a06:2380:0:1::211",
+            "family": 6,
+            "create_time": "2019-06-07T14:59:47Z",
+            "prefix": "2a06:2380:0:1::211/128"
+          }
+        ]
+      },
+      "memory": 10,
+      "location_iata": "fra",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "change_time": "2019-06-17T14:13:31Z",
+      "object_uuid": "1479405e-d46c-47a2-91e8-eb43951c899f",
+      "labels": [],
+      "usage_in_minutes_cores": 25030,
+      "cores": 2,
+      "console_token": "088f625818dc5b9114f8bee8e7f67d7b5510fc5159968a02752875f4b55ca911d59fd6cbe3eeb60358c0f353b1d7cbb9",
+      "availability_zone": null,
+      "location_name": "de/fra",
+      "create_time": "2019-06-07T12:56:44Z",
+      "location_country": "de",
+      "legacy": false,
+      "current_price": 17.89645,
+      "power": false,
+      "status": "active",
+      "auto_recovery": true,
+      "name": "test.test",
+      "usage_in_minutes_memory": 125150
+    }
+  }
