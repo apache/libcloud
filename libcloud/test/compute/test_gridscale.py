@@ -133,7 +133,7 @@ class Gridscale_Tests(LibcloudTestCase):
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
-        self.assertEqual(nodes[0].created_at, datetime(2019, 6, 7, 12, 56, 44, tzinfo=UTC)
+        self.assertEqual(nodes[0].created_at, datetime(2019, 6, 7, 12, 56, 44, tzinfo=UTC))
 
 class GridscaleMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('gridscale')
