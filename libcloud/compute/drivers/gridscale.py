@@ -89,7 +89,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
     """
     connectionCls = GridscaleConnection
     type = Provider.GRIDSCALE
-    name = 'gridscale'
+    name = 'Gridscale'
+    api_name = 'gridscale'
     website = 'https://gridscale.io'
     features = {'create_node': ['ssh_key']}
 
