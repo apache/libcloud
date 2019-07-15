@@ -159,7 +159,9 @@ class CloudFlareDNSDriver(DNSDriver):
         RecordType.URL: 'LOC'
     }
 
-    PAGE_SIZE = 20
+    ZONES_PAGE_SIZE = 50
+    RECORDS_PAGE_SIZE = 100
+    MEMBERSHIPS_PAGE_SIZE = 50
 
     def iterate_zones(self):
         def _iterate_zones(params):
@@ -172,7 +174,7 @@ class CloudFlareDNSDriver(DNSDriver):
 
             return zones
 
-        return self._paginate(_iterate_zones)
+        return self._paginate(_iterate_zones, self.ZONES_PAGE_SIZE)
 
     def iterate_records(self, zone):
         def _iterate_records(params):
@@ -186,7 +188,7 @@ class CloudFlareDNSDriver(DNSDriver):
 
             return records
 
-        return self._paginate(_iterate_records)
+        return self._paginate(_iterate_records, self.RECORDS_PAGE_SIZE)
 
     def get_zone(self, zone_id):
         url = '{}/zones/{}'.format(API_BASE, zone_id)
@@ -364,7 +366,8 @@ class CloudFlareDNSDriver(DNSDriver):
             response = self.connection.request(url, params=params)
             return response.object['result']
 
-        return self._paginate(_ex_get_user_account_memberships)
+        return self._paginate(_ex_get_user_account_memberships,
+                              self.MEMBERSHIPS_PAGE_SIZE)
 
     def _to_zone(self, item):
         return Zone(
@@ -397,14 +400,14 @@ class CloudFlareDNSDriver(DNSDriver):
             extra={key: item.get(key) for key in RECORD_EXTRA_ATTRIBUTES},
         )
 
-    def _paginate(self, get_page):
+    def _paginate(self, get_page, page_size):
         for page in itertools.count(start=1):
-            params = {'page': page, 'per_page': self.PAGE_SIZE}
+            params = {'page': page, 'per_page': page_size}
 
             items = get_page(params)
 
             for item in items:
                 yield item
 
-            if len(items) < self.PAGE_SIZE:
+            if len(items) < page_size:
                 break

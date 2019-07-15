@@ -33,7 +33,9 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
     def setUp(self):
         CloudFlareDNSDriver.connectionCls.conn_class = CloudFlareMockHttp
-        CloudFlareDNSDriver.PAGE_SIZE = 5
+        CloudFlareDNSDriver.ZONES_PAGE_SIZE = 5
+        CloudFlareDNSDriver.RECORDS_PAGE_SIZE = 5
+        CloudFlareDNSDriver.MEMBERSHIPS_PAGE_SIZE = 5
         CloudFlareMockHttp.type = None
         CloudFlareMockHttp.use_param = 'a'
         self.driver = CloudFlareDNSDriver(*DNS_PARAMS_CLOUDFLARE)
