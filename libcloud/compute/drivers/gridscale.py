@@ -228,7 +228,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
         if size.ram % 1024 != 0:
             raise Exception('Value not accepted. Use a multiple of 1024 e.g.'
-                            '1024, 2048, 3096...')
+                            '1024, 2048, 3072...')
         data = {
             'name': name,
             'cores': size.extra['cores'],
