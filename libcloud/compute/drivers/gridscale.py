@@ -201,7 +201,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
             templates.append(template)
         return sorted(templates, key=lambda sort: sort.name)
 
-    def create_node(self, name, size, image, location, auth):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
         """
         Create a simple node  with a name, cores, memory at the designated
         location.
@@ -218,14 +218,13 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :param location: The data center to create a node in.
         :type location: :class:`.NodeLocation`
 
-        :param auth: sshkey uuid.
-        :type auth: :class:`.NodeAuthSSHKey`
+        :keyword ex_ssh_key_ids: sshkey uuid.
+        :type ex_ssh_key_ids: ``str``
 
         :return: The newly created Node.
         :rtype: :class:`.Node`
 
         """
-        auth = NodeAuthSSHKey(auth)
 
         if size.ram % 1024 != 0:
             raise Exception('Value not accepted. Use a multiple of 1024 e.g.'
@@ -249,7 +248,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                                    location=location,
                                                    template={
                                                    'template_uuid': image.id,
-                                                   'sshkeys': auth.pubkey})
+                                                   'sshkeys': ex_ssh_key_ids})
 
         ip = self.ex_create_ip(4, location, name + '_ip')
 
