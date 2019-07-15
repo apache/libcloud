@@ -531,13 +531,13 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
     def ex_rename_node(self, node, name=None):
         """
-        change node name
+        Modify node name.
 
-        :param name: new name
+        :param name: New node name.
         :type name: ``str``
 
-        :param node: Server you want to patch
-        :type node: ``str``
+        :param node: Node
+        :type node: :class:`.Node`
 
         :return: ``True`` or ``False``
         :rtype: ``bool``
@@ -550,12 +550,12 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
     def ex_rename_storage(self, storage, name=None):
         """
-        modify storage name
+        Modify storage name
 
-        :param storage: storage object
-        :type storage: ``object``
+        :param storage: Storage.
+        :type storage: :class:.`StorageVolume`
 
-        :param name: rename storage
+        :param name: New storage name.
         :type name: ``str``
 
         :return: ``True`` or ``False``
@@ -571,10 +571,10 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         """
         Modify networks name.
 
-        :param network: Network object.
+        :param network: Network.
         :type network: :class:`.GridscaleNetwork`
 
-        :param name: New name.
+        :param name: New network name.
         :type name: ``str``
 
         :return: ``True`` or ``False``
