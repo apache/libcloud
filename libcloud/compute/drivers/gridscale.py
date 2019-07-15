@@ -645,8 +645,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         """
 
         response_dict = self._get_response_dict(self._sync_request(
-                                                endpoint='/objects/templates/{}'
-                                                         .format(image_id)))
+            endpoint='/objects/templates/{}'.format(image_id)))
 
         return self._to_node_image(response_dict)
 
@@ -919,8 +918,13 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         return template
 
     def _to_key(self, data):
+        extra = {
+            'uuid': data['object_uuid'],
+            'labels': data.get('labels', [])
+        }
+
         key = KeyPair(name=data['name'], fingerprint=data['object_uuid'],
-                      public_key=data['sshkey'], private_key=None, extra=None,
+                      public_key=data['sshkey'], private_key=None, extra=extra,
                       driver=self.connection.driver)
 
         return key
