@@ -91,6 +91,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
     type = Provider.GRIDSCALE
     name = 'gridscale'
     website = 'https://gridscale.io'
+    features = {'create_node': ['ssh_key']}
 
     def __init__(self, user_id, key, **kwargs):
         super(GridscaleNodeDriver, self).__init__(user_id, key, **kwargs)
