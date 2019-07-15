@@ -369,6 +369,51 @@ class CloudFlareDNSDriver(DNSDriver):
         return self._paginate(_ex_get_user_account_memberships,
                               self.MEMBERSHIPS_PAGE_SIZE)
 
+    def ex_get_zone_stats(self, zone, interval=30):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_zone_check(self, zones):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_get_ip_threat_score(self, ip):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_get_zone_settings(self, zone):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_set_zone_security_level(self, zone, level):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_set_zone_cache_level(self, zone, level):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_enable_development_mode(self, zone):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_disable_development_mode(self, zone):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_purge_cached_files(self, zone):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_purge_cached_file(self, zone, url):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_whitelist_ip(self, zone, ip):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_blacklist_ip(self, zone, ip):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_unlist_ip(self, zone, ip):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_enable_ipv6_support(self, zone):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
+    def ex_disable_ipv6_support(self, zone):
+        raise NotImplementedError('not yet implemented in v4 driver')
+
     def _to_zone(self, item):
         return Zone(
             id=item['id'],
