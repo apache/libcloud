@@ -336,7 +336,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         return self._create_volume_from_template(size, name, location)
 
     def _create_volume_from_template(self, size, name, location=None,
-                                     template={}):
+                                     template=None):
         """
         create Storage
 
@@ -355,6 +355,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: newly created StorageVolume
         :rtype: :class:`.GridscaleVolumeStorage`
         """
+        template = template
         self.connection.async_request(
             'objects/storages/',
             data=json.dumps({
