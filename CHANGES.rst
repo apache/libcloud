@@ -21,6 +21,8 @@ General
 - Also run pylint on ``libcloud/compute/`` directory and fix various pylint
   violations. (GITHUB-1308)
   [Tomaz Muraus]
+- [OpenStack] Remove unused variable in parse_error (GITHUB-1260)
+  [Rick van de Loo]
 
 Compute
 ~~~~~~~
