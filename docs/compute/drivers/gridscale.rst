@@ -36,4 +36,4 @@ API
     :inherited-members:
 
 
-.._`gridscale`: https://www.gridscale.io/
+.. _`gridscale`: https://www.gridscale.io/
