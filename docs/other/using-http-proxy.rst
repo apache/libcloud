@@ -110,3 +110,6 @@ don't do that, you will see errors similar to the one below:
 .. sourcecode:: python
 
     SSLError(1, u'[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed
+
+Keep in mind that you will also receive a similar error message if you try to
+use HTTP proxy for HTTPS requests.
