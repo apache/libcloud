@@ -308,7 +308,6 @@ def generate_providers_table(api):
         for method_name in base_api_methods:
             base_method = base_methods[method_name]
 
-
             if method_name == 'deploy_node':
                 features = getattr(cls, 'features', {}).get('create_node', [])
                 is_implemented = len(features) >= 1
