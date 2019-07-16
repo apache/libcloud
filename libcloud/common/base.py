@@ -350,8 +350,8 @@ class Connection(object):
 
         :param proxy_url: Proxy URL (e.g. http://<hostname>:<port> without
                           authentication and
-                          <scheme>://<username>:<password>@<hostname>:<port> for
-                          basic auth authentication information.
+                          <scheme>://<username>:<password>@<hostname>:<port>
+                          for basic auth authentication information.
         :type proxy_url: ``str``
         """
         self.proxy_url = proxy_url

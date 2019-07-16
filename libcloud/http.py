@@ -186,9 +186,10 @@ class LibcloudConnection(LibcloudBaseConnection):
             ":{0}".format(port) if port not in (80, 443) else ""
         )
 
-        # Support for HTTP proxy
+        # Support for HTTP(s) proxy
         # NOTE: We always only use a single proxy (either HTTP or HTTPS)
-        https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME, None)
+        https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME,
+                                             None)
         http_proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME,
                                             https_proxy_url_env)
 
