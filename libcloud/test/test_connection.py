@@ -60,12 +60,6 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(result[3], 'user1')
         self.assertEqual(result[4], 'pass1')
 
-        proxy_url = 'https://127.0.0.1:3128'
-        expected_msg = 'Only http proxies are supported'
-        assertRaisesRegex(self, ValueError, expected_msg,
-                          conn._parse_proxy_url,
-                          proxy_url=proxy_url)
-
         proxy_url = 'http://127.0.0.1'
         expected_msg = 'proxy_url must be in the following format'
         assertRaisesRegex(self, ValueError, expected_msg,

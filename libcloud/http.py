@@ -114,7 +114,7 @@ class LibcloudBaseConnection(object):
         """
         parsed = urlparse.urlparse(proxy_url)
 
-        if parsed.scheme != 'http':
+        if parsed.scheme not in ('http', 'https'):
             raise ValueError('Only http proxies are supported')
 
         if not parsed.hostname or not parsed.port:
