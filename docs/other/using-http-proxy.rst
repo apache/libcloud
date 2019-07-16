@@ -5,6 +5,9 @@ Using an HTTPs proxy
 
     1. Support for HTTP proxies is available in Libcloud v0.16.0 and higher.
     2. Support for HTTPS proxies is available in Libcloud v2.5.1-dev and higher.
+    3. In versions prior to v2.5.1-dev, ``driver.connection.set_http_proxy()``
+       method was broken and you needed to use
+       ``driver.connection.connection.set_http_proxy()`` instead
 
 Libcloud supports using an HTTP / HTTPS proxy for outgoing HTTP and HTTPS
 requests.

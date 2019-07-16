@@ -354,10 +354,12 @@ class Connection(object):
                           basic auth authentication information.
         :type proxy_url: ``str``
         """
-        warnings.warn('This method is deprecated because it\'s not working '
-                      'correctly. Use driver.connection.connection.set_http_proxy '
-                      'instead')
         self.proxy_url = proxy_url
+
+        # NOTE: Because of the way connection instantion works, we need to call
+        # self.connection.set_http_proxy() here. Just setting "self.proxy_url"
+        # won't work.
+        self.connection.set_http_proxy(proxy_url=proxy_url)
 
     def set_context(self, context):
         if not isinstance(context, dict):
