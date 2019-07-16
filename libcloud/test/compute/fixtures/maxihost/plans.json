@@ -1,0 +1,36 @@
+{
+    "servers": [{
+                "id": 770,
+                "slug": "spot_770",
+                "name": "Spot",
+                "line": "baremetal",
+                "deploy_type": "automated",
+                "specs": {
+                    "cpus": {
+                        "count": 2,
+                        "type": "Intel Xeon E5-2640v3",
+                        "cores": "N/A",
+                        "clock": "N/A"
+                    },
+                    "memory": {
+                        "total": "64GB"
+                    },
+                    "drives": [{
+                        "count": 2,
+                        "size": "500GB",
+                        "type": "SSD"
+                    }]
+                },
+                "regions": [{
+                    "name": "Maxihost SP 1",
+                    "code": "MH1",
+                    "city": "Sao Paulo",
+                    "country": "Brazil",
+                    "in_stock": true
+                }],
+                "pricing": {
+                    "brl_month": 1200,
+                    "usd_month": 300
+                }
+            }]
+}

@@ -1,0 +1,202 @@
+{
+	"events": [
+		{
+			"id": "31256dd5-9e4c-4dbb-9989-bbc13da01958",
+			"type": "power.200",
+			"body": "Reboot operation queued",
+			"state": null,
+			"created_at": "2019-03-21T15:34:25Z",
+			"relationships": [
+				{
+					"href": "#e1fb1cd1-c507-4119-bff6-789ee11d8418"
+				}
+			],
+			"ip": "157.52.105.28",
+			"modified_by": {
+				"id": "bd4f24f3-33f0-46a6-9528-4e31e2ba6074",
+				"full_name": "Dimitris Moraitis",
+				"avatar_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm",
+				"avatar_thumb_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm"
+			},
+			"interpolated": "Reboot operation queued",
+			"href": "/events/31256dd5-9e4c-4dbb-9989-bbc13da01958"
+		},
+		{
+			"id": "c1b136d1-6d55-45c8-b2b3-fb993e6fb55e",
+			"type": "power.203",
+			"body": "Device rebooted",
+			"state": null,
+			"created_at": "2019-03-21T15:34:25Z",
+			"relationships": [
+				{
+					"href": "#65ffb1c3-7123-4ac3-9768-3bd1789f6380"
+				}
+			],
+			"ip": null,
+			"modified_by": null,
+			"interpolated": "Device rebooted",
+			"href": "/events/c1b136d1-6d55-45c8-b2b3-fb993e6fb55e"
+		},
+		{
+			"id": "580a5b8b-ac04-45b7-a16d-a8bcf199c6fa",
+			"type": "power.204",
+			"body": "Device powered on",
+			"state": null,
+			"created_at": "2019-03-05T18:21:50Z",
+			"relationships": [
+				{
+					"href": "#c38eccc8-2b1b-4eee-8a56-c2059530d35b"
+				}
+			],
+			"ip": null,
+			"modified_by": null,
+			"interpolated": "Device powered on",
+			"href": "/events/580a5b8b-ac04-45b7-a16d-a8bcf199c6fa"
+		},
+		{
+			"id": "e4944204-9f09-49ce-aff3-4b2e64b5c9d2",
+			"type": "power.201",
+			"body": "Power operation started",
+			"state": null,
+			"created_at": "2019-03-05T18:21:39Z",
+			"relationships": [
+				{
+					"href": "#a042e3ba-b1cb-436a-b98d-d59d8d6fedde"
+				}
+			],
+			"ip": null,
+			"modified_by": null,
+			"interpolated": "Power operation started",
+			"href": "/events/e4944204-9f09-49ce-aff3-4b2e64b5c9d2"
+		},
+		{
+			"id": "a072109c-5957-4b7e-9c98-0a6a90310cfd",
+			"type": "power.200",
+			"body": "Power on operation queued",
+			"state": null,
+			"created_at": "2019-03-05T18:21:39Z",
+			"relationships": [
+				{
+					"href": "#a0a02f25-461c-41d9-812f-4c17a08ece86"
+				}
+			],
+			"ip": "104.156.95.42",
+			"modified_by": {
+				"id": "446476b8-a835-414a-8e9c-84925cc72705",
+				"full_name": "Markos Gogoulos",
+				"avatar_url": "https://www.gravatar.com/avatar/fafa2cd3f9d378981e87a993661859b4?d=mm",
+				"avatar_thumb_url": "https://www.gravatar.com/avatar/fafa2cd3f9d378981e87a993661859b4?d=mm"
+			},
+			"interpolated": "Power on operation queued",
+			"href": "/events/a072109c-5957-4b7e-9c98-0a6a90310cfd"
+		},
+		{
+			"id": "eb1a5f74-a48b-4632-a5b6-e20b1a3589ee",
+			"type": "power.202",
+			"body": "Device powered off",
+			"state": null,
+			"created_at": "2019-03-05T18:19:42Z",
+			"relationships": [
+				{
+					"href": "#e1ad01ed-deda-42f0-9c01-6262d54f66b4"
+				}
+			],
+			"ip": null,
+			"modified_by": null,
+			"interpolated": "Device powered off",
+			"href": "/events/eb1a5f74-a48b-4632-a5b6-e20b1a3589ee"
+		},
+		{
+			"id": "71b9e370-4e15-4307-8c10-27d3585088eb",
+			"type": "power.200",
+			"body": "Power off operation queued",
+			"state": null,
+			"created_at": "2019-03-05T18:19:02Z",
+			"relationships": [
+				{
+					"href": "#090422c3-cc6e-4a83-947a-591016a21b2e"
+				}
+			],
+			"ip": "104.156.95.48",
+			"modified_by": {
+				"id": "446476b8-a835-414a-8e9c-84925cc72705",
+				"full_name": "Markos Gogoulos",
+				"avatar_url": "https://www.gravatar.com/avatar/fafa2cd3f9d378981e87a993661859b4?d=mm",
+				"avatar_thumb_url": "https://www.gravatar.com/avatar/fafa2cd3f9d378981e87a993661859b4?d=mm"
+			},
+			"interpolated": "Power off operation queued",
+			"href": "/events/71b9e370-4e15-4307-8c10-27d3585088eb"
+		},
+		{
+			"id": "8d871c11-c59b-41bc-849c-8853b9f29252",
+			"type": "power.201",
+			"body": "Power operation started",
+			"state": null,
+			"created_at": "2019-03-05T18:19:02Z",
+			"relationships": [
+				{
+					"href": "#68469965-4801-4dde-831e-ca2cc27dda59"
+				}
+			],
+			"ip": null,
+			"modified_by": null,
+			"interpolated": "Power operation started",
+			"href": "/events/8d871c11-c59b-41bc-849c-8853b9f29252"
+		},
+		{
+			"id": "13c330d5-5cc6-4a2d-8ada-b2c239171f50",
+			"type": "power.200",
+			"body": "Reboot operation queued",
+			"state": null,
+			"created_at": "2019-02-28T20:10:12Z",
+			"relationships": [
+				{
+					"href": "#7b95e08b-84d9-4e83-869e-ea98e7c052fd"
+				}
+			],
+			"ip": "104.156.95.25",
+			"modified_by": {
+				"id": "446476b8-a835-414a-8e9c-84925cc72705",
+				"full_name": "Markos Gogoulos",
+				"avatar_url": "https://www.gravatar.com/avatar/fafa2cd3f9d378981e87a993661859b4?d=mm",
+				"avatar_thumb_url": "https://www.gravatar.com/avatar/fafa2cd3f9d378981e87a993661859b4?d=mm"
+			},
+			"interpolated": "Reboot operation queued",
+			"href": "/events/13c330d5-5cc6-4a2d-8ada-b2c239171f50"
+		},
+		{
+			"id": "68eab1cc-a9a0-4f23-8274-1d71043ed3e1",
+			"type": "power.203",
+			"body": "Device rebooted",
+			"state": null,
+			"created_at": "2019-02-28T20:10:12Z",
+			"relationships": [
+				{
+					"href": "#6b5506b9-d4c9-4467-9ec8-5e887f2f8ae8"
+				}
+			],
+			"ip": null,
+			"modified_by": null,
+			"interpolated": "Device rebooted",
+			"href": "/events/68eab1cc-a9a0-4f23-8274-1d71043ed3e1"
+		}
+	],
+	"meta": {
+		"first": {
+			"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b/events?page=1"
+		},
+		"previous": null,
+		"self": {
+			"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b/events?page=1"
+		},
+		"next": {
+			"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b/events?page=2"
+		},
+		"last": {
+			"href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b/events?page=5"
+		},
+		"current_page": 1,
+		"last_page": 5,
+		"total": 49
+	}
+}

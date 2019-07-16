@@ -15,7 +15,6 @@
 
 import json
 import os
-import sys
 import ssl
 import socket
 import copy
@@ -202,7 +201,7 @@ class JsonResponse(Response):
 
         try:
             body = json.loads(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError(
                 'Failed to parse JSON',
                 body=self.body,
@@ -227,7 +226,7 @@ class XmlResponse(Response):
             except ValueError:
                 # lxml wants a bytes and tests are basically hard-coded to str
                 body = ET.XML(self.body.encode('utf-8'))
-        except:
+        except Exception:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
                                          driver=self.connection.driver)
@@ -600,8 +599,7 @@ class Connection(object):
                 else:
                     self.connection.request(method=method, url=url, body=data,
                                             headers=headers, stream=stream)
-        except socket.gaierror:
-            e = sys.exc_info()[1]
+        except socket.gaierror as e:
             message = str(e)
             errno = getattr(e, 'errno', None)
 
@@ -618,8 +616,7 @@ class Connection(object):
                 raise socket.gaierror(msg)
             self.reset_context()
             raise e
-        except ssl.SSLError:
-            e = sys.exc_info()[1]
+        except ssl.SSLError as e:
             self.reset_context()
             raise ssl.SSLError(str(e))
 

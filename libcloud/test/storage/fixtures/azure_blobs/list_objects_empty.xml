@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<EnumerationResults ContainerName="https://account.blob.core.windows.net/test_container">
+<EnumerationResults ServiceEndpoint="https://account.blob.core.windows.net/" ContainerName="test_container">
     <MaxResults>2</MaxResults>
     <Blobs />
     <NextMarker />

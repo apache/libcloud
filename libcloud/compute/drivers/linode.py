@@ -260,7 +260,7 @@ class LinodeNodeDriver(NodeDriver):
         root = None
         # SSH key and/or root password
         if isinstance(auth, NodeAuthSSHKey):
-            ssh = auth.pubkey
+            ssh = auth.pubkey  # pylint: disable=no-member
         elif isinstance(auth, NodeAuthPassword):
             root = auth.password
 
@@ -272,7 +272,7 @@ class LinodeNodeDriver(NodeDriver):
         # Swap size
         try:
             swap = 128 if "ex_swap" not in kwargs else int(kwargs["ex_swap"])
-        except:
+        except Exception:
             raise LinodeException(0xFB, "Need an integer swap size")
 
         # Root partition size
@@ -688,7 +688,7 @@ class LinodeNodeDriver(NodeDriver):
         args = [iter(batch)] * 25
 
         if PY3:
-            izip_longest = itertools.zip_longest
+            izip_longest = itertools.zip_longest  # pylint: disable=no-member
         else:
             izip_longest = getattr(itertools, 'izip_longest', _izip_longest)
 

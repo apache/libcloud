@@ -15,7 +15,6 @@
 PowerDNS Driver
 """
 import json
-import sys
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.exceptions import BaseHTTPError
@@ -42,8 +41,7 @@ class PowerDNSResponse(JsonResponse):
 
         try:
             body = self.parse_body()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             body = '%s: %s' % (e.value, e.body)
         try:
             errors = [body['error']]
@@ -198,8 +196,7 @@ class PowerDNSDriver(DNSDriver):
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -250,8 +247,7 @@ class PowerDNSDriver(DNSDriver):
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='POST')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith("Domain '%s' already exists" % domain):
                 raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
@@ -283,7 +279,6 @@ class PowerDNSDriver(DNSDriver):
             # I'm not sure if we should raise a ZoneDoesNotExistError here. The
             # base DNS API only specifies that we should return a bool. So,
             # let's ignore this code for now.
-            # e = sys.exc_info()[1]
             # if e.code == httplib.UNPROCESSABLE_ENTITY and \
             #     e.message.startswith('Could not find domain'):
             #     raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -309,7 +304,6 @@ class PowerDNSDriver(DNSDriver):
             # I'm not sure if we should raise a ZoneDoesNotExistError here. The
             # base DNS API only specifies that we should return a bool. So,
             # let's ignore this code for now.
-            # e = sys.exc_info()[1]
             # if e.code == httplib.UNPROCESSABLE_ENTITY and \
             #     e.message.startswith('Could not find domain'):
             #     raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -336,8 +330,7 @@ class PowerDNSDriver(DNSDriver):
                                              zone_id)
         try:
             response = self.connection.request(action=action, method='GET')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY:
                 raise ZoneDoesNotExistError(zone_id=zone_id, driver=self,
                                             value=e.message)
@@ -357,8 +350,7 @@ class PowerDNSDriver(DNSDriver):
                                              zone.id)
         try:
             response = self.connection.request(action=action, method='GET')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -421,8 +413,7 @@ class PowerDNSDriver(DNSDriver):
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=record.zone.id,

@@ -28,7 +28,7 @@ from libcloud.common.google import GoogleBaseConnection
 from libcloud.common.google import GoogleBaseError
 from libcloud.common.google import ResourceNotFoundError
 from libcloud.common.google import ResourceExistsError
-from libcloud.common.types import ProviderError
+from libcloud.common.types import LibcloudError
 
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeLocation
 from libcloud.compute.base import NodeSize, StorageVolume, VolumeSnapshot
@@ -333,7 +333,7 @@ class GCELicense(UuidMixin, LazyObject):
             request = '/global/licenses/%s' % self.name
             response = self.driver.connection.request(request,
                                                       method='GET').object
-        except:
+        except Exception:
             raise
         finally:
             # Restore the connection request_path
@@ -346,7 +346,7 @@ class GCELicense(UuidMixin, LazyObject):
         self.charges_use_fee = response['chargesUseFee']
 
     def destroy(self):
-        raise ProviderError("Can not destroy a License resource.")
+        raise LibcloudError("Can not destroy a License resource.")
 
     def __repr__(self):
         return '<GCELicense id="%s" name="%s" charges_use_fee="%s">' % (
@@ -365,7 +365,7 @@ class GCEDiskType(UuidMixin):
         UuidMixin.__init__(self)
 
     def destroy(self):
-        raise ProviderError("Can not destroy a DiskType resource.")
+        raise LibcloudError("Can not destroy a DiskType resource.")
 
     def __repr__(self):
         return '<GCEDiskType id="%s" name="%s" zone="%s">' % (
@@ -384,7 +384,7 @@ class GCEAcceleratorType(UuidMixin):
         UuidMixin.__init__(self)
 
     def destroy(self):
-        raise ProviderError("Can not destroy an AcceleratorType resource.")
+        raise LibcloudError("Can not destroy an AcceleratorType resource.")
 
     def __repr__(self):
         return '<GCEAcceleratorType id="%s" name="%s" zone="%s">' % (
@@ -848,10 +848,9 @@ class GCERoute(UuidMixin):
         return self.driver.ex_destroy_route(route=self)
 
     def __repr__(self):
+        network_name = getattr(self.network, 'name', self.network)
         return '<GCERoute id="%s" name="%s" dest_range="%s" network="%s">' % (
-            self.id, self.name, self.dest_range,
-            hasattr(self.network, 'name') and self.network.name or
-            self.network)
+            self.id, self.name, self.dest_range, network_name)
 
 
 class GCENodeSize(NodeSize):
@@ -1456,6 +1455,26 @@ class GCEInstanceGroupManager(UuidMixin):
         return self.driver.ex_instancegroup_set_named_ports(
             instancegroup=self.instance_group, named_ports=named_ports)
 
+    def set_autohealingpolicies(self, healthcheck, initialdelaysec):
+        """
+        Sets the autohealing policies for the instance for the instance group
+        controlled by this manager.
+
+        :param  healthcheck: Healthcheck to add
+        :type   healthcheck: :class:`GCEHealthCheck`
+
+        :param  initialdelaysec:  The time to allow an instance to boot and
+                                  applications to fully start before the first
+                                  health check
+        :type   initialdelaysec:  ``int``
+
+        :return:  Return True if successful.
+        :rtype: ``bool``
+        """
+        return self.driver.ex_instancegroupmanager_set_autohealingpolicies(
+            manager=self, healthcheck=healthcheck,
+            initialdelaysec=initialdelaysec)
+
     def __repr__(self):
         return '<GCEInstanceGroupManager name="%s" zone="%s" size="%d">' % (
             self.name, self.zone.name, self.size)
@@ -1610,7 +1629,7 @@ class GCEZone(NodeLocation):
         self.extra = extra
         country = name.split('-')[0]
         super(GCEZone, self).__init__(id=str(id), name=name, country=country,
-                                      driver=driver)
+                                      driver=driver, extra=extra)
 
     @property
     def time_until_mw(self):
@@ -1730,6 +1749,7 @@ class GCENodeDriver(NodeDriver):
         "STAGING": NodeState.PENDING,
         "RUNNING": NodeState.RUNNING,
         "STOPPING": NodeState.PENDING,
+        "SUSPENDED": NodeState.SUSPENDED,
         "TERMINATED": NodeState.STOPPED,
         "UNKNOWN": NodeState.UNKNOWN
     }
@@ -1764,16 +1784,38 @@ class GCENodeDriver(NodeDriver):
         "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
         "debian-cloud": ["debian-8", "debian-9"],
         "opensuse-cloud": ["opensuse-leap"],
-        "rhel-cloud": ["rhel-6", "rhel-7"],
-        "suse-cloud": ["sles-11", "sles-12"],
+        "rhel-cloud": [
+            "rhel-6",
+            "rhel-7",
+            "rhel-8",
+        ],
+        "suse-cloud": [
+            "sles-11",
+            "sles-12",
+            "sles-15",
+        ],
         "suse-byos-cloud": [
             "sles-11-byos", "sles-12-byos",
             "sles-12-sp2-sap-byos", "sles-12-sp3-sap-byos",
             "suse-manager-proxy-byos", "suse-manager-server-byos"
         ],
-        "suse-sap-cloud": ["sles-12-sp2-sap", "sles-12-sp3-sap"],
+        "suse-sap-cloud": [
+            "sles-12-sp2-sap",
+            "sles-12-sp3-sap",
+            "sles-12-sp4-sap",
+            "sles-15-sap",
+        ],
         "ubuntu-os-cloud": [
-            "ubuntu-1404-lts", "ubuntu-1604-lts", "ubuntu-1710"
+            "ubuntu-1404-lts",
+            "ubuntu-1604-lts",
+            "ubuntu-minimal-1604-lts",
+            "ubuntu-1710",
+            "ubuntu-1804-lts",
+            "ubuntu-minimal-1804-lts",
+            "ubuntu-1810",
+            "ubuntu-minimal-1810",
+            "ubuntu-1904",
+            "ubuntu-minimal-1904",
         ],
         "windows-cloud": [
             "windows-1709-core-for-containers", "windows-1709-core",
@@ -2315,7 +2357,7 @@ class GCENodeDriver(NodeDriver):
                 image_list.extend(
                     self.ex_list_project_images(ex_project=img_proj,
                                                 ex_include_deprecated=dep))
-            except:
+            except Exception:
                 # do not break if an OS type is invalid
                 pass
         return image_list
@@ -2360,7 +2402,7 @@ class GCENodeDriver(NodeDriver):
                 try:
                     response = self.connection.request(request,
                                                        method='GET').object
-                except:
+                except Exception:
                     raise
                 finally:
                     # Restore the connection request_path
@@ -3476,8 +3518,7 @@ class GCENodeDriver(NodeDriver):
                 self.connection.request(request, method='POST',
                                         data=image_data)
 
-        except ResourceExistsError:
-            e = sys.exc_info()[1]
+        except ResourceExistsError as e:
             if not use_existing:
                 raise e
 
@@ -4455,7 +4496,7 @@ class GCENodeDriver(NodeDriver):
                                  "and 'nic_gce_struct'. Use one or the "
                                  "other.")
             if hasattr(network, 'name'):
-                if network.name == 'default':
+                if network.name == 'default':  # pylint: disable=no-member
                     # assume this is just the default value from create_node()
                     # and since the user specified ex_nic_gce_struct, the
                     # struct should take precedence
@@ -5367,8 +5408,7 @@ class GCENodeDriver(NodeDriver):
         try:
             self.connection.async_request(request, method='POST',
                                           data=volume_data, params=params)
-        except ResourceExistsError:
-            e = sys.exc_info()[1]
+        except ResourceExistsError as e:
             if not use_existing:
                 raise e
 
@@ -5979,6 +6019,35 @@ class GCENodeDriver(NodeDriver):
 
         return instance_data
 
+    def ex_instancegroupmanager_set_autohealingpolicies(self, manager,
+                                                        healthcheck,
+                                                        initialdelaysec):
+        """
+        Set the Autohealing Policies for this Instance Group.
+
+        :param  healthcheck: Healthcheck to add
+        :type   healthcheck: :class:`GCEHealthCheck`
+
+        :param  initialdelaysec:  The time to allow an instance to boot and
+                                  applications to fully start before the first
+                                  health check
+        :type   initialdelaysec:  ``int``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request_data = {}
+        request_data['autoHealingPolicies'] = [{
+            'healthCheck': healthcheck.path,
+            'initialDelaySec': initialdelaysec
+        }]
+
+        request = "/zones/%s/instanceGroupManagers/%s/" % (
+            manager.zone.name, manager.name)
+        self.connection.async_request(request, method='PATCH',
+                                      data=request_data)
+        return True
+
     def ex_instancegroupmanager_set_instancetemplate(self, manager,
                                                      instancetemplate):
         """
@@ -6052,7 +6121,7 @@ class GCENodeDriver(NodeDriver):
                     instance_uris.append(i)
                 else:
                     instance_uris.append(
-                        self.ex_get_node(i, manager.zone)['selfLink'])
+                        self.ex_get_node(i, manager.zone).extra['selfLink'])
         else:
             raise ValueError("instances must be 'None or "
                              "a list of instance URIs, instance names, or"
@@ -6367,6 +6436,28 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=volume_data)
         return True
 
+    def ex_resize_volume(self, volume, size):
+        """
+        Resize a volume to the specified size.
+
+        :param volume: Volume object to resize
+        :type  volume: :class:`StorageVolume`
+
+        :param size: The size in GB of the volume to resize to.
+        :type size: ``int``
+
+        :return:  True if successful
+        :rtype:   ``bool``
+        """
+        request = '/zones/%s/disks/%s/resize' % (
+            volume.extra['zone'].name, volume.name)
+        request_data = {'sizeGb': int(size)}
+
+        self.connection.async_request(
+            request, method='POST', data=request_data
+        )
+        return True
+
     def detach_volume(self, volume, ex_node=None):
         """
         Detach a volume from a node.
@@ -6524,7 +6615,7 @@ class GCENodeDriver(NodeDriver):
 
                 try:
                     timestamp_to_datetime(value)
-                except:
+                except Exception:
                     raise ValueError('%s must be an RFC3339 timestamp' %
                                      attribute)
                 image_data[attribute] = value
@@ -7203,6 +7294,8 @@ class GCENodeDriver(NodeDriver):
                     if image_family.startswith(short_name):
                         image = _try_image_family(image_family,
                                                   project=img_proj)
+                        if image:
+                            break
 
         if not image:
             raise ResourceNotFoundError('Could not find image for family '
@@ -8351,6 +8444,7 @@ class GCENodeDriver(NodeDriver):
         if not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
         if hasattr(ex_disk_type, 'name'):
+            # pylint: disable=no-member
             volume_data['type'] = ex_disk_type.extra['selfLink']
         elif ex_disk_type.startswith('https'):
             volume_data['type'] = ex_disk_type
@@ -8805,8 +8899,10 @@ class GCENodeDriver(NodeDriver):
             extra['image'] = image
         size = self._get_components_from_path(node['machineType'])['name']
 
+        state = self.NODE_STATE_MAP.get(node['status'], NodeState.UNKNOWN)
+
         return Node(id=node['id'], name=node['name'],
-                    state=self.NODE_STATE_MAP[node['status']],
+                    state=state,
                     public_ips=public_ips, private_ips=private_ips,
                     driver=self, size=size, image=image, extra=extra)
 
@@ -8832,7 +8928,7 @@ class GCENodeDriver(NodeDriver):
                                        extra['zone'].name.split("-")[0])
             price = self._get_size_price(size_id=machine_type['name'])
             self.api_name = orig_api_name
-        except:
+        except Exception:
             price = None
 
         return GCENodeSize(id=machine_type['id'], name=machine_type['name'],
@@ -9126,6 +9222,7 @@ class GCENodeDriver(NodeDriver):
         extra['currentActions'] = manager.get('currentActions')
         extra['baseInstanceName'] = manager.get('baseInstanceName')
         extra['namedPorts'] = manager.get('namedPorts', [])
+        extra['autoHealingPolicies'] = manager.get('autoHealingPolicies', [])
         template_name = self._get_components_from_path(manager[
             'instanceTemplate'])['name']
         template = self.ex_get_instancetemplate(template_name)

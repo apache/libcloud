@@ -1,0 +1,182 @@
+{
+    "eaa06a81-39f5-48e4-ba5b-fe1be151118b": {
+      "create_time": "2019-06-07T15:00:03Z",
+      "name": "Default IP",
+      "location_country": "de",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "reverse_dns": "static-2a06-2380-0-1-229.ipv6.gridserver.io",
+      "current_price": 0,
+      "family": 6,
+      "location_iata": "fra",
+      "location_name": "de/fra",
+      "status": "active",
+      "relations": {
+        "loadbalancers": [],
+        "servers": []
+      },
+      "object_uuid": "eaa06a81-39f5-48e4-ba5b-fe1be151118b",
+      "change_time": "2019-06-07T15:00:03Z",
+      "failover": false,
+      "usage_in_minutes": 0,
+      "ip": "2a06:2380:0:1::229",
+      "delete_block": false,
+      "prefix": "2a06:2380:0:1::229/128",
+      "labels": []
+    },
+    "56b8d161-325b-4fd4-a453-6101cf563713": {
+      "create_time": "2019-06-07T12:57:26Z",
+      "name": "test.test_ip",
+      "location_country": "de",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "reverse_dns": "static-185-102-95-236.ipv4.gridserver.io",
+      "current_price": 1.47738,
+      "family": 4,
+      "location_iata": "fra",
+      "location_name": "de/fra",
+      "status": "active",
+      "relations": {
+        "loadbalancers": [],
+        "servers": [
+          {
+            "create_time": "2019-06-07T12:57:30Z",
+            "server_uuid": "1479405e-d46c-47a2-91e8-eb43951c899f",
+            "server_name": "test.test"
+          }
+        ]
+      },
+      "object_uuid": "56b8d161-325b-4fd4-a453-6101cf563713",
+      "change_time": "2019-06-07T12:57:26Z",
+      "failover": false,
+      "usage_in_minutes": 24623,
+      "ip": "185.102.95.236",
+      "delete_block": false,
+      "prefix": "185.102.95.236/32",
+      "labels": []
+    },
+    "0235e7c4-18c9-4b2f-a3c3-2d9624a67498": {
+      "create_time": "2019-06-07T14:59:17Z",
+      "name": "Default IP",
+      "location_country": "de",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "reverse_dns": "static-2a06-2380-0-1-211.ipv6.gridserver.io",
+      "current_price": 0,
+      "family": 6,
+      "location_iata": "fra",
+      "location_name": "de/fra",
+      "status": "active",
+      "relations": {
+        "loadbalancers": [],
+        "servers": [
+          {
+            "create_time": "2019-06-07T14:59:47Z",
+            "server_uuid": "1479405e-d46c-47a2-91e8-eb43951c899f",
+            "server_name": "test.test"
+          }
+        ]
+      },
+      "object_uuid": "0235e7c4-18c9-4b2f-a3c3-2d9624a67498",
+      "change_time": "2019-06-07T14:59:17Z",
+      "failover": false,
+      "usage_in_minutes": 0,
+      "ip": "2a06:2380:0:1::211",
+      "delete_block": false,
+      "prefix": "2a06:2380:0:1::211/128",
+      "labels": []
+    },
+    "ace17032-3127-4c9e-943b-a2a4679984a3": {
+      "create_time": "2019-06-14T09:47:37Z",
+      "name": "test.test_ip",
+      "location_country": "de",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "reverse_dns": "static-185-201-146-56.ipv4.gridserver.io",
+      "current_price": 0.88392,
+      "family": 4,
+      "location_iata": "fra",
+      "location_name": "de/fra",
+      "status": "active",
+      "relations": {
+        "loadbalancers": [],
+        "servers": []
+      },
+      "object_uuid": "ace17032-3127-4c9e-943b-a2a4679984a3",
+      "change_time": "2019-06-14T09:47:37Z",
+      "failover": false,
+      "usage_in_minutes": 14732,
+      "ip": "185.201.146.56",
+      "delete_block": false,
+      "prefix": "185.201.146.56/32",
+      "labels": []
+    },
+    "63b57604-40a2-454c-a143-69300ea6941c": {
+      "create_time": "2019-06-14T17:31:18Z",
+      "name": "test.test_ip",
+      "location_country": "de",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "reverse_dns": "static-185-102-95-79.ipv4.gridserver.io",
+      "current_price": 0.85614,
+      "family": 4,
+      "location_iata": "fra",
+      "location_name": "de/fra",
+      "status": "active",
+      "relations": {
+        "loadbalancers": [],
+        "servers": []
+      },
+      "object_uuid": "63b57604-40a2-454c-a143-69300ea6941c",
+      "change_time": "2019-06-14T17:31:18Z",
+      "failover": false,
+      "usage_in_minutes": 14269,
+      "ip": "185.102.95.79",
+      "delete_block": false,
+      "prefix": "185.102.95.79/32",
+      "labels": []
+    },
+    "fa81b132-6dd9-4fc6-b7f9-844f89e50b15": {
+      "create_time": "2019-06-07T13:42:55Z",
+      "name": "test.test_ip",
+      "location_country": "de",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "reverse_dns": "static-185-102-95-217.ipv4.gridserver.io",
+      "current_price": 1.47462,
+      "family": 4,
+      "location_iata": "fra",
+      "location_name": "de/fra",
+      "status": "active",
+      "relations": {
+        "loadbalancers": [],
+        "servers": []
+      },
+      "object_uuid": "fa81b132-6dd9-4fc6-b7f9-844f89e50b15",
+      "change_time": "2019-06-07T13:42:55Z",
+      "failover": false,
+      "usage_in_minutes": 24577,
+      "ip": "185.102.95.217",
+      "delete_block": false,
+      "prefix": "185.102.95.217/32",
+      "labels": []
+    },
+    "4f1bef38-b970-4ff3-b891-5ac03af5bdeb": {
+      "create_time": "2019-06-14T14:10:11Z",
+      "name": "test.test_ip",
+      "location_country": "de",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "reverse_dns": "static-185-201-147-66.ipv4.gridserver.io",
+      "current_price": 0.8682,
+      "family": 4,
+      "location_iata": "fra",
+      "location_name": "de/fra",
+      "status": "active",
+      "relations": {
+        "loadbalancers": [],
+        "servers": []
+      },
+      "object_uuid": "4f1bef38-b970-4ff3-b891-5ac03af5bdeb",
+      "change_time": "2019-06-14T14:10:11Z",
+      "failover": false,
+      "usage_in_minutes": 14470,
+      "ip": "185.201.147.66",
+      "delete_block": false,
+      "prefix": "185.201.147.66/32",
+      "labels": []
+    }
+  }

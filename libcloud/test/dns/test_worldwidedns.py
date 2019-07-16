@@ -80,8 +80,7 @@ class WorldWideDNSTests(unittest.TestCase):
         try:
             zone = self.driver.list_zones()[0]
             self.driver.list_records(zone=zone)
-        except NonExistentDomain:
-            e = sys.exc_info()[1]
+        except NonExistentDomain as e:
             self.assertEqual(e.code, 405)
         else:
             self.fail('Exception was not thrown')
@@ -100,8 +99,7 @@ class WorldWideDNSTests(unittest.TestCase):
         WorldWideDNSMockHttp.type = 'GET_ZONE_DOES_NOT_EXIST'
         try:
             self.driver.get_zone(zone_id='unexistentzone')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, 'unexistentzone')
         else:
             self.fail('Exception was not thrown')
@@ -119,8 +117,7 @@ class WorldWideDNSTests(unittest.TestCase):
         try:
             self.driver.get_record(zone_id='unexistentzone',
                                    record_id='3585100')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, 'unexistentzone')
         else:
             self.fail('Exception was not thrown')
@@ -129,8 +126,7 @@ class WorldWideDNSTests(unittest.TestCase):
         try:
             self.driver.get_record(zone_id='niteowebsponsoredthisone.com',
                                    record_id='3585100')
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, '3585100')
         else:
             self.fail('Exception was not thrown')
@@ -149,8 +145,7 @@ class WorldWideDNSTests(unittest.TestCase):
         try:
             self.driver.create_zone(domain='foo.%.com', type='master',
                                     ttl=None, extra=None)
-        except InvalidDomainName:
-            e = sys.exc_info()[1]
+        except InvalidDomainName as e:
             self.assertEqual(e.code, 410)
         else:
             self.fail('Exception was not thrown')
@@ -223,8 +218,7 @@ class WorldWideDNSTests(unittest.TestCase):
         try:
             self.driver.create_record(
                 name='domain41', zone=zone, type=RecordType.A, data='0.0.0.41')
-        except WorldWideDNSError:
-            e = sys.exc_info()[1]
+        except WorldWideDNSError as e:
             self.assertEqual(e.value, 'All record entries are full')
         else:
             self.fail('Exception was not thrown')
@@ -277,8 +271,7 @@ class WorldWideDNSTests(unittest.TestCase):
 
         try:
             self.driver.delete_zone(zone=zone)
-        except NonExistentDomain:
-            e = sys.exc_info()[1]
+        except NonExistentDomain as e:
             self.assertEqual(e.code, 405)
         else:
             self.fail('Exception was not thrown')

@@ -1,0 +1,16 @@
+{
+    "bgp_sessions": [{
+        "id": "08f6b756-758b-4f1f-bfaf-b9b5479822d7",
+        "status": "down",
+        "learned_routes": [],
+        "switch_name": "esr1.r04b01.ams1.packet.net",
+        "default_route": null,
+        "created_at": "2019-03-21T17:24:59Z",
+        "updated_at": "2019-03-21T17:25:10Z",
+        "device": {
+            "href": "/devices/905037a4-967c-4e81-b364-3a0603aa071b"
+        },
+        "address_family": "ipv4",
+        "href": "/bgp/sessions/08f6b756-758b-4f1f-bfaf-b9b5479822d7"
+    }]
+}

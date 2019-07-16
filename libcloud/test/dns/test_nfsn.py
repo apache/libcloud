@@ -50,8 +50,8 @@ class NFSNTestCase(LibcloudTestCase):
 
     def test_get_zone(self):
         zone = self.driver.get_zone('example.com')
-        self.assertEquals(zone.id, None)
-        self.assertEquals(zone.domain, 'example.com')
+        self.assertEqual(zone.id, None)
+        self.assertEqual(zone.domain, 'example.com')
 
     def test_delete_zone(self):
         with self.assertRaises(NotImplementedError):
@@ -63,11 +63,11 @@ class NFSNTestCase(LibcloudTestCase):
                                               type=RecordType.A,
                                               data='127.0.0.1',
                                               extra={'ttl': 900})
-        self.assertEquals(record.id, None)
-        self.assertEquals(record.name, 'newrecord')
-        self.assertEquals(record.data, '127.0.0.1')
-        self.assertEquals(record.type, RecordType.A)
-        self.assertEquals(record.ttl, 900)
+        self.assertEqual(record.id, None)
+        self.assertEqual(record.name, 'newrecord')
+        self.assertEqual(record.data, '127.0.0.1')
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.ttl, 900)
 
     def test_get_record(self):
         with self.assertRaises(NotImplementedError):
@@ -86,10 +86,10 @@ class NFSNTestCase(LibcloudTestCase):
                                                 type=RecordType.A)
         self.assertEqual(len(records), 1)
         record = records[0]
-        self.assertEquals(record.name, '')
-        self.assertEquals(record.data, '192.0.2.1')
-        self.assertEquals(record.type, RecordType.A)
-        self.assertEquals(record.ttl, 3600)
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.data, '192.0.2.1')
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.ttl, 3600)
 
     def test_get_zone_not_found(self):
         NFSNMockHttp.type = 'NOT_FOUND'

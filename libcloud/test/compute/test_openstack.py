@@ -19,6 +19,7 @@ import os
 import sys
 import unittest
 import datetime
+import mock
 import pytest
 
 from libcloud.utils.iso8601 import UTC
@@ -187,8 +188,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -201,8 +201,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -215,8 +214,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -225,8 +223,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         OpenStackMockHttp.type = 'NO_MESSAGE_IN_ERROR_BODY'
         try:
             self.driver.list_images()
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertEqual(True, isinstance(e, Exception))
         else:
             self.fail('test should have thrown')
@@ -601,7 +598,10 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         body = u(body)
         if body.find('resize') != -1:
             # test_ex_resize_server
-            return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
+            if body.find('personality') != -1:
+                return httplib.BAD_REQUEST
+            else:
+                return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
         elif body.find('confirmResize') != -1:
             # test_ex_confirm_resize
             return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
@@ -1069,22 +1069,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                         driver=self.driver)
         try:
             self.driver.ex_resize(self.node, size)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_confirm_resize(self):
         try:
             self.driver.ex_confirm_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_revert_resize(self):
         try:
             self.driver.ex_revert_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_create_image(self):
@@ -1299,7 +1296,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = 'key3'
         path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
-        pub_key = open(path, 'r').read()
+
+        with open(path, 'r') as fp:
+            pub_key = fp.read()
+
         keypair = self.driver.import_key_pair_from_file(name=name,
                                                         key_file_path=path)
         self.assertEqual(keypair.name, name)
@@ -1312,7 +1312,10 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         name = 'key3'
         path = os.path.join(
             os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
-        pub_key = open(path, 'r').read()
+
+        with open(path, 'r') as fp:
+            pub_key = fp.read()
+
         keypair = self.driver.import_key_pair_from_string(name=name,
                                                           key_material=pub_key)
         self.assertEqual(keypair.name, name)
@@ -1414,6 +1417,11 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[1].ip_address, '10.3.1.1')
         self.assertEqual(
             ret[1].node_id, 'fcfc96da-19e2-40fd-8497-f29da1b21143')
+        self.assertEqual(ret[2].id, '123c5336a-0629-4694-ba30-04b0bdfa88a4')
+        self.assertEqual(ret[2].pool, pool)
+        self.assertEqual(ret[2].ip_address, '10.3.1.2')
+        self.assertEqual(
+            ret[2].node_id, 'cb4fba64-19e2-40fd-8497-f29da1b21143')
 
     def test_OpenStack_2_FloatingIpPool_get_floating_ip(self):
         pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)
@@ -1649,6 +1657,8 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(snapshots[0]['name'], 'snap-101')
         self.assertEqual(snapshots[3]['name'], 'snap-001')
 
+    # NOTE: We use a smaller limit to speed tests up.
+    @mock.patch('libcloud.compute.drivers.openstack.PAGINATION_LIMIT', 10)
     def test__paginated_request_raises_if_stuck_in_a_loop(self):
         with pytest.raises(OpenStackException):
             self.driver._paginated_request(
@@ -1788,7 +1798,9 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_ex_create_subnet(self):
         network = self.driver.ex_list_networks()[0]
-        subnet = self.driver.ex_create_subnet('name', network, '10.0.0.0/24')
+        subnet = self.driver.ex_create_subnet('name', network, '10.0.0.0/24',
+                                              ip_version=4,
+                                              dns_nameservers=["10.0.0.01"])
 
         self.assertEqual(subnet.name, 'name')
         self.assertEqual(subnet.cidr, '10.0.0.0/24')
@@ -1796,6 +1808,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_ex_delete_subnet(self):
         subnet = self.driver.ex_list_subnets()[0]
         self.assertTrue(self.driver.ex_delete_subnet(subnet=subnet))
+
+    def test_ex_update_subnet(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        subnet = self.driver.ex_update_subnet(subnet, name='net2')
+        self.assertEqual(subnet.name, 'name')
 
     def test_ex_list_network(self):
         networks = self.driver.ex_list_networks()
@@ -1886,6 +1903,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         ret = self.driver.ex_delete_port(port)
 
         self.assertTrue(ret)
+
+    def test_ex_update_port(self):
+        port = self.driver.ex_get_port('126da55e-cfcb-41c8-ae39-a26cb8a7e723')
+        ret = self.driver.ex_update_port(port, port_security_enabled=False)
+        self.assertEqual(port.extra['name'], 'Some port name')
 
     def test_detach_port_interface(self):
         node = Node(id='1c01300f-ef97-4937-8f03-ac676d6234be', name=None,
@@ -1988,6 +2010,42 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         name, args, kwargs = mock_request.mock_calls[0]
         self.assertFalse("display_name" in kwargs["data"]["snapshot"])
         self.assertFalse("display_description" in kwargs["data"]["snapshot"])
+
+    def test_ex_list_routers(self):
+        routers = self.driver.ex_list_routers()
+        router = routers[0]
+
+        self.assertEqual(len(routers), 2)
+        self.assertEqual(router.name, 'router2')
+        self.assertEqual(router.status, 'ACTIVE')
+        self.assertEqual(router.extra['routes'], [{'destination': '179.24.1.0/24',
+                                                   'nexthop': '172.24.3.99'}])
+
+    def test_ex_create_router(self):
+        router = self.driver.ex_create_router('router1', admin_state_up = True)
+
+        self.assertEqual(router.name, 'router1')
+
+    def test_ex_delete_router(self):
+        router = self.driver.ex_list_routers()[1]
+        self.assertTrue(self.driver.ex_delete_router(router=router))
+
+    def test_manage_router_interfaces(self):
+        router = self.driver.ex_list_routers()[1]
+        port = self.driver.ex_list_ports()[0]
+        subnet = self.driver.ex_list_subnets()[0]
+        self.assertTrue(self.driver.ex_add_router_port(router, port))
+        self.assertTrue(self.driver.ex_del_router_port(router, port))
+        self.assertTrue(self.driver.ex_add_router_subnet(router, subnet))
+        self.assertTrue(self.driver.ex_del_router_subnet(router, subnet))
+
+    def test_detach_volume(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume(
+            'abc6a3a1-c4ce-40f6-9b9f-07a61508938d')
+        self.assertEqual(
+            self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+        self.assertEqual(self.driver.detach_volume(volume), True)
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
@@ -2216,6 +2274,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         elif method == "GET":
+            body = self.fixtures.load('_port_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == "PUT":
             body = self.fixtures.load('_port_v2.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
@@ -2475,7 +2536,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__networks_POST.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-        if method == 'DELETE':
+        elif method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
@@ -2486,6 +2547,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+        elif method == 'PUT':
+            body = self.fixtures.load('_v2_0__subnet.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_v2_0_subnets(self, method, url, body, headers):
         if method == 'POST':
@@ -2511,7 +2575,15 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'DELETE':
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
-    
+
+    def _v2_1337_volumes_abc6a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__volume_abc6a3a1_c4ce_40f6_9b9f_07a61508938d.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
     def _v2_1337_snapshots_detail(self, method, url, body, headers):
         if ('unit_test=paginate' in url and 'marker' not in url) or \
                 'unit_test=pagination_loop' in url:
@@ -2572,6 +2644,33 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__router.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers(self, method, url, body, headers):
+        if method == 'POST':
+            body = self.fixtures.load('_v2_0__router.json')
+            return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            body = self.fixtures.load('_v2_0__routers.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95_add_router_interface(self, method, url,
+                                                                                        body, headers):
+        if method == 'PUT':
+            body = self.fixtures.load('_v2_0__router_interface.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_v2_0_routers_f8a44de0_fc8e_45df_93c7_f79bf3b01c95_remove_router_interface(self, method, url,
+                                                                                           body, headers):
+        if method == 'PUT':
+            body = self.fixtures.load('_v2_0__router_interface.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 

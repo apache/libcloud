@@ -1351,7 +1351,7 @@ class AzureNodeDriver(NodeDriver):
         _affinity_group = res.hosted_service_properties.affinity_group
         _cloud_service_location = res.hosted_service_properties.location
 
-        if _affinity_group is not None and _affinity_group is not '':
+        if _affinity_group is not None and _affinity_group != '':
             return self.service_location(True, _affinity_group)
         elif _cloud_service_location is not None:
             return self.service_location(False, _cloud_service_location)
@@ -1478,8 +1478,7 @@ class AzureNodeDriver(NodeDriver):
                 headers=request.headers,
                 method=request.method
             )
-        except AzureRedirectException:
-            e = sys.exc_info()[1]
+        except AzureRedirectException as e:
             parsed_url = urlparse.urlparse(e.location)
             request.host = parsed_url.netloc
             return self._perform_request(request)
@@ -1933,6 +1932,7 @@ class AzureNodeDriver(NodeDriver):
             message = 'Message: %s, Body: %s, Status code: %s' % (values)
             raise LibcloudError(message, driver=self)
 
+
 """
 XML Serializer
 
@@ -2308,8 +2308,8 @@ class AzureXmlSerializer(object):
         )
 
         if configuration.domain_join is not None:
-            domain = ET.xml("DomainJoin")
-            creds = ET.xml("Credentials")
+            domain = ET.xml("DomainJoin")  # pylint: disable=no-member
+            creds = ET.xml("Credentials")  # pylint: disable=no-member
             domain.appemnd(creds)
             xml.append(domain)
 
@@ -2866,6 +2866,7 @@ class AzureXmlSerializer(object):
                 xml.append(extended_property)
 
             return xml
+
 
 """
 Data Classes
@@ -3501,6 +3502,7 @@ class AzureHTTPResponse(object):
         self.message = message
         self.headers = headers
         self.body = body
+
 
 """
 Helper classes and functions.

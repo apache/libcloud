@@ -150,12 +150,12 @@ class DurableResponse(XmlResponse):
         xml_obj = self.parse_body()
 
         # pylint: disable=no-member
-        envelop_body = xml_obj.getchildren()[0]
-        method_resp = envelop_body.getchildren()[0]
+        envelop_body = list(xml_obj)[0]
+        method_resp = list(envelop_body)[0]
         # parse the xml_obj
         # handle errors
         if 'Fault' in method_resp.tag:
-            fault = [fault for fault in method_resp.getchildren()
+            fault = [fault for fault in list(method_resp)
                      if fault.tag == 'faultstring'][0]
             error_dict['ERRORMESSAGE'] = fault.text.strip()
             error_dict['ERRORCODE'] = self.status
@@ -163,17 +163,17 @@ class DurableResponse(XmlResponse):
 
         # parsing response from listZonesResponse
         if 'listZonesResponse' in method_resp.tag:
-            answer = method_resp.getchildren()[0]
+            answer = list(method_resp)[0]
             for element in answer:
-                zone_dict['id'] = element.getchildren()[0].text
+                zone_dict['id'] = list(element)[0].text
                 objects.append(zone_dict)
                 # reset the zone_dict
                 zone_dict = {}
         # parse response from listRecordsResponse
         if 'listRecordsResponse' in method_resp.tag:
-            answer = method_resp.getchildren()[0]
+            answer = list(method_resp)[0]
             for element in answer:
-                for child in element.getchildren():
+                for child in list(element):
                     if child.tag == 'id':
                         record_dict['id'] = child.text.strip()
                 objects.append(record_dict)
@@ -181,7 +181,7 @@ class DurableResponse(XmlResponse):
                 record_dict = {}
         # parse response from getZoneResponse
         if 'getZoneResponse' in method_resp.tag:
-            for child in method_resp.getchildren():
+            for child in list(method_resp):
                 if child.tag == 'origin':
                     zone_dict['id'] = child.text.strip()
                     zone_dict['domain'] = child.text.strip()
@@ -202,8 +202,8 @@ class DurableResponse(XmlResponse):
             objects.append(zone_dict)
         # parse response from getRecordResponse
         if 'getRecordResponse' in method_resp.tag:
-            answer = method_resp.getchildren()[0]
-            for child in method_resp.getchildren():
+            answer = list(method_resp)[0]
+            for child in list(method_resp):
                 if child.tag == 'id' and child.text:
                     record_dict['id'] = child.text.strip()
                 elif child.tag == 'name' and child.text:
@@ -223,19 +223,19 @@ class DurableResponse(XmlResponse):
             objects.append(record_dict)
             record_dict = {}
         if 'createZoneResponse' in method_resp.tag:
-            answer = method_resp.getchildren()[0]
+            answer = list(method_resp)[0]
             if answer.tag == 'return' and answer.text:
                 record_dict['id'] = answer.text.strip()
             objects.append(record_dict)
         # catch Record does not exists error when deleting record
         if 'deleteRecordResponse' in method_resp.tag:
-            answer = method_resp.getchildren()[0]
+            answer = list(method_resp)[0]
             if 'Record does not exists' in answer.text.strip():
                 errors.append({'ERRORMESSAGE': answer.text.strip(),
                                'ERRORCODE': self.status})
         # parse response in createRecordResponse
         if 'createRecordResponse' in method_resp.tag:
-            answer = method_resp.getchildren()[0]
+            answer = list(method_resp)[0]
             record_dict['id'] = answer.text.strip()
             objects.append(record_dict)
             record_dict = {}

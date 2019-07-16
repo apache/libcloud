@@ -24,5 +24,5 @@ driver.ex_enable_static_website(container=container)
 driver.ex_set_error_page(container=container, file_name='error.html')
 driver.enable_container_cdn(container=container)
 
-print('All done you can view the website at: ' +
-      driver.get_container_cdn_url(container=container))
+print('All done you can view the website at: %s' % (
+      driver.get_container_cdn_url(container=container)))

@@ -1,0 +1,14 @@
+{
+    "operating-systems": [{
+                "id": 297,
+                "slug": "ubuntu_18_04_x64_lts",
+                "operating_system": "Linux",
+                "distro": "Ubuntu",
+                "name": "Ubuntu (18.04 x64 LTS)",
+                "version": "18.04 x64 LTS",
+                "pricing": {
+                    "brl_month": 0,
+                    "usd_month": 0
+                }
+            }]
+}

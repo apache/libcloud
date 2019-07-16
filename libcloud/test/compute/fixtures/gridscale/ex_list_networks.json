@@ -1,0 +1,37 @@
+{
+  "networks": {
+    "1196529b-a8de-417f-ac95-0e13ef4fdfd7": {
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "network_type": "network",
+      "delete_block": false,
+      "relations": {
+        "vlans": [],
+        "servers": [
+          {
+            "ordering": 0,
+            "create_time": "2019-06-07T14:59:47Z",
+            "l3security": [
+              "185.102.95.236/32"
+            ],
+            "mac": "16:63:95:5d:1f:01",
+            "object_name": "test.test",
+            "bootdevice": false,
+            "network_uuid": "1196529b-a8de-417f",
+            "object_uuid": "1479405e-d46c-47a2"
+          }
+        ]
+      },
+      "location_iata": "fra",
+      "create_time": "2018-12-06T13:09:08Z",
+      "location_name": "de/fra",
+      "location_country": "de",
+      "name": "network",
+      "change_time": "2019-04-08T09:10:08Z",
+      "l2security": true,
+      "public_net": true,
+      "object_uuid": "1196529b-a8de-417f",
+      "status": "active",
+      "labels": []
+    }
+  }
+}

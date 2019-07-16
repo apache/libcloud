@@ -17,8 +17,6 @@
 Common methods for obtaining a reference to the provider driver class.
 """
 
-import sys
-
 __all__ = [
     'get_driver',
     'set_driver'
@@ -99,8 +97,7 @@ def set_driver(drivers, provider, module, klass):
     # Check if this driver is valid
     try:
         driver = get_driver(drivers, provider)
-    except (ImportError, AttributeError):
-        exp = sys.exc_info()[1]
+    except (ImportError, AttributeError) as exp:
         drivers.pop(provider)
         raise exp
 

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import base64
 import hashlib
 import hmac
@@ -91,8 +90,9 @@ class AtmosConnection(ConnectionUserAndKey):
 
     def _calculate_signature(self, params, headers):
         pathstring = urlunquote(self.action)
-        if pathstring.startswith(self.driver.path):
-            pathstring = pathstring[len(self.driver.path):]
+        driver_path = self.driver.path  # pylint: disable=no-member
+        if pathstring.startswith(driver_path):
+            pathstring = pathstring[len(driver_path):]
         if params:
             if type(params) is dict:
                 params = list(params.items())
@@ -146,8 +146,7 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container_name) + '/?metadata/system'
         try:
             result = self.connection.request(path)
-        except AtmosError:
-            e = sys.exc_info()[1]
+        except AtmosError as e:
             if e.code != 1003:
                 raise
             raise ContainerDoesNotExistError(e, self, container_name)
@@ -161,8 +160,7 @@ class AtmosDriver(StorageDriver):
         path = self._namespace_path(container_name) + '/'
         try:
             self.connection.request(path, method='POST')
-        except AtmosError:
-            e = sys.exc_info()[1]
+        except AtmosError as e:
             if e.code != 1016:
                 raise
             raise ContainerAlreadyExistsError(e, self, container_name)
@@ -172,8 +170,7 @@ class AtmosDriver(StorageDriver):
         try:
             self.connection.request(self._namespace_path(container.name) + '/',
                                     method='DELETE')
-        except AtmosError:
-            e = sys.exc_info()[1]
+        except AtmosError as e:
             if e.code == 1003:
                 raise ContainerDoesNotExistError(e, self, container.name)
             elif e.code == 1023:
@@ -191,8 +188,7 @@ class AtmosDriver(StorageDriver):
 
             result = self.connection.request(path + '?metadata/user')
             user_meta = self._emc_meta(result)
-        except AtmosError:
-            e = sys.exc_info()[1]
+        except AtmosError as e:
             if e.code != 1003:
                 raise
             raise ObjectDoesNotExistError(e, self, object_name)
@@ -221,8 +217,7 @@ class AtmosDriver(StorageDriver):
 
         try:
             self.connection.request(request_path + '?metadata/system')
-        except AtmosError:
-            e = sys.exc_info()[1]
+        except AtmosError as e:
             if e.code != 1003:
                 raise
             method = 'POST'
@@ -286,8 +281,7 @@ class AtmosDriver(StorageDriver):
 
         try:
             self.connection.request(path + '?metadata/system')
-        except AtmosError:
-            e = sys.exc_info()[1]
+        except AtmosError as e:
             if e.code != 1003:
                 raise
             method = 'POST'
@@ -371,8 +365,7 @@ class AtmosDriver(StorageDriver):
             self._clean_object_name(obj.name)
         try:
             self.connection.request(path, method='DELETE')
-        except AtmosError:
-            e = sys.exc_info()[1]
+        except AtmosError as e:
             if e.code != 1003:
                 raise
             raise ObjectDoesNotExistError(e, self, obj.name)

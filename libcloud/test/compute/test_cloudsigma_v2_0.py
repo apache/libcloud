@@ -17,10 +17,11 @@ import sys
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.common.types import InvalidCredsError
 from libcloud.compute.drivers.cloudsigma import CloudSigmaNodeDriver
@@ -48,9 +49,9 @@ class CloudSigmaAPI20BaseTestCase(object):
 
     def test_invalid_api_versions(self):
         expected_msg = 'Unsupported API version: invalid'
-        self.assertRaisesRegexp(NotImplementedError, expected_msg,
-                                CloudSigmaNodeDriver, 'username', 'password',
-                                api_version='invalid')
+        assertRaisesRegex(self, NotImplementedError, expected_msg,
+                          CloudSigmaNodeDriver, 'username', 'password',
+                          api_version='invalid')
 
     def test_invalid_credentials(self):
         CloudSigmaMockHttp.type = 'INVALID_CREDS'
@@ -58,9 +59,9 @@ class CloudSigmaAPI20BaseTestCase(object):
 
     def test_invalid_region(self):
         expected_msg = 'Invalid region:'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                CloudSigma_2_0_NodeDriver, 'foo', 'bar',
-                                region='invalid')
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          CloudSigma_2_0_NodeDriver, 'foo', 'bar',
+                          region='invalid')
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -133,8 +134,8 @@ class CloudSigmaAPI20BaseTestCase(object):
         expected_msg = 'Cannot start guest in state "started". Guest should ' \
                        'be in state "stopped'
 
-        self.assertRaisesRegexp(CloudSigmaError, expected_msg,
-                                self.driver.ex_start_node, node=self.node)
+        assertRaisesRegex(self, CloudSigmaError, expected_msg,
+                          self.driver.ex_start_node, node=self.node)
 
     def test_ex_stop_node(self):
         status = self.driver.ex_stop_node(node=self.node)
@@ -144,8 +145,8 @@ class CloudSigmaAPI20BaseTestCase(object):
         CloudSigmaMockHttp.type = 'ALREADY_STOPPED'
 
         expected_msg = 'Cannot stop guest in state "stopped"'
-        self.assertRaisesRegexp(CloudSigmaError, expected_msg,
-                                self.driver.ex_stop_node, node=self.node)
+        assertRaisesRegex(self, CloudSigmaError, expected_msg,
+                          self.driver.ex_stop_node, node=self.node)
 
     def test_ex_clone_node(self):
         node_to_clone = self.driver.list_nodes()[0]
@@ -271,11 +272,11 @@ class CloudSigmaAPI20BaseTestCase(object):
 
         nic_mac = 'inexistent'
         expected_msg = 'Cannot find the NIC interface to attach a policy to'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                self.driver.ex_attach_firewall_policy,
-                                policy=policy,
-                                node=node,
-                                nic_mac=nic_mac)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          self.driver.ex_attach_firewall_policy,
+                          policy=policy,
+                          node=node,
+                          nic_mac=nic_mac)
 
     def test_ex_delete_firewall_policy(self):
         policy = self.driver.ex_list_firewall_policies()[0]
@@ -325,9 +326,9 @@ class CloudSigmaAPI20BaseTestCase(object):
         tag = self.driver.ex_list_tags()[0]
 
         expected_msg = 'Resource doesn\'t have id attribute'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                self.driver.ex_tag_resource, tag=tag,
-                                resource={})
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          self.driver.ex_tag_resource, tag=tag,
+                          resource={})
 
     def test_ex_delete_tag(self):
         tag = self.driver.ex_list_tags()[0]
@@ -355,14 +356,20 @@ class CloudSigmaAPI20BaseTestCase(object):
     def test_ex_list_subscriptions(self):
         subscriptions = self.driver.ex_list_subscriptions()
 
+        self.assertEqual(len(subscriptions), 6)
+
         subscription = subscriptions[0]
-        self.assertEqual(len(subscriptions), 5)
         self.assertEqual(subscription.id, '7272')
         self.assertEqual(subscription.resource, 'vlan')
         self.assertEqual(subscription.amount, 1)
         self.assertEqual(subscription.period, '345 days, 0:00:00')
         self.assertEqual(subscription.status, 'active')
         self.assertEqual(subscription.price, '0E-20')
+
+        subscription = subscriptions[-1]
+        self.assertEqual(subscription.id, '5555')
+        self.assertEqual(subscription.start_time, None)
+        self.assertEqual(subscription.end_time, None)
 
     def test_ex_create_subscription(self):
         CloudSigmaMockHttp.type = 'CREATE_SUBSCRIPTION'
@@ -411,10 +418,10 @@ class CloudSigmaAPI20BaseTestCase(object):
         state = 'timeout'
 
         expected_msg = 'Timed out while waiting for drive transition'
-        self.assertRaisesRegexp(Exception, expected_msg,
-                                self.driver._wait_for_drive_state_transition,
-                                drive=drive, state=state,
-                                timeout=0.5)
+        assertRaisesRegex(self, Exception, expected_msg,
+                          self.driver._wait_for_drive_state_transition,
+                          drive=drive, state=state,
+                          timeout=0.5)
 
     def test_wait_for_drive_state_transition_success(self):
         drive = self.driver.ex_list_user_drives()[0]

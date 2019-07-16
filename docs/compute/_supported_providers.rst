@@ -25,6 +25,7 @@ Provider                              Documentation                             
 `Gandi`_                              :doc:`Click </compute/drivers/gandi>`             GANDI               single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.gandi`             :class:`GandiNodeDriver`            
 `Google Compute Engine`_              :doc:`Click </compute/drivers/gce>`               GCE                 single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.gce`               :class:`GCENodeDriver`              
 `GoGrid`_                                                                               GOGRID              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.gogrid`            :class:`GoGridNodeDriver`           
+`Gridscale`_                          :doc:`Click </compute/drivers/gridscale>`         GRIDSCALE           single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.gridscale`         :class:`GridscaleNodeDriver`        
 `HostVirtual`_                                                                          HOSTVIRTUAL         single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.hostvirtual`       :class:`HostVirtualNodeDriver`      
 `Ikoula`_                             :doc:`Click </compute/drivers/ikoula>`            IKOULA              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.ikoula`            :class:`IkoulaNodeDriver`           
 `Indosat`_                            :doc:`Click </compute/drivers/indosat>`           INDOSAT             single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.indosat`           :class:`IndosatNodeDriver`          
@@ -34,6 +35,7 @@ Provider                              Documentation                             
 `KTUCloud`_                                                                             KTUCLOUD            single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.ktucloud`          :class:`KTUCloudNodeDriver`         
 `Libvirt`_                            :doc:`Click </compute/drivers/libvirt>`           LIBVIRT             single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.libvirt_driver`    :class:`LibvirtNodeDriver`          
 `Linode`_                                                                               LINODE              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.linode`            :class:`LinodeNodeDriver`           
+`Maxihost`_                           :doc:`Click </compute/drivers/maxihost>`          MAXIHOST            single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.maxihost`          :class:`MaxihostNodeDriver`         
 `MedOne`_                             :doc:`Click </compute/drivers/medone>`            MEDONE              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.medone`            :class:`MedOneNodeDriver`           
 `NephoScale`_                                                                           NEPHOSCALE          single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.nephoscale`        :class:`NephoscaleNodeDriver`       
 `Nimbus`_                             :doc:`Click </compute/drivers/nimbus>`            NIMBUS              single region driver                                                                                                                                                                                                                                      :mod:`libcloud.compute.drivers.ec2`               :class:`NimbusNodeDriver`           
@@ -82,10 +84,11 @@ Provider                              Documentation                             
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
-.. _`Exoscale`: https://www.exoscale.ch/
+.. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
+.. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
@@ -95,6 +98,7 @@ Provider                              Documentation                             
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
+.. _`Maxihost`: https://www.maxihost.com/
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
@@ -107,7 +111,7 @@ Provider                              Documentation                             
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`Packet`: http://www.packet.net/
+.. _`Packet`: http://www.packet.com/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com

@@ -59,7 +59,7 @@ Feedback
 ========
 
 Please send feedback to the mailing list at <dev@libcloud.apache.org>,
-or the JIRA at <https://issues.apache.org/jira/browse/LIBCLOUD>.
+or Github repo at <https://github.com/apache/libcloud/issues>.
 
 Contributing
 ============

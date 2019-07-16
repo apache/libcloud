@@ -59,8 +59,7 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             self.driver.get_zone(zone_id='13')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, '13')
         else:
             self.fail('Exception was not thrown')
@@ -87,8 +86,7 @@ class LuadnsTests(unittest.TestCase):
         zone = self.test_zone
         try:
             self.driver.delete_zone(zone=zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, '11')
         else:
             self.fail('Exception was not thrown')
@@ -107,8 +105,7 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = 'CREATE_ZONE_ZONE_ALREADY_EXISTS'
         try:
             self.driver.create_zone(domain='test.com')
-        except ZoneAlreadyExistsError:
-            e = sys.exc_info()[1]
+        except ZoneAlreadyExistsError as e:
             self.assertEqual(e.zone_id, 'test.com')
         else:
             self.fail('Exception was not thrown')
@@ -146,8 +143,7 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = 'GET_RECORD_RECORD_DOES_NOT_EXIST'
         try:
             self.driver.get_record(zone_id='31', record_id='31')
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, '31')
         else:
             self.fail('Exception was not thrown')
@@ -173,8 +169,7 @@ class LuadnsTests(unittest.TestCase):
         record = self.test_record
         try:
             self.driver.delete_record(record=record)
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, '13')
         else:
             self.fail('Exception was not thrown')

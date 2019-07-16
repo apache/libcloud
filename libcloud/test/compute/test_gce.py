@@ -32,6 +32,7 @@ from libcloud.common.google import (GoogleBaseAuthConnection,
                                     GoogleBaseError)
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 from libcloud.compute.base import Node, StorageVolume
+from libcloud.compute.types import NodeState
 
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
@@ -448,6 +449,29 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                           {'name': 'foo',
                            'port': 4444})
 
+    def test_ex_instancegroupmanager_set_autohealing_policies(self):
+        kwargs = {'host': 'lchost',
+                  'path': '/lc',
+                  'port': 8000,
+                  'interval': 10,
+                  'timeout': 10,
+                  'unhealthy_threshold': 4,
+                  'healthy_threshold': 3,
+                  'description': 'test healthcheck'}
+        healthcheck_name = 'lchealthcheck'
+        hc = self.driver.ex_create_healthcheck(healthcheck_name, **kwargs)
+
+        ig_name = 'myinstancegroup'
+        ig_zone = 'us-central1-a'
+        manager = self.driver.ex_get_instancegroupmanager(ig_name, ig_zone)
+
+        res = self.driver.ex_instancegroupmanager_set_autohealingpolicies(
+            manager=manager, healthcheck=hc, initialdelaysec=2)
+        self.assertTrue(res)
+
+        res = manager.set_autohealingpolicies(healthcheck=hc, initialdelaysec=2)
+        self.assertTrue(res)
+
     def test_ex_create_instancegroupmanager(self):
         name = 'myinstancegroup'
         zone = 'us-central1-a'
@@ -616,8 +640,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(len(nodes_uc1a), 1)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
+
         names = [n.name for n in nodes_all]
         self.assertTrue('node-name' in names)
+
+        states = [n.state for n in nodes_all]
+        self.assertTrue(NodeState.SUSPENDED in states)
 
     def test_ex_list_regions(self):
         regions = self.driver.ex_list_regions()
@@ -1385,8 +1413,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         size = self.driver.ex_get_size('n1-standard-1')
         number = 2
         disk_size = "25"
+        # NOTE: We use small poll_interval to speed up the tests
         nodes = self.driver.ex_create_multiple_nodes(base_name, size, image,
-                                                     number, ex_disk_size=disk_size)
+                                                     number,
+                                                     ex_disk_size=disk_size,
+                                                     poll_interval=0.1)
         self.assertEqual(len(nodes), 2)
         self.assertTrue(isinstance(nodes[0], Node))
         self.assertTrue(isinstance(nodes[1], Node))
@@ -1400,8 +1431,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         image = None
         size = self.driver.ex_get_size('n1-standard-1')
         number = 2
+        # NOTE: We use small poll_interval to speed up the tests
         nodes = self.driver.ex_create_multiple_nodes(
-            base_name, size, image, number, ex_image_family='coreos-stable')
+            base_name, size, image, number, ex_image_family='coreos-stable',
+            poll_interval=0.1)
         self.assertEqual(len(nodes), 2)
         self.assertTrue(isinstance(nodes[0], Node))
         self.assertTrue(isinstance(nodes[1], Node))
@@ -1606,6 +1639,12 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         node = self.driver.ex_get_node('node-name')
         attach = volume.attach(node)
         self.assertTrue(attach)
+
+    def test_ex_resize_volume(self):
+        volume = self.driver.ex_get_volume('lcdisk')
+        desired_size = int(volume.size) + 8
+        resize = self.driver.ex_resize_volume(volume, desired_size)
+        self.assertTrue(resize)
 
     def test_detach_volume(self):
         volume = self.driver.ex_get_volume('lcdisk')
@@ -2913,6 +2952,12 @@ class GCEMockHttp(MockHttp):
             'operations_operation_zones_us-central1-a_disks_lcdisk_createSnapshot_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_lcdisk_resize_post(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_disks_lcdisk_resize_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -3327,6 +3372,12 @@ class GCEMockHttp(MockHttp):
             'zones_us-central1-a_disks_lcdisk_createSnapshot_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_disks_lcdisk_resize(self, method, url,
+                                                 body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_disks_lcdisk_resize_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_disks_node_name(self, method, url, body, headers):
         body = self.fixtures.load('generic_disk.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -3557,8 +3608,13 @@ class GCEMockHttp(MockHttp):
 
     def _zones_us_central1_a_instanceGroupManagers_myinstancegroup(
             self, method, url, body, headers):
-        body = self.fixtures.load(
-            'zones_us-central1-a_instanceGroupManagers_myinstancegroup.json')
+        if method == 'PATCH':
+            # test_ex_instancegroupmanager_set_autohealing_policies
+            body = self.fixtures.load(
+                'zones_us-central1-a_operations_operation_zones_us-central1-a_instanceGroupManagers_insert_post.json')
+        else:
+            body = self.fixtures.load(
+                'zones_us-central1-a_instanceGroupManagers_myinstancegroup.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_instanceGroupManagers_myinstancegroup_shared_network(

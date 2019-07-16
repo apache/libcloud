@@ -30,6 +30,7 @@ from libcloud.compute.ssh import have_paramiko
 
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
+from libcloud.utils.py3 import assertRaisesRegex
 
 from mock import patch, Mock, MagicMock
 
@@ -99,8 +100,8 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         expected_msg = ('key_files and key_material arguments are mutually '
                         'exclusive')
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                ParamikoSSHClient, **conn_params)
+        assertRaisesRegex(self, ValueError, expected_msg,
+                          ParamikoSSHClient, **conn_params)
 
     @patch('paramiko.SSHClient', Mock)
     def test_key_material_argument(self):
@@ -135,8 +136,8 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         mock = ParamikoSSHClient(**conn_params)
 
         expected_msg = 'Invalid or unsupported key type'
-        self.assertRaisesRegexp(paramiko.ssh_exception.SSHException,
-                                expected_msg, mock.connect)
+        assertRaisesRegex(self, paramiko.ssh_exception.SSHException,
+                          expected_msg, mock.connect)
 
     @patch('paramiko.SSHClient', Mock)
     def test_create_with_key(self):
@@ -347,8 +348,7 @@ class ShellOutSSHClientTests(LibcloudTestCase):
         try:
             ShellOutSSHClient(hostname='localhost', username='foo',
                               password='bar')
-        except ValueError:
-            e = sys.exc_info()[1]
+        except ValueError as e:
             msg = str(e)
             self.assertTrue('ShellOutSSHClient only supports key auth' in msg)
         else:
@@ -367,8 +367,7 @@ class ShellOutSSHClientTests(LibcloudTestCase):
         with patch('subprocess.Popen', mock_popen):
             try:
                 ShellOutSSHClient(hostname='localhost', username='foo')
-            except ValueError:
-                e = sys.exc_info()[1]
+            except ValueError as e:
                 msg = str(e)
                 self.assertTrue('ssh client is not available' in msg)
             else:
