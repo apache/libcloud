@@ -11,9 +11,9 @@ cls = get_driver(Provider.RACKSPACE)
 driver = cls('username', 'api key', region='ord')
 
 # Use proxy 1 for this request
-driver.connection.set_http_proxy(proxy_url=PROXY_URL_NO_AUTH_1)
+driver.connection.connection.set_http_proxy(proxy_url=PROXY_URL_NO_AUTH_1)
 pprint(driver.list_nodes())
 
 # Use proxy 2 for this request
-driver.connection.set_http_proxy(proxy_url=PROXY_URL_NO_AUTH_2)
+driver.connection.connection.set_http_proxy(proxy_url=PROXY_URL_NO_AUTH_2)
 pprint(driver.list_nodes())

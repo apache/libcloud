@@ -346,14 +346,17 @@ class Connection(object):
 
     def set_http_proxy(self, proxy_url):
         """
-        Set a HTTP proxy which will be used with this connection.
+        Set a HTTP / HTTPS proxy which will be used with this connection.
 
         :param proxy_url: Proxy URL (e.g. http://<hostname>:<port> without
                           authentication and
-                          http://<username>:<password>@<hostname>:<port> for
+                          <scheme>://<username>:<password>@<hostname>:<port> for
                           basic auth authentication information.
         :type proxy_url: ``str``
         """
+        warnings.warn('This method is deprecated because it\'s not working '
+                      'correctly. Use driver.connection.connection.set_http_proxy '
+                      'instead')
         self.proxy_url = proxy_url
 
     def set_context(self, context):
