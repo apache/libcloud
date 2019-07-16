@@ -101,6 +101,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.2')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.2:3128'
+        })
 
         _ = os.environ.pop('http_proxy', None)
         conn = LibcloudConnection(host='localhost', port=80)
@@ -113,6 +116,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.3')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.3:3128'
+        })
 
         proxy_url = 'http://127.0.0.4:3128'
         conn = LibcloudConnection(host='localhost', port=80,
@@ -120,6 +126,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.4')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.4:3128'
+        })
 
         os.environ['http_proxy'] = proxy_url
         proxy_url = 'http://127.0.0.5:3128'
@@ -128,6 +137,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.5')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.5:3128'
+        })
 
         os.environ['http_proxy'] = proxy_url
         proxy_url = 'https://127.0.0.6:3129'
@@ -136,6 +148,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'https')
         self.assertEqual(conn.proxy_host, '127.0.0.6')
         self.assertEqual(conn.proxy_port, 3129)
+        self.assertEqual(conn.session.proxies, {
+            'https': 'https://127.0.0.6:3129'
+        })
 
     def test_connection_to_unusual_port(self):
         conn = LibcloudConnection(host='localhost', port=8080)
