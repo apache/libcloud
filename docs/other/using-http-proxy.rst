@@ -1,5 +1,5 @@
-Using an HTTPs proxy
-====================
+Using an HTTP / HTTPS proxy
+===========================
 
 .. note::
 
