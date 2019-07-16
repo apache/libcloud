@@ -21,6 +21,16 @@ General
 - Also run pylint on ``libcloud/compute/`` directory and fix various pylint
   violations. (GITHUB-1308)
   [Tomaz Muraus]
+- Add support for HTTPS proxies and fix ``driver.set_http_proxy()`` method.
+
+  HTTPS proxy can be set up by either setting ``https_proxy`` / ``http_proxy``
+  environment variable or by using
+  ``driver.connection.connection.set_http_proxy`` method.
+
+  For more information, please refer to the documentation -
+  https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
+  (GITHUB-1314)
+  [Jim Liu - @hldh214, Tomaz Muraus]
 
 Compute
 ~~~~~~~
