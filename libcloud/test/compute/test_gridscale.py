@@ -12,9 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
 import unittest
-import json
 
 from datetime import datetime
 from libcloud.utils.iso8601 import UTC
@@ -27,8 +27,9 @@ from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import GRIDSCALE_PARAMS
 
+
 class Gridscale_Tests(LibcloudTestCase):
-    def  setUp(self):
+    def setUp(self):
         GridscaleNodeDriver.connectionCls.conn_class = GridscaleMockHttp
         GridscaleMockHttp.type = None
         self.driver = GridscaleNodeDriver(*GRIDSCALE_PARAMS)
@@ -109,9 +110,15 @@ class Gridscale_Tests(LibcloudTestCase):
         self.assertEqual(ips.id, "56b8d161-325b-4fd4")
 
     def test_destroy_node_success(self):
+        # Regular destroy
         node = self.driver.list_nodes()[0]
         GridscaleMockHttp.type = 'DELETE'
+
         res = self.driver.destroy_node(node)
+        self.assertTrue(res)
+
+        # Destroy associated resources
+        res = self.driver.destroy_node(node, ex_destroy_associated_resources=True)
         self.assertTrue(res)
 
     def test_destroy_volume(self):
@@ -135,6 +142,19 @@ class Gridscale_Tests(LibcloudTestCase):
         nodes = self.driver.list_nodes()
         self.assertEqual(nodes[0].created_at, datetime(2019, 6, 7, 12, 56, 44, tzinfo=UTC))
 
+    def test_ex_list_volumes_for_node(self):
+        node = self.driver.list_nodes()[0]
+        volumes = self.driver.ex_list_volumes_for_node(node=node)
+        self.assertEqual(len(volumes), 1)
+        self.assertEqual(volumes[0].size, 50)
+
+    def test_ex_list_ips_for_node(self):
+        node = self.driver.list_nodes()[0]
+        ips = self.driver.ex_list_ips_for_node(node=node)
+        self.assertEqual(len(ips), 1)
+        self.assertEqual(ips[0].ip_address, '185.102.95.236')
+
+
 class GridscaleMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('gridscale')
 
@@ -149,6 +169,20 @@ class GridscaleMockHttp(MockHttp):
     def _objects_storages(self, method, url, body, headers):
         body = self.fixtures.load('list_volumes.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _objects_storages_DELETE(self, method, url, body, headers):
+        # test_destroy_node_success
+        body = self.fixtures.load('list_volumes.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _objects_ips_DELETE(self, method, url, body, headers):
+        # test_destroy_node_success
+        body = self.fixtures.load('ex_list_ips.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _objects_ips_56b8d161_325b_4fd4_DELETE(self, method, url, body, headers):
+        # test_destroy_node_success
+        return (httplib.NO_CONTENT, None , {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_storages_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('list_volumes_empty.json')
