@@ -674,7 +674,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_import_key_pair_from_string(self):
         path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
-                            'dummy_rsa.pub')
+                            'test_rsa.pub')
 
         with open(path, 'r') as fp:
             key_material = fp.read()
@@ -692,7 +692,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_import_key_pair_from_file(self):
         path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
-                            'dummy_rsa.pub')
+                            'test_rsa.pub')
 
         key = self.driver.import_key_pair_from_file('keypair', path)
         self.assertEqual(key.name, 'keypair')
