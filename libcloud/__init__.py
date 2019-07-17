@@ -30,7 +30,7 @@ from libcloud.base import get_driver  # NOQA
 
 
 try:
-    import paramiko
+    import paramiko  # NOQA
     have_paramiko = True
 except ImportError:
     have_paramiko = False
@@ -89,9 +89,8 @@ def _init_once():
         fo = codecs.open(path, mode, encoding='utf8')
         enable_debug(fo)
 
-        if have_paramiko:
-            paramiko_logger = paramiko.util.logging.getLogger()
-            paramiko_logger.setLevel(logging.DEBUG)
+        if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
+            paramiko.util.log_to_file(filename=path, level=logging.DEBUG)
 
 
 _init_once()
