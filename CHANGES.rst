@@ -115,6 +115,13 @@ Storage
   ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
 
+DNS
+~~~
+
+- [Cloudflare] Re-write the Cloudflare DNS driver to use Cloudflare API v4.
+  (LIBCLOUD-1001, LIBCLOUD-994, GITHUB-1292)
+  [Clemens Wolff - @c-w]
+
 Changes in Apache Libcloud 2.5.0
 --------------------------------
 

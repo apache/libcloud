@@ -1,0 +1,109 @@
+{
+  "result": [
+    {
+      "id": "364797364",
+      "type": "A",
+      "name": "example.com",
+      "content": "192.30.252.153",
+      "proxiable": true,
+      "proxied": true,
+      "ttl": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T21:28:00.801892Z",
+      "created_on": "2018-12-22T21:28:00.801892Z",
+      "meta": {
+        "auto_added": false,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    },
+    {
+      "id": "r1r1r1r1r1r1r1r1r1r1r1r1r1r1r1r1",
+      "type": "A",
+      "name": "example.com",
+      "content": "192.30.252.154",
+      "proxiable": true,
+      "proxied": true,
+      "ttl": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T21:28:03.346998Z",
+      "created_on": "2018-12-22T21:28:03.346998Z",
+      "meta": {
+        "auto_added": false,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    },
+    {
+      "id": "r2r2r2r2r2r2r2r2r2r2r2r2r2r2r2r2",
+      "type": "CNAME",
+      "name": "email.example.com",
+      "content": "mailgun.org",
+      "proxiable": true,
+      "proxied": false,
+      "ttl": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T20:29:48.453923Z",
+      "created_on": "2018-12-22T20:29:48.453923Z",
+      "meta": {
+        "auto_added": true,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    },
+    {
+      "id": "r3r3r3r3r3r3r3r3r3r3r3r3r3r3r3r3",
+      "type": "CNAME",
+      "name": "foo.example.com",
+      "content": "foo.com",
+      "proxiable": true,
+      "proxied": false,
+      "ttl": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2019-05-30T01:43:01.509188Z",
+      "created_on": "2019-05-30T01:43:01.509188Z",
+      "meta": {
+        "auto_added": false,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    },
+    {
+      "id": "364982413",
+      "type": "CNAME",
+      "name": "yesyes",
+      "content": "verify.bing.com",
+      "proxiable": true,
+      "proxied": true,
+      "ttl": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T21:29:46.874918Z",
+      "created_on": "2018-12-22T21:29:46.874918Z",
+      "meta": {
+        "auto_added": false,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    }
+  ],
+  "result_info": {
+    "page": 1,
+    "per_page": 5,
+    "total_pages": 2,
+    "count": 5,
+    "total_count": 9
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}
