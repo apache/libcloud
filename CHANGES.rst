@@ -123,6 +123,7 @@ Compute
   [Tomaz Muraus]
 
 - [Gridscale] Add new driver for Gridscale provider (https://gridscale.io).
+  (GITHUB-1305, GITHUB-1315)
   [Sydney Weber - @PrinceSydney]
 
 Storage
