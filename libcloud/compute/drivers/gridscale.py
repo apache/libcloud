@@ -521,7 +521,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
                                     method='DELETE')
         return result.status == 204
 
-    def ex_destroy_networks(self, network):
+    def ex_destroy_network(self, network):
         """
         Delete network.
 

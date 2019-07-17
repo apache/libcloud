@@ -105,8 +105,20 @@ class Gridscale_Tests(LibcloudTestCase):
         self.assertEqual(networks.id, "1196529b-a8de-417f")
 
     def test_ex_list_ips(self):
-        ips = self.driver.ex_list_ips()[0]
-        self.assertEqual(ips.id, "56b8d161-325b-4fd4")
+        ip = self.driver.ex_list_ips()[0]
+        self.assertEqual(ip.id, "56b8d161-325b-4fd4")
+
+    def test_ex_destroy_ip(self):
+        ip = self.driver.ex_list_ips()[0]
+
+        GridscaleMockHttp.type = 'DELETE'
+        self.assertTrue(self.driver.ex_destroy_ip(ip))
+
+    def test_ex_destroy_network(self):
+        network = self.driver.ex_list_networks()[0]
+
+        GridscaleMockHttp.type = 'DELETE'
+        self.assertTrue(self.driver.ex_destroy_network(network))
 
     def test_destroy_node_success(self):
         # Regular destroy
@@ -246,6 +258,10 @@ class GridscaleMockHttp(MockHttp):
     def _objects_networks_POST(self, method, url, body, headers):
         body = self.fixtures.load('create_network.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _objects_networks_1196529b_a8de_417f_DELETE(self, method, url, body, headers):
+        # test_ex_destroy_network
+        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f_networks_POST(self, method, url, body, headers):
         body = self.fixtures.load('network_to_node.json')
