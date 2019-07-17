@@ -622,6 +622,16 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
             return False
 
+    def import_key_pair_from_string(self, name, key_material):
+        data = {
+            'name': name,
+            'sshkey': key_material
+        }
+        result = self._sync_request(endpoint='objects/sshkeys/', method='POST',
+                                    data=data)
+        key = self._to_key(result.object, name=name, sshkey=key_material)
+        return key
+
     def list_key_pairs(self):
         """
         List all the available key pair objects.
@@ -919,14 +929,17 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
         return template
 
-    def _to_key(self, data):
+    def _to_key(self, data, name=None, sshkey=None):
         extra = {
             'uuid': data['object_uuid'],
             'labels': data.get('labels', [])
         }
 
-        key = KeyPair(name=data['name'], fingerprint=data['object_uuid'],
-                      public_key=data['sshkey'], private_key=None, extra=extra,
+        name = data.get('name', name)
+        sshkey = data.get('sshkey', sshkey)
+
+        key = KeyPair(name=name, fingerprint=data['object_uuid'],
+                      public_key=sshkey, private_key=None, extra=extra,
                       driver=self.connection.driver)
 
         return key
