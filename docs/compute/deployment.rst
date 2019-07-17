@@ -21,8 +21,8 @@ Once your server has been bootstrapped, libcloud.deploy task should be done
 and replaced by other tools such as previously mentioned configuration
 management software.
 
-Note on supported private SSH key types
----------------------------------------
+Supported private SSH key types
+-------------------------------
 
 `paramiko`_ Python library we use for deployment only supports RSA, DSS and
 ECDSA private keys in PEM format.
