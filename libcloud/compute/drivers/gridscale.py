@@ -552,7 +552,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
                                     method='DELETE')
         return result.status == 204
 
-    def ex_rename_node(self, node, name=None):
+    def ex_rename_node(self, node, name):
         """
         Modify node name.
 
@@ -571,12 +571,12 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
                                     method='PATCH')
         return result.status == 204
 
-    def ex_rename_storage(self, storage, name=None):
+    def ex_rename_volume(self, volume, name):
         """
-        Modify storage name
+        Modify storage volume name
 
-        :param storage: Storage.
-        :type storage: :class:.`StorageVolume`
+        :param volume: Storage.
+        :type volume: :class:.`StorageVolume`
 
         :param name: New storage name.
         :type name: ``str``
@@ -586,11 +586,11 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         """
         result = self._sync_request(data={'name': name},
                                     endpoint='objects/storages/{}'
-                                    .format(storage.id),
+                                    .format(volume.id),
                                     method='PATCH')
         return result.status == 204
 
-    def ex_rename_network(self, network, name=None):
+    def ex_rename_network(self, network, name):
         """
         Modify networks name.
 
