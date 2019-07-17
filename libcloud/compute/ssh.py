@@ -259,6 +259,24 @@ class ParamikoSSHClient(BaseSSHClient):
         if self.timeout:
             conninfo['timeout'] = self.timeout
 
+        # This is a workaround for paramiko only supporting key files in
+        # format staring with "BEGIN RSA PRIVATE KEY".
+        # If key_files are provided and a key looks like a PEM formatted key
+        # we try to convert it into a format supported by paramiko
+        if self.key_files and not isinstance(self.key_files, (list, tuple)):
+            with open(self.key_files, 'r') as fp:
+                key_material = fp.read()
+
+            try:
+                pkey = self._get_pkey_object(key=key_material)
+            except Exception:
+                pass
+            else:
+                # It appears key is valid, but it was passed in in an invalid
+                # format. Try to use the converted key directly
+                del conninfo['key_filename']
+                conninfo['pkey'] = pkey
+
         extra = {'_hostname': self.hostname, '_port': self.port,
                  '_username': self.username, '_timeout': self.timeout}
 
@@ -458,14 +476,30 @@ class ParamikoSSHClient(BaseSSHClient):
         result.write(result_bytes.decode('utf-8'))
         return result
 
-    def _get_pkey_object(self, key):
+    def _get_pkey_object(self, key, passpharse=None):
         """
         Try to detect private key type and return paramiko.PKey object.
+
+        # NOTE: Paramiko only supports key in PKCS#1 PEM format.
         """
 
-        for cls in [paramiko.RSAKey, paramiko.DSSKey, paramiko.ECDSAKey]:
+        for cls, key_type in [(paramiko.RSAKey, 'RSA'),
+                              (paramiko.DSSKey, 'DSA'),
+                              (paramiko.ECDSAKey, 'ECDSA')]:
+            # Work around for paramiko not recognizing keys which start with
+            # "----BEGIN PRIVATE KEY-----"
+            # Since key is already in PEM format, we just try changing the
+            # header and footer
+            key_split = key.strip().splitlines()
+            if (key_split[0] == '-----BEGIN PRIVATE KEY-----' and
+                    key_split[-1] == '-----END PRIVATE KEY-----'):
+                key_split[0] = '-----BEGIN %s PRIVATE KEY-----' % (key_type)
+                key_split[-1] = '-----END %s PRIVATE KEY-----' % (key_type)
+
+                key = '\n'.join(key_split)
+
             try:
-                key = cls.from_private_key(StringIO(key))
+                key = cls.from_private_key(StringIO(key), passpharse)
             except paramiko.ssh_exception.SSHException:
                 # Invalid key, try other key type
                 pass
@@ -473,7 +507,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 return key
 
         msg = ('Invalid or unsupported key type (only RSA, DSS and ECDSA keys'
-               ' are supported)')
+               ' in PKCS#1 PEM format are supported)')
         raise paramiko.ssh_exception.SSHException(msg)
 
 
