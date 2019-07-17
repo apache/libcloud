@@ -1494,11 +1494,16 @@ class NodeDriver(BaseDriver):
             try:
                 ssh_client.connect()
             except SSH_TIMEOUT_EXCEPTION_CLASSES as e:
+                # Errors which represent fatal invalid key files which should
+                # be propagated to the user
                 message = str(e).lower()
-                expected_msg = 'no such file or directory'
+                expected_msg_1 = 'no such file or directory'
+                expected_msg_2 = 'invalid key'
 
-                if isinstance(e, IOError) and expected_msg in message:
-                    # Propagate (key) file doesn't exist errors
+                # Propagate (key) file doesn't exist errors
+                if expected_msg_1 in message:
+                    raise e
+                elif expected_msg_2 in message:
                     raise e
 
                 # Retry if a connection is refused, timeout occurred,
