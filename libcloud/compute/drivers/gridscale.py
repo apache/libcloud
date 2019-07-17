@@ -48,7 +48,7 @@ class GridscaleIp(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return ('Ip: id={}, family={}, prefix={}, create_time={},Ip_address={}'
+        return ('Ip: id={}, family={}, prefix={}, create_time={}, ip_address={}'
                 .format(self.id, self.family,
                         self.prefix,
                         self.create_time,
@@ -455,8 +455,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :rtype: ``bool``
         """
         if ex_destroy_associated_resources:
-            associated_volumes = self.ex_get_volumes_for_node(node=node)
-            associated_ips = self.ex_get_ips_for_node(node=node)
+            associated_volumes = self.ex_list_volumes_for_node(node=node)
+            associated_ips = self.ex_list_ips_for_node(node=node)
 
         # 1. Delete the server itself
         result = self._sync_request(endpoint='objects/servers/{}'
@@ -857,7 +857,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
                                     method='PATCH')
         return result
 
-    def ex_get_volumes_for_node(self, node):
+    def ex_list_volumes_for_node(self, node):
         """
         Return a list of associated volumes for the provided node.
 
@@ -875,7 +875,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
         return result
 
-    def ex_get_ips_for_node(self, node):
+    def ex_list_ips_for_node(self, node):
         """
         Return a list of associated IPs for the provided node.
 
