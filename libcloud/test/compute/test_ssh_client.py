@@ -106,7 +106,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
     @patch('paramiko.SSHClient', Mock)
     def test_key_material_argument(self):
         path = os.path.join(os.path.dirname(__file__),
-                            'fixtures', 'misc', 'dummy_rsa')
+                            'fixtures', 'misc', 'test_rsa.key')
 
         with open(path, 'r') as fp:
             private_key = fp.read()
@@ -138,6 +138,111 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         expected_msg = 'Invalid or unsupported key type'
         assertRaisesRegex(self, paramiko.ssh_exception.SSHException,
                           expected_msg, mock.connect)
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_key_file_non_pem_format_error(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa_non_pem_format.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key}
+
+        mock = ParamikoSSHClient(**conn_params)
+
+        expected_msg = 'Invalid or unsupported key type'
+        assertRaisesRegex(self, paramiko.ssh_exception.SSHException,
+                          expected_msg, mock.connect)
+
+    def test_key_material_valid_pem_keys_invalid_header_auto_conversion(self):
+        # Test a scenario where valid PEM keys with invalid headers which is
+        # not recognized by paramiko are automatically converted in a format
+        # which is recognized by paramiko
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        # 1. RSA key type with header which is not supported by paramiko
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa_non_paramiko_recognized_header.key')
+
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        pkey = client._get_pkey_object(key=private_key)
+        self.assertTrue(pkey)
+        self.assertTrue(isinstance(pkey, paramiko.RSAKey))
+
+        # 2. DSA key type with header which is not supported by paramiko
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_dsa_non_paramiko_recognized_header.key')
+
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        pkey = client._get_pkey_object(key=private_key)
+        self.assertTrue(pkey)
+        self.assertTrue(isinstance(pkey, paramiko.DSSKey))
+
+        # 3. ECDSA key type with header which is not supported by paramiko
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_ecdsa_non_paramiko_recognized_header.key')
+
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        pkey = client._get_pkey_object(key=private_key)
+        self.assertTrue(pkey)
+        self.assertTrue(isinstance(pkey, paramiko.ECDSAKey))
+
+    def test_key_material_valid_pem_keys(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        # 1. RSA key type with header which is not supported by paramiko
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa.key')
+
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        pkey = client._get_pkey_object(key=private_key)
+        self.assertTrue(pkey)
+        self.assertTrue(isinstance(pkey, paramiko.RSAKey))
+
+        # 2. DSA key type with header which is not supported by paramiko
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_dsa.key')
+
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        pkey = client._get_pkey_object(key=private_key)
+        self.assertTrue(pkey)
+        self.assertTrue(isinstance(pkey, paramiko.DSSKey))
+
+        # 3. ECDSA key type with header which is not supported by paramiko
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_ecdsa.key')
+
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        pkey = client._get_pkey_object(key=private_key)
+        self.assertTrue(pkey)
+        self.assertTrue(isinstance(pkey, paramiko.ECDSAKey))
 
     @patch('paramiko.SSHClient', Mock)
     def test_create_with_key(self):
