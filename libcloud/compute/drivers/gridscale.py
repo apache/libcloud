@@ -203,7 +203,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             templates.append(template)
         return sorted(templates, key=lambda sort: sort.name)
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
+                    **kwargs):
         """
         Create a simple node  with a name, cores, memory at the designated
         location.
@@ -235,8 +236,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             'name': name,
             'cores': size.extra['cores'],
             'memory': int(size.ram / 1024),
-            'location_uuid':
-                location.id}
+            'location_uuid': location.id
+        }
         self.connection.async_request('objects/servers/',
                                       data=data,
                                       method='POST')
