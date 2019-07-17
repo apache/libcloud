@@ -1497,14 +1497,19 @@ class NodeDriver(BaseDriver):
                 # Errors which represent fatal invalid key files which should
                 # be propagated to the user
                 message = str(e).lower()
-                expected_msg_1 = 'no such file or directory'
-                expected_msg_2 = 'invalid key'
+                invalid_key_msgs = [
+                    'no such file or directory',
+                    'invalid key',
+                    'not a valid openssh private key file'
+                ]
 
                 # Propagate (key) file doesn't exist errors
-                if expected_msg_1 in message:
-                    raise e
-                elif expected_msg_2 in message:
-                    raise e
+                # NOTE: Paramiko only supports PEM private key format
+                # See https://github.com/paramiko/paramiko/issues/1313
+                # for details
+                for invalid_key_msg in invalid_key_msgs:
+                    if invalid_key_msg in message:
+                        raise e
 
                 # Retry if a connection is refused, timeout occurred,
                 # or the connection fails due to failed authentication.
