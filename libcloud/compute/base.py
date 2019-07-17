@@ -1306,7 +1306,7 @@ class NodeDriver(BaseDriver):
         key_file_path = os.path.expanduser(key_file_path)
 
         with open(key_file_path, 'r') as fp:
-            key_material = fp.read()
+            key_material = fp.read().strip()
 
         return self.import_key_pair_from_string(name=name,
                                                 key_material=key_material)
