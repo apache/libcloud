@@ -261,6 +261,15 @@ class ParamikoSSHClient(BaseSSHClient):
 
         extra = {'_hostname': self.hostname, '_port': self.port,
                  '_username': self.username, '_timeout': self.timeout}
+
+        if self.password:
+            extra['_auth_method'] = 'password'
+        else:
+            extra['_auth_method'] = 'key_file'
+
+            if self.key_files:
+                extra['_key_file'] = self.key_files
+
         self.logger.debug('Connecting to server', extra=extra)
 
         self.client.connect(**conninfo)
