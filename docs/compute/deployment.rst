@@ -21,6 +21,44 @@ Once your server has been bootstrapped, libcloud.deploy task should be done
 and replaced by other tools such as previously mentioned configuration
 management software.
 
+Note on supported private SSH key types
+---------------------------------------
+
+`paramiko`_ Python library we use for deployment only supports RSA, DSS and
+ECDSA private keys in PEM format.
+
+If you try to use key in an other format such as newer OpenSSH and PKCS#8
+format an exception will be thrown and deployment will fail.
+
+Keys which contain the following header should generally work:
+
+* ``-----BEGIN RSA PRIVATE KEY-----``
+* ``-----BEGIN DSA PRIVATE KEY-----``
+* ``-----BEGIN ECDSA PRIVATE KEY-----``
+
+And keys which contain the following header won't work:
+
+* ``-----BEGIN OPENSSH PRIVATE KEY-----``
+* ``-----BEGIN PRIVATE KEY-----``
+
+To generate a RSA key in a compatible format, you can use the following
+commands:
+
+.. sourcecode:: bash
+
+    ssh-keygen -m PEM -t rsa -b 4096 -C "comment" -f ~/.ssh/id_rsa_libcloud
+    # Newer versions of OpenSSH will include a header which paramiko doesn't
+    # recognize so we also need to change a header to a format paramiko
+    # recognizes
+    sed -i "s/-----BEGIN PRIVATE KEY-----/-----BEGIN RSA PRIVATE KEY-----/g" ~/.ssh/id_rsa_libcloud
+    sed -i "s/-----END PRIVATE KEY-----/-----END RSA PRIVATE KEY-----/g" ~/.ssh/id_rsa_libcloud
+
+For details / reference, see the following issues:
+
+* https://github.com/paramiko/paramiko/issues/1015
+* https://github.com/paramiko/paramiko/issues/1363
+* https://github.com/paramiko/paramiko/issues/1313
+
 Deployment classes
 ------------------
 
@@ -95,3 +133,4 @@ shell script.
 .. _`Puppet`: http://puppetlabs.com/
 .. _`Salt`: http://docs.saltstack.com/topics/
 .. _`CFEngine`: http://cfengine.com/
+.. _`paramiko`: http://www.paramiko.org/
