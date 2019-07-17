@@ -33,6 +33,17 @@ General
   https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
   (GITHUB-1314)
   [Jim Liu - @hldh214, Tomaz Muraus]
+- Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
+  environment variable. (GITHUB-1315)
+  [Tomaz Muraaus]
+- Update paramiko SSH deployment client so it automatically tries to convert
+  private keys in PEM format with a header which paramiko doesn't recognize
+  into a format which paramiko recognizes.
+
+  NOTE: Paramiko only supports keys in PEM format. This means keys which start
+  with "----BEGIN <TYPE> PRIVATE KEY-----". Keys in PKCS#8 and newer OpenSSH
+  format are not supported. (GITHUB-1314)
+  [Tomaz Muraus]
 
 Compute
 ~~~~~~~
