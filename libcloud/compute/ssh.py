@@ -50,6 +50,8 @@ __all__ = [
     'SSHCommandTimeoutError'
 ]
 
+SUPPORTED_KEY_TYPES_URL = 'https://libcloud.readthedocs.io/en/latest/compute/deployment.html#supported-private-ssh-key-types' # NOQA
+
 
 class SSHCommandTimeoutError(Exception):
     """
@@ -511,7 +513,8 @@ class ParamikoSSHClient(BaseSSHClient):
                 return key
 
         msg = ('Invalid or unsupported key type (only RSA, DSS and ECDSA keys'
-               ' in PEM format are supported)')
+               ' in PEM format are supported). For more information on '
+               ' supported key file types, see %s' % (SUPPORTED_KEY_TYPES_URL))
         raise paramiko.ssh_exception.SSHException(msg)
 
 
