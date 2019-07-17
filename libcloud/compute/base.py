@@ -1500,7 +1500,7 @@ class NodeDriver(BaseDriver):
                 invalid_key_msgs = [
                     'no such file or directory',
                     'invalid key',
-                    'not a valid openssh private key file'
+                    'not a valid ',
                 ]
 
                 # Propagate (key) file doesn't exist errors
