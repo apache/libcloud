@@ -39,12 +39,13 @@ class GridscaleIp(object):
     :type create_time: ``str``
     """
 
-    def __init__(self, id, family, prefix, create_time, address):
+    def __init__(self, id, family, prefix, create_time, address, extra=None):
         self.id = id
         self.family = family
         self.prefix = prefix
         self.create_time = create_time
         self.ip_address = address
+        self.extra = extra or {}
 
     def __repr__(self):
         return ('Ip: id={}, family={}, prefix={}, create_time={},Ip_address={}'
@@ -438,19 +439,37 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             'templates', self.connection.poll_response_initial.object[
                 'object_uuid']))
 
-    def destroy_node(self, node):
+    def destroy_node(self, node, ex_destroy_associated_resources=False):
         """
         Destroy node.
 
         :param node: Node object.
         :type node: :class:`.Node`
 
+        :param ex_destroy_associated_resources: True to destroy associated
+        resources such as storage volumes and IPs.
+        :type ex_destroy_associated_resources: ``bool``
+
         :return: True if the destroy was successful, otherwise False.
         :rtype: ``bool``
         """
+        if ex_destroy_associated_resources:
+            associated_volumes = self.ex_get_volumes_for_node(node=node)
+            associated_ips = self.ex_get_ips_for_node(node=node)
+
+        # 1. Delete the server itself
         result = self._sync_request(endpoint='objects/servers/{}'
                                     .format(node.id),
                                     method='DELETE')
+
+        # 2. Destroy associated resouces (if requested)
+        if ex_destroy_associated_resources:
+            for volume in associated_volumes:
+                self.destroy_volume(volume=volume)
+
+            for ip in associated_ips:
+                self.ex_destroy_ip(ip=ip)
+
         return result.status == 204
 
     def destroy_volume(self, volume):
@@ -837,6 +856,44 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
                                     method='PATCH')
         return result
 
+    def ex_get_volumes_for_node(self, node):
+        """
+        Return a list of associated volumes for the provided node.
+
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
+        volumes = self.list_volumes()
+
+        result = []
+        for volume in volumes:
+            related_servers = volume.extra.get('relations', {}) \
+                .get('servers', [])
+            for server in related_servers:
+                if server['object_uuid'] == node.id:
+                    result.append(volume)
+
+        return result
+
+    def ex_get_ips_for_node(self, node):
+        """
+        Return a list of associated IPs for the provided node.
+
+        :rype: ``list`` of :class:`GridscaleIp`
+        """
+        ips = self.ex_list_ips()
+
+        result = []
+        for ip in ips:
+            related_servers = ip.extra.get('relations', {}) \
+                .get('servers', [])
+            for server in related_servers:
+                # TODO: This is not consistent with volumes where key is
+                # called "object_uuid"
+                if server['server_uuid'] == node.id:
+                    result.append(ip)
+
+        return result
+
     def _to_node(self, data):
         extra_keys = ['cores', 'power', 'memory', 'current_price', 'relations']
 
@@ -862,7 +919,6 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         return node
 
     def _to_volume(self, data):
-
         extra_keys = ['create_time', 'current_price', 'storage_type',
                       'relations']
 
@@ -898,10 +954,15 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         return location
 
     def _to_ip(self, data):
+        extra_keys = ['create_time', 'current_price', 'name',
+                      'relations', 'reverse_dns', 'status']
+        extra = self._extract_values_to_dict(data=data, keys=extra_keys)
+
         ip = GridscaleIp(id=data['object_uuid'], family=data['family'],
                          prefix=data['prefix'],
                          create_time=data['create_time'],
-                         address=data['ip'])
+                         address=data['ip'],
+                         extra=extra)
 
         return ip
 
