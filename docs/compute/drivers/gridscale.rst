@@ -25,6 +25,12 @@ Creating a Server
 .. literalinclude:: /examples/compute/gridscale/create_node.py
    :language: python
 
+Create a server, SSH into it and run deployment script on it
+------------------------------------------------------------
+
+.. literalinclude:: /examples/compute/gridscale/deploy_node.py
+   :language: python
+
 API Docs
 --------
 

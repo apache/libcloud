@@ -1306,7 +1306,7 @@ class NodeDriver(BaseDriver):
         key_file_path = os.path.expanduser(key_file_path)
 
         with open(key_file_path, 'r') as fp:
-            key_material = fp.read()
+            key_material = fp.read().strip()
 
         return self.import_key_pair_from_string(name=name,
                                                 key_material=key_material)
@@ -1494,12 +1494,22 @@ class NodeDriver(BaseDriver):
             try:
                 ssh_client.connect()
             except SSH_TIMEOUT_EXCEPTION_CLASSES as e:
+                # Errors which represent fatal invalid key files which should
+                # be propagated to the user
                 message = str(e).lower()
-                expected_msg = 'no such file or directory'
+                invalid_key_msgs = [
+                    'no such file or directory',
+                    'invalid key',
+                    'not a valid ',
+                ]
 
-                if isinstance(e, IOError) and expected_msg in message:
-                    # Propagate (key) file doesn't exist errors
-                    raise e
+                # Propagate (key) file doesn't exist errors
+                # NOTE: Paramiko only supports PEM private key format
+                # See https://github.com/paramiko/paramiko/issues/1313
+                # for details
+                for invalid_key_msg in invalid_key_msgs:
+                    if invalid_key_msg in message:
+                        raise e
 
                 # Retry if a connection is refused, timeout occurred,
                 # or the connection fails due to failed authentication.

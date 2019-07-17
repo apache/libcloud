@@ -12,17 +12,22 @@ General
   possible and the first project which was returned by the API was always
   selected. (GITHUB-1293)
   [Miguel Caballer - @micafer]
+
 - Add new ``extra`` attribute to the base ``NodeLocation`` class. (GITHUB-1282)
   [Dimitris Moraitis - @d-mo]
+
 - Remove various code patterns which were in place for supporting multiple
   Python versions, including 2.5 and 2.6. Libcloud hasn't supported Python <
   2.7 for a while now, so we can remove that code. (GITHUB-1307)
   [Tomaz Muraus]
+
 - Also run pylint on ``libcloud/compute/`` directory and fix various pylint
   violations. (GITHUB-1308)
   [Tomaz Muraus]
+
 - [OpenStack] Remove unused variable in parse_error (GITHUB-1260)
   [Rick van de Loo]
+
 - Add support for HTTPS proxies and fix ``driver.set_http_proxy()`` method.
 
   HTTPS proxy can be set up by either setting ``https_proxy`` / ``http_proxy``
@@ -33,6 +38,25 @@ General
   https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
   (GITHUB-1314)
   [Jim Liu - @hldh214, Tomaz Muraus]
+
+- Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
+  environment variable. (GITHUB-1315)
+  [Tomaz Muraaus]
+
+- Update paramiko SSH deployment client so it automatically tries to convert
+  private keys in PEM format with a header which paramiko doesn't recognize
+  into a format which paramiko recognizes.
+
+  NOTE: Paramiko only supports keys in PEM format. This means keys which start
+  with "----BEGIN <TYPE> PRIVATE KEY-----". Keys in PKCS#8 and newer OpenSSH
+  format are not supported.
+
+  For more information, see https://libcloud.readthedocs.io/en/latest/compute/deployment.html#supported-private-ssh-key-types
+  (GITHUB-1314)
+
+- Update Paramiko SSH client to throw a more user-friendly error if a private
+  key file in an unsupported format is used. (GITHUB-1314)
+  [Tomaz Muraus]
 
 Compute
 ~~~~~~~
@@ -99,6 +123,7 @@ Compute
   [Tomaz Muraus]
 
 - [Gridscale] Add new driver for Gridscale provider (https://gridscale.io).
+  (GITHUB-1305, GITHUB-1315)
   [Sydney Weber - @PrinceSydney]
 
 Storage

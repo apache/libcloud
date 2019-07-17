@@ -25,7 +25,7 @@ Provider                              list key pairs get key pair create key pai
 `Gandi`_                              yes            yes          no              yes                           no                          yes            
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
-`Gridscale`_                          yes            no           no              no                            no                          no             
+`Gridscale`_                          yes            no           no              yes                           no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
 `Ikoula`_                             yes            yes          yes             yes                           no                          yes            
 `Indosat`_                            no             no           no              no                            no                          no             

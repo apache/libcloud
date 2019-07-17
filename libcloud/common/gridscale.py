@@ -17,6 +17,11 @@
 Common settings and connection objects for gridscale
 """
 
+try:
+    import simplejson as json
+except Exception:
+    import json
+
 from libcloud.common.base import BaseDriver, PollingConnection
 from libcloud.common.base import ConnectionUserAndKey
 from libcloud.common.base import JsonResponse
@@ -58,6 +63,9 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
     """
     host = 'api.gridscale.io'
     responseCls = GridscaleResponse
+
+    def encode_data(self, data):
+        return json.dumps(data)
 
     def add_default_headers(self, headers):
         """

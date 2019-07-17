@@ -1295,7 +1295,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_import_key_pair_from_file(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
+            os.path.dirname(__file__), 'fixtures', 'misc', 'test_rsa.pub')
 
         with open(path, 'r') as fp:
             pub_key = fp.read()
@@ -1311,7 +1311,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_import_key_pair_from_string(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
+            os.path.dirname(__file__), 'fixtures', 'misc', 'test_rsa.pub')
 
         with open(path, 'r') as fp:
             pub_key = fp.read()

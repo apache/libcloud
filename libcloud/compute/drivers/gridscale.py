@@ -12,13 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
+
 import time
 
 from libcloud.common.gridscale import GridscaleBaseDriver
 from libcloud.common.gridscale import GridscaleConnection
 from libcloud.compute.base import NodeImage, NodeLocation, VolumeSnapshot, \
-    Node, StorageVolume, KeyPair, NodeState, StorageVolumeState
+    Node, StorageVolume, KeyPair, NodeState, StorageVolumeState, NodeDriver
 from libcloud.compute.providers import Provider
 from libcloud.utils.iso8601 import parse_date
 
@@ -39,15 +39,17 @@ class GridscaleIp(object):
     :type create_time: ``str``
     """
 
-    def __init__(self, id, family, prefix, create_time, address):
+    def __init__(self, id, family, prefix, create_time, address, extra=None):
         self.id = id
         self.family = family
         self.prefix = prefix
         self.create_time = create_time
         self.ip_address = address
+        self.extra = extra or {}
 
     def __repr__(self):
-        return ('Ip: id={}, family={}, prefix={}, create_time={},Ip_address={}'
+        return ('Ip: id={}, family={}, prefix={}, create_time={}, '
+                'ip_address={}'
                 .format(self.id, self.family,
                         self.prefix,
                         self.create_time,
@@ -83,7 +85,7 @@ class GridscaleNetwork(object):
                                       self.create_time, self.relations))
 
 
-class GridscaleNodeDriver(GridscaleBaseDriver):
+class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
     """
     create and entry in libcloud/compute/providers for gridscale
     """
@@ -202,7 +204,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
             templates.append(template)
         return sorted(templates, key=lambda sort: sort.name)
 
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None):
+    def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
+                    **kwargs):
         """
         Create a simple node  with a name, cores, memory at the designated
         location.
@@ -234,10 +237,10 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
             'name': name,
             'cores': size.extra['cores'],
             'memory': int(size.ram / 1024),
-            'location_uuid':
-                location.id}
+            'location_uuid': location.id
+        }
         self.connection.async_request('objects/servers/',
-                                      data=json.dumps(data),
+                                      data=data,
                                       method='POST')
 
         node = self._to_node(self._get_resource('servers', self.connection
@@ -279,10 +282,10 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         """
         self.connection.async_request(
             'objects/ips/',
-            data=json.dumps({
+            data={
                 'name': name,
                 'family': family,
-                'location_uuid': location.id}),
+                'location_uuid': location.id},
             method='POST')
 
         return self._to_ip(self._get_resource('ips', self.connection
@@ -304,9 +307,9 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         """
         self.connection.async_request(
             'objects/networks',
-            data=json.dumps({
+            data={
                 'name': name,
-                'location_uuid': location.id}),
+                'location_uuid': location.id},
             method='POST')
 
         return self._to_network(self._get_resource('network', self.connection
@@ -359,11 +362,11 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         template = template
         self.connection.async_request(
             'objects/storages/',
-            data=json.dumps({
+            data={
                 'name': name,
                 'capacity': size,
                 'location_uuid': location.id,
-                'template': template}),
+                'template': template},
             method='POST')
 
         return self._to_volume(self._get_resource('storages',
@@ -387,8 +390,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         """
         self.connection.async_request(
             'objects/storages/{}/snapshots'.format(volume.id),
-            data=json.dumps({
-                'name': name}),
+            data={
+                'name': name},
             method='POST')
 
         return self._to_volume_snapshot(self._get_resource(
@@ -414,7 +417,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
             self.connection.async_request(
                 'objects/storages/{}/snapshots/'
                 .format(storage_dict['object_uuid']),
-                data=json.dumps({'name': name + '_snapshot'}),
+                data={'name': name + '_snapshot'},
                 method='POST')
 
             snapshot_uuid = self.connection.poll_response_initial.object[
@@ -422,9 +425,9 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
             self.connection.async_request(
                 'objects/templates/',
-                data=json.dumps({
+                data={
                     'name': name,
-                    'snapshot_uuid': snapshot_uuid}),
+                    'snapshot_uuid': snapshot_uuid},
                 method='POST')
 
             snapshot_dict = self._get_response_dict(self._sync_request(
@@ -438,19 +441,37 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
             'templates', self.connection.poll_response_initial.object[
                 'object_uuid']))
 
-    def destroy_node(self, node):
+    def destroy_node(self, node, ex_destroy_associated_resources=False):
         """
         Destroy node.
 
         :param node: Node object.
         :type node: :class:`.Node`
 
+        :param ex_destroy_associated_resources: True to destroy associated
+        resources such as storage volumes and IPs.
+        :type ex_destroy_associated_resources: ``bool``
+
         :return: True if the destroy was successful, otherwise False.
         :rtype: ``bool``
         """
+        if ex_destroy_associated_resources:
+            associated_volumes = self.ex_list_volumes_for_node(node=node)
+            associated_ips = self.ex_list_ips_for_node(node=node)
+
+        # 1. Delete the server itself
         result = self._sync_request(endpoint='objects/servers/{}'
                                     .format(node.id),
                                     method='DELETE')
+
+        # 2. Destroy associated resouces (if requested)
+        if ex_destroy_associated_resources:
+            for volume in associated_volumes:
+                self.destroy_volume(volume=volume)
+
+            for ip in associated_ips:
+                self.ex_destroy_ip(ip=ip)
+
         return result.status == 204
 
     def destroy_volume(self, volume):
@@ -500,7 +521,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                     method='DELETE')
         return result.status == 204
 
-    def ex_destroy_networks(self, network):
+    def ex_destroy_network(self, network):
         """
         Delete network.
 
@@ -531,7 +552,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
                                     method='DELETE')
         return result.status == 204
 
-    def ex_rename_node(self, node, name=None):
+    def ex_rename_node(self, node, name):
         """
         Modify node name.
 
@@ -544,18 +565,18 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: ``True`` or ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'name': name}),
+        result = self._sync_request(data={'name': name},
                                     endpoint='objects/servers/{}'
                                     .format(node.id),
                                     method='PATCH')
         return result.status == 204
 
-    def ex_rename_storage(self, storage, name=None):
+    def ex_rename_volume(self, volume, name):
         """
-        Modify storage name
+        Modify storage volume name
 
-        :param storage: Storage.
-        :type storage: :class:.`StorageVolume`
+        :param volume: Storage.
+        :type volume: :class:.`StorageVolume`
 
         :param name: New storage name.
         :type name: ``str``
@@ -563,13 +584,13 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: ``True`` or ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'name': name}),
+        result = self._sync_request(data={'name': name},
                                     endpoint='objects/storages/{}'
-                                    .format(storage.id),
+                                    .format(volume.id),
                                     method='PATCH')
         return result.status == 204
 
-    def ex_rename_network(self, network, name=None):
+    def ex_rename_network(self, network, name):
         """
         Modify networks name.
 
@@ -582,7 +603,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: ``True`` or ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'name': name}),
+        result = self._sync_request(data={'name': name},
                                     endpoint='objects/networks/{}'
                                     .format(network.id),
                                     method='PATCH')
@@ -605,14 +626,14 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
         if node.extra['power'] is True:
             data = dict({'power': False})
-            self._sync_request(data=json.dumps(data),
+            self._sync_request(data=data,
                                endpoint='objects/servers/{}/power'
                                .format(node.id),
                                method='PATCH')
             time.sleep(ex_sleep_interval)
 
             data = dict({'power': True})
-            self._sync_request(data=json.dumps(data),
+            self._sync_request(data=data,
                                endpoint='objects/servers/{}/power'
                                .format(node.id),
                                method='PATCH')
@@ -621,6 +642,16 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         else:
 
             return False
+
+    def import_key_pair_from_string(self, name, key_material):
+        data = {
+            'name': name,
+            'sshkey': key_material
+        }
+        result = self._sync_request(endpoint='objects/sshkeys/', method='POST',
+                                    data=data)
+        key = self._to_key(result.object, name=name, sshkey=key_material)
+        return key
 
     def list_key_pairs(self):
         """
@@ -653,7 +684,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
     def ex_start_node(self, node):
 
-        result = self._sync_request(data=json.dumps({'power': True}),
+        result = self._sync_request(data={'power': True},
                                     endpoint='objects/servers/{}/power'
                                     .format(node.id),
                                     method='PATCH')
@@ -673,8 +704,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: None -> success
         :rtype: ``None``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    isoimage.id}),
+        result = self._sync_request(data={'object_uuid': isoimage.id},
                                     endpoint='objects/servers/{}/isoimages/'
                                     .format(node.id),
                                     method='POST')
@@ -692,8 +722,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
         :rytpe: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    volume.id}),
+        result = self._sync_request(data={'object_uuid': volume.id},
                                     endpoint='objects/servers/{}/storages/'
                                     .format(node.id),
                                     method='POST')
@@ -712,8 +741,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: ``True`` if linked sucessfully, otherwise ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    network.id}),
+        result = self._sync_request(data={'object_uuid': network.id},
                                     endpoint='objects/servers/{}/networks/'
                                     .format(node.id),
                                     method='POST')
@@ -732,8 +760,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: Request ID
         :rtype: ``str``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    ip.id}),
+        result = self._sync_request(data={'object_uuid': ip.id},
                                     endpoint='objects/servers/{}/ips/'
                                     .format(node.id),
                                     method='POST')
@@ -824,11 +851,49 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         :return: RequestID
         :rtype: ``str``
         """
-        result = self._sync_request(data=json.dumps({'rollback': rollback}),
+        result = self._sync_request(data={'rollback': rollback},
                                     endpoint='objects/storages/{}/snapshots/'
                                              '{}/rollback'
                                     .format(volume.id, snapshot.id),
                                     method='PATCH')
+        return result
+
+    def ex_list_volumes_for_node(self, node):
+        """
+        Return a list of associated volumes for the provided node.
+
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
+        volumes = self.list_volumes()
+
+        result = []
+        for volume in volumes:
+            related_servers = volume.extra.get('relations', {}) \
+                .get('servers', [])
+            for server in related_servers:
+                if server['object_uuid'] == node.id:
+                    result.append(volume)
+
+        return result
+
+    def ex_list_ips_for_node(self, node):
+        """
+        Return a list of associated IPs for the provided node.
+
+        :rype: ``list`` of :class:`GridscaleIp`
+        """
+        ips = self.ex_list_ips()
+
+        result = []
+        for ip in ips:
+            related_servers = ip.extra.get('relations', {}) \
+                .get('servers', [])
+            for server in related_servers:
+                # TODO: This is not consistent with volumes where key is
+                # called "object_uuid"
+                if server['server_uuid'] == node.id:
+                    result.append(ip)
+
         return result
 
     def _to_node(self, data):
@@ -856,7 +921,6 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         return node
 
     def _to_volume(self, data):
-
         extra_keys = ['create_time', 'current_price', 'storage_type',
                       'relations']
 
@@ -892,10 +956,15 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
         return location
 
     def _to_ip(self, data):
+        extra_keys = ['create_time', 'current_price', 'name',
+                      'relations', 'reverse_dns', 'status']
+        extra = self._extract_values_to_dict(data=data, keys=extra_keys)
+
         ip = GridscaleIp(id=data['object_uuid'], family=data['family'],
                          prefix=data['prefix'],
                          create_time=data['create_time'],
-                         address=data['ip'])
+                         address=data['ip'],
+                         extra=extra)
 
         return ip
 
@@ -919,14 +988,17 @@ class GridscaleNodeDriver(GridscaleBaseDriver):
 
         return template
 
-    def _to_key(self, data):
+    def _to_key(self, data, name=None, sshkey=None):
         extra = {
             'uuid': data['object_uuid'],
             'labels': data.get('labels', [])
         }
 
-        key = KeyPair(name=data['name'], fingerprint=data['object_uuid'],
-                      public_key=data['sshkey'], private_key=None, extra=extra,
+        name = data.get('name', name)
+        sshkey = data.get('sshkey', sshkey)
+
+        key = KeyPair(name=name, fingerprint=data['object_uuid'],
+                      public_key=sshkey, private_key=None, extra=extra,
                       driver=self.connection.driver)
 
         return key
