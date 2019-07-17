@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnumerationResults ServiceEndpoint="http://localhost:10000/account">
+  <Prefix></Prefix>
+  <Marker></Marker>
+  <MaxResults>100</MaxResults>
+  <Containers />
+  <NextMarker />
+</EnumerationResults>

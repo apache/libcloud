@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnumerationResults ContainerName="test_container" ServiceEndpoint="http://localhost:10000/account">
+    <Marker>object3.txt</Marker>
+    <MaxResults>2</MaxResults>
+    <Blobs>
+        <Blob>
+            <Name>object3.txt</Name>
+            <Properties>
+                <Last-Modified>Sat, 05 Jan 2013 03:52:08 GMT</Last-Modified>
+                <Etag>0x8CFB90F2B6FC022</Etag>
+                <Content-Length>1048576</Content-Length>
+                <Content-Type>application/octet-stream</Content-Type>
+                <Content-Encoding />
+                <Content-Language />
+                <Cache-Control />
+                <BlobType>BlockBlob</BlobType>
+                <LeaseStatus>unlocked</LeaseStatus>
+                <LeaseState>available</LeaseState>
+            </Properties>
+        </Blob>
+        <Blob>
+            <Name>object4.txt</Name>
+            <Properties>
+                <Last-Modified>Fri, 04 Jan 2013 10:20:14 GMT</Last-Modified>
+                <Etag>0x8CFB87C38717450</Etag>
+                <Content-Length>0</Content-Length>
+                <Content-Type>application/octet-stream</Content-Type>
+                <Content-Encoding /><Content-Language />
+                <Cache-Control />
+                <BlobType>BlockBlob</BlobType>
+                <LeaseStatus>unlocked</LeaseStatus>
+                <LeaseState>available</LeaseState>
+            </Properties>
+        </Blob>
+    </Blobs>
+    <NextMarker />
+</EnumerationResults>

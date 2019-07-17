@@ -43,6 +43,7 @@ from libcloud.test import unittest
 from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
+from libcloud.test.secrets import STORAGE_AZURITE_BLOBS_PARAMS
 
 
 class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
@@ -364,6 +365,19 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
     def _assert_content_length_header_is_string(self, headers):
         if 'Content-Length' in headers:
             self.assertTrue(isinstance(headers['Content-Length'], basestring))
+
+
+class AzuriteBlobsMockHttp(AzureBlobsMockHttp):
+    fixtures = StorageFileFixtures('azurite_blobs')
+
+    def _get_method_name(self, *args, **kwargs):
+        method_name = super(AzuriteBlobsMockHttp, self).\
+            _get_method_name(*args, **kwargs)
+
+        if method_name.startswith('_account'):
+            method_name = method_name[8:]
+
+        return method_name
 
 
 class AzureBlobsTests(unittest.TestCase):
@@ -986,6 +1000,11 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(host1, 'fakeaccount1.blob.core.windows.net')
         self.assertEqual(host2, 'fakeaccount2.blob.core.windows.net')
         self.assertEqual(host3, 'test.foo.bar.com')
+
+
+class AzuriteBlobsTests(AzureBlobsTests):
+    driver_args = STORAGE_AZURITE_BLOBS_PARAMS
+    mock_response_klass = AzuriteBlobsMockHttp
 
 
 if __name__ == '__main__':

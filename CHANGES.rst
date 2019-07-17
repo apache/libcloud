@@ -104,6 +104,11 @@ Compute
 Storage
 ~~~~~~~
 
+- [Azure Blobs] Enable the Azure storage driver to be used with the Azurite
+  Storage Emulator and Azure Blob Storage on IoT Edge.
+  (LIBCLOUD-1037, GITHUB-1278)
+  [Clemens Wolff - @c-w]
+
 - [Azure Blobs] Fix a bug with Azure storage driver works when used against a
   storage account that was created using ``kind=BlobStrage``. The includes
   updating minimum API version used / supported by storage driver from
