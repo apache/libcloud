@@ -263,7 +263,8 @@ class ParamikoSSHClient(BaseSSHClient):
         # format staring with "BEGIN RSA PRIVATE KEY".
         # If key_files are provided and a key looks like a PEM formatted key
         # we try to convert it into a format supported by paramiko
-        if self.key_files and not isinstance(self.key_files, (list, tuple)):
+        if (self.key_files and not isinstance(self.key_files, (list, tuple))
+                and os.path.isfile(self.key_files)):
             with open(self.key_files, 'r') as fp:
                 key_material = fp.read()
 
