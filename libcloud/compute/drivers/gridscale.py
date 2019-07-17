@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
+
 import time
 
 from libcloud.common.gridscale import GridscaleBaseDriver
@@ -237,7 +237,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             'location_uuid':
                 location.id}
         self.connection.async_request('objects/servers/',
-                                      data=json.dumps(data),
+                                      data=data,
                                       method='POST')
 
         node = self._to_node(self._get_resource('servers', self.connection
@@ -279,10 +279,10 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         """
         self.connection.async_request(
             'objects/ips/',
-            data=json.dumps({
+            data={
                 'name': name,
                 'family': family,
-                'location_uuid': location.id}),
+                'location_uuid': location.id},
             method='POST')
 
         return self._to_ip(self._get_resource('ips', self.connection
@@ -304,9 +304,9 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         """
         self.connection.async_request(
             'objects/networks',
-            data=json.dumps({
+            data={
                 'name': name,
-                'location_uuid': location.id}),
+                'location_uuid': location.id},
             method='POST')
 
         return self._to_network(self._get_resource('network', self.connection
@@ -359,11 +359,11 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         template = template
         self.connection.async_request(
             'objects/storages/',
-            data=json.dumps({
+            data={
                 'name': name,
                 'capacity': size,
                 'location_uuid': location.id,
-                'template': template}),
+                'template': template},
             method='POST')
 
         return self._to_volume(self._get_resource('storages',
@@ -387,8 +387,8 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         """
         self.connection.async_request(
             'objects/storages/{}/snapshots'.format(volume.id),
-            data=json.dumps({
-                'name': name}),
+            data={
+                'name': name},
             method='POST')
 
         return self._to_volume_snapshot(self._get_resource(
@@ -414,7 +414,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
             self.connection.async_request(
                 'objects/storages/{}/snapshots/'
                 .format(storage_dict['object_uuid']),
-                data=json.dumps({'name': name + '_snapshot'}),
+                data={'name': name + '_snapshot'},
                 method='POST')
 
             snapshot_uuid = self.connection.poll_response_initial.object[
@@ -422,9 +422,9 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
             self.connection.async_request(
                 'objects/templates/',
-                data=json.dumps({
+                data={
                     'name': name,
-                    'snapshot_uuid': snapshot_uuid}),
+                    'snapshot_uuid': snapshot_uuid},
                 method='POST')
 
             snapshot_dict = self._get_response_dict(self._sync_request(
@@ -544,7 +544,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: ``True`` or ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'name': name}),
+        result = self._sync_request(data={'name': name},
                                     endpoint='objects/servers/{}'
                                     .format(node.id),
                                     method='PATCH')
@@ -563,7 +563,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: ``True`` or ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'name': name}),
+        result = self._sync_request(data={'name': name},
                                     endpoint='objects/storages/{}'
                                     .format(storage.id),
                                     method='PATCH')
@@ -582,7 +582,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: ``True`` or ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'name': name}),
+        result = self._sync_request(data={'name': name},
                                     endpoint='objects/networks/{}'
                                     .format(network.id),
                                     method='PATCH')
@@ -605,14 +605,14 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
         if node.extra['power'] is True:
             data = dict({'power': False})
-            self._sync_request(data=json.dumps(data),
+            self._sync_request(data=data,
                                endpoint='objects/servers/{}/power'
                                .format(node.id),
                                method='PATCH')
             time.sleep(ex_sleep_interval)
 
             data = dict({'power': True})
-            self._sync_request(data=json.dumps(data),
+            self._sync_request(data=data,
                                endpoint='objects/servers/{}/power'
                                .format(node.id),
                                method='PATCH')
@@ -663,7 +663,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
     def ex_start_node(self, node):
 
-        result = self._sync_request(data=json.dumps({'power': True}),
+        result = self._sync_request(data={'power': True},
                                     endpoint='objects/servers/{}/power'
                                     .format(node.id),
                                     method='PATCH')
@@ -683,8 +683,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: None -> success
         :rtype: ``None``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    isoimage.id}),
+        result = self._sync_request(data={'object_uuid': isoimage.id},
                                     endpoint='objects/servers/{}/isoimages/'
                                     .format(node.id),
                                     method='POST')
@@ -702,8 +701,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
         :rytpe: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    volume.id}),
+        result = self._sync_request(data={'object_uuid': volume.id},
                                     endpoint='objects/servers/{}/storages/'
                                     .format(node.id),
                                     method='POST')
@@ -722,8 +720,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: ``True`` if linked sucessfully, otherwise ``False``
         :rtype: ``bool``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    network.id}),
+        result = self._sync_request(data={'object_uuid': network.id},
                                     endpoint='objects/servers/{}/networks/'
                                     .format(node.id),
                                     method='POST')
@@ -742,8 +739,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: Request ID
         :rtype: ``str``
         """
-        result = self._sync_request(data=json.dumps({'object_uuid':
-                                                    ip.id}),
+        result = self._sync_request(data={'object_uuid': ip.id},
                                     endpoint='objects/servers/{}/ips/'
                                     .format(node.id),
                                     method='POST')
@@ -834,7 +830,7 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
         :return: RequestID
         :rtype: ``str``
         """
-        result = self._sync_request(data=json.dumps({'rollback': rollback}),
+        result = self._sync_request(data={'rollback': rollback},
                                     endpoint='objects/storages/{}/snapshots/'
                                              '{}/rollback'
                                     .format(volume.id, snapshot.id),
