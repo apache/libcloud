@@ -18,7 +18,7 @@ import time
 from libcloud.common.gridscale import GridscaleBaseDriver
 from libcloud.common.gridscale import GridscaleConnection
 from libcloud.compute.base import NodeImage, NodeLocation, VolumeSnapshot, \
-    Node, StorageVolume, KeyPair, NodeState, StorageVolumeState
+    Node, StorageVolume, KeyPair, NodeState, StorageVolumeState, NodeDriver
 from libcloud.compute.providers import Provider
 from libcloud.utils.iso8601 import parse_date
 
@@ -83,7 +83,7 @@ class GridscaleNetwork(object):
                                       self.create_time, self.relations))
 
 
-class GridscaleNodeDriver(GridscaleBaseDriver):
+class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
     """
     create and entry in libcloud/compute/providers for gridscale
     """
