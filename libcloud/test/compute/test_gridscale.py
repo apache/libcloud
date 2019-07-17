@@ -165,6 +165,18 @@ class Gridscale_Tests(LibcloudTestCase):
         self.assertEqual(len(ips), 1)
         self.assertEqual(ips[0].ip_address, '185.102.95.236')
 
+    def test_ex_rename_node(self):
+        node = self.driver.list_nodes()[0]
+        self.assertTrue(self.driver.ex_rename_node(node, name='new-name'))
+
+    def test_ex_rename_volume(self):
+        volume = self.driver.list_volumes()[0]
+        self.assertTrue(self.driver.ex_rename_volume(volume, name='new-name'))
+
+    def test_ex_network(self):
+        network = self.driver.ex_list_networks()[0]
+        self.assertTrue(self.driver.ex_rename_network(network, name='new-name'))
+
 
 class GridscaleMockHttp(MockHttp):
     fixtures = ComputeFileFixtures('gridscale')
@@ -212,10 +224,37 @@ class GridscaleMockHttp(MockHttp):
         body = self.fixtures.load('list_volume_snapshots.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    # create_node
+    def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f(
+        self, method, url, body, headers):
+        # test_ex_rename_node
+        if method == 'PATCH':
+            return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+
+        raise ValueError('Invalid method')
+
+    def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee(
+        self, method, url, body, headers):
+        # test_ex_rename_node
+        if method == 'PATCH':
+            return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+
+        raise ValueError('Invalid method')
+
+    def _objects_networks_1196529b_a8de_417f(
+        self, method, url, body, headers):
+        # test_ex_rename_network
+        if method == 'PATCH':
+            return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+
+        raise ValueError('Invalid method')
+
     def _objects_servers_POST(self, method, url, body, headers):
-        body = self.fixtures.load('create_node.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        # create_node
+        if method == 'POST':
+            body = self.fixtures.load('create_node.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+        raise ValueError('Invalid method')
 
     def _requests_x123xx1x_123x_1x12_123x_123xxx123x1x_POST(self, method, url,
                                                             body, headers):
@@ -237,10 +276,11 @@ class GridscaleMockHttp(MockHttp):
         body = self.fixtures.load('create_volume_response_dict.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    #ex_create_ip
     def _objects_ips_POST(self, method, url, body, headers):
-        body = self.fixtures.load('create_ip.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        # ex_create_ip
+        if method == 'POST':
+            body = self.fixtures.load('create_ip.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_ips_690de890_13c0_4e76_8a01_e10ba8786e53_POST(self, method, url,
                                                                 body, headers):
@@ -261,46 +301,57 @@ class GridscaleMockHttp(MockHttp):
 
     def _objects_networks_1196529b_a8de_417f_DELETE(self, method, url, body, headers):
         # test_ex_destroy_network
-        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+        if method == 'DELETE':
+            return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+
+        raise ValueError('Invalid method')
 
     def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f_networks_POST(self, method, url, body, headers):
         body = self.fixtures.load('network_to_node.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f_power_POST(self, method, url, body, headers):
-        body = self.fixtures.load('ex_start_node.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'PATCH':
+            body = self.fixtures.load('ex_start_node.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f_POST(self, method, url, body, headers):
         body = self.fixtures.load('create_node_dict.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_networks(self, method, url, body, headers):
-        body = self.fixtures.load('ex_list_networks.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('ex_list_networks.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_ips(self, method, url, body, headers):
-        body = self.fixtures.load('ex_list_ips.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('ex_list_ips.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f_DELETE(self, method, url, body, headers):
-        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+        if method == 'DELETE':
+            return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee_DELETE(self, method, url, body, headers):
-        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+        if method == 'DELETE':
+            return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee_snapshots_d755de62_4d75_4d61_addd_a5c9743a5deb_DELETE(self, method, url, body, headers):
-        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
+        if method == 'DELETE':
+            return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_templates_POST(self, method, url, body, headers):
         # create_image
-        body = self.fixtures.load('create_image.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'POST':
+            body = self.fixtures.load('create_image.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee_snapshots_POST(self, method, url, body, headers):
         # create_image
-        body = self.fixtures.load('create_image.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'POST':
+            body = self.fixtures.load('create_image.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee_snapshots_690de890_13c0_4e76_8a01_e10ba8786e53_POST(self, method, url, body, headers):
         # create_image
@@ -309,13 +360,15 @@ class GridscaleMockHttp(MockHttp):
 
     def _objects_templates_690de890_13c0_4e76_8a01_e10ba8786e53_POST(self, method, url, body, headers):
         # create_image
-        body = self.fixtures.load('create_image_dict.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('create_image_dict.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_templates_12345(self, method, url, body, headers):
         # get_image
-        body = self.fixtures.load('get_image.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('get_image.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
