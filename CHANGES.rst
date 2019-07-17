@@ -23,6 +23,16 @@ General
   [Tomaz Muraus]
 - [OpenStack] Remove unused variable in parse_error (GITHUB-1260)
   [Rick van de Loo]
+- Add support for HTTPS proxies and fix ``driver.set_http_proxy()`` method.
+
+  HTTPS proxy can be set up by either setting ``https_proxy`` / ``http_proxy``
+  environment variable or by using
+  ``driver.connection.connection.set_http_proxy`` method.
+
+  For more information, please refer to the documentation -
+  https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
+  (GITHUB-1314)
+  [Jim Liu - @hldh214, Tomaz Muraus]
 
 Compute
 ~~~~~~~
