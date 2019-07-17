@@ -48,7 +48,8 @@ class GridscaleIp(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return ('Ip: id={}, family={}, prefix={}, create_time={}, ip_address={}'
+        return ('Ip: id={}, family={}, prefix={}, create_time={}, '
+                'ip_address={}'
                 .format(self.id, self.family,
                         self.prefix,
                         self.create_time,

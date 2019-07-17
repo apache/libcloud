@@ -42,7 +42,7 @@ class Gridscale_Tests(LibcloudTestCase):
         sshkey = ["b1682d3a-1869-4bdc-8ffe-e74a261d300c"]
         GridscaleMockHttp.type = 'POST'
         node = self.driver.create_node(name='test', size=size, image=image,
-                                        location=location, ex_ssh_key_ids=sshkey)
+                                       location=location, ex_ssh_key_ids=sshkey)
 
         self.assertEqual(node.name, 'test.test')
         self.assertEqual(node.public_ips, ['185.102.95.236', '2a06:2380:0:1::211'])
@@ -51,8 +51,7 @@ class Gridscale_Tests(LibcloudTestCase):
         node = self.driver.list_nodes()[0]
         GridscaleMockHttp.type = 'POST'
         image = self.driver.create_image(node, 'test.test')
-
-
+        self.assertTrue(image)
 
     def test_list_nodes_success(self):
         nodes = self.driver.list_nodes()
@@ -182,7 +181,7 @@ class GridscaleMockHttp(MockHttp):
 
     def _objects_ips_56b8d161_325b_4fd4_DELETE(self, method, url, body, headers):
         # test_destroy_node_success
-        return (httplib.NO_CONTENT, None , {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_storages_EMPTY(self, method, url, body, headers):
         body = self.fixtures.load('list_volumes_empty.json')
@@ -213,9 +212,10 @@ class GridscaleMockHttp(MockHttp):
 
     def _objects_servers_690de890_13c0_4e76_8a01_e10ba8786e53_POST(self, method, url,
                                                             body, headers):
-        body =  self.fixtures.load('create_node_dict.json')
+        body = self.fixtures.load('create_node_dict.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    #create_volume
+
+    # create_volume
     def _objects_storages_POST(self, method, url, body, headers):
         body = self.fixtures.load('create_volume.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -224,6 +224,7 @@ class GridscaleMockHttp(MockHttp):
                                                                     url, body, headers):
         body = self.fixtures.load('create_volume_response_dict.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     #ex_create_ip
     def _objects_ips_POST(self, method, url, body, headers):
         body = self.fixtures.load('create_ip.json')
@@ -267,13 +268,13 @@ class GridscaleMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _objects_servers_1479405e_d46c_47a2_91e8_eb43951c899f_DELETE(self, method, url, body, headers):
-        return (httplib.NO_CONTENT, None , {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee_DELETE(self, method, url, body, headers):
-        return (httplib.NO_CONTENT, None , {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_storages_e66bb753_4a03_4ee2_a069_a601f393c9ee_snapshots_d755de62_4d75_4d61_addd_a5c9743a5deb_DELETE(self, method, url, body, headers):
-        return (httplib.NO_CONTENT, None , {}, httplib.responses[httplib.NO_CONTENT])
+        return (httplib.NO_CONTENT, None, {}, httplib.responses[httplib.NO_CONTENT])
 
     def _objects_templates_POST(self, method, url, body, headers):
         # create_image
@@ -299,6 +300,7 @@ class GridscaleMockHttp(MockHttp):
         # get_image
         body = self.fixtures.load('get_image.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
