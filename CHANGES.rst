@@ -133,6 +133,12 @@ Compute
   (GITHUB-1230)
   [Amel Ajdinovic - @aajdinov]
 
+- [DigitalOcean] Update ``list_locations`` method in the DigitalOcean driver
+  to only returns regions which are available by default. If you want to list
+  all the regions, you need to pass ``ex_available=False`` argument to the
+  method. (GITHUB-1001)
+  [Markos Gogoulos]
+
 Storage
 ~~~~~~~
 
