@@ -139,6 +139,10 @@ Compute
   method. (GITHUB-1001)
   [Markos Gogoulos]
 
+- [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
+  (GITHUB-1205)
+  [Dan Hunsaker - @danhunsaker]
+
 Storage
 ~~~~~~~
 
