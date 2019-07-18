@@ -19,7 +19,6 @@ Provides generic deployment steps for machines post boot.
 
 from __future__ import with_statement
 
-from typing import Type
 from typing import Union
 from typing import Optional
 from typing import List
@@ -161,16 +160,17 @@ class ScriptDeployment(Deployment):
 
         self.script = script
         self.args = args or []
-        self.stdout = None
-        self.stderr = None
-        self.exit_status = None
+        self.stdout = None  # type: Optional[str]
+        self.stderr = None  # type: Optional[str]
+        self.exit_status = None  # type: Optional[int]
         self.delete = delete
-        self.name = name
+        self.name = name  # type: Optional[str]
 
         if self.name is None:
             # File is put under user's home directory
             # (~/libcloud_deployment_<random_string>.sh)
-            random_string = binascii.hexlify(os.urandom(4))  # type: Union[bytes, str]
+            random_string = ''  # type: Union[str, bytes]
+            random_string = binascii.hexlify(os.urandom(4))
             random_string = cast(bytes, random_string)
             random_string = random_string.decode('ascii')
             self.name = 'libcloud_deployment_%s.sh' % (random_string)
@@ -182,6 +182,7 @@ class ScriptDeployment(Deployment):
 
         See also :class:`Deployment.run`
         """
+        self.name = cast(str, self.name)
         file_path = client.put(path=self.name, chmod=int('755', 8),
                                contents=self.script)
 
@@ -190,6 +191,7 @@ class ScriptDeployment(Deployment):
             base_path = os.path.dirname(file_path)
             name = os.path.join(base_path, self.name)
         else:
+            self.name = cast(str, self.name)
             name = self.name
 
         cmd = name

@@ -141,7 +141,7 @@ class BaseSSHClient(object):
             'connect not implemented for this ssh client')
 
     def put(self, path, contents=None, chmod=None, mode='w'):
-        # type: (str, Optional[str], Optional[int], str) -> str
+        # type: (str, Optional[Union[str, bytes]], Optional[int], str) -> str
         """
         Upload a file to the remote node.
 

@@ -17,6 +17,8 @@
 Amazon EC2, Eucalyptus, Nimbus and Outscale drivers.
 """
 
+from typing import List
+
 import re
 import base64
 import copy
