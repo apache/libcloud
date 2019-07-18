@@ -1866,6 +1866,22 @@ class AzureNodeDriver(NodeDriver):
                                     method='PUT')
         return self._to_ip_address(r.object)
 
+    def ex_delete_public_ip(self, public_ip):
+        """
+        Delete a public ip address resource.
+
+        :param public_ip: Public ip address resource to delete
+        :type public_ip: `.AzureIPAddress`
+        """
+        resource = resource.id
+        self.connection.request(
+            resource,
+            method='DELETE',
+            params={
+                'api-version': "2019-06-01"
+            },
+        )
+
     def ex_create_network_interface(self, name, subnet, resource_group,
                                     location=None, public_ip=None):
         """
