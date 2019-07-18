@@ -112,16 +112,17 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = self._paginated_request('/v2/account/keys', 'ssh_keys')
         return list(map(self._to_key_pair, data))
 
-    def list_locations(self, available=True):
+    def list_locations(self, ex_available=True):
         """
         List locations
 
-        If available is True, show only locations which are available
+        :param ex_available: Only return locations which are available.
+        :type ex_evailable: ``bool``
         """
         locations = []
         data = self._paginated_request('/v2/regions', 'regions')
         for location in data:
-            if available:
+            if ex_available:
                 if location.get('available'):
                     locations.append(self._to_location(location))
             else:
@@ -198,12 +199,6 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             raise ValueError('Failed to create node: %s' % (error_message))
 
         return self._to_node(data=data)
-
-    def ex_start_node(self, node):
-        params = {"type": "power_on"}
-        res = self.connection.request('/v2/droplets/%s/actions/' % node.id,
-                                      params=params, method='POST')
-        return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
     def destroy_node(self, node):
         res = self.connection.request('/v2/droplets/%s' % (node.id),
@@ -669,8 +664,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                  'regions': data['regions'],
                  'min_disk_size': data['min_disk_size'],
                  'created_at': data['created_at']}
-        name = "%s %s" % (data.get('distribution'), data.get('name'))
-        return NodeImage(id=data['id'], name=name, driver=self,
+        return NodeImage(id=data['id'], name=data['name'], driver=self,
                          extra=extra)
 
     def _to_volume(self, data):
