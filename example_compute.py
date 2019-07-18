@@ -22,7 +22,9 @@ Rackspace = get_driver(Provider.RACKSPACE)
 drivers = [EC2('access key id', 'secret key', region='us-east-1'),
            Rackspace('username', 'api key', region='iad')]
 
-nodes = [driver.list_nodes() for driver in drivers]
+nodes = []
+for driver in drivers:
+    nodes.extend(driver.list_nodes())
 
 print(nodes)
 # [ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
