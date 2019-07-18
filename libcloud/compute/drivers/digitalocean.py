@@ -112,9 +112,21 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = self._paginated_request('/v2/account/keys', 'ssh_keys')
         return list(map(self._to_key_pair, data))
 
-    def list_locations(self):
+    def list_locations(self, available=True):
+        """
+        List locations
+
+        If available is True, show only locations which are available
+        """
+        locations = []
         data = self._paginated_request('/v2/regions', 'regions')
-        return list(map(self._to_location, data))
+        for location in data:
+            if available:
+                if location.get('available'):
+                    locations.append(self._to_location(location))
+            else:
+                locations.append(self._to_location(location))
+        return locations
 
     def list_nodes(self):
         data = self._paginated_request('/v2/droplets', 'droplets')
@@ -186,6 +198,12 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             raise ValueError('Failed to create node: %s' % (error_message))
 
         return self._to_node(data=data)
+
+    def ex_start_node(self, node):
+        params = {"type": "power_on"}
+        res = self.connection.request('/v2/droplets/%s/actions/' % node.id,
+                                      params=params, method='POST')
+        return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
     def destroy_node(self, node):
         res = self.connection.request('/v2/droplets/%s' % (node.id),
@@ -614,7 +632,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         return resp.status == httplib.CREATED
 
     def _to_node(self, data):
-        extra_keys = ['memory', 'vcpus', 'disk', 'region', 'image',
+        extra_keys = ['memory', 'vcpus', 'disk', 'image', 'size',
                       'size_slug', 'locked', 'created_at', 'networks',
                       'kernel', 'backup_ids', 'snapshot_ids', 'features',
                       'tags']
@@ -638,7 +656,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         for key in extra_keys:
             if key in data:
                 extra[key] = data[key]
-
+        extra['region'] = data.get('region', {}).get('name')
         node = Node(id=data['id'], name=data['name'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
                     created_at=created, driver=self, extra=extra)
@@ -651,7 +669,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                  'regions': data['regions'],
                  'min_disk_size': data['min_disk_size'],
                  'created_at': data['created_at']}
-        return NodeImage(id=data['id'], name=data['name'], driver=self,
+        name = "%s %s" % (data.get('distribution'), data.get('name'))
+        return NodeImage(id=data['id'], name=name, driver=self,
                          extra=extra)
 
     def _to_volume(self, data):
@@ -665,8 +684,9 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
                              extra=extra)
 
     def _to_location(self, data):
+        extra = data.get('features', [])
         return NodeLocation(id=data['slug'], name=data['name'], country=None,
-                            driver=self)
+                            extra=extra, driver=self)
 
     def _to_size(self, data):
         extra = {'vcpus': data['vcpus'],

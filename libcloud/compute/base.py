@@ -459,6 +459,10 @@ class NodeLocation(object):
 
         :param driver: Driver this location belongs to.
         :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provided specific attributes associated with
+                      this location.
+        :type extra: ``dict``
         """
         self.id = str(id)
         self.name = name
