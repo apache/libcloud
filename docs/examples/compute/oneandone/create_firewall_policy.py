@@ -14,9 +14,9 @@ my_rules = [
         "source": "0.0.0.0"
     },
     {
+        "description": "Testing firewall improvements",
         "protocol": "TCP",
-        "port_from": 443,
-        "port_to": 443,
+        "port": 443,
         "source": "0.0.0.0"
     }
 ]
