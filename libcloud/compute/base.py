@@ -764,11 +764,10 @@ class NodeDriver(BaseDriver):
 
     connectionCls = ConnectionKey  # type: Type[Connection]
     name = None  # type: str
+    api_name = None  # type: str
     website = None  # type: str
     type = None  # type: Provider
     port = None  # type: int
-    website = None  # type: str
-    api_name = None  # type: str
     features = {'create_node': []}  # type: Dict[str, List[str]]
 
     """

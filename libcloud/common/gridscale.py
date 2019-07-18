@@ -20,7 +20,7 @@ Common settings and connection objects for gridscale
 try:
     import simplejson as json
 except Exception:
-    import json
+    import json  # type: ignore
 
 from libcloud.common.base import BaseDriver, PollingConnection
 from libcloud.common.base import ConnectionUserAndKey

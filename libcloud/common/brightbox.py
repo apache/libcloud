@@ -23,7 +23,7 @@ from libcloud.utils.py3 import base64_encode_string
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 
 class BrightboxResponse(JsonResponse):

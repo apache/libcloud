@@ -34,7 +34,7 @@ from libcloud.common.openstack_identity import (OpenStackServiceCatalog,
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 AUTH_API_VERSION = '1.1'
 

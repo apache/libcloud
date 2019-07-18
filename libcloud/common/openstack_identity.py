@@ -573,7 +573,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     """
     responseCls = OpenStackAuthResponse
     timeout = None
-    auth_version = None
+    auth_version = None  # type: str
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',

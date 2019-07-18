@@ -30,6 +30,7 @@ from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
+from libcloud.common.base import BaseDriver
 
 # The time format for headers in Azure requests
 AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
@@ -230,7 +231,7 @@ class AzureConnection(ConnectionUserAndKey):
         return 'SharedKey %s:%s' % (self.user_id, b64_hmac.decode('utf-8'))
 
 
-class AzureBaseDriver(object):
+class AzureBaseDriver(BaseDriver):
     name = "Microsoft Azure Service Management API"
 
 

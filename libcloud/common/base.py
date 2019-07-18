@@ -15,6 +15,7 @@
 
 from typing import Union
 from typing import Type
+from typing import Optional
 
 import json
 import os
@@ -309,9 +310,9 @@ class Connection(object):
     connection = None
     host = '127.0.0.1'  # type: str
     port = 443
-    timeout = None  # type: Union[int, float]
+    timeout = None  # type: Optional[Union[int, float]]
     secure = 1
-    driver = None
+    driver = None  # type:  Type[BaseDriver]
     action = None
     cache_busting = False
     backoff = None

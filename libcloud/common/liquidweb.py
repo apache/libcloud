@@ -161,7 +161,6 @@ EXCEPTIONS_FIELDS = {
 class LiquidWebResponse(JsonResponse):
     objects = None
     errors = None
-    error_dict = {}
 
     def __init__(self, response, connection):
         self.errors = []
