@@ -1172,10 +1172,13 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
                                                       'auto_ipv6',
                                                       False)
         self.assertTrue(resp)
-        resp = self.driver.ex_modify_subnet_attribute(subnet,
-                                                      'invalid',
-                                                      True)
-        self.assertFalse(resp)
+
+        expected_msg = 'Unsupported attribute: invalid'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                self.driver.ex_modify_subnet_attribute,
+                                subnet,
+                                'invalid',
+                                True)
 
     def test_ex_delete_subnet(self):
         subnet = self.driver.ex_list_subnets()[0]

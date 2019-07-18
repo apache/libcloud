@@ -2853,7 +2853,7 @@ class BaseEC2NodeDriver(NodeDriver):
         elif attribute == 'auto_ipv6':
             params['AssignIpv6AddressOnCreation.Value'] = value
         else:
-            return False
+            raise ValueError('Unsupported attribute: %s' % (attribute))
 
         res = self.connection.request(self.path, params=params).object
 
