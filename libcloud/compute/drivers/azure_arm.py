@@ -1873,7 +1873,7 @@ class AzureNodeDriver(NodeDriver):
         :param public_ip: Public ip address resource to delete
         :type public_ip: `.AzureIPAddress`
         """
-        resource = resource.id
+        resource = public_ip.id
         self.connection.request(
             resource,
             method='DELETE',
