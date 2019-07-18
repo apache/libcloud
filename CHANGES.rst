@@ -126,6 +126,13 @@ Compute
   (GITHUB-1305, GITHUB-1315)
   [Sydney Weber - @PrinceSydney]
 
+- [Oneandone] Update Oneandone driver to accomodate latest changes to the API.
+  This means removing deprecated ``ex_remove_server_firewall_policy`` method
+  and replacing ``port_from`` and ``port_to`` argument on the firewall policy
+  with a single ``port`` attribute.
+  (GITHUB-1230)
+  [Amel Ajdinovic - @aajdinov]
+
 Storage
 ~~~~~~~
 
