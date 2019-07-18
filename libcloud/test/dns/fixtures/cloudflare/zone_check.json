@@ -1,9 +1,0 @@
-{
-  "response": {
-    "zones": {
-      "example.com": 4025956
-    }
-  },
-  "result": "success",
-  "msg": null
-}

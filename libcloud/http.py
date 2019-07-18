@@ -36,6 +36,7 @@ __all__ = [
 ALLOW_REDIRECTS = 1
 
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
+HTTPS_PROXY_ENV_VARIABLE_NAME = 'https_proxy'
 
 
 class SignedHTTPSAdapter(HTTPAdapter):
@@ -86,6 +87,7 @@ class LibcloudBaseConnection(object):
         :type proxy_url: ``str``
         """
         result = self._parse_proxy_url(proxy_url=proxy_url)
+
         scheme = result[0]
         host = result[1]
         port = result[2]
@@ -114,12 +116,12 @@ class LibcloudBaseConnection(object):
         """
         parsed = urlparse.urlparse(proxy_url)
 
-        if parsed.scheme != 'http':
-            raise ValueError('Only http proxies are supported')
+        if parsed.scheme not in ('http', 'https'):
+            raise ValueError('Only http and https proxies are supported')
 
         if not parsed.hostname or not parsed.port:
             raise ValueError('proxy_url must be in the following format: '
-                             'http://<proxy host>:<proxy port>')
+                             '<scheme>://<proxy host>:<proxy port>')
 
         proxy_scheme = parsed.scheme
         proxy_host, proxy_port = parsed.hostname, parsed.port
@@ -183,9 +185,16 @@ class LibcloudConnection(LibcloudBaseConnection):
             host,
             ":{0}".format(port) if port not in (80, 443) else ""
         )
-        # Support for HTTP proxy
-        proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME, None)
-        proxy_url = kwargs.pop('proxy_url', proxy_url_env)
+
+        # Support for HTTP(s) proxy
+        # NOTE: We always only use a single proxy (either HTTP or HTTPS)
+        https_proxy_url_env = os.environ.get(HTTPS_PROXY_ENV_VARIABLE_NAME,
+                                             None)
+        http_proxy_url_env = os.environ.get(HTTP_PROXY_ENV_VARIABLE_NAME,
+                                            https_proxy_url_env)
+
+        # Connection argument rgument has precedence over environment variables
+        proxy_url = kwargs.pop('proxy_url', http_proxy_url_env)
 
         self._setup_verify()
         self._setup_ca_cert()

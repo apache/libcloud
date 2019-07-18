@@ -83,6 +83,7 @@ class Provider(Type):
     :cvar EXOSCALE: Exoscale driver.
     :cvar GCE: Google Compute Engine
     :cvar GOGRID: GoGrid
+    :cvar GRIDSCALE: gridscale
     :cvar GRIDSPOT: Gridspot driver
     :cvar IBM: IBM Developer Cloud
     :cvar IKOULA: Ikoula driver.
@@ -133,6 +134,7 @@ class Provider(Type):
     GANDI = 'gandi'
     GCE = 'gce'
     GOGRID = 'gogrid'
+    GRIDSCALE = 'gridscale'
     GRIDSPOT = 'gridspot'
     HOSTVIRTUAL = 'hostvirtual'
     IBM = 'ibm'

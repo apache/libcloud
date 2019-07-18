@@ -16,7 +16,6 @@
 """
 Cloudwatt driver.
 """
-import sys
 try:
     import simplejson as json
 except ImportError:
@@ -70,8 +69,7 @@ class CloudwattAuthConnection(OpenStackIdentityConnection):
         else:
             try:
                 body = json.loads(resp.body)
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
 
             try:
@@ -81,8 +79,7 @@ class CloudwattAuthConnection(OpenStackIdentityConnection):
                 self.auth_token_expires = parse_date(expires)
                 self.urls = body['access']['serviceCatalog']
                 self.auth_user_info = None
-            except KeyError:
-                e = sys.exc_info()[1]
+            except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
 

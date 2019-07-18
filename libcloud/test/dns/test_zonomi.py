@@ -85,8 +85,7 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = 'GET_ZONE_DOES_NOT_EXIST'
         try:
             self.driver.get_zone('testzone.com')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, 'testzone.com')
         else:
             self.fail('Exception was not thrown.')
@@ -105,8 +104,7 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = 'DELETE_ZONE_DOES_NOT_EXIST'
         try:
             self.driver.delete_zone(zone=self.test_zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, self.test_zone.id)
         else:
             self.fail('Exception was not thrown.')
@@ -121,8 +119,7 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = 'CREATE_ZONE_ALREADY_EXISTS'
         try:
             self.driver.create_zone(domain='gamertest.com')
-        except ZoneAlreadyExistsError:
-            e = sys.exc_info()[1]
+        except ZoneAlreadyExistsError as e:
             self.assertEqual(e.zone_id, 'gamertest.com')
         else:
             self.fail('Exception was not thrown.')
@@ -185,8 +182,7 @@ class ZonomiTests(unittest.TestCase):
         try:
             self.driver.get_record(record_id=record_id,
                                    zone_id='zone.com')
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, record_id)
         else:
             self.fail('Exception was not thrown.')
@@ -209,8 +205,7 @@ class ZonomiTests(unittest.TestCase):
         record = self.test_record
         try:
             self.driver.delete_record(record=record)
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, record.id)
         else:
             self.fail('Exception was not thrown.')
@@ -228,8 +223,7 @@ class ZonomiTests(unittest.TestCase):
         try:
             self.driver.create_record(name='createrecord', type='A',
                                       data='127.0.0.1', zone=zone, extra={})
-        except RecordAlreadyExistsError:
-            e = sys.exc_info()[1]
+        except RecordAlreadyExistsError as e:
             self.assertEqual(e.record_id, 'createrecord')
         else:
             self.fail('Exception was not thrown.')
@@ -257,8 +251,7 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = 'COULDNT_CONVERT'
         try:
             self.driver.ex_convert_to_secondary(zone, '1.2.3.4')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, 'zone.com')
         else:
             self.fail('Exception was not thrown.')
@@ -273,8 +266,7 @@ class ZonomiTests(unittest.TestCase):
         ZonomiMockHttp.type = 'COULDNT_CONVERT'
         try:
             self.driver.ex_convert_to_master(zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, 'zone.com')
         else:
             self.fail('Exception was not thrown.')

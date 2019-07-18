@@ -378,7 +378,6 @@ class OpenStackResponse(Response):
             return self.body
 
     def parse_error(self):
-        text = None
         body = self.parse_body()
 
         if self.has_content_type('application/xml'):

@@ -698,10 +698,9 @@ class GoogleOAuth2Credential(object):
             with open(filename, 'r') as f:
                 data = f.read()
             token = json.loads(data)
-        except (IOError, ValueError):
+        except (IOError, ValueError) as e:
             # Note: File related errors (IOError) and errors related to json
             # parsing of the data (ValueError) are not fatal.
-            e = sys.exc_info()[1]
             LOG.info('Failed to read cached auth token from file "%s": %s',
                      filename, str(e))
 
@@ -721,11 +720,10 @@ class GoogleOAuth2Credential(object):
             with os.fdopen(os.open(filename, write_flags,
                                    int('600', 8)), 'w') as f:
                 f.write(data)
-        except Exception:
+        except Exception as e:
             # Note: Failure to write (cache) token in a file is not fatal. It
             # simply means degraded performance since we will need to acquire a
             # new token each time script runs.
-            e = sys.exc_info()[1]
             LOG.info('Failed to write auth token to file "%s": %s',
                      filename, str(e))
 
@@ -813,8 +811,7 @@ class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
             try:
                 return super(GoogleBaseConnection, self).request(
                     *args, **kwargs)
-            except socket.error:
-                e = sys.exc_info()[1]
+            except socket.error as e:
                 if e.errno == errno.ECONNRESET:
                     tries = tries + 1
                 else:

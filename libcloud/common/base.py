@@ -18,7 +18,6 @@ from typing import Type
 
 import json
 import os
-import sys
 import ssl
 import socket
 import copy
@@ -356,15 +355,20 @@ class Connection(object):
 
     def set_http_proxy(self, proxy_url):
         """
-        Set a HTTP proxy which will be used with this connection.
+        Set a HTTP / HTTPS proxy which will be used with this connection.
 
         :param proxy_url: Proxy URL (e.g. http://<hostname>:<port> without
                           authentication and
-                          http://<username>:<password>@<hostname>:<port> for
-                          basic auth authentication information.
+                          <scheme>://<username>:<password>@<hostname>:<port>
+                          for basic auth authentication information.
         :type proxy_url: ``str``
         """
         self.proxy_url = proxy_url
+
+        # NOTE: Because of the way connection instantion works, we need to call
+        # self.connection.set_http_proxy() here. Just setting "self.proxy_url"
+        # won't work.
+        self.connection.set_http_proxy(proxy_url=proxy_url)
 
     def set_context(self, context):
         if not isinstance(context, dict):
@@ -609,8 +613,7 @@ class Connection(object):
                 else:
                     self.connection.request(method=method, url=url, body=data,
                                             headers=headers, stream=stream)
-        except socket.gaierror:
-            e = sys.exc_info()[1]
+        except socket.gaierror as e:
             message = str(e)
             errno = getattr(e, 'errno', None)
 
@@ -627,8 +630,7 @@ class Connection(object):
                 raise socket.gaierror(msg)
             self.reset_context()
             raise e
-        except ssl.SSLError:
-            e = sys.exc_info()[1]
+        except ssl.SSLError as e:
             self.reset_context()
             raise ssl.SSLError(str(e))
 

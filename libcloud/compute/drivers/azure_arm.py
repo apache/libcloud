@@ -651,7 +651,7 @@ class AzureNodeDriver(NodeDriver):
                         {
                             "path": '/home/%s/.ssh/authorized_keys' % (
                                 ex_user_name),
-                            "keyData": auth.pubkey
+                            "keyData": auth.pubkey  # pylint: disable=no-member
                         }
                     ]
                 }

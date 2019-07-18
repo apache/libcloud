@@ -105,8 +105,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'FAIL'
         try:
             self.driver.list_images()
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(isinstance(e, LibcloudError))
         else:
             self.fail("test should have thrown")
@@ -115,8 +114,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         GoGridMockHttp.type = 'FAIL'
         try:
             self.driver.list_nodes()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)
         else:
@@ -130,8 +128,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
                 name='test1',
                 image=image,
                 size=self._get_test_512Mb_node_size())
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(isinstance(e, LibcloudError))
             self.assertTrue(e.driver is not None)
             self.assertEqual(e.driver.name, self.driver.name)

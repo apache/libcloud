@@ -17,9 +17,47 @@ As noted above, this functionality is there to help you bootstrap a server
 and is not a replacement for a configuration management software such as
 `Chef`_ `Puppet`_, `Salt`_, `CFEngine`_ and others.
 
-Once your server has been bootstrapped, libcloud.deploy task should be done
+Once your server has been bootstrapped, libcloud.deploy task should be finished
 and replaced by other tools such as previously mentioned configuration
 management software.
+
+Supported private SSH key types
+-------------------------------
+
+`paramiko`_ Python library we use for deployment only supports RSA, DSS and
+ECDSA private keys in PEM format.
+
+If you try to use key in an other format such as newer OpenSSH and PKCS#8
+format an exception will be thrown and deployment will fail.
+
+Keys which contain the following header should generally work:
+
+* ``-----BEGIN RSA PRIVATE KEY-----``
+* ``-----BEGIN DSA PRIVATE KEY-----``
+* ``-----BEGIN EC PRIVATE KEY-----``
+
+And keys which contain the following header won't work:
+
+* ``-----BEGIN OPENSSH PRIVATE KEY-----``
+* ``-----BEGIN PRIVATE KEY-----``
+
+To generate a RSA key in a compatible format, you can use the following
+commands:
+
+.. sourcecode:: bash
+
+    ssh-keygen -m PEM -t rsa -b 4096 -C "comment" -f ~/.ssh/id_rsa_libcloud
+    # Newer versions of OpenSSH will include a header which paramiko doesn't
+    # recognize so we also need to change a header to a format paramiko
+    # recognizes
+    sed -i "s/-----BEGIN PRIVATE KEY-----/-----BEGIN RSA PRIVATE KEY-----/g" ~/.ssh/id_rsa_libcloud
+    sed -i "s/-----END PRIVATE KEY-----/-----END RSA PRIVATE KEY-----/g" ~/.ssh/id_rsa_libcloud
+
+For details / reference, see the following issues:
+
+* https://github.com/paramiko/paramiko/issues/1015
+* https://github.com/paramiko/paramiko/issues/1363
+* https://github.com/paramiko/paramiko/issues/1313
 
 Deployment classes
 ------------------
@@ -42,8 +80,10 @@ Using deployment functionality
 This section describes how to use deployment functionality and
 :func:`libcloud.compute.base.NodeDriver.deploy_node` method.
 
-deploy_node method allows you to create a cloud server and run bootstrap
-commands on it. It works in the following steps:
+deploy_node method allows you to create a server and run bootstrap commands on
+it.
+
+This method performs the following operations:
 
 1. Create a server (same as ``create_node``, in fact it calls ``create_node``
    underneath)
@@ -53,13 +93,13 @@ commands on it. It works in the following steps:
 As noted above, second step waits for node to become available which means it
 can take a while. If for some reason deploy_node is timing out, make sure you
 are using a correct ``ssh_username``. You can troubleshoot deployment issues
-using LIBCLOUD_DEBUG method which is described on the
+using ``LIBCLOUD_DEBUG`` method which is described on the
 :ref:`troubleshooting page <troubleshooting>`.
 
 :func:`libcloud.compute.base.NodeDriver.deploy_node` takes the same base
 keyword arguments as the :func:`libcloud.compute.base.NodeDriver.create_node`
-method and couple of additional arguments. The most important ones are
-``deploy`` and ``auth``:
+method and a couple of additional arguments. The most important ones are
+``deploy``, ``auth`` and ``ssh_key``:
 
 * ``deploy`` argument specifies which deployment step or steps to run after the
   server has been created.
@@ -68,6 +108,13 @@ method and couple of additional arguments. The most important ones are
   password once the server has been created and this password is then used to
   log in. For more information, please see the create_node and deploy_node
   method docstring.
+* ``ssh_key`` - A path to a private SSH key file which will be used to
+  authenticate. Key needs to be in a format which is supported by paramiko
+  (see section on supported key types above).
+* ``ssh_username`` - SSH username used to login. If not provided, it defaults
+  to ``root``
+* ``ssh_port`` - Port of the SSH server. If not provided, it defaults to
+  ``22``.
 
 Some examples which demonstrate how this method can be used are displayed
 below.
@@ -95,3 +142,4 @@ shell script.
 .. _`Puppet`: http://puppetlabs.com/
 .. _`Salt`: http://docs.saltstack.com/topics/
 .. _`CFEngine`: http://cfengine.com/
+.. _`paramiko`: http://www.paramiko.org/

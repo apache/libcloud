@@ -271,11 +271,6 @@ class OneAndOneTests(unittest.TestCase):
             .ex_get_server_firewall_policies("srv_id", "ip_id")
         self.assertNotEqual(firewall, None)
 
-    def test_ex_remove_server_firewall_policies(self):
-        node = self.driver \
-            .ex_remove_server_firewall_policy("srv_id", "ip_id")
-        self.assertNotEqual(node, None)
-
     def test_ex_add_server_firewall_policy(self):
         node = self.driver \
             .ex_add_server_firewall_policy("srv_id", "ip_id", "fw_id")

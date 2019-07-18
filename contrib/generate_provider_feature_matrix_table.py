@@ -307,13 +307,16 @@ def generate_providers_table(api):
 
         for method_name in base_api_methods:
             base_method = base_methods[method_name]
-            driver_method = driver_methods[method_name]
 
             if method_name == 'deploy_node':
                 features = getattr(cls, 'features', {}).get('create_node', [])
                 is_implemented = len(features) >= 1
             else:
-                is_implemented = (id(driver_method) != id(base_method))
+                if method_name not in driver_methods:
+                    is_implemented = False
+                else:
+                    driver_method = driver_methods[method_name]
+                    is_implemented = (id(driver_method) != id(base_method))
 
             result[name]['methods'][method_name] = is_implemented
 

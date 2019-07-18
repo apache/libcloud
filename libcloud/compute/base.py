@@ -26,7 +26,6 @@ from typing import Type
 from typing import Optional
 from typing import Any
 
-import sys
 import time
 import hashlib
 import os
@@ -509,6 +508,10 @@ class NodeLocation(object):
 
         :param driver: Driver this location belongs to.
         :type driver: :class:`.NodeDriver`
+
+        :param extra: Optional provided specific attributes associated with
+                      this location.
+        :type extra: ``dict``
         """
         self.id = str(id)
         self.name = name
@@ -757,7 +760,6 @@ class NodeDriver(BaseDriver):
     This class is always subclassed by a specific driver.  For
     examples of base behavior of most functions (except deploy node)
     see the dummy driver.
-
     """
 
     connectionCls = ConnectionKey  # type: Type[Connection]
@@ -765,6 +767,8 @@ class NodeDriver(BaseDriver):
     website = None  # type: str
     type = None  # type: Provider
     port = None  # type: int
+    website = None  # type: str
+    api_name = None  # type: str
     features = {'create_node': []}  # type: Dict[str, List[str]]
 
     """
@@ -1029,8 +1033,7 @@ class NodeDriver(BaseDriver):
                 wait_period=3,
                 timeout=kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT),
                 ssh_interface=ssh_interface)[0]
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             raise DeploymentError(node=node, original_exception=e, driver=self)
 
         ssh_username = kwargs.get('ssh_username', 'root')
@@ -1050,11 +1053,10 @@ class NodeDriver(BaseDriver):
                     ssh_username=username, ssh_password=password,
                     ssh_key_file=ssh_key_file, ssh_timeout=ssh_timeout,
                     timeout=timeout, max_tries=max_tries)
-            except Exception:
+            except Exception as e:
                 # Try alternate username
                 # Todo: Need to fix paramiko so we can catch a more specific
                 # exception
-                e = sys.exc_info()[1]
                 deploy_error = e
             else:
                 # Script successfully executed, don't try alternate username
@@ -1390,7 +1392,7 @@ class NodeDriver(BaseDriver):
         key_file_path = os.path.expanduser(key_file_path)
 
         with open(key_file_path, 'r') as fp:
-            key_material = fp.read()
+            key_material = fp.read().strip()
 
         return self.import_key_pair_from_string(name=name,
                                                 key_material=key_material)
@@ -1583,14 +1585,23 @@ class NodeDriver(BaseDriver):
         while time.time() < end:
             try:
                 ssh_client.connect()
-            except SSH_TIMEOUT_EXCEPTION_CLASSES:
-                e = sys.exc_info()[1]
+            except SSH_TIMEOUT_EXCEPTION_CLASSES as e:
+                # Errors which represent fatal invalid key files which should
+                # be propagated to the user
                 message = str(e).lower()
-                expected_msg = 'no such file or directory'
+                invalid_key_msgs = [
+                    'no such file or directory',
+                    'invalid key',
+                    'not a valid ',
+                ]
 
-                if isinstance(e, IOError) and expected_msg in message:
-                    # Propagate (key) file doesn't exist errors
-                    raise e
+                # Propagate (key) file doesn't exist errors
+                # NOTE: Paramiko only supports PEM private key format
+                # See https://github.com/paramiko/paramiko/issues/1313
+                # for details
+                for invalid_key_msg in invalid_key_msgs:
+                    if invalid_key_msg in message:
+                        raise e
 
                 # Retry if a connection is refused, timeout occurred,
                 # or the connection fails due to failed authentication.
@@ -1655,11 +1666,10 @@ class NodeDriver(BaseDriver):
         while tries < max_tries:
             try:
                 node = task.run(node, ssh_client)
-            except Exception:
+            except Exception as e:
                 tries += 1
 
                 if tries >= max_tries:
-                    e = sys.exc_info()[1]
                     raise LibcloudError(value='Failed after %d tries: %s'
                                         % (max_tries, str(e)), driver=self)
             else:

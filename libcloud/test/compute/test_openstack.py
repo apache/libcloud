@@ -188,8 +188,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -202,8 +201,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -216,8 +214,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -226,8 +223,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         OpenStackMockHttp.type = 'NO_MESSAGE_IN_ERROR_BODY'
         try:
             self.driver.list_images()
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertEqual(True, isinstance(e, Exception))
         else:
             self.fail('test should have thrown')
@@ -602,7 +598,10 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         body = u(body)
         if body.find('resize') != -1:
             # test_ex_resize_server
-            return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
+            if body.find('personality') != -1:
+                return httplib.BAD_REQUEST
+            else:
+                return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
         elif body.find('confirmResize') != -1:
             # test_ex_confirm_resize
             return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
@@ -1070,22 +1069,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                         driver=self.driver)
         try:
             self.driver.ex_resize(self.node, size)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_confirm_resize(self):
         try:
             self.driver.ex_confirm_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_revert_resize(self):
         try:
             self.driver.ex_revert_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_create_image(self):
@@ -1299,7 +1295,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_import_key_pair_from_file(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
+            os.path.dirname(__file__), 'fixtures', 'misc', 'test_rsa.pub')
 
         with open(path, 'r') as fp:
             pub_key = fp.read()
@@ -1315,7 +1311,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_import_key_pair_from_string(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
+            os.path.dirname(__file__), 'fixtures', 'misc', 'test_rsa.pub')
 
         with open(path, 'r') as fp:
             pub_key = fp.read()

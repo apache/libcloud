@@ -12,8 +12,51 @@ General
   possible and the first project which was returned by the API was always
   selected. (GITHUB-1293)
   [Miguel Caballer - @micafer]
+
 - Add new ``extra`` attribute to the base ``NodeLocation`` class. (GITHUB-1282)
   [Dimitris Moraitis - @d-mo]
+
+- Remove various code patterns which were in place for supporting multiple
+  Python versions, including 2.5 and 2.6. Libcloud hasn't supported Python <
+  2.7 for a while now, so we can remove that code. (GITHUB-1307)
+  [Tomaz Muraus]
+
+- Also run pylint on ``libcloud/compute/`` directory and fix various pylint
+  violations. (GITHUB-1308)
+  [Tomaz Muraus]
+
+- [OpenStack] Remove unused variable in parse_error (GITHUB-1260)
+  [Rick van de Loo]
+
+- Add support for HTTPS proxies and fix ``driver.set_http_proxy()`` method.
+
+  HTTPS proxy can be set up by either setting ``https_proxy`` / ``http_proxy``
+  environment variable or by using
+  ``driver.connection.connection.set_http_proxy`` method.
+
+  For more information, please refer to the documentation -
+  https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
+  (GITHUB-1314)
+  [Jim Liu - @hldh214, Tomaz Muraus]
+
+- Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
+  environment variable. (GITHUB-1315)
+  [Tomaz Muraaus]
+
+- Update paramiko SSH deployment client so it automatically tries to convert
+  private keys in PEM format with a header which paramiko doesn't recognize
+  into a format which paramiko recognizes.
+
+  NOTE: Paramiko only supports keys in PEM format. This means keys which start
+  with "----BEGIN <TYPE> PRIVATE KEY-----". Keys in PKCS#8 and newer OpenSSH
+  format are not supported.
+
+  For more information, see https://libcloud.readthedocs.io/en/latest/compute/deployment.html#supported-private-ssh-key-types
+  (GITHUB-1314)
+
+- Update Paramiko SSH client to throw a more user-friendly error if a private
+  key file in an unsupported format is used. (GITHUB-1314)
+  [Tomaz Muraus]
 
 Compute
 ~~~~~~~
@@ -71,14 +114,55 @@ Compute
   driver. (GITHUB-1281)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Fix ``ex_resize`` method. (GITHUB-1311)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] For consistency, rename ``ex_resize`` method to
+  ``ex_resize_node``. For backward compatibility reasons, leave ``ex_resize``
+  alias in place.
+  [Tomaz Muraus]
+
+- [Gridscale] Add new driver for Gridscale provider (https://gridscale.io).
+  (GITHUB-1305, GITHUB-1315)
+  [Sydney Weber - @PrinceSydney]
+
+- [Oneandone] Update Oneandone driver to accomodate latest changes to the API.
+  This means removing deprecated ``ex_remove_server_firewall_policy`` method
+  and replacing ``port_from`` and ``port_to`` argument on the firewall policy
+  with a single ``port`` attribute.
+  (GITHUB-1230)
+  [Amel Ajdinovic - @aajdinov]
+
+- [DigitalOcean] Update ``list_locations`` method in the DigitalOcean driver
+  to only returns regions which are available by default. If you want to list
+  all the regions, you need to pass ``ex_available=False`` argument to the
+  method. (GITHUB-1001)
+  [Markos Gogoulos]
+
+- [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
+  (GITHUB-1205)
+  [Dan Hunsaker - @danhunsaker]
+
 Storage
 ~~~~~~~
+
+- [Azure Blobs] Enable the Azure storage driver to be used with the Azurite
+  Storage Emulator and Azure Blob Storage on IoT Edge.
+  (LIBCLOUD-1037, GITHUB-1278)
+  [Clemens Wolff - @c-w]
 
 - [Azure Blobs] Fix a bug with Azure storage driver works when used against a
   storage account that was created using ``kind=BlobStrage``. The includes
   updating minimum API version used / supported by storage driver from
   ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
+
+DNS
+~~~
+
+- [Cloudflare] Re-write the Cloudflare DNS driver to use Cloudflare API v4.
+  (LIBCLOUD-1001, LIBCLOUD-994, GITHUB-1292)
+  [Clemens Wolff - @c-w]
 
 Changes in Apache Libcloud 2.5.0
 --------------------------------

@@ -41,6 +41,15 @@ After you have registered go to
 "`Your details <https://pypi.python.org/pypi?%3Aaction=user_form>`_" page and
 populate `PGP Key ID` field with your PGP key ID.
 
+4. Link your ASF and Github account
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We use Github for managing issues and user contributions (pull requests). As
+such, you need to link your Github.com account with your ASF account using
+`Gitbox <https://gitbox.apache.org/setup/>`_. This way you will get write
+access to github.com/apache/libcloud repository and you will be able to
+manage issues and pull request directly through our Github repository.
+
 Merging user contributions
 --------------------------
 

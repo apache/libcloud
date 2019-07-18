@@ -1,0 +1,35 @@
+ {
+    "1196529b-a8de-417f-ac95-0e13ef4fdfd7": {
+      "delete_block": false,
+      "relations": {
+        "servers": [
+          {
+            "bootdevice": false,
+            "create_time": "2019-06-07T14:59:47Z",
+            "ordering": 0,
+            "l3security": [
+              "185.102.95.236/32"
+            ],
+            "mac": "16:63:95:5d:1f:01",
+            "object_name": "test.test",
+            "network_uuid": "1196529b-a8de-417f-ac95-0e13ef4fdfd7",
+            "object_uuid": "1479405e-d46c-47a2-91e8-eb43951c899f"
+          }
+        ],
+        "vlans": []
+      },
+      "labels": [],
+      "network_type": "network",
+      "change_time": "2019-04-08T09:10:08Z",
+      "status": "active",
+      "create_time": "2018-12-06T13:09:08Z",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "location_name": "de/fra",
+      "name": "network",
+      "location_iata": "fra",
+      "l2security": true,
+      "public_net": true,
+      "location_country": "de",
+      "object_uuid": "1196529b-a8de-417f-ac95-0e13ef4fdfd7"
+    }
+  }

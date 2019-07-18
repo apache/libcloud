@@ -1,0 +1,37 @@
+{
+    "e66bb753-4a03-4ee2-a069-a601f393c9ee": {
+      "snapshots": [],
+      "capacity": 50,
+      "relations": {
+        "snapshot_schedules": [],
+        "servers": [
+          {
+            "create_time": "2019-06-24T10:10:51Z",
+            "bootdevice": true,
+            "lun": 0,
+            "bus": 0,
+            "object_name": "test.test",
+            "target": 0,
+            "object_uuid": "1479405e-d46c-47a2-91e8-eb43951c899f",
+            "controller": 0
+          }
+        ]
+      },
+      "storage_type": "storage",
+      "last_used_template": "a5112c72-c9fa-4a23-8115-5f6303eb047b",
+      "object_uuid": "e66bb753-4a03-4ee2-a069-a601f393c9ee",
+      "license_product_no": null,
+      "location_country": "de",
+      "current_price": 3.09298,
+      "create_time": "2019-06-14T17:31:10Z",
+      "change_time": "2019-06-14T17:31:10Z",
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950",
+      "labels": [],
+      "name": "linux",
+      "usage_in_minutes": 702950,
+      "location_name": "de/fra",
+      "location_iata": "fra",
+      "status": "active",
+      "parent_uuid": null
+    }
+  }

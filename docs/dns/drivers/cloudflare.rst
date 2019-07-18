@@ -27,4 +27,4 @@ API Docs
     :inherited-members:
 
 .. _`CloudFlare`: https://www.cloudflare.com/
-.. _`account page`: https://www.cloudflare.com/my-account.html
+.. _`account page`: https://dash.cloudflare.com/profile

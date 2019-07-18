@@ -57,8 +57,7 @@ class CloudStackCommonTest(unittest.TestCase):
         self.driver.path = '/bad/response'
         try:
             self.connection._sync_request('fake')
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertTrue(isinstance(e, MalformedResponseError))
             return
         self.assertTrue(False)
@@ -76,8 +75,7 @@ class CloudStackCommonTest(unittest.TestCase):
         self.driver.path = '/async/fail'
         try:
             self.connection._async_request('fake')
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertEqual(CloudStackMockHttp.ERROR_TEXT, str(e))
             return
         self.assertFalse(True)
