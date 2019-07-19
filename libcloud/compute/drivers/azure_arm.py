@@ -1882,7 +1882,7 @@ class AzureNodeDriver(NodeDriver):
             },
         )
 
-        return r.object
+        return r.status in [200, 202, 204]
 
     def ex_create_network_interface(self, name, subnet, resource_group,
                                     location=None, public_ip=None):

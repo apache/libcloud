@@ -441,7 +441,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         )
         new_size = volume.size
 
-        self.assertEqual(new_size , original_size + 8)
+        self.assertEqual(new_size, original_size + 8)
 
     def test_detach_volume(self):
         volumes = self.driver.list_volumes()
@@ -564,10 +564,12 @@ class AzureNodeDriverTests(LibcloudTestCase):
         snapshot = self.driver.list_snapshots()[0]
         res_value = snapshot.destroy()
         self.assertTrue(res_value)
-    
+
     def test_delete_public_ip(self):
         location = self.driver.list_locations()[0]
-        public_ip = self.driver.ex_create_public_ip(name='test_public_ip', resource_group='REVIZOR', location=location)
+        public_ip = self.driver.ex_create_public_ip(name='test_public_ip',
+                                                    resource_group='REVIZOR',
+                                                    location=location)
         res_value = self.driver.ex_delete_public_ip(public_ip)
         self.assertTrue(res_value)
 
