@@ -143,6 +143,10 @@ Compute
   (GITHUB-1205)
   [Dan Hunsaker - @danhunsaker]
 
+- [Azure ARM] Add ``ex_delete_public_ip`` method to the Azure ARM driver.
+  (GITHUB-1318)
+  [Reza Shahriari - redha1419]
+
 Storage
 ~~~~~~~
 
