@@ -564,6 +564,11 @@ class AzureNodeDriverTests(LibcloudTestCase):
         snapshot = self.driver.list_snapshots()[0]
         res_value = snapshot.destroy()
         self.assertTrue(res_value)
+    
+    def test_delete_public_ip(self):
+        public_ip = self.driver.ex_create_public_ip(name='test_public_ip', resource_group='111111')
+        res_value = self.driver.ex_delete_public_ip(public_ip)
+        self.assertTrue(res_value)
 
     def test_update_network_profile(self):
         nics = self.driver.ex_list_nics()

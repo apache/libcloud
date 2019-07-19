@@ -1874,13 +1874,15 @@ class AzureNodeDriver(NodeDriver):
         :type public_ip: `.AzureIPAddress`
         """
         resource = public_ip.id
-        self.connection.request(
+        r = self.connection.request(
             resource,
             method='DELETE',
             params={
                 'api-version': "2019-06-01"
             },
         )
+
+        return r.object
 
     def ex_create_network_interface(self, name, subnet, resource_group,
                                     location=None, public_ip=None):
