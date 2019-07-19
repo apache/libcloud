@@ -1323,13 +1323,14 @@ class AzureNodeDriver(NodeDriver):
         """
         if not isinstance(resource, basestring):
             resource = resource.id
-        self.connection.request(
+        r = self.connection.request(
             resource,
             method='DELETE',
             params={
                 'api-version': RESOURCE_API_VERSION
             },
         )
+        return r.status in [200, 202, 204]
 
     def ex_get_ratecard(self, offer_durable_id, currency='USD',
                         locale='en-US', region='US'):
@@ -1873,16 +1874,7 @@ class AzureNodeDriver(NodeDriver):
         :param public_ip: Public ip address resource to delete
         :type public_ip: `.AzureIPAddress`
         """
-        resource = public_ip.id
-        r = self.connection.request(
-            resource,
-            method='DELETE',
-            params={
-                'api-version': "2019-06-01"
-            },
-        )
-
-        return r.status in [200, 202, 204]
+        return self.ex_delete_resource(public_ip)
 
     def ex_create_network_interface(self, name, subnet, resource_group,
                                     location=None, public_ip=None):
