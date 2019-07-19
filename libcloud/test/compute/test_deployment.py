@@ -231,8 +231,7 @@ class DeploymentTests(unittest.TestCase):
             node2, ips = self.driver.wait_until_running(
                 nodes=[self.node], wait_period=0.1,
                 timeout=0.2)[0]
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(e.value.find('Timed out after 0.2 second') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -244,8 +243,7 @@ class DeploymentTests(unittest.TestCase):
             node2, ips = self.driver.wait_until_running(
                 nodes=[self.node], wait_period=0.1,
                 timeout=0.2)[0]
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(e.value.find('Timed out after 0.2 second') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -289,8 +287,7 @@ class DeploymentTests(unittest.TestCase):
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.1,
                                            timeout=0.2)
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(e.value.find('Timed out') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -301,8 +298,7 @@ class DeploymentTests(unittest.TestCase):
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.1,
                                            timeout=0.2)
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(e.value.find('Timed out after 0.2 second') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -313,8 +309,7 @@ class DeploymentTests(unittest.TestCase):
         try:
             self.driver.wait_until_running(nodes=[self.node], wait_period=0.1,
                                            timeout=0.2)
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(
                 e.value.find('Unable to match specified uuids') != -1)
         else:
@@ -349,8 +344,7 @@ class DeploymentTests(unittest.TestCase):
             self.driver._ssh_client_connect(ssh_client=mock_ssh_client,
                                             wait_period=0.1,
                                             timeout=0.2)
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(e.value.find('Giving up') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -376,8 +370,7 @@ class DeploymentTests(unittest.TestCase):
                                                node=self.node,
                                                ssh_client=ssh_client,
                                                max_tries=2)
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(e.value.find('Failed after 2 tries') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -408,8 +401,7 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.deploy_node(deploy=deploy)
-        except DeploymentError:
-            e = sys.exc_info()[1]
+        except DeploymentError as e:
             self.assertTrue(e.node.id, self.node.id)
         else:
             self.fail('Exception was not thrown')
@@ -428,8 +420,7 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.deploy_node(deploy=deploy)
-        except DeploymentError:
-            e = sys.exc_info()[1]
+        except DeploymentError as e:
             self.assertTrue(e.node.id, self.node.id)
         else:
             self.fail('Exception was not thrown')
@@ -480,8 +471,7 @@ class DeploymentTests(unittest.TestCase):
 
         try:
             self.driver.deploy_node(deploy=Mock())
-        except RuntimeError:
-            e = sys.exc_info()[1]
+        except RuntimeError as e:
             self.assertTrue(str(e).find('paramiko is not installed') != -1)
         else:
             self.fail('Exception was not thrown')

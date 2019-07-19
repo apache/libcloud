@@ -25,6 +25,7 @@ Provider                              list nodes create node reboot node destroy
 `Gandi`_                              yes        yes         yes         yes          yes         yes        no         
 `Google Compute Engine`_              yes        yes         yes         yes          yes         yes        no         
 `GoGrid`_                             yes        yes         yes         yes          yes         yes        yes        
+`Gridscale`_                          yes        yes         yes         yes          yes         no         yes        
 `HostVirtual`_                        yes        yes         yes         yes          yes         yes        yes        
 `Ikoula`_                             yes        yes         yes         yes          yes         yes        yes        
 `Indosat`_                            yes        yes         yes         yes          yes         yes        yes        
@@ -34,6 +35,7 @@ Provider                              list nodes create node reboot node destroy
 `KTUCloud`_                           yes        yes         yes         yes          yes         yes        yes        
 `Libvirt`_                            yes        no          yes         yes          no          no         no         
 `Linode`_                             yes        yes         yes         yes          yes         yes        yes        
+`Maxihost`_                           yes        yes         yes         yes          yes         yes        no         
 `MedOne`_                             yes        yes         yes         yes          yes         yes        yes        
 `NephoScale`_                         yes        yes         yes         yes          yes         yes        yes        
 `Nimbus`_                             yes        yes         yes         yes          yes         yes        yes        
@@ -82,10 +84,11 @@ Provider                              list nodes create node reboot node destroy
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
-.. _`Exoscale`: https://www.exoscale.ch/
+.. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
+.. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
@@ -95,6 +98,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
+.. _`Maxihost`: https://www.maxihost.com/
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
@@ -107,7 +111,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`Packet`: http://www.packet.net/
+.. _`Packet`: http://www.packet.com/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com

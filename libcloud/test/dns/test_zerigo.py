@@ -95,8 +95,7 @@ class ZerigoTests(unittest.TestCase):
         ZerigoMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             list(self.driver.list_records(zone=zone))
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -115,8 +114,7 @@ class ZerigoTests(unittest.TestCase):
 
         try:
             self.driver.get_zone(zone_id='4444')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, '4444')
         else:
             self.fail('Exception was not thrown')
@@ -163,8 +161,7 @@ class ZerigoTests(unittest.TestCase):
         try:
             self.driver.create_zone(domain='foo.bar.com', type='master',
                                     ttl=10, extra=None)
-        except ZerigoError:
-            e = sys.exc_info()[1]
+        except ZerigoError as e:
             self.assertEqual(len(e.errors), 2)
         else:
             self.fail('Exception was not thrown')
@@ -234,8 +231,7 @@ class ZerigoTests(unittest.TestCase):
 
         try:
             self.driver.delete_zone(zone=zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -254,8 +250,7 @@ class ZerigoTests(unittest.TestCase):
 
         try:
             self.driver.delete_record(record=record)
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, record.id)
         else:
             self.fail('Exception was not thrown')

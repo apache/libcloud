@@ -114,8 +114,7 @@ class DurableDNSTests(LibcloudTestCase):
         DurableDNSMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             self.driver.list_records(zone=zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -141,8 +140,7 @@ class DurableDNSTests(LibcloudTestCase):
         DurableDNSMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             self.driver.get_zone(zone_id='nonexistentzone.com.')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, 'nonexistentzone.com.')
         else:
             self.fail('Exception was not thrown')

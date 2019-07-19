@@ -25,6 +25,7 @@ Provider                              list key pairs get key pair create key pai
 `Gandi`_                              yes            yes          no              yes                           no                          yes            
 `Google Compute Engine`_              no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
+`Gridscale`_                          yes            no           no              yes                           no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
 `Ikoula`_                             yes            yes          yes             yes                           no                          yes            
 `Indosat`_                            no             no           no              no                            no                          no             
@@ -34,6 +35,7 @@ Provider                              list key pairs get key pair create key pai
 `KTUCloud`_                           yes            yes          yes             yes                           no                          yes            
 `Libvirt`_                            no             no           no              no                            no                          no             
 `Linode`_                             no             no           no              no                            no                          no             
+`Maxihost`_                           yes            no           yes             no                            no                          no             
 `MedOne`_                             no             no           no              no                            no                          no             
 `NephoScale`_                         no             no           no              no                            no                          no             
 `Nimbus`_                             yes            yes          yes             yes                           no                          yes            
@@ -82,10 +84,11 @@ Provider                              list key pairs get key pair create key pai
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
-.. _`Exoscale`: https://www.exoscale.ch/
+.. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
+.. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/
@@ -95,6 +98,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
+.. _`Maxihost`: https://www.maxihost.com/
 .. _`MedOne`: http://www.med-1.com/
 .. _`NephoScale`: http://www.nephoscale.com
 .. _`Nimbus`: http://www.nimbusproject.org/
@@ -107,7 +111,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`Packet`: http://www.packet.net/
+.. _`Packet`: http://www.packet.com/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com

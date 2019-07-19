@@ -1,6 +1,169 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+General
+~~~~~~~
+
+- [OpenStack] Update OpenStack identity driver so a custom project can be
+  selected using ``domain_name`` keyword argument. Previously, that wasn't
+  possible and the first project which was returned by the API was always
+  selected. (GITHUB-1293)
+  [Miguel Caballer - @micafer]
+
+- Add new ``extra`` attribute to the base ``NodeLocation`` class. (GITHUB-1282)
+  [Dimitris Moraitis - @d-mo]
+
+- Remove various code patterns which were in place for supporting multiple
+  Python versions, including 2.5 and 2.6. Libcloud hasn't supported Python <
+  2.7 for a while now, so we can remove that code. (GITHUB-1307)
+  [Tomaz Muraus]
+
+- Also run pylint on ``libcloud/compute/`` directory and fix various pylint
+  violations. (GITHUB-1308)
+  [Tomaz Muraus]
+
+- [OpenStack] Remove unused variable in parse_error (GITHUB-1260)
+  [Rick van de Loo]
+
+- Add support for HTTPS proxies and fix ``driver.set_http_proxy()`` method.
+
+  HTTPS proxy can be set up by either setting ``https_proxy`` / ``http_proxy``
+  environment variable or by using
+  ``driver.connection.connection.set_http_proxy`` method.
+
+  For more information, please refer to the documentation -
+  https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
+  (GITHUB-1314)
+  [Jim Liu - @hldh214, Tomaz Muraus]
+
+- Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
+  environment variable. (GITHUB-1315)
+  [Tomaz Muraaus]
+
+- Update paramiko SSH deployment client so it automatically tries to convert
+  private keys in PEM format with a header which paramiko doesn't recognize
+  into a format which paramiko recognizes.
+
+  NOTE: Paramiko only supports keys in PEM format. This means keys which start
+  with "----BEGIN <TYPE> PRIVATE KEY-----". Keys in PKCS#8 and newer OpenSSH
+  format are not supported.
+
+  For more information, see https://libcloud.readthedocs.io/en/latest/compute/deployment.html#supported-private-ssh-key-types
+  (GITHUB-1314)
+
+- Update Paramiko SSH client to throw a more user-friendly error if a private
+  key file in an unsupported format is used. (GITHUB-1314)
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [Google Compute Engine] Fix the driver so ``list_nodes()`` method doesn't
+  throw if there is a node in a ``SUSPENDED`` state.
+
+  Also update the code so it doesn't crash if an unknown node state which is
+  not defined locally is returned by the API when listing nodes. Such states
+  are now mapped to ``UNKNOWN``. (GITHUB-1296, LIBCLOUD-1045)
+
+  Reported by rafa alistair.
+  [Tomaz Muraus]
+
+- [OpenStack] Fix a bug with retrieving floating IP address when a
+  ``device_owner`` of a port is ``compute:None``. (GITHUB-1295)
+  [Miguel Caballer - @micafer]
+- [Packet] Add various new extension methods to Packet.net driver
+  (``ex_reinstall_node``, ``ex_list_projects``,
+  ``ex_get_bgp_config_for_project``, ``ex_get_bgp_config``,
+  ``ex_list_nodes_for_project``, etc.). (GITHUB-1282)
+  [Dimitris Moraitis - @d-mo]
+
+- [Maxihost] Add new compute driver for Maxihost provider
+  (https://www.maxihost.com/). (GITHUB-1298)
+  [Spyros Tzavaras - @mpempekos]
+
+- [Azure ARM] Add various improvements to the Azure ARM driver:
+  - Add functionality to resize a volume in Azure
+  - Add functionality to update the network profile of a node
+  - Add functionality to update a network interface's properties
+  - Add functionality to check IP address availability (GITHUB-1244)
+  [Palash Gandhi - @palashgandhi]
+
+- [EC2] Allow user to pass arbitrary filters to ``list_volumes`` method by
+  passing a dictionary with filters as ``ex_filters`` method argument value.
+  (GITHUB-1300)
+  [Palash Gandhi - @palashgandhi]
+
+- [GCE] Add new ``ex_instancegroupmanager_set_autohealingpolicies`` method to
+  the GCE driver.
+
+  This method allows user to set the auto healing policies (health check to
+  use and initial delay) on GCE instance group. (GITHUB-1286)
+  [Kenta Morris - @kentamorris]
+
+- [GCE] Update GCE driver to include new operating system images such as
+  Ubuntu 18.04, RHEL 8, etc. (GITHUB-1304)
+  [Christopher Lambert - @XN137]
+
+- [GCE] Add new ``ex_resize_volume`` method to the driver. (GITHUB-1301)
+  [Palash Gandhi - @palashgandhi]
+
+- [OpenStack] Add various router management methods to the OpenStack
+  driver. (GITHUB-1281)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix ``ex_resize`` method. (GITHUB-1311)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] For consistency, rename ``ex_resize`` method to
+  ``ex_resize_node``. For backward compatibility reasons, leave ``ex_resize``
+  alias in place.
+  [Tomaz Muraus]
+
+- [Gridscale] Add new driver for Gridscale provider (https://gridscale.io).
+  (GITHUB-1305, GITHUB-1315)
+  [Sydney Weber - @PrinceSydney]
+
+- [Oneandone] Update Oneandone driver to accomodate latest changes to the API.
+  This means removing deprecated ``ex_remove_server_firewall_policy`` method
+  and replacing ``port_from`` and ``port_to`` argument on the firewall policy
+  with a single ``port`` attribute.
+  (GITHUB-1230)
+  [Amel Ajdinovic - @aajdinov]
+
+- [DigitalOcean] Update ``list_locations`` method in the DigitalOcean driver
+  to only returns regions which are available by default. If you want to list
+  all the regions, you need to pass ``ex_available=False`` argument to the
+  method. (GITHUB-1001)
+  [Markos Gogoulos]
+
+- [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
+  (GITHUB-1205)
+  [Dan Hunsaker - @danhunsaker]
+
+Storage
+~~~~~~~
+
+- [Azure Blobs] Enable the Azure storage driver to be used with the Azurite
+  Storage Emulator and Azure Blob Storage on IoT Edge.
+  (LIBCLOUD-1037, GITHUB-1278)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Fix a bug with Azure storage driver works when used against a
+  storage account that was created using ``kind=BlobStrage``. The includes
+  updating minimum API version used / supported by storage driver from
+  ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
+  [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
+
+DNS
+~~~
+
+- [Cloudflare] Re-write the Cloudflare DNS driver to use Cloudflare API v4.
+  (LIBCLOUD-1001, LIBCLOUD-994, GITHUB-1292)
+  [Clemens Wolff - @c-w]
+
 Changes in Apache Libcloud 2.5.0
 --------------------------------
 
@@ -2416,7 +2579,7 @@ Compute
   (GITHUB-338)
   [Anthony Monthe]
 
-- Add new driver for Packet (https://www.packet.net/) provider.
+- Add new driver for Packet (https://www.packet.com/) provider.
   (LIBCLOUD-703, GITHUB-527)
   [Aaron Welch]
 

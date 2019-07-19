@@ -1,0 +1,39 @@
+{
+    "regions": [{
+        "slug": "CH3",
+        "name": "Equinix CH3",
+        "location": {
+            "city": "Chicago",
+            "country": "US"
+        },
+        "available": 1,
+        "features": ["bare_metal", "firewall", "ddos_protection"]
+    }, {
+        "slug": "MI1",
+        "name": "Equinix MI1",
+        "location": {
+            "city": "Miami",
+            "country": "US"
+        },
+        "available": 1,
+        "features": ["bare_metal", "firewall", "ddos_protection"]
+    }, {
+        "slug": "MH1",
+        "name": "Maxihost MH1",
+        "location": {
+            "city": "Sao Paulo",
+            "country": "BR"
+        },
+        "available": 1,
+        "features": ["bare_metal", "firewall", "ddos_protection"]
+    }],
+    "links": {
+        "self": "https://api.maxihost.com/regions?limit=3&page=1"
+    },
+    "meta": {
+        "pages": {
+            "total": 1,
+            "count": 3
+        }
+    }
+}

@@ -16,8 +16,6 @@
 BuddyNS DNS Driver
 """
 
-import sys
-
 try:
     import simplejson as json
 except ImportError:
@@ -63,8 +61,7 @@ class BuddyNSDNSDriver(DNSDriver):
         action = '/api/v2/zone/%s' % zone_id
         try:
             response = self.connection.request(action=action, method='GET')
-        except BuddyNSException:
-            e = sys.exc_info()[1]
+        except BuddyNSException as e:
             if e.message == 'Not found':
                 raise ZoneDoesNotExistError(value=e.message, driver=self,
                                             zone_id=zone_id)
@@ -102,8 +99,7 @@ class BuddyNSDNSDriver(DNSDriver):
         try:
             response = self.connection.request(action=action, method='POST',
                                                data=post_data)
-        except BuddyNSException:
-            e = sys.exc_info()[1]
+        except BuddyNSException as e:
             if e.message == 'Invalid zone submitted for addition.':
                 raise ZoneAlreadyExistsError(value=e.message, driver=self,
                                              zone_id=domain)
@@ -124,8 +120,7 @@ class BuddyNSDNSDriver(DNSDriver):
         action = '/api/v2/zone/%s' % zone.domain
         try:
             self.connection.request(action=action, method='DELETE')
-        except BuddyNSException:
-            e = sys.exc_info()[1]
+        except BuddyNSException as e:
             if e.message == 'Not found':
                 raise ZoneDoesNotExistError(value=e.message, driver=self,
                                             zone_id=zone.id)

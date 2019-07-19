@@ -123,7 +123,7 @@ class VoxelNodeDriver(NodeDriver):
     name = 'Voxel VoxCLOUD'
     website = 'http://www.voxel.net/'
 
-    def _initialize_instance_types():
+    def _initialize_instance_types():  # pylint: disable=no-method-argument
         for cpus in range(1, 14):
             if cpus == 1:
                 name = "Single CPU"

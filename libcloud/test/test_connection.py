@@ -52,6 +52,14 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertIsNone(result[3])
         self.assertIsNone(result[4])
 
+        proxy_url = 'https://127.0.0.2:3129'
+        result = conn._parse_proxy_url(proxy_url=proxy_url)
+        self.assertEqual(result[0], 'https')
+        self.assertEqual(result[1], '127.0.0.2')
+        self.assertEqual(result[2], 3129)
+        self.assertIsNone(result[3])
+        self.assertIsNone(result[4])
+
         proxy_url = 'http://user1:pass1@127.0.0.1:3128'
         result = conn._parse_proxy_url(proxy_url=proxy_url)
         self.assertEqual(result[0], 'http')
@@ -60,11 +68,13 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(result[3], 'user1')
         self.assertEqual(result[4], 'pass1')
 
-        proxy_url = 'https://127.0.0.1:3128'
-        expected_msg = 'Only http proxies are supported'
-        assertRaisesRegex(self, ValueError, expected_msg,
-                          conn._parse_proxy_url,
-                          proxy_url=proxy_url)
+        proxy_url = 'https://user1:pass1@127.0.0.2:3129'
+        result = conn._parse_proxy_url(proxy_url=proxy_url)
+        self.assertEqual(result[0], 'https')
+        self.assertEqual(result[1], '127.0.0.2')
+        self.assertEqual(result[2], 3129)
+        self.assertEqual(result[3], 'user1')
+        self.assertEqual(result[4], 'pass1')
 
         proxy_url = 'http://127.0.0.1'
         expected_msg = 'proxy_url must be in the following format'
@@ -91,6 +101,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.2')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.2:3128'
+        })
 
         _ = os.environ.pop('http_proxy', None)
         conn = LibcloudConnection(host='localhost', port=80)
@@ -103,6 +116,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.3')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.3:3128'
+        })
 
         proxy_url = 'http://127.0.0.4:3128'
         conn = LibcloudConnection(host='localhost', port=80,
@@ -110,6 +126,9 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.4')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.4:3128'
+        })
 
         os.environ['http_proxy'] = proxy_url
         proxy_url = 'http://127.0.0.5:3128'
@@ -118,6 +137,20 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_scheme, 'http')
         self.assertEqual(conn.proxy_host, '127.0.0.5')
         self.assertEqual(conn.proxy_port, 3128)
+        self.assertEqual(conn.session.proxies, {
+            'http': 'http://127.0.0.5:3128'
+        })
+
+        os.environ['http_proxy'] = proxy_url
+        proxy_url = 'https://127.0.0.6:3129'
+        conn = LibcloudConnection(host='localhost', port=80,
+                                  proxy_url=proxy_url)
+        self.assertEqual(conn.proxy_scheme, 'https')
+        self.assertEqual(conn.proxy_host, '127.0.0.6')
+        self.assertEqual(conn.proxy_port, 3129)
+        self.assertEqual(conn.session.proxies, {
+            'https': 'https://127.0.0.6:3129'
+        })
 
     def test_connection_to_unusual_port(self):
         conn = LibcloudConnection(host='localhost', port=8080)
@@ -392,6 +425,7 @@ class CertificateConnectionClassTestCase(unittest.TestCase):
         adapter = self.connection.connection.session.adapters['https://']
         self.assertTrue(isinstance(adapter, SignedHTTPSAdapter))
         self.assertEqual(adapter.cert_file, 'test.pem')
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

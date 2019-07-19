@@ -5,7 +5,7 @@ Provider            list zones list records create zone update zone create recor
 =================== ========== ============ =========== =========== ============= ============= =========== =============
 `AuroraDNS`_        yes        yes          yes         no          yes           yes           yes         yes          
 `BuddyNS DNS`_      yes        no           yes         no          no            no            yes         no           
-`CloudFlare DNS`_   yes        yes          no          no          yes           yes           no          yes          
+`CloudFlare DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
 `DigitalOcean`_     yes        yes          yes         no          yes           yes           yes         yes          
 `DNSimple`_         yes        yes          yes         no          yes           yes           yes         yes          
 `DurableDNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
