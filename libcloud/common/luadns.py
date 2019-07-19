@@ -18,6 +18,8 @@ from typing import Dict
 
 import base64
 
+import base64
+
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.utils.py3 import b
 
