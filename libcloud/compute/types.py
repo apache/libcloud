@@ -16,8 +16,12 @@
 Base types used by other parts of libcloud
 """
 
+from typing import Union
+from typing import cast
+
 from enum import Enum
 
+from libcloud.utils.py3 import _real_unicode
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.types import InvalidCredsError, InvalidCredsException
 
@@ -40,13 +44,14 @@ __all__ = [
 class Type(Enum):
     @classmethod
     def tostring(cls, value):
-        # type: (str) -> str
+        # type: (Union[Enum, str]) -> str
         """Return the string representation of the state object attribute
         :param str value: the state object to turn into string
         :return: the uppercase string that represents the state object
         :rtype: str
         """
-        return value.upper()
+        value = cast(Enum, value)
+        return str(value._value_).upper()
 
     @classmethod
     def fromstring(cls, value):
@@ -57,6 +62,37 @@ class Type(Enum):
         :rtype: str
         """
         return getattr(cls, value.upper(), None)
+
+    """
+    NOTE: These methods are here for backward compatibility reasons where
+    Type values were simple strings and Type didn't inherit from Enum.
+    """
+
+    def __eq__(self, other):
+        if isinstance(other, Type):
+            return other.value == self.value
+        elif isinstance(other, (str, _real_unicode)):
+            return self.value == other
+
+        return super(Type, self).__eq__(other)
+
+    def upper(self):
+        return self.value.upper()
+
+    def lower(self):
+        return self.value.lower()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return self.value
+
+    def __hash__(self):
+        return id(self)
 
 
 class Provider(Type):

@@ -1,3 +1,5 @@
+import sys
+import unittest
 from unittest import TestCase
 
 from libcloud.compute.types import Provider, NodeState, StorageVolumeState, \
@@ -20,6 +22,10 @@ class TestTestType(TestCase):
 
     def test_provider_fromstring_caseinsensitive(self):
         self.assertEqual(TestType.fromstring("INUSE"), TestType.INUSE)
+
+    def test_compare_as_string(self):
+        self.assertTrue(TestType.INUSE == 'inuse')
+        self.assertFalse(TestType.INUSE == 'bar')
 
 
 class TestProvider(TestCase):
@@ -68,3 +74,7 @@ class TestVolumeSnapshotState(TestCase):
             VolumeSnapshotState.fromstring("available"),
             VolumeSnapshotState.AVAILABLE
         )
+
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())
