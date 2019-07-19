@@ -567,7 +567,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
     
     def test_delete_public_ip(self):
         location = self.driver.list_locations()[0]
-        public_ip = self.driver.ex_create_public_ip(name='test_public_ip', resource_group='111111', location=location)
+        public_ip = self.driver.ex_create_public_ip(name='test_public_ip', resource_group='000000', location=location)
         res_value = self.driver.ex_delete_public_ip(public_ip)
         self.assertTrue(res_value)
 
