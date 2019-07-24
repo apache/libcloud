@@ -18,6 +18,10 @@ Gandi Live driver base classes
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 
+import requests
+
+from libcloud.utils.py3 import httplib
+
 __all__ = [
     'API_HOST',
     'GandiLiveException',
@@ -48,6 +52,21 @@ class GandiLiveResponse(JsonResponse):
     A Base Gandi Live Response class to derive from.
     """
 
+    def success(self):
+        """
+        Determine if our request was successful.
+
+        The meaning of this can be arbitrary; did we receive OK status? Did
+        the node get created? Were we authenticated?
+
+        :rtype: ``bool``
+        :return: ``True`` or ``False``
+        """
+        # pylint: disable=E1101
+        return self.status in [requests.codes.ok, requests.codes.created,
+                               requests.codes.no_content,
+                               httplib.OK, httplib.CREATED, httplib.ACCEPTED]
+
 
 class GandiLiveConnection(ConnectionKey):
     """
@@ -56,7 +75,6 @@ class GandiLiveConnection(ConnectionKey):
 
     responseCls = GandiLiveResponse
     host = API_HOST
-    endpoint = '/api/v5/'
 
     def add_default_headers(self, headers):
         """

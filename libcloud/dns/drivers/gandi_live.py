@@ -29,8 +29,9 @@ __all__ = [
 ]
 
 
-TTL_MIN = 30
+TTL_MIN = 300
 TTL_MAX = 2592000  # 30 days
+API_BASE = '/api/v5'
 
 
 # @@@ update this - nothing in docs about error messages...
@@ -100,11 +101,12 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return ret
 
     def list_zones(self):
-        zones = self.connection.request(action='domains', method='GET')
+        zones = self.connection.request(action='%s/domains' % API_BASE,
+                                        method='GET')
         return self._to_zones(zones.object)
 
     def get_zone(self, zone_id):
-        action = 'domains/%s' % zone_id
+        action = '%s/domains/%s' % (API_BASE, zone_id)
         zone = self.connection.request(action=action, method='GET')
         return self._to_zone(zone.object)
 
@@ -121,7 +123,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             'name': zone_name,
         }
         post_zone_data = json.dumps(raw_zone_data)
-        new_zone = self.connection.request(action='zones', method='POST',
+        new_zone = self.connection.request(action='%s/zones' % API_BASE,
+                                           method='POST',
                                            data=post_zone_data)
         new_zone_uuid = new_zone.headers['location'].lstrip('/zones/')
 
@@ -130,7 +133,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             'zone_uuid': new_zone_uuid,
         }
         post_domain_data = json.dumps(raw_domain_data)
-        self.connection.request(action='domains', method='POST',
+        self.connection.request(action='%s/domains' % API_BASE,
+                                method='POST',
                                 data=post_domain_data)
         return self._to_zone({'fqdn': domain})
 
@@ -141,7 +145,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     """
     def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
         if extra and 'zone_uuid' in extra:
-            action = 'domains/%s' % zone.id
+            action = '%s/domains/%s' % (API_BASE, zone.id)
             raw_data = {
                 'zone_uuid': extra['zone_uuid'],
             }
@@ -183,13 +187,16 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return retval
 
     def list_records(self, zone):
-        action = 'domains/%s/records' % zone.id
+        action = '%s/domains/%s/records' % (API_BASE, zone.id)
         records = self.connection.request(action=action, method='GET')
         return self._to_records(records.object, zone)
 
     def get_record(self, zone_id, record_id):
         record_type, name = record_id.split(':', 1)
-        action = 'domains/%s/records/%s/%s' % (zone_id, name, record_type)
+        action = '%s/domains/%s/records/%s/%s' % (API_BASE,
+                                                  zone_id,
+                                                  name,
+                                                  record_type)
         record = self.connection.request(action=action, method='GET')
         return self._to_record(record.object, self.get_zone(zone_id))
 
@@ -199,7 +206,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                               driver=self, record_id=record_id)
         if extra and 'ttl' in extra:
             if extra['ttl'] < TTL_MIN:
-                raise RecordError('TTL must be at least 30 seconds',
+                raise RecordError('TTL must be at least 300 seconds',
                                   driver=self, record_id=record_id)
             if extra['ttl'] > TTL_MAX:
                 raise RecordError('TTL must not excdeed 30 days',
@@ -208,7 +215,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     def create_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
 
-        action = 'domains/%s/records' % zone.id
+        action = '%s/domains/%s/records' % (API_BASE, zone.id)
 
         if isinstance(data, list):
             rvalue = data
@@ -233,7 +240,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     def update_record(self, record, name, type, data, extra):
         self._validate_record(record.id, name, type, data, extra)
 
-        action = 'domains/%s/records/%s/%s' % (
+        action = '%s/domains/%s/records/%s/%s' % (
+            API_BASE,
             record.zone.id,
             record.name,
             self.RECORD_TYPE_MAP[record.type]
@@ -260,7 +268,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return self._to_record(raw_data, record.zone)
 
     def delete_record(self, record):
-        action = 'domains/%s/records/%s/%s' % (
+        action = '%s/domains/%s/records/%s/%s' % (
+            API_BASE,
             record.zone.id,
             record.name,
             self.RECORD_TYPE_MAP[record.type]
@@ -268,14 +277,14 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
         resp = self.connection.request(action=action, method='DELETE')
 
-        if resp.success:
+        if resp.success():
             return True
 
         raise RecordDoesNotExistError(value='No such record', driver=self,
                                       record_id=record.id)
 
     def export_zone_to_bind_format(self, zone):
-        action = 'domains/%s/records' % zone.id
+        action = '%s/domains/%s/records' % (API_BASE, zone.id)
         headers = {
             'Accept': 'text/plain'
         }
