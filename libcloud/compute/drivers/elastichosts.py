@@ -150,7 +150,7 @@ class ElasticHostsNodeDriver(ElasticStackBaseNodeDriver):
                  region=DEFAULT_REGION, **kwargs):
 
         if hasattr(self, '_region'):
-            region = self._region
+            region = getattr(self, '_region', None)
 
         if region not in API_ENDPOINTS:
             raise ValueError('Invalid region: %s' % (region))

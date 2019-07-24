@@ -1,0 +1,11 @@
+{
+    "id": "f2909129-6445-4f7f-8fdf-65c9a1c342e9",
+    "created_at": "2019-04-20T16:53:59Z",
+    "volume": {
+        "href": "/storage/a08aaf76-e0ce-43aa-b9cd-cce0d4ae4f4c"
+    },
+    "device": {
+        "href": "/devices/756db520-fa13-4a8c-858c-b3ceb60ce95f"
+    },
+    "href": "/storage/attachments/f2909129-6445-4f7f-8fdf-65c9a1c342e9"
+}

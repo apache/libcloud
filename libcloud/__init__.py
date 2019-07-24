@@ -18,9 +18,11 @@ libcloud provides a unified interface to the cloud computing resources.
 
 :var __version__: Current version of libcloud
 """
+
 import logging
 import os
 import codecs
+import atexit
 
 from libcloud.base import DriverType  # NOQA
 from libcloud.base import DriverTypeFactoryMap  # NOQA
@@ -28,7 +30,7 @@ from libcloud.base import get_driver  # NOQA
 
 
 try:
-    import paramiko
+    import paramiko  # NOQA
     have_paramiko = True
 except ImportError:
     have_paramiko = False
@@ -38,7 +40,7 @@ __all__ = [
     'enable_debug'
 ]
 
-__version__ = '2.4.1-dev'
+__version__ = '2.5.1-dev'
 
 
 def enable_debug(fo):
@@ -53,6 +55,15 @@ def enable_debug(fo):
 
     LoggingConnection.log = fo
     Connection.conn_class = LoggingConnection
+
+    # Ensure the file handle is closed on exit
+    def close_file(fd):
+        try:
+            fd.close()
+        except Exception:
+            pass
+
+    atexit.register(close_file, fo)
 
 
 def _init_once():
@@ -78,8 +89,8 @@ def _init_once():
         fo = codecs.open(path, mode, encoding='utf8')
         enable_debug(fo)
 
-        if have_paramiko:
-            paramiko_logger = paramiko.util.logging.getLogger()
-            paramiko_logger.setLevel(logging.DEBUG)
+        if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
+            paramiko.util.log_to_file(filename=path, level=logging.DEBUG)
+
 
 _init_once()

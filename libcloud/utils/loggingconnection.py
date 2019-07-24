@@ -17,7 +17,7 @@ from __future__ import absolute_import
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from pipes import quote as pquote
@@ -70,7 +70,7 @@ class LoggingConnection(LibcloudConnection):
             try:
                 body = json.loads(body.decode('utf-8'))
                 body = json.dumps(body, sort_keys=True, indent=4)
-            except:
+            except Exception:
                 # Invalid JSON or server is lying about content-type
                 pass
         elif pretty_print and content_type == 'text/xml':
@@ -94,13 +94,15 @@ class LoggingConnection(LibcloudConnection):
 
         if self.http_proxy_used:
             if self.proxy_username and self.proxy_password:
-                proxy_url = 'http://%s:%s@%s:%s' % (self.proxy_username,
-                                                    self.proxy_password,
-                                                    self.proxy_host,
-                                                    self.proxy_port)
+                proxy_url = '%s://%s:%s@%s:%s' % (self.proxy_scheme,
+                                                  self.proxy_username,
+                                                  self.proxy_password,
+                                                  self.proxy_host,
+                                                  self.proxy_port)
             else:
-                proxy_url = 'http://%s:%s' % (self.proxy_host,
-                                              self.proxy_port)
+                proxy_url = '%s://%s:%s' % (self.proxy_scheme,
+                                            self.proxy_host,
+                                            self.proxy_port)
             proxy_url = pquote(proxy_url)
             cmd.extend(['--proxy', proxy_url])
 

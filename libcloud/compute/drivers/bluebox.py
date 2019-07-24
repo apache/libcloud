@@ -180,7 +180,7 @@ class BlueboxNodeDriver(NodeDriver):
         password = None
 
         if isinstance(auth, NodeAuthSSHKey):
-            ssh = auth.pubkey
+            ssh = auth.pubkey  # pylint: disable=no-member
             data.update(ssh_public_key=ssh)
         elif isinstance(auth, NodeAuthPassword):
             password = auth.password

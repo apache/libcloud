@@ -112,7 +112,7 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
     def _get_state(self, element):
         try:
             return STATE[element['state']['name']]
-        except:
+        except Exception:
             pass
         return NodeState.UNKNOWN
 

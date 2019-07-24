@@ -418,7 +418,7 @@ class OneAndOneNodeDriver(NodeDriver):
         body = {}
 
         if fixed_instance_size_id is not None:
-            body['firewall_policy_id'] = fixed_instance_size_id
+            body['fixed_instance_size_id'] = fixed_instance_size_id
         if vcore is not None:
             body['vcore'] = vcore
         if cores_per_processor is not None:
@@ -746,26 +746,6 @@ class OneAndOneNodeDriver(NodeDriver):
         )
 
         return response.object
-
-    def ex_remove_server_firewall_policy(self, server_id, ip_id):
-        """
-        Removes a firewall policy from server's IP
-
-        :param server_id: Id of the server
-        :type: ``str``
-
-        :param ip_id: ID of the IP address
-        :type: ``str``
-
-        :return: ``Node`` instance
-        :rtype: ``Node``
-        """
-        response = self.connection.request(
-            action='/servers/%s/ips/%s/firewall_policy' % (server_id, ip_id),
-            method='DELETE'
-        )
-
-        return self._to_node(response.object)
 
     def ex_add_server_firewall_policy(self, server_id, ip_id, firewall_id):
         """

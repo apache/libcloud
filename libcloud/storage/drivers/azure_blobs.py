@@ -18,6 +18,7 @@ from __future__ import with_statement
 import base64
 import os
 import binascii
+from io import BytesIO
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
@@ -153,8 +154,39 @@ class AzureBlobLease(object):
 
 class AzureBlobsConnection(AzureConnection):
     """
-    Represents a single connection to Azure Blobs
+    Represents a single connection to Azure Blobs.
+
+    The main Azure Blob Storage service uses a prefix in the hostname to
+    distinguish between accounts, e.g. ``theaccount.blob.core.windows.net``.
+    However, some custom deployments of the service, such as the Azurite
+    emulator, instead use a URL prefix such as ``/theaccount``. To support
+    these deployments, the parameter ``account_prefix`` must be set on the
+    connection. This is done by instantiating the driver with arguments such
+    as ``host='somewhere.tld'`` and ``key='theaccount'``. To specify a custom
+    host without an account prefix, e.g. for use-cases where the custom host
+    implements an auditing proxy or similar, the driver can be instantiated
+    with ``host='theaccount.somewhere.tld'`` and ``key=''``.
+
+    :param account_prefix: Optional prefix identifying the sotrage account.
+                           Used when connecting to a custom deployment of the
+                           storage service like Azurite or IoT Edge Storage.
+    :type account_prefix: ``str``
     """
+    def __init__(self, *args, **kwargs):
+        self.account_prefix = kwargs.pop('account_prefix', None)
+        super(AzureBlobsConnection, self).__init__(*args, **kwargs)
+
+    def morph_action_hook(self, action):
+        action = super(AzureBlobsConnection, self).morph_action_hook(action)
+
+        if self.account_prefix is not None:
+            action = '/%s%s' % (self.account_prefix, action)
+
+        return action
+
+    # this is the minimum api version supported by storage accounts of kinds
+    # StorageV2, Storage and BlobStorage
+    API_VERSION = '2014-02-14'
 
 
 class AzureBlobsStorageDriver(StorageDriver):
@@ -183,6 +215,8 @@ class AzureBlobsStorageDriver(StorageDriver):
         # host argument has precedence
         if not self._host_argument_set:
             result['host'] = '%s.%s' % (self.key, AZURE_STORAGE_HOST_SUFFIX)
+        else:
+            result['account_prefix'] = self.key
 
         return result
 
@@ -213,8 +247,9 @@ class AzureBlobsStorageDriver(StorageDriver):
             'meta_data': {}
         }
 
-        for meta in metadata.getchildren():
-            extra['meta_data'][meta.tag] = meta.text
+        if metadata is not None:
+            for meta in list(metadata):
+                extra['meta_data'][meta.tag] = meta.text
 
         return Container(name=name, extra=extra, driver=self)
 
@@ -298,8 +333,9 @@ class AzureBlobsStorageDriver(StorageDriver):
             extra['md5_hash'] = value
 
         meta_data = {}
-        for meta in metadata.getchildren():
-            meta_data[meta.tag] = meta.text
+        if metadata is not None:
+            for meta in list(metadata):
+                meta_data[meta.tag] = meta.text
 
         return Object(name=name, size=size, hash=etag, meta_data=meta_data,
                       extra=extra, container=container, driver=self)
@@ -799,6 +835,9 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         @inherits: :class:`StorageDriver.upload_object_via_stream`
 
+        Note that if ``iterator`` does not support ``seek``, the
+        entire generator will be buffered in memory.
+
         :param ex_blob_type: Storage class
         :type ex_blob_type: ``str``
 
@@ -825,7 +864,12 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         self._check_values(ex_blob_type, ex_page_blob_size)
         if ex_blob_type == "BlockBlob":
-            iterator.seek(0, os.SEEK_END)
+            try:
+                iterator.seek(0, os.SEEK_END)
+            except AttributeError:
+                buffer = BytesIO()
+                buffer.writelines(iterator)
+                iterator = buffer
             blob_size = iterator.tell()
             iterator.seek(0)
         else:
@@ -942,7 +986,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                 'Unexpected status code, status_code=%s' % (response.status),
                 driver=self)
 
-        server_hash = headers['content-md5']
+        server_hash = headers.get('content-md5')
 
         if server_hash:
             server_hash = binascii.hexlify(base64.b64decode(b(server_hash)))

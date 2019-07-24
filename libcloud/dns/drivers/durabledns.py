@@ -15,8 +15,6 @@
 """
 DurableDNS Driver
 """
-import sys
-
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import ensure_string
 from libcloud.dns.types import Provider, RecordType
@@ -92,7 +90,7 @@ class DurableDNSDriver(DNSDriver):
                                     schema_params.get('method'),
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -128,7 +126,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone.id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -141,8 +139,7 @@ class DurableDNSDriver(DNSDriver):
             response = self.connection.request(action=action, params=params,
                                                data=req_data, method="POST",
                                                headers=headers)
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Zone does not exist' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -173,7 +170,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone_id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -186,8 +183,7 @@ class DurableDNSDriver(DNSDriver):
             response = self.connection.request(action=action, params=params,
                                                data=req_data, method="POST",
                                                headers=headers)
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Zone does not exist' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone_id, driver=self,
                                             value=e.message)
@@ -216,7 +212,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone_id, 'recordid': record_id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -229,8 +225,7 @@ class DurableDNSDriver(DNSDriver):
             response = self.connection.request(action=action, params=params,
                                                data=req_data, method="POST",
                                                headers=headers)
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Zone does not exist' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone_id, driver=self,
                                             value=e.message)
@@ -278,7 +273,7 @@ class DurableDNSDriver(DNSDriver):
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': domain, 'ttl': ttl or DEFAULT_TTL}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -302,8 +297,7 @@ class DurableDNSDriver(DNSDriver):
             self.connection.request(action=action, params=params,
                                     data=req_data, method="POST",
                                     headers=headers)
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Zone Already Exist' in e.message:
                 raise ZoneAlreadyExistsError(zone_id=domain, driver=self,
                                              value=e.message)
@@ -353,7 +347,7 @@ class DurableDNSDriver(DNSDriver):
                   'zonename': zone.id, 'name': name, 'type': type,
                   'data': data}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -374,8 +368,7 @@ class DurableDNSDriver(DNSDriver):
             response = self.connection.request(action=action, data=req_data,
                                                method="POST", headers=headers)
             objects = response.objects
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             # In DurableDNS is possible to create records with same data.
             # Their ID's will be different but the API does not implement
             # the RecordAlreadyExist exception. Only ZoneDoesNotExist will
@@ -434,7 +427,7 @@ class DurableDNSDriver(DNSDriver):
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': domain, 'ttl': ttl}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -457,8 +450,7 @@ class DurableDNSDriver(DNSDriver):
                                     data=req_data,
                                     method="POST",
                                     headers=headers)
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Zone does not exist' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -511,7 +503,7 @@ class DurableDNSDriver(DNSDriver):
                   'zonename': zone.id, 'id': record.id, 'name': name,
                   'data': data}
         params.update(extra)
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -533,8 +525,7 @@ class DurableDNSDriver(DNSDriver):
                                     data=req_data,
                                     method="POST",
                                     headers=headers)
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Zone does not exist' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -568,7 +559,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': zone.id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -580,8 +571,7 @@ class DurableDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                data=req_data, method="POST",
                                                headers=headers)
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Zone does not exist' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -605,7 +595,7 @@ class DurableDNSDriver(DNSDriver):
                                     attributes)
         params = {'apiuser': self.key, 'apikey': self.secret,
                   'zonename': record.zone.id, 'id': record.id}
-        urn = schema.getchildren()[0]
+        urn = list(schema)[0]
         for child in urn:
             key = child.tag.split(':')[2]
             if key in attributes:
@@ -616,8 +606,7 @@ class DurableDNSDriver(DNSDriver):
         try:
             response = self.connection.request(action=action, data=req_data,
                                                headers=headers, method="POST")
-        except DurableDNSException:
-            e = sys.exc_info()[1]
+        except DurableDNSException as e:
             if 'Record does not exists' in e.message:
                 raise RecordDoesNotExistError(record_id=record.id, driver=self,
                                               value=e.message)

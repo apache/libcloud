@@ -40,7 +40,7 @@ class VoxelResponse(XmlResponse):
     def parse_body(self):
         if not self.body:
             return None
-        if not self.parsed:
+        if self.parsed is None:
             self.parsed = super(VoxelResponse, self).parse_body()
         return self.parsed
 
@@ -48,7 +48,7 @@ class VoxelResponse(XmlResponse):
         err_list = []
         if not self.body:
             return None
-        if not self.parsed:
+        if self.parsed is None:
             self.parsed = super(VoxelResponse, self).parse_body()
         for err in self.parsed.findall('err'):
             code = err.get('code')
@@ -99,6 +99,7 @@ class VoxelConnection(ConnectionUserAndKey):
         params['api_sig'] = md5.hexdigest()
         return params
 
+
 VOXEL_INSTANCE_TYPES = {}
 RAM_PER_CPU = 2048
 
@@ -122,7 +123,7 @@ class VoxelNodeDriver(NodeDriver):
     name = 'Voxel VoxCLOUD'
     website = 'http://www.voxel.net/'
 
-    def _initialize_instance_types():
+    def _initialize_instance_types():  # pylint: disable=no-method-argument
         for cpus in range(1, 14):
             if cpus == 1:
                 name = "Single CPU"

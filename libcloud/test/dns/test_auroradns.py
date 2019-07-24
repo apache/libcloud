@@ -110,12 +110,12 @@ class AuroraDNSDriverTests(LibcloudTestCase):
 
     def test_create_zone(self):
         zone = self.driver.create_zone('example.com')
-        self.assertEquals(zone.domain, 'example.com')
+        self.assertEqual(zone.domain, 'example.com')
 
     def test_get_zone(self):
         zone = self.driver.get_zone('example.com')
-        self.assertEquals(zone.domain, 'example.com')
-        self.assertEquals(zone.id, 'ffb62570-8414-4578-a346-526b44e320b7')
+        self.assertEqual(zone.domain, 'example.com')
+        self.assertEqual(zone.id, 'ffb62570-8414-4578-a346-526b44e320b7')
 
     def test_delete_zone(self):
         zone = self.driver.get_zone('example.com')
@@ -127,28 +127,28 @@ class AuroraDNSDriverTests(LibcloudTestCase):
                                     type=RecordType.A,
                                     data='127.0.0.1',
                                     extra={'ttl': 900})
-        self.assertEquals(record.id, '5592f1ff')
-        self.assertEquals(record.name, 'localhost')
-        self.assertEquals(record.data, '127.0.0.1')
-        self.assertEquals(record.type, RecordType.A)
-        self.assertEquals(record.extra['ttl'], 900)
+        self.assertEqual(record.id, '5592f1ff')
+        self.assertEqual(record.name, 'localhost')
+        self.assertEqual(record.data, '127.0.0.1')
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.extra['ttl'], 900)
 
     def test_get_record(self):
         zone = self.driver.get_zone('example.com')
         record = self.driver.get_record(zone.id, '5592f1ff')
-        self.assertEquals(record.id, '5592f1ff')
-        self.assertEquals(record.name, 'localhost')
-        self.assertEquals(record.data, '127.0.0.1')
-        self.assertEquals(record.type, RecordType.A)
-        self.assertEquals(record.extra['ttl'], 900)
-        self.assertEquals(record.extra['priority'], None)
+        self.assertEqual(record.id, '5592f1ff')
+        self.assertEqual(record.name, 'localhost')
+        self.assertEqual(record.data, '127.0.0.1')
+        self.assertEqual(record.type, RecordType.A)
+        self.assertEqual(record.extra['ttl'], 900)
+        self.assertEqual(record.extra['priority'], None)
 
     def test_update_record(self):
         ttl = 900
         zone = self.driver.get_zone('example.com')
         record = self.driver.get_record(zone.id, '5592f1ff')
         record = record.update(extra={'ttl': ttl})
-        self.assertEquals(record.extra['ttl'], ttl)
+        self.assertEqual(record.extra['ttl'], ttl)
 
     def test_delete_record(self):
         zone = self.driver.get_zone('example.com')
@@ -167,7 +167,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneDoesNotExistError')
         except ZoneDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_delete_zone_non_exist(self):
@@ -178,7 +178,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneDoesNotExistError')
         except ZoneDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_create_zone_already_exist(self):
@@ -187,7 +187,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneAlreadyExistsError')
         except ZoneAlreadyExistsError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_list_records_non_exist(self):
@@ -198,7 +198,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a ZoneDoesNotExistError')
         except ZoneDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_get_record_non_exist(self):
@@ -207,7 +207,7 @@ class AuroraDNSDriverTests(LibcloudTestCase):
             self.fail('expected a RecordDoesNotExistError')
         except RecordDoesNotExistError:
             pass
-        except:
+        except Exception:
             raise
 
     def test_create_health_check(self):

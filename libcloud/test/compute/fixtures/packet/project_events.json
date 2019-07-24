@@ -1,0 +1,95 @@
+{
+	"events": [
+		{
+			"id": "6e91f6a7-b01b-479f-b5bb-1791e3a7840c",
+			"type": "virtual_network.assigned",
+			"body": "Dimitris assigned the VNID 1011 to \"%project%\" in ams1.",
+			"state": null,
+			"created_at": "2019-03-21T15:31:42Z",
+			"relationships": [
+				{
+					"href": "#0911cfa1-f089-46c1-80bd-e1c83ae57ba0"
+				},
+				{
+					"href": "#384585e9-7655-4c4b-b816-061a72fd256c"
+				}
+			],
+			"ip": "157.52.105.28",
+			"modified_by": {
+				"id": "bd4f24f3-33f0-46a6-9528-4e31e2ba6074",
+				"full_name": "Dimitris Moraitis",
+				"avatar_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm",
+				"avatar_thumb_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm"
+			},
+			"interpolated": "Dimitris assigned the VNID 1011 to \"Packet Integration Testing [Sponsored]\" in ams1.",
+			"href": "/events/6e91f6a7-b01b-479f-b5bb-1791e3a7840c"
+		},
+		{
+			"id": "c4016ce2-9c53-4616-a087-029755292919",
+			"type": "ip_reservation.assigned",
+			"body": "Dimitris requested an IP range of /31 be added to \"%project%\" in ams1 and got assigned 147.75.100.12/31.",
+			"state": null,
+			"created_at": "2019-03-21T15:31:28Z",
+			"relationships": [
+				{
+					"href": "#495145fb-61ec-4483-80ef-cf6989b836cc"
+				},
+				{
+					"href": "#a38801d1-56db-4744-96f7-54a3bf4e9c8a"
+				},
+				{
+					"href": "#37d36535-e983-48d0-831a-5fc9d4143412"
+				}
+			],
+			"ip": "157.52.105.28",
+			"modified_by": {
+				"id": "bd4f24f3-33f0-46a6-9528-4e31e2ba6074",
+				"full_name": "Dimitris Moraitis",
+				"avatar_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm",
+				"avatar_thumb_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm"
+			},
+			"interpolated": "Dimitris requested an IP range of /31 be added to \"Packet Integration Testing [Sponsored]\" in ams1 and got assigned 147.75.100.12/31.",
+			"href": "/events/c4016ce2-9c53-4616-a087-029755292919"
+		},
+		{
+			"id": "af57627a-4e41-4d50-8e1b-c80fee4f2284",
+			"type": "bgp_config.requested",
+			"body": "Global BGP was requested to be enabled on project \"%project%\"",
+			"state": null,
+			"created_at": "2019-03-08T12:03:47Z",
+			"relationships": [
+				{
+					"href": "#6935e72e-7822-485e-b87a-238a56282731"
+				},
+				{
+					"href": "#d6297ecd-f294-46b1-98c2-647bf55e31c8"
+				}
+			],
+			"ip": "157.52.92.50",
+			"modified_by": {
+				"id": "bd4f24f3-33f0-46a6-9528-4e31e2ba6074",
+				"full_name": "Dimitris Moraitis",
+				"avatar_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm",
+				"avatar_thumb_url": "https://www.gravatar.com/avatar/702119decab6288093449009ab5af843?d=mm"
+			},
+			"interpolated": "Global BGP was requested to be enabled on project \"Packet Integration Testing [Sponsored]\"",
+			"href": "/events/af57627a-4e41-4d50-8e1b-c80fee4f2284"
+		}
+	],
+	"meta": {
+		"first": {
+			"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df/events?page=1"
+		},
+		"previous": null,
+		"self": {
+			"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df/events?page=1"
+		},
+		"next": null,
+		"last": {
+			"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df/events?page=1"
+		},
+		"current_page": 1,
+		"last_page": 1,
+		"total": 3
+	}
+}

@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import sys
 import binascii
 import socket
 import time
@@ -302,9 +301,7 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
     def transform_ssl_error(func, *args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except ssl.SSLError:
-            exc = sys.exc_info()[1]
-
+        except ssl.SSLError as exc:
             if TRANSIENT_SSL_ERROR in str(exc):
                 raise TransientSSLError(*exc.args)
 
@@ -319,9 +316,7 @@ def retry(retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
             while True:
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
-                except retry_exceptions:
-                    exc = sys.exc_info()[1]
-
+                except retry_exceptions as exc:
                     if isinstance(exc, RateLimitReachedError):
                         time.sleep(exc.retry_after)
 

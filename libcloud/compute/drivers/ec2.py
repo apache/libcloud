@@ -18,7 +18,6 @@ Amazon EC2, Eucalyptus, Nimbus and Outscale drivers.
 """
 
 import re
-import sys
 import base64
 import copy
 import warnings
@@ -1208,12 +1207,12 @@ class EC2Response(AWSBaseResponse):
 
         try:
             body = ET.XML(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError("Failed to parse XML",
                                          body=self.body, driver=EC2NodeDriver)
 
         for err in body.findall('Errors/Error'):
-            code, message = err.getchildren()
+            code, message = list(err)
             err_list.append('%s: %s' % (code.text, message.text))
             if code.text == 'InvalidClientTokenId':
                 raise InvalidCredsError(err_list[-1])
@@ -1612,6 +1611,8 @@ class BaseEC2NodeDriver(NodeDriver):
     connectionCls = EC2Connection
     features = {'create_node': ['ssh_key']}
     path = '/'
+    region_name = ''
+    country = ''
     signature_version = DEFAULT_SIGNATURE_VERSION
 
     NODE_STATE_MAP = {
@@ -1774,21 +1775,38 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def list_locations(self):
         locations = []
-        for index, availability_zone in \
-                enumerate(self.ex_list_availability_zones()):
-                    locations.append(EC2NodeLocation(
-                        index, availability_zone.name, self.country, self,
-                        availability_zone)
-                    )
+
+        iterator = enumerate(self.ex_list_availability_zones())
+        for index, availability_zone in iterator:
+            locations.append(EC2NodeLocation(
+                index, availability_zone.name, self.country, self,
+                availability_zone)
+            )
         return locations
 
-    def list_volumes(self, node=None):
+    def list_volumes(self, node=None, ex_filters=None):
+        """
+        List volumes that are attached to a node, if specified and those that
+        satisfy the filters, if specified.
+
+        :param node: The node to which the volumes are attached.
+        :type node: :class:`Node`
+
+        :param ex_filters: The dictionary of additional filters.
+        :type ex_filters: ``dict``
+
+        :return: The list of volumes that match the criteria.
+        :rtype: ``list`` of :class:`StorageVolume`
+        """
         params = {
             'Action': 'DescribeVolumes',
         }
+        if not ex_filters:
+            ex_filters = {}
         if node:
-            filters = {'attachment.instance-id': node.id}
-            params.update(self._build_filters(filters))
+            ex_filters['attachment.instance-id'] = node.id
+        if node or ex_filters:
+            params.update(self._build_filters(ex_filters))
 
         response = self.connection.request(self.path, params=params).object
         volumes = [self._to_volume(el) for el in response.findall(
@@ -1922,6 +1940,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if 'auth' in kwargs:
             auth = self._get_and_check_auth(kwargs['auth'])
+            # pylint: disable=no-member
             key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
             params['KeyName'] = key['keyName']
 
@@ -2443,8 +2462,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
         params = {'Action': 'ImportSnapshot'}
 
-        if client_data is not None:
-            params.update(self._get_client_date_params(client_data))
+        # TODO: This method isn't defined anywhere?
+        #  if client_data is not None:
+        #      params.update(self._get_client_date_params(client_data))
 
         if client_token is not None:
             params['ClientToken'] = client_token
@@ -2804,6 +2824,41 @@ class BaseEC2NodeDriver(NodeDriver):
 
         return subnet
 
+    def ex_modify_subnet_attribute(self, subnet, attribute='auto_public_ip',
+                                   value=False):
+        """
+        Modifies a subnet attribute.
+        You can only modify one attribute at a time.
+
+        :param      subnet: The subnet to delete
+        :type       subnet: :class:`.EC2NetworkSubnet`
+
+        :param      attribute: The attribute to set on the subnet; one of:
+                               ``'auto_public_ip'``: Automatically allocate a
+                               public IP address when a server is created
+                               ``'auto_ipv6'``: Automatically assign an IPv6
+                               address when a server is created
+        :type       attribute: ``str``
+
+        :param      value: The value to set the subnet attribute to
+                           (defaults to ``False``)
+        :type       value: ``bool``
+
+        :rtype:     ``bool``
+        """
+        params = {'Action': 'ModifySubnetAttribute', 'SubnetId': subnet.id}
+
+        if attribute == 'auto_public_ip':
+            params['MapPublicIpOnLaunch.Value'] = value
+        elif attribute == 'auto_ipv6':
+            params['AssignIpv6AddressOnCreation.Value'] = value
+        else:
+            raise ValueError('Unsupported attribute: %s' % (attribute))
+
+        res = self.connection.request(self.path, params=params).object
+
+        return self._get_boolean(res)
+
     def ex_delete_subnet(self, subnet):
         """
         Deletes a VPC subnet.
@@ -2984,8 +3039,7 @@ class BaseEC2NodeDriver(NodeDriver):
             res = self.connection.request(
                 self.path, params=params.copy()).object
             return self._get_boolean(res)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if e.args[0].find('InvalidPermission.Duplicate') == -1:
                 raise e
 
@@ -3228,8 +3282,7 @@ class BaseEC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
         params['IpProtocol'] = 'udp'
@@ -3238,8 +3291,7 @@ class BaseEC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
 
@@ -3249,8 +3301,7 @@ class BaseEC2NodeDriver(NodeDriver):
             results.append(
                 self.connection.request(self.path, params=params.copy()).object
             )
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
 
             if e.args[0].find("InvalidPermission.Duplicate") == -1:
                 raise e
@@ -4586,6 +4637,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(BaseEC2NodeDriver, self)._ex_connection_class_kwargs()
+        # pylint: disable=no-member
         if hasattr(self, 'token') and self.token is not None:
             kwargs['token'] = self.token
             # Force signature_version 4 for tokens or auth breaks
@@ -5683,7 +5735,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='us-east-1', token=None, **kwargs):
         if hasattr(self, '_region'):
-            region = self._region
+            region = self._region  # pylint: disable=no-member
 
         valid_regions = self.list_regions()
         if region not in valid_regions:
@@ -5888,7 +5940,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region='us-east-1', region_details=None, **kwargs):
         if hasattr(self, '_region'):
-            region = self._region
+            region = getattr(self, '_region', None)
 
         if region_details is None:
             raise ValueError('Invalid region_details argument')
@@ -5907,9 +5959,9 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         self._not_implemented_msg =\
             'This method is not supported in the Outscale driver'
 
-        super(BaseEC2NodeDriver, self).__init__(key=key, secret=secret,
-                                                secure=secure, host=host,
-                                                port=port, **kwargs)
+        super(OutscaleNodeDriver, self).__init__(key=key, secret=secret,
+                                                 secure=secure, host=host,
+                                                 port=port, **kwargs)
 
     def create_node(self, **kwargs):
         """

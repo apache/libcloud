@@ -7,7 +7,7 @@ City
 .. figure:: /_static/images/provider_logos/packet.png
     :align: center
     :width: 300
-    :target: https://www.packet.net/
+    :target: https://www.packet.com/
 
 Instantiating a driver and listing devices in a project
 -------------------------------------------------------
@@ -22,4 +22,4 @@ API Docs
     :members:
     :inherited-members:
 
-.. _`Packet`: https://www.packet.net/
+.. _`Packet`: https://www.packet.com/

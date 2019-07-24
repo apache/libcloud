@@ -1,0 +1,21 @@
+{
+  "name": "testDNS-ip",
+  "id": "/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.Network/publicIPAddresses/test-ip",
+  "location": "westus",
+  "zones": [
+    "1"
+  ],
+  "properties": {
+    "provisioningState": "Succeeded",
+    "publicIPAddressVersion": "IPv4",
+    "publicIPAllocationMethod": "Static",
+    "idleTimeoutInMinutes": 10,
+    "ipConfiguration": {
+      "id": "/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.Network/networkInterfaces/testDNS649/ipConfigurations/ipconfig1"
+    }
+  },
+  "sku": {
+    "name": "Standard"
+  },
+  "type": "Microsoft.Network/publicIPAddresses"
+}

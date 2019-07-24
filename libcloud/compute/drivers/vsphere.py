@@ -22,7 +22,6 @@ more information, please refer to the official documentation.
 """
 
 import os
-import sys
 import atexit
 
 try:
@@ -90,11 +89,11 @@ class VSphereConnection(ConnectionUserAndKey):
                                 password=self.key,
                                 sock_timeout=DEFAULT_CONNECTION_TIMEOUT,
                                 trace_file=trace_file)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             message = e.message
             if hasattr(e, 'strerror'):
-                message = e.strerror
+                message = getattr(e, 'strerror', e.message)
+
             fault = getattr(e, 'fault', None)
 
             if fault == 'InvalidLoginFault':
@@ -292,7 +291,10 @@ class VSphereNodeDriver(NodeDriver):
             _this = request.new__this(vm._mor)
             _this.set_attribute_type(vm._mor.get_attribute_type())
             request.set_element__this(_this)
-            ret = server._proxy.Destroy_Task(request)._returnval
+
+            # pylint: disable=no-member
+            ret = server._proxy.Destroy_Task(request)._returnva
+            # pylint: enable=no-member
             task = VITask(ret, server)
 
             # Wait for the task to finish
@@ -447,7 +449,9 @@ class VSphereNodeDriver(NodeDriver):
             request.set_element_uuid(uuid)
 
             try:
+                # pylint: disable=no-member
                 vm = server._proxy.FindByUuid(request)._returnval
+                # pylint: enable=no-member
             except VI.ZSI.FaultException:
                 pass
             else:

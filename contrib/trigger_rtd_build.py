@@ -14,11 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import os
+
 import requests
 
-
-key = sys.argv[1]
-url = 'https://readthedocs.org/build/%s' % (key)
+# Old deprecated API
+url = 'https://readthedocs.org/build/8284/'
 r = requests.post(url)
+print(r.text)
+
+# New API (which doesn't apear to be working)
+token = os.environ['RTD_TOKEN']
+
+url = 'https://readthedocs.org/api/v2/webhook/libcloud/87656/'
+r = requests.post(url, data={'token': token, 'branches': 'trunk'})
 print(r.text)

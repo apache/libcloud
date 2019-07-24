@@ -16,7 +16,6 @@
 VMware vCloud driver.
 """
 import copy
-import sys
 import re
 import base64
 import os
@@ -590,10 +589,10 @@ class VCloudNodeDriver(NodeDriver):
                                  'application/vnd.vmware.vcloud.vApp+xml'}
                     )
                     nodes.append(self._to_node(res.object))
-                except Exception:
+                except Exception as e:
                     # The vApp was probably removed since the previous vDC
                     # query, ignore
-                    e = sys.exc_info()[1]
+                    # pylint: disable=no-member
                     if not (e.args[0].tag.endswith('Error') and
                             e.args[0].get('minorErrorCode') ==
                             'ACCESS_TO_RESOURCE_IS_FORBIDDEN'):
@@ -677,7 +676,7 @@ class VCloudNodeDriver(NodeDriver):
 
     def _uniquer(self, seq, idfun=None):
         if idfun is None:
-            def idfun(x):
+            def idfun(x):  # pylint: disable=function-redefined
                 return x
         seen = {}
         result = []
@@ -840,6 +839,8 @@ class VCloud_1_5_Connection(VCloudConnection):
             # Get the URL of the Organization
             body = ET.XML(resp.text)
             self.org_name = body.get('org')
+
+            # pylint: disable=no-member
             org_list_url = get_url_path(
                 next((link for link in body.findall(fixxpath(body, 'Link'))
                      if link.get('type') ==
@@ -851,6 +852,8 @@ class VCloud_1_5_Connection(VCloudConnection):
             self.connection.request(method='GET', url=org_list_url,
                                     headers=self.add_default_headers({}))
             body = ET.XML(self.connection.getresponse().text)
+
+            # pylint: disable=no-member
             self.driver.org = get_url_path(
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                      if org.get('name') == self.org_name)).get('href')
@@ -1735,7 +1738,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 "%s the VM script file does not exist" % vm_script)
         try:
             open(vm_script).read()
-        except:
+        except Exception:
             raise
         return vm_script
 
@@ -1915,7 +1918,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vms = self._get_vm_elements(vapp_or_vm_id)
         try:
             script = open(vm_script).read()
-        except:
+        except Exception:
             return
 
         # ElementTree escapes script characters automatically. Escape
@@ -1931,7 +1934,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             try:
                 res.object.find(
                     fixxpath(res.object, 'CustomizationScript')).text = script
-            except:
+            except Exception:
                 # CustomizationScript section does not exist, insert it just
                 # before ComputerName
                 for i, e in enumerate(res.object):
@@ -1993,7 +1996,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         try:
             res.object.find(
                 fixxpath(res.object, section)).text = text
-        except:
+        except Exception:
             # "section" section does not exist, insert it just
             # before "prev_section"
             for i, e in enumerate(res.object):
@@ -2169,7 +2172,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vdc_id = next(link.get('href') for link
                       in node_elm.findall(fixxpath(node_elm, 'Link'))
                       if link.get('type') ==
-                      'application/vnd.vmware.vcloud.vdc+xml')
+                      'application/vnd.vmware.vcloud.vdc+xml'
+                      )  # pylint: disable=no-member
         vdc = next(vdc for vdc in self.vdcs if vdc.id == vdc_id)
 
         extra = {'vdc': vdc.name, 'vms': vms}
@@ -2292,7 +2296,7 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
     def _perform_snapshot_operation(self, node, operation, xml_data, headers):
         res = self.connection.request(
             '%s/action/%s' % (get_url_path(node.id), operation),
-            data=ET.tostring(xml_data) if xml_data else None,
+            data=ET.tostring(xml_data) if xml_data is not None else None,
             method='POST',
             headers=headers)
         self._wait_for_task_completion(res.object.get('href'))
@@ -2334,5 +2338,5 @@ class VCloud_5_5_NodeDriver(VCloud_5_1_NodeDriver):
                 "port": res.object.find(fixxpath(res.object, 'Port')).text,
             }
             return output
-        except:
+        except Exception:
             return None

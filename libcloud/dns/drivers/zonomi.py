@@ -14,7 +14,6 @@
 """
 Zonomi DNS Driver
 """
-import sys
 
 from libcloud.common.zonomi import ZonomiConnection, ZonomiResponse
 from libcloud.common.zonomi import ZonomiException
@@ -77,8 +76,7 @@ class ZonomiDNSDriver(DNSDriver):
         params = {'action': 'QUERY', 'name': '**.' + zone.id}
         try:
             response = self.connection.request(action=action, params=params)
-        except ZonomiException:
-            e = sys.exc_info()[1]
+        except ZonomiException as e:
             if e.code == '404':
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -147,8 +145,7 @@ class ZonomiDNSDriver(DNSDriver):
         params = {'name': domain}
         try:
             self.connection.request(action=action, params=params)
-        except ZonomiException:
-            e = sys.exc_info()[1]
+        except ZonomiException as e:
             if e.message == 'ERROR: This zone is already in your zone list.':
                 raise ZoneAlreadyExistsError(zone_id=domain, driver=self,
                                              value=e.message)
@@ -195,8 +192,7 @@ class ZonomiDNSDriver(DNSDriver):
             params['prio'] = extra.get('prio')
         try:
             response = self.connection.request(action=action, params=params)
-        except ZonomiException:
-            e = sys.exc_info()[1]
+        except ZonomiException as e:
             if ('ERROR: No zone found for %s' % record_name) in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -233,8 +229,7 @@ class ZonomiDNSDriver(DNSDriver):
         params = {'action': 'DELETEZONE', 'name': zone.id}
         try:
             response = self.connection.request(action=action, params=params)
-        except ZonomiException:
-            e = sys.exc_info()[1]
+        except ZonomiException as e:
             if e.code == '404':
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -255,8 +250,7 @@ class ZonomiDNSDriver(DNSDriver):
         params = {'action': 'DELETE', 'name': record.name, 'type': record.type}
         try:
             response = self.connection.request(action=action, params=params)
-        except ZonomiException:
-            e = sys.exc_info()[1]
+        except ZonomiException as e:
             if e.message == 'Record not deleted.':
                 raise RecordDoesNotExistError(record_id=record.id, driver=self,
                                               value=e.message)
@@ -280,8 +274,7 @@ class ZonomiDNSDriver(DNSDriver):
         params = {'name': zone.domain, 'master': master}
         try:
             self.connection.request(action=action, params=params)
-        except ZonomiException:
-            e = sys.exc_info()[1]
+        except ZonomiException as e:
             if 'ERROR: Could not find' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)
@@ -300,8 +293,7 @@ class ZonomiDNSDriver(DNSDriver):
         params = {'name': zone.domain}
         try:
             self.connection.request(action=action, params=params)
-        except ZonomiException:
-            e = sys.exc_info()[1]
+        except ZonomiException as e:
             if 'ERROR: Could not find' in e.message:
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
                                             value=e.message)

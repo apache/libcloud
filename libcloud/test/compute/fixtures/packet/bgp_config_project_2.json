@@ -1,0 +1,17 @@
+{
+	"id": "6e3a1b3b-f8de-4d3c-9b4c-be097af6e199",
+	"status": "requested",
+	"deployment_type": "global",
+	"asn": 65000,
+	"md5": null,
+	"route_object": null,
+	"max_prefix": 10,
+	"created_at": "2019-03-08T12:03:47Z",
+	"requested_at": "2019-03-08T12:03:47Z",
+	"project": {
+		"href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df"
+	},
+	"sessions": [],
+	"ranges": [],
+	"href": "/bgp-configs/6e3a1b3b-f8de-4d3c-9b4c-be097af6e199"
+}

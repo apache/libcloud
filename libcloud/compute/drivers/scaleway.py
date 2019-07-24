@@ -93,8 +93,8 @@ class ScalewayConnection(ConnectionUserAndKey):
 
         if isinstance(params, dict):
             params['per_page'] = 100
-        else:
-            params.append(('per_page', 100))
+        elif isinstance(params, list):
+            params.append(('per_page', 100))  # pylint: disable=no-member
 
         results = self.request(action, params, data, headers,
                                method, raw, stream, region).object

@@ -974,6 +974,7 @@ class NttCisFirewallRule(object):
                    self.protocol, self.source, self.destination,
                    self.enabled))
 
+
 """
 class NttCisFirewallAddress(object):
     The source or destination model in a firewall rule

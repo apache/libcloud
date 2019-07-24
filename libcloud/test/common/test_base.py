@@ -71,7 +71,7 @@ class ErrorResponseTest(LibcloudTestCase):
             Response(resp_mock, mock.MagicMock())
         except RateLimitReachedError as e:
             self.assertEqual(e.retry_after, 120)
-        except:
+        except Exception:
             # We should have got a RateLimitReachedError
             self.fail("Catched exception should have been RateLimitReachedError")
         else:
