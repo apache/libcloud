@@ -53,7 +53,8 @@ class GandiLiveTests(unittest.TestCase):
         self.assertIsNone(zone.ttl)
 
     def test_create_zone(self):
-        zone = self.driver.create_zone('example.org', extra={'name': 'Example'})
+        zone = self.driver.create_zone('example.org',
+                                       extra={'name': 'Example'})
         self.assertEqual(zone.id, 'example.org')
         self.assertEqual(zone.domain, 'example.org')
 
@@ -66,7 +67,7 @@ class GandiLiveTests(unittest.TestCase):
 
     def test_update_zone(self):
         zone = self.test_zone
-        updated_zone = self.driver.update_zone(zone, extra={'zone_uuid': 12346})
+        self.driver.update_zone(zone, extra={'zone_uuid': 12346})
         self.assertEqual(zone.id, 'example.com')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'example.com')
@@ -114,7 +115,7 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(record.name, 'alice')
         self.assertEqual(record.type, RecordType.AAAA)
         self.assertEqual(record.data, ['::1'])
-        
+
     def test_update_record(self):
         record = self.driver.update_record(self.test_record, 'bob',
                                            RecordType.A, '192.168.0.2',
@@ -133,51 +134,61 @@ class GandiLiveTests(unittest.TestCase):
         bind_lines = bind_export.decode('utf8').split('\n')
         self.assertEqual(bind_lines[0], '@ 10800 IN A 127.0.0.1')
 
+
 class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     fixtures = DNSFileFixtures('gandi_live')
 
     def _json_domains_get(self, method, url, body, headers):
         body = self.fixtures.load('list_zones.json')
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_domains_example_com_get(self, method, url, body, headers):
         body = self.fixtures.load('get_zone.json')
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_zones_post(self, method, url, body, headers):
         body = self.fixtures.load('create_zone.json')
-        return httplib.OK, body, {'Location': '/zones/54321'}, httplib.responses[httplib.OK]
+        return (httplib.OK, body, {'Location': '/zones/54321'},
+                httplib.responses[httplib.OK])
 
     def _json_domains_post(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_domains_example_com_patch(self, method, url, body, headers):
         body = self.fixtures.load('update_zone.json')
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_get(self, method, url, body, headers):
+    def _json_domains_example_com_records_get(self, method, url, body,
+                                              headers):
         body = self.fixtures.load('list_records.json')
         if headers is not None and 'Accept' in headers:
             if headers['Accept'] == 'text/plain':
                 body = self.fixtures.load('list_records_bind.txt')
-        return httplib.OK, body, {'Content-Type': 'text/plain'}, httplib.responses[httplib.OK]
+        return (httplib.OK, body, {'Content-Type': 'text/plain'},
+                httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_bob_A_get(self,  method, url, body, headers):
+    def _json_domains_example_com_records_bob_A_get(self, method, url,
+                                                    body, headers):
         body = self.fixtures.load('get_record.json')
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_post(self, method, url, body, headers):
+    def _json_domains_example_com_records_post(self, method, url, body,
+                                               headers):
         body = self.fixtures.load('create_record.json')
-        return httplib.OK, body, {'Location': '/zones/12345/records/alice/AAAA'}, httplib.responses[httplib.OK]
+        return (httplib.OK, body,
+                {'Location': '/zones/12345/records/alice/AAAA'},
+                httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_bob_A_put(self, method, url, body, headers):
+    def _json_domains_example_com_records_bob_A_put(self, method, url,
+                                                    body, headers):
         body = self.fixtures.load('update_record.json')
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]        
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_bob_A_delete(self, method, url, body, headers):
+    def _json_domains_example_com_records_bob_A_delete(self, method, url,
+                                                       body, headers):
         body = self.fixtures.load('delete_record.json')
-        return httplib.OK, body, {}, httplib.responses[httplib.OK]        
-    
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 if __name__ == '__main__':
     sys.exit(unittest.main())

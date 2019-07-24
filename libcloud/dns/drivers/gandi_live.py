@@ -48,11 +48,12 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     https://doc.livedns.gandi.net/
 
-    Please note that the Libcloud paradigm of one zone per domain does not match
-    exactly with Gandi LiveDNS.  For Gandi, a "zone" can apply to multiple
-    domains.  This driver behaves as if the domain is a zone, but be warned that
-    modifying a domain means modifying the zone.  Iif you have a zone associated
-    with mutiple domains, all of those domains will be modified as well.
+    Please note that the Libcloud paradigm of one zone per domain does not
+    match exactly with Gandi LiveDNS.  For Gandi, a "zone" can apply to
+    multiple domains.  This driver behaves as if the domain is a zone, but be
+    warned that modifying a domain means modifying the zone.  Iif you have a
+    zone associated with mutiple domains, all of those domains will be
+    modified as well.
     """
 
     type = Provider.GANDI
@@ -223,9 +224,9 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             raw_data['rrset_ttl'] = extra['ttl']
 
         post_data = json.dumps(raw_data)
-        
+
         self.connection.request(action=action, method='POST',
-                                         data=post_data)
+                                data=post_data)
 
         return self._to_record(raw_data, zone)
 
@@ -237,7 +238,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             record.name,
             self.RECORD_TYPE_MAP[record.type]
         )
-        
+
         if isinstance(data, list):
             rvalue = data
         else:
@@ -253,8 +254,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         raw_data['rrset_name'] = record.name
         raw_data['rrset_type'] = self.RECORD_TYPE_MAP[record.type]
 
-        updated = self.connection.request(action=action, method='PUT',
-                                          data=put_data)
+        self.connection.request(action=action, method='PUT',
+                                data=put_data)
 
         return self._to_record(raw_data, record.zone)
 

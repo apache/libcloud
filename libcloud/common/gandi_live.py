@@ -28,6 +28,7 @@ __all__ = [
 
 API_HOST = 'dns.api.gandi.net'
 
+
 class GandiLiveException(Exception):
     """
     Exception class for Gandi Live driver
@@ -36,7 +37,10 @@ class GandiLiveException(Exception):
         return '(%u) %s' % (self.args[0], self.args[1])
 
     def __repr__(self):
-        return '<GandiLiveException code %u "%s">' % (self.args[0], self.args[1])
+        return '<GandiLiveException code %u "%s">' % (
+            self.args[0],
+            self.args[1]
+        )
 
 
 class GandiLiveResponse(JsonResponse):
