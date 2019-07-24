@@ -59,7 +59,7 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(zone.domain, 'example.org')
 
     def test_get_zone(self):
-        zone = self.test_zone
+        zone = self.driver.get_zone('example.com')
         self.assertEqual(zone.id, 'example.com')
         self.assertEqual(zone.type, 'master')
         self.assertEqual(zone.domain, 'example.com')
