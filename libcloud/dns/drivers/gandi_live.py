@@ -157,8 +157,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     # There is nothing you can update about a domain; you can update zones'
     # names and which zone a domain is associated with, but the domain itself
-    # is basically immutable.  This method is not implemented; the implementation
-    # commented out will do a zone name update.
+    # is basically immutable.  This method is not implemented; the
+    # implementation commented out will do a zone name update.
 
     # """
     # :param extra: (optional) Extra attributes ('name') to change the name of

@@ -143,8 +143,8 @@ class GandiLiveResponse(JsonResponse):
     #  <error-location> is a string for which part of the request to look in
     #  <error-name> is a string naming the parameter
     #  <error-description> is a string detailing what the problem is
-    # Here we ignore object and combine message and cause along with an error if
-    # one or more exists.
+    # Here we ignore object and combine message and cause along with an error
+    # if one or more exists.
     def _get_error(self, body):
         """
         Get the error code and message from a JSON response.

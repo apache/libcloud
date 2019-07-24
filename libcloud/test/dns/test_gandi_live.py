@@ -17,8 +17,7 @@ import sys
 import unittest
 
 from libcloud.utils.py3 import httplib
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
+from libcloud.dns.types import RecordType
 from libcloud.dns.drivers.gandi_live import GandiLiveDNSDriver
 from libcloud.dns.base import Zone, Record
 from libcloud.test.file_fixtures import DNSFileFixtures
@@ -141,7 +140,7 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_get(self, method, url, body,
-                                              headers):
+                                                     headers):
         body = self.fixtures.load('list_records.json')
         if headers is not None and 'Accept' in headers:
             if headers['Accept'] == 'text/plain':
@@ -150,24 +149,24 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
                 httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_bob_A_get(self, method, url,
-                                                    body, headers):
+                                                           body, headers):
         body = self.fixtures.load('get_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_post(self, method, url, body,
-                                               headers):
+                                                      headers):
         body = self.fixtures.load('create_record.json')
         return (httplib.OK, body,
                 {'Location': '/zones/12345/records/alice/AAAA'},
                 httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_bob_A_put(self, method, url,
-                                                    body, headers):
+                                                           body, headers):
         body = self.fixtures.load('update_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_bob_A_delete(self, method, url,
-                                                       body, headers):
+                                                              body, headers):
         body = self.fixtures.load('delete_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
