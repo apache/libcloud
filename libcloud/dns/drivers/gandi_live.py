@@ -18,10 +18,12 @@ from __future__ import with_statement
 import json
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import RecordError
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.dns.types import ZoneDoesNotExistError, \
+    RecordDoesNotExistError, ZoneAlreadyExistsError, RecordAlreadyExistsError
 from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.common.gandi_live import GandiLiveException, GandiLiveResponse,\
-    GandiLiveConnection, BaseGandiLiveDriver
+from libcloud.common.gandi_live import ResourceNotFoundError, \
+    ResourceConflictError, GandiLiveResponse, GandiLiveConnection, \
+    BaseGandiLiveDriver
 
 
 __all__ = [
@@ -34,7 +36,6 @@ TTL_MAX = 2592000  # 30 days
 API_BASE = '/api/v5'
 
 
-# @@@ update this - nothing in docs about error messages...
 class GandiLiveDNSResponse(GandiLiveResponse):
     pass
 
@@ -112,7 +113,12 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     def get_zone(self, zone_id):
         action = '%s/domains/%s' % (API_BASE, zone_id)
-        zone = self.connection.request(action=action, method='GET')
+        try:
+            zone = self.connection.request(action=action, method='GET')
+        except ResourceNotFoundError:
+            raise ZoneDoesNotExistError(value='',
+                                        driver=self.connection.driver,
+                                        zone_id=zone_id)
         return self._to_zone(zone.object)
 
     """
@@ -128,47 +134,56 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             'name': zone_name,
         }
         post_zone_data = json.dumps(raw_zone_data)
-        new_zone = self.connection.request(action='%s/zones' % API_BASE,
-                                           method='POST',
-                                           data=post_zone_data)
+
+        try:
+            new_zone = self.connection.request(action='%s/zones' % API_BASE,
+                                               method='POST',
+                                               data=post_zone_data)
+        except ResourceConflictError:
+            raise ZoneAlreadyExistsError(value='',
+                                         driver=self.connection.driver,
+                                         zone_id=zone_name)
         new_zone_uuid = new_zone.headers['location'].split('/')[-1]
 
         raw_domain_data = {
             'zone_uuid': new_zone_uuid,
         }
         patch_domain_data = json.dumps(raw_domain_data)
+
         self.connection.request(action='%s/domains/%s' % (API_BASE, domain),
                                 method='PATCH',
                                 data=patch_domain_data)
         return self._to_zone({'fqdn': domain})
 
-    # Consider eliminating update_zone as well.  The only thing you can change
-    # is the name of the zone, which you would never see because we're trying
-    # to ignore zones.  It's the only thing that makes use of the zone_uuid,
-    # which we can otherwise ignore.
-    """
-    :param extra: (optional) Extra attributes ('name') to change the name of a
-                             zone a domain is associated with.  Does nothing
-                             otherwise.
-    """
-    def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
-        if extra and 'name' in extra and 'zone_uuid' in zone.extra:
-            action = '%s/zones/%s' % (API_BASE, zone.extra['zone_uuid'])
-            raw_data = {
-                'name': extra['name'],
-            }
-            patch_data = json.dumps(raw_data)
-            self.connection.request(action=action, method='PATCH',
-                                    data=patch_data)
-            return zone
-        return None
+    # There is nothing you can update about a domain; you can update zones'
+    # names and which zone a domain is associated with, but the domain itself
+    # is basically immutable.  This method is not implemented; the implementation
+    # commented out will do a zone name update.
+
+    # """
+    # :param extra: (optional) Extra attributes ('name') to change the name of
+    #                          a zone a domain is associated with.  Does
+    #                          nothing otherwise.
+    # """
+    # def update_zone(self, zone, domain=None, type=None, ttl=None,
+    #                 extra=None):
+    #     if extra and 'name' in extra and 'zone_uuid' in zone.extra:
+    #         action = '%s/zones/%s' % (API_BASE, zone.extra['zone_uuid'])
+    #         raw_data = {
+    #             'name': extra['name'],
+    #         }
+    #         patch_data = json.dumps(raw_data)
+    #         self.connection.request(action=action, method='PATCH',
+    #                                 data=patch_data)
+    #         return zone
+    #     return None
 
     # There is no concept of deleting domains in this API, not even to
     # disassociate a domain from a zone.  You can delete all the records in a
     # domain (not the same thing) and also delete a zone, but because that
     # level is being masked in this API, it isn't implemented here.  Otherwise
     # this Libcloud zone vs. Gandi zone mismatch gets even more confused.
-    # @@@ implement it as always returning an exception?
+    # This implementation deletes a zone.
     # def delete_zone(self, zone_uuid):
     #     self.connection.request(action='%s/zones/%s' % (API_BASE, zone_uuid),
     #                             method='DELETE')
@@ -218,7 +233,12 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                                                   zone_id,
                                                   name,
                                                   record_type)
-        record = self.connection.request(action=action, method='GET')
+        try:
+            record = self.connection.request(action=action, method='GET')
+        except ResourceNotFoundError:
+            raise RecordDoesNotExistError(value='',
+                                          driver=self.connection.driver,
+                                          record_id=record_id)
         return self._to_record(record.object, self.get_zone(zone_id))
 
     def _validate_record(self, record_id, name, record_type, data, extra):
@@ -252,9 +272,15 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             raw_data['rrset_ttl'] = extra['ttl']
 
         post_data = json.dumps(raw_data)
-
-        self.connection.request(action=action, method='POST',
-                                data=post_data)
+        try:
+            self.connection.request(action=action, method='POST',
+                                    data=post_data)
+        except ResourceConflictError:
+            raise RecordAlreadyExistsError(value='',
+                                           driver=self.connection.driver,
+                                           record_id='%s:%s' % (
+                                               self.RECORD_TYPE_MAP[type],
+                                               name))
 
         return self._to_record(raw_data, zone)
 
@@ -282,9 +308,13 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         put_data = json.dumps(raw_data)
         raw_data['rrset_name'] = record.name
         raw_data['rrset_type'] = self.RECORD_TYPE_MAP[record.type]
-
-        self.connection.request(action=action, method='PUT',
-                                data=put_data)
+        try:
+            self.connection.request(action=action, method='PUT',
+                                    data=put_data)
+        except ResourceNotFoundError:
+            raise RecordDoesNotExistError(value='',
+                                          driver=self.connection.driver,
+                                          record_id=record.id)
 
         return self._to_record(raw_data, record.zone)
 
@@ -295,14 +325,17 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             record.name,
             self.RECORD_TYPE_MAP[record.type]
         )
-
-        resp = self.connection.request(action=action, method='DELETE')
+        try:
+            resp = self.connection.request(action=action, method='DELETE')
+        except ResourceNotFoundError:
+            raise RecordDoesNotExistError(value='',
+                                          driver=self.connection.driver,
+                                          record_id=record.id)
 
         if resp.success():
             return True
 
-        raise RecordDoesNotExistError(value='No such record', driver=self,
-                                      record_id=record.id)
+        return False
 
     def export_zone_to_bind_format(self, zone):
         action = '%s/domains/%s/records' % (API_BASE, zone.id)

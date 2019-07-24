@@ -66,22 +66,6 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(zone.domain, 'example.com')
         self.assertIsNone(zone.ttl)
 
-    def test_update_zone(self):
-        zone = self.test_zone
-        updated = self.driver.update_zone(zone, extra={'name': 'Test Zone'})
-        self.assertEqual(updated.id, 'example.com')
-        self.assertEqual(updated.type, 'master')
-        self.assertEqual(updated.domain, 'example.com')
-        self.assertIsNone(updated.ttl)
-
-    def test_update_zone_noop(self):
-        zone = self.test_zone
-        updated_zone = self.driver.update_zone(zone, domain='dontmatter.com')
-        self.assertIsNone(updated_zone)
-
-    def test_delete_zone(self):
-        pass
-
     def test_list_records(self):
         records = self.driver.list_records(self.test_zone)
         self.assertEqual(len(records), 3)
@@ -154,10 +138,6 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
 
     def _json_api_v5_domains_example_org_patch(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _json_api_v5_zones_a53re_patch(self, method, url, body, headers):
-        body = self.fixtures.load('update_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_get(self, method, url, body,
