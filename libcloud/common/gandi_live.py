@@ -118,56 +118,6 @@ class GandiLiveResponse(JsonResponse):
 
         return True
 
-    # Errors are not described at all in Gandi's official documentation.
-    # It appears when an error arises, a JSON object is returned along with
-    # an HTTP 4xx class code.  The object is structured as:
-    # {
-    #   code: <code>,
-    #   object: <object>,
-    #   message: <message>,
-    #   cause: <cause>,
-    #   errors: [
-    #      {
-    #         location: <error-location>,
-    #         name: <error-name>,
-    #         description: <error-description>
-    #      }
-    #   ]
-    # }
-    # where
-    #  <code> is a number equal to the HTTP response status code
-    #  <object> is a string with some internal name for the status code
-    #  <message> is a string detailing what the problem is
-    #  <cause> is a string that comes from a set of succinct problem summaries
-    #  errors is optional; if present:
-    #  <error-location> is a string for which part of the request to look in
-    #  <error-name> is a string naming the parameter
-    #  <error-description> is a string detailing what the problem is
-    # Here we ignore object and combine message and cause along with an error
-    # if one or more exists.
-    def _get_error(self, body):
-        """
-        Get the error code and message from a JSON response.
-
-        Incorporate the first error if there are multiple errors.
-
-        :param  body: The body of the JSON response dictionary
-        :type   body: ``dict``
-
-        :return:  String containing error message
-        :rtype:   ``str``
-        """
-        message = '%s: %s' % (body['cause'], body['message'])
-
-        if 'errors' in body:
-            err = body['errors'][0]
-            message = '%s (%s in %s: %s)' % (message,
-                                             err.get('location'),
-                                             err.get('name'),
-                                             err.get('description'))
-
-        return message
-
     def parse_body(self):
         """
         Parse the JSON response body, or raise exceptions as appropriate.
@@ -223,6 +173,56 @@ class GandiLiveResponse(JsonResponse):
             else:
                 message = body
             raise GandiLiveBaseError(message, self.status)
+
+    # Errors are not described at all in Gandi's official documentation.
+    # It appears when an error arises, a JSON object is returned along with
+    # an HTTP 4xx class code.  The object is structured as:
+    # {
+    #   code: <code>,
+    #   object: <object>,
+    #   message: <message>,
+    #   cause: <cause>,
+    #   errors: [
+    #      {
+    #         location: <error-location>,
+    #         name: <error-name>,
+    #         description: <error-description>
+    #      }
+    #   ]
+    # }
+    # where
+    #  <code> is a number equal to the HTTP response status code
+    #  <object> is a string with some internal name for the status code
+    #  <message> is a string detailing what the problem is
+    #  <cause> is a string that comes from a set of succinct problem summaries
+    #  errors is optional; if present:
+    #  <error-location> is a string for which part of the request to look in
+    #  <error-name> is a string naming the parameter
+    #  <error-description> is a string detailing what the problem is
+    # Here we ignore object and combine message and cause along with an error
+    # if one or more exists.
+    def _get_error(self, body):
+        """
+        Get the error code and message from a JSON response.
+
+        Incorporate the first error if there are multiple errors.
+
+        :param  body: The body of the JSON response dictionary
+        :type   body: ``dict``
+
+        :return:  String containing error message
+        :rtype:   ``str``
+        """
+        message = '%s: %s' % (body['cause'], body['message'])
+
+        if 'errors' in body:
+            err = body['errors'][0]
+            message = '%s (%s in %s: %s)' % (message,
+                                             err.get('location'),
+                                             err.get('name'),
+                                             err.get('description'))
+
+        return message
 
 
 class GandiLiveConnection(ConnectionKey):
