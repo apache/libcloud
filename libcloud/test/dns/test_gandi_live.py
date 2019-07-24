@@ -33,7 +33,8 @@ class GandiLiveTests(unittest.TestCase):
         GandiLiveMockHttp.type = None
         self.driver = GandiLiveDNSDriver(*DNS_GANDI_LIVE)
         self.test_zone = Zone(id='example.com', type='master', ttl=None,
-                              domain='example.com', extra={}, driver=self)
+                              domain='example.com', extra={'zone_uuid': 'a53re'},
+                              driver=self)
         self.test_record = Record(id='A:bob', type=RecordType.A,
                                   name='bob', zone=self.test_zone,
                                   data='127.0.0.1', driver=self, extra={})
@@ -67,11 +68,11 @@ class GandiLiveTests(unittest.TestCase):
 
     def test_update_zone(self):
         zone = self.test_zone
-        self.driver.update_zone(zone, extra={'zone_uuid': 12346})
-        self.assertEqual(zone.id, 'example.com')
-        self.assertEqual(zone.type, 'master')
-        self.assertEqual(zone.domain, 'example.com')
-        self.assertIsNone(zone.ttl)
+        updated = self.driver.update_zone(zone, extra={'name': 'Test Zone'})
+        self.assertEqual(updated.id, 'example.com')
+        self.assertEqual(updated.type, 'master')
+        self.assertEqual(updated.domain, 'example.com')
+        self.assertIsNone(updated.ttl)
 
     def test_update_zone_noop(self):
         zone = self.test_zone
@@ -110,7 +111,7 @@ class GandiLiveTests(unittest.TestCase):
     def test_create_record(self):
         record = self.driver.create_record('alice', self.test_zone, 'AAAA',
                                            '::1',
-                                           extra={'ttl': 100})
+                                           extra={'ttl': 400})
         self.assertEqual(record.id, 'AAAA:alice')
         self.assertEqual(record.name, 'alice')
         self.assertEqual(record.type, RecordType.AAAA)
@@ -119,7 +120,7 @@ class GandiLiveTests(unittest.TestCase):
     def test_update_record(self):
         record = self.driver.update_record(self.test_record, 'bob',
                                            RecordType.A, '192.168.0.2',
-                                           {'ttl': 200})
+                                           {'ttl': 500})
         self.assertEqual(record.id, 'A:bob')
         self.assertEqual(record.name, 'bob')
         self.assertEqual(record.type, RecordType.A)
@@ -138,28 +139,28 @@ class GandiLiveTests(unittest.TestCase):
 class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     fixtures = DNSFileFixtures('gandi_live')
 
-    def _json_domains_get(self, method, url, body, headers):
+    def _json_api_v5_domains_get(self, method, url, body, headers):
         body = self.fixtures.load('list_zones.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_get(self, method, url, body, headers):
+    def _json_api_v5_domains_example_com_get(self, method, url, body, headers):
         body = self.fixtures.load('get_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_zones_post(self, method, url, body, headers):
+    def _json_api_v5_zones_post(self, method, url, body, headers):
         body = self.fixtures.load('create_zone.json')
         return (httplib.OK, body, {'Location': '/zones/54321'},
                 httplib.responses[httplib.OK])
 
-    def _json_domains_post(self, method, url, body, headers):
+    def _json_api_v5_domains_example_org_patch(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_patch(self, method, url, body, headers):
+    def _json_api_v5_zones_a53re_patch(self, method, url, body, headers):
         body = self.fixtures.load('update_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_get(self, method, url, body,
+    def _json_api_v5_domains_example_com_records_get(self, method, url, body,
                                               headers):
         body = self.fixtures.load('list_records.json')
         if headers is not None and 'Accept' in headers:
@@ -168,24 +169,24 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         return (httplib.OK, body, {'Content-Type': 'text/plain'},
                 httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_bob_A_get(self, method, url,
+    def _json_api_v5_domains_example_com_records_bob_A_get(self, method, url,
                                                     body, headers):
         body = self.fixtures.load('get_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_post(self, method, url, body,
+    def _json_api_v5_domains_example_com_records_post(self, method, url, body,
                                                headers):
         body = self.fixtures.load('create_record.json')
         return (httplib.OK, body,
                 {'Location': '/zones/12345/records/alice/AAAA'},
                 httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_bob_A_put(self, method, url,
+    def _json_api_v5_domains_example_com_records_bob_A_put(self, method, url,
                                                     body, headers):
         body = self.fixtures.load('update_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_domains_example_com_records_bob_A_delete(self, method, url,
+    def _json_api_v5_domains_example_com_records_bob_A_delete(self, method, url,
                                                        body, headers):
         body = self.fixtures.load('delete_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

@@ -85,13 +85,18 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     }
 
     def _to_zone(self, zone):
+        extra = {}
+        if 'zone_uuid' in zone:
+            extra = {
+                'zone_uuid': zone['zone_uuid']
+            }
         return Zone(
             id=str(zone['fqdn']),
             domain=zone['fqdn'],
             type='master',
             ttl=0,
             driver=self,
-            extra={}
+            extra=extra,
         )
 
     def _to_zones(self, zones):
@@ -126,28 +131,31 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         new_zone = self.connection.request(action='%s/zones' % API_BASE,
                                            method='POST',
                                            data=post_zone_data)
-        new_zone_uuid = new_zone.headers['location'].lstrip('/zones/')
+        new_zone_uuid = new_zone.headers['location'].split('/')[-1]
 
         raw_domain_data = {
-            'fqdn': domain,
             'zone_uuid': new_zone_uuid,
         }
-        post_domain_data = json.dumps(raw_domain_data)
-        self.connection.request(action='%s/domains' % API_BASE,
-                                method='POST',
-                                data=post_domain_data)
+        patch_domain_data = json.dumps(raw_domain_data)
+        self.connection.request(action='%s/domains/%s' % (API_BASE, domain),
+                                method='PATCH',
+                                data=patch_domain_data)
         return self._to_zone({'fqdn': domain})
 
+    # Consider eliminating update_zone as well.  The only thing you can change
+    # is the name of the zone, which you would never see because we're trying
+    # to ignore zones.  It's the only thing that makes use of the zone_uuid,
+    # which we can otherwise ignore.
     """
-    :param extra: (optional) Extra attributes ('zone_uuid') to change which
+    :param extra: (optional) Extra attributes ('name') to change the name of a
                              zone a domain is associated with.  Does nothing
                              otherwise.
     """
     def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
-        if extra and 'zone_uuid' in extra:
-            action = '%s/domains/%s' % (API_BASE, zone.id)
+        if extra and 'name' in extra and 'zone_uuid' in zone.extra:
+            action = '%s/zones/%s' % (API_BASE, zone.extra['zone_uuid'])
             raw_data = {
-                'zone_uuid': extra['zone_uuid'],
+                'name': extra['name'],
             }
             patch_data = json.dumps(raw_data)
             self.connection.request(action=action, method='PATCH',
@@ -161,7 +169,20 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     # level is being masked in this API, it isn't implemented here.  Otherwise
     # this Libcloud zone vs. Gandi zone mismatch gets even more confused.
     # @@@ implement it as always returning an exception?
-    # def delete_zone(self, zone):
+    # def delete_zone(self, zone_uuid):
+    #     self.connection.request(action='%s/zones/%s' % (API_BASE, zone_uuid),
+    #                             method='DELETE')
+
+    # Since zones are hidden, switching a domain from one zone to another
+    # is as well.
+    # def switch_zone(self, domain, new_zone_uuid):
+    #     raw_domain_data = {
+    #         'zone_uuid': new_zone_uuid,
+    #     }
+    #     post_domain_data = json.dumps(raw_domain_data)
+    #     self.connection.request(action='%s/domains/%s' % (API_BASE, domain),
+    #                             method='PATCH',
+    #                             data=post_domain_data)
 
     def _to_record(self, record, zone):
         extra = {'ttl': int(record['rrset_ttl'])}
