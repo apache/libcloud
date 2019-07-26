@@ -73,10 +73,10 @@ With basic auth authentication (http proxy):
 
     http_proxy=http://<username>:<password>@<proxy hostname>:<proxy port> python my_script.py
 
-2. Passing ``http_proxy`` argument to the connection class constructor
+2. Passing ``proxy_url`` argument to the connection class constructor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By passing ``http_proxy`` argument to the
+By passing ``proxy_url`` argument to the
 :class:`libcloud.common.base.Connection` class constructor, you can specify
 which proxy to use for a particular connection.
 
