@@ -76,6 +76,18 @@ With basic auth authentication (http proxy):
 2. Passing ``proxy_url`` argument to the connection class constructor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+. note::
+
+  Some drivers don't correctly pass ``proxy_url`` argument to the connection
+  class and don't support ``proxy_url`` constructor argument.
+  
+  If you pass this argument to the driver constructor, but it doesn't appear
+  to be working, it's likely the driver doesn't support this method.
+  
+  In such scenarios, you are advised to use some other method of setting a
+  proxy (e.g. by setting an environment variable or by using
+  :meth:`libcloud.common.base.LibcloudConnection.set_http_proxy` method).
+
 By passing ``proxy_url`` argument to the
 :class:`libcloud.common.base.Connection` class constructor, you can specify
 which proxy to use for a particular connection.
