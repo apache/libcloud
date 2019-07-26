@@ -684,7 +684,8 @@ class ECSDriver(NodeDriver):
             params['RegionId'] = self.region
 
         resp = self.connection.request(self.path, params)
-        return
+        return findtext(resp.object, 'VSwitchId',
+                        namespace=self.namespace)
 
     def _to_switches(self, response):
         return [self._to_switch(el) for el in response.findall(
