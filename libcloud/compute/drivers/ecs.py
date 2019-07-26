@@ -373,13 +373,14 @@ class ECSVpc(object):
     Represents a Vpc
     """
     def __init__(self, id, name, description=None, driver=None, vpc_id=None,
-                 creation_time=None):
+                 creation_time=None, status=None):
         self.id = id
         self.name = name
         self.description = description
         self.driver = driver
         self.vpc_id = vpc_id
         self.creation_time = creation_time
+        self.status = status
 
     def __repr__(self):
         return ('<ECSVpc: id=%s, name=%s, driver=%s ...>' %
@@ -656,11 +657,14 @@ class ECSDriver(NodeDriver):
                         namespace=self.namespace)
         description = findtext(element, 'Description',
                                namespace=self.namespace)
+        status = findtext(element, 'Status',
+                               namespace=self.namespace)
         creation_time = findtext(element, 'CreationTime',
                                  namespace=self.namespace)
         return ECSVpc(_id, name, description=description,
                                  driver=self,
-                                 creation_time=creation_time)
+                                 creation_time=creation_time,
+                                 status=status)
 
     def ex_list_switches(self, ex_filters=None):
         params = {'Action': 'DescribeVSwitches', 'RegionId': self.region}
