@@ -178,6 +178,11 @@ Storage
   ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
 
+- [Azure Blobs] Set the minimum required version of requests to ``2.5.0`` since
+  requests ``2.4.0`` and earlier exhibit XML parsing errors of Azure Storage
+  responses. (GITHUB-1325, GITHUB-1322)
+  [Clemens Wolff - @c-w]
+
 - [Common, CloudFiles] Fix ``upload_object_via_stream`` and ensure we start
   from the beginning when calculating hash for the provided iterator. This way
   we avoid hash mismatch errors in scenario where provided iterator is already
