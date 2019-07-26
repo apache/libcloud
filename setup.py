@@ -54,13 +54,14 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 
 SUPPORTED_VERSIONS = ['2.7', 'PyPy', '3.3+']
 
+INSTALL_REQUIREMENTS = ['requests']
+
 TEST_REQUIREMENTS = [
     'mock',
-    'requests',
     'requests_mock',
     'pytest',
     'pytest-runner'
-]
+] + INSTALL_REQUIREMENTS
 
 if PY2_pre_279:
     TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
@@ -119,10 +120,8 @@ class ApiDocsCommand(Command):
 
 forbid_publish()
 
-install_requires = ['requests']
-
 if PY2_pre_279:
-    install_requires.append('backports.ssl_match_hostname')
+    INSTALL_REQUIREMENTS.append('backports.ssl_match_hostname')
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
@@ -136,7 +135,7 @@ setup(
     long_description=open('README.rst').read(),
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
-    install_requires=install_requires,
+    install_requires=INSTALL_REQUIREMENTS,
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4",
     packages=get_packages('libcloud'),
     package_dir={
