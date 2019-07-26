@@ -36,7 +36,7 @@ General
 
   For more information, please refer to the documentation -
   https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
-  (GITHUB-1314)
+  (GITHUB-1314, GITHUB-1324)
   [Jim Liu - @hldh214, Tomaz Muraus]
 
 - Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
@@ -57,6 +57,9 @@ General
 - Update Paramiko SSH client to throw a more user-friendly error if a private
   key file in an unsupported format is used. (GITHUB-1314)
   [Tomaz Muraus]
+  
+- Fix HTTP(s) proxy support in the OpenStack drivers. (GITHUB-1324)
+  [Gabe Van Engel - @gvengel]
 
 Compute
 ~~~~~~~
