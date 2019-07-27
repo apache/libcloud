@@ -232,7 +232,7 @@ def _list_async(driver):
 
     def create_node(self, name, size, image, location,
                     ex_project_id=None, ip_addresses=[], cloud_init=None,
-                    **kwargs):
+                    disk=None, disk_size=0, **kwargs):
         """
         Create a node.
 
@@ -241,7 +241,6 @@ def _list_async(driver):
         """
         # if project has been specified on initialization of driver, then
         # create on this project
-
         if self.project_id:
             ex_project_id = self.project_id
         else:
@@ -266,11 +265,10 @@ def _list_async(driver):
             error_message = data.object.get('error_message', message)
             raise ValueError('Failed to create node: %s' % (error_message))
         node = self._to_node(data=data.object)
-        if kwargs.get('disk'):
-            self.attach_volume(node, kwargs.get('disk'))
-        if kwargs.get('disk_size'):
-            volume = self.create_volume(size=kwargs.get('disk_size'),
-                                        location=location)
+        if disk:
+            self.attach_volume(node, disk)
+        if disk_size:
+            volume = self.create_volume(size=disk_size, location=location)
             self.attach_volume(node, volume)
         return node
 
