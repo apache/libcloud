@@ -200,7 +200,7 @@ def _list_async(driver):
 
     def create_node(self, name, size, image, location,
                     ex_project_id=None, ip_addresses=[], cloud_init=None,
-                    disk=None, disk_size=None, **kwargs):
+                    disk=None, disk_size=0, **kwargs):
         """
         Create a node.
 
