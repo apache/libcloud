@@ -25,6 +25,7 @@ import time
 import base64
 import hashlib
 
+from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize, \
@@ -43,7 +44,9 @@ __all__ = [
     'ECS_API_VERSION',
     'ECSDriver',
     'ECSSecurityGroup',
-    'ECSZone'
+    'ECSZone',
+    'ECSVpc',
+    'ECSVSwitch'
 ]
 
 ECS_API_VERSION = '2014-05-26'
@@ -365,6 +368,43 @@ class ECSConnection(SignedAliyunConnection):
     service_name = 'ecs'
 
 
+class ECSVpc(object):
+    """
+    Represents a Vpc
+    """
+    def __init__(self, id, name, description=None, driver=None, vpc_id=None,
+                 creation_time=None, status=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.driver = driver
+        self.vpc_id = vpc_id
+        self.creation_time = creation_time
+        self.status = status
+
+    def __repr__(self):
+        return ('<ECSVpc: id=%s, name=%s, driver=%s ...>' %
+                (self.id, self.name, self.driver.name))
+
+
+class ECSVSwitch(object):
+    """
+    Represents a VSwitch
+    """
+    def __init__(self, id, name, description=None, driver=None, vpc_id=None,
+                 creation_time=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.driver = driver
+        self.vpc_id = vpc_id
+        self.creation_time = creation_time
+
+    def __repr__(self):
+        return ('<ECSVSwitch: id=%s, name=%s, driver=%s ...>' %
+                (self.id, self.name, self.driver.name))
+
+
 class ECSSecurityGroup(object):
     """
     Security group used to control nodes internet and intranet accessibility.
@@ -573,6 +613,100 @@ class ECSDriver(NodeDriver):
                                     namespace=self.namespace)
         locations = [self._to_location(each) for each in location_elements]
         return locations
+
+    def ex_list_networks(self, ex_filters=None):
+        params= {'Action': 'DescribeVpcs',
+                 'RegionId': self.region}
+
+        if ex_filters and isinstance(ex_filters, dict):
+            ex_filters.update(params)
+            params = ex_filters
+        def _parse_response(resp_object):
+            sg_elements = findall(resp_object, 'Vpcs/Vpc',
+                                  namespace=self.namespace)
+            sgs = [self._to_network(el) for el in sg_elements]
+            return sgs
+        return self._request_multiple_pages(self.path, params,
+                                            _parse_response)
+
+    def ex_create_network(self, region_id=None, ex_filters=None):
+        """
+        Create a VPC.
+
+        :keyword region_id: the region ID of the VPC to be created.
+        :type region_id: ``str``
+        """
+        params = {'Action': 'CreateVpc'}
+        if region_id:
+            params['RegionId'] = region_id
+        else:
+            params['RegionId'] = self.region
+
+        if ex_filters and isinstance(ex_filters, dict):
+            ex_filters.update(params)
+            params = ex_filters
+
+        resp = self.connection.request(self.path, params)
+
+        return findtext(resp.object, 'VpcId',
+                        namespace=self.namespace)
+
+    def _to_network(self, element, name=None):
+        _id = findtext(element, 'VpcId', namespace=self.namespace)
+        name = findtext(element, 'VpcName',
+                        namespace=self.namespace)
+        description = findtext(element, 'Description',
+                               namespace=self.namespace)
+        status = findtext(element, 'Status',
+                               namespace=self.namespace)
+        creation_time = findtext(element, 'CreationTime',
+                                 namespace=self.namespace)
+        return ECSVpc(_id, name, description=description,
+                                 driver=self,
+                                 creation_time=creation_time,
+                                 status=status)
+
+    def ex_list_switches(self, ex_filters=None):
+        params = {'Action': 'DescribeVSwitches', 'RegionId': self.region}
+
+        if ex_filters and isinstance(ex_filters, dict):
+            ex_filters.update(params)
+            params = ex_filters
+
+        resp = self.connection.request(self.path, params)
+        return self._to_switches(resp.object)
+
+    def ex_create_switch(self, cidr, zone, vpc, region_id=None):
+        params = {'Action': 'CreateVSwitch',
+                  'CidrBlock': cidr,
+                  'VpcId': vpc,
+                  'ZoneId': zone,
+                  'RegionId': self.region}
+        if region_id:
+            params['RegionId'] = region_id
+        else:
+            params['RegionId'] = self.region
+
+        resp = self.connection.request(self.path, params)
+        return findtext(resp.object, 'VSwitchId',
+                        namespace=self.namespace)
+
+    def _to_switches(self, response):
+        return [self._to_switch(el) for el in response.findall(
+            fixxpath(xpath='VSwitches/VSwitch', namespace=self.namespace))
+        ]
+
+    def _to_switch(self, element, name=None):
+        _id = findtext(element, 'VSwitchId', namespace=self.namespace)
+        name = findtext(element, 'VSwitchName',
+                        namespace=self.namespace)
+        description = findtext(element, 'VSwitchDescription',
+                               namespace=self.namespace)
+        creation_time = findtext(element, 'CreationTime',
+                                 namespace=self.namespace)
+        return ECSVSwitch(_id, name, description=description,
+                                 driver=self,
+                                 creation_time=creation_time)
 
     def create_node(self, name, size, image, auth=None,
                     ex_security_group_id=None, ex_description=None,
@@ -816,7 +950,7 @@ class ECSDriver(NodeDriver):
         return resp.success()
 
 
-    def ex_create_security_group(self, description=None, client_token=None):
+    def ex_create_security_group(self, description=None, client_token=None, vpc_id=None):
         """
         Create a new security group.
 
@@ -829,11 +963,12 @@ class ECSDriver(NodeDriver):
         """
         params = {'Action': 'CreateSecurityGroup',
                   'RegionId': self.region}
-
         if description:
             params['Description'] = description
         if client_token:
             params['ClientToken'] = client_token
+        if vpc_id:
+            params['VpcId'] = vpc_id
         resp = self.connection.request(self.path, params)
         return findtext(resp.object, 'SecurityGroupId',
                         namespace=self.namespace)
