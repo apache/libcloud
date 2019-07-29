@@ -93,6 +93,7 @@ try:
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.hashes import SHA256
     from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
+    from cryptography import exceptions
 except ImportError:
     # The cryptography library is unavailable
     SHA256 = None
@@ -469,8 +470,9 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
     """Authentication class for "Service Account" authentication."""
     def __init__(self, user_id, key, *args, **kwargs):
         """
-        Check to see if cryptography is available, and convert PEM key file into
-        a key string, or extract the key from JSON object, string or file.
+        Check to see if cryptography is available, and convert PEM key file
+        into a key string, or extract the key from JSON object, string or
+        file.
 
         :param  user_id: Email address to be used for Service Account
                 authentication.
@@ -495,9 +497,9 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                 try:
                     with open(key_path, 'r') as f:
                         key_content = f.read()
-                    except IOError:
-                        raise GoogleAuthError("Missing (or unreadable) key "
-                                      "file: '%s'" % key)
+                except IOError:
+                    raise GoogleAuthError("Missing (or unreadable) key "
+                                          "file: '%s'" % key)
             else:
                 # assume it's a PEM str or serialized JSON str
                 key_content = key
@@ -525,8 +527,15 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
                 password=None,
                 backend=default_backend()
             )
-        except ValueError:
-            raise GoogleAuthError("Provided key value is no PEM encoded private key")
+        except ValueError as e:
+            raise GoogleAuthError("Unable to decode provided PEM key: %s" %
+                                  e)
+        except TypeError as e:
+            raise GoogleAuthError("Unable to decode provided PEM key: %s" %
+                                  e)
+        except exceptions.UnsupportedAlgorithm as e:
+            raise GoogleAuthError("Unable to decode provided PEM key: %s" %
+                                  e)
 
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs)

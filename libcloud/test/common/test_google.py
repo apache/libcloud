@@ -317,6 +317,9 @@ class GoogleOAuth2CredentialTest(GoogleTestCase):
             self.assertTrue(isinstance(cred1.oauth2_conn,
                                        GoogleServiceAcctAuthConnection))
 
+            self.assertRaises(GoogleAuthError, GoogleOAuth2Credential,
+                              *GCE_PARAMS, **kwargs)
+
         kwargs['auth_type'] = GoogleAuthType.IA
         cred2 = GoogleOAuth2Credential(*GCE_PARAMS_IA, **kwargs)
         self.assertTrue(isinstance(cred2.oauth2_conn,
