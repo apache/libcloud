@@ -150,28 +150,16 @@ class GandiLiveResponse(JsonResponse):
             else:
                 return body
         elif self.status == httplib.NOT_FOUND:
-            if (not json_error) and ('cause' in body):
-                message = self._get_error(body)
-            else:
-                message = body
+            message = self._get_error(body, json_error)
             raise ResourceNotFoundError(message, self.status)
         elif self.status == httplib.BAD_REQUEST:
-            if (not json_error) and ('cause' in body):
-                message = self._get_error(body)
-            else:
-                message = body
+            message = self._get_error(body, json_error)
             raise InvalidRequestError(message, self.status)
         elif self.status == httplib.CONFLICT:
-            if (not json_error) and ('cause' in body):
-                message = self._get_error(body)
-            else:
-                message = body
+            message = self._get_error(body, json_error)
             raise ResourceConflictError(message, self.status)
         else:
-            if (not json_error) and ('cause' in body):
-                message = self._get_error(body)
-            else:
-                message = body
+            message = self._get_error(body, json_error)
             raise GandiLiveBaseError(message, self.status)
 
     # Errors are not described at all in Gandi's official documentation.
@@ -201,7 +189,7 @@ class GandiLiveResponse(JsonResponse):
     #  <error-description> is a string detailing what the problem is
     # Here we ignore object and combine message and cause along with an error
     # if one or more exists.
-    def _get_error(self, body):
+    def _get_error(self, body, json_error):
         """
         Get the error code and message from a JSON response.
 
@@ -213,14 +201,16 @@ class GandiLiveResponse(JsonResponse):
         :return:  String containing error message
         :rtype:   ``str``
         """
-        message = '%s: %s' % (body['cause'], body['message'])
-
-        if 'errors' in body:
-            err = body['errors'][0]
-            message = '%s (%s in %s: %s)' % (message,
-                                             err.get('location'),
-                                             err.get('name'),
-                                             err.get('description'))
+        if not json_error and 'cause' in body:
+            message = '%s: %s' % (body['cause'], body['message'])
+            if 'errors' in body:
+                err = body['errors'][0]
+                message = '%s (%s in %s: %s)' % (message,
+                                                 err.get('location'),
+                                                 err.get('name'),
+                                                 err.get('description'))
+        else:
+            message = body
 
         return message
 
