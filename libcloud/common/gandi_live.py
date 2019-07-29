@@ -231,6 +231,10 @@ class GandiLiveConnection(ConnectionKey):
         headers["X-Api-Key"] = self.key
         return headers
 
+    def encode_data(self, data):
+        """Encode data to JSON"""
+        return json.dumps(data)
+
 
 class BaseGandiLiveDriver(object):
     """

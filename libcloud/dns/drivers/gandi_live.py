@@ -15,7 +15,6 @@
 
 from __future__ import with_statement
 
-import json
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import RecordError
 from libcloud.dns.types import ZoneDoesNotExistError, \
@@ -130,29 +129,27 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             zone_name = extra['name']
         else:
             zone_name = '%s zone' % domain
-        raw_zone_data = {
+        zone_data = {
             'name': zone_name,
         }
-        post_zone_data = json.dumps(raw_zone_data)
 
         try:
             new_zone = self.connection.request(action='%s/zones' % API_BASE,
                                                method='POST',
-                                               data=post_zone_data)
+                                               data=zone_data)
         except ResourceConflictError:
             raise ZoneAlreadyExistsError(value='',
                                          driver=self.connection.driver,
                                          zone_id=zone_name)
         new_zone_uuid = new_zone.headers['location'].split('/')[-1]
 
-        raw_domain_data = {
+        domain_data = {
             'zone_uuid': new_zone_uuid,
         }
-        patch_domain_data = json.dumps(raw_domain_data)
 
         self.connection.request(action='%s/domains/%s' % (API_BASE, domain),
                                 method='PATCH',
-                                data=patch_domain_data)
+                                data=domain_data)
         return self._to_zone({'fqdn': domain})
 
     # There is nothing you can update about a domain; you can update zones'
@@ -169,12 +166,11 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     #                 extra=None):
     #     if extra and 'name' in extra and 'zone_uuid' in zone.extra:
     #         action = '%s/zones/%s' % (API_BASE, zone.extra['zone_uuid'])
-    #         raw_data = {
+    #         data = {
     #             'name': extra['name'],
     #         }
-    #         patch_data = json.dumps(raw_data)
     #         self.connection.request(action=action, method='PATCH',
-    #                                 data=patch_data)
+    #                                 data=data)
     #         return zone
     #     return None
 
@@ -191,13 +187,12 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     # Since zones are hidden, switching a domain from one zone to another
     # is as well.
     # def switch_zone(self, domain, new_zone_uuid):
-    #     raw_domain_data = {
+    #     domain_data = {
     #         'zone_uuid': new_zone_uuid,
     #     }
-    #     post_domain_data = json.dumps(raw_domain_data)
     #     self.connection.request(action='%s/domains/%s' % (API_BASE, domain),
     #                             method='PATCH',
-    #                             data=post_domain_data)
+    #                             data=domain_data)
 
     def _to_record(self, record, zone):
         extra = {'ttl': int(record['rrset_ttl'])}
@@ -262,19 +257,18 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             rvalue = data
         else:
             rvalue = [data]
-        raw_data = {
+        record_data = {
             'rrset_name': name,
             'rrset_type': self.RECORD_TYPE_MAP[type],
             'rrset_values': rvalue,
         }
 
         if 'ttl' in extra:
-            raw_data['rrset_ttl'] = extra['ttl']
+            record_data['rrset_ttl'] = extra['ttl']
 
-        post_data = json.dumps(raw_data)
         try:
             self.connection.request(action=action, method='POST',
-                                    data=post_data)
+                                    data=record_data)
         except ResourceConflictError:
             raise RecordAlreadyExistsError(value='',
                                            driver=self.connection.driver,
@@ -282,7 +276,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                                                self.RECORD_TYPE_MAP[type],
                                                name))
 
-        return self._to_record(raw_data, zone)
+        return self._to_record(record_data, zone)
 
     def update_record(self, record, name, type, data, extra):
         self._validate_record(record.id, name, type, data, extra)
@@ -298,25 +292,24 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             rvalue = data
         else:
             rvalue = [data]
-        raw_data = {
+        record_data = {
             'rrset_values': rvalue
         }
 
         if 'ttl' in extra:
-            raw_data['rrset_ttl'] = extra['ttl']
+            record_data['rrset_ttl'] = extra['ttl']
 
-        put_data = json.dumps(raw_data)
-        raw_data['rrset_name'] = record.name
-        raw_data['rrset_type'] = self.RECORD_TYPE_MAP[record.type]
         try:
             self.connection.request(action=action, method='PUT',
-                                    data=put_data)
+                                    data=record_data)
         except ResourceNotFoundError:
             raise RecordDoesNotExistError(value='',
                                           driver=self.connection.driver,
                                           record_id=record.id)
 
-        return self._to_record(raw_data, record.zone)
+        record_data['rrset_name'] = record.name
+        record_data['rrset_type'] = self.RECORD_TYPE_MAP[record.type]
+        return self._to_record(record_data, record.zone)
 
     def delete_record(self, record):
         action = '%s/domains/%s/records/%s/%s' % (
