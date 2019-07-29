@@ -961,7 +961,6 @@ class ECSDriver(NodeDriver):
                                   each request.
         :type client_token: ``str``
         """
-        # TODO: verify that vpc is ready
         params = {'Action': 'CreateSecurityGroup',
                   'RegionId': self.region}
         if description:
@@ -1206,7 +1205,6 @@ class ECSDriver(NodeDriver):
                   'SecurityGroupId': group_id}
         resp = self.connection.request(self.path, params)
         return resp.success()
-
 
     def ex_list_zones(self, region_id=None):
         """
