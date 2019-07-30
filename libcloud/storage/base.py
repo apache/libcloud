@@ -647,6 +647,11 @@ class StorageDriver(BaseDriver):
         total_len = 0
 
         if hasattr(stream, '__next__') or hasattr(stream, 'next'):
+            # Ensure we start from the begining of a stream in case stream is
+            # not at the beginning
+            if hasattr(stream, 'seek'):
+                stream.seek(0)
+
             for chunk in libcloud.utils.files.read_in_chunks(iterator=stream):
                 hasher.update(b(chunk))
                 total_len += len(chunk)
