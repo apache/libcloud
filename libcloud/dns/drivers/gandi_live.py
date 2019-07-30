@@ -150,7 +150,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         self.connection.request(action='%s/domains/%s' % (API_BASE, domain),
                                 method='PATCH',
                                 data=domain_data)
-        return self._to_zone({'fqdn': domain})
+        return self._to_zone({'fqdn': domain, 'zone_uuid': new_zone_uuid})
 
     # There is nothing you can update about a domain; you can update zones'
     # names and which zone a domain is associated with, but the domain itself
@@ -237,6 +237,9 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return self._to_record(record.object, self.get_zone(zone_id))
 
     def _validate_record(self, record_id, name, record_type, data, extra):
+        # Need to redo records so data is only ever a string, noting that
+        # the current implementation allowing lists as data would pass
+        # this check incorrectly (e.g., short list of long strings).
         if len(data) > 1024:
             raise RecordError('Record data must be <= 1024 characters',
                               driver=self, record_id=record_id)
@@ -245,7 +248,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                 raise RecordError('TTL must be at least 300 seconds',
                                   driver=self, record_id=record_id)
             if extra['ttl'] > TTL_MAX:
-                raise RecordError('TTL must not excdeed 30 days',
+                raise RecordError('TTL must not exceed 30 days',
                                   driver=self, record_id=record_id)
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -324,11 +327,9 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             raise RecordDoesNotExistError(value='',
                                           driver=self.connection.driver,
                                           record_id=record.id)
-
-        if resp.success():
-            return True
-
-        return False
+        # Originally checked for success here, but it should never reach
+        # this point with anything other than HTTP 200
+        return True
 
     def export_zone_to_bind_format(self, zone):
         action = '%s/domains/%s/records' % (API_BASE, zone.id)
