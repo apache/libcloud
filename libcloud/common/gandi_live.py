@@ -125,9 +125,6 @@ class GandiLiveResponse(JsonResponse):
         :return:  JSON dictionary
         :rtype:   ``dict``
         """
-        if len(self.body) == 0 and not self.parse_zero_length_body:
-            return self.body
-
         json_error = False
         try:
             body = json.loads(self.body)
