@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import sys
 import unittest
 
 from libcloud.utils.py3 import httplib
-from libcloud.dns.types import RecordType
+from libcloud.common.gandi_live import GandiLiveBaseError, JsonParseError, \
+    ResourceNotFoundError, InvalidRequestError, ResourceConflictError
+from libcloud.dns.types import RecordType, RecordError, \
+    ZoneDoesNotExistError, RecordDoesNotExistError, ZoneAlreadyExistsError, \
+    RecordAlreadyExistsError
 from libcloud.dns.drivers.gandi_live import GandiLiveDNSDriver
 from libcloud.dns.base import Zone, Record
 from libcloud.test.file_fixtures import DNSFileFixtures
@@ -34,9 +39,16 @@ class GandiLiveTests(unittest.TestCase):
         self.test_zone = Zone(id='example.com', type='master', ttl=None,
                               domain='example.com', extra={'zone_uuid': 'a53re'},
                               driver=self)
+        self.test_bad_zone = Zone(id='badexample.com', type='master', ttl=None,
+                                  domain='badexample.com',
+                                  extra={'zone_uuid': 'a53rf'},
+                                  driver=self)
         self.test_record = Record(id='A:bob', type=RecordType.A,
                                   name='bob', zone=self.test_zone,
                                   data='127.0.0.1', driver=self, extra={})
+        self.test_bad_record = Record(id='A:jane', type=RecordType.A,
+                                      name='jane', zone=self.test_bad_zone,
+                                      data='127.0.0.1', driver=self, extra={})
 
     def test_list_zones(self):
         zones = self.driver.list_zones()
@@ -57,6 +69,13 @@ class GandiLiveTests(unittest.TestCase):
                                        extra={'name': 'Example'})
         self.assertEqual(zone.id, 'example.org')
         self.assertEqual(zone.domain, 'example.org')
+        self.assertEqual(zone.extra['zone_uuid'], '54321')
+
+    def test_create_zone_without_name(self):
+        zone = self.driver.create_zone('example.org')
+        self.assertEqual(zone.id, 'example.org')
+        self.assertEqual(zone.domain, 'example.org')
+        self.assertEqual(zone.extra['zone_uuid'], '54321')
 
     def test_get_zone(self):
         zone = self.driver.get_zone('example.com')
@@ -100,6 +119,32 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.AAAA)
         self.assertEqual(record.data, ['::1'])
 
+    def test_create_record_with_list(self):
+        record = self.driver.create_record('alice', self.test_zone, 'AAAA',
+                                           ['::1'],
+                                           extra={'ttl': 400})
+        self.assertEqual(record.id, 'AAAA:alice')
+        self.assertEqual(record.name, 'alice')
+        self.assertEqual(record.type, RecordType.AAAA)
+        self.assertEqual(record.data, ['::1'])
+
+    def test_bad_record_validation(self):
+        with self.assertRaises(RecordError) as ctx:
+            self.driver.create_record('alice', self.test_zone, 'AAAA',
+                                      '1' * 1025,
+                                      extra={'ttl': 400})
+        self.assertTrue('Record data must be' in str(ctx.exception))
+        with self.assertRaises(RecordError) as ctx:
+            self.driver.create_record('alice', self.test_zone, 'AAAA',
+                                      '::1',
+                                      extra={'ttl': 10})
+        self.assertTrue('TTL must be at least' in str(ctx.exception))
+        with self.assertRaises(RecordError) as ctx:
+            self.driver.create_record('alice', self.test_zone, 'AAAA',
+                                      '::1',
+                                      extra={'ttl': 31 * 24 * 60 * 60})
+        self.assertTrue('TTL must not exceed' in str(ctx.exception))
+
     def test_update_record(self):
         record = self.driver.update_record(self.test_record, 'bob',
                                            RecordType.A, '192.168.0.2',
@@ -118,6 +163,41 @@ class GandiLiveTests(unittest.TestCase):
         bind_lines = bind_export.decode('utf8').split('\n')
         self.assertEqual(bind_lines[0], '@ 10800 IN A 127.0.0.1')
 
+    def test_bad_json_response(self):
+        with self.assertRaises(JsonParseError):
+            self.driver.get_zone('badexample.com')
+
+    def test_no_record_found(self):
+        with self.assertRaises(RecordDoesNotExistError):
+            self.driver.get_record(self.test_zone.id, 'A:none')
+
+    def test_record_already_exists(self):
+        with self.assertRaises(RecordAlreadyExistsError):
+            self.driver.create_record('bob', self.test_bad_zone, 'A',
+                                      '127.0.0.1',
+                                      extra={'ttl': 400})
+
+    def test_no_zone_found(self):
+        with self.assertRaises(ZoneDoesNotExistError):
+            self.driver.get_zone('nosuchzone.com')
+
+    def test_zone_already_exists(self):
+        with self.assertRaises(ZoneAlreadyExistsError):
+            self.driver.create_zone('badexample.com')
+
+    # This is somewhat spurious - the driver should be preventing any invalid
+    # request error from arising.
+    def test_suberrors(self):
+        with self.assertRaises(InvalidRequestError) as ctx:
+            self.driver.update_record(self.test_bad_record, 'jane',
+                                      RecordType.A, '192.168.0.2',
+                                      {'ttl': 500})
+        self.assertTrue('is not a foo' in str(ctx.exception))
+
+    def test_other_error(self):
+        with self.assertRaises(GandiLiveBaseError):
+            self.driver.list_records(self.test_bad_zone)
+
 
 class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     fixtures = DNSFileFixtures('gandi_live')
@@ -130,22 +210,46 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         body = self.fixtures.load('get_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _json_api_v5_domains_badexample_com_get(self, method, url, body,
+                                                headers):
+        body = self.fixtures.load('get_bad_zone.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_api_v5_domains_nosuchzone_com_get(self, method, url, body,
+                                                headers):
+        body = self.fixtures.load('get_nonexistent_zone.json')
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
+
     def _json_api_v5_zones_post(self, method, url, body, headers):
-        body = self.fixtures.load('create_zone.json')
-        return (httplib.OK, body, {'Location': '/zones/54321'},
-                httplib.responses[httplib.OK])
+        input = json.loads(body)
+        if 'badexample' in input['name']:
+            body = self.fixtures.load('create_bad_zone.json')
+            return (httplib.CONFLICT, body, {},
+                    httplib.responses[httplib.CONFLICT])
+        else:
+            body = self.fixtures.load('create_zone.json')
+            return (httplib.OK, body, {'Location': '/zones/54321'},
+                    httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_org_patch(self, method, url, body, headers):
+        body = self.fixtures.load('create_domain.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_api_v5_domains_badexample_com_patch(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_get(self, method, url, body,
                                                      headers):
         body = self.fixtures.load('list_records.json')
-        if headers is not None and 'Accept' in headers:
-            if headers['Accept'] == 'text/plain':
+        resp_headers = {}
+        if (headers is not None
+            and 'Accept' in headers
+            and headers['Accept'] == 'text/plain'):
                 body = self.fixtures.load('list_records_bind.txt')
-        return (httplib.OK, body, {'Content-Type': 'text/plain'},
+                resp_headers['Content-Type'] = 'text/plain'
+        return (httplib.OK, body, resp_headers,
                 httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_bob_A_get(self, method, url,
@@ -153,12 +257,36 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         body = self.fixtures.load('get_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _json_api_v5_domains_example_com_records_none_A_get(self, method, url,
+                                                            body, headers):
+        body = self.fixtures.load('get_nonexistent_record.json')
+        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
+
     def _json_api_v5_domains_example_com_records_post(self, method, url, body,
                                                       headers):
         body = self.fixtures.load('create_record.json')
         return (httplib.OK, body,
                 {'Location': '/zones/12345/records/alice/AAAA'},
                 httplib.responses[httplib.OK])
+
+    def _json_api_v5_domains_badexample_com_records_post(self, method,
+                                                         url, body,
+                                                         headers):
+        body = self.fixtures.load('create_existing_record.json')
+        return (httplib.CONFLICT, body, {}, httplib.responses[httplib.CONFLICT])
+
+    def _json_api_v5_domains_badexample_com_records_get(self, method,
+                                                        url, body,
+                                                        headers):
+        return (httplib.INTERNAL_SERVER_ERROR, body, {},
+                httplib.responses[httplib.INTERNAL_SERVER_ERROR])
+
+    def _json_api_v5_domains_badexample_com_records_jane_A_put(self, method,
+                                                               url, body,
+                                                               headers):
+        body = self.fixtures.load('update_bad_record.json')
+        return (httplib.BAD_REQUEST, body, {},
+                httplib.responses[httplib.BAD_REQUEST])
 
     def _json_api_v5_domains_example_com_records_bob_A_put(self, method, url,
                                                            body, headers):
