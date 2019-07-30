@@ -164,9 +164,10 @@ Storage
   ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
 
-- [Common, CloudFiles] Fix ``upload_object_via_stream`` via stream method and
-  ensure we rewind to the beginning of the provided iterator in case iterator
-  has already been iterated or is not positioned at the begining. (GITHUB-1326)
+- [Common, CloudFiles] Fix ``upload_object_via_stream`` and ensure we start
+  from the beginning when calculating hash for the provided iterator. This way
+  we avoid hash mismatch errors in scenario where provided iterator is already
+  iterated / seeked upon before calculating the hash. (GITHUB-1326)
   [Gabe Van Engel - @gvengel, Tomaz Muraus]
 
 DNS
