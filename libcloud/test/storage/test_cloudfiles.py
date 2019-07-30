@@ -21,6 +21,7 @@ import math
 import sys
 import copy
 from io import BytesIO
+import hashlib
 from hashlib import sha1
 
 import mock
@@ -530,6 +531,27 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         object_name = 'foo_test_stream_data'
         iterator = BytesIO(b('235'))
+        try:
+            self.driver.upload_object_via_stream(container=container,
+                                                 object_name=object_name,
+                                                 iterator=iterator)
+        finally:
+            libcloud.utils.files.guess_file_mime_type = old_func
+
+    def test_upload_object_via_stream_stream_seek_at_end(self):
+        def dummy_content_type(name):
+            return 'application/zip', None
+
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
+
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        object_name = 'foo_test_stream_data_seek'
+        iterator = BytesIO(b('123456789'))
+        iterator.seek(10)
+
+        self.assertEqual(iterator.tell(), 10)
+
         try:
             self.driver.upload_object_via_stream(container=container,
                                                  object_name=object_name,
@@ -1212,11 +1234,31 @@ class CloudFilesMockHttp(MockHttp, unittest.TestCase):
 
     def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data(
             self, method, url, body, headers):
-
         # test_upload_object_via_stream_success
+        hasher = hashlib.md5()
+        hasher.update(b'235')
+        hash_value = hasher.hexdigest()
+
         headers = {}
         headers.update(self.base_headers)
-        headers['etag'] = '577ef1154f3240ad5b9b413aa7346a1e'
+        headers['etag'] = hash_value
+        body = 'test'
+        return (httplib.CREATED,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_foo_test_stream_data_seek(
+            self, method, url, body, headers):
+
+        # test_upload_object_via_stream_stream_seek_at_end
+        hasher = hashlib.md5()
+        hasher.update(b'123456789')
+        hash_value = hasher.hexdigest()
+
+        headers = {}
+        headers.update(self.base_headers)
+        headers['etag'] = hash_value
         body = 'test'
         return (httplib.CREATED,
                 body,
