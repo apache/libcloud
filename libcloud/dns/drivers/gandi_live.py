@@ -322,7 +322,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             self.RECORD_TYPE_MAP[record.type]
         )
         try:
-            resp = self.connection.request(action=action, method='DELETE')
+            self.connection.request(action=action, method='DELETE')
         except ResourceNotFoundError:
             raise RecordDoesNotExistError(value='',
                                           driver=self.connection.driver,
