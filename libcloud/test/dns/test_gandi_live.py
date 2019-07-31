@@ -91,24 +91,24 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(record.id, 'A:@')
         self.assertEqual(record.name, '@')
         self.assertEqual(record.type, RecordType.A)
-        self.assertEqual(record.data, ['127.0.0.1'])
+        self.assertEqual(record.data, '127.0.0.1')
         record = records[1]
         self.assertEqual(record.id, 'CNAME:www')
         self.assertEqual(record.name, 'www')
         self.assertEqual(record.type, RecordType.CNAME)
-        self.assertEqual(record.data, ['bob.example.com.'])
+        self.assertEqual(record.data, 'bob.example.com.')
         record = records[2]
         self.assertEqual(record.id, 'A:bob')
         self.assertEqual(record.name, 'bob')
         self.assertEqual(record.type, RecordType.A)
-        self.assertEqual(record.data, ['127.0.1.1'])
+        self.assertEqual(record.data, '127.0.1.1')
 
     def test_get_record(self):
         record = self.driver.get_record(self.test_zone.id, 'A:bob')
         self.assertEqual(record.id, 'A:bob')
         self.assertEqual(record.name, 'bob')
         self.assertEqual(record.type, RecordType.A)
-        self.assertEqual(record.data, ['127.0.1.1'])
+        self.assertEqual(record.data, '127.0.1.1')
 
     def test_create_record(self):
         record = self.driver.create_record('alice', self.test_zone, 'AAAA',
@@ -117,16 +117,7 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(record.id, 'AAAA:alice')
         self.assertEqual(record.name, 'alice')
         self.assertEqual(record.type, RecordType.AAAA)
-        self.assertEqual(record.data, ['::1'])
-
-    def test_create_record_with_list(self):
-        record = self.driver.create_record('alice', self.test_zone, 'AAAA',
-                                           ['::1'],
-                                           extra={'ttl': 400})
-        self.assertEqual(record.id, 'AAAA:alice')
-        self.assertEqual(record.name, 'alice')
-        self.assertEqual(record.type, RecordType.AAAA)
-        self.assertEqual(record.data, ['::1'])
+        self.assertEqual(record.data, '::1')
 
     def test_bad_record_validation(self):
         with self.assertRaises(RecordError) as ctx:
@@ -152,7 +143,7 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(record.id, 'A:bob')
         self.assertEqual(record.name, 'bob')
         self.assertEqual(record.type, RecordType.A)
-        self.assertEqual(record.data, ['192.168.0.2'])
+        self.assertEqual(record.data, '192.168.0.2')
 
     def test_delete_record(self):
         success = self.driver.delete_record(self.test_record)
@@ -233,10 +224,6 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
                     httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_org_patch(self, method, url, body, headers):
-        body = self.fixtures.load('create_domain.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _json_api_v5_domains_badexample_com_patch(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
