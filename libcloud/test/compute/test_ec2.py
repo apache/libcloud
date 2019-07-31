@@ -1313,6 +1313,23 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('io1', modifications[1].target_volume_type)
         self.assertEqual('vol-bEXAMPLE', modifications[1].volume_id)
 
+    def test_params_is_not_simple_type_exception_is_thrown(self):
+        params = {
+            'not': {'not': ['simple']}
+        }
+
+        expected_msg = 'dictionary contains an attribute "not" which value'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                               self.driver.connection.request, '/', params=params)
+
+        params = {
+            'invalid': [1, 2, 3]
+        }
+
+        expected_msg = 'dictionary contains an attribute "invalid" which value'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                               self.driver.connection.request, '/', params=params)
+
 
 class EC2USWest1Tests(EC2Tests):
     region = 'us-west-1'
