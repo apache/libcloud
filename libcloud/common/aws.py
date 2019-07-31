@@ -62,6 +62,9 @@ one:
 
 params['TagSpecification.1.Tag.Value'] = 'foo'
 params['TagSpecification.2.Tag.Value'] = 'bar'
+
+See https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html
+for details.
 """.strip()
 
 
