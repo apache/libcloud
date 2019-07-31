@@ -57,7 +57,7 @@ General
 - Update Paramiko SSH client to throw a more user-friendly error if a private
   key file in an unsupported format is used. (GITHUB-1314)
   [Tomaz Muraus]
-  
+
 - Fix HTTP(s) proxy support in the OpenStack drivers. (GITHUB-1324)
   [Gabe Van Engel - @gvengel]
 
@@ -149,6 +149,16 @@ Compute
 - [Azure ARM] Add ``ex_delete_public_ip`` method to the Azure ARM driver.
   (GITHUB-1318)
   [Reza Shahriari - redha1419]
+
+- [EC2] Update EC2 driver to throw a more user-friendly exception if a user /
+  developer tries to provide an invalid value type for an item value in the
+  request ``params`` dictionary.
+
+  Request parameters are sent via query parameters and not via request body,
+  as such, only string values are supported. (GITHUB-1329, GITHUB-1321)
+
+  Reported by James Bednell.
+  [Tomaz Muraus]
 
 Storage
 ~~~~~~~
