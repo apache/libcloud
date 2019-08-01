@@ -15,6 +15,8 @@
 
 from __future__ import with_statement
 
+import copy
+
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import RecordError
 from libcloud.dns.types import ZoneDoesNotExistError, \
@@ -150,20 +152,23 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             raise RecordDoesNotExistError(value='',
                                           driver=self.connection.driver,
                                           record_id=record_id)
-        return self._to_record(record.object, self.get_zone(zone_id))
+        return self._to_record(record.object, self.get_zone(zone_id))[0]
 
     def create_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
 
         action = '%s/domains/%s/records' % (API_BASE, zone.id)
 
+        if type == 'MX':
+            data = '%s %s' % (extra['priority'], data)
+        
         record_data = {
             'rrset_name': name,
             'rrset_type': self.RECORD_TYPE_MAP[type],
             'rrset_values': [data],
         }
 
-        if 'ttl' in extra:
+        if extra is not None and 'ttl' in extra:
             record_data['rrset_ttl'] = extra['ttl']
 
         try:
@@ -176,25 +181,27 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                                                self.RECORD_TYPE_MAP[type],
                                                name))
 
-        return self._to_record(record_data, zone)
+        return self._to_record_sub(record_data, zone, data)
 
     """
+    Ignores name and type, not allowed in an update call to the service.
+
     The Gandi service requires all values for a record when doing an update.
-    This implementation makes an attempt to coerce the Libcloud notion
-    of a record update into the service's record update, but to do so
-    requires some extra interpretation of this method.
+    Not providing all values during an update means the service will interpret
+    it as replacing all values with the one data value.  The easiest way to
+    accomplish this is to make sure the value of a get_record is used as the
+    value of the record parameter.
 
-    It depends on record.extra['other_records'] and extra['other_records'].
-    The value will be set to the list of data and extra['other_records'] so
-    long as it exists; if it's an empty list, the value will just be data.
-    If extra['other_records'] is not set at all, the value will be set to the
-    list of data and record.extra['other_records'].
+    This method will change the value when only one exists.  When more than
+    one exists, it will combine the data parameter value with the extra dict
+    values contained in the list extra['_other_records'].  This method should
+    only be used to make single value updates.
 
-    It's incumbent on the user to figure out what to pass to this method
-    in order to get the desired end result.
+    To change the number of values in the value set or to change several at
+    once, delete and recreate, potentially using ex_create_multi_value_record.
     """
     def update_record(self, record, name, type, data, extra):
-        self._validate_record(record.id, name, type, data, extra)
+        self._validate_record(record.id, record.name, record.type, data, extra)
 
         action = '%s/domains/%s/records/%s/%s' % (
             API_BASE,
@@ -203,20 +210,29 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             self.RECORD_TYPE_MAP[record.type]
         )
 
-        if extra is not None and 'other_records' in extra:
-            if len(extra['other_records']) > 0:
-                rvalue = [data] + extra['other_records']
-            else:
-                rvalue = [data]
-        elif record.extra is not None and 'other_records' in record.extra:
-            rvalue = [data] + record.extra['other_records']
+        multiple_value_record = record.extra.get('_multi_value', False)
+        other_records = record.extra.get('_other_records', [])
+
+        if record.type == RecordType.MX:
+            data = '%s %s' % (extra['priority'], data)
+
+        if multiple_value_record and len(other_records) > 0:
+            rvalue = [data]
+            for other_record in other_records:
+                if record.type == RecordType.MX:
+                    rvalue.append('%s %s' %
+                                  (other_record['extra']['priority'],
+                                   other_record['data']))
+                else:
+                    rvalue.append(other_record['data'])
         else:
             rvalue = [data]
+
         record_data = {
             'rrset_values': rvalue
         }
 
-        if 'ttl' in extra:
+        if extra is not None and 'ttl' in extra:
             record_data['rrset_ttl'] = extra['ttl']
 
         try:
@@ -229,8 +245,13 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
         record_data['rrset_name'] = record.name
         record_data['rrset_type'] = self.RECORD_TYPE_MAP[record.type]
-        return self._to_record(record_data, record.zone)
+        return self._to_record(record_data, record.zone)[0]
 
+    """
+    The Gandi service considers all values for a name-type combination to be
+    one record.  Deleting that name-type record means deleting all values for
+    it.
+    """
     def delete_record(self, record):
         action = '%s/domains/%s/records/%s/%s' % (
             API_BASE,
@@ -280,7 +301,6 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :return: ``bool``
     """
-    # @@@ test
     def ex_update_gandi_zone_name(self, zone_uuid, name):
         action = '%s/zones/%s' % (API_BASE, zone_uuid)
         data = {
@@ -301,7 +321,6 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :return: ``bool``
     """
-    # @@@ test
     def ex_delete_gandi_zone(self, zone_uuid):
         self.connection.request(action='%s/zones/%s' % (API_BASE, zone_uuid),
                                 method='DELETE')
@@ -332,8 +351,9 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :param data: Record values (depends on the record type)
     :type  data: ``list`` (of ``str``)
+
+    :return: ``list`` of :class:`Record`s
     """
-    # @@@ test
     def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
 
@@ -345,7 +365,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             'rrset_values': data,
         }
 
-        if 'ttl' in extra:
+        if extra is not None and 'ttl' in extra:
             record_data['rrset_ttl'] = extra['ttl']
 
         try:
@@ -359,34 +379,60 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                                                name))
         return self._to_record(record_data, zone)
 
-    # The Gandi service returns a set of values for a record,
-    # so setting something like extra['priority'] for MX records
-    # doesn't make a lot of sense.  Instead, the value is the
-    # first from the set, with extra['other_values'] for the
-    # remainder of values (not set if no other values).
-    def _to_record(self, record, zone):
+    def _to_record(self, data, zone):
+        records = []
+        rrset_values = data['rrset_values']
+        multiple_value_record = len(rrset_values) > 1
+
+        for index, rrset_value in enumerate(rrset_values):
+            record = self._to_record_sub(data, zone, rrset_value)
+            record.extra['_multi_value'] = multiple_value_record
+            if multiple_value_record:
+                record.extra['_other_records'] = []
+            records.append(record)
+
+        if multiple_value_record:
+            for index in range(0, len(records)):
+                record = records[index]
+                for other_index, other_record in enumerate(records):
+                    if index == other_index:
+                        continue
+
+                    extra = copy.deepcopy(other_record.extra)
+                    extra.pop('_multi_value')
+                    extra.pop('_other_records')
+
+                    item = {
+                        'name': other_record.name,
+                        'data': other_record.data,
+                        'type': other_record.type,
+                        'extra': extra
+                    }
+                    record.extra['_other_records'].append(item)
+        return records
+
+    def _to_record_sub(self, data, zone, value):
         extra = {
-            'ttl': int(record['rrset_ttl']),
+            'ttl': int(data['rrset_ttl']),
         }
-        rrset_values = record['rrset_values']
-        value = rrset_values[0]
-        if len(rrset_values) > 1:
-            extra['other_values'] = rrset_values[1:]
+        if data['rrset_type'] == 'MX':
+            priority, value = value.split()
+            extra['priority'] = priority
         return Record(
-            id='%s:%s' % (record['rrset_type'], record['rrset_name']),
-            name=record['rrset_name'],
-            type=self._string_to_record_type(record['rrset_type']),
+            id='%s:%s' % (data['rrset_type'], data['rrset_name']),
+            name=data['rrset_name'],
+            type=self._string_to_record_type(data['rrset_type']),
             data=value,
             zone=zone,
             driver=self,
-            ttl=record['rrset_ttl'],
+            ttl=data['rrset_ttl'],
             extra=extra)
 
-    def _to_records(self, records, zone):
-        retval = []
-        for r in records:
-            retval.append(self._to_record(r, zone))
-        return retval
+    def _to_records(self, data, zone):
+        records = []
+        for r in data:
+            records += self._to_record(r, zone)
+        return records
 
     def _to_zone(self, zone):
         extra = {}
@@ -413,11 +459,18 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         if len(data) > 1024:
             raise RecordError('Record data must be <= 1024 characters',
                               driver=self, record_id=record_id)
-        if extra is not None and 'other_values' in extra:
-            for other_value in other_values:
-                if len(other_value) > 1024:
+        if type == 'MX' or type == RecordType.MX:
+            if extra is None or 'priority' not in extra:
+                raise RecordError('MX record must have a priority')
+        if extra is not None and '_other_records' in extra:
+            for other_value in extra.get('_other_records', []):
+                if len(other_value['data']) > 1024:
                     raise RecordError('Record data must be <= 1024 characters',
                                       driver=self, record_id=record_id)
+                if type == 'MX' or type == RecordType.MX:
+                    if (other_value['extra'] is None
+                        or 'priority' not in other_value['extra']):
+                        raise RecordError('MX record must have a priority')
         if extra is not None and 'ttl' in extra:
             if extra['ttl'] < TTL_MIN:
                 raise RecordError('TTL must be at least 300 seconds',

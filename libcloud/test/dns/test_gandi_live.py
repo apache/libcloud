@@ -189,6 +189,46 @@ class GandiLiveTests(unittest.TestCase):
         with self.assertRaises(GandiLiveBaseError):
             self.driver.list_records(self.test_bad_zone)
 
+    def test_mx_record(self):
+        record = self.driver.get_record(self.test_zone.id, 'MX:lists')
+        self.assertEqual(record.extra['priority'], '10')
+        self.assertTrue('_other_records' in record.extra)
+        other_record = record.extra['_other_records'][0]
+        self.assertEqual(other_record['extra']['priority'], '20')
+
+    def test_ex_create_multivalue_record(self):
+        records = self.driver.ex_create_multi_value_record('alice',
+                                                           self.test_zone,
+                                                           'AAAA',
+                                                           ['::1', '::2'],
+                                                           extra={'ttl': 400})
+        self.assertEqual(records[0].id, 'AAAA:alice')
+        self.assertEqual(records[0].name, 'alice')
+        self.assertEqual(records[0].type, RecordType.AAAA)
+        self.assertEqual(records[0].data, '::1')
+        self.assertEqual(records[1].id, 'AAAA:alice')
+        self.assertEqual(records[1].name, 'alice')
+        self.assertEqual(records[1].type, RecordType.AAAA)
+        self.assertEqual(records[1].data, '::2')
+
+    def test_update_multivalue_record(self):
+        record = self.driver.get_record(self.test_zone.id, 'MX:lists')
+        updated = self.driver.update_record(record, None, None,
+                                            'mail1', {'ttl': 400, 'priority': 10})
+        self.assertEqual(updated.extra['priority'], '10')
+        self.assertEqual(updated.data, 'mail1')
+        self.assertTrue('_other_records' in record.extra)
+        other_record = record.extra['_other_records'][0]
+        self.assertEqual(other_record['extra']['priority'], '20')
+
+    def test_ex_update_gandi_zone_name(self):
+        updated = self.driver.ex_update_gandi_zone_name('111111', 'Foo')
+        self.assertTrue(updated)
+
+    def test_ex_delete_gandi_zone(self):
+        deleted = self.driver.ex_delete_gandi_zone('111111')
+        self.assertTrue(deleted)
+
 
 class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     fixtures = DNSFileFixtures('gandi_live')
@@ -223,6 +263,14 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
             return (httplib.OK, body, {'Location': '/zones/54321'},
                     httplib.responses[httplib.OK])
 
+    def _json_api_v5_zones_111111_patch(self, method, url, body, headers):
+        body = self.fixtures.load('update_gandi_zone.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_api_v5_zones_111111_delete(self, method, url, body, headers):
+        body = self.fixtures.load('delete_gandi_zone.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _json_api_v5_domains_example_org_patch(self, method, url, body, headers):
         body = self.fixtures.load('create_domain.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -248,6 +296,18 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
                                                             body, headers):
         body = self.fixtures.load('get_nonexistent_record.json')
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
+
+    def _json_api_v5_domains_example_com_records_lists_MX_get(self, method,
+                                                              url, body,
+                                                              headers):
+        body = self.fixtures.load('get_mx_record.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_api_v5_domains_example_com_records_lists_MX_put(self, method,
+                                                              url, body,
+                                                              headers):
+        body = self.fixtures.load('update_mx_record.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_com_records_post(self, method, url, body,
                                                       headers):
