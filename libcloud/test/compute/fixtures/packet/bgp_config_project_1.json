@@ -1,0 +1,17 @@
+{
+	"id": "02dde1ca-a360-4bc5-9c08-897bbd22536a",
+	"status": "enabled",
+	"deployment_type": "local",
+	"asn": 65000,
+	"md5": null,
+	"route_object": null,
+	"max_prefix": 10,
+	"created_at": "2019-03-08T12:03:01Z",
+	"requested_at": "2019-03-08T12:03:01Z",
+	"project": {
+		"href": "/projects/4b653fce-6405-4300-9f7d-c587b7888fe5"
+	},
+	"sessions": [],
+	"ranges": [],
+	"href": "/bgp-configs/02dde1ca-a360-4bc5-9c08-897bbd22536a"
+}

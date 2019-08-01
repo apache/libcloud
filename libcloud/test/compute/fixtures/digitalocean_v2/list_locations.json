@@ -7,7 +7,7 @@
         "1gb",
         "512mb"
       ],
-      "available": false,
+      "available": true,
       "features": [
         "virtio",
         "private_networking",
@@ -35,7 +35,7 @@
         "1gb",
         "512mb"
       ],
-      "available": true,
+      "available": false,
       "features": [
         "virtio",
         "backups"

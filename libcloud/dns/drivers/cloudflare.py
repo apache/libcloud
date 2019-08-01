@@ -17,85 +17,112 @@ __all__ = [
     'CloudFlareDNSDriver'
 ]
 
-import copy
+import itertools
+import json
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
-from libcloud.utils.py3 import httplib
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.dns.types import Provider, RecordType
-from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
+from libcloud.dns.types import RecordAlreadyExistsError, ZoneAlreadyExistsError
+from libcloud.dns.types import RecordDoesNotExistError, ZoneDoesNotExistError
+from libcloud.utils.misc import merge_valid_keys, reverse_dict
 
-API_URL = 'https://www.cloudflare.com/api_json.html'
-API_HOST = 'www.cloudflare.com'
-API_PATH = '/api_json.html'
+API_HOST = 'api.cloudflare.com'
+API_BASE = '/client/v4'
 
-ZONE_EXTRA_ATTRIBUTES = [
-    'display_name',
-    'zone_status',
-    'zone_type',
-    'host_id',
-    'host_pubname',
-    'host_website',
-    'fqdns',
-    'vtxt',
-    'step',
-    'zone_status_class',
-    'zone_status_desc',
-    'orig_registrar',
-    'orig_dnshost',
-    'orig_ns_names'
-]
+CLOUDFLARE_TO_LIBCLOUD_ZONE_TYPE = {
+    'full': 'master',
+    'partial': 'slave',
+}
 
-RECORD_EXTRA_ATTRIBUTES = [
-    'rec_tag',
-    'display_name',
-    'pro',
-    'display_content',
-    'ttl_ceil',
-    'ssl_id',
-    'ssl_status',
-    'ssl_expires_on',
-    'auto_ttl',
-    'service_mode'
-]
+LIBCLOUD_TO_CLOUDFLARE_ZONE_TYPE = reverse_dict(
+    CLOUDFLARE_TO_LIBCLOUD_ZONE_TYPE)
+
+ZONE_EXTRA_ATTRIBUTES = {
+    'development_mode',
+    'original_name_servers',
+    'original_registrar',
+    'original_dnshost',
+    'created_on',
+    'modified_on',
+    'activated_on',
+    'owner',
+    'account',
+    'permissions',
+    'plan',
+    'plan_pending',
+    'status',
+    'paused',
+    'name_servers',
+}
+
+ZONE_UPDATE_ATTRIBUTES = {
+    'paused',
+    'vanity_name_servers',
+    'plan',
+}
+
+ZONE_CREATE_ATTRIBUTES = {
+    'jump_start',
+}
+
+RECORD_EXTRA_ATTRIBUTES = {
+    'proxiable',
+    'proxied',
+    'locked',
+    'created_on',
+    'modified_on',
+    'data',
+}
+
+RECORD_CREATE_ATTRIBUTES = {
+    'ttl',
+    'priority',
+    'proxied',
+}
+
+RECORD_UPDATE_ATTRIBUTES = {
+    'ttl',
+    'proxied',
+}
 
 
 class CloudFlareDNSResponse(JsonResponse):
+    exceptions = {
+        9103: (InvalidCredsError, []),
+        1001: (ZoneDoesNotExistError, ['zone_id']),
+        1061: (ZoneAlreadyExistsError, ['zone_id']),
+        1002: (RecordDoesNotExistError, ['record_id']),
+        81053: (RecordAlreadyExistsError, ['record_id']),
+    }
+
     def success(self):
-        return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
+        body = self.parse_body()
 
-    def parse_body(self):
-        body = super(CloudFlareDNSResponse, self).parse_body()
-        body = body or {}
+        is_success = body.get('success', False)
 
-        result = body.get('result', None)
-        error_code = body.get('err_code', None)
-        msg = body.get('msg', None)
-        is_error_result = result == 'error'
+        return is_success
 
-        context = self.connection.context or {}
-        context_record_id = context.get('record_id', None)
-        context_zone_domain = context.get('zone_domain', None)
+    def parse_error(self):
+        body = self.parse_body()
 
-        if (is_error_result and 'invalid record id' in msg.lower() and
-                context_record_id):
-            raise RecordDoesNotExistError(value=msg,
-                                          driver=self.connection.driver,
-                                          record_id=context_record_id)
-        elif (is_error_result and 'invalid zone' in msg.lower() and
-              context_zone_domain):
-            raise ZoneDoesNotExistError(value=msg,
-                                        driver=self.connection.driver,
-                                        zone_id=context_zone_domain)
+        errors = body.get('errors', [])
 
-        if error_code == 'E_UNAUTH':
-            raise InvalidCredsError(msg)
-        elif result == 'error' or error_code is not None:
-            msg = 'Request failed: %s' % (self.body)
-            raise LibcloudError(value=msg, driver=self.connection.driver)
+        for error in errors:
+            try:
+                exception_class, context = self.exceptions[error['code']]
+            except KeyError:
+                exception_class, context = LibcloudError, []
 
-        return body
+            kwargs = {
+                'value': '{}: {}'.format(error['code'], error['message']),
+                'driver': self.connection.driver,
+            }
+
+            merge_valid_keys(kwargs, context, self.connection.context)
+
+            raise exception_class(**kwargs)
 
 
 class CloudFlareDNSConnection(ConnectionUserAndKey):
@@ -103,24 +130,15 @@ class CloudFlareDNSConnection(ConnectionUserAndKey):
     secure = True
     responseCls = CloudFlareDNSResponse
 
-    def request(self, action, params=None, data=None, headers=None,
-                method='GET'):
-        params = params or {}
-        data = data or {}
+    def add_default_headers(self, headers):
+        headers['Content-Type'] = 'application/json'
+        headers['X-Auth-Email'] = self.user_id
+        headers['X-Auth-Key'] = self.key
 
-        base_params = {
-            'email': self.user_id,
-            'tkn': self.key,
-            'a': action
-        }
-        params = copy.deepcopy(params)
-        params.update(base_params)
+        return headers
 
-        return super(CloudFlareDNSConnection, self).request(action=API_PATH,
-                                                            params=params,
-                                                            data=None,
-                                                            method=method,
-                                                            headers=headers)
+    def encode_data(self, data):
+        return json.dumps(data)
 
 
 class CloudFlareDNSDriver(DNSDriver):
@@ -141,290 +159,313 @@ class CloudFlareDNSDriver(DNSDriver):
         RecordType.URL: 'LOC'
     }
 
-    def iterate_zones(self):
-        # TODO: Support pagination
-        result = self.connection.request(action='zone_load_multi').object
-        zones = self._to_zones(data=result['response']['zones']['objs'])
+    ZONES_PAGE_SIZE = 50
+    RECORDS_PAGE_SIZE = 100
+    MEMBERSHIPS_PAGE_SIZE = 50
 
-        return zones
+    def iterate_zones(self):
+        def _iterate_zones(params):
+            url = '{}/zones'.format(API_BASE)
+
+            response = self.connection.request(url, params=params)
+
+            items = response.object['result']
+            zones = [self._to_zone(item) for item in items]
+
+            return response, zones
+
+        return self._paginate(_iterate_zones, self.ZONES_PAGE_SIZE)
 
     def iterate_records(self, zone):
-        # TODO: Support pagination
-        params = {'z': zone.domain}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='rec_load_all', params=params)
-        data = resp.object['response']['recs']['objs']
-        records = self._to_records(zone=zone, data=data)
-        return records
+        def _iterate_records(params):
+            url = '{}/zones/{}/dns_records'.format(API_BASE, zone.id)
+
+            self.connection.set_context({'zone_id': zone.id})
+            response = self.connection.request(url, params=params)
+
+            items = response.object['result']
+            records = [self._to_record(zone, item) for item in items]
+
+            return response, records
+
+        return self._paginate(_iterate_records, self.RECORDS_PAGE_SIZE)
 
     def get_zone(self, zone_id):
-        # TODO: This is not efficient
-        zones = self.list_zones()
+        url = '{}/zones/{}'.format(API_BASE, zone_id)
 
-        try:
-            zone = [z for z in zones if z.id == zone_id][0]
-        except IndexError:
-            raise ZoneDoesNotExistError(value='', driver=self, zone_id=zone_id)
+        self.connection.set_context({'zone_id': zone_id})
+        response = self.connection.request(url)
+
+        item = response.object['result']
+        zone = self._to_zone(item)
 
         return zone
 
-    def create_record(self, name, zone, type, data, extra=None):
+    def create_zone(self, domain, type='master', ttl=None, extra=None):
+        """
+        @inherits: :class:`DNSDriver.create_zone`
+
+        Note that for users who have more than one account membership,
+        the id of the account in which to create the zone must be
+        specified via the ``extra`` key ``account``.
+
+        Note that for ``extra`` zone properties, only the ones specified in
+        ``ZONE_CREATE_ATTRIBUTES`` can be set at creation time. Additionally,
+        setting the ``ttl` property is not supported.
+        """
         extra = extra or {}
-        params = {'name': name, 'z': zone.domain, 'type': type,
-                  'content': data}
 
-        params['ttl'] = extra.get('ttl', 120)
+        account = extra.get('account')
+        if account is None:
+            memberships = self.ex_get_user_account_memberships()
+            memberships = list(itertools.islice(memberships, 2))
 
-        if 'priority' in extra:
-            # For MX and SRV records
-            params['prio'] = extra['priority']
+            if len(memberships) != 1:
+                raise ValueError('must specify account for zone')
 
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='rec_new', params=params)
-        item = resp.object['response']['rec']['obj']
-        record = self._to_record(zone=zone, item=item)
+            account = memberships[0]['account']['id']
+
+        url = '{}/zones'.format(API_BASE)
+
+        body = {
+            'name': domain,
+            'account': {
+                'id': account
+            },
+            'type': LIBCLOUD_TO_CLOUDFLARE_ZONE_TYPE[type]
+        }
+
+        merge_valid_keys(body, ZONE_CREATE_ATTRIBUTES, extra)
+
+        response = self.connection.request(url, data=body, method='POST')
+
+        item = response.object['result']
+        zone = self._to_zone(item)
+
+        return zone
+
+    def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
+        """
+        @inherits: :class:`DNSDriver.update_zone`
+
+        Note that the ``zone``, ``type`` and ``ttl`` properties can't be
+        updated. The only updatable properties are the ``extra`` zone
+        properties specified in ``ZONE_UPDATE_ATTRIBUTES``. Only one property
+        may be updated at a time. Any non-updatable properties are ignored.
+        """
+        body = merge_valid_keys({}, ZONE_UPDATE_ATTRIBUTES, extra)
+        if len(body) != 1:
+            return zone
+
+        url = '{}/zones/{}'.format(API_BASE, zone.id)
+
+        self.connection.set_context({'zone_id': zone.id})
+        response = self.connection.request(url, data=body, method='PATCH')
+
+        item = response.object['result']
+        zone = self._to_zone(item)
+
+        return zone
+
+    def delete_zone(self, zone):
+        url = '{}/zones/{}'.format(API_BASE, zone.id)
+
+        self.connection.set_context({'zone_id': zone.id})
+        response = self.connection.request(url, method='DELETE')
+
+        item = response.object.get('result', {}).get('id')
+        is_deleted = item == zone.id
+
+        return is_deleted
+
+    def get_record(self, zone_id, record_id):
+        zone = self.get_zone(zone_id)
+
+        url = '{}/zones/{}/dns_records/{}'.format(API_BASE, zone.id,
+                                                  record_id)
+
+        self.connection.set_context({'record_id': record_id})
+        response = self.connection.request(url)
+
+        item = response.object['result']
+        record = self._to_record(zone, item)
+
+        return record
+
+    def create_record(self, name, zone, type, data, extra=None):
+        """
+        @inherits: :class:`DNSDriver.create_record`
+
+        Note that for ``extra`` record properties, only the ones specified in
+        ``RECORD_CREATE_ATTRIBUTES`` can be set at creation time. Any
+        non-settable properties are ignored.
+        """
+        url = '{}/zones/{}/dns_records'.format(API_BASE, zone.id)
+
+        body = {
+            'type': type,
+            'name': name,
+            'content': data,
+        }
+
+        merge_valid_keys(body, RECORD_CREATE_ATTRIBUTES, extra)
+
+        self.connection.set_context({'zone_id': zone.id})
+        response = self.connection.request(url, data=body, method='POST')
+
+        item = response.object['result']
+        record = self._to_record(zone, item)
+
         return record
 
     def update_record(self, record, name=None, type=None, data=None,
                       extra=None):
-        extra = extra or {}
-        params = {'z': record.zone.domain, 'id': record.id}
+        """
+        @inherits: :class:`DNSDriver.update_record`
 
-        params['name'] = name or record.name
-        params['type'] = type or record.type
-        params['content'] = data or record.data
-        params['ttl'] = extra.get('ttl', None) or record.extra['ttl']
+        Note that for ``extra`` record properties, only the ones specified in
+        ``RECORD_UPDATE_ATTRIBUTES`` can be updated. Any non-updatable
+        properties are ignored.
+        """
+        url = '{}/zones/{}/dns_records/{}'.format(API_BASE, record.zone.id,
+                                                  record.id)
 
-        self.connection.set_context({'zone_domain': record.zone.domain})
+        body = {
+            'type': record.type if type is None else type,
+            'name': record.name if name is None else name,
+            'content': record.data if data is None else data,
+            'extra': record.extra or {},
+        }
+
+        merge_valid_keys(body['extra'], RECORD_UPDATE_ATTRIBUTES, extra)
+
         self.connection.set_context({'record_id': record.id})
-        resp = self.connection.request(action='rec_edit', params=params)
-        item = resp.object['response']['rec']['obj']
-        record = self._to_record(zone=record.zone, item=item)
+        response = self.connection.request(url, data=body, method='PUT')
+
+        item = response.object['result']
+        record = self._to_record(record.zone, item)
+
         return record
 
     def delete_record(self, record):
-        params = {'z': record.zone.domain, 'id': record.id}
-        self.connection.set_context({'zone_domain': record.zone.domain})
+        url = '{}/zones/{}/dns_records/{}'.format(API_BASE, record.zone.id,
+                                                  record.id)
+
         self.connection.set_context({'record_id': record.id})
-        resp = self.connection.request(action='rec_delete', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        response = self.connection.request(url, method='DELETE')
+
+        item = response.object.get('result', {}).get('id')
+        is_deleted = item == record.id
+
+        return is_deleted
+
+    def ex_get_user_account_memberships(self):
+        def _ex_get_user_account_memberships(params):
+            url = '{}/memberships'.format(API_BASE)
+
+            response = self.connection.request(url, params=params)
+            return response, response.object['result']
+
+        return self._paginate(_ex_get_user_account_memberships,
+                              self.MEMBERSHIPS_PAGE_SIZE)
 
     def ex_get_zone_stats(self, zone, interval=30):
-        params = {'z': zone.domain, 'interval': interval}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='stats', params=params)
-        result = resp.object['response']['result']['objs'][0]
-        return result
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_zone_check(self, zones):
-        zone_domains = [zone.domain for zone in zones]
-        zone_domains = ','.join(zone_domains)
-        params = {'zones': zone_domains}
-        resp = self.connection.request(action='zone_check', params=params)
-        result = resp.object['response']['zones']
-        return result
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_get_ip_threat_score(self, ip):
-        """
-        Retrieve current threat score for a given IP. Note that scores are on
-        a logarithmic scale, where a higher score indicates a higher threat.
-        """
-        params = {'ip': ip}
-        resp = self.connection.request(action='ip_lkup', params=params)
-        result = resp.object['response']
-        return result
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_get_zone_settings(self, zone):
-        """
-        Retrieve all current settings for a given zone.
-        """
-        params = {'z': zone.domain}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='zone_settings', params=params)
-        result = resp.object['response']['result']['objs'][0]
-        return result
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_set_zone_security_level(self, zone, level):
-        """
-        Set the zone Basic Security Level to I'M UNDER ATTACK! / HIGH /
-        MEDIUM / LOW / ESSENTIALLY OFF.
-
-        :param level: Security level. Valid values are: help, high, med, low,
-                      eoff.
-        :type level: ``str``
-        """
-        params = {'z': zone.domain, 'v': level}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='sec_lvl', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_set_zone_cache_level(self, zone, level):
-        """
-        Set the zone caching level.
-
-        :param level: Caching level. Valid values are: agg (aggresive), basic.
-        :type level: ``str``
-        """
-        params = {'z': zone.domain, 'v': level}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='cache_lvl', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_enable_development_mode(self, zone):
-        """
-        Enable development mode. When Development Mode is on the cache is
-        bypassed. Development mode remains on for 3 hours or until when it is
-        toggled back off.
-        """
-        params = {'z': zone.domain, 'v': 1}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='devmode', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_disable_development_mode(self, zone):
-        """
-        Disable development mode.
-        """
-        params = {'z': zone.domain, 'v': 0}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='devmode', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_purge_cached_files(self, zone):
-        """
-        Purge CloudFlare of any cached files.
-        """
-        params = {'z': zone.domain, 'v': 1}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='fpurge_ts', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_purge_cached_file(self, zone, url):
-        """
-        Purge single file from CloudFlare's cache.
-
-        :param url: URL to the file to purge from cache.
-        :type url: ``str``
-        """
-        params = {'z': zone.domain, 'url': url}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='zone_file_purge', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_whitelist_ip(self, zone, ip):
-        """
-        Whitelist the provided IP.
-        """
-        params = {'z': zone.domain, 'key': ip}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='wl', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_blacklist_ip(self, zone, ip):
-        """
-        Blacklist the provided IP.
-        """
-        params = {'z': zone.domain, 'key': ip}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='ban', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_unlist_ip(self, zone, ip):
-        """
-        Remove provided ip from the whitelist and blacklist.
-        """
-        params = {'z': zone.domain, 'key': ip}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='nul', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_enable_ipv6_support(self, zone):
-        """
-        Enable IPv6 support for the provided zone.
-        """
-        params = {'z': zone.domain, 'v': 3}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='ipv46', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def ex_disable_ipv6_support(self, zone):
-        """
-        Disable IPv6 support for the provided zone.
-        """
-        params = {'z': zone.domain, 'v': 0}
-        self.connection.set_context({'zone_domain': zone.domain})
-        resp = self.connection.request(action='ipv46', params=params)
-        result = resp.object
-        return result.get('result', None) == 'success'
-
-    def _to_zones(self, data):
-        zones = []
-
-        for item in data:
-            zone = self._to_zone(item=item)
-            zones.append(zone)
-
-        return zones
+        raise NotImplementedError('not yet implemented in v4 driver')
 
     def _to_zone(self, item):
-        type = 'master'
-
-        extra = {}
-        extra['props'] = item.get('props', {})
-        extra['confirm_code'] = item.get('confirm_code', {})
-        extra['allow'] = item.get('allow', {})
-        for attribute in ZONE_EXTRA_ATTRIBUTES:
-            value = item.get(attribute, None)
-            extra[attribute] = value
-
-        zone = Zone(id=str(item['zone_id']), domain=item['zone_name'],
-                    type=type, ttl=None, driver=self, extra=extra)
-        return zone
-
-    def _to_records(self, zone, data):
-        records = []
-
-        for item in data:
-            record = self._to_record(zone=zone, item=item)
-            records.append(record)
-
-        return records
+        return Zone(
+            id=item['id'],
+            domain=item['name'],
+            type=CLOUDFLARE_TO_LIBCLOUD_ZONE_TYPE[item['type']],
+            ttl=None,
+            driver=self,
+            extra={key: item.get(key) for key in ZONE_EXTRA_ATTRIBUTES},
+        )
 
     def _to_record(self, zone, item):
-        name = self._get_record_name(item=item)
-        type = item['type']
-        data = item['content']
+        name = item['name']
+        name = name.replace('.' + item['zone_name'], '')
+        name = name.replace(item['zone_name'], '')
+        name = name or None
 
-        if item.get('ttl', None):
-            ttl = int(item['ttl'])
-        else:
-            ttl = None
+        ttl = item.get('ttl')
+        if ttl is not None:
+            ttl = int(ttl)
 
-        extra = {}
-        extra['ttl'] = ttl
-        extra['props'] = item.get('props', {})
-        for attribute in RECORD_EXTRA_ATTRIBUTES:
-            value = item.get(attribute, None)
-            extra[attribute] = value
+        return Record(
+            id=item['id'],
+            name=name,
+            type=item['type'],
+            data=item['content'],
+            zone=zone,
+            driver=self,
+            ttl=ttl,
+            extra={key: item.get(key) for key in RECORD_EXTRA_ATTRIBUTES},
+        )
 
-        record = Record(id=str(item['rec_id']), name=name, type=type,
-                        data=data, zone=zone, driver=self, ttl=ttl,
-                        extra=extra)
-        return record
+    def _paginate(self, get_page, page_size):
+        for page in itertools.count(start=1):
+            params = {'page': page, 'per_page': page_size}
 
-    def _get_record_name(self, item):
-        name = item['name'].replace('.' + item['zone_name'], '') or None
-        if name:
-            name = name.replace(item['zone_name'], '') or None
-        return name
+            response, items = get_page(params)
+
+            for item in items:
+                yield item
+
+            if self._is_last_page(response):
+                break
+
+            if len(items) < page_size:
+                break
+
+    def _is_last_page(self, response):
+        try:
+            result_info = response.object['result_info']
+            last_page = result_info['total_pages']
+            current_page = result_info['page']
+        except KeyError:
+            return False
+
+        return current_page == last_page

@@ -1,0 +1,110 @@
+{
+  "result": [
+    {
+      "id": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+      "status": "accepted",
+      "permissions": {
+        "access": {
+          "read": true,
+          "edit": true
+        },
+        "analytics": {
+          "read": true,
+          "edit": false
+        },
+        "app": {
+          "read": false,
+          "edit": true
+        },
+        "auditlogs": {
+          "read": true,
+          "edit": false
+        },
+        "billing": {
+          "read": true,
+          "edit": true
+        },
+        "cache_purge": {
+          "read": false,
+          "edit": true
+        },
+        "dns_records": {
+          "read": true,
+          "edit": true
+        },
+        "lb": {
+          "read": true,
+          "edit": true
+        },
+        "legal": {
+          "read": true,
+          "edit": true
+        },
+        "logs": {
+          "read": true,
+          "edit": true
+        },
+        "member": {
+          "read": true,
+          "edit": true
+        },
+        "organization": {
+          "read": true,
+          "edit": true
+        },
+        "ssl": {
+          "read": true,
+          "edit": true
+        },
+        "stream": {
+          "read": true,
+          "edit": true
+        },
+        "subscription": {
+          "read": true,
+          "edit": true
+        },
+        "waf": {
+          "read": true,
+          "edit": true
+        },
+        "webhooks": {
+          "read": true,
+          "edit": true
+        },
+        "worker": {
+          "read": true,
+          "edit": true
+        },
+        "zone": {
+          "read": true,
+          "edit": true
+        },
+        "zone_settings": {
+          "read": true,
+          "edit": true
+        }
+      },
+      "roles": [
+        "Super Administrator - All Privileges"
+      ],
+      "account": {
+        "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "cloudflare@test.com's Account",
+        "settings": {
+          "enforce_twofactor": false
+        }
+      }
+    }
+  ],
+  "result_info": {
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 1,
+    "count": 1,
+    "total_count": 1
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}

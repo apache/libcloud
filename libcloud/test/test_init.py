@@ -34,8 +34,8 @@ from libcloud.test import unittest
 class TestUtils(unittest.TestCase):
     def test_init_once_and_debug_mode(self):
         if have_paramiko:
-            paramiko_logger = paramiko.util.logging.getLogger()
-            paramiko_logger.setLevel(logging.NOTSET)
+            paramiko_logger = logging.getLogger('paramiko')
+            paramiko_logger.setLevel(logging.INFO)
 
         # Debug mode is disabled
         _init_once()
@@ -44,7 +44,7 @@ class TestUtils(unittest.TestCase):
 
         if have_paramiko:
             paramiko_log_level = paramiko_logger.getEffectiveLevel()
-            self.assertEqual(paramiko_log_level, logging.NOTSET)
+            self.assertEqual(paramiko_log_level, logging.INFO)
 
         # Enable debug mode
         os.environ['LIBCLOUD_DEBUG'] = '/dev/null'
@@ -63,6 +63,7 @@ class TestUtils(unittest.TestCase):
     def test_raises_error(self):
         with self.assertRaises(DriverTypeNotFoundError):
             libcloud.get_driver('potato', 'potato')
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

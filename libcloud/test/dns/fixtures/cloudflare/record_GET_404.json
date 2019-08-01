@@ -1,0 +1,11 @@
+{
+  "success": false,
+  "errors": [
+    {
+      "code": 1002,
+      "message": "Invalid dns record identifier"
+    }
+  ],
+  "messages": [],
+  "result": null
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnumerationResults ContainerName="test_container" ServiceEndpoint="http://localhost:10000/account">
+    <MaxResults>2</MaxResults>
+    <Blobs />
+    <NextMarker />
+</EnumerationResults>

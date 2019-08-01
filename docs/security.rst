@@ -8,7 +8,7 @@ Reporting a vulnerability
 
 .. note::
 
-    Please do **not** report security issues using our public JIRA instance. Use
+    Please do **not** report security issues using our public Github instance. Use
     the private mailing list described below.
 
 If you believe you've found a security issue or a vulnerability, please send a

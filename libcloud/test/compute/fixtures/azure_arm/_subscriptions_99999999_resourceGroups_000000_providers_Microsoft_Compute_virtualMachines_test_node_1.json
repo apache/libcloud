@@ -1,48 +1,51 @@
 {
   "properties": {
-    "vmId": "e717ae77-db36-4225-b12a-68506fe5fc8f",
+    "vmId": "99999999-9999-9999-9999-999999999999",
     "hardwareProfile": {
       "vmSize": "Standard_A1"
     },
     "storageProfile": {
-      "imageReference": {
-        "publisher": "OpenLogic",
-        "offer": "CentOS",
-        "sku": "7.3",
-        "version": "latest"
-      },
       "osDisk": {
         "osType": "Linux",
-        "name": "test-node-disk-1",
-        "createOption": "FromImage",
+        "name": "OSD-9999",
+        "createOption": "Attach",
         "caching": "ReadWrite",
         "managedDisk": {
           "storageAccountType": "Standard_LRS",
-          "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/disks/test-node-disk-1"
+          "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/disks/OSD-9999"
         }
       },
-      "dataDisks": []
-    },
-    "osProfile": {
-      "computerName": "test-node-1",
-      "adminUsername": "user",
-      "linuxConfiguration": {
-        "disablePasswordAuthentication": false
-      },
-      "secrets": []
+      "dataDisks": [
+        {
+          "lun": 0,
+          "name": "DD0-9999",
+          "createOption": "Attach",
+          "caching": "None",
+          "managedDisk": {
+            "storageAccountType": "Standard_LRS",
+            "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/disks/DD0-9999"
+          },
+          "diskSizeGB": 8
+        }
+      ]
     },
     "networkProfile": {
       "networkInterfaces": [
         {
-          "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Network/networkInterfaces/test-node-1-nic"
+          "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/0000/providers/Microsoft.Network/networkInterfaces/test-nic",
+          "properties": {
+            "primary": true
+          }
         }
       ]
     },
-    "provisioningState": "Running"
+    "provisioningState": "Succeeded"
   },
   "type": "Microsoft.Compute/virtualMachines",
   "location": "eastus",
-  "tags": {},
-  "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/000000/providers/Microsoft.Compute/virtualMachines/test-node-1",
-  "name": "test-node-1"
+  "tags": {
+    "tag_key1": "tag_val1"
+  },
+  "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/0000/providers/Microsoft.Compute/virtualMachines/test_vm",
+  "name": "test_vm"
 }

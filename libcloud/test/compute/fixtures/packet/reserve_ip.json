@@ -1,0 +1,29 @@
+{
+    "id": "31ae66fe-ee00-4f50-be25-60eeca8718ff",
+    "address_family": 4,
+    "netmask": "255.255.255.255",
+    "created_at": "2019-04-06T23:05:17Z",
+    "details": null,
+    "public": true,
+    "cidr": 32,
+    "management": false,
+    "manageable": true,
+    "enabled": true,
+    "global_ip": true,
+    "customdata": {},
+    "addon": true,
+    "bill": true,
+    "project": {
+        "href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df"
+    },
+    "project_lite": {
+        "href": "/projects/3d27fd13-0466-4878-be22-9a4b5595a3df"
+    },
+    "assignments": [],
+    "facility": null,
+    "network": "147.75.40.2",
+    "address": "147.75.40.2",
+    "gateway": "147.75.40.2",
+    "available": "/ips/31ae66fe-ee00-4f50-be25-60eeca8718ff/available",
+    "href": "/ips/31ae66fe-ee00-4f50-be25-60eeca8718ff"
+}

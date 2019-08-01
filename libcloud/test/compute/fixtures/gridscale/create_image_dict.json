@@ -1,0 +1,25 @@
+{
+    "adf09edd-9411-43b1-b99e-b92070e65f22": {
+      "description": null,
+      "ostype": null,
+      "version": null,
+      "location_country": "de",
+      "location_name": "de/fra",
+      "capacity": 50,
+      "create_time": "2019-06-21T09:28:58Z",
+      "location_iata": "fra",
+      "name": "test.test",
+      "status": "active",
+      "labels": [],
+      "parent_uuid": "e66bb753_4a03_4ee2_a069_a601f393c9ee",
+      "usage_in_minutes": 225600,
+      "license_product_no": null,
+      "current_price": 0.99264,
+      "object_uuid": "690de890_13c0_4e76_8a01_e10ba8786e53",
+      "change_time": "2019-06-21T09:28:58Z",
+      "private": true,
+      "metadata": {},
+      "distro": null,
+      "location_uuid": "45ed677b-3702-4b36-be2a-a2eab9827950"
+    }
+  }

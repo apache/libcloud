@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import time
 
 from libcloud.utils.py3 import httplib
@@ -130,8 +129,7 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
             resp = self.connection.request(
                 '/api/grid/loadbalancer/delete', method='POST',
                 params={'id': balancer.id})
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if "Update request for LoadBalancer" in str(e):
                 raise LibcloudLBImmutableError(
                     "Cannot delete immutable object", GoGridLBDriver)
@@ -190,13 +188,12 @@ class GoGridLBDriver(BaseGoGridDriver, Driver):
             return self.connection.request('/api/grid/loadbalancer/edit',
                                            method='POST',
                                            params=params)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             if "Update already pending" in str(e):
                 raise LibcloudLBImmutableError(
                     "Balancer is immutable", GoGridLBDriver)
 
-        raise LibcloudError(value='Exception: %s' % str(e), driver=self)
+            raise LibcloudError(value='Exception: %s' % str(e), driver=self)
 
     def _members_to_params(self, members):
         """

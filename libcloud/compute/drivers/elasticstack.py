@@ -166,6 +166,9 @@ class ElasticStackBaseNodeDriver(NodeDriver):
     connectionCls = ElasticStackBaseConnection
     features = {"create_node": ["generates_password"]}
 
+    # Dynamically populated by sub-classes
+    _standard_drives = {}
+
     def reboot_node(self, node):
         # Reboots the node
         response = self.connection.request(

@@ -35,7 +35,7 @@
               "nics": [{"count":2,"type":"gigabit"}],
               "features": {"raid":true, "txt":true}
             },
-          "pricing": { "hourly":0.4 }
+          "pricing": { "hour":0.4 }
         },
       "ip_addresses": [
         { "address_family": 4,"netmask":"255.255.255.255","cidr":32,"address":"147.75.255.255","gateway":"147.75.255.255","public":true },

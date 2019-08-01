@@ -34,3 +34,19 @@ below.
 
 .. literalinclude:: /examples/storage/azure/instantiate.py
    :language: python
+
+Connecting to self-hosted Azure Storage implementations
+-------------------------------------------------------
+
+To facilitate integration testing, libcloud supports connecting to the
+`Azurite storage emulator`_. After starting the emulator, you can
+instantiate the driver as shown below.
+
+.. literalinclude:: /examples/storage/azure/instantiate_azurite.py
+   :language: python
+
+This instantiation strategy can also be adapted to connect to other self-hosted
+Azure Storage implementations such as `Azure Blob Storage on IoT Edge`_.
+
+.. _`Azurite storage emulator`: https://github.com/Azure/Azurite
+.. _`Azure Blob Storage on IoT Edge`: https://docs.microsoft.com/en-us/azure/iot-edge/how-to-store-data-blob

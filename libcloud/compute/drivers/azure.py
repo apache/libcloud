@@ -1478,8 +1478,7 @@ class AzureNodeDriver(NodeDriver):
                 headers=request.headers,
                 method=request.method
             )
-        except AzureRedirectException:
-            e = sys.exc_info()[1]
+        except AzureRedirectException as e:
             parsed_url = urlparse.urlparse(e.location)
             request.host = parsed_url.netloc
             return self._perform_request(request)
@@ -2309,8 +2308,8 @@ class AzureXmlSerializer(object):
         )
 
         if configuration.domain_join is not None:
-            domain = ET.xml("DomainJoin")
-            creds = ET.xml("Credentials")
+            domain = ET.xml("DomainJoin")  # pylint: disable=no-member
+            creds = ET.xml("Credentials")  # pylint: disable=no-member
             domain.appemnd(creds)
             xml.append(domain)
 
