@@ -461,7 +461,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                               driver=self, record_id=record_id)
         if type == 'MX' or type == RecordType.MX:
             if extra is None or 'priority' not in extra:
-                raise RecordError('MX record must have a priority')
+                raise RecordError('MX record must have a priority',
+                                  driver=self, record_id=record_id)
         if extra is not None and '_other_records' in extra:
             for other_value in extra.get('_other_records', []):
                 if len(other_value['data']) > 1024:
@@ -470,7 +471,8 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                 if type == 'MX' or type == RecordType.MX:
                     if (other_value['extra'] is None
                             or 'priority' not in other_value['extra']):
-                        raise RecordError('MX record must have a priority')
+                        raise RecordError('MX record must have a priority',
+                                          driver=self, record_id=record_id)
         if extra is not None and 'ttl' in extra:
             if extra['ttl'] < TTL_MIN:
                 raise RecordError('TTL must be at least 300 seconds',
