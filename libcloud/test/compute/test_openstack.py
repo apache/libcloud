@@ -2047,6 +2047,12 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
             self.driver.attach_volume(node, volume, '/dev/sdb'), True)
         self.assertEqual(self.driver.detach_volume(volume), True)
 
+    def test_ex_remove_security_group_from_node(self):
+        security_group = OpenStackSecurityGroup("sgid", None, "sgname", "", self.driver)
+        node = Node("1000", "node", None, [], [], self.driver)
+        ret = self.driver.ex_remove_security_group_from_node(security_group, node)
+        self.assertTrue(ret)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -2674,6 +2680,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'PUT':
             body = self.fixtures.load('_v2_0__router_interface.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_servers_1000_action(self, method, url, body, headers):
+        if method != 'POST' or body != '{"removeSecurityGroup": {"name": "sgname"}}':
+            raise NotImplementedError(body)
+        return httplib.ACCEPTED, None, {}, httplib.responses[httplib.ACCEPTED]
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 

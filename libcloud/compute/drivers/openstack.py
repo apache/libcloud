@@ -3564,6 +3564,22 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             '/v2.0/security-group-rules/%s' % (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
 
+    def ex_remove_security_group_from_node(self, security_group, node):
+        """
+        Remove a Security Group from a node.
+
+        :param security_group: Security Group to remove from node.
+        :type  security_group: :class:`OpenStackSecurityGroup`
+
+        :param      node: Node to remove the Security Group.
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        server_params = {'name': security_group.name}
+        resp = self._node_action(node, 'removeSecurityGroup', **server_params)
+        return resp.status == httplib.ACCEPTED
+
     def _to_floating_ip_pool(self, obj):
         return OpenStack_2_FloatingIpPool(obj['id'], obj['name'],
                                           self.network_connection)
