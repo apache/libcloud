@@ -142,6 +142,10 @@ Compute
 - [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
   (GITHUB-1205)
   [Dan Hunsaker - @danhunsaker]
+  
+- [OpenStack] Add new ``ex_remove_security_group_from_node`` method.
+  (GITHUB-1331)
+  [Miguel Caballer - @micafer]
 
 Storage
 ~~~~~~~
