@@ -3294,7 +3294,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if security_groups is not None:
             data['port']['security_groups'] = security_groups
         response = self.network_connection.request(
-            '/v2.0/ports/{}'.format(port.id), method='PUT'
+            '/v2.0/ports/{}'.format(port.id), method='PUT', data=data
         )
         return self._to_port(response.object['port'])
 

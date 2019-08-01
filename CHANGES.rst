@@ -145,6 +145,10 @@ Compute
 - [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
   (GITHUB-1205)
   [Dan Hunsaker - @danhunsaker]
+  
+- [OpenStack] Fix broken ``ex_update_port`` method.
+  (GITHUB-1320)
+  [Miguel Caballer - @micafer]
 
 - [Azure ARM] Add ``ex_delete_public_ip`` method to the Azure ARM driver.
   (GITHUB-1318)
