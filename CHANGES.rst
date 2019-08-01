@@ -36,7 +36,7 @@ General
 
   For more information, please refer to the documentation -
   https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
-  (GITHUB-1314)
+  (GITHUB-1314, GITHUB-1324)
   [Jim Liu - @hldh214, Tomaz Muraus]
 
 - Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
@@ -57,6 +57,9 @@ General
 - Update Paramiko SSH client to throw a more user-friendly error if a private
   key file in an unsupported format is used. (GITHUB-1314)
   [Tomaz Muraus]
+
+- Fix HTTP(s) proxy support in the OpenStack drivers. (GITHUB-1324)
+  [Gabe Van Engel - @gvengel]
 
 Compute
 ~~~~~~~
@@ -142,9 +145,27 @@ Compute
 - [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
   (GITHUB-1205)
   [Dan Hunsaker - @danhunsaker]
-  
+
+- [Azure ARM] Add ``ex_delete_public_ip`` method to the Azure ARM driver.
+  (GITHUB-1318)
+  [Reza Shahriari - redha1419]
+
+- [EC2] Update EC2 driver to throw a more user-friendly exception if a user /
+  developer tries to provide an invalid value type for an item value in the
+  request ``params`` dictionary.
+
+  Request parameters are sent via query parameters and not via request body,
+  as such, only string values are supported. (GITHUB-1329, GITHUB-1321)
+
+  Reported by James Bednell.
+  [Tomaz Muraus]
+
 - [OpenStack] Add new ``ex_remove_security_group_from_node`` method.
   (GITHUB-1331)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix broken ``ex_update_port`` method.
+  (GITHUB-1320)
   [Miguel Caballer - @micafer]
 
 Storage
@@ -160,6 +181,12 @@ Storage
   updating minimum API version used / supported by storage driver from
   ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
+
+- [Common, CloudFiles] Fix ``upload_object_via_stream`` and ensure we start
+  from the beginning when calculating hash for the provided iterator. This way
+  we avoid hash mismatch errors in scenario where provided iterator is already
+  iterated / seeked upon before calculating the hash. (GITHUB-1326)
+  [Gabe Van Engel - @gvengel, Tomaz Muraus]
 
 DNS
 ~~~

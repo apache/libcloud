@@ -578,11 +578,12 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None):
         super(OpenStackIdentityConnection, self).__init__(user_id=user_id,
                                                           key=key,
                                                           url=auth_url,
-                                                          timeout=timeout)
+                                                          timeout=timeout,
+                                                          proxy_url=proxy_url)
 
         self.parent_conn = parent_conn
 
