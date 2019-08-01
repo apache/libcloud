@@ -19,7 +19,7 @@ import unittest
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.gandi_live import GandiLiveBaseError, JsonParseError, \
-    ResourceNotFoundError, InvalidRequestError, ResourceConflictError
+    InvalidRequestError
 from libcloud.dns.types import RecordType, RecordError, \
     ZoneDoesNotExistError, RecordDoesNotExistError, ZoneAlreadyExistsError, \
     RecordAlreadyExistsError
@@ -37,8 +37,8 @@ class GandiLiveTests(unittest.TestCase):
         GandiLiveMockHttp.type = None
         self.driver = GandiLiveDNSDriver(*DNS_GANDI_LIVE)
         self.test_zone = Zone(id='example.com', type='master', ttl=None,
-                              domain='example.com', extra={'zone_uuid': 'a53re'},
-                              driver=self)
+                              domain='example.com',
+                              extra={'zone_uuid': 'a53re'}, driver=self)
         self.test_bad_zone = Zone(id='badexample.com', type='master', ttl=None,
                                   domain='badexample.com',
                                   extra={'zone_uuid': 'a53rf'},
@@ -214,7 +214,8 @@ class GandiLiveTests(unittest.TestCase):
     def test_update_multivalue_record(self):
         record = self.driver.get_record(self.test_zone.id, 'MX:lists')
         updated = self.driver.update_record(record, None, None,
-                                            'mail1', {'ttl': 400, 'priority': 10})
+                                            'mail1', {'ttl': 400,
+                                                      'priority': 10})
         self.assertEqual(updated.extra['priority'], '10')
         self.assertEqual(updated.data, 'mail1')
         self.assertTrue('_other_records' in record.extra)
@@ -271,7 +272,8 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         body = self.fixtures.load('delete_gandi_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_api_v5_domains_example_org_patch(self, method, url, body, headers):
+    def _json_api_v5_domains_example_org_patch(self, method, url, body,
+                                               headers):
         body = self.fixtures.load('create_domain.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -280,10 +282,10 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         body = self.fixtures.load('list_records.json')
         resp_headers = {}
         if (headers is not None
-            and 'Accept' in headers
-            and headers['Accept'] == 'text/plain'):
-                body = self.fixtures.load('list_records_bind.txt')
-                resp_headers['Content-Type'] = 'text/plain'
+                and 'Accept' in headers
+                and headers['Accept'] == 'text/plain'):
+            body = self.fixtures.load('list_records_bind.txt')
+            resp_headers['Content-Type'] = 'text/plain'
         return (httplib.OK, body, resp_headers,
                 httplib.responses[httplib.OK])
 
@@ -295,7 +297,8 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     def _json_api_v5_domains_example_com_records_none_A_get(self, method, url,
                                                             body, headers):
         body = self.fixtures.load('get_nonexistent_record.json')
-        return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.NOT_FOUND])
+        return (httplib.NOT_FOUND, body, {},
+                httplib.responses[httplib.NOT_FOUND])
 
     def _json_api_v5_domains_example_com_records_lists_MX_get(self, method,
                                                               url, body,
@@ -320,7 +323,8 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
                                                          url, body,
                                                          headers):
         body = self.fixtures.load('create_existing_record.json')
-        return (httplib.CONFLICT, body, {}, httplib.responses[httplib.CONFLICT])
+        return (httplib.CONFLICT, body, {},
+                httplib.responses[httplib.CONFLICT])
 
     def _json_api_v5_domains_badexample_com_records_get(self, method,
                                                         url, body,
@@ -340,8 +344,9 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         body = self.fixtures.load('update_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_api_v5_domains_example_com_records_bob_A_delete(self, method, url,
-                                                              body, headers):
+    def _json_api_v5_domains_example_com_records_bob_A_delete(self, method,
+                                                              url, body,
+                                                              headers):
         body = self.fixtures.load('delete_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

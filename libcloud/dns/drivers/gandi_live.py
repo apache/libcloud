@@ -161,7 +161,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
         if type == 'MX':
             data = '%s %s' % (extra['priority'], data)
-        
+
         record_data = {
             'rrset_name': name,
             'rrset_type': self.RECORD_TYPE_MAP[type],
@@ -469,7 +469,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                                       driver=self, record_id=record_id)
                 if type == 'MX' or type == RecordType.MX:
                     if (other_value['extra'] is None
-                        or 'priority' not in other_value['extra']):
+                            or 'priority' not in other_value['extra']):
                         raise RecordError('MX record must have a priority')
         if extra is not None and 'ttl' in extra:
             if extra['ttl'] < TTL_MIN:
