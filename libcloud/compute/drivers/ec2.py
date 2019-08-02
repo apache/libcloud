@@ -3866,7 +3866,8 @@ class BaseEC2NodeDriver(NodeDriver):
                                  'the current one')
 
         attributes = {'InstanceType.Value': new_size.id}
-        return self.ex_modify_instance_attribute(node, attributes)
+        return self.ex_modify_instance_attribute(node=node,
+                                                 attributes=attributes)
 
     def ex_start_node(self, node):
         """
@@ -6023,7 +6024,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
     def ex_modify_instance_attribute(self, node, disable_api_termination=None,
                                      ebs_optimized=None, group_id=None,
                                      source_dest_check=None, user_data=None,
-                                     instance_type=None):
+                                     instance_type=None, attributes=None):
         """
         Modifies node attributes.
         Ouscale supports the following attributes:
@@ -6040,7 +6041,7 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
         :return: True on success, False otherwise.
         :rtype: ``bool``
         """
-        attributes = {}
+        attributes = attributes or {}
 
         if disable_api_termination is not None:
             attributes['DisableApiTermination.Value'] = disable_api_termination
