@@ -202,6 +202,11 @@ Storage
   responses. (GITHUB-1325, GITHUB-1322)
   [Clemens Wolff - @c-w]
 
+- [Azure Blobs] Detect bad version of requests that leads to errors in parsing
+  Azure Storage responses. This scenario is known to happen on RHEL 7.6 when
+  requests was installed via yum. (GITHUB-1332, GITHUB-1322)
+  [Clemens Wolff - @c-w]
+
 - [Common, CloudFiles] Fix ``upload_object_via_stream`` and ensure we start
   from the beginning when calculating hash for the provided iterator. This way
   we avoid hash mismatch errors in scenario where provided iterator is already
