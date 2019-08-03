@@ -200,6 +200,9 @@ DNS
   (LIBCLOUD-1001, LIBCLOUD-994, GITHUB-1292)
   [Clemens Wolff - @c-w]
 
+- [Gandi LiveDNS] Add new driver for Gandi LiveDNS service. (GITHUB-1323)
+  [Ryan Lee - @zepheiryan
+
 Changes in Apache Libcloud 2.5.0
 --------------------------------
 
