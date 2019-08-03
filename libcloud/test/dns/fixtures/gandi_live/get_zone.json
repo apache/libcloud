@@ -1,0 +1,9 @@
+{
+    "zone_uuid": "12345",
+    "domain_keys_href": "https://dns.api.gandi.net/api/v5/domains/example.com/keys",
+    "fqdn": "example.com",
+    "zone_href": "https://dns.api.gandi.net/api/v5/zones/12345",
+    "zone_records_href": "https://dns.api.gandi.net/api/v5/zones/12345/records",
+    "domain_records_href": "https://dns.api.gandi.net/api/v5/domains/example.com/records",
+    "domain_href": "https://dns.api.gandi.net/api/v5/domains/example.com"
+}

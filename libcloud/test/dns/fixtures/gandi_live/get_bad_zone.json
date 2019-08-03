@@ -1,0 +1,9 @@
+{
+    "zone_uuid": "12346"
+    "domain_keys_href": "https://dns.api.gandi.net/api/v5/domains/badexample.com/keys",
+    "fqdn": "badexample.com",
+    "zone_href": "https://dns.api.gandi.net/api/v5/zones/12346",
+    "zone_records_href": "https://dns.api.gandi.net/api/v5/zones/12346/records",
+    "domain_records_href": "https://dns.api.gandi.net/api/v5/domains/badexample.com/records",
+    "domain_href": "https://dns.api.gandi.net/api/v5/domains/badexample.com"
+}
