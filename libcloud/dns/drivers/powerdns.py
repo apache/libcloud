@@ -23,7 +23,6 @@ from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.dns.types import Provider, RecordType
 from libcloud.utils.py3 import httplib
-import pprint
 
 __all__ = [
     'PowerDNSDriver',
@@ -144,7 +143,7 @@ class PowerDNSDriver(DNSDriver):
                                              host=host, port=port,
                                              **kwargs)
 
-    def create_record(self, name, zone, type, data, extra=None, disabled=False, comment=None):
+    def create_record(self, name, zone, type, data, extra=None):
         """
         Create a new record.
 
@@ -181,7 +180,7 @@ class PowerDNSDriver(DNSDriver):
                                              zone.id)
         if extra is None or extra.get('ttl', None) is None:
             raise ValueError('PowerDNS requires a ttl value for every record')
-			
+            
         if self._pdns_version() == 3:
             record = {
                 'content': data,
@@ -189,15 +188,18 @@ class PowerDNSDriver(DNSDriver):
                 'name': name,
                 'ttl': extra['ttl'],
                 'type': type,
-		    }
+            }
             payload = {'rrsets': [{'name': name,
                                'type': type,
                                'changetype': 'REPLACE',
                                'records': [record]
                                }]
                        }
-					   
+                       
         if self._pdns_version() == 4:
+            disabled = False
+            if 'disabled' in extra:
+                disabled = extra['disabled']
             record = {
                 'content': data,
                 'disabled': disabled,
@@ -213,8 +215,8 @@ class PowerDNSDriver(DNSDriver):
                 }]
             }
 
-            if (comment):
-                payload["rrsets"][0]["comments"] = [comment]
+            if 'comment' in extra:
+                payload["rrsets"][0]["comments"] = extra['comment']
 
 
         try:
@@ -392,7 +394,7 @@ class PowerDNSDriver(DNSDriver):
         response = self.connection.request(action=action, method='GET')
         return self._to_zones(response)
 
-    def update_record(self, record, name, type, data, extra=None, disabled=False, comment=None):
+    def update_record(self, record, name, type, data, extra=None):
         """
         Update an existing record.
 
@@ -417,27 +419,31 @@ class PowerDNSDriver(DNSDriver):
                                              record.zone.id)
         if extra is None or extra.get('ttl', None) is None:
             raise ValueError('PowerDNS requires a ttl value for every record')
-			
+            
         if self._pdns_version() == 3:
             updated_record = {
-				'content': data,
-				'disabled': False,
-				'name': name,
-				'ttl': extra['ttl'],
-				'type': type,
+                'content': data,
+                'disabled': False,
+                'name': name,
+                'ttl': extra['ttl'],
+                'type': type,
             }
             payload = {'rrsets': [{'name': record.name,
-			                       'type': record.type,
-								   'changetype': 'DELETE',
-								   },
-								  {'name': name,
-								   'type': type,
-								   'changetype': 'REPLACE',
-								   'records': [updated_record]
-								   }]
-					   }
-					   
+                                   'type': record.type,
+                                   'changetype': 'DELETE',
+                                   },
+                                  {'name': name,
+                                   'type': type,
+                                   'changetype': 'REPLACE',
+                                   'records': [updated_record]
+                                   }]
+                       }
+                       
         if self._pdns_version() == 4:
+            disabled = False
+            if "disabled" in extra:
+                disabled = extra['disabled']
+            comment = None
             updated_record = {
                 'content': data,
                 'disabled': disabled,
@@ -453,9 +459,9 @@ class PowerDNSDriver(DNSDriver):
                 }]
             }
 
-            if (comment):
-                payload["rrsets"][0]["comments"] = [comment]
-					  
+            if 'comment' in extra:
+                payload["rrsets"][0]["comments"] = extra['comment']
+                
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
@@ -504,7 +510,7 @@ class PowerDNSDriver(DNSDriver):
                 for record in item['records']:
                     records.append(self._to_record(item, zone, record))
         return records
-		
+        
     def _pdns_version(self):
         if self.api_root == '': return 3
         if self.api_root == '/api/v1': return 4
