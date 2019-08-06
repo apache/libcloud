@@ -299,7 +299,7 @@ class SoftLayerNodeDriver(NodeDriver):
         ram = kwargs.get('ex_ram') or ex_size_data.get('ram') or \
             DEFAULT_RAM_SIZE
         bandwidth = kwargs.get('ex_bandwidth') or size.bandwidth or 10
-        hourly = 'true' if kwargs.get('ex_hourly', True) else 'false'
+        hourly = kwargs.get('ex_hourly', True)
 
         local_disk = 'true'
         if ex_size_data.get('local_disk') is False:
