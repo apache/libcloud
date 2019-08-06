@@ -1,0 +1,6 @@
+{
+    "code": 409,
+    "message": "Record bob already exists",
+    "object": "HTTPConflict",
+    "cause": "Duplicate Entry"
+}

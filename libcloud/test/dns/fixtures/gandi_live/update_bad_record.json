@@ -1,0 +1,13 @@
+{
+   "code": 400,
+   "message": "foo must be set",
+   "object": "HTTPBadRequest",
+   "cause": "No foo set.",
+   "errors": [
+     {
+       "location": "body",
+       "name": "foo",
+       "description": "'' is not a foo"
+     }
+  ]
+}

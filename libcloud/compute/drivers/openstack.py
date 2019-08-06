@@ -3168,7 +3168,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to detach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3185,7 +3185,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to attach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3256,7 +3256,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         Update a OpenStack_2_PortInterface
 
-        :param      port: port interface to remove
+        :param      port: port interface to update
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :param      description: Description of the port

@@ -145,10 +145,6 @@ Compute
 - [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
   (GITHUB-1205)
   [Dan Hunsaker - @danhunsaker]
-  
-- [OpenStack] Fix broken ``ex_update_port`` method.
-  (GITHUB-1320)
-  [Miguel Caballer - @micafer]
 
 - [Azure ARM] Add ``ex_delete_public_ip`` method to the Azure ARM driver.
   (GITHUB-1318)
@@ -164,6 +160,14 @@ Compute
   Reported by James Bednell.
   [Tomaz Muraus]
 
+- [OpenStack] Add new ``ex_remove_security_group_from_node`` method.
+  (GITHUB-1331)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix broken ``ex_update_port`` method.
+  (GITHUB-1320)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
@@ -178,6 +182,11 @@ Storage
   ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
 
+- [Azure Blobs] Set the minimum required version of requests to ``2.5.0`` since
+  requests ``2.4.0`` and earlier exhibit XML parsing errors of Azure Storage
+  responses. (GITHUB-1325, GITHUB-1322)
+  [Clemens Wolff - @c-w]
+
 - [Common, CloudFiles] Fix ``upload_object_via_stream`` and ensure we start
   from the beginning when calculating hash for the provided iterator. This way
   we avoid hash mismatch errors in scenario where provided iterator is already
@@ -190,6 +199,9 @@ DNS
 - [Cloudflare] Re-write the Cloudflare DNS driver to use Cloudflare API v4.
   (LIBCLOUD-1001, LIBCLOUD-994, GITHUB-1292)
   [Clemens Wolff - @c-w]
+
+- [Gandi LiveDNS] Add new driver for Gandi LiveDNS service. (GITHUB-1323)
+  [Ryan Lee - @zepheiryan
 
 Changes in Apache Libcloud 2.5.0
 --------------------------------
