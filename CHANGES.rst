@@ -168,6 +168,12 @@ Compute
   (GITHUB-1320)
   [Miguel Caballer - @micafer]
 
+- [Softlayer] Fix a bug with driver incorrectly handling the value of
+  ``ex_hourly`` argument in the ``create_node()`` method which caused nodes
+  to always be created with hourly billing, even if this argument was set to
+  ``False``. (GITHUB-1334, GITHUB-1335)
+  [@r2ronoha]
+
 Storage
 ~~~~~~~
 
