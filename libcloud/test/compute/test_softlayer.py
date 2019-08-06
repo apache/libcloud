@@ -28,6 +28,7 @@ from libcloud.compute.drivers.softlayer import SoftLayerException, \
     NODE_STATE_MAP
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 
+from libcloud.test import unittest
 from libcloud.test import MockHttp               # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import SOFTLAYER_PARAMS
@@ -84,6 +85,16 @@ class SoftLayerTests(unittest.TestCase):
             self.assertTrue(size.price > 0.0)
 
     def test_create_node(self):
+        node = self.driver.create_node(name="libcloud-testing",
+                                       location=self.driver.list_locations()[0],
+                                       size=self.driver.list_sizes()[0],
+                                       image=self.driver.list_images()[0])
+        self.assertEqual(node.name, 'libcloud-testing.example.com')
+        self.assertEqual(node.state, NODE_STATE_MAP['RUNNING'])
+
+    def test_create_node_ex_hourly_True(self):
+        SoftLayerMockHttp.type = 'HOURLY_BILLING'
+
         node = self.driver.create_node(name="libcloud-testing",
                                        location=self.driver.list_locations()[0],
                                        size=self.driver.list_sizes()[0],
@@ -177,7 +188,7 @@ class SoftLayerTests(unittest.TestCase):
         self.assertTrue(success)
 
 
-class SoftLayerMockHttp(MockHttp):
+class SoftLayerMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('softlayer')
 
     def _get_method_name(self, type, use_param, qs, path):
@@ -212,7 +223,20 @@ class SoftLayerMockHttp(MockHttp):
             None: 'v3__SoftLayer_Virtual_Guest_createObject.xml',
             'INVALIDCREDSERROR': 'SoftLayer_Account.xml',
             'SOFTLAYEREXCEPTION': 'fail.xml',
+            'HOURLY_BILLING': 'v3__SoftLayer_Virtual_Guest_createObject.xml',
         }[self.type]
+
+        if self.type == 'HOURLY_BILLING':
+            # Verify parameter is sent as a boolean and not as a string
+            expected_value = """
+<member>
+<name>hourlyBillingFlag</name>
+<value><boolean>1</boolean></value>
+</member>
+""".strip()
+
+            self.assertTrue(expected_value in body, 'Request body is missing hourlyBillingFlag attribute')
+
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
