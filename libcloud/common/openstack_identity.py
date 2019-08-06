@@ -933,7 +933,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None):
         """
         :param tenant_name: Name of the project this user belongs to. Note:
                             When token_scope is set to project, this argument
@@ -957,6 +957,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              domain_name=domain_name,
                              token_scope=token_scope,
                              timeout=timeout,
+                             proxy_url=proxy_url,
                              parent_conn=parent_conn)
 
         if self.token_scope not in self.VALID_TOKEN_SCOPES:
@@ -1585,9 +1586,10 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None):
         CertificateConnection.__init__(self, cert_file=key,
                                        url=auth_url,
+                                       proxy_url=proxy_url,
                                        timeout=timeout)
 
         self.parent_conn = parent_conn
@@ -1604,6 +1606,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
         self.domain_name = domain_name
         self.token_scope = token_scope
         self.timeout = timeout
+        self.proxy_url = proxy_url
 
         self.urls = {}
         self.auth_token = None
