@@ -232,7 +232,9 @@ class OpenStackIdentity_2_0_ConnectionTests(unittest.TestCase):
         self.auth_instance = OpenStackIdentity_2_0_Connection(auth_url='http://none',
                                                               user_id='test',
                                                               key='test',
-                                                              tenant_name='test')
+                                                              tenant_name='test',
+                                                              proxy_url='http://proxy:8080',
+                                                              timeout=10)
         self.auth_instance.auth_token = 'mock'
 
     def test_list_projects(self):
@@ -253,7 +255,9 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         self.auth_instance = OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                                               user_id='test',
                                                               key='test',
-                                                              tenant_name='test')
+                                                              tenant_name='test',
+                                                              proxy_url='http://proxy:8080',
+                                                              timeout=10)
         self.auth_instance.auth_token = 'mock'
 
     def test_token_scope_argument(self):
@@ -306,7 +310,9 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                                 key='test_key',
                                                 token_scope='project',
                                                 tenant_name="test_tenant",
-                                                domain_name='test_domain')
+                                                domain_name='test_domain',
+                                                proxy_url='http://proxy:8080',
+                                                timeout=10)
         auth.authenticate()
 
     def test_list_supported_versions(self):
@@ -454,7 +460,9 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
         self.auth_instance = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
                                                                                 user_id='idp',
                                                                                 key='token',
-                                                                                tenant_name='oidc')
+                                                                                tenant_name='oidc',
+                                                                                proxy_url='http://proxy:8080',
+                                                                                timeout=10)
         self.auth_instance.auth_token = 'mock'
 
     def test_authenticate(self):
@@ -462,7 +470,9 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
                                                                   user_id='idp',
                                                                   key='token',
                                                                   token_scope='project',
-                                                                  tenant_name="oidc")
+                                                                  tenant_name="oidc",
+                                                                  proxy_url='http://proxy:8080',
+                                                                  timeout=10)
         auth.authenticate()
 
 
