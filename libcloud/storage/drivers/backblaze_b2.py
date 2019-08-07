@@ -328,8 +328,11 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
-                                callback_kwargs={'iterator': response.response,
-                                                 'chunk_size': chunk_size},
+                                callback_kwargs={
+                                    'iterator': response.iter_content(
+                                        chunk_size
+                                    ),
+                                    'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
