@@ -162,8 +162,8 @@ class BackblazeB2MockHttp(MockHttp):
         if method == 'GET':
             body = json.dumps({
                 'accountId': 'test',
-                'apiUrl': 'test',
-                'downloadUrl': 'test',
+                'apiUrl': 'https://apiNNN.backblazeb2.com',
+                'downloadUrl': 'https://f002.backblazeb2.com',
                 'authorizationToken': 'test'
             })
         else:
