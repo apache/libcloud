@@ -22,6 +22,7 @@ import json
 
 from libcloud.storage.drivers.backblaze_b2 import BackblazeB2StorageDriver
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
 from libcloud.utils.files import exhaust_iterator
 from libcloud.test import unittest
 from libcloud.test import MockHttp
@@ -98,7 +99,7 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
 
         stream = self.driver.download_object_as_stream(obj=obj, chunk_size=1024)
         self.assertTrue(hasattr(stream, '__iter__'))
-        self.assertEqual(exhaust_iterator(stream), 'ab')
+        self.assertEqual(exhaust_iterator(stream), b('ab'))
 
     def test_upload_object(self):
         file_path = os.path.abspath(__file__)
