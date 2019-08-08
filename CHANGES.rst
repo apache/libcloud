@@ -210,6 +210,9 @@ Storage
   Reported by Shawn Nock - @nocko.
   [Tomaz Muraus]
 
+- [Backblaze B2] Fix ``upload_object_via_stream`` method. (GITHUB-1339)
+  [Tomaz Muraus]
+
 DNS
 ~~~
 
