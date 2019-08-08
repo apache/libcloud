@@ -225,10 +225,11 @@ class BackblazeB2Connection(ConnectionUserAndKey):
 
     def _set_host(self, host):
         """
-        Dynamically set host which will be used for the following HTTP requests.
-
-        NOTE: This is needed because Backblaze uses different hosts for API, download and upload
+        Dynamically set host which will be used for the following HTTP
         requests.
+
+        NOTE: This is needed because Backblaze uses different hosts for API,
+        download and upload requests.
         """
         self.host = host
         self.connection.host = 'https://%s' % (host)
