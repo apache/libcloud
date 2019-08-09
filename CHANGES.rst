@@ -61,6 +61,10 @@ General
 - Fix HTTP(s) proxy support in the OpenStack drivers. (GITHUB-1324)
   [Gabe Van Engel - @gvengel]
 
+- Fix logging connection class so it also works when data type is ``bytearray``
+  or ``bytes``. (GITHUB-1339)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
@@ -198,6 +202,16 @@ Storage
   we avoid hash mismatch errors in scenario where provided iterator is already
   iterated / seeked upon before calculating the hash. (GITHUB-1326)
   [Gabe Van Engel - @gvengel, Tomaz Muraus]
+
+- [Backblaze B2] Fix a bug with driver not working correctly due to a
+  regression which was inadvertently introduced in one of the previous
+  releases. (GITHUB-1338, GITHUB-1339)
+
+  Reported by Shawn Nock - @nocko.
+  [Tomaz Muraus]
+
+- [Backblaze B2] Fix ``upload_object_via_stream`` method. (GITHUB-1339)
+  [Tomaz Muraus]
 
 DNS
 ~~~

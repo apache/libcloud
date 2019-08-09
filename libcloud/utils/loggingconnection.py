@@ -124,6 +124,9 @@ class LoggingConnection(LibcloudConnection):
 
         # TODO: in python 2.6, body can be a file-like object.
         if body is not None and len(body) > 0:
+            if isinstance(body, (bytearray, bytes)):
+                body = body.decode('utf-8')
+
             cmd.extend(["--data-binary", pquote(body)])
 
         cmd.extend(["--compress"])
