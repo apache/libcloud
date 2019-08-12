@@ -187,10 +187,15 @@ Storage
   [Clemens Wolff - @c-w]
 
 - [Azure Blobs] Fix a bug with Azure storage driver works when used against a
-  storage account that was created using ``kind=BlobStrage``. The includes
-  updating minimum API version used / supported by storage driver from
-  ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
+  storage account that was created using ``kind=BlobStrage``. This includes
+  updating the minimum API version used / supported by the storage driver from
+  ``2012-02-12`` to ``2014-02-14``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
+
+- [Azure Blobs] Increase the maximum size of block blobs that can be created
+  to 100 MB. This includes updating the minimum API version used / supported
+  by the storage driver from ``2014-02-14`` to ``2016-05-31``. (GITHUB-1340)
+  [Clemens Wolff - @c-w]
 
 - [Azure Blobs] Set the minimum required version of requests to ``2.5.0`` since
   requests ``2.4.0`` and earlier exhibit XML parsing errors of Azure Storage

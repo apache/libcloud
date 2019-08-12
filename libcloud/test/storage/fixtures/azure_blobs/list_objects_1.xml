@@ -13,9 +13,11 @@
                 <Content-Language />
                 <Content-MD5>1B2M2Y8AsgTpgAmY7PhCfg==</Content-MD5>
                 <Cache-Control />
+                <Content-Disposition />
                 <BlobType>BlockBlob</BlobType>
                 <LeaseStatus>unlocked</LeaseStatus>
                 <LeaseState>available</LeaseState>
+                <ServerEncrypted>true</ServerEncrypted>
             </Properties>
             <Metadata>
                 <meta1>value1</meta1>
@@ -33,9 +35,11 @@
                 <Content-Language />
                 <Content-MD5>ttgbNgpWctgMJ0MPORU+LA==</Content-MD5>
                 <Cache-Control />
+                <Content-Disposition />
                 <BlobType>BlockBlob</BlobType>
                 <LeaseStatus>unlocked</LeaseStatus>
                 <LeaseState>available</LeaseState>
+                <ServerEncrypted>true</ServerEncrypted>
             </Properties>
             <Metadata>
                 <meta1>value1</meta1>

@@ -159,22 +159,8 @@ class AzureConnection(ConnectionUserAndKey):
             CanonicalizedHeaders +
             CanonicalizedResource;
         """
-        special_header_values = []
         xms_header_values = []
         param_list = []
-        special_header_keys = [
-            'content-encoding',
-            'content-language',
-            'content-length',
-            'content-md5',
-            'content-type',
-            'date',
-            'if-modified-since',
-            'if-match',
-            'if-none-match',
-            'if-unmodified-since',
-            'range'
-        ]
 
         # Split the x-ms headers and normal headers and make everything
         # lower case
@@ -188,16 +174,8 @@ class AzureConnection(ConnectionUserAndKey):
                 headers_copy[header] = value
 
         # Get the values for the headers in the specific order
-        for header in special_header_keys:
-            header = header.lower()  # Just for safety
-            if header in headers_copy:
-                special_header_values.append(headers_copy[header])
-            elif header == "content-length" and method not in ("GET", "HEAD"):
-                # Must be '0' unless method is GET or HEAD
-                # https://docs.microsoft.com/en-us/rest/api/storageservices/authentication-for-the-azure-storage-services
-                special_header_values.append('0')
-            else:
-                special_header_values.append('')
+        special_header_values = self._format_special_header_values(
+            headers_copy, method)
 
         # Prepare the first section of the string to be signed
         values_to_sign = [method] + special_header_values
@@ -228,6 +206,39 @@ class AzureConnection(ConnectionUserAndKey):
         )
 
         return 'SharedKey %s:%s' % (self.user_id, b64_hmac.decode('utf-8'))
+
+    def _format_special_header_values(self, headers, method):
+        is_change = method not in ('GET', 'HEAD')
+        is_old_api = self.API_VERSION <= '2014-02-14'
+
+        special_header_keys = [
+            'content-encoding',
+            'content-language',
+            'content-length',
+            'content-md5',
+            'content-type',
+            'date',
+            'if-modified-since',
+            'if-match',
+            'if-none-match',
+            'if-unmodified-since',
+            'range'
+        ]
+
+        special_header_values = []
+
+        for header in special_header_keys:
+            header = header.lower()  # Just for safety
+            if header in headers:
+                special_header_values.append(headers[header])
+            elif header == 'content-length' and is_change and is_old_api:
+                # For old API versions, the Content-Length header must be '0'
+                # https://docs.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key#content-length-header-in-version-2014-02-14-and-earlier
+                special_header_values.append('0')
+            else:
+                special_header_values.append('')
+
+        return special_header_values
 
 
 class AzureBaseDriver(object):
