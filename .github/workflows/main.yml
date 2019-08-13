@@ -45,7 +45,7 @@ jobs:
     - name: Install Python Dependencies
       run: |
         pip install "tox==3.12.1"
-    - name: Build Docs
+    - name: Run Checks
       run: |
         tox -e checks,lint,pylint
 
@@ -55,7 +55,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [2.7]
+        python_version: [3.5]
 
     steps:
     - uses: actions/checkout@master
