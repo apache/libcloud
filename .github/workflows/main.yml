@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [2.7, 3.4, 3.5, 3.6, 3.7, pypy3]
+        python_version: [2.7, 3.4, 3.5, 3.6, 3.7, pypy2, pypy3]
         os: [ubuntu-latest]
 
     steps:
@@ -29,6 +29,32 @@ jobs:
     - name: Run tox target
       run: |
         tox -e py${{ matrix.python_version }}
+        
+  code_coverage:
+    name: Generate Code Coverage
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: [2.7]
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+    - name: Install Python Dependencies
+      run: |
+        pip install "tox==3.12.1"
+    - name: Run Checks
+      run: |
+        tox -e coverage-travis
 
   lint_checks:
     name: Run various lint checks
