@@ -1,43 +1,17 @@
-
 name: CI
 
 on: [push]
 
 jobs:
   unit_tests:
-    name: Run Build
+    name: Run Unit Tests
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        include:
-        - python_version: 2.7
-          os: ubuntu-latest
-          tox_env: py2.7
-        - python_version: 3.4
-          os: ubuntu-latest
-          tox_env: py3.4
-        - python_version: 3.5
-          os: ubuntu-latest
-          tox_env: py3.5
-        - python_version: 3.6
-          os: ubuntu-latest
-          tox_env: py3.6
-        - python_version: 3.7
-          os: ubuntu-latest
-          tox_env: py3.7
-        - python_version: 2.7
-          os: ubuntu-latest
-          tox_env: checks
-        - python_version: 2.7
-          os: ubuntu-latest
-          tox_env: lint
-        - python_version: 2.7
-          os: ubuntu-latest
-          tox_env: pylint
-        - python_version: 2.7
-          os: ubuntu-latest
-          tox_env: docs-travis
+        python_version: [2.7, 3.4, 3.5, 3.6, 3.7, pypy, pypy3]
+        os: [ubuntu-latest]
+
     steps:
     - uses: actions/checkout@master
     - name: Use Python ${{ matrix.python_version }}
@@ -54,4 +28,56 @@ jobs:
         pip install "tox==3.12.1"
     - name: Run tox target
       run: |
-        tox -e ${{ matrix.tox_env }}
+        tox -e py${{ matrix.python_version }}
+
+  lint_checks:
+    name: Run various lint checks
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: [2.7]
+
+    steps:
+    - uses: actions/checkout@master
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo apt-get install -y graphviz gcc libvirt-dev
+    - name: Install Python Dependencies
+      run: |
+        pip install --upgrade "pip"
+        pip install --upgrade "virtualenv"
+        pip install "tox==3.12.1"
+    - name: Build Docs
+      run: |
+        tox -e checks,lint,pylint
+
+  docs:
+    name: Build and upload Documentation
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: [2.7]
+
+    steps:
+    - uses: actions/checkout@master
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo apt-get install -y graphviz gcc libvirt-dev
+    - name: Install Python Dependencies
+      run: |
+        pip install --upgrade "pip"
+        pip install --upgrade "virtualenv"
+        pip install "tox==3.12.1"
+    - name: Build Docs
+      run: |
+        tox -e docs-travis
