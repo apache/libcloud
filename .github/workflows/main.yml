@@ -46,6 +46,9 @@ jobs:
       uses: actions/setup-python@v1
       with:
         version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
     - name: Install Python Dependencies
       run: |
         pip install "tox==3.12.1"
