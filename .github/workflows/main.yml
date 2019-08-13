@@ -9,11 +9,13 @@ jobs:
 
     strategy:
       matrix:
-        python_version: [2.7, 3.4, 3.5, 3.6, 3.7, pypy, pypy3]
+        python_version: [2.7, 3.4, 3.5, 3.6, 3.7, pypy3]
         os: [ubuntu-latest]
 
     steps:
     - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v1
       with:
@@ -38,6 +40,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v1
       with:
@@ -59,6 +63,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v1
       with:
