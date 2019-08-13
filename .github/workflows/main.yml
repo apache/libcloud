@@ -3,26 +3,54 @@ name: CI
 on: [push]
 
 jobs:
-  build:
-    name: Run lint checks and tests
+  unit_tests:
+    name: Run Build
     runs-on: ${{ matrix.os }}
     
     strategy:
       matrix:
-        python_version: [2.7, 3.4, 3.5, 3.6, 3.7]
-        os: [ubuntu-latest]
-    
+        include:
+          - python_version: 2.7
+            os: ubuntu-latest
+            tox_env: py2.7
+          - python_version: 3.4
+            os: ubuntu-latest
+            tox_env: py3.4
+          - python_version: 3.5
+            os: ubuntu-latest
+            tox_env: py3.5
+          - python_version: 3.6
+            os: ubuntu-latest
+            tox_env: py3.6
+          - python_version: 3.7
+            os: ubuntu-latest
+            tox_env: py3.7
+          - python_version: 2.7
+            os: ubuntu-latest
+            tox_env: checks
+          - python_version: 2.7
+            os: ubuntu-latest
+            tox_env: lint
+          - python_version: 2.7
+            os: ubuntu-latest
+            tox_env: pylint
+          - python_version: 2.7
+            os: ubuntu-latest
+            tox_env: docs-travis
     steps:
     - uses: actions/checkout@master
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v1
       with:
         version: ${{ matrix.python_version }}
-    - name: Install Dependencies
+    - name: Install OS / deb dependencies
+      run: |
+        sudo apt-get install -y graphviz gcc libvirt-dev
+    - name: Install Python Dependencies
       run: |
         pip install --upgrade "pip"
         pip install --upgrade "virtualenv"
         pip install "tox==3.12.1"
     - name: Run tox target
       run: |
-        tox -e py${{ matrix.python_version }}
+        tox -e ${{ matrix.tox_env }}
