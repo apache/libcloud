@@ -1,0 +1,28 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    name: Run lint checks and tests
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        python_version: [2.7, 3.4, 3.5, 3.6, 3.7]
+        os: [ubuntu-latest]
+    
+    steps:
+    - uses: actions/checkout@master
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install Dependencies
+      run: |
+        pip install --upgrade "pip"
+        pip install --upgrade "virtualenv"
+        pip install "tox=3.12.1"
+    - name: Run tox target
+      run: |
+        tox -e py${{ matrix.python_version }}
