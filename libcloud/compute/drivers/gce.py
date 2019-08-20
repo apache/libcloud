@@ -8849,6 +8849,8 @@ class GCENodeDriver(NodeDriver):
         extra['zone'] = self.ex_get_zone(node['zone'])
         extra['image'] = node.get('image')
         extra['machineType'] = node.get('machineType')
+        extra['cpuPlatform'] = node.get('cpuPlatform')
+        extra['minCpuPlatform'] = node.get('minCpuPlatform')
         extra['disks'] = node.get('disks', [])
         extra['networkInterfaces'] = node.get('networkInterfaces')
         extra['id'] = node['id']
