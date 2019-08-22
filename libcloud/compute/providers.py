@@ -124,6 +124,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.ec2', 'OutscaleSASNodeDriver'),
     Provider.OUTSCALE_INC:
     ('libcloud.compute.drivers.ec2', 'OutscaleINCNodeDriver'),
+    Provider.OUTSCALE_SDK:
+    ('libcloud.compute.drivers.outscale_sdk', 'OutscaleSDKNodeDriver'),
     Provider.PROFIT_BRICKS:
     ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
     Provider.VULTR:
