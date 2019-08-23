@@ -178,6 +178,10 @@ Compute
   ``False``. (GITHUB-1334, GITHUB-1335)
   [@r2ronoha]
 
+- [GCE] Add optional ``cpuPlatform`` and ``minCpuPlatform`` attributes to the
+  ``node.extra`` dictionary. (GITHUB-1342, GITHUB-1343)
+  [@yairshemla]
+
 Storage
 ~~~~~~~
 
