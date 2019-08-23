@@ -640,6 +640,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(len(nodes_uc1a), 1)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
+        self.assertEqual(nodes_uc1a[0].extra['cpuPlatform'], 'Intel Skylake')
+        self.assertEqual(nodes_uc1a[0].extra['minCpuPlatform'], 'Intel Skylake')
 
         names = [n.name for n in nodes_all]
         self.assertTrue('node-name' in names)
