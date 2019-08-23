@@ -68,9 +68,15 @@ class TestUtils(unittest.TestCase):
 
     @patch.object(libcloud.requests, '__version__', '2.6.0')
     @patch.object(libcloud.requests.packages.chardet, '__version__', '2.2.1')
-    def test_detects_bad_yum_install_requests(self, *args):
-        with self.assertRaises(AssertionError):
+    def test_init_once_detects_bad_yum_install_requests(self, *args):
+        expected_msg = 'Known bad version of requests detected'
+        with self.assertRaisesRegexp(AssertionError, expected_msg):
             _init_once()
+
+    @patch.object(libcloud.requests, '__version__', '2.6.0')
+    @patch.object(libcloud.requests.packages.chardet, '__version__', '2.3.0')
+    def test_init_once_correct_chardet_version(self, *args):
+        _init_once()
 
 
 if __name__ == '__main__':
