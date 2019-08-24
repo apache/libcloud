@@ -180,7 +180,7 @@ class PowerDNSDriver(DNSDriver):
                                              zone.id)
         if extra is None or extra.get('ttl', None) is None:
             raise ValueError('PowerDNS requires a ttl value for every record')
-            
+
         if self._pdns_version() == 3:
             record = {
                 'content': data,
@@ -195,7 +195,7 @@ class PowerDNSDriver(DNSDriver):
                                'records': [record]
                                }]
                        }
-                       
+
         if self._pdns_version() == 4:
             disabled = False
             if 'disabled' in extra:
@@ -438,12 +438,11 @@ class PowerDNSDriver(DNSDriver):
                                    'records': [updated_record]
                                    }]
                        }
-                       
+
         if self._pdns_version() == 4:
             disabled = False
             if "disabled" in extra:
                 disabled = extra['disabled']
-            comment = None
             updated_record = {
                 'content': data,
                 'disabled': disabled,
@@ -461,7 +460,7 @@ class PowerDNSDriver(DNSDriver):
 
             if 'comment' in extra:
                 payload["rrsets"][0]["comments"] = extra['comment']
-                
+
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
@@ -491,7 +490,7 @@ class PowerDNSDriver(DNSDriver):
             zones.append(self._to_zone(item))
         return zones
 
-    def _to_record(self, item, zone, record = None):
+    def _to_record(self, item, zone, record=None):
         if record is None:
             data = item['content']
         else:
@@ -510,7 +509,7 @@ class PowerDNSDriver(DNSDriver):
                 for record in item['records']:
                     records.append(self._to_record(item, zone, record))
         return records
-        
+
     def _pdns_version(self):
         if self.api_root == '': return 3
         if self.api_root == '/api/v1': return 4
