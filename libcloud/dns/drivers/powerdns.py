@@ -176,6 +176,8 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
+        extra = extra or {}
+
         action = '%s/servers/%s/zones/%s' % (self.api_root, self.ex_server,
                                              zone.id)
         if extra is None or extra.get('ttl', None) is None:
@@ -189,35 +191,36 @@ class PowerDNSDriver(DNSDriver):
                 'ttl': extra['ttl'],
                 'type': type,
             }
-            payload = {'rrsets': [{'name': name,
-                               'type': type,
-                               'changetype': 'REPLACE',
-                               'records': [record]
-                               }]
-                       }
-
-        if self._pdns_version() == 4:
-            disabled = False
-            if 'disabled' in extra:
-                disabled = extra['disabled']
+            payload = {
+                'rrsets': [
+                    {
+                        'name': name,
+                        'type': type,
+                        'changetype': 'REPLACE',
+                        'records': [record]
+                    }
+                ]
+            }
+        elif self._pdns_version() == 4:
             record = {
                 'content': data,
-                'disabled': disabled,
+                'disabled': extra.get('disabled', False),
                 'set-ptr': False,
             }
             payload = {
-                'rrsets': [{
-                    'name': name,
-                    'type': type,
-                    'changetype': 'REPLACE',
-                    'ttl': extra['ttl'],
-                    'records': [record],
-                }]
+                'rrsets': [
+                    {
+                        'name': name,
+                        'type': type,
+                        'changetype': 'REPLACE',
+                        'ttl': extra['ttl'],
+                        'records': [record],
+                    }
+                ]
             }
 
             if 'comment' in extra:
-                payload["rrsets"][0]["comments"] = extra['comment']
-
+                payload['rrsets'][0]['comments'] = extra['comment']
 
         try:
             self.connection.request(action=action, data=json.dumps(payload),
@@ -419,7 +422,7 @@ class PowerDNSDriver(DNSDriver):
                                              record.zone.id)
         if extra is None or extra.get('ttl', None) is None:
             raise ValueError('PowerDNS requires a ttl value for every record')
-            
+
         if self._pdns_version() == 3:
             updated_record = {
                 'content': data,
@@ -428,18 +431,22 @@ class PowerDNSDriver(DNSDriver):
                 'ttl': extra['ttl'],
                 'type': type,
             }
-            payload = {'rrsets': [{'name': record.name,
-                                   'type': record.type,
-                                   'changetype': 'DELETE',
-                                   },
-                                  {'name': name,
-                                   'type': type,
-                                   'changetype': 'REPLACE',
-                                   'records': [updated_record]
-                                   }]
-                       }
-
-        if self._pdns_version() == 4:
+            payload = {
+                'rrsets': [
+                    {
+                        'name': record.name,
+                        'type': record.type,
+                        'changetype': 'DELETE',
+                    },
+                    {
+                        'name': name,
+                        'type': type,
+                        'changetype': 'REPLACE',
+                        'records': [updated_record]
+                    }
+                ]
+            }
+        elif self._pdns_version() == 4:
             disabled = False
             if "disabled" in extra:
                 disabled = extra['disabled']
@@ -504,13 +511,16 @@ class PowerDNSDriver(DNSDriver):
         if self._pdns_version() == 3:
             for item in items.object['records']:
                 records.append(self._to_record(item, zone))
-        if self._pdns_version() == 4:
+        elif self._pdns_version() == 4:
             for item in items.object['rrsets']:
                 for record in item['records']:
                     records.append(self._to_record(item, zone, record))
         return records
 
     def _pdns_version(self):
-        if self.api_root == '': return 3
-        if self.api_root == '/api/v1': return 4
+        if self.api_root == '':
+            return 3
+        elif self.api_root == '/api/v1':
+            return 4
+
         raise ValueError('PowerDNS version has not been declared')
