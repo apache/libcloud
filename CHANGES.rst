@@ -235,7 +235,10 @@ DNS
   [Clemens Wolff - @c-w]
 
 - [Gandi LiveDNS] Add new driver for Gandi LiveDNS service. (GITHUB-1323)
-  [Ryan Lee - @zepheiryan
+  [Ryan Lee - @zepheiryan]
+
+- [PowerDNS] Update driver so it works with API v3 and v4. #1328
+  [@biggosh]
 
 Changes in Apache Libcloud 2.5.0
 --------------------------------
