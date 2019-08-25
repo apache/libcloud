@@ -43,6 +43,26 @@ from libcloud.utils.networking import is_public_subnet
 logger = logging.getLogger('libcloud.compute.drivers.vsphere')
 
 
+def recurse_snapshots(snapshot_list):
+    ret = []
+    for s in snapshot_list:
+        ret.append(s)
+        ret += recurse_snapshots(getattr(s, 'childSnapshotList', []))
+    return ret
+
+
+def format_snapshots(snapshot_list):
+    ret = []
+    for s in snapshot_list:
+        ret.append({
+            'id': s.id,
+            'name': s.name,
+            'description': s.description,
+            'created': s.createTime.strftime('%Y-%m-%d %H:%M'),
+            'state': s.state})
+    return ret
+
+
 class VSphereNodeDriver(NodeDriver):
     name = 'VMware vSphere'
     website = 'http://www.vmware.com/products/vsphere/'
@@ -498,14 +518,8 @@ class VSphereNodeDriver(NodeDriver):
                 # IPV6 not supported
                 pass
         if vm.get('snapshot'):
-            snapshots = [{
-                'id': s.id,
-                'name': s.name,
-                'description': s.description,
-                'created': s.createTime.strftime('%Y-%m-%d %H:%M'),
-                'state': s.state,
-                } for s in vm['snapshot'].rootSnapshotList]
-            extra['snapshots'] = snapshots
+            extra['snapshots'] = format_snapshots(
+                recurse_snapshots(vm.get('snapshot').rootSnapshotList))
 
         for custom_field in vm.get('customValue', []):
             key_id = custom_field.key
@@ -644,12 +658,8 @@ class VSphereNodeDriver(NodeDriver):
         vm = self.find_by_uuid(node.id)
         if not vm.snapshot:
             return []
-        snapshots = vm.snapshot.rootSnapshotList
-        return [{'id': s.id,
-                 'name': s.name,
-                 'description': s.description,
-                 'created': s.createTime.strftime('%Y-%m-%d %H:%M'),
-                 'state': s.state} for s in snapshots]
+        return format_snapshots(
+            recurse_snapshots(vm.snapshot.rootSnapshotList))
 
     def ex_create_snapshot(self, node, snapshot_name, description='',
                            dump_memory=False, quiesce=False):
@@ -670,7 +680,7 @@ class VSphereNodeDriver(NodeDriver):
         if not vm.snapshot:
             raise LibcloudError(
                 "Remove snapshot failed. No snapshots for node %s" % node.name)
-        snapshots = vm.snapshot.rootSnapshotList
+        snapshots = recurse_snapshots(vm.snapshot.rootSnapshotList)
         if not snapshot_name:
             snapshot = snapshots[-1].snapshot
         else:
@@ -691,7 +701,7 @@ class VSphereNodeDriver(NodeDriver):
         vm = self.find_by_uuid(node.id)
         if not vm.snapshot:
             raise LibcloudError("Revert failed. No snapshots for node %s" % node.name)
-        snapshots = vm.snapshot.rootSnapshotList
+        snapshots = recurse_snapshots(vm.snapshot.rootSnapshotList)
         if not snapshot_name:
             snapshot = snapshots[-1].snapshot
         else:
