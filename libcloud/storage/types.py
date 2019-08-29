@@ -69,6 +69,7 @@ class Provider(object):
     :cvar S3_US_GOV_WEST: Amazon S3 GovCloud (US)
     :cvar S3_RGW: S3 RGW
     :cvar S3_RGW_OUTSCALE: OUTSCALE S3 RGW
+    :cvar VULTR: Vultr Object Storage driver
     """
     DUMMY = 'dummy'
     ALIYUN_OSS = 'aliyun_oss'
@@ -103,6 +104,7 @@ class Provider(object):
     S3_US_GOV_WEST = 's3_us_gov_west'
     S3_RGW = 's3_rgw'
     S3_RGW_OUTSCALE = 's3_rgw_outscale'
+    VULTR = 'vultr'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'
