@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from libcloud.utils.py3 import httplib
+
+from libcloud.common.types import LibcloudError
+
 from libcloud.storage.providers import Provider
+from libcloud.storage.types import ContainerDoesNotExistError
+from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver, BaseS3Connection
 
 __all__ = [
@@ -36,3 +42,43 @@ class BaseVultrObjectStorageDriver(BaseS3StorageDriver):
 
 class VultrObjectStorageDriver(BaseVultrObjectStorageDriver):
     connectionCls = BaseVultrObjectConnection
+
+    def get_container_cdn_url(self, container):
+        if self.connection.secure:
+            protocol = 'https'
+        else:
+            protocol = 'http'
+
+        cdn_host = self.connection.host
+        cdn_path = self._get_container_path(container)
+
+        cdn_url = '%s://%s%s/' % (protocol, cdn_host, cdn_path)
+
+        response = self.connection.request(cdn_path, method='HEAD')
+
+        if response.status == httplib.OK:
+            return cdn_url
+        elif response.status == httplib.NOT_FOUND:
+            raise ContainerDoesNotExistError(value='',
+                                             container_name=container.name,
+                                             driver=self)
+
+        raise LibcloudError('Unexpected status code: %s' % (response.status))
+
+    def get_object_cdn_url(self, obj):
+        container_cdn_url = self.get_container_cdn_url(container=obj.container)
+
+        cdn_path = self._get_object_path(obj.container, obj.name)
+
+        cdn_url = container_cdn_url + obj.name
+
+        response = self.connection.request(cdn_path, method='HEAD')
+
+        if response.status == httplib.OK:
+            return cdn_url
+        elif response.status == httplib.NOT_FOUND:
+            raise ObjectDoesNotExistError(value='',
+                                          object_name=obj.name,
+                                          driver=self)
+
+        raise LibcloudError('Unexpected status code: %s' % (response.status))
