@@ -415,7 +415,7 @@ class ApplicationLBDriver(Driver):
         :type health_check_interval: ``int``
 
         :param health_check_path: The ping path that is the destination on
-                                the targets for health checks. The default is /.
+                                the targets for health checks. The default is /
         :type health_check_path: ``str``
 
         :param health_check_port: The port the load balancer uses when
@@ -442,7 +442,7 @@ class ApplicationLBDriver(Driver):
 
         :param healthy_threshold: The number of consecutive health checks
                                   successes required before considering
-                                  an unhealthy target healthy. The default is 5.
+                                  an unhealthy target healthy. The default is 5
         :type healthy_threshold: ``int``
 
         :param unhealthy_threshold: The number of consecutive health check
@@ -548,7 +548,8 @@ class ApplicationLBDriver(Driver):
         :param target_group: Target group associated with the listener.
         :type target_group: :class:`ALBTargetGroup`
 
-        :param action: Default action for the listener, valid value is 'forward'
+        :param action: Default action for the listener,
+                        valid value is 'forward'
         :type action: ``str``
 
         :param ssl_cert_arn: SSL certificate ARN to use when listener protocol
@@ -709,7 +710,8 @@ class ApplicationLBDriver(Driver):
 
     def _to_listener(self, el):
         listener = ALBListener(
-            listener_id=findtext(element=el, xpath='ListenerArn', namespace=NS),
+            listener_id=findtext(element=el, xpath='ListenerArn',
+                                 namespace=NS),
             protocol=findtext(element=el, xpath='Protocol', namespace=NS),
             port=int(findtext(element=el, xpath='Port', namespace=NS)),
             balancer=None,
@@ -717,9 +719,10 @@ class ApplicationLBDriver(Driver):
             action=findtext(element=el, xpath='DefaultActions/member/Type',
                             namespace=NS),
             ssl_policy=findtext(element=el, xpath='SslPolicy', namespace=NS),
-            ssl_certificate=findtext(element=el,
-                                     xpath='Certificates/member/CertificateArn',
-                                     namespace=NS),
+            ssl_certificate=findtext(
+                element=el, xpath='Certificates/member/CertificateArn',
+                namespace=NS
+            ),
         )
 
         listener._balancer_arn = findtext(element=el, xpath='LoadBalancerArn',
@@ -801,9 +804,9 @@ class ApplicationLBDriver(Driver):
             conditions=conditions
         )
 
-        rule._target_group_arn = findtext(element=el,
-                                          xpath='Actions/member/TargetGroupArn',
-                                          namespace=NS)
+        rule._target_group_arn = findtext(
+            element=el, xpath='Actions/member/TargetGroupArn', namespace=NS
+        )
 
         return rule
 
@@ -835,7 +838,8 @@ class ApplicationLBDriver(Driver):
                                        namespace=NS),
             health_check_path=findtext(element=el, xpath='HealthCheckPath',
                                        namespace=NS),
-            health_check_proto=findtext(element=el, xpath='HealthCheckProtocol',
+            health_check_proto=findtext(element=el,
+                                        xpath='HealthCheckProtocol',
                                         namespace=NS),
             health_check_interval=int(findtext(
                 element=el, xpath='HealthCheckIntervalSeconds', namespace=NS)
@@ -852,7 +856,8 @@ class ApplicationLBDriver(Driver):
                                           namespace=NS)
         )
 
-        lbs = findall(element=el, xpath='LoadBalancerArns/member', namespace=NS)
+        lbs = findall(element=el, xpath='LoadBalancerArns/member',
+                      namespace=NS)
         target_group._balancers_arns = [lb_arn.text for lb_arn in lbs]
 
         return target_group
