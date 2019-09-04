@@ -82,3 +82,15 @@ class VultrObjectStorageDriver(BaseVultrObjectStorageDriver):
                                           driver=self)
 
         raise LibcloudError('Unexpected status code: %s' % (response.status))
+
+    def _headers_to_object(self, object_name, container, headers):
+        normalized_headers = headers.copy()
+
+        # Vultr doesn't return this header for objects >1K that are compressed
+        if 'content-length' not in normalized_headers:
+            normalized_headers['content-length'] = 0
+
+        return super(VultrObjectStorageDriver, self)._headers_to_object(
+            object_name=object_name,
+            container=container,
+            headers=normalized_headers)
