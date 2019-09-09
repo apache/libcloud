@@ -245,8 +245,8 @@ class ApplicationLBDriver(Driver):
         return self._to_balancers(data)[0]
 
     def create_balancer(self, name, port, protocol, algorithm, members,
-                        ex_scheme="", ex_security_groups=[], ex_subnets=[],
-                        ex_tags={}, ex_ssl_cert_arn=""):
+                        ex_scheme=None, ex_security_groups=None,
+                        ex_subnets=None, ex_tags=None, ex_ssl_cert_arn=None):
         """
         Create a new load balancer instance.
 
@@ -297,6 +297,12 @@ class ApplicationLBDriver(Driver):
         :rtype: :class:`LoadBalancer`
         """
 
+        ex_scheme = ex_scheme or ""
+        ex_security_groups = ex_security_groups or []
+        ex_subnets = ex_subnets or []
+        ex_tags = ex_tags or {}
+        ex_ssl_cert_arn = ex_ssl_cert_arn or ""
+
         balancer = self.ex_create_balancer(name, scheme=ex_scheme,
                                            security_groups=ex_security_groups,
                                            subnets=ex_subnets, tags=ex_tags)
@@ -315,8 +321,8 @@ class ApplicationLBDriver(Driver):
         return balancer
 
     def ex_create_balancer(self, name, addr_type="ipv4",
-                           scheme="internet-facing", security_groups=[],
-                           subnets=[], tags={}):
+                           scheme="internet-facing", security_groups=None,
+                           subnets=None, tags=None):
         """
         AWS-specific method to create a new load balancer. Since ALB is a
         composite object (load balancer, target group, listener etc) - extra
@@ -344,6 +350,10 @@ class ApplicationLBDriver(Driver):
         :return: LoadBalancer object
         :rtype: :class:`LoadBalancer`
         """
+
+        security_groups = security_groups or []
+        subnets = subnets or []
+        tags = tags or {}
 
         # mandatory params
         params = {
@@ -491,7 +501,7 @@ class ApplicationLBDriver(Driver):
 
         return target_group
 
-    def ex_register_targets(self, target_group, members=[]):
+    def ex_register_targets(self, target_group, members=None):
         """
         Register members as targets at target group
 
@@ -507,6 +517,8 @@ class ApplicationLBDriver(Driver):
         :return: True on success, False if no members provided.
         :rtype: ``bool``
         """
+
+        members = members or []
 
         # mandatory params
         params = {
@@ -532,7 +544,8 @@ class ApplicationLBDriver(Driver):
         return True
 
     def ex_create_listener(self, balancer, port, proto, target_group,
-                           action="forward", ssl_cert_arn="", ssl_policy=""):
+                           action="forward", ssl_cert_arn=None,
+                           ssl_policy=None):
         """
         Create a listener for application load balancer
 
@@ -566,6 +579,9 @@ class ApplicationLBDriver(Driver):
         :rtype: :class:`ALBListener`
         """
 
+        ssl_cert_arn = ssl_cert_arn or ""
+        ssl_policy = ssl_policy or ""
+
         # mandatory params
         params = {
             'Action': 'CreateListener',
@@ -592,8 +608,8 @@ class ApplicationLBDriver(Driver):
         return listener
 
     def ex_create_listener_rule(self, listener, priority, target_group,
-                                action="forward", condition_field="",
-                                condition_value=""):
+                                action="forward", condition_field=None,
+                                condition_value=None):
         """
         Create a rule for listener.
 
@@ -620,6 +636,9 @@ class ApplicationLBDriver(Driver):
         :return: Rule object
         :rtype: :class:`ALBRule`
         """
+
+        condition_field = condition_field or ""
+        condition_value = condition_value or ""
 
         # mandatory params
         params = {
