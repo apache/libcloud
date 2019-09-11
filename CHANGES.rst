@@ -1,6 +1,15 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Load Balancer
+~~~~~~~------
+
+- [AWS] Implement various create methods in the driver. (GITHUB-1349)
+  [Anton Kozyrev - @Irvan]
+
 Changes in Apache Libcloud 2.6.0
 --------------------------------
 
