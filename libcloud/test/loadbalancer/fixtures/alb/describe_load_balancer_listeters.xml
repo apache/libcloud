@@ -9,13 +9,13 @@
                         <CertificateArn>arn:aws:iam::111111111111:server-certificate/test.certificate</CertificateArn>
                     </member>
                 </Certificates>
-                <Port>1443</Port>
+                <Port>443</Port>
                 <ListenerArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:listener/app/Test-ALB/1111111111111111/1111111111111111</ListenerArn>
                 <SslPolicy>ELBSecurityPolicy-2015-05</SslPolicy>
                 <DefaultActions>
                     <member>
                         <Type>forward</Type>
-                        <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/TEST-TARGET-GROUP1/1111111111111111</TargetGroupArn>
+                        <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB-tg/1111111111111111</TargetGroupArn>
                     </member>
                 </DefaultActions>
             </member>

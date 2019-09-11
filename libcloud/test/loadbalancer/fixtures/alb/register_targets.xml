@@ -1,0 +1,6 @@
+<RegisterTargetsResponse xmlns="http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/">
+  <RegisterTargetsResult/>
+  <ResponseMetadata>
+    <RequestId>602f6d21-7c2e-11e7-b2c0-af0ff9ebe45c</RequestId>
+  </ResponseMetadata>
+</RegisterTargetsResponse>

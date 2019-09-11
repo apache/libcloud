@@ -2,17 +2,17 @@
     <DescribeTargetGroupsResult>
         <TargetGroups>
             <member>
-                <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/TEST-TARGET-GROUP1/1111111111111111</TargetGroupArn>
+                <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB-tg/1111111111111111</TargetGroupArn>
                 <HealthCheckTimeoutSeconds>5</HealthCheckTimeoutSeconds>
                 <HealthCheckPort>traffic-port</HealthCheckPort>
                 <Matcher>
                     <HttpCode>200</HttpCode>
                 </Matcher>
-                <TargetGroupName>TEST-TARGET-GROUP1</TargetGroupName>
+                <TargetGroupName>Test-ALB-tg</TargetGroupName>
                 <HealthCheckProtocol>HTTPS</HealthCheckProtocol>
-                <HealthCheckPath>/apps/health</HealthCheckPath>
+                <HealthCheckPath>/</HealthCheckPath>
                 <Protocol>HTTPS</Protocol>
-                <Port>1443</Port>
+                <Port>443</Port>
                 <VpcId>vpc-11111111</VpcId>
                 <HealthyThresholdCount>5</HealthyThresholdCount>
                 <HealthCheckIntervalSeconds>30</HealthCheckIntervalSeconds>
