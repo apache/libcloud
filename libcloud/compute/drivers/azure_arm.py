@@ -34,6 +34,7 @@ from libcloud.compute.types import (NodeState, StorageVolumeState,
                                     VolumeSnapshotState)
 from libcloud.common.types import LibcloudError
 from libcloud.storage.types import ObjectDoesNotExistError
+from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.utils.py3 import basestring
@@ -466,7 +467,8 @@ class AzureNodeDriver(NodeDriver):
                     ex_customdata="",
                     ex_use_managed_disks=False,
                     ex_disk_size=None,
-                    ex_storage_account_type="Standard_LRS"):
+                    ex_storage_account_type="Standard_LRS",
+                    ex_data_disks=[]):
         """Create a new node instance. This instance will be started
         automatically.
 
@@ -599,16 +601,22 @@ class AzureNodeDriver(NodeDriver):
                  "/Microsoft.Compute/virtualMachines/%s" % \
                  (self.subscription_id, ex_resource_group, name)
 
+        if 'windows' in image.name.lower():
+            os_type = 'windows'
+        else:
+            os_type = 'linux'
+
         if isinstance(image, AzureVhdImage):
+            disk_name = name + '-os'
             instance_vhd = self._get_instance_vhd(
                 name=name,
                 ex_resource_group=ex_resource_group,
                 ex_storage_account=ex_storage_account,
-                ex_blob_container=ex_blob_container)
+                ex_blob_container=ex_blob_container, disk_name=disk_name)
             storage_profile = {
                 "osDisk": {
                     "name": name,
-                    "osType": "linux",
+                    "osType": os_type,
                     "caching": "ReadWrite",
                     "createOption": "FromImage",
                     "image": {
@@ -632,8 +640,8 @@ class AzureNodeDriver(NodeDriver):
                     "version": image.version
                 },
                 "osDisk": {
-                    "name": name,
-                    "osType": "linux",
+                    "name": name + '-osDisk',
+                    "osType": os_type,
                     "caching": "ReadWrite",
                     "createOption": "FromImage"
                 }
@@ -643,11 +651,12 @@ class AzureNodeDriver(NodeDriver):
                     "storageAccountType": ex_storage_account_type
                 }
             else:
+                disk_name = name + '-os'
                 instance_vhd = self._get_instance_vhd(
                     name=name,
                     ex_resource_group=ex_resource_group,
                     ex_storage_account=ex_storage_account,
-                    ex_blob_container=ex_blob_container)
+                    ex_blob_container=ex_blob_container, disk_name=disk_name)
                 storage_profile["osDisk"]["vhd"] = {
                     "uri": instance_vhd
                 }
@@ -655,6 +664,33 @@ class AzureNodeDriver(NodeDriver):
             raise LibcloudError(
                 "Unknown image type %s, expected one of AzureImage, "
                 "AzureVhdImage." % type(image))
+        data_disks = []
+        used_luns = []
+        for disk in ex_data_disks:
+            free_luns = [lun for lun in range(0, 63) if lun not in used_luns]
+            if len(free_luns) > 0:
+                lun = free_luns[0]
+            else:
+                raise LibcloudError("No LUN available to attach new disk.")
+            used_luns.append(lun)
+
+            if disk.get('id'):  # existing disk
+                existing_disk = {
+                    'lun': lun,
+                    'createOption': 'attach',
+                    'managedDisk': {'id': disk.get('id')},
+                }
+                data_disks.append(existing_disk)
+
+            else:   # new disk
+                disk_name = disk.get('name')
+                disk_size = disk.get('size')
+                disk_type = disk.get('storage_account_type')
+                caching = disk.get('host_caching', None)
+                new_disk = {"createOption": "Empty", "name": disk_name, "diskSizeGB": disk_size, 'caching': caching, 'lun': lun, 'managedDisk': {'storageAccountType': disk_type}}
+                data_disks.append(new_disk)
+
+        storage_profile.update({'dataDisks': data_disks})
 
         data = {
             "id": target,
@@ -718,7 +754,7 @@ class AzureNodeDriver(NodeDriver):
 
         r = self.connection.request(
             target,
-            params={"api-version": RESOURCE_API_VERSION},
+            params={"api-version": '2018-04-01'},
             data=data,
             method="PUT")
 
@@ -790,7 +826,7 @@ class AzureNodeDriver(NodeDriver):
         # failed to clean up its related resources, so it isn't taken as a
         # failure.
         try:
-            self.connection.request(node.id,
+            self.connection.request(node.extra['id'],
                                     params={"api-version": "2015-06-15"},
                                     method='DELETE')
         except BaseHTTPError as h:
@@ -809,7 +845,7 @@ class AzureNodeDriver(NodeDriver):
             try:
                 time.sleep(ex_poll_wait)
                 self.connection.request(
-                    node.id,
+                    node.extra['id'],
                     params={"api-version": RESOURCE_API_VERSION})
                 retries -= 1
             except BaseHTTPError as h:
@@ -820,6 +856,11 @@ class AzureNodeDriver(NodeDriver):
                     raise
 
         # Optionally clean up the network interfaces that were attached to this node.
+        # interfaces that were attached to this node.
+        try:
+            interfaces = node.extra["properties"]["networkProfile"]["networkInterfaces"]
+        except KeyError:
+            interfaces = []
         if ex_destroy_nic:
             for nic in interfaces:
                 retries = ex_poll_qty
@@ -837,7 +878,10 @@ class AzureNodeDriver(NodeDriver):
                             raise
 
         # Optionally clean up OS disk VHD.
-        vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
+        try:
+            vhd = node.extra["properties"]["storageProfile"]["osDisk"].get("vhd")
+        except KeyError:
+            vhd = None
         if ex_destroy_vhd and vhd is not None:
             retries = ex_poll_qty
             resourceGroup = node.id.split("/")[4]
@@ -864,7 +908,7 @@ class AzureNodeDriver(NodeDriver):
         return True
 
     def create_volume(self, size, name, location=None, snapshot=None,
-                      ex_resource_group=None, ex_account_type=None,
+                      ex_resource_group=None, ex_storage_account_type='Standard_LRS',
                       ex_tags=None):
         """
         Create a new managed volume.
@@ -885,9 +929,9 @@ class AzureNodeDriver(NodeDriver):
             create the volume. (required)
         :type ex_resource_group: ``str``
 
-        :param ex_account_type: The Storage Account type,
+        :param ex_storage_account_type: The Storage Account type,
             ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
-        :type ex_account_type: ``str``
+        :type ex_storage_account_type: ``str``
 
         :param ex_tags: Optional tags to associate with this resource.
         :type ex_tags: ``dict``
@@ -923,16 +967,15 @@ class AzureNodeDriver(NodeDriver):
             'properties': {
                 'creationData': creation_data,
                 'diskSizeGB': size
-            }
+            },
+            'sku': {'name': ex_storage_account_type}
         }
-        if ex_account_type is not None:
-            data['properties']['accountType'] = ex_account_type
 
         response = self.connection.request(
             action,
             method='PUT',
             params={
-                'api-version': RESOURCE_API_VERSION,
+                'api-version': '2018-04-01',
             },
             data=data
         )
@@ -1002,7 +1045,7 @@ class AzureNodeDriver(NodeDriver):
         """
         action = node.extra['id']
         location = node.extra['location']
-        disks = node.extra['properties']['storageProfile']['dataDisks']
+        disks = node.extra['storageProfile']['dataDisks']
 
         if ex_lun is None:
             # find the smallest unused logical unit number
@@ -1026,7 +1069,8 @@ class AzureNodeDriver(NodeDriver):
             new_disk = {
                 'lun': ex_lun,
                 'createOption': 'attach',
-                'managedDisk': {'id': volume.id}}
+                'managedDisk': {'id': volume.extra['id']},
+                }
 
         disks.append(new_disk)
         self.connection.request(
@@ -1101,7 +1145,7 @@ class AzureNodeDriver(NodeDriver):
 
         action = ex_node.extra['id']
         location = ex_node.extra['location']
-        disks = ex_node.extra['properties']['storageProfile']['dataDisks']
+        disks = ex_node.extra['storageProfile']['dataDisks']
 
         # remove volume from `properties.storageProfile.dataDisks`
         disks[:] = [
@@ -2279,6 +2323,8 @@ class AzureNodeDriver(NodeDriver):
                 blobdriver.get_object(blobContainer, blob))
         except ObjectDoesNotExistError:
             return True
+        except ContainerDoesNotExistError:
+            return True
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(AzureNodeDriver, self)._ex_connection_class_kwargs()
@@ -2466,18 +2512,16 @@ class AzureNodeDriver(NodeDriver):
                             self.connection.driver)
 
     def _get_instance_vhd(self, name, ex_resource_group, ex_storage_account,
-                          ex_blob_container="vhds"):
+                          ex_blob_container="vhds", disk_name='os'):
         n = 0
         errors = []
         while n < 10:
             try:
                 instance_vhd = "https://%s.blob%s" \
-                               "/%s/%s-os_%i.vhd" \
+                               "/%s/%s.vhd" \
                                % (ex_storage_account,
                                   self.connection.storage_suffix,
-                                  ex_blob_container,
-                                  name,
-                                  n)
+                                  ex_blob_container, disk_name)
                 if self._ex_delete_old_vhd(ex_resource_group, instance_vhd):
                     # We were able to remove it or it doesn't exist,
                     # so we can use it.
