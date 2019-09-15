@@ -1751,10 +1751,10 @@ class ECSDriver(NodeDriver):
         mappings = {'size': 'Size',
                     'category': 'Category',
                     'snapshot_id': 'SnapshotId',
-                    'disk_name': 'DiskName',
+                    'name': 'DiskName',
                     'description': 'Description',
                     'device': 'Device',
-                    'delete_with_instance': 'DeleteWithInstance'}
+                    'delete_on_termination': 'DeleteWithInstance'}
         params = {}
         for idx, disk in enumerate(data_disks):
             key_base = 'DataDisk.{0}.'.format(idx + 1)
