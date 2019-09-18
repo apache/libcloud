@@ -723,7 +723,7 @@ class AzureNodeDriver(NodeDriver):
 
         if ex_customdata:
             data["properties"]["osProfile"]["customData"] = \
-                base64.b64encode(ex_customdata)
+                base64.b64encode(ex_customdata.encode()).decode()
 
         data["properties"]["osProfile"]["adminUsername"] = ex_user_name
 
