@@ -441,8 +441,7 @@ class AzureNodeDriver(NodeDriver):
         # remove host from nextLink
         while r.object.get("nextLink"):
             next_url = r.object.get("nextLink").split(self.connection.host)[1]
-            r = self.connection.request(next_url,
-                                        params={"api-version": "2015-06-15"})
+            r = self.connection.request(next_url)
             nodes_data.extend(r.object["value"])
 
         return [self._to_node(n,
