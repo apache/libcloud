@@ -1111,9 +1111,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vms = self.ex_query('vm', filter='name=={vm_name}'.format(vm_name=vm_name), page=1, page_size=1)
         return [self._ex_get_node(vm['container']) for vm in vms]
 
-    def destroy_node(self, node):
+    def destroy_node(self, node, shutdown=True):
         try:
-            self.ex_undeploy_node(node)
+            self.ex_undeploy_node(node, shutdown=shutdown)
         except Exception:
             # Some vendors don't implement undeploy at all yet,
             # so catch this and move on.
@@ -1174,12 +1174,15 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                       headers=headers)
         self._wait_for_task_completion(res.object.get('href'))
 
-    def ex_undeploy_node(self, node):
+    def ex_undeploy_node(self, node, shutdown=True):
         """
         Undeploys existing node. Equal to vApp "stop" operation.
 
         :param  node: The node to be deployed
         :type   node: :class:`Node`
+
+        :param  shutdown: Whether to shutdown or power off the guest when undeploying
+        :type   shutdown: ``bool``
 
         :rtype: :class:`Node`
         """
@@ -1187,29 +1190,28 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         undeploy_xml = ET.Element('UndeployVAppParams', data)
         undeploy_power_action_xml = ET.SubElement(undeploy_xml,
                                                   'UndeployPowerAction')
-        undeploy_power_action_xml.text = 'shutdown'
 
         headers = {
             'Content-Type':
             'application/vnd.vmware.vcloud.undeployVAppParams+xml'
         }
 
-        try:
-            res = self.connection.request(
+        def undeploy(action):
+            undeploy_power_action_xml.text = action
+            undeploy_res = self.connection.request(
                 '%s/action/undeploy' % get_url_path(node.id),
                 data=ET.tostring(undeploy_xml),
                 method='POST',
                 headers=headers)
+            self._wait_for_task_completion(undeploy_res.object.get('href'))
 
-            self._wait_for_task_completion(res.object.get('href'))
-        except Exception:
-            undeploy_power_action_xml.text = 'powerOff'
-            res = self.connection.request(
-                '%s/action/undeploy' % get_url_path(node.id),
-                data=ET.tostring(undeploy_xml),
-                method='POST',
-                headers=headers)
-            self._wait_for_task_completion(res.object.get('href'))
+        if shutdown:
+            try:
+                undeploy('shutdown')
+            except Exception:
+                undeploy('powerOff')
+        else:
+            undeploy('powerOff')
 
         res = self.connection.request(get_url_path(node.id))
         return self._to_node(res.object)
