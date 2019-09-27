@@ -882,12 +882,13 @@ class VCloud_5_5_Connection(VCloud_1_5_Connection):
 class Instantiate_1_5_VAppXML(object):
 
     def __init__(self, name, template, network, vm_network=None,
-                 vm_fence=None):
+                 vm_fence=None, description=None):
         self.name = name
         self.template = template
         self.network = network
         self.vm_network = vm_network
         self.vm_fence = vm_fence
+        self.description = description
         self._build_xmltree()
 
     def tostring(self):
@@ -897,9 +898,9 @@ class Instantiate_1_5_VAppXML(object):
         self.root = self._make_instantiation_root()
 
         if self.network is not None:
-            instantionation_params = ET.SubElement(self.root,
-                                                   'InstantiationParams')
-            network_config_section = ET.SubElement(instantionation_params,
+            instantiation_params = ET.SubElement(self.root,
+                                                 'InstantiationParams')
+            network_config_section = ET.SubElement(instantiation_params,
                                                    'NetworkConfigSection')
             ET.SubElement(
                 network_config_section,
@@ -909,6 +910,9 @@ class Instantiate_1_5_VAppXML(object):
             network_config = ET.SubElement(network_config_section,
                                            'NetworkConfig')
             self._add_network_association(network_config)
+
+        if self.description is not None:
+            ET.SubElement(self.root, 'Description').text = self.description
 
         self._add_vapp_template(self.root)
 
@@ -1451,6 +1455,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         :keyword    ex_admin_password: set the node admin password explicitly.
         :type       ex_admin_password: ``str``
+
+        :keyword    ex_description: Set a description for the vApp.
+        :type       ex_description: ``str``
         """
         name = kwargs['name']
         image = kwargs['image']
@@ -1468,6 +1475,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         ex_clone_timeout = kwargs.get('ex_clone_timeout',
                                       DEFAULT_TASK_COMPLETION_TIMEOUT)
         ex_admin_password = kwargs.get('ex_admin_password', None)
+        ex_description = kwargs.get('ex_description', None)
 
         self._validate_vm_names(ex_vm_names)
         self._validate_vm_cpu(ex_vm_cpu)
@@ -1496,7 +1504,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                                           network_elem,
                                                           vdc, ex_vm_network,
                                                           ex_vm_fence,
-                                                          ex_clone_timeout)
+                                                          ex_clone_timeout,
+                                                          description=ex_description)
 
         self._change_vm_names(vapp_href, ex_vm_names)
         self._change_vm_cpu(vapp_href, ex_vm_cpu)
@@ -1529,13 +1538,14 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         return node
 
     def _instantiate_node(self, name, image, network_elem, vdc, vm_network,
-                          vm_fence, instantiate_timeout):
+                          vm_fence, instantiate_timeout, description=None):
         instantiate_xml = Instantiate_1_5_VAppXML(
             name=name,
             template=image.id,
             network=network_elem,
             vm_network=vm_network,
-            vm_fence=vm_fence
+            vm_fence=vm_fence,
+            description=description
         )
 
         # Instantiate VM and get identifier.
@@ -2209,6 +2219,10 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vdc = next(vdc for vdc in self.vdcs if vdc.id == vdc_id)
 
         extra = {'vdc': vdc.name, 'vms': vms}
+
+        description = node_elm.find(fixxpath(node_elm, 'Description'))
+        extra['description'] = description.text if description is not None else ''
+
         if snapshots is not None:
             extra['snapshots'] = snapshots
 
