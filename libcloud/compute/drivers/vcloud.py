@@ -1513,6 +1513,11 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                                   public SSH keys etc.
         :type       ex_vm_script: ``str``
 
+        :keyword    ex_vm_script_text: content of guest customisation script
+                                       for each vApp VM. Overrides ex_vm_script
+                                       parameter.
+        :type       ex_vm_script_text: ``str``
+
         :keyword    ex_vm_network: Override default vApp VM network name.
                                    Useful for when you've imported an OVF
                                    originating from outside of the vCloud.
@@ -1558,6 +1563,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         ex_vm_cpu = kwargs.get('ex_vm_cpu')
         ex_vm_memory = kwargs.get('ex_vm_memory')
         ex_vm_script = kwargs.get('ex_vm_script')
+        ex_vm_script_text = kwargs.get('ex_vm_script_text', None)
         ex_vm_fence = kwargs.get('ex_vm_fence', None)
         ex_network = kwargs.get('ex_network', None)
         ex_vm_network = kwargs.get('ex_vm_network', None)
@@ -1603,7 +1609,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         self._change_vm_names(vapp_href, ex_vm_names)
         self._change_vm_cpu(vapp_href, ex_vm_cpu)
         self._change_vm_memory(vapp_href, ex_vm_memory)
-        self._change_vm_script(vapp_href, ex_vm_script)
+        self._change_vm_script(vapp_href, ex_vm_script, ex_vm_script_text)
         self._change_vm_ipmode(vapp_href, ex_vm_ipmode)
 
         if ex_admin_password is not None:
@@ -2030,15 +2036,19 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             )
             self._wait_for_task_completion(res.object.get('href'))
 
-    def _change_vm_script(self, vapp_or_vm_id, vm_script):
-        if vm_script is None:
+    def _change_vm_script(self, vapp_or_vm_id, vm_script, vm_script_text=None):
+        if vm_script is None and vm_script_text is None:
             return
 
+        if vm_script_text is not None:
+            script = vm_script_text
+        else:
+            try:
+                script = open(vm_script).read()
+            except Exception:
+                return
+
         vms = self._get_vm_elements(vapp_or_vm_id)
-        try:
-            script = open(vm_script).read()
-        except Exception:
-            return
 
         # ElementTree escapes script characters automatically. Escape
         # requirements:
