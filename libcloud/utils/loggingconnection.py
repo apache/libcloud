@@ -94,13 +94,15 @@ class LoggingConnection(LibcloudConnection):
 
         if self.http_proxy_used:
             if self.proxy_username and self.proxy_password:
-                proxy_url = 'http://%s:%s@%s:%s' % (self.proxy_username,
-                                                    self.proxy_password,
-                                                    self.proxy_host,
-                                                    self.proxy_port)
+                proxy_url = '%s://%s:%s@%s:%s' % (self.proxy_scheme,
+                                                  self.proxy_username,
+                                                  self.proxy_password,
+                                                  self.proxy_host,
+                                                  self.proxy_port)
             else:
-                proxy_url = 'http://%s:%s' % (self.proxy_host,
-                                              self.proxy_port)
+                proxy_url = '%s://%s:%s' % (self.proxy_scheme,
+                                            self.proxy_host,
+                                            self.proxy_port)
             proxy_url = pquote(proxy_url)
             cmd.extend(['--proxy', proxy_url])
 
@@ -122,6 +124,9 @@ class LoggingConnection(LibcloudConnection):
 
         # TODO: in python 2.6, body can be a file-like object.
         if body is not None and len(body) > 0:
+            if isinstance(body, (bytearray, bytes)):
+                body = body.decode('utf-8')
+
             cmd.extend(["--data-binary", pquote(body)])
 
         cmd.extend(["--compress"])

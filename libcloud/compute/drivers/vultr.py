@@ -63,7 +63,8 @@ class rate_limited:
                     last_exception = e
                     time.sleep(self.sleep)  # hit by rate limit, let's sleep
 
-            raise last_exception
+            if last_exception:
+                raise last_exception  # pylint: disable=raising-bad-type
 
         update_wrapper(wrapper, call)
         return wrapper

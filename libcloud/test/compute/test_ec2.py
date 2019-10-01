@@ -216,8 +216,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
             self.driver.create_node(name='foo', image=image, size=size,
                                     ex_mincount='2', ex_maxcount='2',
                                     ex_clienttoken=token)
-        except IdempotentParamError:
-            e = sys.exc_info()[1]
+        except IdempotentParamError as e:
             idem_error = e
         self.assertTrue(idem_error is not None)
 
@@ -675,7 +674,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_import_key_pair_from_string(self):
         path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
-                            'dummy_rsa.pub')
+                            'test_rsa.pub')
 
         with open(path, 'r') as fp:
             key_material = fp.read()
@@ -693,7 +692,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_import_key_pair_from_file(self):
         path = os.path.join(os.path.dirname(__file__), 'fixtures', 'misc',
-                            'dummy_rsa.pub')
+                            'test_rsa.pub')
 
         key = self.driver.import_key_pair_from_file('keypair', path)
         self.assertEqual(key.name, 'keypair')
@@ -1163,6 +1162,24 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual('pending', subnet.state)
         self.assertEqual('vpc-532135d1', subnet.extra['vpc_id'])
 
+    def test_ex_modify_subnet_attribute(self):
+        subnet = self.driver.ex_list_subnets()[0]
+        resp = self.driver.ex_modify_subnet_attribute(subnet,
+                                                      'auto_public_ip',
+                                                      True)
+        self.assertTrue(resp)
+        resp = self.driver.ex_modify_subnet_attribute(subnet,
+                                                      'auto_ipv6',
+                                                      False)
+        self.assertTrue(resp)
+
+        expected_msg = 'Unsupported attribute: invalid'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                self.driver.ex_modify_subnet_attribute,
+                                subnet,
+                                'invalid',
+                                True)
+
     def test_ex_delete_subnet(self):
         subnet = self.driver.ex_list_subnets()[0]
         resp = self.driver.ex_delete_subnet(subnet=subnet)
@@ -1295,6 +1312,23 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(200, modifications[1].target_size)
         self.assertEqual('io1', modifications[1].target_volume_type)
         self.assertEqual('vol-bEXAMPLE', modifications[1].volume_id)
+
+    def test_params_is_not_simple_type_exception_is_thrown(self):
+        params = {
+            'not': {'not': ['simple']}
+        }
+
+        expected_msg = 'dictionary contains an attribute "not" which value'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                               self.driver.connection.request, '/', params=params)
+
+        params = {
+            'invalid': [1, 2, 3]
+        }
+
+        expected_msg = 'dictionary contains an attribute "invalid" which value'
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                               self.driver.connection.request, '/', params=params)
 
 
 class EC2USWest1Tests(EC2Tests):
@@ -1664,6 +1698,10 @@ class EC2MockHttp(MockHttp):
 
     def _CreateSubnet(self, method, url, body, headers):
         body = self.fixtures.load('create_subnet.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ModifySubnetAttribute(self, method, url, body, headers):
+        body = self.fixtures.load('modify_subnet_attribute.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _DeleteSubnet(self, method, url, body, headers):

@@ -25,6 +25,7 @@ Provider                              list images get image create image delete 
 `Gandi`_                              yes         no        no           no           no        
 `Google Compute Engine`_              yes         no        no           no           no        
 `GoGrid`_                             yes         no        no           no           no        
+`Gridscale`_                          yes         yes       yes          yes          no        
 `HostVirtual`_                        yes         no        no           no           no        
 `Ikoula`_                             yes         no        no           no           no        
 `Indosat`_                            yes         no        no           no           no        
@@ -87,6 +88,7 @@ Provider                              list images get image create image delete 
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
 .. _`GoGrid`: http://www.gogrid.com/
+.. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
 .. _`Ikoula`: http://express.ikoula.co.uk/cloudstack
 .. _`Indosat`: http://www.indosat.com/

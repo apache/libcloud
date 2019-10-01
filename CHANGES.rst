@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud in development
------------------------------------------
+Changes in Apache Libcloud 2.6.0
+--------------------------------
 
 General
 ~~~~~~~
@@ -12,8 +12,58 @@ General
   possible and the first project which was returned by the API was always
   selected. (GITHUB-1293)
   [Miguel Caballer - @micafer]
+
 - Add new ``extra`` attribute to the base ``NodeLocation`` class. (GITHUB-1282)
   [Dimitris Moraitis - @d-mo]
+
+- Remove various code patterns which were in place for supporting multiple
+  Python versions, including 2.5 and 2.6. Libcloud hasn't supported Python <
+  2.7 for a while now, so we can remove that code. (GITHUB-1307)
+  [Tomaz Muraus]
+
+- Also run pylint on ``libcloud/compute/`` directory and fix various pylint
+  violations. (GITHUB-1308)
+  [Tomaz Muraus]
+
+- [OpenStack] Remove unused variable in parse_error (GITHUB-1260)
+  [Rick van de Loo]
+
+- Add support for HTTPS proxies and fix ``driver.set_http_proxy()`` method.
+
+  HTTPS proxy can be set up by either setting ``https_proxy`` / ``http_proxy``
+  environment variable or by using
+  ``driver.connection.connection.set_http_proxy`` method.
+
+  For more information, please refer to the documentation -
+  https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
+  (GITHUB-1314, GITHUB-1324)
+  [Jim Liu - @hldh214, Tomaz Muraus]
+
+- Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
+  environment variable. (GITHUB-1315)
+  [Tomaz Muraaus]
+
+- Update paramiko SSH deployment client so it automatically tries to convert
+  private keys in PEM format with a header which paramiko doesn't recognize
+  into a format which paramiko recognizes.
+
+  NOTE: Paramiko only supports keys in PEM format. This means keys which start
+  with "----BEGIN <TYPE> PRIVATE KEY-----". Keys in PKCS#8 and newer OpenSSH
+  format are not supported.
+
+  For more information, see https://libcloud.readthedocs.io/en/latest/compute/deployment.html#supported-private-ssh-key-types
+  (GITHUB-1314)
+
+- Update Paramiko SSH client to throw a more user-friendly error if a private
+  key file in an unsupported format is used. (GITHUB-1314)
+  [Tomaz Muraus]
+
+- Fix HTTP(s) proxy support in the OpenStack drivers. (GITHUB-1324)
+  [Gabe Van Engel - @gvengel]
+
+- Fix logging connection class so it also works when data type is ``bytearray``
+  or ``bytes``. (GITHUB-1339)
+  [Tomaz Muraus]
 
 Compute
 ~~~~~~~
@@ -71,14 +121,124 @@ Compute
   driver. (GITHUB-1281)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Fix ``ex_resize`` method. (GITHUB-1311)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] For consistency, rename ``ex_resize`` method to
+  ``ex_resize_node``. For backward compatibility reasons, leave ``ex_resize``
+  alias in place.
+  [Tomaz Muraus]
+
+- [Gridscale] Add new driver for Gridscale provider (https://gridscale.io).
+  (GITHUB-1305, GITHUB-1315)
+  [Sydney Weber - @PrinceSydney]
+
+- [Oneandone] Update Oneandone driver to accomodate latest changes to the API.
+  This means removing deprecated ``ex_remove_server_firewall_policy`` method
+  and replacing ``port_from`` and ``port_to`` argument on the firewall policy
+  with a single ``port`` attribute.
+  (GITHUB-1230)
+  [Amel Ajdinovic - @aajdinov]
+
+- [DigitalOcean] Update ``list_locations`` method in the DigitalOcean driver
+  to only returns regions which are available by default. If you want to list
+  all the regions, you need to pass ``ex_available=False`` argument to the
+  method. (GITHUB-1001)
+  [Markos Gogoulos]
+
+- [EC2] Add new ``ex_modify_subnet_attribute`` method to the EC2 driver.
+  (GITHUB-1205)
+  [Dan Hunsaker - @danhunsaker]
+
+- [Azure ARM] Add ``ex_delete_public_ip`` method to the Azure ARM driver.
+  (GITHUB-1318)
+  [Reza Shahriari - redha1419]
+
+- [EC2] Update EC2 driver to throw a more user-friendly exception if a user /
+  developer tries to provide an invalid value type for an item value in the
+  request ``params`` dictionary.
+
+  Request parameters are sent via query parameters and not via request body,
+  as such, only string values are supported. (GITHUB-1329, GITHUB-1321)
+
+  Reported by James Bednell.
+  [Tomaz Muraus]
+
+- [OpenStack] Add new ``ex_remove_security_group_from_node`` method.
+  (GITHUB-1331)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix broken ``ex_update_port`` method.
+  (GITHUB-1320)
+  [Miguel Caballer - @micafer]
+
+- [Softlayer] Fix a bug with driver incorrectly handling the value of
+  ``ex_hourly`` argument in the ``create_node()`` method which caused nodes
+  to always be created with hourly billing, even if this argument was set to
+  ``False``. (GITHUB-1334, GITHUB-1335)
+  [@r2ronoha]
+
+- [GCE] Add optional ``cpuPlatform`` and ``minCpuPlatform`` attributes to the
+  ``node.extra`` dictionary. (GITHUB-1342, GITHUB-1343)
+  [@yairshemla]
+
 Storage
 ~~~~~~~
 
+- [Azure Blobs] Enable the Azure storage driver to be used with the Azurite
+  Storage Emulator and Azure Blob Storage on IoT Edge.
+  (LIBCLOUD-1037, GITHUB-1278)
+  [Clemens Wolff - @c-w]
+
 - [Azure Blobs] Fix a bug with Azure storage driver works when used against a
-  storage account that was created using ``kind=BlobStrage``. The includes
-  updating minimum API version used / supported by storage driver from
-  ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
+  storage account that was created using ``kind=BlobStrage``. This includes
+  updating the minimum API version used / supported by the storage driver from
+  ``2012-02-12`` to ``2014-02-14``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
+
+- [Azure Blobs] Increase the maximum size of block blobs that can be created
+  to 100 MB. This includes updating the minimum API version used / supported
+  by the storage driver from ``2014-02-14`` to ``2016-05-31``. (GITHUB-1340)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Set the minimum required version of requests to ``2.5.0`` since
+  requests ``2.4.0`` and earlier exhibit XML parsing errors of Azure Storage
+  responses. (GITHUB-1325, GITHUB-1322)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Detect bad version of requests that leads to errors in parsing
+  Azure Storage responses. This scenario is known to happen on RHEL 7.6 when
+  requests was installed via yum. (GITHUB-1332, GITHUB-1322)
+  [Clemens Wolff - @c-w]
+
+- [Common, CloudFiles] Fix ``upload_object_via_stream`` and ensure we start
+  from the beginning when calculating hash for the provided iterator. This way
+  we avoid hash mismatch errors in scenario where provided iterator is already
+  iterated / seeked upon before calculating the hash. (GITHUB-1326)
+  [Gabe Van Engel - @gvengel, Tomaz Muraus]
+
+- [Backblaze B2] Fix a bug with driver not working correctly due to a
+  regression which was inadvertently introduced in one of the previous
+  releases. (GITHUB-1338, GITHUB-1339)
+
+  Reported by Shawn Nock - @nocko.
+  [Tomaz Muraus]
+
+- [Backblaze B2] Fix ``upload_object_via_stream`` method. (GITHUB-1339)
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- [Cloudflare] Re-write the Cloudflare DNS driver to use Cloudflare API v4.
+  (LIBCLOUD-1001, LIBCLOUD-994, GITHUB-1292)
+  [Clemens Wolff - @c-w]
+
+- [Gandi LiveDNS] Add new driver for Gandi LiveDNS service. (GITHUB-1323)
+  [Ryan Lee - @zepheiryan]
+
+- [PowerDNS] Update driver so it works with API v3 and v4. #1328
+  [@biggosh]
 
 Changes in Apache Libcloud 2.5.0
 --------------------------------

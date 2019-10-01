@@ -158,7 +158,9 @@ DRIVERS = {
     Provider.CLEARAPI:
     ('libcloud.compute.drivers.clearapi', 'ClearAPINodeDriver'),
     Provider.MAXIHOST:
-    ('libcloud.compute.drivers.maxihost', 'MaxihostNodeDriver')
+    ('libcloud.compute.drivers.maxihost', 'MaxihostNodeDriver'),
+    Provider.GRIDSCALE:
+    ('libcloud.compute.drivers.gridscale', 'GridscaleNodeDriver')
 }
 
 

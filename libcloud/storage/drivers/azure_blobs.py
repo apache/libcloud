@@ -43,15 +43,8 @@ from libcloud.storage.types import ObjectHashMismatchError
 RESPONSES_PER_REQUEST = 100
 
 # As per the Azure documentation, if the upload file size is less than
-# 64MB, we can upload it in a single request. However, in real life azure
-# servers seem to disconnect randomly after around 5 MB or 200s of upload.
-# So, it is better that for file sizes greater than 4MB, we upload it in
-# chunks.
-# Also, with large sizes, if we use a lease, the lease will timeout after
-# 60 seconds, but the upload might still be in progress. This can be
-# handled in code, but if we use chunked uploads, the lease renewal will
-# happen automatically.
-AZURE_BLOCK_MAX_SIZE = 4 * 1024 * 1024
+# 100MB, we can upload it in a single request.
+AZURE_BLOCK_MAX_SIZE = 100 * 1024 * 1024
 
 # Azure block blocks must be maximum 4MB
 # Azure page blobs must be aligned in 512 byte boundaries (4MB fits that)
@@ -154,12 +147,37 @@ class AzureBlobLease(object):
 
 class AzureBlobsConnection(AzureConnection):
     """
-    Represents a single connection to Azure Blobs
-    """
+    Represents a single connection to Azure Blobs.
 
-    # this is the minimum api version supported by storage accounts of kinds
-    # StorageV2, Storage and BlobStorage
-    API_VERSION = '2014-02-14'
+    The main Azure Blob Storage service uses a prefix in the hostname to
+    distinguish between accounts, e.g. ``theaccount.blob.core.windows.net``.
+    However, some custom deployments of the service, such as the Azurite
+    emulator, instead use a URL prefix such as ``/theaccount``. To support
+    these deployments, the parameter ``account_prefix`` must be set on the
+    connection. This is done by instantiating the driver with arguments such
+    as ``host='somewhere.tld'`` and ``key='theaccount'``. To specify a custom
+    host without an account prefix, e.g. for use-cases where the custom host
+    implements an auditing proxy or similar, the driver can be instantiated
+    with ``host='theaccount.somewhere.tld'`` and ``key=''``.
+
+    :param account_prefix: Optional prefix identifying the sotrage account.
+                           Used when connecting to a custom deployment of the
+                           storage service like Azurite or IoT Edge Storage.
+    :type account_prefix: ``str``
+    """
+    def __init__(self, *args, **kwargs):
+        self.account_prefix = kwargs.pop('account_prefix', None)
+        super(AzureBlobsConnection, self).__init__(*args, **kwargs)
+
+    def morph_action_hook(self, action):
+        action = super(AzureBlobsConnection, self).morph_action_hook(action)
+
+        if self.account_prefix is not None:
+            action = '/%s%s' % (self.account_prefix, action)
+
+        return action
+
+    API_VERSION = '2016-05-31'
 
 
 class AzureBlobsStorageDriver(StorageDriver):
@@ -188,6 +206,8 @@ class AzureBlobsStorageDriver(StorageDriver):
         # host argument has precedence
         if not self._host_argument_set:
             result['host'] = '%s.%s' % (self.key, AZURE_STORAGE_HOST_SUFFIX)
+        else:
+            result['account_prefix'] = self.key
 
         return result
 
@@ -218,8 +238,9 @@ class AzureBlobsStorageDriver(StorageDriver):
             'meta_data': {}
         }
 
-        for meta in list(metadata):
-            extra['meta_data'][meta.tag] = meta.text
+        if metadata is not None:
+            for meta in list(metadata):
+                extra['meta_data'][meta.tag] = meta.text
 
         return Container(name=name, extra=extra, driver=self)
 
@@ -303,8 +324,9 @@ class AzureBlobsStorageDriver(StorageDriver):
             extra['md5_hash'] = value
 
         meta_data = {}
-        for meta in list(metadata):
-            meta_data[meta.tag] = meta.text
+        if metadata is not None:
+            for meta in list(metadata):
+                meta_data[meta.tag] = meta.text
 
         return Object(name=name, size=size, hash=etag, meta_data=meta_data,
                       extra=extra, container=container, driver=self)
@@ -955,7 +977,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                 'Unexpected status code, status_code=%s' % (response.status),
                 driver=self)
 
-        server_hash = headers['content-md5']
+        server_hash = headers.get('content-md5')
 
         if server_hash:
             server_hash = binascii.hexlify(base64.b64decode(b(server_hash)))

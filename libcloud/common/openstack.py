@@ -204,6 +204,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                             domain_name=self._ex_domain_name,
                             token_scope=self._ex_token_scope,
                             timeout=self.timeout,
+                            proxy_url=self.proxy_url,
                             parent_conn=self)
 
         return self._osa
@@ -380,7 +381,6 @@ class OpenStackResponse(Response):
             return self.body
 
     def parse_error(self):
-        text = None
         body = self.parse_body()
 
         if self.has_content_type('application/xml'):

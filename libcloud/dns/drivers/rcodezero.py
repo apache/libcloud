@@ -15,7 +15,6 @@
     RcodeZero DNS Driver
 """
 import json
-import sys
 import hashlib
 import re
 
@@ -48,8 +47,7 @@ class RcodeZeroResponse(JsonResponse):
         errors = []
         try:
             body = self.parse_body()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             body = '%s: %s' % (e.value, e.body)
         try:
             errors = [body['message']]
@@ -174,8 +172,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -221,8 +218,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='POST')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.find("Zone '%s' already configured for your account"
                               % domain):
@@ -269,8 +265,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PUT')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith("Domain '%s' update failed" % domain):
                 raise ZoneAlreadyExistsError(zone_id=zone.id, driver=self,
@@ -299,8 +294,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
 
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=record.zone.id,
@@ -340,8 +334,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         action = '%s/zones/%s' % (self.api_root, zone_id)
         try:
             response = self.connection.request(action=action, method='GET')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.NOT_FOUND:
                 raise ZoneDoesNotExistError(zone_id=zone_id, driver=self,
                                             value=e.message)
@@ -384,8 +377,7 @@ class RcodeZeroDNSDriver(DNSDriver):
         action = '%s/zones/%s/rrsets?page_size=-1' % (self.api_root, zone.id)
         try:
             response = self.connection.request(action=action, method='GET')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -434,8 +426,7 @@ class RcodeZeroDNSDriver(DNSDriver):
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
 
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=record.zone.id,

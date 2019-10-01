@@ -20,7 +20,6 @@ Created by Markos Gogoulos (https://mist.io)
 """
 
 import base64
-import sys
 import time
 import os
 import binascii
@@ -594,8 +593,7 @@ get all keys call with no arguments')
             node = self.connection.request('/server/%s/'
                                            % element_uri, data=params,
                                            method='POST')
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             raise Exception("Failed to create node %s" % e)
         node = Node(id=name, name=name, state=NodeState.UNKNOWN, public_ips=[],
                     private_ips=[], driver=self)

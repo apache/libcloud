@@ -1,0 +1,26 @@
+<CreateTargetGroupResponse xmlns="http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/">
+  <CreateTargetGroupResult>
+    <TargetGroups>
+      <member>
+        <TargetGroupArn>arn:aws:elasticloadbalancing:us-east-1:111111111111:targetgroup/Test-ALB-tg/1111111111111111</TargetGroupArn>
+        <HealthCheckTimeoutSeconds>5</HealthCheckTimeoutSeconds>
+        <HealthCheckPort>traffic-port</HealthCheckPort>
+        <Matcher>
+          <HttpCode>200</HttpCode>
+        </Matcher>
+        <TargetGroupName>Test-ALB-tg</TargetGroupName>
+        <HealthCheckProtocol>HTTPS</HealthCheckProtocol>
+        <HealthCheckPath>/</HealthCheckPath>
+        <Protocol>HTTPS</Protocol>
+        <Port>443</Port>
+        <VpcId>vpc-11111111</VpcId>
+        <HealthyThresholdCount>5</HealthyThresholdCount>
+        <HealthCheckIntervalSeconds>30</HealthCheckIntervalSeconds>
+        <UnhealthyThresholdCount>2</UnhealthyThresholdCount>
+      </member>
+    </TargetGroups>
+  </CreateTargetGroupResult>
+  <ResponseMetadata>
+    <RequestId>b83fe90e-f2d5-11e5-b95d-3b2c1831fc26</RequestId>
+  </ResponseMetadata>
+</CreateTargetGroupResponse>

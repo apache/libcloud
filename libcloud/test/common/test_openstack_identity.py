@@ -232,8 +232,11 @@ class OpenStackIdentity_2_0_ConnectionTests(unittest.TestCase):
         self.auth_instance = OpenStackIdentity_2_0_Connection(auth_url='http://none',
                                                               user_id='test',
                                                               key='test',
-                                                              tenant_name='test')
+                                                              tenant_name='test',
+                                                              proxy_url='http://proxy:8080',
+                                                              timeout=10)
         self.auth_instance.auth_token = 'mock'
+        self.assertEqual(self.auth_instance.proxy_url, 'http://proxy:8080')
 
     def test_list_projects(self):
         result = self.auth_instance.list_projects()
@@ -253,8 +256,11 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
         self.auth_instance = OpenStackIdentity_3_0_Connection(auth_url='http://none',
                                                               user_id='test',
                                                               key='test',
-                                                              tenant_name='test')
+                                                              tenant_name='test',
+                                                              proxy_url='http://proxy:8080',
+                                                              timeout=10)
         self.auth_instance.auth_token = 'mock'
+        self.assertEqual(self.auth_instance.proxy_url, 'http://proxy:8080')
 
     def test_token_scope_argument(self):
         # Invalid token_scope value
@@ -306,8 +312,11 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                                 key='test_key',
                                                 token_scope='project',
                                                 tenant_name="test_tenant",
-                                                domain_name='test_domain')
+                                                domain_name='test_domain',
+                                                proxy_url='http://proxy:8080',
+                                                timeout=10)
         auth.authenticate()
+        self.assertEqual(auth.proxy_url, 'http://proxy:8080')
 
     def test_list_supported_versions(self):
         OpenStackIdentity_3_0_MockHttp.type = 'v3'
@@ -454,7 +463,9 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
         self.auth_instance = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
                                                                                 user_id='idp',
                                                                                 key='token',
-                                                                                tenant_name='oidc')
+                                                                                tenant_name='oidc',
+                                                                                proxy_url='http://proxy:8080',
+                                                                                timeout=10)
         self.auth_instance.auth_token = 'mock'
 
     def test_authenticate(self):
@@ -462,7 +473,9 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTest
                                                                   user_id='idp',
                                                                   key='token',
                                                                   token_scope='project',
-                                                                  tenant_name="oidc")
+                                                                  tenant_name="oidc",
+                                                                  proxy_url='http://proxy:8080',
+                                                                  timeout=10)
         auth.authenticate()
 
 
@@ -841,6 +854,7 @@ class OpenStackIdentity_2_0_Connection_VOMSMockHttp(MockHttp):
             body = json.dumps({"tenant": [{"name": "tenant_name"}]})
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

@@ -6,6 +6,9 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.deployment import SSHKeyDeployment
 
+# Path to the private SSH key file used to authenticate
+PRIVATE_SSH_KEY_PATH = os.path.expanduser('~/.ssh/id_rsa')
+
 # Path to the public key you would like to install
 KEY_PATH = os.path.expanduser('~/.ssh/id_rsa.pub')
 
@@ -27,4 +30,4 @@ sizes = conn.list_sizes()
 
 # deploy_node takes the same base keyword arguments as create_node.
 node = conn.deploy_node(name='test', image=images[0], size=sizes[0],
-                        deploy=step)
+                        deploy=step, ssh_key=PRIVATE_SSH_KEY_PATH)

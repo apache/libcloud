@@ -60,7 +60,6 @@ Server Functions
 * ``ex_assign_server_ip`` - Assigns a new IP address to the server
 * ``ex_remove_server_ip`` - Removes an IP address from the server
 * ``ex_get_server_firewall_policies`` - Gets a firewall policy attached to the server's IP address
-* ``ex_remove_server_firewall_policy`` - Removes a firewall policy from  the server's IP address
 * ``ex_add_server_firewall_policy`` - Adds a firewall policy to the server's IP address
 
 Monitoring Policy Functions

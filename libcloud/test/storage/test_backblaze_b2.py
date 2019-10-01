@@ -19,8 +19,11 @@ import tempfile
 
 import mock
 import json
+
 from libcloud.storage.drivers.backblaze_b2 import BackblazeB2StorageDriver
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
+from libcloud.utils.files import exhaust_iterator
 from libcloud.test import unittest
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import StorageFileFixtures
@@ -90,12 +93,13 @@ class BackblazeB2StorageDriverTestCase(unittest.TestCase):
                                              overwrite_existing=True)
         self.assertTrue(result)
 
-    @unittest.skip(reason='The API for backblaze download object as stream is wrong')
     def test_download_object_as_stream(self):
         container = self.driver.list_containers()[0]
         obj = self.driver.list_container_objects(container=container)[0]
-        result = self.driver.download_object_as_stream(obj=obj)
-        self.assertEqual(result, 'ab')
+
+        stream = self.driver.download_object_as_stream(obj=obj, chunk_size=1024)
+        self.assertTrue(hasattr(stream, '__iter__'))
+        self.assertEqual(exhaust_iterator(stream), b('ab'))
 
     def test_upload_object(self):
         file_path = os.path.abspath(__file__)
@@ -162,8 +166,8 @@ class BackblazeB2MockHttp(MockHttp):
         if method == 'GET':
             body = json.dumps({
                 'accountId': 'test',
-                'apiUrl': 'test',
-                'downloadUrl': 'test',
+                'apiUrl': 'https://apiNNN.backblazeb2.com',
+                'downloadUrl': 'https://f002.backblazeb2.com',
                 'authorizationToken': 'test'
             })
         else:

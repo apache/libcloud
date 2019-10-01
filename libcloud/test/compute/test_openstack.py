@@ -188,8 +188,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -202,8 +201,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -216,8 +214,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         try:
             self.driver = self.create_driver()
             self.driver.list_nodes()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
@@ -226,8 +223,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         OpenStackMockHttp.type = 'NO_MESSAGE_IN_ERROR_BODY'
         try:
             self.driver.list_images()
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertEqual(True, isinstance(e, Exception))
         else:
             self.fail('test should have thrown')
@@ -602,7 +598,10 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         body = u(body)
         if body.find('resize') != -1:
             # test_ex_resize_server
-            return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
+            if body.find('personality') != -1:
+                return httplib.BAD_REQUEST
+            else:
+                return (httplib.ACCEPTED, "", headers, httplib.responses[httplib.NO_CONTENT])
         elif body.find('confirmResize') != -1:
             # test_ex_confirm_resize
             return (httplib.NO_CONTENT, "", headers, httplib.responses[httplib.NO_CONTENT])
@@ -1070,22 +1069,19 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                         driver=self.driver)
         try:
             self.driver.ex_resize(self.node, size)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_confirm_resize(self):
         try:
             self.driver.ex_confirm_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_ex_revert_resize(self):
         try:
             self.driver.ex_revert_resize(self.node)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.fail('An error was raised: ' + repr(e))
 
     def test_create_image(self):
@@ -1299,7 +1295,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_import_key_pair_from_file(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
+            os.path.dirname(__file__), 'fixtures', 'misc', 'test_rsa.pub')
 
         with open(path, 'r') as fp:
             pub_key = fp.read()
@@ -1315,7 +1311,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
     def test_import_key_pair_from_string(self):
         name = 'key3'
         path = os.path.join(
-            os.path.dirname(__file__), 'fixtures', 'misc', 'dummy_rsa.pub')
+            os.path.dirname(__file__), 'fixtures', 'misc', 'test_rsa.pub')
 
         with open(path, 'r') as fp:
             pub_key = fp.read()
@@ -1911,7 +1907,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_ex_update_port(self):
         port = self.driver.ex_get_port('126da55e-cfcb-41c8-ae39-a26cb8a7e723')
         ret = self.driver.ex_update_port(port, port_security_enabled=False)
-        self.assertEqual(port.extra['name'], 'Some port name')
+        self.assertEqual(ret.extra['name'], 'Some port name')
 
     def test_detach_port_interface(self):
         node = Node(id='1c01300f-ef97-4937-8f03-ac676d6234be', name=None,
@@ -2050,6 +2046,12 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(
             self.driver.attach_volume(node, volume, '/dev/sdb'), True)
         self.assertEqual(self.driver.detach_volume(volume), True)
+
+    def test_ex_remove_security_group_from_node(self):
+        security_group = OpenStackSecurityGroup("sgid", None, "sgname", "", self.driver)
+        node = Node("1000", "node", None, [], [], self.driver)
+        ret = self.driver.ex_remove_security_group_from_node(security_group, node)
+        self.assertTrue(ret)
 
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
@@ -2281,8 +2283,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load('_port_v2.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         elif method == "PUT":
-            body = self.fixtures.load('_port_v2.json')
-            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            if body:
+                body = self.fixtures.load('_port_v2.json')
+                return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+            else:
+                return (httplib.INTERNAL_SERVER_ERROR, "", {}, httplib.responses[httplib.INTERNAL_SERVER_ERROR])
         else:
             raise NotImplementedError()
 
@@ -2675,6 +2680,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'PUT':
             body = self.fixtures.load('_v2_0__router_interface.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_servers_1000_action(self, method, url, body, headers):
+        if method != 'POST' or body != '{"removeSecurityGroup": {"name": "sgname"}}':
+            raise NotImplementedError(body)
+        return httplib.ACCEPTED, None, {}, httplib.responses[httplib.ACCEPTED]
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 

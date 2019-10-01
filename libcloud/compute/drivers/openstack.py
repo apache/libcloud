@@ -234,6 +234,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def reboot_node(self, node):
+        # pylint: disable=no-member
         return self._reboot_node(node, reboot_type='HARD')
 
     def list_nodes(self, ex_all_tenants=False):
@@ -248,6 +249,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         params = {}
         if ex_all_tenants:
             params = {'all_tenants': 1}
+
+        # pylint: disable=no-member
         return self._to_nodes(
             self.connection.request('/servers/detail', params=params).object)
 
@@ -299,6 +302,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         resp = self.connection.request('/os-volumes',
                                        method='POST',
                                        data={'volume': volume})
+
+        # pylint: disable=no-member
         return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
@@ -343,10 +348,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return True
 
     def list_volumes(self):
+        # pylint: disable=no-member
         return self._to_volumes(
             self.connection.request('/os-volumes').object)
 
     def ex_get_volume(self, volumeId):
+        # pylint: disable=no-member
         return self._to_volume(
             self.connection.request('/os-volumes/%s' % volumeId).object)
 
@@ -360,6 +367,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         :type ex_only_active: ``bool``
 
         """
+        # pylint: disable=no-member
         return self._to_images(
             self.connection.request('/images/detail').object, ex_only_active)
 
@@ -376,10 +384,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         :rtype: :class:`NodeImage`
 
         """
+        # pylint: disable=no-member
         return self._to_image(self.connection.request(
             '/images/%s' % (image_id,)).object['image'])
 
     def list_sizes(self, location=None):
+        # pylint: disable=no-member
         return self._to_sizes(
             self.connection.request('/flavors/detail').object)
 
@@ -410,6 +420,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                 return None
             raise
 
+        # pylint: disable=no-member
         return self._to_node_from_obj(resp.object)
 
     def ex_soft_reboot_node(self, node):
@@ -421,6 +432,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
         :rtype: ``bool``
         """
+        # pylint: disable=no-member
         return self._reboot_node(node, reboot_type='SOFT')
 
     def ex_hard_reboot_node(self, node):
@@ -432,6 +444,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
         :rtype: ``bool``
         """
+        # pylint: disable=no-member
         return self._reboot_node(node, reboot_type='HARD')
 
 
@@ -630,7 +643,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         return self._change_password_or_name(node, name=name)
 
-    def ex_resize(self, node, size):
+    def ex_resize_node(self, node, size):
         """
         Change an existing server flavor / scale the server up or down.
 
@@ -652,6 +665,14 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                                        method='POST',
                                        data=ET.tostring(elm))
         return resp.status == httplib.ACCEPTED
+
+    def ex_resize(self, node, size):
+        """
+        NOTE: This method is here for backward compatibility reasons.
+
+        You should use ``ex_resize_node`` instead.
+        """
+        return self.ex_resize_node(node=node, size=size)
 
     def ex_confirm_resize(self, node):
         """
@@ -942,6 +963,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                  public_ips=public_ip,
                  private_ips=private_ip,
                  driver=self.connection.driver,
+                 # pylint: disable=no-member
                  extra={
                      'password': el.get('adminPass'),
                      'hostId': el.get('hostId'),
@@ -2491,6 +2513,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
+                # pylint: disable=no-member
                 service_name=self.connection.get_service_name(),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass', None),
@@ -3422,7 +3445,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to detach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3439,7 +3462,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to attach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3510,7 +3533,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         Update a OpenStack_2_PortInterface
 
-        :param      port: port interface to remove
+        :param      port: port interface to update
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :param      description: Description of the port
@@ -3548,7 +3571,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if security_groups is not None:
             data['port']['security_groups'] = security_groups
         response = self.network_connection.request(
-            '/v2.0/ports/{}'.format(port.id), method='PUT'
+            '/v2.0/ports/{}'.format(port.id), method='PUT', data=data
         )
         return self._to_port(response.object['port'])
 
@@ -3817,6 +3840,22 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         resp = self.network_connection.request(
             '/v2.0/security-group-rules/%s' % (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
+
+    def ex_remove_security_group_from_node(self, security_group, node):
+        """
+        Remove a Security Group from a node.
+
+        :param security_group: Security Group to remove from node.
+        :type  security_group: :class:`OpenStackSecurityGroup`
+
+        :param      node: Node to remove the Security Group.
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        server_params = {'name': security_group.name}
+        resp = self._node_action(node, 'removeSecurityGroup', **server_params)
+        return resp.status == httplib.ACCEPTED
 
     def _to_floating_ip_pool(self, obj):
         return OpenStack_2_FloatingIpPool(obj['id'], obj['name'],

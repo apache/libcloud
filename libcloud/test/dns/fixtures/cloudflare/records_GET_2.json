@@ -1,0 +1,92 @@
+{
+  "result": [
+    {
+      "id": "r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4",
+      "type": "MX",
+      "name": "example.com",
+      "content": "mxa.mailgun.org",
+      "proxiable": false,
+      "proxied": false,
+      "ttl": 1,
+      "priority": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T20:29:48.532399Z",
+      "created_on": "2018-12-22T20:29:48.532399Z",
+      "meta": {
+        "auto_added": true,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    },
+    {
+      "id": "r5r5r5r5r5r5r5r5r5r5r5r5r5r5r5r5",
+      "type": "MX",
+      "name": "example.com",
+      "content": "mxb.mailgun.org",
+      "proxiable": false,
+      "proxied": false,
+      "ttl": 1,
+      "priority": 2,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T20:29:48.540671Z",
+      "created_on": "2018-12-22T20:29:48.540671Z",
+      "meta": {
+        "auto_added": true,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    },
+    {
+      "id": "r6r6r6r6r6r6r6r6r6r6r6r6r6r6r6r6",
+      "type": "TXT",
+      "name": "example.com",
+      "content": "v=spf1 include:mailgun.org ~all",
+      "proxiable": false,
+      "proxied": false,
+      "ttl": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T20:29:48.512931Z",
+      "created_on": "2018-12-22T20:29:48.512931Z",
+      "meta": {
+        "auto_added": true,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    },
+    {
+      "id": "r7r7r7r7r7r7r7r7r7r7r7r7r7r7r7r7",
+      "type": "TXT",
+      "name": "pic._domainkey.example.com",
+      "content": "k=rsa; ...",
+      "proxiable": false,
+      "proxied": false,
+      "ttl": 1,
+      "locked": false,
+      "zone_id": "1234",
+      "zone_name": "example.com",
+      "modified_on": "2018-12-22T20:29:48.523230Z",
+      "created_on": "2018-12-22T20:29:48.523230Z",
+      "meta": {
+        "auto_added": true,
+        "managed_by_apps": false,
+        "managed_by_argo_tunnel": false
+      }
+    }
+  ],
+  "result_info": {
+    "page": 2,
+    "per_page": 5,
+    "total_pages": 2,
+    "count": 4,
+    "total_count": 9
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}

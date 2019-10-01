@@ -468,7 +468,7 @@ class OvhNodeDriver(NodeDriver):
         return [self._to_volume(obj) for obj in objs]
 
     def _to_location(self, obj):
-        location = self.connection.LOCATIONS[obj]
+        location = self.connectionCls.LOCATIONS[obj]
         return NodeLocation(driver=self, **location)
 
     def _to_locations(self, objs):

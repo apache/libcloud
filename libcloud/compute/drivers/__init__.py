@@ -31,7 +31,6 @@ __all__ = [
     'gce',
     'gogrid',
     'hostvirtual',
-    'ibm_sce',
     'linode',
     'nttcis',
     'opennebula',

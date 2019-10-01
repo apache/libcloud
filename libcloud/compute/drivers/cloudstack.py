@@ -15,7 +15,6 @@
 
 from __future__ import with_statement
 
-import sys
 import base64
 import warnings
 
@@ -36,8 +35,7 @@ from libcloud.utils.networking import is_private_subnet
 def transform_int_or_unlimited(value):
     try:
         return int(value)
-    except ValueError:
-        e = sys.exc_info()[1]
+    except ValueError as e:
 
         if str(value).lower() == 'unlimited':
             return -1
@@ -3850,10 +3848,6 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
             params['ostypeid'] = os_type_id
 
         return self._sync_request(command='registerIso',
-                                  name=name,
-                                  displaytext=name,
-                                  url=url,
-                                  zoneid=location.id,
                                   params=params)
 
     def ex_limits(self):

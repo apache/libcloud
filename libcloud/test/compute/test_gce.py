@@ -1,4 +1,4 @@
-# License to the Apache Software Foundation (ASF) under one or more
+# Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
 # The ASF licenses this file to You under the Apache License, Version 2.0
@@ -640,6 +640,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(len(nodes_uc1a), 1)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
+        self.assertEqual(nodes_uc1a[0].extra['cpuPlatform'], 'Intel Skylake')
+        self.assertEqual(nodes_uc1a[0].extra['minCpuPlatform'], 'Intel Skylake')
 
         names = [n.name for n in nodes_all]
         self.assertTrue('node-name' in names)

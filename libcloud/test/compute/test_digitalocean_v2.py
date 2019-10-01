@@ -82,11 +82,17 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
 
     def test_list_locations_success(self):
         locations = self.driver.list_locations()
-        self.assertTrue(len(locations) >= 1)
+        self.assertTrue(len(locations) == 2)
 
         location = locations[0]
         self.assertEqual(location.id, 'nyc1')
         self.assertEqual(location.name, 'New York 1')
+
+        locations = self.driver.list_locations(ex_available=True)
+        self.assertTrue(len(locations) == 2)
+
+        locations = self.driver.list_locations(ex_available=False)
+        self.assertTrue(len(locations) == 3)
 
     def test_list_nodes_success(self):
         nodes = self.driver.list_nodes()

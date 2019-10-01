@@ -1,0 +1,9 @@
+{
+    "rrset_type": "MX",
+    "rrset_ttl": 10800,
+    "rrset_name": "lists",
+    "rrset_values": [
+        "10 mail",
+        "20 mail2"
+    ]
+}

@@ -16,7 +16,6 @@
 VMware vCloud driver.
 """
 import copy
-import sys
 import re
 import base64
 import os
@@ -863,7 +862,7 @@ class VCloudNodeDriver(NodeDriver):
 
     def _uniquer(self, seq, idfun=None):
         if idfun is None:
-            def idfun(x):
+            def idfun(x):  # pylint: disable=function-redefined
                 return x
         seen = {}
         result = []
@@ -1028,6 +1027,8 @@ class VCloud_1_5_Connection(VCloudConnection):
             # Get the URL of the Organization
             body = ET.XML(resp.text)
             self.org_name = body.get('org')
+
+            # pylint: disable=no-member
             org_list_url = get_url_path(
                 next((link for link in body.findall(fixxpath(body, 'Link'))
                      if link.get('type') ==
@@ -1039,6 +1040,8 @@ class VCloud_1_5_Connection(VCloudConnection):
             self.connection.request(method='GET', url=org_list_url,
                                     headers=self.add_default_headers({}))
             body = ET.XML(self.connection.getresponse().text)
+
+            # pylint: disable=no-member
             self.driver.org = get_url_path(
                 next((org for org in body.findall(fixxpath(body, 'Org'))
                      if org.get('name') == self.org_name)).get('href')
@@ -2357,7 +2360,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vdc_id = next(link.get('href') for link
                       in node_elm.findall(fixxpath(node_elm, 'Link'))
                       if link.get('type') ==
-                      'application/vnd.vmware.vcloud.vdc+xml')
+                      'application/vnd.vmware.vcloud.vdc+xml'
+                      )  # pylint: disable=no-member
         vdc = next(vdc for vdc in self.vdcs if vdc.id == vdc_id)
 
         node = Node(id=node_elm.get('href'),

@@ -30,17 +30,23 @@ from libcloud.base import get_driver  # NOQA
 
 
 try:
-    import paramiko
+    import paramiko  # NOQA
     have_paramiko = True
 except ImportError:
     have_paramiko = False
+
+try:
+    import requests  # NOQA
+    have_requests = True
+except ImportError:
+    have_requests = False
 
 __all__ = [
     '__version__',
     'enable_debug'
 ]
 
-__version__ = '2.5.1-dev'
+__version__ = '2.6.1-dev'
 
 
 def enable_debug(fo):
@@ -72,6 +78,8 @@ def _init_once():
 
     This checks for the LIBCLOUD_DEBUG environment variable, which if it exists
     is where we will log debug information about the provider transports.
+
+    This also checks for known environment/dependency incompatibilities.
     """
     path = os.getenv('LIBCLOUD_DEBUG')
     if path:
@@ -89,9 +97,20 @@ def _init_once():
         fo = codecs.open(path, mode, encoding='utf8')
         enable_debug(fo)
 
-        if have_paramiko:
-            paramiko_logger = paramiko.util.logging.getLogger()
-            paramiko_logger.setLevel(logging.DEBUG)
+        if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
+            paramiko.util.log_to_file(filename=path, level=logging.DEBUG)
+
+    # check for broken `yum install python-requests`
+    if have_requests and requests.__version__ == '2.6.0':
+        chardet_version = requests.packages.chardet.__version__
+        required_chardet_version = '2.3.0'
+        assert chardet_version == required_chardet_version, (
+            'Known bad version of requests detected! This can happen when '
+            'requests was installed from a source other than PyPI, e.g. via '
+            'a package manager such as yum. Please either install requests '
+            'from PyPI or run `pip install chardet==%s` to resolve this '
+            'issue.' % required_chardet_version
+        )
 
 
 _init_once()

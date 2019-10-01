@@ -41,8 +41,7 @@ class TestHttpLibSSLTests(unittest.TestCase):
 
         try:
             reload(libcloud.security)
-        except ValueError:
-            e = sys.exc_info()[1]
+        except ValueError as e:
             msg = 'Certificate file /foo/doesnt/exist doesn\'t exist'
             self.assertEqual(str(e), msg)
         else:
