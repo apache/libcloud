@@ -99,6 +99,25 @@
             "status": "active",
             "subscribed_object": null,
             "uuid": "8965ff95-4924-40a9-b923-a58615149732"
+        },
+        {
+            "amount": "32212254720",
+            "auto_renew": true,
+            "descendants": [],
+            "discount_amount": null,
+            "discount_percent": null,
+            "end_time": "",
+            "id": "5555",
+            "last_notification": null,
+            "period": "365 days, 0:00:00",
+            "price": "0E-20",
+            "remaining": "32212254720",
+            "resource": "dssd",
+            "resource_uri": "/api/2.0/subscriptions/3987/",
+            "start_time": null,
+            "status": "active",
+            "subscribed_object": null,
+            "uuid": "8965ff95-4924-40a9-b923-a58615149732"
         }
     ],
     "price": "0E-20"

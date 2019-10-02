@@ -782,12 +782,18 @@ class NttCisLBDriver(Driver):
         :type `description: `str``
         :return: ``bool``
         """
-        c = OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, open(crt_file).read())
+
+        with open(crt_file) as fp:
+            c = OpenSSL.crypto.load_certificate(
+                OpenSSL.crypto.FILETYPE_PEM, fp.read())
+
         cert = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM, c).decode(encoding='utf-8')
-        k = OpenSSL.crypto.load_privatekey(
-            OpenSSL.crypto.FILETYPE_PEM, open(key_file).read())
+
+        with open(key_file) as fp:
+            k = OpenSSL.crypto.load_privatekey(
+                OpenSSL.crypto.FILETYPE_PEM, fp.read())
+
         key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, k) \
             .decode(encoding='utf-8')
         cert_elem = ET.Element("importSslDomainCertificate",

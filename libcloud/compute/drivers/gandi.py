@@ -15,7 +15,6 @@
 """
 Gandi driver for compute
 """
-import sys
 from datetime import datetime
 
 from libcloud.common.gandi import BaseGandiDriver, GandiException,\
@@ -93,14 +92,13 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         """
         @inherits: :class:`NodeDriver.__init__`
         """
-        super(BaseGandiDriver, self).__init__(*args, **kwargs)
+        super(GandiNodeDriver, self).__init__(*args, **kwargs)
 
     def _resource_info(self, type, id):
         try:
             obj = self.connection.request('hosting.%s.info' % type, int(id))
             return obj.object
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             raise GandiException(1003, e)
 
     def _node_info(self, id):
@@ -360,8 +358,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
                 filtering = {}
             images = self.connection.request('hosting.image.list', filtering)
             return [self._to_image(i) for i in images.object]
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             raise GandiException(1011, e)
 
     def _to_size(self, id, size):

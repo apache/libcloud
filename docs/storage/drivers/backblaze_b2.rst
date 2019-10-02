@@ -12,19 +12,18 @@ other object storage services.
     :width: 300
     :target: https://www.backblaze.com/b2/cloud-storage.html
 
-Keep in mind that the service is currently in public beta and only users who
-have signed up and received beta access can use it. To sign up for the beta
-access, visit their website mentioned above.
-
 Instantiating a driver
 ----------------------
 
-To instantiate the driver you need to pass your account id and application key
-to the driver constructor as shown below.
+To instantiate the driver you need to pass your key id and application key to
+the driver constructor as shown below.
 
-To access the account id, once we have admitted you into the beta you can login
-to https://secure.backblaze.com/user_signin.htm, then click "buckets" and
-"show account id and application key".
+To access the credentials, you can login to
+https://secure.backblaze.com/user_signin.htm, then click "App Keys" or go
+to https://secure.backblaze.com/app_keys.htm directly.
+
+``keyID`` serves as the first and ``applicationKey`` as the second argument to
+the driver constructor.
 
 .. literalinclude:: /examples/storage/backblaze_b2/instantiate.py
    :language: python

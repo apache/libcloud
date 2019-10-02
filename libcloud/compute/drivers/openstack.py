@@ -234,6 +234,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def reboot_node(self, node):
+        # pylint: disable=no-member
         return self._reboot_node(node, reboot_type='HARD')
 
     def list_nodes(self, ex_all_tenants=False):
@@ -248,6 +249,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         params = {}
         if ex_all_tenants:
             params = {'all_tenants': 1}
+
+        # pylint: disable=no-member
         return self._to_nodes(
             self.connection.request('/servers/detail', params=params).object)
 
@@ -299,6 +302,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         resp = self.connection.request('/os-volumes',
                                        method='POST',
                                        data={'volume': volume})
+
+        # pylint: disable=no-member
         return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
@@ -322,14 +327,19 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         # when ex_node is not provided, volume is detached from all nodes
         failed_nodes = []
         for attachment in volume.extra['attachments']:
-            if not ex_node or ex_node.id == attachment['server_id']:
+            if not ex_node or ex_node.id in filter(None, (attachment.get(
+                'serverId'
+            ), attachment.get('server_id'))):
                 response = self.connection.request(
                     '/servers/%s/os-volume_attachments/%s' %
-                    (attachment['server_id'], attachment['id']),
+                    (attachment.get('serverId') or attachment['server_id'],
+                     attachment['id']),
                     method='DELETE')
 
                 if not response.success():
-                    failed_nodes.append(attachment['server_id'])
+                    failed_nodes.append(
+                        attachment.get('serverId') or attachment['server_id']
+                    )
         if failed_nodes:
             raise OpenStackException(
                 'detach_volume failed for nodes with id: %s' %
@@ -338,10 +348,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return True
 
     def list_volumes(self):
+        # pylint: disable=no-member
         return self._to_volumes(
             self.connection.request('/os-volumes').object)
 
     def ex_get_volume(self, volumeId):
+        # pylint: disable=no-member
         return self._to_volume(
             self.connection.request('/os-volumes/%s' % volumeId).object)
 
@@ -355,6 +367,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         :type ex_only_active: ``bool``
 
         """
+        # pylint: disable=no-member
         return self._to_images(
             self.connection.request('/images/detail').object, ex_only_active)
 
@@ -371,10 +384,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         :rtype: :class:`NodeImage`
 
         """
+        # pylint: disable=no-member
         return self._to_image(self.connection.request(
             '/images/%s' % (image_id,)).object['image'])
 
     def list_sizes(self, location=None):
+        # pylint: disable=no-member
         return self._to_sizes(
             self.connection.request('/flavors/detail').object)
 
@@ -405,6 +420,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                 return None
             raise
 
+        # pylint: disable=no-member
         return self._to_node_from_obj(resp.object)
 
     def ex_soft_reboot_node(self, node):
@@ -416,6 +432,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
         :rtype: ``bool``
         """
+        # pylint: disable=no-member
         return self._reboot_node(node, reboot_type='SOFT')
 
     def ex_hard_reboot_node(self, node):
@@ -427,6 +444,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
 
         :rtype: ``bool``
         """
+        # pylint: disable=no-member
         return self._reboot_node(node, reboot_type='HARD')
 
 
@@ -625,7 +643,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
         """
         return self._change_password_or_name(node, name=name)
 
-    def ex_resize(self, node, size):
+    def ex_resize_node(self, node, size):
         """
         Change an existing server flavor / scale the server up or down.
 
@@ -647,6 +665,14 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                                        method='POST',
                                        data=ET.tostring(elm))
         return resp.status == httplib.ACCEPTED
+
+    def ex_resize(self, node, size):
+        """
+        NOTE: This method is here for backward compatibility reasons.
+
+        You should use ``ex_resize_node`` instead.
+        """
+        return self.ex_resize_node(node=node, size=size)
 
     def ex_confirm_resize(self, node):
         """
@@ -937,6 +963,7 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
                  public_ips=public_ip,
                  private_ips=private_ip,
                  driver=self.connection.driver,
+                 # pylint: disable=no-member
                  extra={
                      'password': el.get('adminPass'),
                      'hostId': el.get('hostId'),
@@ -2486,6 +2513,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 flavorId=api_node['flavor']['id'],
                 uri=next(link['href'] for link in api_node['links'] if
                          link['rel'] == 'self'),
+                # pylint: disable=no-member
                 service_name=self.connection.get_service_name(),
                 metadata=api_node['metadata'],
                 password=api_node.get('adminPass', None),
@@ -3228,6 +3256,38 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._networks_url_prefix).object
         return self._to_networks(response)
 
+    def ex_create_network(self, name, **kwargs):
+        """
+        Create a new Network
+
+        :param name: Name of network which should be used
+        :type name: ``str``
+
+        :rtype: :class:`OpenStackNetwork`
+        """
+        data = {'network': {'name': name}}
+        # Add optional values
+        for key, value in kwargs.items():
+            data['network'][key] = value
+        response = self.network_connection.request(self._networks_url_prefix,
+                                                   method='POST',
+                                                   data=data).object
+        return self._to_network(response['network'])
+
+    def ex_delete_network(self, network):
+        """
+        Delete a Network
+
+        :param network: Network which should be used
+        :type network: :class:`OpenStackNetwork`
+
+        :rtype: ``bool``
+        """
+        resp = self.network_connection.request(
+            '%s/%s' % (self._networks_url_prefix,
+                       network.id), method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
     def _to_subnets(self, obj):
         subnets = obj['subnets']
         return [self._to_subnet(subnet) for subnet in subnets]
@@ -3242,6 +3302,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return OpenStack_2_SubNet(id=obj['id'],
                                   name=obj['name'],
                                   cidr=obj['cidr'],
+                                  network_id=obj['network_id'],
                                   driver=self,
                                   extra=extra)
 
@@ -3256,7 +3317,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._subnets_url_prefix, params=params).object
         return self._to_subnets(response)
 
-    def ex_create_subnet(self, name, network, cidr, ip_version=4):
+    def ex_create_subnet(self, name, network, cidr, ip_version=4,
+                         description='', dns_nameservers=None,
+                         host_routes=None):
         """
         Create a new Subnet
 
@@ -3272,10 +3335,29 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param ip_version: ip_version of subnet which should be used
         :type ip_version: ``int``
 
+        :param description: Description for the resource.
+        :type description: ``str``
+
+        :param dns_nameservers: List of dns name servers.
+        :type dns_nameservers: ``list`` of ``str``
+
+        :param host_routes: Additional routes for the subnet.
+        :type host_routes: ``list`` of ``str``
+
         :rtype: :class:`OpenStack_2_SubNet`
         """
-        data = {'subnet': {'cidr': cidr, 'network_id': network.id,
-                           'ip_version': ip_version, 'name': name}}
+        data = {
+            'subnet':
+                {
+                    'cidr': cidr,
+                    'network_id': network.id,
+                    'ip_version': ip_version,
+                    'name': name or '',
+                    'description': description or '',
+                    'dns_nameservers': dns_nameservers or [],
+                    'host_routes': host_routes or []
+                }
+        }
         response = self.network_connection.request(
             self._subnets_url_prefix, method='POST', data=data).object
         return self._to_subnet(response['subnet'])
@@ -3292,6 +3374,42 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         resp = self.network_connection.request('%s/%s' % (
             self._subnets_url_prefix, subnet.id), method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
+    def ex_update_subnet(self, subnet, name=None, description=None,
+                         dns_nameservers=None, host_routes=None):
+        """
+        Update data of an existing SubNet
+
+        :param subnet: Subnet which should be updated
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :param name: Name of subnet which should be used
+        :type name: ``str``
+
+        :param description: Description for the resource.
+        :type description: ``str``
+
+        :param dns_nameservers: List of dns name servers.
+        :type dns_nameservers: ``list`` of ``str``
+
+        :param host_routes: Additional routes for the subnet.
+        :type host_routes: ``list`` of ``str``
+
+        :rtype: :class:`OpenStack_2_SubNet`
+        """
+        data = {'subnet': {}}
+        if name is not None:
+            data['subnet']['name'] = name
+        if description is not None:
+            data['subnet']['description'] = description
+        if dns_nameservers is not None:
+            data['subnet']['dns_nameservers'] = dns_nameservers
+        if host_routes is not None:
+            data['subnet']['host_routes'] = host_routes
+        response = self.network_connection.request(
+            "%s/%s" % (self._subnets_url_prefix, subnet.id),
+            method='PUT', data=data).object
+        return self._to_subnet(response['subnet'])
 
     def ex_list_ports(self):
         """
@@ -3327,7 +3445,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to detach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3344,7 +3462,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to attach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3405,6 +3523,55 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         response = self.network_connection.request(
             '/v2.0/ports/{}'.format(port_interface_id), method='GET'
+        )
+        return self._to_port(response.object['port'])
+
+    def ex_update_port(self, port, description=None,
+                       admin_state_up=None, name=None,
+                       port_security_enabled=None,
+                       qos_policy_id=None, security_groups=None):
+        """
+        Update a OpenStack_2_PortInterface
+
+        :param      port: port interface to update
+        :type       port: :class:`OpenStack_2_PortInterface`
+
+        :param      description: Description of the port
+        :type       description: ``str``
+
+        :param      admin_state_up: The administrative state of the
+                    resource, which is up or down
+        :type       admin_state_up: ``bool``
+
+        :param      name: Human-readable name of the resource
+        :type       name: ``str``
+
+        :param      port_security_enabled: 	The port security status
+        :type       port_security_enabled: ``bool``
+
+        :param      qos_policy_id: QoS policy associated with the port
+        :type       qos_policy_id: ``str``
+
+        :param      security_groups: The IDs of security groups applied
+        :type       security_groups: ``list`` of ``str``
+
+        :rtype: :class:`OpenStack_2_PortInterface`
+        """
+        data = {'port': {}}
+        if description is not None:
+            data['port']['description'] = description
+        if admin_state_up is not None:
+            data['port']['admin_state_up'] = admin_state_up
+        if name is not None:
+            data['port']['name'] = name
+        if port_security_enabled is not None:
+            data['port']['port_security_enabled'] = port_security_enabled
+        if qos_policy_id is not None:
+            data['port']['qos_policy_id'] = qos_policy_id
+        if security_groups is not None:
+            data['port']['security_groups'] = security_groups
+        response = self.network_connection.request(
+            '/v2.0/ports/{}'.format(port.id), method='PUT', data=data
         )
         return self._to_port(response.object['port'])
 
@@ -3674,6 +3841,22 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             '/v2.0/security-group-rules/%s' % (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
 
+    def ex_remove_security_group_from_node(self, security_group, node):
+        """
+        Remove a Security Group from a node.
+
+        :param security_group: Security Group to remove from node.
+        :type  security_group: :class:`OpenStackSecurityGroup`
+
+        :param      node: Node to remove the Security Group.
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        server_params = {'name': security_group.name}
+        resp = self._node_action(node, 'removeSecurityGroup', **server_params)
+        return resp.status == httplib.ACCEPTED
+
     def _to_floating_ip_pool(self, obj):
         return OpenStack_2_FloatingIpPool(obj['id'], obj['name'],
                                           self.network_connection)
@@ -3692,6 +3875,165 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self.network_connection.request('/v2.0/networks?router:external'
                                             '=True&fields=id&fields='
                                             'name').object)
+
+    def _to_routers(self, obj):
+        routers = obj['routers']
+        return [self._to_router(router) for router in routers]
+
+    def _to_router(self, obj):
+        extra = {}
+        extra['external_gateway_info'] = obj['external_gateway_info']
+        extra['routes'] = obj['routes']
+        return OpenStack_2_Router(id=obj['id'],
+                                  name=obj['name'],
+                                  status=obj['status'],
+                                  driver=self,
+                                  extra=extra)
+
+    def ex_list_routers(self):
+        """
+        Get a list of Routers that are available.
+
+        :rtype: ``list`` of :class:`OpenStack_2_Router`
+        """
+        response = self.network_connection.request(
+            '/v2.0/routers').object
+        return self._to_routers(response)
+
+    def ex_create_router(self, name, description='', admin_state_up=True,
+                         external_gateway_info=None):
+        """
+        Create a new Router
+
+        :param name: Name of router which should be used
+        :type name: ``str``
+
+        :param      description: Description of the port
+        :type       description: ``str``
+
+        :param      admin_state_up: The administrative state of the
+                    resource, which is up or down
+        :type       admin_state_up: ``bool``
+
+        :param      external_gateway_info: The external gateway information
+        :type       external_gateway_info: ``dict``
+
+        :rtype: :class:`OpenStack_2_Router`
+        """
+        data = {
+            'router':
+                {
+                    'name': name or '',
+                    'description': description or '',
+                    'admin_state_up': admin_state_up,
+                }
+        }
+        if external_gateway_info:
+            data['router']['external_gateway_info'] = external_gateway_info
+        response = self.network_connection.request(
+            '/v2.0/routers', method='POST', data=data).object
+        return self._to_router(response['router'])
+
+    def ex_delete_router(self, router):
+        """
+        Delete a Router
+
+        :param router: Router which should be deleted
+        :type router: :class:`OpenStack_2_Router`
+
+        :rtype: ``bool``
+        """
+        resp = self.network_connection.request('%s/%s' % (
+            '/v2.0/routers', router.id), method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
+    def _manage_router_interface(self, router, op, subnet=None, port=None):
+        """
+        Add/Remove interface to router
+
+        :param router: Router to add/remove the interface
+        :type router: :class:`OpenStack_2_Router`
+
+        :param      op: Operation to perform: 'add' or 'remove'
+        :type       op: ``str``
+
+        :param subnet: Subnet object to be added to the router
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :param port: Port object to be added to the router
+        :type port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        data = {}
+        if subnet:
+            data['subnet_id'] = subnet.id
+        elif port:
+            data['port_id'] = port.id
+        else:
+            raise OpenStackException("Error in router interface: "
+                                     "port or subnet are None.", 500,
+                                     self)
+
+        resp = self.network_connection.request('%s/%s/%s_router_interface' % (
+            '/v2.0/routers', router.id, op), method='PUT', data=data)
+        return resp.status == httplib.OK
+
+    def ex_add_router_port(self, router, port):
+        """
+        Add port to a router
+
+        :param router: Router to add the port
+        :type router: :class:`OpenStack_2_Router`
+
+        :param port: Port object to be added to the router
+        :type port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'add', port=port)
+
+    def ex_del_router_port(self, router, port):
+        """
+        Remove port from a router
+
+        :param router: Router to remove the port
+        :type router: :class:`OpenStack_2_Router`
+
+        :param port: Port object to be added to the router
+        :type port: :class:`OpenStack_2_PortInterface`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'remove', port=port)
+
+    def ex_add_router_subnet(self, router, subnet):
+        """
+        Add subnet to a router
+
+        :param router: Router to add the subnet
+        :type router: :class:`OpenStack_2_Router`
+
+        :param subnet: Subnet object to be added to the router
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'add', subnet=subnet)
+
+    def ex_del_router_subnet(self, router, subnet):
+        """
+        Remove subnet to a router
+
+        :param router: Router to remove the subnet
+        :type router: :class:`OpenStack_2_Router`
+
+        :param subnet: Subnet object to be added to the router
+        :type subnet: :class:`OpenStack_2_SubNet`
+
+        :rtype: ``bool``
+        """
+        return self._manage_router_interface(router, 'remove', subnet=subnet)
 
 
 class OpenStack_1_1_FloatingIpPool(object):
@@ -3894,15 +4236,115 @@ class OpenStack_2_FloatingIpPool(object):
         return ('<OpenStack_2_FloatingIpPool: name=%s>' % self.name)
 
 
+class OpenStack_2_FloatingIpPool(object):
+    """
+    Floating IP Pool info.
+    """
+
+    def __init__(self, id, name, connection):
+        self.id = id
+        self.name = name
+        self.connection = connection
+
+    def _to_floating_ips(self, obj):
+        ip_elements = obj['floatingips']
+        return [self._to_floating_ip(ip) for ip in ip_elements]
+
+    def _to_floating_ip(self, obj):
+        instance_id = None
+
+        # In neutron version prior to 13.0.0 port_details does not exists
+        if 'port_details' not in obj and 'port_id' in obj and obj['port_id']:
+            port = self.connection.driver.ex_get_port(obj['port_id'])
+            if port:
+                obj['port_details'] = {"device_id": port.extra["device_id"],
+                                       "device_owner":
+                                           port.extra["device_owner"],
+                                       "mac_address":
+                                           port.extra["mac_address"]}
+
+        if 'port_details' in obj and obj['port_details']:
+            if obj['port_details']['device_owner'] in ['compute:nova',
+                                                       'compute:None']:
+                instance_id = obj['port_details']['device_id']
+
+        ip_address = obj['floating_ip_address']
+        return OpenStack_1_1_FloatingIpAddress(id=obj['id'],
+                                               ip_address=ip_address,
+                                               pool=self,
+                                               node_id=instance_id,
+                                               driver=self.connection.driver)
+
+    def list_floating_ips(self):
+        """
+        List floating IPs in the pool
+
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        return self._to_floating_ips(
+            self.connection.request('/v2.0/floatingips').object)
+
+    def get_floating_ip(self, ip):
+        """
+        Get specified floating IP from the pool
+
+        :param      ip: floating IP to get
+        :type       ip: ``str``
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        floating_ips = self._to_floating_ips(
+            self.connection.request('/v2.0/floatingips?floating_ip_address'
+                                    '=%s' % ip).object)
+        return floating_ips[0]
+
+    def create_floating_ip(self):
+        """
+        Create new floating IP in the pool
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        resp = self.connection.request('/v2.0/floatingips',
+                                       method='POST',
+                                       data={'floatingip':
+                                             {'floating_network_id': self.id}}
+                                       )
+        data = resp.object['floatingip']
+        id = data['id']
+        ip_address = data['floating_ip_address']
+        return OpenStack_1_1_FloatingIpAddress(id=id,
+                                               ip_address=ip_address,
+                                               pool=self,
+                                               node_id=None,
+                                               driver=self.connection.driver)
+
+    def delete_floating_ip(self, ip):
+        """
+        Delete specified floating IP from the pool
+
+        :param      ip: floating IP to remove
+        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request('/v2.0/floatingips/%s' % ip.id,
+                                       method='DELETE')
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
+    def __repr__(self):
+        return ('<OpenStack_2_FloatingIpPool: name=%s>' % self.name)
+
+
 class OpenStack_2_SubNet(object):
     """
     A Virtual SubNet.
     """
 
-    def __init__(self, id, name, cidr, driver, extra=None):
+    def __init__(self, id, name, cidr, network_id, driver, extra=None):
         self.id = str(id)
         self.name = name
         self.cidr = cidr
+        self.network_id = network_id
         self.driver = driver
         self.extra = extra or {}
 
@@ -3910,6 +4352,23 @@ class OpenStack_2_SubNet(object):
         return '<OpenStack_2_SubNet id="%s" name="%s" cidr="%s">' % (self.id,
                                                                      self.name,
                                                                      self.cidr)
+
+
+class OpenStack_2_Router(object):
+    """
+    A Virtual Router.
+    """
+
+    def __init__(self, id, name, status, driver, extra=None):
+        self.id = str(id)
+        self.name = name
+        self.status = status
+        self.driver = driver
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return '<OpenStack_2_Router id="%s" name="%s">' % (self.id,
+                                                           self.name)
 
 
 class OpenStack_2_PortInterface(UuidMixin):

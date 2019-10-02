@@ -16,8 +16,6 @@
 Liquid Web DNS Driver
 """
 
-import sys
-
 try:
     import simplejson as json
 except ImportError:
@@ -111,8 +109,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except APIException:
-            e = sys.exc_info()[1]
+        except APIException as e:
             if e.error_class == 'LW::Exception::RecordNotFound':
                 raise ZoneDoesNotExistError(zone_id=zone_id,
                                             value=e.value, driver=self)
@@ -141,8 +138,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except APIException:
-            e = sys.exc_info()[1]
+        except APIException as e:
             if e.error_class == 'LW::Exception::RecordNotFound':
                 raise RecordDoesNotExistError(record_id=record_id, driver=self,
                                               value=e.value)
@@ -185,8 +181,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except APIException:
-            e = sys.exc_info()[1]
+        except APIException as e:
             if e.error_class == 'LW::Exception::DuplicateRecord':
                 raise ZoneAlreadyExistsError(zone_id=domain,
                                              value=e.value,
@@ -238,8 +233,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except APIException:
-            e = sys.exc_info()[1]
+        except APIException as e:
             if e.error_class == 'LW::Exception::DuplicateRecord':
                 raise RecordAlreadyExistsError(record_id=name,
                                                value=e.value,
@@ -288,8 +282,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='PUT',
                                                data=j_data)
-        except APIException:
-            e = sys.exc_info()[1]
+        except APIException as e:
             if e.error_class == 'LW::Exception::RecordNotFound':
                 raise RecordDoesNotExistError(record_id=record.id, driver=self,
                                               value=e.value)
@@ -316,8 +309,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except APIException:
-            e = sys.exc_info()[1]
+        except APIException as e:
             if e.error_class == 'LW::Exception::RecordNotFound':
                 raise ZoneDoesNotExistError(zone_id=zone.id,
                                             value=e.value, driver=self)
@@ -341,8 +333,7 @@ class LiquidWebDNSDriver(DNSDriver):
             response = self.connection.request(action=action,
                                                method='POST',
                                                data=data)
-        except APIException:
-            e = sys.exc_info()[1]
+        except APIException as e:
             if e.error_class == 'LW::Exception::RecordNotFound':
                 raise RecordDoesNotExistError(record_id=record.id, driver=self,
                                               value=e.value)

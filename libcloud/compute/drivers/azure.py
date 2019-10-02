@@ -1418,7 +1418,7 @@ class AzureNodeDriver(NodeDriver):
         _affinity_group = res.hosted_service_properties.affinity_group
         _cloud_service_location = res.hosted_service_properties.location
 
-        if _affinity_group is not None and _affinity_group is not u'':
+        if _affinity_group is not None and _affinity_group != '':
             return self.service_location(True, _affinity_group)
         elif _cloud_service_location is not None:
             return self.service_location(False, _cloud_service_location)
@@ -1543,21 +1543,18 @@ class AzureNodeDriver(NodeDriver):
 
     def _perform_request(self, request):
         try:
-            response = self.connection.request(
-                        action=request.path,
-                        data=request.body, headers=request.headers,
-                        method=request.method)
-        except requests.exceptions.SSLError:
-            raise InvalidCredsError('Please provide a valid SSL certificate')
-        except:
-            raise
-        if response.status == 307:
-            #handle 307 responses
-            response = self.connection.request(
-                        action=response.headers.get('location'),
-                        data=request.body, headers=request.headers,
-                        method=request.method)
-        return response
+            return self.connection.request(
+                action=request.path,
+                data=request.body,
+                headers=request.headers,
+                method=request.method
+            )
+        except AzureRedirectException as e:
+            parsed_url = urlparse.urlparse(e.location)
+            request.host = parsed_url.netloc
+            return self._perform_request(request)
+        except Exception as e:
+            raise e
 
     def _update_request_uri_query(self, request):
         '''pulls the query string out of the URI and moves it into
@@ -1965,9 +1962,13 @@ class AzureNodeDriver(NodeDriver):
 
     #    return connection
 
-"""XML Serializer
 
-Borrowed from the Azure SDK for Python.
+"""
+XML Serializer
+
+Borrowed from the Azure SDK for Python which is licensed under Apache 2.0.
+
+https://github.com/Azure/azure-sdk-for-python
 """
 
 
@@ -2176,81 +2177,183 @@ class AzureXmlSerializer():
     def start_role_operation_to_xml():
         return AzureXmlSerializer.doc_from_xml(
             'StartRoleOperation',
-            '<OperationType>StartRoleOperation</OperationType>')
+            xml
+        )
+        result = ensure_string(ET.tostring(doc, encoding='utf-8'))
+        return result
 
     @staticmethod
-    def windows_configuration_to_xml(configuration):
-        xml = AzureXmlSerializer.data_to_xml(
-            [('ConfigurationSetType', configuration.configuration_set_type),
-             ('ComputerName', configuration.computer_name),
-             ('AdminPassword', configuration.admin_password),
-             ('ResetPasswordOnFirstLogon',
-              configuration.reset_password_on_first_logon,
-              _lower),
-             ('EnableAutomaticUpdates',
-              configuration.enable_automatic_updates,
-              _lower),
-             ('TimeZone', configuration.time_zone)])
+    def windows_configuration_to_xml(configuration, xml):
+        AzureXmlSerializer.data_to_xml(
+            [('ConfigurationSetType', configuration.configuration_set_type)],
+            xml
+        )
+        AzureXmlSerializer.data_to_xml(
+            [('ComputerName', configuration.computer_name)],
+            xml
+        )
+        AzureXmlSerializer.data_to_xml(
+            [('AdminPassword', configuration.admin_password)],
+            xml
+        )
+        AzureXmlSerializer.data_to_xml(
+            [
+                (
+                    'ResetPasswordOnFirstLogon',
+                    configuration.reset_password_on_first_logon,
+                    _lower
+                )
+            ],
+            xml
+        )
+
+        AzureXmlSerializer.data_to_xml(
+            [
+                (
+                    'EnableAutomaticUpdates',
+                    configuration.enable_automatic_updates,
+                    _lower
+                )
+            ],
+            xml
+        )
+
+        AzureXmlSerializer.data_to_xml(
+            [('TimeZone', configuration.time_zone)],
+            xml
+        )
 
         if configuration.domain_join is not None:
-            xml += '<DomainJoin>'
-            xml += '<Credentials>'
-            xml += AzureXmlSerializer.data_to_xml(
-                [('Domain', configuration.domain_join.credentials.domain),
-                 ('Username', configuration.domain_join.credentials.username),
-                 ('Password', configuration.domain_join.credentials.password)])
-            xml += '</Credentials>'
-            xml += AzureXmlSerializer.data_to_xml(
-                [('JoinDomain', configuration.domain_join.join_domain),
-                 ('MachineObjectOU',
-                  configuration.domain_join.machine_object_ou)])
-            xml += '</DomainJoin>'
-        if configuration.stored_certificate_settings is not None:
-            xml += '<StoredCertificateSettings>'
-            for cert in configuration.stored_certificate_settings:
-                xml += '<CertificateSetting>'
-                xml += AzureXmlSerializer.data_to_xml(
-                    [('StoreLocation', cert.store_location),
-                     ('StoreName', cert.store_name),
-                     ('Thumbprint', cert.thumbprint)])
-                xml += '</CertificateSetting>'
-            xml += '</StoredCertificateSettings>'
+            domain = ET.xml("DomainJoin")  # pylint: disable=no-member
+            creds = ET.xml("Credentials")  # pylint: disable=no-member
+            domain.appemnd(creds)
+            xml.append(domain)
 
-        xml += AzureXmlSerializer.data_to_xml(
-            [('AdminUsername', configuration.admin_user_name)])
+            AzureXmlSerializer.data_to_xml(
+                [('Domain', configuration.domain_join.credentials.domain)],
+                creds
+            )
+
+            AzureXmlSerializer.data_to_xml(
+                [
+                    (
+                        'Username',
+                        configuration.domain_join.credentials.username
+                    )
+                ],
+                creds
+            )
+            AzureXmlSerializer.data_to_xml(
+                [
+                    (
+                        'Password',
+                        configuration.domain_join.credentials.password
+                    )
+                ],
+                creds
+            )
+
+            AzureXmlSerializer.data_to_xml(
+                [('JoinDomain', configuration.domain_join.join_domain)],
+                domain
+            )
+
+            AzureXmlSerializer.data_to_xml(
+                [
+                    (
+                        'MachineObjectOU',
+                        configuration.domain_join.machine_object_ou
+                    )
+                ],
+                domain
+            )
+
+        if configuration.stored_certificate_settings is not None:
+            cert_settings = ET.Element("StoredCertificateSettings")
+            xml.append(cert_settings)
+            for cert in configuration.stored_certificate_settings:
+                cert_setting = ET.Element("CertificateSetting")
+                cert_settings.append(cert_setting)
+
+                cert_setting.append(AzureXmlSerializer.data_to_xml(
+                    [('StoreLocation', cert.store_location)])
+                )
+                AzureXmlSerializer.data_to_xml(
+                    [('StoreName', cert.store_name)],
+                    cert_setting
+                )
+                AzureXmlSerializer.data_to_xml(
+                    [('Thumbprint', cert.thumbprint)],
+                    cert_setting
+                )
+
+        AzureXmlSerializer.data_to_xml(
+            [('AdminUsername', configuration.admin_user_name)],
+            xml
+        )
         return xml
 
     @staticmethod
-    def linux_configuration_to_xml(configuration):
-        xml = AzureXmlSerializer.data_to_xml(
-            [('ConfigurationSetType', configuration.configuration_set_type),
-             ('HostName', configuration.host_name),
-             ('UserName', configuration.user_name),
-             ('UserPassword', configuration.user_password),
-             ('CustomData', configuration.custom_data),
-             ('DisableSshPasswordAuthentication',
-              configuration.disable_ssh_password_authentication,
-              _lower)])
+    def linux_configuration_to_xml(configuration, xml):
+        AzureXmlSerializer.data_to_xml(
+            [('ConfigurationSetType', configuration.configuration_set_type)],
+            xml
+        )
+        AzureXmlSerializer.data_to_xml(
+            [('HostName', configuration.host_name)],
+            xml
+        )
+        AzureXmlSerializer.data_to_xml(
+            [('UserName', configuration.user_name)],
+            xml
+        )
+        AzureXmlSerializer.data_to_xml(
+            [('UserPassword', configuration.user_password)],
+            xml
+        )
+        AzureXmlSerializer.data_to_xml(
+            [
+                (
+                    'DisableSshPasswordAuthentication',
+                    configuration.disable_ssh_password_authentication,
+                    _lower
+                )
+            ],
+            xml
+        )
 
         if configuration.ssh is not None:
-            xml += '<SSH>'
-            xml += '<PublicKeys>'
+            ssh = ET.Element("SSH")
+            pkeys = ET.Element("PublicKeys")
+            kpairs = ET.Element("KeyPairs")
+            ssh.append(pkeys)
+            ssh.append(kpairs)
+            xml.append(ssh)
+
             for key in configuration.ssh.public_keys:
-                xml += '<PublicKey>'
-                xml += AzureXmlSerializer.data_to_xml(
-                    [('Fingerprint', key.fingerprint),
-                     ('Path', key.path)])
-                xml += '</PublicKey>'
-            xml += '</PublicKeys>'
-            xml += '<KeyPairs>'
+                pkey = ET.Element("PublicKey")
+                pkeys.append(pkey)
+                AzureXmlSerializer.data_to_xml(
+                    [('Fingerprint', key.fingerprint)],
+                    pkey
+                )
+                AzureXmlSerializer.data_to_xml([('Path', key.path)], pkey)
+
             for key in configuration.ssh.key_pairs:
-                xml += '<KeyPair>'
-                xml += AzureXmlSerializer.data_to_xml(
-                    [('Fingerprint', key.fingerprint),
-                     ('Path', key.path)])
-                xml += '</KeyPair>'
-            xml += '</KeyPairs>'
-            xml += '</SSH>'
+                kpair = ET.Element("KeyPair")
+                kpairs.append(kpair)
+                AzureXmlSerializer.data_to_xml(
+                    [('Fingerprint', key.fingerprint)],
+                    kpair
+                )
+                AzureXmlSerializer.data_to_xml([('Path', key.path)], kpair)
+
+        if configuration.custom_data is not None:
+            AzureXmlSerializer.data_to_xml(
+                [('CustomData', configuration.custom_data)],
+                xml
+            )
+
         return xml
 
     @staticmethod
@@ -2500,7 +2603,9 @@ class AzureXmlSerializer():
         return xml
 
 
-"""Data Classes
+
+"""
+Data Classes
 
 Borrowed from the Azure SDK for Python.
 """
@@ -3167,7 +3272,9 @@ class AzureHTTPResponse(object):
         self.headers = headers
         self.body = body
 
-"""Helper Functions
+
+"""
+Helper classes and functions.
 """
 
 

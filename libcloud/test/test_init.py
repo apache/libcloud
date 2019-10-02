@@ -24,6 +24,8 @@ try:
 except ImportError:
     have_paramiko = False
 
+from mock import patch
+
 import libcloud
 from libcloud import _init_once
 from libcloud.utils.loggingconnection import LoggingConnection
@@ -34,8 +36,8 @@ from libcloud.test import unittest
 class TestUtils(unittest.TestCase):
     def test_init_once_and_debug_mode(self):
         if have_paramiko:
-            paramiko_logger = paramiko.util.logging.getLogger()
-            paramiko_logger.setLevel(logging.NOTSET)
+            paramiko_logger = logging.getLogger('paramiko')
+            paramiko_logger.setLevel(logging.INFO)
 
         # Debug mode is disabled
         _init_once()
@@ -44,7 +46,7 @@ class TestUtils(unittest.TestCase):
 
         if have_paramiko:
             paramiko_log_level = paramiko_logger.getEffectiveLevel()
-            self.assertEqual(paramiko_log_level, logging.NOTSET)
+            self.assertEqual(paramiko_log_level, logging.INFO)
 
         # Enable debug mode
         os.environ['LIBCLOUD_DEBUG'] = '/dev/null'
@@ -63,6 +65,19 @@ class TestUtils(unittest.TestCase):
     def test_raises_error(self):
         with self.assertRaises(DriverTypeNotFoundError):
             libcloud.get_driver('potato', 'potato')
+
+    @patch.object(libcloud.requests, '__version__', '2.6.0')
+    @patch.object(libcloud.requests.packages.chardet, '__version__', '2.2.1')
+    def test_init_once_detects_bad_yum_install_requests(self, *args):
+        expected_msg = 'Known bad version of requests detected'
+        with self.assertRaisesRegexp(AssertionError, expected_msg):
+            _init_once()
+
+    @patch.object(libcloud.requests, '__version__', '2.6.0')
+    @patch.object(libcloud.requests.packages.chardet, '__version__', '2.3.0')
+    def test_init_once_correct_chardet_version(self, *args):
+        _init_once()
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

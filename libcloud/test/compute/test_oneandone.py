@@ -271,11 +271,6 @@ class OneAndOneTests(unittest.TestCase):
             .ex_get_server_firewall_policies("srv_id", "ip_id")
         self.assertNotEqual(firewall, None)
 
-    def test_ex_remove_server_firewall_policies(self):
-        node = self.driver \
-            .ex_remove_server_firewall_policy("srv_id", "ip_id")
-        self.assertNotEqual(node, None)
-
     def test_ex_add_server_firewall_policy(self):
         node = self.driver \
             .ex_add_server_firewall_policy("srv_id", "ip_id", "fw_id")
@@ -283,7 +278,7 @@ class OneAndOneTests(unittest.TestCase):
 
     def test_ex_list_shared_storages(self):
         storages = self.driver.ex_list_shared_storages()
-        self.assertEquals(len(storages), 3)
+        self.assertEqual(len(storages), 3)
 
     def test_ex_get_shared_storage(self):
         storage = self.driver.ex_get_shared_storage('storage_1')

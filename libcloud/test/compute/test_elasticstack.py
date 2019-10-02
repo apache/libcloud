@@ -15,6 +15,7 @@
 
 import sys
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.compute.base import Node
 from libcloud.compute.drivers.elasticstack import ElasticStackException
@@ -44,8 +45,7 @@ class ElasticStackTestCase(object):
         self.mockHttp.type = 'UNAUTHORIZED'
         try:
             self.driver.list_nodes()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('test should have thrown')
@@ -63,8 +63,7 @@ class ElasticStackTestCase(object):
         self.mockHttp.type = 'PARSE_ERROR'
         try:
             self.driver.list_nodes()
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             self.assertTrue(str(e).find('X-Elastic-Error') != -1)
         else:
             self.fail('test should have thrown')
@@ -173,8 +172,8 @@ class ElasticHostsTestCase(ElasticStackTestCase, unittest.TestCase):
 
     def test_invalid_region(self):
         expected_msg = r'Invalid region.+'
-        self.assertRaisesRegexp(ValueError, expected_msg, ElasticHosts,
-                                'foo', 'bar', region='invalid')
+        assertRaisesRegex(self, ValueError, expected_msg, ElasticHosts,
+                          'foo', 'bar', region='invalid')
 
 
 class SkaliCloudTestCase(ElasticStackTestCase, unittest.TestCase):

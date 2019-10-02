@@ -39,8 +39,8 @@ IRC
 Issue Tracker
 -------------
 
-For bug and issue tracking we use JIRA located at
-https://issues.apache.org/jira/browse/LIBCLOUD.
+For bug and issue tracking we use Github issues located at
+https://github.com/apache/libcloud/issues.
 
 Testing
 -------
@@ -48,13 +48,14 @@ Testing
 For information how to run the tests and how to generate the test coverage
 report, please see the :doc:`Testing page </testing>`.
 
+.. _ci-cd:
+
 Continuous Integration
 ----------------------
 
-For continuous integration we use Apache buildbot instance and Travis-CI. You
-can find build reports on the following two links:
+For continuous integration we use Travis-CI. You can find build reports on the
+following links:
 
-* https://ci.apache.org/waterfall?builder=libcloud-trunk-tox&builder=libcloud-site-staging
 * https://travis-ci.org/apache/libcloud
 
 Travis-CI builder is also integrated with Github which means that if you open a
@@ -63,11 +64,13 @@ pull request there, Travis-CI will automatically build it.
 If you want to validate the build before raising the PR, Travis-CI can be enabled for personal
 accounts and branches separately.
 
+.. _code-coverage:
+
 Test Coverage
 -------------
 
 Test coverage report is automatically generated after every push and can be
-found at http://ci.apache.org/projects/libcloud/coverage.
+found at https://codecov.io/github/apache/libcloud?branch=trunk.
 
 .. _`announce@libcloud.apache.org`: mailto:announce-subscribe@libcloud.apache.org
 .. _`users@libcloud.apache.org`: mailto:users-subscribe@libcloud.apache.org

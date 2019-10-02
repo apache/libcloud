@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
-
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.compute.types import InvalidCredsError
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import base64_encode_string
 
 try:
     import simplejson as json
@@ -62,7 +61,7 @@ class BrightboxConnection(ConnectionUserAndKey):
     def _fetch_oauth_token(self):
         body = json.dumps({'client_id': self.user_id, 'grant_type': 'none'})
 
-        authorization = 'Basic ' + str(base64.encodestring(b('%s:%s' %
+        authorization = 'Basic ' + str(base64_encode_string(b('%s:%s' %
                                        (self.user_id, self.key)))).rstrip()
 
         self.connect()

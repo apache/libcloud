@@ -43,6 +43,7 @@ from libcloud.test import unittest
 from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
+from libcloud.test.secrets import STORAGE_AZURITE_BLOBS_PARAMS
 
 
 class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
@@ -366,6 +367,19 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
             self.assertTrue(isinstance(headers['Content-Length'], basestring))
 
 
+class AzuriteBlobsMockHttp(AzureBlobsMockHttp):
+    fixtures = StorageFileFixtures('azurite_blobs')
+
+    def _get_method_name(self, *args, **kwargs):
+        method_name = super(AzuriteBlobsMockHttp, self).\
+            _get_method_name(*args, **kwargs)
+
+        if method_name.startswith('_account'):
+            method_name = method_name[8:]
+
+        return method_name
+
+
 class AzureBlobsTests(unittest.TestCase):
     driver_type = AzureBlobsStorageDriver
     driver_args = STORAGE_AZURE_BLOBS_PARAMS
@@ -395,8 +409,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.mock_response_klass.type = 'UNAUTHORIZED'
         try:
             self.driver.list_containers()
-        except InvalidCredsError:
-            e = sys.exc_info()[1]
+        except InvalidCredsError as e:
             self.assertEqual(True, isinstance(e, InvalidCredsError))
         else:
             self.fail('Exception was not thrown')
@@ -663,8 +676,7 @@ class AzureBlobsTests(unittest.TestCase):
                                       object_name=object_name,
                                       verify_hash=True,
                                       ex_blob_type='invalid-blob')
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(str(e).lower().find('invalid blob type') != -1)
         else:
             self.fail('Exception was not thrown')
@@ -774,8 +786,7 @@ class AzureBlobsTests(unittest.TestCase):
                                       extra=extra,
                                       verify_hash=False,
                                       ex_blob_type='PageBlob')
-        except LibcloudError:
-            e = sys.exc_info()[1]
+        except LibcloudError as e:
             self.assertTrue(str(e).lower().find('not aligned') != -1)
 
         os.remove(file_path)
@@ -863,6 +874,24 @@ class AzureBlobsTests(unittest.TestCase):
 
         object_name = 'foo_test_upload'
         iterator = BytesIO(b('345'))
+        extra = {'content_type': 'text/plain'}
+        obj = self.driver.upload_object_via_stream(container=container,
+                                                   object_name=object_name,
+                                                   iterator=iterator,
+                                                   extra=extra,
+                                                   ex_blob_type='BlockBlob')
+
+        self.assertEqual(obj.name, object_name)
+        self.assertEqual(obj.size, 3)
+        self.mock_response_klass.use_param = None
+
+    def test_upload_blob_object_via_stream_from_iterable(self):
+        self.mock_response_klass.use_param = 'comp'
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+
+        object_name = 'foo_test_upload'
+        iterator = iter([b('34'), b('5')])
         extra = {'content_type': 'text/plain'}
         obj = self.driver.upload_object_via_stream(container=container,
                                                    object_name=object_name,
@@ -971,6 +1000,11 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(host1, 'fakeaccount1.blob.core.windows.net')
         self.assertEqual(host2, 'fakeaccount2.blob.core.windows.net')
         self.assertEqual(host3, 'test.foo.bar.com')
+
+
+class AzuriteBlobsTests(AzureBlobsTests):
+    driver_args = STORAGE_AZURITE_BLOBS_PARAMS
+    mock_response_klass = AzuriteBlobsMockHttp
 
 
 if __name__ == '__main__':

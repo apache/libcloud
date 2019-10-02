@@ -1,0 +1,6 @@
+{
+    "code": 404,
+    "message": "Unknown record",
+    "object": "LocalizedHTTPNotFound",
+    "cause": "Not Found"
+}

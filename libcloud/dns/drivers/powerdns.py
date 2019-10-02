@@ -15,7 +15,6 @@
 PowerDNS Driver
 """
 import json
-import sys
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.exceptions import BaseHTTPError
@@ -42,8 +41,7 @@ class PowerDNSResponse(JsonResponse):
 
         try:
             body = self.parse_body()
-        except MalformedResponseError:
-            e = sys.exc_info()[1]
+        except MalformedResponseError as e:
             body = '%s: %s' % (e.value, e.body)
         try:
             errors = [body['error']]
@@ -178,28 +176,56 @@ class PowerDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
+        extra = extra or {}
+
         action = '%s/servers/%s/zones/%s' % (self.api_root, self.ex_server,
                                              zone.id)
         if extra is None or extra.get('ttl', None) is None:
             raise ValueError('PowerDNS requires a ttl value for every record')
-        record = {
-            'content': data,
-            'disabled': False,
-            'name': name,
-            'ttl': extra['ttl'],
-            'type': type,
-        }
-        payload = {'rrsets': [{'name': name,
-                               'type': type,
-                               'changetype': 'REPLACE',
-                               'records': [record]
-                               }]
-                   }
+
+        if self._pdns_version() == 3:
+            record = {
+                'content': data,
+                'disabled': False,
+                'name': name,
+                'ttl': extra['ttl'],
+                'type': type,
+            }
+            payload = {
+                'rrsets': [
+                    {
+                        'name': name,
+                        'type': type,
+                        'changetype': 'REPLACE',
+                        'records': [record]
+                    }
+                ]
+            }
+        elif self._pdns_version() == 4:
+            record = {
+                'content': data,
+                'disabled': extra.get('disabled', False),
+                'set-ptr': False,
+            }
+            payload = {
+                'rrsets': [
+                    {
+                        'name': name,
+                        'type': type,
+                        'changetype': 'REPLACE',
+                        'ttl': extra['ttl'],
+                        'records': [record],
+                    }
+                ]
+            }
+
+            if 'comment' in extra:
+                payload['rrsets'][0]['comments'] = extra['comment']
+
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -250,8 +276,7 @@ class PowerDNSDriver(DNSDriver):
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='POST')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith("Domain '%s' already exists" % domain):
                 raise ZoneAlreadyExistsError(zone_id=zone_id, driver=self,
@@ -283,7 +308,6 @@ class PowerDNSDriver(DNSDriver):
             # I'm not sure if we should raise a ZoneDoesNotExistError here. The
             # base DNS API only specifies that we should return a bool. So,
             # let's ignore this code for now.
-            # e = sys.exc_info()[1]
             # if e.code == httplib.UNPROCESSABLE_ENTITY and \
             #     e.message.startswith('Could not find domain'):
             #     raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -309,7 +333,6 @@ class PowerDNSDriver(DNSDriver):
             # I'm not sure if we should raise a ZoneDoesNotExistError here. The
             # base DNS API only specifies that we should return a bool. So,
             # let's ignore this code for now.
-            # e = sys.exc_info()[1]
             # if e.code == httplib.UNPROCESSABLE_ENTITY and \
             #     e.message.startswith('Could not find domain'):
             #     raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -336,8 +359,7 @@ class PowerDNSDriver(DNSDriver):
                                              zone_id)
         try:
             response = self.connection.request(action=action, method='GET')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY:
                 raise ZoneDoesNotExistError(zone_id=zone_id, driver=self,
                                             value=e.message)
@@ -357,8 +379,7 @@ class PowerDNSDriver(DNSDriver):
                                              zone.id)
         try:
             response = self.connection.request(action=action, method='GET')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
@@ -401,28 +422,56 @@ class PowerDNSDriver(DNSDriver):
                                              record.zone.id)
         if extra is None or extra.get('ttl', None) is None:
             raise ValueError('PowerDNS requires a ttl value for every record')
-        updated_record = {
-            'content': data,
-            'disabled': False,
-            'name': name,
-            'ttl': extra['ttl'],
-            'type': type,
-        }
-        payload = {'rrsets': [{'name': record.name,
-                               'type': record.type,
-                               'changetype': 'DELETE',
-                               },
-                              {'name': name,
-                               'type': type,
-                               'changetype': 'REPLACE',
-                               'records': [updated_record]
-                               }]
-                   }
+
+        if self._pdns_version() == 3:
+            updated_record = {
+                'content': data,
+                'disabled': False,
+                'name': name,
+                'ttl': extra['ttl'],
+                'type': type,
+            }
+            payload = {
+                'rrsets': [
+                    {
+                        'name': record.name,
+                        'type': record.type,
+                        'changetype': 'DELETE',
+                    },
+                    {
+                        'name': name,
+                        'type': type,
+                        'changetype': 'REPLACE',
+                        'records': [updated_record]
+                    }
+                ]
+            }
+        elif self._pdns_version() == 4:
+            disabled = False
+            if "disabled" in extra:
+                disabled = extra['disabled']
+            updated_record = {
+                'content': data,
+                'disabled': disabled,
+                'set-ptr': False,
+            }
+            payload = {
+                'rrsets': [{
+                    'name': name,
+                    'type': type,
+                    'changetype': 'REPLACE',
+                    'ttl': extra['ttl'],
+                    'records': [updated_record],
+                }]
+            }
+
+            if 'comment' in extra:
+                payload["rrsets"][0]["comments"] = extra['comment']
+
         try:
             self.connection.request(action=action, data=json.dumps(payload),
                                     method='PATCH')
-        except BaseHTTPError:
-            e = sys.exc_info()[1]
+        except BaseHTTPError as e:
             if e.code == httplib.UNPROCESSABLE_ENTITY and \
                e.message.startswith('Could not find domain'):
                 raise ZoneDoesNotExistError(zone_id=record.zone.id,
@@ -448,13 +497,30 @@ class PowerDNSDriver(DNSDriver):
             zones.append(self._to_zone(item))
         return zones
 
-    def _to_record(self, item, zone):
-        return Record(id=None, name=item['name'], data=item['content'],
+    def _to_record(self, item, zone, record=None):
+        if record is None:
+            data = item['content']
+        else:
+            data = record['content']
+        return Record(id=None, name=item['name'], data=data,
                       type=item['type'], zone=zone, driver=self,
                       ttl=item['ttl'])
 
     def _to_records(self, items, zone):
         records = []
-        for item in items.object['records']:
-            records.append(self._to_record(item, zone))
+        if self._pdns_version() == 3:
+            for item in items.object['records']:
+                records.append(self._to_record(item, zone))
+        elif self._pdns_version() == 4:
+            for item in items.object['rrsets']:
+                for record in item['records']:
+                    records.append(self._to_record(item, zone, record))
         return records
+
+    def _pdns_version(self):
+        if self.api_root == '':
+            return 3
+        elif self.api_root == '/api/v1':
+            return 4
+
+        raise ValueError('PowerDNS version has not been declared')

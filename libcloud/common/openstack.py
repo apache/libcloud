@@ -204,6 +204,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                             domain_name=self._ex_domain_name,
                             token_scope=self._ex_token_scope,
                             timeout=self.timeout,
+                            proxy_url=self.proxy_url,
                             parent_conn=self)
 
         return self._osa
@@ -362,7 +363,7 @@ class OpenStackResponse(Response):
         if self.has_content_type('application/xml'):
             try:
                 return ET.XML(self.body)
-            except:
+            except Exception:
                 raise MalformedResponseError(
                     'Failed to parse XML',
                     body=self.body,
@@ -371,7 +372,7 @@ class OpenStackResponse(Response):
         elif self.has_content_type('application/json'):
             try:
                 return json.loads(self.body)
-            except:
+            except Exception:
                 raise MalformedResponseError(
                     'Failed to parse JSON',
                     body=self.body,
@@ -380,7 +381,6 @@ class OpenStackResponse(Response):
             return self.body
 
     def parse_error(self):
-        text = None
         body = self.parse_body()
 
         if self.has_content_type('application/xml'):

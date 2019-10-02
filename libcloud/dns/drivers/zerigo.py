@@ -81,7 +81,7 @@ class ZerigoDNSResponse(XmlResponse):
         elif status != 503:
             try:
                 body = ET.XML(self.body)
-            except:
+            except Exception:
                 raise MalformedResponseError('Failed to parse XML',
                                              body=self.body)
 

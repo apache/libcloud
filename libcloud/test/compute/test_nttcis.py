@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import pytest
 from types import GeneratorType
 from libcloud.utils.py3 import httplib
@@ -1003,13 +1018,15 @@ def test_ex_get_vlan(driver):
 def test_ex_wait_for_state(driver):
     driver.ex_wait_for_state('NORMAL',
                              driver.ex_get_vlan,
-                             vlan_id='0e56433f-d808-4669-821d-812769517ff8')
+                             vlan_id='0e56433f-d808-4669-821d-812769517ff8',
+                             poll_interval=0.1)
 
 
 def test_ex_wait_for_state_NODE(driver):
     driver.ex_wait_for_state('running',
                              driver.ex_get_node_by_id,
-                             id='e75ead52-692f-4314-8725-c8a4f4d13a87')
+                             id='e75ead52-692f-4314-8725-c8a4f4d13a87',
+                             poll_interval=0.1)
 
 
 def test_ex_wait_for_state_FAIL(driver):
@@ -1017,7 +1034,8 @@ def test_ex_wait_for_state_FAIL(driver):
         driver.ex_wait_for_state('starting',
                                  driver.ex_get_node_by_id,
                                  id='e75ead52-692f-4314-8725-c8a4f4d13a87',
-                                 timeout=2
+                                 poll_interval=0.1,
+                                 timeout=0.1
                                  )
     assert context.value.code == 'running'
     assert 'timed out' in context.value.msg

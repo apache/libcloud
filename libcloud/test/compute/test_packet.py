@@ -32,6 +32,14 @@ from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
+# This is causing test failures inder Python 3.5
+import libcloud.compute.drivers.packet
+libcloud.compute.drivers.packet.USE_ASYNC_IO_IF_AVAILABLE = False
+
+__all__ = [
+    'PacketTest'
+]
+
 
 class PacketTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
@@ -155,8 +163,8 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
         config = self.driver.ex_get_bgp_config()
         self.assertEqual(len(config), 2)
 
-    def test_list_nodes_for_project(self):
-        nodes = self.driver.list_nodes_for_project(ex_project_id='4b653fce-6405-4300-9f7d-c587b7888fe5')
+    def test_ex_list_nodes_for_project(self):
+        nodes = self.driver.ex_list_nodes_for_project(ex_project_id='4b653fce-6405-4300-9f7d-c587b7888fe5')
         self.assertEqual(nodes[0].public_ips, ['147.75.102.193', '2604:1380:2000:c100::3'])
 
     def test_ex_create_bgp_session(self):
@@ -165,7 +173,6 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
         self.assertEqual(session['status'], 'unknown')
 
     def test_ex_get_bgp_session(self):
-        node = self.driver.list_nodes('project-id')[0]
         session = self.driver.ex_get_bgp_session(self.driver.ex_list_bgp_sessions()[0]['id'])
         self.assertEqual(session['status'], 'down')
 
@@ -226,7 +233,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
         assignments = self.driver.ex_list_ip_assignments_for_node(node)
         for ip_assignment in assignments['ip_addresses']:
             if ip_assignment['gateway'] == '147.75.40.2':
-                response = self.driver.ex_disassociate_address(
+                self.driver.ex_disassociate_address(
                     ip_assignment['id'])
                 break
 
@@ -241,12 +248,12 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
             10, location, description="test volume", plan="storage_1",
             ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
         assert len(volume.extra['attachments']) == 0
-        assert volume.extra['locked'] == False
+        assert not volume.extra['locked']
 
     def test_attach_volume(self):
         attached = False
-        volumes = self.driver.list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
-        node = self.driver.list_nodes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')[0]
+        volumes = self.driver.ex_list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
+        node = self.driver.ex_list_nodes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')[0]
         for vol in volumes:
             if len(vol.extra['attachments']) == 0:
                 attached = self.driver.attach_volume(node, vol)
@@ -255,7 +262,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
 
     def test_detach_volume(self):
         detached = False
-        volumes = self.driver.list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
+        volumes = self.driver.ex_list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
         for vol in volumes:
             if len(vol.extra['attachments']) > 0:
                 detached = self.driver.detach_volume(vol)
@@ -264,7 +271,7 @@ g5ZW2BiJzvqz5PebGS70y/ySCNW1qQmJURK/Wc1bt9en root@libcloud")
 
     def test_destroy_volume(self):
         destroyed = False
-        volumes = self.driver.list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
+        volumes = self.driver.ex_list_volumes_for_project(ex_project_id='3d27fd13-0466-4878-be22-9a4b5595a3df')
         for vol in volumes:
             if len(vol.extra['attachments']) == 0:
                 destroyed = self.driver.destroy_volume(vol)
@@ -304,7 +311,7 @@ class PacketMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_ips(self, method, url, body, headers):
-        if method =='POST':
+        if method == 'POST':
             body = self.fixtures.load('reserve_ip.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -352,7 +359,7 @@ class PacketMockHttp(MockHttp):
 
     def _devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb_actions(
             self, method, url, body, headers):
-            return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
 
     def _devices_1e52437e_bbbb_cccc_dddd_74a9dfd3d3bb_bgp_sessions(self,
             method, url, body, headers):
@@ -382,7 +389,6 @@ class PacketMockHttp(MockHttp):
         if method == 'GET':
             body = self.fixtures.load('bgp_sessions.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
 
     def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_bgp_sessions(self,
             method, url, body, headers):
@@ -466,6 +472,7 @@ class PacketMockHttp(MockHttp):
             method, url, body, headers):
         if method == 'DELETE':
             return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.NO_CONTENT])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

@@ -44,6 +44,7 @@ class Provider(object):
     DNSIMPLE = 'dnsimple'
     DURABLEDNS = 'durabledns'
     GANDI = 'gandi'
+    GANDI_LIVE = 'gandi_live'
     GODADDY = 'godaddy'
     GOOGLE = 'google'
     HOSTVIRTUAL = 'hostvirtual'

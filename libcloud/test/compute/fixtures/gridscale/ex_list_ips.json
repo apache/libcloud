@@ -1,0 +1,34 @@
+{
+  "ips": {
+    "56b8d161-325b-4fd4-a453-6101cf563713": {
+      "family": 4,
+      "location_uuid": "45ed677b-3702-4b36",
+      "object_uuid": "56b8d161-325b-4fd4",
+      "change_time": "2019-06-07T12:57:26Z",
+      "relations": {
+        "loadbalancers": [],
+        "servers": [
+          {
+            "server_name": "test.test",
+            "server_uuid": "1479405e-d46c-47a2-91e8-eb43951c899f",
+            "create_time": "2019-06-07T12:57:30Z"
+          }
+        ]
+      },
+      "create_time": "2019-06-07T12:57:26Z",
+      "location_name": "de/fra",
+      "location_country": "de",
+      "location_iata": "fra",
+      "ip": "185.102.95.236",
+      "labels": [],
+      "reverse_dns": "static-185-102-95-236.ipv4.gridserver.io",
+      "delete_block": false,
+      "failover": false,
+      "usage_in_minutes": 27893,
+      "current_price": 1.67358,
+      "status": "active",
+      "name": "test.test_ip",
+      "prefix": "185.102.95.236/32"
+    }
+  }
+}

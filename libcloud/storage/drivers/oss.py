@@ -19,7 +19,6 @@ import base64
 import codecs
 import hmac
 import time
-import sys
 from hashlib import sha1
 
 from libcloud.utils.py3 import ET
@@ -91,7 +90,7 @@ class OSSResponse(XmlResponse):
                 body = ET.XML(self.body.encode('utf-8'), parser=parser)
             else:
                 body = ET.XML(self.body)
-        except:
+        except Exception:
             raise MalformedResponseError('Failed to parse XML',
                                          body=self.body,
                                          driver=self.connection.driver)
@@ -207,6 +206,8 @@ class OSSConnection(ConnectionUserAndKey):
             path = '/%s%s' % (self._container.name, self.action)
         else:
             path = self.action
+
+        # pylint: disable=no-member
         params['Signature'] = self._get_auth_signature(
             method=self.method, headers=headers, params=params,
             expires=params['Expires'], secret_key=self.key, path=path,
@@ -685,11 +686,10 @@ class OSSStorageDriver(StorageDriver):
             # Commit the chunk info and complete the upload
             etag = self._commit_multipart(object_path, upload_id, chunks,
                                           container=container)
-        except Exception:
-            exc = sys.exc_info()[1]
+        except Exception as e:
             # Amazon provides a mechanism for aborting an upload.
             self._abort_multipart(object_path, upload_id, container=container)
-            raise exc
+            raise e
 
         # Modify the response header of the first request. This is used
         # by other functions once the callback is done

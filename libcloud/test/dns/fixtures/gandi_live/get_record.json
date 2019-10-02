@@ -1,0 +1,8 @@
+{
+    "rrset_type": "A",
+    "rrset_ttl": 9600,
+    "rrset_name": "bob",
+    "rrset_values": [
+        "127.0.1.1"
+    ]
+}

@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import sys
 import unittest
 
@@ -59,8 +74,7 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             self.driver.get_zone(zone_id='13')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, '13')
         else:
             self.fail('Exception was not thrown')
@@ -87,8 +101,7 @@ class LuadnsTests(unittest.TestCase):
         zone = self.test_zone
         try:
             self.driver.delete_zone(zone=zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, '11')
         else:
             self.fail('Exception was not thrown')
@@ -107,8 +120,7 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = 'CREATE_ZONE_ZONE_ALREADY_EXISTS'
         try:
             self.driver.create_zone(domain='test.com')
-        except ZoneAlreadyExistsError:
-            e = sys.exc_info()[1]
+        except ZoneAlreadyExistsError as e:
             self.assertEqual(e.zone_id, 'test.com')
         else:
             self.fail('Exception was not thrown')
@@ -146,8 +158,7 @@ class LuadnsTests(unittest.TestCase):
         LuadnsMockHttp.type = 'GET_RECORD_RECORD_DOES_NOT_EXIST'
         try:
             self.driver.get_record(zone_id='31', record_id='31')
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, '31')
         else:
             self.fail('Exception was not thrown')
@@ -173,8 +184,7 @@ class LuadnsTests(unittest.TestCase):
         record = self.test_record
         try:
             self.driver.delete_record(record=record)
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, '13')
         else:
             self.fail('Exception was not thrown')

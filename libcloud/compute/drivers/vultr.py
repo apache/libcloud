@@ -39,7 +39,7 @@ class rate_limited:
     :param int retries: Number of retries.
     """
 
-    def __init__(self, sleep=1, retries=1):
+    def __init__(self, sleep=0.5, retries=1):
         self.sleep = sleep
         self.retries = retries
 
@@ -63,7 +63,8 @@ class rate_limited:
                     last_exception = e
                     time.sleep(self.sleep)  # hit by rate limit, let's sleep
 
-            raise last_exception
+            if last_exception:
+                raise last_exception  # pylint: disable=raising-bad-type
 
         update_wrapper(wrapper, call)
         return wrapper

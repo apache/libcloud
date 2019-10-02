@@ -1,0 +1,56 @@
+{
+  "value": [
+    {
+      "name": "test_network",
+      "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/REVIZOR/providers/Microsoft.Network/virtualNetworks/test_network",
+      "etag": "W/\"99999999-9999-9999-9999-999999999999\"",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "westus2",
+      "tags": {
+        "tag_key1": "tag_val1"
+      },
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "99999999-9999-9999-9999-999999999999",
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.39.0.0/16"
+          ]
+        },
+        "dhcpOptions": {
+          "dnsServers": [
+            "172.11.111.11",
+            "172.11.111.12",
+            "8.8.8.8",
+            "8.8.4.4"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "Azure_VPC_Subnet",
+            "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/REVIZOR/providers/Microsoft.Network/virtualNetworks/test_network/subnets/Azure_VPC_Subnet",
+            "etag": "W/\"99999999-9999-9999-9999-999999999990\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "addressPrefix": "10.17.26.0/19",
+              "ipConfigurations": [
+                {
+                  "id": "/subscriptions/99999999-9999-9999-9999-999999999999/resourceGroups/REVIZOR/providers/Microsoft.Network/networkInterfaces/test-nic/ipConfigurations/ipconfig1"
+                }
+              ],
+              "delegations": [
+
+              ]
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          }
+        ],
+        "virtualNetworkPeerings": [
+
+        ],
+        "enableDdosProtection": false,
+        "enableVmProtection": false
+      }
+    }
+  ]
+}

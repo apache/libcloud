@@ -20,8 +20,8 @@ matrix:
     - python: 3.7
       dist: xenial
       sudo: required
-    - pypy
-    - pypy3
+    - python: pypy
+    - python: pypy3
     - env: ENV=checks
       python: 2.7
       before_script: TOX_ENV=checks
@@ -34,7 +34,9 @@ matrix:
     - env: ENV=coverage
       python: 2.7
       before_script: TOX_ENV=coverage-travis
-    - env: ENV=docs
+    - env:
+        - ENV=docs
+        - secure: "d4F2RE2iWFh6yqE5MUxnakDihBMsY/hMsaMWllVAYU/fvCMKhaW97d51EiS55kur/eNVX2jpEqkVkSu5VeNSxC3w9sZTG+dHVb8A43o9QaSCPngvHTZ4X9fx8lB96G7uju6pmm5ovKt85hxZW2uQNYo3ugwCUl94lVDYqo+KJUM="
       python: 3.5
       before_script: TOX_ENV=docs-travis
       # Note: graphviz is needed for grapgs embedded in the docs
@@ -47,12 +49,12 @@ matrix:
       # Trigger ReadTheDocs build on docs builder
       after_success:
         - pip3 install requests
-        - python3 ./contrib/trigger_rtd_build.py 8284
+        - python3 ./contrib/trigger_rtd_build.py
 
 install:
   - pip install --upgrade "pip==9.0.1"
   - pip install "virtualenv==15.1.0"
-  - pip install "tox==2.8.2"
+  - pip install "tox==3.12.1"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:
@@ -62,6 +64,7 @@ cache:
   apt: true
   directories:
     - $HOME/.cache/pip # pip cache
+    - .tox
 
 notifications:
   # Disabled until ASF switches to new mailing list software

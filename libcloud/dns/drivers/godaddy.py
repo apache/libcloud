@@ -18,7 +18,7 @@ __all__ = [
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from libcloud.common.base import ConnectionKey, JsonResponse

@@ -1,0 +1,6 @@
+{
+  "code": 409,
+  "message": "Zone badexample.com already exists",
+  "object": "HTTPConflict",
+  "cause": "Duplicate Entry"
+}

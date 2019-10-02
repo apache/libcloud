@@ -21,7 +21,7 @@ import os
 
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from libcloud.utils.py3 import httplib
@@ -314,7 +314,7 @@ class DockerContainerDriver(ContainerDriver):
         for image in result:
             try:
                 name = image.get('RepoTags')[0]
-            except:
+            except Exception:
                 name = image.get('Id')
             images.append(ContainerImage(
                 id=image.get('Id'),
@@ -687,10 +687,10 @@ class DockerContainerDriver(ContainerDriver):
         """
         try:
             name = data.get('Name').strip('/')
-        except:
+        except Exception:
             try:
                 name = data.get('Names')[0].strip('/')
-            except:
+            except Exception:
                 name = data.get('Id')
         state = data.get('State')
         if isinstance(state, dict):

@@ -1,9 +1,7 @@
 [MASTER]
 # Add <file or directory> to the black list. It should be a base name, not a
 # path. You may set this option multiple times.
-ignore=test
-ignore=constants
-
+ignore=test,constants
 
 # Pickle collected data for later comparisons.
 persistent=yes

@@ -16,11 +16,9 @@ __all__ = [
     'HostVirtualDNSDriver'
 ]
 
-import sys
-
 try:
     import simplejson as json
-except:
+except Exception:
     import json
 
 from libcloud.utils.py3 import httplib
@@ -124,8 +122,7 @@ class HostVirtualDNSDriver(DNSDriver):
         try:
             result = self.connection.request(
                 API_ROOT + '/dns/records/', params=params).object
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             if 'Not Found: No Records Found' in e.value:
                 return []
             raise e

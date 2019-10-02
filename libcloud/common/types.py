@@ -70,7 +70,7 @@ class ProviderError(LibcloudError):
     Exception used when provider gives back
     error response (HTTP 4xx, 5xx) for a request.
 
-    Specific sub types can be derieved for errors like
+    Specific sub types can be derived for errors like
     HTTP 401 : InvalidCredsError
     HTTP 404 : NodeNotFoundError, ContainerDoesNotExistError
     """

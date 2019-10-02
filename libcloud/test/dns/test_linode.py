@@ -69,10 +69,10 @@ class LinodeTests(unittest.TestCase):
                                            'weight'])
 
         srvrecord = records[1]
-        self.assertEquals(srvrecord.id, '3585141')
-        self.assertEquals(srvrecord.name, '_minecraft._udp')
-        self.assertEquals(srvrecord.type, RecordType.SRV)
-        self.assertEquals(srvrecord.data, 'mc.linode.com')
+        self.assertEqual(srvrecord.id, '3585141')
+        self.assertEqual(srvrecord.name, '_minecraft._udp')
+        self.assertEqual(srvrecord.type, RecordType.SRV)
+        self.assertEqual(srvrecord.data, 'mc.linode.com')
         self.assertHasKeys(srvrecord.extra, ['protocol', 'ttl_sec', 'port',
                                              'priority', 'weight'])
 
@@ -82,8 +82,7 @@ class LinodeTests(unittest.TestCase):
         LinodeMockHttp.type = 'ZONE_DOES_NOT_EXIST'
         try:
             self.driver.list_records(zone=zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -103,8 +102,7 @@ class LinodeTests(unittest.TestCase):
 
         try:
             self.driver.get_zone(zone_id='4444')
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, '4444')
         else:
             self.fail('Exception was not thrown')
@@ -213,8 +211,7 @@ class LinodeTests(unittest.TestCase):
 
         try:
             self.driver.delete_zone(zone=zone)
-        except ZoneDoesNotExistError:
-            e = sys.exc_info()[1]
+        except ZoneDoesNotExistError as e:
             self.assertEqual(e.zone_id, zone.id)
         else:
             self.fail('Exception was not thrown')
@@ -233,8 +230,7 @@ class LinodeTests(unittest.TestCase):
 
         try:
             self.driver.delete_record(record=record)
-        except RecordDoesNotExistError:
-            e = sys.exc_info()[1]
+        except RecordDoesNotExistError as e:
             self.assertEqual(e.record_id, record.id)
         else:
             self.fail('Exception was not thrown')

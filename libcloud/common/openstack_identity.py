@@ -18,7 +18,6 @@ Common / shared code for handling authentication against OpenStack identity
 service (Keystone).
 """
 
-import sys
 import datetime
 
 from libcloud.utils.py3 import httplib
@@ -553,7 +552,7 @@ class OpenStackAuthResponse(Response):
         if content_type == 'application/json':
             try:
                 data = json.loads(self.body)
-            except:
+            except Exception:
                 driver = OpenStackIdentityConnection
                 raise MalformedResponseError('Failed to parse JSON',
                                              body=self.body,
@@ -579,11 +578,12 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None):
         super(OpenStackIdentityConnection, self).__init__(user_id=user_id,
                                                           key=key,
                                                           url=auth_url,
-                                                          timeout=timeout)
+                                                          timeout=timeout,
+                                                          proxy_url=proxy_url)
 
         self.parent_conn = parent_conn
 
@@ -817,8 +817,7 @@ class OpenStackIdentity_1_1_Connection(OpenStackIdentityConnection):
         else:
             try:
                 body = json.loads(resp.body)
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
 
             try:
@@ -828,8 +827,7 @@ class OpenStackIdentity_1_1_Connection(OpenStackIdentityConnection):
                 self.auth_token_expires = parse_date(expires)
                 self.urls = body['auth']['serviceCatalog']
                 self.auth_user_info = None
-            except KeyError:
-                e = sys.exc_info()[1]
+            except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
 
@@ -902,8 +900,7 @@ class OpenStackIdentity_2_0_Connection(OpenStackIdentityConnection):
                 self.auth_token_expires = parse_date(expires)
                 self.urls = access['serviceCatalog']
                 self.auth_user_info = access.get('user', {})
-            except KeyError:
-                e = sys.exc_info()[1]
+            except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
 
@@ -936,7 +933,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None):
         """
         :param tenant_name: Name of the project this user belongs to. Note:
                             When token_scope is set to project, this argument
@@ -960,6 +957,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              domain_name=domain_name,
                              token_scope=token_scope,
                              timeout=timeout,
+                             proxy_url=proxy_url,
                              parent_conn=parent_conn)
 
         if self.token_scope not in self.VALID_TOKEN_SCOPES:
@@ -1036,14 +1034,12 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
             try:
                 body = json.loads(response.body)
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
 
             try:
                 roles = self._to_roles(body['token']['roles'])
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 roles = []
 
             try:
@@ -1055,8 +1051,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 self.urls = body['token'].get('catalog', None)
                 self.auth_user_info = None
                 self.auth_user_roles = roles
-            except KeyError:
-                e = sys.exc_info()[1]
+            except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
             body = 'code: %s body:%s' % (response.status, response.body)
@@ -1416,8 +1411,9 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
     The protocol name required to get the full path
     must be set in the self.tenant_name attribute.
 
-    The user must be scoped to the first project accessible with the
-    specified access token (usually there are only one)
+    The self.domain_name attribute can be used either to select the
+    domain name in case of domain scoped token or to select the project
+    name in case of project scoped token
     """
 
     responseCls = OpenStackAuthResponse
@@ -1432,7 +1428,6 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
             return self
 
         subject_token = self._get_unscoped_token_from_oidc_token()
-        project_id = self._get_project_id(token=subject_token)
 
         data = {
             'auth': {
@@ -1447,6 +1442,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
 
         if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
             # Scope token to project (tenant)
+            project_id = self._get_project_id(token=subject_token)
             data['auth']['scope'] = {
                 'project': {
                     'id': project_id
@@ -1478,14 +1474,12 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
 
             try:
                 body = json.loads(response.body)
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
 
             try:
                 roles = self._to_roles(body['token']['roles'])
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 roles = []
 
             try:
@@ -1497,8 +1491,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 self.urls = body['token'].get('catalog', None)
                 self.auth_user_info = None
                 self.auth_user_roles = roles
-            except KeyError:
-                e = sys.exc_info()[1]
+            except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
             body = 'code: %s body:%s' % (response.status, response.body)
@@ -1562,9 +1555,16 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
         elif response.status in [httplib.OK, httplib.CREATED]:
             try:
                 body = json.loads(response.body)
-                return body["projects"][0]["id"]
-            except Exception:
-                e = sys.exc_info()[1]
+                # We use domain_name in both cases of the scoped tokens
+                # as we have used tenant as the protocol
+                if self.domain_name and self.domain_name != 'Default':
+                    for project in body['projects']:
+                        if project['name'] == self.domain_name:
+                            return project['id']
+                    raise ValueError('Project %s not found' % self.domain_name)
+                else:
+                    return body['projects'][0]['id']
+            except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
@@ -1586,9 +1586,10 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None):
         CertificateConnection.__init__(self, cert_file=key,
                                        url=auth_url,
+                                       proxy_url=proxy_url,
                                        timeout=timeout)
 
         self.parent_conn = parent_conn
@@ -1605,6 +1606,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
         self.domain_name = domain_name
         self.token_scope = token_scope
         self.timeout = timeout
+        self.proxy_url = proxy_url
 
         self.urls = {}
         self.auth_token = None
@@ -1644,8 +1646,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
             try:
                 body = json.loads(response.body)
                 return body['access']['token']['id']
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
@@ -1668,8 +1669,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
             try:
                 body = json.loads(response.body)
                 return body["tenants"][0]["name"]
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
             raise MalformedResponseError('Malformed response',
@@ -1699,8 +1699,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
                 self.auth_token_expires = parse_date(expires)
                 self.urls = access['serviceCatalog']
                 self.auth_user_info = access.get('user', {})
-            except KeyError:
-                e = sys.exc_info()[1]
+            except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
 
