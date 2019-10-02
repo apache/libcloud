@@ -40,7 +40,7 @@ class MaxihostNodeDriver(NodeDriver):
 
         try:
             res = self.connection.request('/devices',
-                                          params=attr, method='POST')
+                                          data=json.dumps(attr), method='POST')
         except BaseHTTPError as exc:
             error_message = exc.message.get('error_messages', '')
             raise ValueError('Failed to create node: %s' % (error_message))
@@ -151,8 +151,12 @@ class MaxihostNodeDriver(NodeDriver):
         return sizes
 
     def _to_size(self, data):
+        regions = []
+        for region in data['regions']:
+            if region.get('in_stock'):
+                regions.append(region.get('code'))
         extra = {'specs': data['specs'],
-                 'regions': data['regions']}
+                 'regions': regions}
         return NodeSize(id=data['slug'], name=data['name'], ram=data['specs']['memory']['total'],
                         disk=None, bandwidth=None,
                         price=None, driver=self, extra=extra)
