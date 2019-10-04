@@ -899,7 +899,7 @@ class GCEProject(UuidMixin):
         :return: True if successful
         :rtype:  ``bool``
         """
-        return self.driver.ex_set_common_instance_metadata(self, metadata)
+        return self.driver.ex_set_common_instance_metadata(metadata, force)
 
     def set_usage_export_bucket(self, bucket, prefix=None):
         """
