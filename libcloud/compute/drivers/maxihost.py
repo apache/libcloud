@@ -43,6 +43,37 @@ class MaxihostNodeDriver(NodeDriver):
     type = Provider.MAXIHOST
     name = 'Maxihost'
 
+    def _paginated_request(self, url, obj):
+        """
+        Perform multiple calls in order to have a full list of elements when
+        the API responses are paginated.
+
+        :param url: API endpoint
+        :type url: ``str``
+
+        :param obj: Result object key
+        :type obj: ``str``
+
+        :return: ``list`` of API response objects
+        :rtype: ``list``
+        """
+        params = {}
+        data = self.connection.request(url)
+        try:
+            pages = data.object['meta']['pages']['total']
+            values = data.object[obj]
+            for page in range(2, int(pages) + 1):
+                params.update({'page': page})
+                new_data = self.connection.request(url, params=params)
+
+                for value in new_data.object[obj]:
+                    values.append(value)
+            data = values
+        except KeyError:  # No pages.
+            data = data.object[obj]
+        return data
+
+
     def create_node(self, name, size, image, location,
                     ex_ssh_key_ids=None):
         """
@@ -108,9 +139,8 @@ class MaxihostNodeDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`MaxihostNode`
         """
-        response = self.connection.request('/devices', method='GET')
-        nodes = [self._to_node(host)
-                 for host in response.object['devices']]
+        data = self._paginated_request('/devices', 'devices')
+        nodes = [self._to_node(host) for host in data]
         return nodes
 
 
@@ -144,8 +174,8 @@ class MaxihostNodeDriver(NodeDriver):
         If available is True, show only locations which are available
         """
         locations = []
-        data = self.connection.request('/regions')
-        for location in data.object['regions']:
+        data = self._paginated_request('/regions', 'regions')
+        for location in data:
             if available:
                 if location.get('available'):
                     locations.append(self._to_location(location))
@@ -164,9 +194,9 @@ class MaxihostNodeDriver(NodeDriver):
         List sizes
         """
         sizes = []
-        data = self.connection.request('/plans')
-        for size in data.object['servers']:
-                sizes.append(self._to_size(size))
+        data = self._paginated_request('/plans', 'servers')
+        for size in data:
+            sizes.append(self._to_size(size))
         return sizes
 
     def _to_size(self, data):
@@ -185,9 +215,9 @@ class MaxihostNodeDriver(NodeDriver):
         List images
         """
         images = []
-        data = self.connection.request('/plans/operating-systems')
-        for image in data.object['operating-systems']:
-                images.append(self._to_image(image))
+        data = self._paginated_request('/plans/operating-systems', 'operating-systems')
+        for image in data:
+            images.append(self._to_image(image))
         return images
 
     def _to_image(self, data):
@@ -206,8 +236,11 @@ class MaxihostNodeDriver(NodeDriver):
         :return: Available SSH keys.
         :rtype: ``list`` of :class:`KeyPair`
         """
-        data = self.connection.request('/account/keys')
-        return list(map(self._to_key_pair, data.object['ssh_keys']))
+        keys = []
+        data = self._paginated_request('/account/keys', 'ssh_keys')
+        for key in data:
+            keys.append(key)
+        return list(map(self._to_key_pair, keys))
 
 
     def create_key_pair(self, name, public_key):
