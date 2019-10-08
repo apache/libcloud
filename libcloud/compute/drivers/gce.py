@@ -899,7 +899,8 @@ class GCEProject(UuidMixin):
         :return: True if successful
         :rtype:  ``bool``
         """
-        return self.driver.ex_set_common_instance_metadata(metadata, force)
+        return self.driver.ex_set_common_instance_metadata(metadata=metadata,
+                                                           force=force)
 
     def set_usage_export_bucket(self, bucket, prefix=None):
         """
@@ -921,7 +922,8 @@ class GCEProject(UuidMixin):
         :return: True if successful
         :rtype:  ``bool``
         """
-        return self.driver.ex_set_usage_export_bucket(self, bucket, prefix)
+        return self.driver.ex_set_usage_export_bucket(bucket=bucket,
+                                                      prefix=prefix)
 
     def __repr__(self):
         return '<GCEProject id="%s" name="%s">' % (self.id, self.name)
