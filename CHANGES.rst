@@ -4,6 +4,12 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Storage
+~~~~~~~
+
+- [Common, S3, GCS] Reuse TCP connections when uploading files (GITHUB-1353)
+  [Quentin Pradet]
+
 Load Balancer
 ~~~~~~~------
 
@@ -225,9 +231,6 @@ Storage
   we avoid hash mismatch errors in scenario where provided iterator is already
   iterated / seeked upon before calculating the hash. (GITHUB-1326)
   [Gabe Van Engel - @gvengel, Tomaz Muraus]
-
-- [Common, S3, GCS] Reuse TCP connections when uploading files (GITHUB-1353)
-  [Quentin Pradet]
 
 - [Backblaze B2] Fix a bug with driver not working correctly due to a
   regression which was inadvertently introduced in one of the previous
