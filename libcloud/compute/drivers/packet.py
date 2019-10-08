@@ -232,8 +232,14 @@ def _list_async(driver):
             .object['operating_systems']
         return list(map(self._to_image, data))
 
-    def list_sizes(self):
-        data = self.connection.request('/plans').object['plans']
+    def list_sizes(self, ex_project_id=None):
+        project_id = ex_project_id or self.project_id or (
+            len(self.projects) and self.projects[0].id)
+        if project_id:
+            data = self.connection.request('/projects/%s/plans' %
+                                           project_id).object['plans']
+        else:  # This only works with personal tokens
+            data = self.connection.request('/plans' ).object['plans']
         return [self._to_size(size) for size in data if
                 size.get('line') == 'baremetal']
 
