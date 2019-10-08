@@ -86,6 +86,17 @@ class BaseStorageTests(unittest.TestCase):
             else:
                 self.fail('Exception was not thrown')
 
+    def test__upload_object_does_not_stream_response(self):
+        resp = self.driver1._upload_object(
+            object_name='foo',
+            content_type='foo/bar',
+            request_path='/',
+            stream=iter(b'foo'))
+        mock_response = resp["response"].response._response
+        response_streamed = mock_response.request.stream
+        assert response_streamed is False
+
+
     def test__get_hash_function(self):
         self.driver1.hash_type = 'md5'
         func = self.driver1._get_hash_function()
