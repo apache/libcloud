@@ -244,7 +244,7 @@ class LibcloudConnection(LibcloudBaseConnection):
 
         self.response = self.session.send(
             prepped,
-            stream=raw,
+            stream=stream,
             verify=self.ca_cert if self.ca_cert is not None else self.verify)
 
     def getresponse(self):

@@ -40,6 +40,8 @@ DRIVERS = {
     ('libcloud.dns.drivers.route53', 'Route53DNSDriver'),
     Provider.GANDI:
     ('libcloud.dns.drivers.gandi', 'GandiDNSDriver'),
+    Provider.GANDI_LIVE:
+    ('libcloud.dns.drivers.gandi_live', 'GandiLiveDNSDriver'),
     Provider.GOOGLE: ('libcloud.dns.drivers.google', 'GoogleDNSDriver'),
     Provider.SOFTLAYER:
     ('libcloud.dns.drivers.softlayer', 'SoftLayerDNSDriver'),
