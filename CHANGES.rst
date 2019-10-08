@@ -4,6 +4,12 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Compute
+~~~~~~~
+
+- [Packet] Update ``list_sizes`` method so it accepts ``ex_project_id`` argument
+  and works with project API tokens. (GITHUB-1351) [Dimitris Moraitis - @d-mo]
+
 Storage
 ~~~~~~~
 
