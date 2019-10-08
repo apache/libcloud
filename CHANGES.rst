@@ -10,6 +10,10 @@ Compute
 - [Packet] Update ``list_sizes`` method so it accepts ``ex_project_id`` argument
   and works with project API tokens. (GITHUB-1351) [Dimitris Moraitis - @d-mo]
 
+- [GCE] Fix ``GCEProject.set_common_instance_metadata`` and
+  ``GCEproject.set_usage_export_bucket`` method. (GITHUB-1354)
+  [Aitor Zabala - @aitorzabala, Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 
