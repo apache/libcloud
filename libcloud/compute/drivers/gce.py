@@ -6816,7 +6816,7 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
-    def destroy_node(self, node, destroy_boot_disk=False):
+    def destroy_node(self, node, destroy_boot_disk=False, sync=True):
         """
         Destroy a node.
 
@@ -6829,12 +6829,19 @@ class GCENodeDriver(NodeDriver):
                                      method.)
         :type     destroy_boot_disk: ``bool``
 
+        :keyword  sync: If true, do not return until destroyed or timeout
+        :type     sync: ``bool``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                               node.name)
-        self.connection.async_request(request, method='DELETE')
+        if sync:
+            self.connection.async_request(request, method='DELETE')
+        else:
+            self.connection.request(request, method='DELETE')
+
         if destroy_boot_disk and node.extra['boot_disk']:
             node.extra['boot_disk'].destroy()
         return True
