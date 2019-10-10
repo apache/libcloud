@@ -6726,34 +6726,49 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
-    def ex_start_node(self, node):
+    def ex_start_node(self, node, sync=True):
         """
         Start a node that is stopped and in TERMINATED state.
 
         :param  node: Node object to start
         :type   node: :class:`Node`
 
+        :keyword  sync: If true, do not return until destroyed or timeout
+        :type     sync: ``bool``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s/start' % (node.extra['zone'].name,
                                                     node.name)
-        self.connection.async_request(request, method='POST')
+
+        if sync:
+            self.connection.async_request(request, method='POST')
+        else:
+            self.connection.request(request, method='POST')
+
         return True
 
-    def ex_stop_node(self, node):
+    def ex_stop_node(self, node, sync=True):
         """
         Stop a running node.
 
         :param  node: Node object to stop
         :type   node: :class:`Node`
 
+        :keyword  sync: If true, do not return until destroyed or timeout
+        :type     sync: ``bool``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s/stop' % (node.extra['zone'].name,
                                                    node.name)
-        self.connection.async_request(request, method='POST')
+        if sync:
+            self.connection.async_request(request, method='POST')
+        else:
+            self.connection.request(request, method='POST')
+
         return True
 
     def ex_destroy_instancegroupmanager(self, manager):
