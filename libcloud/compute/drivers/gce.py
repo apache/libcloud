@@ -1781,10 +1781,18 @@ class GCENodeDriver(NodeDriver):
     }
 
     IMAGE_PROJECTS = {
-        "centos-cloud": ["centos-6", "centos-7"],
+        "centos-cloud": [
+            "centos-6",
+            "centos-7",
+            "centos-8",
+        ],
         "cos-cloud": ["cos-beta", "cos-dev", "cos-stable"],
         "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
-        "debian-cloud": ["debian-8", "debian-9"],
+        "debian-cloud": [
+            "debian-8",
+            "debian-9",
+            "debian-10",
+        ],
         "opensuse-cloud": ["opensuse-leap"],
         "rhel-cloud": [
             "rhel-6",
