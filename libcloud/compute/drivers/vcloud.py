@@ -16,9 +16,11 @@
 VMware vCloud driver.
 """
 import copy
+import datetime
 import re
 import base64
 import os
+from libcloud.utils.iso8601 import parse_date
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlparse
@@ -138,6 +140,95 @@ class Subject(object):
     def __repr__(self):
         return ('<Subject: type=%s, name=%s, access_level=%s>'
                 % (self.type, self.name, self.access_level))
+
+
+class Lease(object):
+    """
+    Lease information for vApps.
+
+    https://www.vmware.com/support/vcd/doc/rest-api-doc-1.5-html/types/LeaseSettingsSectionType.html
+    """
+
+    def __init__(self, lease_id, deployment_lease=None, storage_lease=None,
+                 deployment_lease_expiration=None, storage_lease_expiration=None):
+        """
+        :param lease_id: ID (link) to the lease settings section of a vApp.
+        :type lease_id: ``str``
+
+        :param deployment_lease: Deployment lease time in seconds
+        :type deployment_lease: ``int`` or ``None``
+
+        :param storage_lease: Storage lease time in seconds
+        :type storage_lease: ``int`` or ``None``
+
+        :param deployment_lease_expiration: Deployment lease expiration time
+        :type deployment_lease_expiration: ``datetime.datetime`` or ``None``
+
+        :param storage_lease_expiration: Storage lease expiration time
+        :type storage_lease_expiration: ``datetime.datetime`` or ``None``
+        """
+        self.lease_id = lease_id
+        self.deployment_lease = deployment_lease
+        self.storage_lease = storage_lease
+        self.deployment_lease_expiration = deployment_lease_expiration
+        self.storage_lease_expiration = storage_lease_expiration
+
+    @classmethod
+    def to_lease(cls, lease_element):
+        """
+        Convert lease settings element to lease instance.
+
+        :param lease_element: "LeaseSettingsSection" XML element
+        :type lease_element: ``ET.Element``
+
+        :return: Lease instance
+        :rtype: :class:`Lease`
+        """
+        lease_id = lease_element.get('href')
+        deployment_lease = lease_element.find(fixxpath(lease_element, 'DeploymentLeaseInSeconds'))
+        storage_lease = lease_element.find(fixxpath(lease_element, 'StorageLeaseInSeconds'))
+        deployment_lease_expiration = lease_element.find(fixxpath(lease_element, 'DeploymentLeaseExpiration'))
+        storage_lease_expiration = lease_element.find(fixxpath(lease_element, 'StorageLeaseExpiration'))
+
+        def apply_if_elem_not_none(elem, function):
+            return function(elem.text) if elem is not None else None
+
+        return cls(
+            lease_id=lease_id,
+            deployment_lease=apply_if_elem_not_none(deployment_lease, int),
+            storage_lease=apply_if_elem_not_none(storage_lease, int),
+            deployment_lease_expiration=apply_if_elem_not_none(deployment_lease_expiration, parse_date),
+            storage_lease_expiration=apply_if_elem_not_none(storage_lease_expiration, parse_date)
+        )
+
+    def get_time_deployed(self):
+        """
+        Gets the date and time a vApp was deployed. Time is inferred from the
+        deployment lease and expiration or the storage lease and expiration.
+
+        :return: Date and time the vApp was deployed or None if unable to calculate
+        :rtype: ``datetime.datetime`` or ``None``
+        """
+        if self.deployment_lease is not None and self.deployment_lease_expiration is not None:
+            return self.deployment_lease_expiration - datetime.timedelta(seconds=self.deployment_lease)
+
+        if self.storage_lease is not None and self.storage_lease_expiration is not None:
+            return self.storage_lease_expiration - datetime.timedelta(seconds=self.storage_lease)
+
+        raise Exception('Cannot get time deployed. Missing complete lease and expiration information.')
+
+    def __repr__(self):
+        return (
+            '<Lease: id={lease_id}, deployment_lease={deployment_lease}, storage_lease={storage_lease}, '
+            'deployment_lease_expiration={deployment_lease_expiration}, '
+            'storage_lease_expiration={storage_lease_expiration}>'.format(
+                lease_id=self.lease_id,
+                deployment_lease=self.deployment_lease,
+                storage_lease=self.storage_lease,
+                deployment_lease_expiration=self.deployment_lease_expiration,
+                storage_lease_expiration=self.storage_lease_expiration
+            )
+        )
 
 
 class InstantiateVAppXML(object):
@@ -2222,6 +2313,9 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
 
         description = node_elm.find(fixxpath(node_elm, 'Description'))
         extra['description'] = description.text if description is not None else ''
+
+        lease_settings = node_elm.find(fixxpath(node_elm, 'LeaseSettingsSection'))
+        extra['lease_settings'] = Lease.to_lease(lease_settings) if lease_settings is not None else None
 
         if snapshots is not None:
             extra['snapshots'] = snapshots
