@@ -999,13 +999,22 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 if entity_elem.get('type') == \
                         'application/vnd.vmware.vcloud.vApp+xml' and \
                         entity_elem.get('name') == node_name:
-                    path = get_url_path(entity_elem.get('href'))
-                    headers = {'Content-Type':
-                               'application/vnd.vmware.vcloud.vApp+xml'}
-                    res = self.connection.request(path,
-                                                  headers=headers)
-                    return self._to_node(res.object)
+                    path = entity_elem.get('href')
+                    return self._ex_get_node(path)
         return None
+
+    def ex_find_vm_nodes(self, vm_name):
+        """
+        Finds nodes that contain a VM with the specified name.
+
+        :param vm_name: The VM name to find nodes for
+        :type vm_name: ``str``
+
+        :return: List of node instances
+        :rtype: `list` of :class:`Node`
+        """
+        vms = self.ex_query('vm', filter='name=={vm_name}'.format(vm_name=vm_name), page=1, page_size=1)
+        return [self._ex_get_node(vm['container']) for vm in vms]
 
     def destroy_node(self, node):
         try:
@@ -2103,6 +2112,22 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 '%s is not a valid organisation network name' % network_name)
         else:
             return network_href
+
+    def _ex_get_node(self, node_id):
+        """
+        Get a node instance from a node ID.
+
+        :param node_id: ID of the node
+        :type node_id: ``str``
+
+        :return: node instance or None if not found
+        :rtype: :class:`Node` or ``None``
+        """
+        res = self.connection.request(
+            get_url_path(node_id),
+            headers={'Content-Type': 'application/vnd.vmware.vcloud.vApp+xml'}
+        )
+        return self._to_node(res.object)
 
     def _get_vm_elements(self, vapp_or_vm_id):
         res = self.connection.request(get_url_path(vapp_or_vm_id))
