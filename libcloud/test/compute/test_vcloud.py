@@ -384,6 +384,50 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         )
         self.assertEqual(node.extra['lease_settings'], lease)
 
+    def test_remove_admin_password(self):
+        pass_enabled_xml = '<AdminPasswordEnabled>{text}</AdminPasswordEnabled>'
+        pass_enabled_true = pass_enabled_xml.format(text='true')
+        pass_enabled_false = pass_enabled_xml.format(text='false')
+        pass_auto_xml = '<AdminPasswordAuto>{text}</AdminPasswordAuto>'
+        pass_auto_true = pass_auto_xml.format(text='true')
+        pass_auto_false = pass_auto_xml.format(text='false')
+        passwd = '<AdminPassword>testpassword</AdminPassword>'
+        for admin_pass_enabled, admin_pass_auto, admin_pass, pass_exists in [
+            (pass_enabled_true, pass_auto_true, passwd, False),
+            (pass_enabled_true, pass_auto_true, '', False),
+            (pass_enabled_true, pass_auto_false, passwd, True),
+            (pass_enabled_true, pass_auto_false, '', False),
+            (pass_enabled_true, '', passwd, False),
+            (pass_enabled_true, '', '', False),
+            (pass_enabled_false, pass_auto_true, passwd, False),
+            (pass_enabled_false, pass_auto_true, '', False),
+            (pass_enabled_false, pass_auto_false, passwd, False),
+            (pass_enabled_false, pass_auto_false, '', False),
+            (pass_enabled_false, '', passwd, False),
+            (pass_enabled_false, '', '', False),
+            ('', pass_auto_true, passwd, False),
+            ('', pass_auto_true, '', False),
+            ('', pass_auto_false, passwd, False),
+            ('', pass_auto_false, '', False),
+            ('', '', passwd, False),
+            ('', '', '', False)
+        ]:
+            guest_customization_section = ET.fromstring(
+                '<GuestCustomizationSection xmlns="http://www.vmware.com/vcloud/v1.5">'
+                + admin_pass_enabled
+                + admin_pass_auto
+                + admin_pass
+                + '</GuestCustomizationSection>'
+            )
+            self.driver._remove_admin_password(guest_customization_section)
+            admin_pass_element = guest_customization_section.find(
+                fixxpath(guest_customization_section, 'AdminPassword')
+            )
+            if pass_exists:
+                self.assertIsNotNone(admin_pass_element)
+            else:
+                self.assertIsNone(admin_pass_element)
+
 
 class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
 

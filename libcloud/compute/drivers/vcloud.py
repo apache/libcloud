@@ -1915,10 +1915,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             # Update GuestCustomizationSection
             res.object.find(
                 fixxpath(res.object, 'ComputerName')).text = vm_names[i]
-            # Remove AdminPassword from customization section
-            admin_pass = res.object.find(fixxpath(res.object, 'AdminPassword'))
-            if admin_pass is not None:
-                res.object.remove(admin_pass)
+            # Remove AdminPassword from customization section if it would be invalid to include it
+            self._remove_admin_password(res.object)
 
             headers = {
                 'Content-Type':
@@ -2087,11 +2085,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 e.text = script
                 res.object.insert(i, e)
 
-            # Remove AdminPassword from customization section due to an API
-            # quirk
-            admin_pass = res.object.find(fixxpath(res.object, 'AdminPassword'))
-            if admin_pass is not None:
-                res.object.remove(admin_pass)
+            # Remove AdminPassword from customization section if it would be invalid to include it
+            self._remove_admin_password(res.object)
 
             # Update VM's GuestCustomizationSection
             headers = {
@@ -2132,6 +2127,34 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 headers=headers
             )
             self._wait_for_task_completion(res.object.get('href'))
+
+    @staticmethod
+    def _remove_admin_password(guest_customization_section):
+        """
+        Remove AdminPassword element from GuestCustomizationSection if it
+        would be invalid to include it.
+
+        This was originally done unconditionally due to an "API quirk" of
+        unknown origin or effect. When AdminPasswordEnabled is set to true
+        and AdminPasswordAuto is false, the admin password must be set or
+        an error will ensue, and vice versa.
+        :param guest_customization_section: GuestCustomizationSection element
+                                            to remove password from (if valid
+                                            to do so)
+        :type guest_customization_section: ``ET.Element``
+        """
+        admin_pass_enabled = guest_customization_section.find(
+            fixxpath(guest_customization_section, 'AdminPasswordEnabled')
+        )
+        admin_pass_auto = guest_customization_section.find(
+            fixxpath(guest_customization_section, 'AdminPasswordAuto')
+        )
+        admin_pass = guest_customization_section.find(
+            fixxpath(guest_customization_section, 'AdminPassword')
+        )
+        if admin_pass is not None and (admin_pass_enabled is None or admin_pass_enabled.text != 'true'
+                                       or admin_pass_auto is None or admin_pass_auto.text != 'false'):
+            guest_customization_section.remove(admin_pass)
 
     def _update_or_insert_section(self, res, section, prev_section, text):
         try:
