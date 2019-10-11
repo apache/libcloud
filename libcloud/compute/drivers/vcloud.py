@@ -230,6 +230,18 @@ class Lease(object):
             )
         )
 
+    def __eq__(self, other):
+        return (
+            self.lease_id == other.lease_id
+            and self.deployment_lease == other.deployment_lease
+            and self.storage_lease == other.storage_lease
+            and self.deployment_lease_expiration == other.deployment_lease_expiration
+            and self.storage_lease_expiration == other.storage_lease_expiration
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class InstantiateVAppXML(object):
 

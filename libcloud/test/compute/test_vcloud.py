@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import sys
 import unittest
 
 from libcloud.utils.py3 import httplib, b
 from libcloud.utils.py3 import ET
-from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject
+from libcloud.utils.iso8601 import UTC
+from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject, Lease
 from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, ControlAccess
 from libcloud.compute.drivers.vcloud import VCloud_5_1_NodeDriver
 from libcloud.compute.drivers.vcloud import VCloud_5_5_NodeDriver
@@ -338,6 +340,49 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b',
             'testNode', NodeState.RUNNING, [], [], self.driver)
         self.driver.ex_set_metadata_entry(node, 'foo', 'bar')
+
+    def test_to_node_description(self):
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
+        self.assertIsNone(node.extra['description'])
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d')
+        self.assertEqual(node.extra['description'], 'Test Description')
+
+    def test_to_node_lease_settings(self):
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
+        lease = Lease(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/leaseSettingsSection/',
+            deployment_lease=0,
+            storage_lease=0
+        )
+        self.assertEqual(node.extra['lease_settings'], lease)
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d')
+        # 2019-10-07T14:06:29.980725
+        lease = Lease(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/leaseSettingsSection/',
+            deployment_lease=86400,
+            storage_lease=172800,
+            deployment_lease_expiration=datetime.datetime(
+                year=2019,
+                month=10,
+                day=7,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            ),
+            storage_lease_expiration=datetime.datetime(
+                year=2019,
+                month=10,
+                day=8,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            )
+        )
+        self.assertEqual(node.extra['lease_settings'], lease)
 
 
 class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
@@ -761,6 +806,11 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413(self, method, url, body, headers):
         body = self.fixtures.load(
             'api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
 
