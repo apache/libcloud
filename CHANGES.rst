@@ -21,6 +21,10 @@ Compute
   compatibility reasons, it defaults to ``True``. (GITHUB-1357)
   [Rob Zimmerman - zimventures]
 
+- [GCE] Update list of image projects and add new ``centos-8`` and
+  ``debian-10`` based images. (GITHUB-1358)
+  [Christopher Lambert - XN137]
+
 Storage
 ~~~~~~~
 
