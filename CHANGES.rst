@@ -14,6 +14,13 @@ Compute
   ``GCEproject.set_usage_export_bucket`` method. (GITHUB-1354)
   [Aitor Zabala - @aitorzabala, Tomaz Muraus - @Kami]
 
+- [GCE] Add ``sync`` / ``ex_sync`` argument to the ``ex_stop_node``,
+  ``ex_start_node`` and ``destroy_node`` method. When this argument is set to
+  ``False``, method will return immediately without waiting polling and waiting
+  for a long running API operation to finish before returning. For backward
+  compatibility reasons, it defaults to ``True``. (GITHUB-1357)
+  [Rob Zimmerman - zimventures]
+
 Storage
 ~~~~~~~
 
