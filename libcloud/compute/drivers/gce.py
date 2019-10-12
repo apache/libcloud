@@ -6852,7 +6852,7 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                               node.name)
-        if sync:
+        if ex_sync:
             self.connection.async_request(request, method='DELETE')
         else:
             self.connection.request(request, method='DELETE')
