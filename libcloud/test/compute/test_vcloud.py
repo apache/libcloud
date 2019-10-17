@@ -14,10 +14,12 @@
 # limitations under the License.
 
 import datetime
+import re
 import sys
+import traceback
 import unittest
 
-from libcloud.utils.py3 import httplib, b
+from libcloud.utils.py3 import httplib, b, assertRaisesRegex
 from libcloud.utils.py3 import ET
 from libcloud.utils.iso8601 import UTC
 from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject, Lease, fixxpath, get_url_path
@@ -34,6 +36,27 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 from mock import Mock, patch, mock_open
 
 from libcloud.test.secrets import VCLOUD_PARAMS
+
+
+def print_parameterized_failure(names_values):
+    """
+    Print failure information for a failed, parameterized test.
+    This includes a traceback and parameter values.
+
+    :param names_values: Name, value pairs for parameters of test at failure
+    :type names_values: ``list`` of (``str``,  ``Any``)
+
+    :return: None
+    :rtype: ``None``
+    """
+    formatted_names_values = (
+        '    {name}={value}'.format(name=name, value=value) for name, value in names_values
+    )
+    traceback.print_exc()
+    print(
+        'Data values:\n{values}\n'.format(values='\n'.join(formatted_names_values)),
+        file=sys.stderr
+    )
 
 
 class CallException(Exception):
@@ -186,7 +209,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             {
                 'description': None,
                 'lease_settings': Lease(
-                    'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/leaseSettingsSection/',
+                    'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b/leaseSettingsSection/',
                     deployment_lease=0,
                     storage_lease=0
                 ),
@@ -412,7 +435,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d')
         # 2019-10-07T14:06:29.980725
         lease = Lease(
-            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/leaseSettingsSection/',
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d/leaseSettingsSection/',
             deployment_lease=86400,
             storage_lease=172800,
             deployment_lease_expiration=datetime.datetime(
@@ -446,7 +469,9 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         pass_auto_true = pass_auto_xml.format(text='true')
         pass_auto_false = pass_auto_xml.format(text='false')
         passwd = '<AdminPassword>testpassword</AdminPassword>'
-        for admin_pass_enabled, admin_pass_auto, admin_pass, pass_exists in [
+        assertion_error = False
+
+        for admin_pass_enabled, admin_pass_auto, admin_pass, pass_exists in (
             (pass_enabled_true, pass_auto_true, passwd, False),
             (pass_enabled_true, pass_auto_true, '', False),
             (pass_enabled_true, pass_auto_false, passwd, True),
@@ -465,26 +490,40 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             ('', pass_auto_false, '', False),
             ('', '', passwd, False),
             ('', '', '', False)
-        ]:
-            guest_customization_section = ET.fromstring(
-                '<GuestCustomizationSection xmlns="http://www.vmware.com/vcloud/v1.5">'
-                + admin_pass_enabled
-                + admin_pass_auto
-                + admin_pass
-                + '</GuestCustomizationSection>'
-            )
-            self.driver._remove_admin_password(guest_customization_section)
-            admin_pass_element = guest_customization_section.find(
-                fixxpath(guest_customization_section, 'AdminPassword')
-            )
-            if pass_exists:
-                self.assertIsNotNone(admin_pass_element)
-            else:
-                self.assertIsNone(admin_pass_element)
+        ):
+            try:
+                guest_customization_section = ET.fromstring(
+                    '<GuestCustomizationSection xmlns="http://www.vmware.com/vcloud/v1.5">'
+                    + admin_pass_enabled
+                    + admin_pass_auto
+                    + admin_pass
+                    + '</GuestCustomizationSection>'
+                )
+                self.driver._remove_admin_password(guest_customization_section)
+                admin_pass_element = guest_customization_section.find(
+                    fixxpath(guest_customization_section, 'AdminPassword')
+                )
+                if pass_exists:
+                    self.assertIsNotNone(admin_pass_element)
+                else:
+                    self.assertIsNone(admin_pass_element)
+            except AssertionError:
+                assertion_error = True
+                print_parameterized_failure([
+                    ('admin_pass_enabled', admin_pass_enabled),
+                    ('admin_pass_auto', admin_pass_auto),
+                    ('admin_pass', admin_pass),
+                    ('pass_exists', pass_exists)
+                ])
+
+        if assertion_error:
+            self.fail(msg='Assertion error(s) encountered. Details above.')
 
     @patch('libcloud.compute.drivers.vcloud.VCloud_1_5_NodeDriver._get_vm_elements',
            side_effect=CallException('Called'))
     def test_change_vm_script_text_and_file_logic(self, _):
+        assertion_error = False
+
         for vm_script_file, vm_script_text, open_succeeds, open_call_count, returned_early in (
             (None, None, True, 0, True),
             (None, None, False, 0, True),
@@ -495,21 +534,34 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             ('file.sh', 'script text', True, 0, False),
             ('file.sh', 'script text', False, 0, False)
         ):
-            if open_succeeds:
-                open_mock = patch('builtins.open', mock_open(read_data='script text'))
-            else:
-                open_mock = patch('builtins.open', side_effect=Exception())
-            with open_mock as mocked_open:
-                try:
-                    self.driver._change_vm_script(
-                        'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d',
-                        vm_script=vm_script_file,
-                        vm_script_text=vm_script_text)
-                    returned_early_res = True
-                except CallException:
-                    returned_early_res = False
-                self.assertEqual(mocked_open.call_count, open_call_count)
-                self.assertEqual(returned_early_res, returned_early)
+            try:
+                if open_succeeds:
+                    open_mock = patch('builtins.open', mock_open(read_data='script text'))
+                else:
+                    open_mock = patch('builtins.open', side_effect=Exception())
+                with open_mock as mocked_open:
+                    try:
+                        self.driver._change_vm_script(
+                            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d',
+                            vm_script=vm_script_file,
+                            vm_script_text=vm_script_text)
+                        returned_early_res = True
+                    except CallException:
+                        returned_early_res = False
+                    self.assertEqual(mocked_open.call_count, open_call_count)
+                    self.assertEqual(returned_early_res, returned_early)
+            except AssertionError:
+                assertion_error = True
+                print_parameterized_failure([
+                    ('vm_script_file', vm_script_file),
+                    ('vm_script_text', vm_script_text),
+                    ('open_succeeds', open_succeeds),
+                    ('open_call_count', open_call_count),
+                    ('returned_early', returned_early)
+                ])
+
+        if assertion_error:
+            self.fail(msg='Assertion error(s) encountered. Details above.')
 
     def test_build_xmltree_description(self):
         instantiate_xml = Instantiate_1_5_VAppXML(
@@ -605,6 +657,7 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
                 microsecond=980725,
                 tzinfo=UTC
             )
+        assertion_error = False
 
         for deployment_lease, storage_lease, deployment_lease_exp, storage_lease_exp, exception, res in (
             (None, None, None, None, True, None),
@@ -632,15 +685,29 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
                     deployment_lease_expiration=deployment_lease_exp,
                     storage_lease_expiration=storage_lease_exp
                 )
-                time_deployed = lease.get_time_deployed()
-            except Exception as e:
-                self.assertEqual(str(e), 'Cannot get time deployed. Missing proper lease and expiration information.')
-                time_deployed = None
 
-            if exception:
-                self.assertIsNone(time_deployed)
-            else:
-                self.assertEqual(time_deployed, res)
+                if exception:
+                    with assertRaisesRegex(
+                        self,
+                        Exception,
+                        re.escape('Cannot get time deployed. Missing complete lease and expiration information.'),
+                    ):
+                        lease.get_deployment_time()
+                else:
+                    self.assertEqual(lease.get_deployment_time(), res)
+            except AssertionError:
+                assertion_error = True
+                print_parameterized_failure([
+                    ('deployment_lease', deployment_lease),
+                    ('storage_lease', storage_lease),
+                    ('deployment_lease_exp', deployment_lease_exp),
+                    ('storage_lease_exp', storage_lease_exp),
+                    ('exception', exception),
+                    ('res', res)
+                ])
+
+        if assertion_error:
+            self.fail(msg='Assertion error(s) encountered. Details above.')
 
 
 class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):

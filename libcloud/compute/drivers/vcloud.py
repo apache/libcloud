@@ -201,7 +201,7 @@ class Lease(object):
             storage_lease_expiration=apply_if_elem_not_none(storage_lease_expiration, parse_date)
         )
 
-    def get_time_deployed(self):
+    def get_deployment_time(self):
         """
         Gets the date and time a vApp was deployed. Time is inferred from the
         deployment lease and expiration or the storage lease and expiration.
@@ -231,6 +231,9 @@ class Lease(object):
         )
 
     def __eq__(self, other):
+        if not isinstance(other, Lease):
+            return False
+
         return (
             self.lease_id == other.lease_id
             and self.deployment_lease == other.deployment_lease
@@ -972,9 +975,9 @@ class VCloud_5_5_Connection(VCloud_1_5_Connection):
 
     def _get_auth_headers(self):
         """Compatibility for using v5.5 of the API"""
-        auth_headers_1_5 = super(VCloud_5_5_Connection, self)._get_auth_headers()
-        auth_headers_1_5['Accept'] = 'application/*+xml;version=5.5'
-        return auth_headers_1_5
+        auth_headers = super(VCloud_5_5_Connection, self)._get_auth_headers()
+        auth_headers['Accept'] = 'application/*+xml;version=5.5'
+        return auth_headers
 
     def add_default_headers(self, headers):
         headers['Accept'] = 'application/*+xml;version=5.5'
