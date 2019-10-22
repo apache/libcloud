@@ -816,6 +816,9 @@ class ECSDriver(NodeDriver):
             else:
                 params['Password'] = auth.password
 
+        if 'ex_userdata' in kwargs:
+            params['UserData'] = base64.b64encode(kwargs.get('ex_userdata').encode()).decode()
+
         if 'ex_keyname' in kwargs:
             params['KeyPairName'] = kwargs['ex_keyname']
 
