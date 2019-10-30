@@ -2684,7 +2684,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     network_connection = None
 
     # Similarly all image operations are noe exposed through the block-storage
-    # API of the cinde service:
+    # API of the cinder service:
     # https://developer.openstack.org/api-ref/block-storage/
     volumev2_connectionCls = OpenStack_2_VolumeV2Connection
     volumev2_connection = None
