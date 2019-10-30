@@ -3320,7 +3320,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self.volumev2_connection.request('/volumes/%s' % volumeId).object)
 
     def create_volume(self, size, name, location=None, snapshot=None,
-                      ex_volume_type=None):
+                      ex_volume_type=None, ex_image_ref=None):
         """
         Create a new volume.
 
@@ -3343,6 +3343,10 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                             (optional)
         :type ex_volume_type: ``str``
 
+        :param ex_image_ref: The image to create the volume from
+                             when creating a bootable volume (optional)
+        :type ex_image_ref: ``str``
+
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
@@ -3357,6 +3361,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         if ex_volume_type:
             volume['volume_type'] = ex_volume_type
+
+        if ex_image_ref:
+            volume['imageRef'] = ex_image_ref
 
         if location:
             volume['availability_zone'] = location
