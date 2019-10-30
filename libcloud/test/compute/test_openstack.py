@@ -981,6 +981,26 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'racktest')
         self.assertTrue(node.extra['config_drive'])
 
+    def test_create_node_from_bootable_volume(self):
+        size = NodeSize(
+            1, '256 slice', None, None, None, None, driver=self.driver)
+
+        node = self.driver.create_node(
+            name='racktest', size=size,
+            ex_blockdevicemappings=[
+                {
+                    'boot_index': 0,
+                    'uuid': 'ee7ee330-b454-4414-8e9f-c70c558dd3af',
+                    'source_type': 'volume',
+                    'destination_type': 'volume',
+                    'delete_on_termination': False
+                }])
+
+        self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra['password'], 'racktestvJq7d3')
+        self.assertEqual(node.extra['metadata']['My Server Name'], 'Apache1')
+
     def test_destroy_node(self):
         self.assertTrue(self.node.destroy())
 
