@@ -1515,7 +1515,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'image' in kwargs:
             server_params['imageRef'] = kwargs.get('image').id
         else:
-            server_params['imageRef'] = node.extra.get('imageId')
+            server_params['imageRef'] = node.extra.get(
+                'imageId', ''
+            ) if node else ''
 
         if 'size' in kwargs:
             server_params['flavorRef'] = kwargs.get('size').id
