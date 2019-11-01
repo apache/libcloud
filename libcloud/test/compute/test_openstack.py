@@ -1998,6 +1998,21 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("volume_type" in kwargs["data"]["volume"])
 
+    def test_create_volume_passes_image_ref_to_request_only_if_not_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(
+                1, 'test', ex_image_ref='353c4bd2-b28f-4857-9b7b-808db4397d03')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertEqual(
+                kwargs["data"]["volume"]["imageRef"],
+                "353c4bd2-b28f-4857-9b7b-808db4397d03")
+
+    def test_create_volume_does_not_pass_image_ref_to_request_if_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertFalse("imageRef" in kwargs["data"]["volume"])
+
     def test_ex_create_snapshot_does_not_post_optional_parameters_if_none(self):
         volume = self.driver.list_volumes()[0]
         with patch.object(self.driver, '_to_snapshot'):
