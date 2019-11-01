@@ -25,6 +25,16 @@ Compute
   ``debian-10`` based images. (GITHUB-1358)
   [Christopher Lambert - XN137]
 
+- [OpenStack v2] Add new ``ex_image_ref`` argument to the ``create_volume``
+  method. This way bootable volumes can be created from specific images.
+  (GITHUB-1363)
+  [Rick van de Loo]
+
+- [OpenStack v2] Update ``create_node_method`` and allow users to create
+  nodes from bootable volumes without specifying ``image`` argument.
+  (GITHUB-1362)
+  [Rick van de Loo]
+
 Storage
 ~~~~~~~
 
