@@ -113,6 +113,10 @@ class LibvirtNodeDriver(NodeDriver):
                                 "ALLOW_LIBVIRT_LOCALHOST variable")
         else:
             if ssh_key:
+                # Ensure ssh_key ends with newline
+                # Prevents `invalid format` libvirtError
+                if ssh_key[-1] != '\n':
+                    ssh_key += '\n'
                 # if ssh key is string create temp file
                 if not os.path.isfile(ssh_key):
                     key_temp_file = NamedTemporaryFile(delete=False)
