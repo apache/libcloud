@@ -258,6 +258,34 @@ class Node(UuidMixin):
         """
         return self.driver.destroy_node(self)
 
+    def start(self, sync=True):
+        """
+        Start this node that is stopped.
+
+        This calls the node's driver and starts the node
+        (executes driver.ex_start_node)
+
+        :keyword  sync: If true, do not return until destroyed or timeout
+        :type     sync: ``bool``
+
+        :return: ``bool``
+        """
+        return self.driver.ex_start_node(self, sync=sync)
+
+    def stop(self, sync=True):
+        """
+        Stops this running node.
+
+        :keyword  sync: If true, do not return until destroyed or timeout
+        :type     sync: ``bool``
+
+        :return: ``bool``
+
+        This calls the node's driver and stops the node
+        (executes driver.ex_stop_node)
+        """
+        return self.driver.ex_stop_node(self, sync=sync)
+
     def __repr__(self):
         state = NodeState.tostring(self.state)
 
