@@ -16,6 +16,7 @@
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
+
 """
 This script downloads and parses AWS EC2 from https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json.
 It writes a Python module with constants about EC2's sizes and regions.
@@ -296,8 +297,12 @@ def dump():
     print("# See the License for the specific language governing permissions and")
     print("# limitations under the License.")
 
-    print("INSTANCE_TYPES = " + json.dumps(sizes, indent=4, sort_keys=True).replace('null', 'None'))
-    print("REGION_DETAILS = " + json.dumps(regions, indent=4, sort_keys=True))
+    separators = (',', ': ')
+
+    print("INSTANCE_TYPES = " + json.dumps(sizes, indent=4, sort_keys=True,
+                                           separators=separators)).replace('null', 'None')
+    print("REGION_DETAILS = " + json.dumps(regions, indent=4, sort_keys=True,
+                                           separators=separators))
 
 
 if __name__ == '__main__':
