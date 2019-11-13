@@ -35,7 +35,7 @@ Compute
   (GITHUB-1362)
   [Rick van de Loo]
 
-- [AWS] Re-generate and update available EC2 instance sizes.
+- [AWS] Re-generate and update available EC2 instance sizes and pricing data.
   [Tomaz Muraus]
 
 Storage
