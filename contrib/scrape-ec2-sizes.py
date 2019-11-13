@@ -34,7 +34,8 @@ import ijson  # pylint: disable=import-error
 FILEPATH = os.environ.get('TMP_JSON', '/tmp/ec.json')
 URL = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json"
 IGNORED_FIELDS = ['locationType', 'operatingSystem']
-REG_STORAGE = re.compile(r'(\d+) x ([0-9,]+)')
+REG1_STORAGE = re.compile(r'(\d+) x ([0-9,]+)')
+REG2_STORAGE = re.compile(r'(\d+) GB.*?')
 REG_BANDWIDTH = re.compile(r'\D*(\d+)\D*')
 #  From <https://aws.amazon.com/marketplace/help/200777880>
 REGION_DETAILS = {
@@ -257,8 +258,15 @@ def parse():
                 'extra': filter_extras(products_data[sku]['attributes']),
             }
             if products_data[sku]['attributes'].get('storage') != "EBS only":
-                disk_number, disk_size = REG_STORAGE.match(
-                    products_data[sku]['attributes']['storage']).groups()
+                match = REG1_STORAGE.match(products_data[sku]['attributes']['storage'])
+                if match:
+                    disk_number, disk_size = match.groups()
+                else:
+                    match = REG2_STORAGE.match(products_data[sku]['attributes']['storage'])
+                    if match:
+                        disk_number, disk_size = 1, match.groups()[0]
+                    else:
+                        disk_number, disk_size = 0, '0'
                 disk_number, disk_size = int(disk_number), int(disk_size.replace(',', ''))
                 sizes[instance_type]['disk'] = disk_number * disk_size
             else:
