@@ -45,7 +45,7 @@ Storage
   [Quentin Pradet]
 
 Load Balancer
-~~~~~~~------
+~~~~~~~~~~~~~
 
 - [AWS] Implement various create methods in the driver. (GITHUB-1349)
   [Anton Kozyrev - @Irvan]
