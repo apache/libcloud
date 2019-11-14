@@ -54,7 +54,7 @@ matrix:
 install:
   - pip install --upgrade "pip==9.0.1"
   - pip install "virtualenv==15.1.0"
-  - pip install "tox==3.12.1"
+  - pip install "tox==3.14.1"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:
