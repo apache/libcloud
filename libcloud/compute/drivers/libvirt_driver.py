@@ -74,6 +74,7 @@ class LibvirtNodeDriver(NodeDriver):
     type = Provider.LIBVIRT
     name = 'Libvirt'
     website = 'http://libvirt.org/'
+    _uri = None
 
     NODE_STATE_MAP = {
         0: NodeState.TERMINATED,  # no state
