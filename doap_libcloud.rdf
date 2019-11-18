@@ -406,6 +406,13 @@
         <revision>v2.6.0</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>2.6.1</name>
+        <created>2019-11-18</created>
+        <revision>v2.6.1</revision>
+      </Version>
+  </release>
   <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>
