@@ -1,6 +1,6 @@
 language: python
 sudo: false
-dist: trusty
+dist: xenial
 os: linux
 
 # Note: graphviz is needed for grapgs embedded in the docs
