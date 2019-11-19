@@ -959,7 +959,7 @@ class AzureNodeDriver(NodeDriver):
         if ex_lun is None:
             # find the smallest unused logical unit number
             used_luns = [disk['lun'] for disk in disks]
-            free_luns = [lun for lun in range(0, 63) if lun not in used_luns]
+            free_luns = [lun for lun in range(0, 64) if lun not in used_luns]
             if len(free_luns) > 0:
                 ex_lun = free_luns[0]
             else:
