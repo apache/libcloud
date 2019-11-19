@@ -4,6 +4,24 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Storage
+~~~~~~~
+
+- [S3] Update S3 driver so a single driver class can be used for different
+  regions.
+
+  Region which is used is controled by the ``region`` driver constructor
+  argument.
+
+  Previously, that driver followed "driver class per region" approach. That
+  approach will be deprecated and removed in a future release.
+
+  For more information, please refer to the Upgrade Notes documentation section.
+  [Tomaz Muras]
+
+- [S3] Add missing ``eu-north-1`` region to the S3 driver. (GITHUB-1370)
+  [michaelsembwever]
+
 Changes in Apache Libcloud 2.6.1
 --------------------------------
 
