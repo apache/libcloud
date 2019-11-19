@@ -16,7 +16,7 @@
 from libcloud.common.types import LibcloudError
 from libcloud.common.aws import SignedAWSConnection
 from libcloud.storage.drivers.s3 import BaseS3Connection, S3Connection
-from libcloud.storage.drivers.s3 import S3StorageDriver
+from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 
 __all__ = [
     'DigitalOceanSpacesStorageDriver'
@@ -63,7 +63,7 @@ class DOSpacesConnectionAWS2(S3Connection):
                                                      backoff)
 
 
-class DigitalOceanSpacesStorageDriver(S3StorageDriver):
+class DigitalOceanSpacesStorageDriver(BaseS3StorageDriver):
     name = 'DigitalOcean Spaces'
     website = 'https://www.digitalocean.com/products/object-storage/'
     supports_chunked_encoding = False
