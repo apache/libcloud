@@ -82,15 +82,19 @@ REGION_TO_HOST_MAP = {
     'cn-northwest-1': S3_CN_NORTHWEST_HOST,
     'eu-west-1': S3_EU_WEST_HOST,
     'eu-west-2': S3_EU_WEST2_HOST,
+    'eu-west-3': 's3.eu-west-3.amazonaws.com',
+    'eu-north-1': 's3.eu-north-1.amazonaws.com',
     'eu-central-1': S3_EU_CENTRAL_HOST,
     'ap-south-1': S3_AP_SOUTH_HOST,
     'ap-southeast-1': S3_AP_SOUTHEAST_HOST,
     'ap-southeast-2': S3_AP_SOUTHEAST2_HOST,
     'ap-northeast-1': S3_AP_NORTHEAST1_HOST,
     'ap-northeast-2': S3_AP_NORTHEAST2_HOST,
+    'ap-northeast-3': 's3.ap-northeast-3.amazonaws.com',
     'sa-east-1': S3_SA_EAST_HOST,
     'sa-east-2': S3_SA_SOUTHEAST2_HOST,
-    'ca-central-1': S3_CA_CENTRAL_HOST
+    'ca-central-1': S3_CA_CENTRAL_HOST,
+    'me-south-1': 's3.me-south-1.amazonaws.com'
 }
 
 API_VERSION = '2006-03-01'
@@ -120,8 +124,8 @@ class S3Response(AWSBaseResponse):
             bucket_region = self.headers.get('x-amz-bucket-region', None)
             used_region = self.connection.driver.region
             raise LibcloudError('This bucket is located in a different '
-                                'region. Please use the correct driver.'
-                                'Bucket region "%s", used region "%s"' %
+                                'region. Please use the correct driver. '
+                                'Bucket region "%s", used region "%s".' %
                                 (bucket_region, used_region),
                                 driver=S3StorageDriver)
         raise LibcloudError('Unknown error. Status code: %d' % (self.status),
