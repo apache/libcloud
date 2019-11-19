@@ -17,10 +17,20 @@ Storage
   approach will be deprecated and removed in a future release.
 
   For more information, please refer to the Upgrade Notes documentation section.
+  (GITHUB-1371)
   [Tomaz Muras]
 
 - [S3] Add missing ``eu-north-1`` region to the S3 driver. (GITHUB-1370)
   [michaelsembwever]
+
+- [S3] Add missing regions (eu-west-3, ap-northeast-3, me-south-1) to the driver.
+  (GITHUB-1371)
+  [Tomaz Muras]
+
+- [S3] Update the driver to throw more user-friendly error message if user is
+  using driver for a region X, but trying to upload / download object to / from
+  a region Y. (GITHUB-1371)
+  [Tomaz Muras]
 
 Changes in Apache Libcloud 2.6.1
 --------------------------------
