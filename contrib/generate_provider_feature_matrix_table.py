@@ -317,7 +317,7 @@ def generate_providers_table(api):
                 else:
                     driver_method = driver_methods[method_name]
                     # NOTE: id() is not safe
-                    #is_implemented = (id(driver_method) != id(base_method))
+                    # is_implemented = (id(driver_method) != id(base_method))
                     is_implemented = (driver_method != base_method)
 
             result[name]['methods'][method_name] = is_implemented

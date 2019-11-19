@@ -1033,10 +1033,10 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  region=None, token=None, **kwargs):
-        # Here for backward compatibility for old and deprecated driver class per region
-        # approach
+        # Here for backward compatibility for old and deprecated driver class
+        # per region approach
         if hasattr(self, 'region_name') and not region:
-            region = self.region_name # pylint: disable=no-member
+            region = self.region_name  # pylint: disable=no-member
 
         self.region_name = region
 
@@ -1047,9 +1047,10 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
 
         host = REGION_TO_HOST_MAP[region]
         super(S3StorageDriver, self).__init__(key=key, secret=secret,
-                                            secure=secure, host=host,
-                                            port=port,
-                                            region=region, token=token,**kwargs)
+                                              secure=secure, host=host,
+                                              port=port,
+                                              region=region, token=token,
+                                              **kwargs)
 
     @classmethod
     def list_regions(self):
