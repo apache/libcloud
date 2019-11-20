@@ -297,14 +297,12 @@ def get_params(func):
     @wraps(func)
     def paramed(*args, **kwargs):
         if kwargs:
+            params = {}
             for k, v in kwargs.items():
-                old_key = k
                 matches = re.findall(r'_(\w)', k)
                 for match in matches:
                     k = k.replace('_' + match, match.upper())
-                del kwargs[old_key]
-                kwargs[k] = v
-            params = kwargs
+                params[k] = v
             result = func(args[0], params)
         else:
             result = func(args[0])
