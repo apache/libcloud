@@ -3,7 +3,7 @@
 ====================================== =============== ============== ============ ============= ============= ===================
 Provider                               create balancer list balancers list members attach member detach member attach compute node
 ====================================== =============== ============== ============ ============= ============= ===================
-`Amazon Application Load Balancing`_   no              yes            yes          no            no            no                 
+`Amazon Application Load Balancing`_   yes             yes            no           no            no            no                 
 `Aliyun Server Load Balancer`_         yes             yes            yes          yes           yes           yes                
 `Brightbox`_                           yes             yes            yes          yes           yes           yes                
 `CloudStack`_                          yes             yes            yes          yes           yes           no                 

@@ -44,11 +44,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.drivers.s3 import BaseS3Connection
-from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver,\
-    S3CNNorthWestStorageDriver
-from libcloud.storage.drivers.s3 import S3EUWestStorageDriver
-from libcloud.storage.drivers.s3 import S3APSEStorageDriver
-from libcloud.storage.drivers.s3 import S3APNEStorageDriver
+from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
 from libcloud.utils.py3 import b
 
@@ -691,7 +687,6 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = self._file_path
         result = self.driver.download_object_as_stream(obj=obj)
         result = exhaust_iterator(result)
 
@@ -862,7 +857,8 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            headers = {'etag': '0cc175b9c0f1b6a831c399e269772661'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -1042,25 +1038,42 @@ class S3Tests(unittest.TestCase):
         result = self.driver.delete_object(obj=obj)
         self.assertTrue(result)
 
+    def test_region_keyword_argument(self):
+        # Default region
+        driver  = S3StorageDriver(*self.driver_args)
+        self.assertEqual(driver.region, 'us-east-1')
+        self.assertEqual(driver.connection.host, 's3.amazonaws.com')
 
-class S3USWestTests(S3Tests):
-    driver_type = S3USWestStorageDriver
+        # Custom region
+        driver  = S3StorageDriver(*self.driver_args, region='us-west-2')
+        self.assertEqual(driver.region, 'us-west-2')
+        self.assertEqual(driver.connection.host, 's3-us-west-2.amazonaws.com')
 
+        # Verify class instance and class variables don't get mixed up
+        driver1  = S3StorageDriver(*self.driver_args, region='us-west-2')
+        self.assertEqual(driver1.region, 'us-west-2')
+        self.assertEqual(driver1.connection.host, 's3-us-west-2.amazonaws.com')
 
-class S3CNNorthWestTests(S3Tests):
-    driver_type = S3CNNorthWestStorageDriver
+        driver2  = S3StorageDriver(*self.driver_args, region='ap-south-1')
+        self.assertEqual(driver2.region, 'ap-south-1')
+        self.assertEqual(driver2.connection.host, 's3-ap-south-1.amazonaws.com')
 
+        self.assertEqual(driver1.region, 'us-west-2')
+        self.assertEqual(driver1.connection.host, 's3-us-west-2.amazonaws.com')
 
-class S3EUWestTests(S3Tests):
-    driver_type = S3EUWestStorageDriver
+        # Test all supported regions
+        for region in S3StorageDriver.list_regions():
+            driver = S3StorageDriver(*self.driver_args, region=region)
+            self.assertEqual(driver.region, region)
 
+        # Invalid region
+        expected_msg = 'Invalid or unsupported region: foo'
+        self.assertRaisesRegexp(ValueError, expected_msg, S3StorageDriver,
+                                *self.driver_args, region='foo')
 
-class S3APSETests(S3Tests):
-    driver_type = S3APSEStorageDriver
-
-
-class S3APNETests(S3Tests):
-    driver_type = S3APNEStorageDriver
+    def test_deprecated_driver_class_per_region(self):
+        driver = S3USWestStorageDriver(*self.driver_args)
+        self.assertEqual(driver.region, 'us-west-1')
 
 
 if __name__ == '__main__':

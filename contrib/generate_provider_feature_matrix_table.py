@@ -316,7 +316,9 @@ def generate_providers_table(api):
                     is_implemented = False
                 else:
                     driver_method = driver_methods[method_name]
-                    is_implemented = (id(driver_method) != id(base_method))
+                    # NOTE: id() is not safe
+                    # is_implemented = (id(driver_method) != id(base_method))
+                    is_implemented = (driver_method != base_method)
 
             result[name]['methods'][method_name] = is_implemented
 
@@ -395,6 +397,10 @@ def generate_supported_providers_table(api, provider_matrix):
         name_str = '`%s`_' % (values['name'])
         module_str = ':mod:`%s`' % (values['module'])
         class_str = ':class:`%s`' % (values['class'])
+
+        # Ignore old deprecated driver class per region S3 drivers
+        if 'Amazon S3 (' in values['name']:
+            continue
 
         params = {'api': api, 'provider': provider.lower()}
         driver_docs_path = pjoin(this_dir,

@@ -61,6 +61,7 @@ S3_CN_NORTHWEST_HOST = 's3.cn-northwest-1.amazonaws.com.cn'
 S3_EU_WEST_HOST = 's3-eu-west-1.amazonaws.com'
 S3_EU_WEST2_HOST = 's3-eu-west-2.amazonaws.com'
 S3_EU_CENTRAL_HOST = 's3-eu-central-1.amazonaws.com'
+S3_EU_NORTH1_HOST = 's3-eu-north-1.amazonaws.com'
 S3_AP_SOUTH_HOST = 's3-ap-south-1.amazonaws.com'
 S3_AP_SOUTHEAST_HOST = 's3-ap-southeast-1.amazonaws.com'
 S3_AP_SOUTHEAST2_HOST = 's3-ap-southeast-2.amazonaws.com'
@@ -70,6 +71,32 @@ S3_AP_NORTHEAST_HOST = S3_AP_NORTHEAST1_HOST
 S3_SA_EAST_HOST = 's3-sa-east-1.amazonaws.com'
 S3_SA_SOUTHEAST2_HOST = 's3-sa-east-2.amazonaws.com'
 S3_CA_CENTRAL_HOST = 's3-ca-central-1.amazonaws.com'
+
+# Maps AWS region name to connection hostname
+REGION_TO_HOST_MAP = {
+    'us-east-1': S3_US_STANDARD_HOST,
+    'us-east-2': S3_US_EAST2_HOST,
+    'us-west-1': S3_US_WEST_HOST,
+    'us-west-2': S3_US_WEST_OREGON_HOST,
+    'us-gov-west-1': S3_US_GOV_WEST_HOST,
+    'cn-north-1': S3_CN_NORTH_HOST,
+    'cn-northwest-1': S3_CN_NORTHWEST_HOST,
+    'eu-west-1': S3_EU_WEST_HOST,
+    'eu-west-2': S3_EU_WEST2_HOST,
+    'eu-west-3': 's3.eu-west-3.amazonaws.com',
+    'eu-north-1': 's3.eu-north-1.amazonaws.com',
+    'eu-central-1': S3_EU_CENTRAL_HOST,
+    'ap-south-1': S3_AP_SOUTH_HOST,
+    'ap-southeast-1': S3_AP_SOUTHEAST_HOST,
+    'ap-southeast-2': S3_AP_SOUTHEAST2_HOST,
+    'ap-northeast-1': S3_AP_NORTHEAST1_HOST,
+    'ap-northeast-2': S3_AP_NORTHEAST2_HOST,
+    'ap-northeast-3': 's3.ap-northeast-3.amazonaws.com',
+    'sa-east-1': S3_SA_EAST_HOST,
+    'sa-east-2': S3_SA_SOUTHEAST2_HOST,
+    'ca-central-1': S3_CA_CENTRAL_HOST,
+    'me-south-1': 's3.me-south-1.amazonaws.com'
+}
 
 API_VERSION = '2006-03-01'
 NAMESPACE = 'http://s3.amazonaws.com/doc/%s/' % (API_VERSION)
@@ -95,8 +122,12 @@ class S3Response(AWSBaseResponse):
         if self.status in [httplib.UNAUTHORIZED, httplib.FORBIDDEN]:
             raise InvalidCredsError(self.body)
         elif self.status == httplib.MOVED_PERMANENTLY:
-            raise LibcloudError('This bucket is located in a different ' +
-                                'region. Please use the correct driver.',
+            bucket_region = self.headers.get('x-amz-bucket-region', None)
+            used_region = self.connection.driver.region
+            raise LibcloudError('This bucket is located in a different '
+                                'region. Please use the correct driver. '
+                                'Bucket region "%s", used region "%s".' %
+                                (bucket_region, used_region),
                                 driver=S3StorageDriver)
         raise LibcloudError('Unknown error. Status code: %d' % (self.status),
                             driver=S3StorageDriver)
@@ -1001,9 +1032,34 @@ class BaseS3StorageDriver(StorageDriver):
 
 
 class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
-    name = 'Amazon S3 (us-east-1)'
+    name = 'Amazon S3'
     connectionCls = S3SignatureV4Connection
     region_name = 'us-east-1'
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 region=None, token=None, **kwargs):
+        # Here for backward compatibility for old and deprecated driver class
+        # per region approach
+        if hasattr(self, 'region_name') and not region:
+            region = self.region_name  # pylint: disable=no-member
+
+        self.region_name = region
+
+        if region and region not in REGION_TO_HOST_MAP.keys():
+            raise ValueError('Invalid or unsupported region: %s' % (region))
+
+        self.name = 'Amazon S3 (%s)' % (region)
+
+        host = REGION_TO_HOST_MAP[region]
+        super(S3StorageDriver, self).__init__(key=key, secret=secret,
+                                              secure=secure, host=host,
+                                              port=port,
+                                              region=region, token=token,
+                                              **kwargs)
+
+    @classmethod
+    def list_regions(self):
+        return REGION_TO_HOST_MAP.keys()
 
 
 class S3USEast2Connection(S3SignatureV4Connection):
@@ -1107,6 +1163,17 @@ class S3EUCentralStorageDriver(S3StorageDriver):
 
 class S3APSEConnection(S3SignatureV4Connection):
     host = S3_AP_SOUTHEAST_HOST
+
+
+class S3EUNorth1Connection(S3SignatureV4Connection):
+    host = S3_EU_NORTH1_HOST
+
+
+class S3EUNorth1StorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (eu-north-1)'
+    connectionCls = S3EUNorth1Connection
+    ex_location_name = 'eu-north-1'
+    region_name = 'eu-north-1'
 
 
 class S3APSEStorageDriver(S3StorageDriver):
