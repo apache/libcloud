@@ -4,6 +4,13 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+General
+-------
+
+- Test code with Python 3.8 and advertise that we also support Python 3.8.
+  (GITHUB-1371, GITHUB-1374)
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 
