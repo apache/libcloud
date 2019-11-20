@@ -981,6 +981,26 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.name, 'racktest')
         self.assertTrue(node.extra['config_drive'])
 
+    def test_create_node_from_bootable_volume(self):
+        size = NodeSize(
+            1, '256 slice', None, None, None, None, driver=self.driver)
+
+        node = self.driver.create_node(
+            name='racktest', size=size,
+            ex_blockdevicemappings=[
+                {
+                    'boot_index': 0,
+                    'uuid': 'ee7ee330-b454-4414-8e9f-c70c558dd3af',
+                    'source_type': 'volume',
+                    'destination_type': 'volume',
+                    'delete_on_termination': False
+                }])
+
+        self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
+        self.assertEqual(node.name, 'racktest')
+        self.assertEqual(node.extra['password'], 'racktestvJq7d3')
+        self.assertEqual(node.extra['metadata']['My Server Name'], 'Apache1')
+
     def test_destroy_node(self):
         self.assertTrue(self.node.destroy())
 
@@ -1997,6 +2017,21 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
             self.driver.create_volume(1, 'test')
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("volume_type" in kwargs["data"]["volume"])
+
+    def test_create_volume_passes_image_ref_to_request_only_if_not_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(
+                1, 'test', ex_image_ref='353c4bd2-b28f-4857-9b7b-808db4397d03')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertEqual(
+                kwargs["data"]["volume"]["imageRef"],
+                "353c4bd2-b28f-4857-9b7b-808db4397d03")
+
+    def test_create_volume_does_not_pass_image_ref_to_request_if_none(self):
+        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            self.driver.create_volume(1, 'test')
+            name, args, kwargs = mock_request.mock_calls[0]
+            self.assertFalse("imageRef" in kwargs["data"]["volume"])
 
     def test_ex_create_snapshot_does_not_post_optional_parameters_if_none(self):
         volume = self.driver.list_volumes()[0]

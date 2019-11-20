@@ -290,6 +290,10 @@ class PacketMockHttp(MockHttp):
         body = self.fixtures.load('plans.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _projects_3d27fd13_0466_4878_be22_9a4b5595a3df_plans(self, method, url, body, headers):
+        body = self.fixtures.load('plans.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _projects(self, method, url, body, headers):
         body = self.fixtures.load('projects.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

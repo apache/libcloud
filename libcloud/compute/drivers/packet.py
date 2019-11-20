@@ -239,7 +239,7 @@ def _list_async(driver):
             data = self.connection.request('/projects/%s/plans' %
                                            project_id).object['plans']
         else:  # This only works with personal tokens
-            data = self.connection.request('/plans' ).object['plans']
+            data = self.connection.request('/plans').object['plans']
         return [self._to_size(size) for size in data if
                 size.get('line') == 'baremetal']
 

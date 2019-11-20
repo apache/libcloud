@@ -899,7 +899,8 @@ class GCEProject(UuidMixin):
         :return: True if successful
         :rtype:  ``bool``
         """
-        return self.driver.ex_set_common_instance_metadata(self, metadata)
+        return self.driver.ex_set_common_instance_metadata(metadata=metadata,
+                                                           force=force)
 
     def set_usage_export_bucket(self, bucket, prefix=None):
         """
@@ -921,7 +922,8 @@ class GCEProject(UuidMixin):
         :return: True if successful
         :rtype:  ``bool``
         """
-        return self.driver.ex_set_usage_export_bucket(self, bucket, prefix)
+        return self.driver.ex_set_usage_export_bucket(bucket=bucket,
+                                                      prefix=prefix)
 
     def __repr__(self):
         return '<GCEProject id="%s" name="%s">' % (self.id, self.name)
@@ -1779,10 +1781,18 @@ class GCENodeDriver(NodeDriver):
     }
 
     IMAGE_PROJECTS = {
-        "centos-cloud": ["centos-6", "centos-7"],
+        "centos-cloud": [
+            "centos-6",
+            "centos-7",
+            "centos-8",
+        ],
         "cos-cloud": ["cos-beta", "cos-dev", "cos-stable"],
         "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
-        "debian-cloud": ["debian-8", "debian-9"],
+        "debian-cloud": [
+            "debian-8",
+            "debian-9",
+            "debian-10",
+        ],
         "opensuse-cloud": ["opensuse-leap"],
         "rhel-cloud": [
             "rhel-6",
@@ -6729,34 +6739,49 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
-    def ex_start_node(self, node):
+    def ex_start_node(self, node, sync=True):
         """
         Start a node that is stopped and in TERMINATED state.
 
         :param  node: Node object to start
         :type   node: :class:`Node`
 
+        :keyword  sync: If true, do not return until destroyed or timeout
+        :type     sync: ``bool``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s/start' % (node.extra['zone'].name,
                                                     node.name)
-        self.connection.async_request(request, method='POST')
+
+        if sync:
+            self.connection.async_request(request, method='POST')
+        else:
+            self.connection.request(request, method='POST')
+
         return True
 
-    def ex_stop_node(self, node):
+    def ex_stop_node(self, node, sync=True):
         """
         Stop a running node.
 
         :param  node: Node object to stop
         :type   node: :class:`Node`
 
+        :keyword  sync: If true, do not return until destroyed or timeout
+        :type     sync: ``bool``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s/stop' % (node.extra['zone'].name,
                                                    node.name)
-        self.connection.async_request(request, method='POST')
+        if sync:
+            self.connection.async_request(request, method='POST')
+        else:
+            self.connection.request(request, method='POST')
+
         return True
 
     def ex_destroy_instancegroupmanager(self, manager):
@@ -6819,7 +6844,7 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='DELETE')
         return True
 
-    def destroy_node(self, node, destroy_boot_disk=False):
+    def destroy_node(self, node, destroy_boot_disk=False, ex_sync=True):
         """
         Destroy a node.
 
@@ -6832,12 +6857,19 @@ class GCENodeDriver(NodeDriver):
                                      method.)
         :type     destroy_boot_disk: ``bool``
 
+        :keyword  ex_sync: If true, do not return until destroyed or timeout
+        :type     ex_sync: ``bool``
+
         :return:  True if successful
         :rtype:   ``bool``
         """
         request = '/zones/%s/instances/%s' % (node.extra['zone'].name,
                                               node.name)
-        self.connection.async_request(request, method='DELETE')
+        if ex_sync:
+            self.connection.async_request(request, method='DELETE')
+        else:
+            self.connection.request(request, method='DELETE')
+
         if destroy_boot_disk and node.extra['boot_disk']:
             node.extra['boot_disk'].destroy()
         return True

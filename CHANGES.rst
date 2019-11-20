@@ -1,6 +1,55 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud 2.6.1
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [Packet] Update ``list_sizes`` method so it accepts ``ex_project_id`` argument
+  and works with project API tokens. (GITHUB-1351) [Dimitris Moraitis - @d-mo]
+
+- [GCE] Fix ``GCEProject.set_common_instance_metadata`` and
+  ``GCEproject.set_usage_export_bucket`` method. (GITHUB-1354)
+  [Aitor Zabala - @aitorzabala, Tomaz Muraus - @Kami]
+
+- [GCE] Add ``sync`` / ``ex_sync`` argument to the ``ex_stop_node``,
+  ``ex_start_node`` and ``destroy_node`` method. When this argument is set to
+  ``False``, method will return immediately without waiting polling and waiting
+  for a long running API operation to finish before returning. For backward
+  compatibility reasons, it defaults to ``True``. (GITHUB-1357)
+  [Rob Zimmerman - zimventures]
+
+- [GCE] Update list of image projects and add new ``centos-8`` and
+  ``debian-10`` based images. (GITHUB-1358)
+  [Christopher Lambert - XN137]
+
+- [OpenStack v2] Add new ``ex_image_ref`` argument to the ``create_volume``
+  method. This way bootable volumes can be created from specific images.
+  (GITHUB-1363)
+  [Rick van de Loo]
+
+- [OpenStack v2] Update ``create_node_method`` and allow users to create
+  nodes from bootable volumes without specifying ``image`` argument.
+  (GITHUB-1362)
+  [Rick van de Loo]
+
+- [AWS] Re-generate and update available EC2 instance sizes and pricing data.
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- [Common, S3, GCS] Reuse TCP connections when uploading files (GITHUB-1353)
+  [Quentin Pradet]
+
+Load Balancer
+~~~~~~~~~~~~~
+
+- [AWS] Implement various create methods in the driver. (GITHUB-1349)
+  [Anton Kozyrev - @Irvan]
+
 Changes in Apache Libcloud 2.6.0
 --------------------------------
 
