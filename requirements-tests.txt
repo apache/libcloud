@@ -9,4 +9,3 @@ requests
 requests_mock
 pytest==4.6.5
 cryptography==2.6.1
-setuptools==41.6.0
