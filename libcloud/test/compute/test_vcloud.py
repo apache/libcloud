@@ -20,7 +20,7 @@ import sys
 import traceback
 import unittest
 
-from libcloud.utils.py3 import httplib, b, assertRaisesRegex
+from libcloud.utils.py3 import httplib, b, assertRaisesRegex, PY2
 from libcloud.utils.py3 import ET
 from libcloud.utils.iso8601 import UTC
 from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject, Lease, fixxpath, get_url_path
@@ -37,6 +37,9 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 from mock import Mock, patch, mock_open
 
 from libcloud.test.secrets import VCLOUD_PARAMS
+
+
+BUILTINS = '__builtin__' if PY2 else 'builtins'
 
 
 def print_parameterized_failure(names_values):
@@ -537,9 +540,9 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         ):
             try:
                 if open_succeeds:
-                    open_mock = patch('builtins.open', mock_open(read_data='script text'))
+                    open_mock = patch(BUILTINS + '.open', mock_open(read_data='script text'))
                 else:
-                    open_mock = patch('builtins.open', side_effect=Exception())
+                    open_mock = patch(BUILTINS + '.open', side_effect=Exception())
                 with open_mock as mocked_open:
                     try:
                         self.driver._change_vm_script(
