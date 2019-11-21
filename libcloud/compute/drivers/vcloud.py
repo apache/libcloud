@@ -146,11 +146,13 @@ class Lease(object):
     """
     Lease information for vApps.
 
-    https://www.vmware.com/support/vcd/doc/rest-api-doc-1.5-html/types/LeaseSettingsSectionType.html
+    More info at: 'https://www.vmware.com/support/vcd/doc/
+                   rest-api-doc-1.5-html/types/LeaseSettingsSectionType.html'
     """
 
     def __init__(self, lease_id, deployment_lease=None, storage_lease=None,
-                 deployment_lease_expiration=None, storage_lease_expiration=None):
+                 deployment_lease_expiration=None,
+                 storage_lease_expiration=None):
         """
         :param lease_id: ID (link) to the lease settings section of a vApp.
         :type lease_id: ``str``
@@ -185,10 +187,18 @@ class Lease(object):
         :rtype: :class:`Lease`
         """
         lease_id = lease_element.get('href')
-        deployment_lease = lease_element.find(fixxpath(lease_element, 'DeploymentLeaseInSeconds'))
-        storage_lease = lease_element.find(fixxpath(lease_element, 'StorageLeaseInSeconds'))
-        deployment_lease_expiration = lease_element.find(fixxpath(lease_element, 'DeploymentLeaseExpiration'))
-        storage_lease_expiration = lease_element.find(fixxpath(lease_element, 'StorageLeaseExpiration'))
+        deployment_lease = lease_element.find(
+            fixxpath(lease_element, 'DeploymentLeaseInSeconds')
+        )
+        storage_lease = lease_element.find(
+            fixxpath(lease_element, 'StorageLeaseInSeconds')
+        )
+        deployment_lease_expiration = lease_element.find(
+            fixxpath(lease_element, 'DeploymentLeaseExpiration')
+        )
+        storage_lease_expiration = lease_element.find(
+            fixxpath(lease_element, 'StorageLeaseExpiration')
+        )
 
         def apply_if_elem_not_none(elem, function):
             return function(elem.text) if elem is not None else None
@@ -197,8 +207,14 @@ class Lease(object):
             lease_id=lease_id,
             deployment_lease=apply_if_elem_not_none(deployment_lease, int),
             storage_lease=apply_if_elem_not_none(storage_lease, int),
-            deployment_lease_expiration=apply_if_elem_not_none(deployment_lease_expiration, parse_date),
-            storage_lease_expiration=apply_if_elem_not_none(storage_lease_expiration, parse_date)
+            deployment_lease_expiration=apply_if_elem_not_none(
+                deployment_lease_expiration,
+                parse_date
+            ),
+            storage_lease_expiration=apply_if_elem_not_none(
+                storage_lease_expiration,
+                parse_date
+            )
         )
 
     def get_deployment_time(self):
@@ -206,20 +222,29 @@ class Lease(object):
         Gets the date and time a vApp was deployed. Time is inferred from the
         deployment lease and expiration or the storage lease and expiration.
 
-        :return: Date and time the vApp was deployed or None if unable to calculate
+        :return: Date and time the vApp was deployed or None if unable to
+                 calculate
         :rtype: ``datetime.datetime`` or ``None``
         """
-        if self.deployment_lease is not None and self.deployment_lease_expiration is not None:
-            return self.deployment_lease_expiration - datetime.timedelta(seconds=self.deployment_lease)
+        if (self.deployment_lease is not None
+           and self.deployment_lease_expiration is not None):
+            return self.deployment_lease_expiration - datetime.timedelta(
+                seconds=self.deployment_lease
+            )
 
-        if self.storage_lease is not None and self.storage_lease_expiration is not None:
-            return self.storage_lease_expiration - datetime.timedelta(seconds=self.storage_lease)
+        if (self.storage_lease is not None
+           and self.storage_lease_expiration is not None):
+            return self.storage_lease_expiration - datetime.timedelta(
+                seconds=self.storage_lease
+            )
 
-        raise Exception('Cannot get time deployed. Missing complete lease and expiration information.')
+        raise Exception('Cannot get time deployed. '
+                        'Missing complete lease and expiration information.')
 
     def __repr__(self):
         return (
-            '<Lease: id={lease_id}, deployment_lease={deployment_lease}, storage_lease={storage_lease}, '
+            '<Lease: id={lease_id}, deployment_lease={deployment_lease}, '
+            'storage_lease={storage_lease}, '
             'deployment_lease_expiration={deployment_lease_expiration}, '
             'storage_lease_expiration={storage_lease_expiration}>'.format(
                 lease_id=self.lease_id,
@@ -238,7 +263,8 @@ class Lease(object):
             self.lease_id == other.lease_id
             and self.deployment_lease == other.deployment_lease
             and self.storage_lease == other.storage_lease
-            and self.deployment_lease_expiration == other.deployment_lease_expiration
+            and (self.deployment_lease_expiration
+                 == other.deployment_lease_expiration)
             and self.storage_lease_expiration == other.storage_lease_expiration
         )
 
@@ -1123,7 +1149,12 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         :return: List of node instances
         :rtype: `list` of :class:`Node`
         """
-        vms = self.ex_query('vm', filter='name=={vm_name}'.format(vm_name=vm_name), page=1, page_size=1)
+        vms = self.ex_query(
+            'vm',
+            filter='name=={vm_name}'.format(vm_name=vm_name),
+            page=1,
+            page_size=1
+        )
         return [self._ex_get_node(vm['container']) for vm in vms]
 
     def destroy_node(self, node, shutdown=True):
@@ -1196,7 +1227,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         :param  node: The node to be deployed
         :type   node: :class:`Node`
 
-        :param  shutdown: Whether to shutdown or power off the guest when undeploying
+        :param  shutdown: Whether to shutdown or power off the guest when
+                undeploying
         :type   shutdown: ``bool``
 
         :rtype: :class:`Node`
@@ -1609,17 +1641,23 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         vdc = self._get_vdc(ex_vdc)
 
         if self._is_node(image):
-            vapp_name, vapp_href = self._clone_node(name,
-                                                    image,
-                                                    vdc,
-                                                    ex_clone_timeout)
+            vapp_name, vapp_href = self._clone_node(
+                name,
+                image,
+                vdc,
+                ex_clone_timeout
+            )
         else:
-            vapp_name, vapp_href = self._instantiate_node(name, image,
-                                                          network_elem,
-                                                          vdc, ex_vm_network,
-                                                          ex_vm_fence,
-                                                          ex_clone_timeout,
-                                                          description=ex_description)
+            vapp_name, vapp_href = self._instantiate_node(
+                name,
+                image,
+                network_elem,
+                vdc,
+                ex_vm_network,
+                ex_vm_fence,
+                ex_clone_timeout,
+                description=ex_description
+            )
 
         self._change_vm_names(vapp_href, ex_vm_names)
         self._change_vm_cpu(vapp_href, ex_vm_cpu)
@@ -1918,7 +1956,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             # Update GuestCustomizationSection
             res.object.find(
                 fixxpath(res.object, 'ComputerName')).text = vm_names[i]
-            # Remove AdminPassword from customization section if it would be invalid to include it
+            # Remove AdminPassword from customization section if it would be
+            # invalid to include it
             self._remove_admin_password(res.object)
 
             headers = {
@@ -2088,7 +2127,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                 e.text = script
                 res.object.insert(i, e)
 
-            # Remove AdminPassword from customization section if it would be invalid to include it
+            # Remove AdminPassword from customization section if it would be
+            # invalid to include it
             self._remove_admin_password(res.object)
 
             # Update VM's GuestCustomizationSection
@@ -2155,8 +2195,13 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         admin_pass = guest_customization_section.find(
             fixxpath(guest_customization_section, 'AdminPassword')
         )
-        if admin_pass is not None and (admin_pass_enabled is None or admin_pass_enabled.text != 'true'
-                                       or admin_pass_auto is None or admin_pass_auto.text != 'false'):
+        if (
+            admin_pass is not None
+            and (
+                admin_pass_enabled is None or admin_pass_enabled.text != 'true'
+                or admin_pass_auto is None or admin_pass_auto.text != 'false'
+            )
+        ):
             guest_customization_section.remove(admin_pass)
 
     def _update_or_insert_section(self, res, section, prev_section, text):
@@ -2362,10 +2407,18 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         extra = {'vdc': vdc.name, 'vms': vms}
 
         description = node_elm.find(fixxpath(node_elm, 'Description'))
-        extra['description'] = description.text if description is not None else ''
+        if description is not None:
+            extra['description'] = description.text
+        else:
+            extra['description'] = ''
 
-        lease_settings = node_elm.find(fixxpath(node_elm, 'LeaseSettingsSection'))
-        extra['lease_settings'] = Lease.to_lease(lease_settings) if lease_settings is not None else None
+        lease_settings = node_elm.find(
+            fixxpath(node_elm, 'LeaseSettingsSection')
+        )
+        if lease_settings is not None:
+            extra['lease_settings'] = Lease.to_lease(lease_settings)
+        else:
+            extra['lease_settings'] = None
 
         if snapshots is not None:
             extra['snapshots'] = snapshots
