@@ -576,7 +576,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     auth_version = None
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
-                 domain_name='Default',
+                 tenant_domain_id='default', domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
                  timeout=None, proxy_url=None, parent_conn=None):
         super(OpenStackIdentityConnection, self).__init__(user_id=user_id,
@@ -931,7 +931,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     ]
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
-                 domain_name='Default',
+                 domain_name='Default', tenant_domain_id='default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
                  timeout=None, proxy_url=None, parent_conn=None):
         """
@@ -973,6 +973,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
             raise ValueError('Must provide domain_name argument')
 
         self.auth_user_roles = None
+        self.tenant_domain_id = tenant_domain_id
 
     def authenticate(self, force=False):
         """
@@ -1003,7 +1004,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
             data['auth']['scope'] = {
                 'project': {
                     'domain': {
-                        'name': self.domain_name
+                        'id': self.tenant_domain_id
                     },
                     'name': self.tenant_name
                 }

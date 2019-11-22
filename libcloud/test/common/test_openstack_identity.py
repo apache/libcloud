@@ -312,6 +312,7 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                                 key='test_key',
                                                 token_scope='project',
                                                 tenant_name="test_tenant",
+                                                tenant_domain_id="test_tenant_domain_id",
                                                 domain_name='test_domain',
                                                 proxy_url='http://proxy:8080',
                                                 timeout=10)
@@ -692,7 +693,7 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             data = json.loads(body)
             if 'password' in data['auth']['identity']:
                 if data['auth']['identity']['password']['user']['domain']['name'] != 'test_domain' or \
-                        data['auth']['scope']['project']['domain']['name'] != 'test_domain':
+                        data['auth']['scope']['project']['domain']['id'] != 'test_tenant_domain_id':
                     status = httplib.UNAUTHORIZED
 
             body = ComputeFileFixtures('openstack').load('_v3__auth.json')
