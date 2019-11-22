@@ -11,6 +11,15 @@ General
   (GITHUB-1371, GITHUB-1374)
   [Tomaz Muraus]
 
+Common
+------
+
+- [OpenStack] Fix OpenStack project scoped token authentication. The driver
+  constructors now accept ``ex_tenant_domain_id`` argument which tells
+  authentication service which domain id to use for the scoped authentication
+  token. (GITHUB-1367)
+  [kshtsk]
+
 Storage
 ~~~~~~~
 
