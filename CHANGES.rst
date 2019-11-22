@@ -20,6 +20,15 @@ Common
   token. (GITHUB-1367)
   [kshtsk]
 
+Compute
+-------
+
+- [Azure ARM] Fix ``attach_volume`` method and allow maximum of 64 disks to be
+  added when LUN is not specified. Previously there was a bug and only a
+  maximum of 63 disks could be added.
+  (GITHUB-1372
+  [Palash Gandhi - @palashgandhi]
+
 Storage
 ~~~~~~~
 
