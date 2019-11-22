@@ -432,6 +432,15 @@ class AzureNodeDriverTests(LibcloudTestCase):
         self.assertTrue(len(data_disks), len(volumes))
         self.assertTrue(set(luns), {0, 1, 15})
 
+        volumes = self.driver.list_volumes()
+        node = self.driver.list_nodes()[0]
+        for count in range(64):
+            self.driver.attach_volume(node, volumes[0])
+        data_disks = node.extra['properties']['storageProfile']['dataDisks']
+        luns = [disk['lun'] for disk in data_disks]
+        self.assertTrue(len(data_disks), 64)
+        self.assertTrue(set(luns), set(range(64)))
+
     def test_resize_volume(self):
         volume = self.driver.list_volumes()[0]
         original_size = volume.size
