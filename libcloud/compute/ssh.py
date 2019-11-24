@@ -649,7 +649,11 @@ class ShellOutSSHClient(BaseSSHClient):
         child = subprocess.Popen(full_cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
         stdout, stderr = child.communicate()
-        return (stdout, stderr, child.returncode)
+
+        stdout_str = cast(str, stdout)
+        stderr_str = cast(str, stdout)
+
+        return (stdout_str, stderr_str, child.returncode)
 
 
 class MockSSHClient(BaseSSHClient):
