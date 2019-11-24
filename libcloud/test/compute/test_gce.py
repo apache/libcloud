@@ -26,7 +26,7 @@ from libcloud.compute.drivers.gce import (
     GCENodeDriver, API_VERSION, timestamp_to_datetime, GCEAddress, GCEBackend,
     GCEBackendService, GCEFirewall, GCEForwardingRule, GCEHealthCheck,
     GCENetwork, GCENodeImage, GCERoute, GCERegion, GCETargetHttpProxy,
-    GCEUrlMap, GCEZone, GCESubnetwork)
+    GCEUrlMap, GCEZone, GCESubnetwork, GCEProject)
 from libcloud.common.google import (GoogleBaseAuthConnection,
                                     ResourceNotFoundError, ResourceExistsError,
                                     GoogleBaseError)
@@ -640,6 +640,8 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(len(nodes_uc1a), 1)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
+        self.assertEqual(nodes_uc1a[0].extra['cpuPlatform'], 'Intel Skylake')
+        self.assertEqual(nodes_uc1a[0].extra['minCpuPlatform'], 'Intel Skylake')
 
         names = [n.name for n in nodes_all]
         self.assertTrue('node-name' in names)
@@ -1975,6 +1977,10 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         bucket_name = 'https://www.googleapis.com/foo'
         self.driver.ex_set_usage_export_bucket(bucket_name)
 
+        project = GCEProject(id=None, name=None, metadata=None, quotas=None,
+                             driver=self.driver)
+        project.set_usage_export_bucket(bucket=bucket_name)
+
     def test__set_project_metadata(self):
         self.assertEqual(
             len(self.driver._set_project_metadata(None, False, "")), 0)
@@ -2056,6 +2062,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
                               'value': 'v1'}, {'key': 'gcedict2',
                                                'value': 'v2'}]}
         self.driver.ex_set_common_instance_metadata(gcedict)
+
+        # Verify project notation works
+        project = GCEProject(id=None, name=None, metadata=None, quotas=None,
+                             driver=self.driver)
+        project.set_common_instance_metadata(metadata=gcedict)
 
     def test_ex_set_node_metadata(self):
         node = self.driver.ex_get_node('node-name', 'us-central1-a')

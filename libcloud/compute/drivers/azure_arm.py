@@ -959,7 +959,7 @@ class AzureNodeDriver(NodeDriver):
         if ex_lun is None:
             # find the smallest unused logical unit number
             used_luns = [disk['lun'] for disk in disks]
-            free_luns = [lun for lun in range(0, 63) if lun not in used_luns]
+            free_luns = [lun for lun in range(0, 64) if lun not in used_luns]
             if len(free_luns) > 0:
                 ex_lun = free_luns[0]
             else:
@@ -1323,13 +1323,14 @@ class AzureNodeDriver(NodeDriver):
         """
         if not isinstance(resource, basestring):
             resource = resource.id
-        self.connection.request(
+        r = self.connection.request(
             resource,
             method='DELETE',
             params={
                 'api-version': RESOURCE_API_VERSION
             },
         )
+        return r.status in [200, 202, 204]
 
     def ex_get_ratecard(self, offer_durable_id, currency='USD',
                         locale='en-US', region='US'):
@@ -1865,6 +1866,26 @@ class AzureNodeDriver(NodeDriver):
                                     data=data,
                                     method='PUT')
         return self._to_ip_address(r.object)
+
+    def ex_delete_public_ip(self, public_ip):
+        """
+        Delete a public ip address resource.
+
+        :param public_ip: Public ip address resource to delete
+        :type public_ip: `.AzureIPAddress`
+        """
+        # NOTE: This operation requires API version 2018-11-01 so
+        # "ex_delete_resource" won't for for deleting an IP address
+        resource = public_ip.id
+        r = self.connection.request(
+            resource,
+            method='DELETE',
+            params={
+                'api-version': '2019-06-01'
+            },
+        )
+
+        return r.status in [200, 202, 204]
 
     def ex_create_network_interface(self, name, subnet, resource_group,
                                     location=None, public_ip=None):

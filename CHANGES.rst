@@ -5,6 +5,111 @@ Changes in Apache Libcloud in development
 -----------------------------------------
 
 General
+-------
+
+- Test code with Python 3.8 and advertise that we also support Python 3.8.
+  (GITHUB-1371, GITHUB-1374)
+  [Tomaz Muraus]
+
+Common
+------
+
+- [OpenStack] Fix OpenStack project scoped token authentication. The driver
+  constructors now accept ``ex_tenant_domain_id`` argument which tells
+  authentication service which domain id to use for the scoped authentication
+  token. (GITHUB-1367)
+  [kshtsk]
+
+Compute
+-------
+
+- [Azure ARM] Fix ``attach_volume`` method and allow maximum of 64 disks to be
+  added when LUN is not specified. Previously there was a bug and only a
+  maximum of 63 disks could be added.
+  (GITHUB-1372
+  [Palash Gandhi - @palashgandhi]
+
+Storage
+~~~~~~~
+
+- [S3] Update S3 driver so a single driver class can be used for different
+  regions.
+
+  Region which is used is controled by the ``region`` driver constructor
+  argument.
+
+  Previously, that driver followed "driver class per region" approach. That
+  approach will be deprecated and removed in a future release.
+
+  For more information, please refer to the Upgrade Notes documentation section.
+  (GITHUB-1371)
+  [Tomaz Muras]
+
+- [S3] Add missing ``eu-north-1`` region to the S3 driver. (GITHUB-1370)
+  [michaelsembwever]
+
+- [S3] Add missing regions (eu-west-3, ap-northeast-3, me-south-1) to the driver.
+  (GITHUB-1371)
+  [Tomaz Muras]
+
+- [S3] Update the driver to throw more user-friendly error message if user is
+  using driver for a region X, but trying to upload / download object to / from
+  a region Y. (GITHUB-1371)
+  [Tomaz Muras]
+
+Changes in Apache Libcloud 2.6.1
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [Packet] Update ``list_sizes`` method so it accepts ``ex_project_id`` argument
+  and works with project API tokens. (GITHUB-1351) [Dimitris Moraitis - @d-mo]
+
+- [GCE] Fix ``GCEProject.set_common_instance_metadata`` and
+  ``GCEproject.set_usage_export_bucket`` method. (GITHUB-1354)
+  [Aitor Zabala - @aitorzabala, Tomaz Muraus - @Kami]
+
+- [GCE] Add ``sync`` / ``ex_sync`` argument to the ``ex_stop_node``,
+  ``ex_start_node`` and ``destroy_node`` method. When this argument is set to
+  ``False``, method will return immediately without waiting polling and waiting
+  for a long running API operation to finish before returning. For backward
+  compatibility reasons, it defaults to ``True``. (GITHUB-1357)
+  [Rob Zimmerman - zimventures]
+
+- [GCE] Update list of image projects and add new ``centos-8`` and
+  ``debian-10`` based images. (GITHUB-1358)
+  [Christopher Lambert - XN137]
+
+- [OpenStack v2] Add new ``ex_image_ref`` argument to the ``create_volume``
+  method. This way bootable volumes can be created from specific images.
+  (GITHUB-1363)
+  [Rick van de Loo]
+
+- [OpenStack v2] Update ``create_node_method`` and allow users to create
+  nodes from bootable volumes without specifying ``image`` argument.
+  (GITHUB-1362)
+  [Rick van de Loo]
+
+- [AWS] Re-generate and update available EC2 instance sizes and pricing data.
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- [Common, S3, GCS] Reuse TCP connections when uploading files (GITHUB-1353)
+  [Quentin Pradet]
+
+Load Balancer
+~~~~~~~~~~~~~
+
+- [AWS] Implement various create methods in the driver. (GITHUB-1349)
+  [Anton Kozyrev - @Irvan]
+
+Changes in Apache Libcloud 2.6.0
+--------------------------------
+
+General
 ~~~~~~~
 
 - [OpenStack] Update OpenStack identity driver so a custom project can be
@@ -36,7 +141,7 @@ General
 
   For more information, please refer to the documentation -
   https://libcloud.readthedocs.io/en/latest/other/using-http-proxy.html
-  (GITHUB-1314)
+  (GITHUB-1314, GITHUB-1324)
   [Jim Liu - @hldh214, Tomaz Muraus]
 
 - Fix paramiko debug logging which didn't work when using ``LIBCLOUD_DEBUG``
@@ -56,6 +161,13 @@ General
 
 - Update Paramiko SSH client to throw a more user-friendly error if a private
   key file in an unsupported format is used. (GITHUB-1314)
+  [Tomaz Muraus]
+
+- Fix HTTP(s) proxy support in the OpenStack drivers. (GITHUB-1324)
+  [Gabe Van Engel - @gvengel]
+
+- Fix logging connection class so it also works when data type is ``bytearray``
+  or ``bytes``. (GITHUB-1339)
   [Tomaz Muraus]
 
 Compute
@@ -143,6 +255,38 @@ Compute
   (GITHUB-1205)
   [Dan Hunsaker - @danhunsaker]
 
+- [Azure ARM] Add ``ex_delete_public_ip`` method to the Azure ARM driver.
+  (GITHUB-1318)
+  [Reza Shahriari - redha1419]
+
+- [EC2] Update EC2 driver to throw a more user-friendly exception if a user /
+  developer tries to provide an invalid value type for an item value in the
+  request ``params`` dictionary.
+
+  Request parameters are sent via query parameters and not via request body,
+  as such, only string values are supported. (GITHUB-1329, GITHUB-1321)
+
+  Reported by James Bednell.
+  [Tomaz Muraus]
+
+- [OpenStack] Add new ``ex_remove_security_group_from_node`` method.
+  (GITHUB-1331)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Fix broken ``ex_update_port`` method.
+  (GITHUB-1320)
+  [Miguel Caballer - @micafer]
+
+- [Softlayer] Fix a bug with driver incorrectly handling the value of
+  ``ex_hourly`` argument in the ``create_node()`` method which caused nodes
+  to always be created with hourly billing, even if this argument was set to
+  ``False``. (GITHUB-1334, GITHUB-1335)
+  [@r2ronoha]
+
+- [GCE] Add optional ``cpuPlatform`` and ``minCpuPlatform`` attributes to the
+  ``node.extra`` dictionary. (GITHUB-1342, GITHUB-1343)
+  [@yairshemla]
+
 Storage
 ~~~~~~~
 
@@ -152,10 +296,41 @@ Storage
   [Clemens Wolff - @c-w]
 
 - [Azure Blobs] Fix a bug with Azure storage driver works when used against a
-  storage account that was created using ``kind=BlobStrage``. The includes
-  updating minimum API version used / supported by storage driver from
-  ``2012-02-12`` to ``2014-02-14'``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
+  storage account that was created using ``kind=BlobStrage``. This includes
+  updating the minimum API version used / supported by the storage driver from
+  ``2012-02-12`` to ``2014-02-14``. (LIBCLOUD-851, GITHUB-1202, GITHUB-1294)
   [Clemens Wolff - @c-w, Davis Kirkendall - @daviskirk]
+
+- [Azure Blobs] Increase the maximum size of block blobs that can be created
+  to 100 MB. This includes updating the minimum API version used / supported
+  by the storage driver from ``2014-02-14`` to ``2016-05-31``. (GITHUB-1340)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Set the minimum required version of requests to ``2.5.0`` since
+  requests ``2.4.0`` and earlier exhibit XML parsing errors of Azure Storage
+  responses. (GITHUB-1325, GITHUB-1322)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Detect bad version of requests that leads to errors in parsing
+  Azure Storage responses. This scenario is known to happen on RHEL 7.6 when
+  requests was installed via yum. (GITHUB-1332, GITHUB-1322)
+  [Clemens Wolff - @c-w]
+
+- [Common, CloudFiles] Fix ``upload_object_via_stream`` and ensure we start
+  from the beginning when calculating hash for the provided iterator. This way
+  we avoid hash mismatch errors in scenario where provided iterator is already
+  iterated / seeked upon before calculating the hash. (GITHUB-1326)
+  [Gabe Van Engel - @gvengel, Tomaz Muraus]
+
+- [Backblaze B2] Fix a bug with driver not working correctly due to a
+  regression which was inadvertently introduced in one of the previous
+  releases. (GITHUB-1338, GITHUB-1339)
+
+  Reported by Shawn Nock - @nocko.
+  [Tomaz Muraus]
+
+- [Backblaze B2] Fix ``upload_object_via_stream`` method. (GITHUB-1339)
+  [Tomaz Muraus]
 
 DNS
 ~~~
@@ -163,6 +338,12 @@ DNS
 - [Cloudflare] Re-write the Cloudflare DNS driver to use Cloudflare API v4.
   (LIBCLOUD-1001, LIBCLOUD-994, GITHUB-1292)
   [Clemens Wolff - @c-w]
+
+- [Gandi LiveDNS] Add new driver for Gandi LiveDNS service. (GITHUB-1323)
+  [Ryan Lee - @zepheiryan]
+
+- [PowerDNS] Update driver so it works with API v3 and v4. #1328
+  [@biggosh]
 
 Changes in Apache Libcloud 2.5.0
 --------------------------------

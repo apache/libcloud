@@ -24,6 +24,8 @@ try:
 except ImportError:
     have_paramiko = False
 
+from mock import patch
+
 import libcloud
 from libcloud import _init_once
 from libcloud.utils.loggingconnection import LoggingConnection
@@ -63,6 +65,18 @@ class TestUtils(unittest.TestCase):
     def test_raises_error(self):
         with self.assertRaises(DriverTypeNotFoundError):
             libcloud.get_driver('potato', 'potato')
+
+    @patch.object(libcloud.requests, '__version__', '2.6.0')
+    @patch.object(libcloud.requests.packages.chardet, '__version__', '2.2.1')
+    def test_init_once_detects_bad_yum_install_requests(self, *args):
+        expected_msg = 'Known bad version of requests detected'
+        with self.assertRaisesRegexp(AssertionError, expected_msg):
+            _init_once()
+
+    @patch.object(libcloud.requests, '__version__', '2.6.0')
+    @patch.object(libcloud.requests.packages.chardet, '__version__', '2.3.0')
+    def test_init_once_correct_chardet_version(self, *args):
+        _init_once()
 
 
 if __name__ == '__main__':

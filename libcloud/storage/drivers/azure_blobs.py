@@ -43,15 +43,8 @@ from libcloud.storage.types import ObjectHashMismatchError
 RESPONSES_PER_REQUEST = 100
 
 # As per the Azure documentation, if the upload file size is less than
-# 64MB, we can upload it in a single request. However, in real life azure
-# servers seem to disconnect randomly after around 5 MB or 200s of upload.
-# So, it is better that for file sizes greater than 4MB, we upload it in
-# chunks.
-# Also, with large sizes, if we use a lease, the lease will timeout after
-# 60 seconds, but the upload might still be in progress. This can be
-# handled in code, but if we use chunked uploads, the lease renewal will
-# happen automatically.
-AZURE_BLOCK_MAX_SIZE = 4 * 1024 * 1024
+# 100MB, we can upload it in a single request.
+AZURE_BLOCK_MAX_SIZE = 100 * 1024 * 1024
 
 # Azure block blocks must be maximum 4MB
 # Azure page blobs must be aligned in 512 byte boundaries (4MB fits that)
@@ -184,9 +177,7 @@ class AzureBlobsConnection(AzureConnection):
 
         return action
 
-    # this is the minimum api version supported by storage accounts of kinds
-    # StorageV2, Storage and BlobStorage
-    API_VERSION = '2014-02-14'
+    API_VERSION = '2016-05-31'
 
 
 class AzureBlobsStorageDriver(StorageDriver):

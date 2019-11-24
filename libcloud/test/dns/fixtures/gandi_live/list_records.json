@@ -1,0 +1,26 @@
+[
+    {
+        "rrset_type": "A",
+        "rrset_ttl": 10800,
+        "rrset_name": "@",
+        "rrset_values": [
+            "127.0.0.1"
+        ]
+    },
+    {
+        "rrset_type": "CNAME",
+        "rrset_ttl": 3600,
+        "rrset_name": "www",
+        "rrset_values": [
+            "bob.example.com."
+        ]
+    },
+    {
+        "rrset_type": "A",
+        "rrset_ttl": 9600,
+        "rrset_name": "bob",
+        "rrset_values": [
+            "127.0.1.1"
+        ]
+    }
+]

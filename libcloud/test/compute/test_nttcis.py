@@ -13,16 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import sys
+import unittest
 from types import GeneratorType
+
+import pytest
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import ET
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.nttcis import NttCisAPIException, NetworkDomainServicePlan
 from libcloud.common.nttcis import NttCisServerCpuSpecification, NttCisServerDisk, NttCisServerVMWareTools
 from libcloud.common.nttcis import NttCisTag, NttCisTagKey
-from libcloud.common.nttcis import NttCisServerCpuSpecification
-from libcloud.common.nttcis import NttCisServerDisk
 from libcloud.common.nttcis import ClassFactory
 from libcloud.common.nttcis import TYPES_URN
 from libcloud.compute.drivers.nttcis import NttCisNodeDriver as NttCis
@@ -130,7 +132,7 @@ def test_paginated_mcp2_call_PAGED_THEN_EMPTY(driver):
     for node_list in node_list_generator:
         final_node_list.extend(node_list)
     assert len(final_node_list) == 2
-    
+
 
 def test_paginated_mcp2_call_with_page_size(driver):
     # cache org
@@ -172,7 +174,7 @@ def test_list_nodes_response_LOCATION(driver):
     ret = driver.list_nodes(ex_location=first_loc)
     for node in ret:
         assert node.extra['datacenterId'] == 'NA3'
-        
+
 
 def test_list_nodes_response_LOCATION_STR(driver):
     NttCisMockHttp.type = None
@@ -346,8 +348,8 @@ def test_create_mcp1_node_response_no_pass_customer_windows_STR(driver):
                               ex_description='test2 node', ex_network=network,
                               ex_is_started=False)
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
-    assert  node.extra['status'].action == 'DEPLOY_SERVER'
-    assert 'password' in node.extra
+    assert node.extra['status'].action == 'DEPLOY_SERVER'
+    assert'password' in node.extra
 
 
 def test_create_mcp1_node_response_no_pass_customer_linux(driver):
@@ -723,6 +725,7 @@ def test_create_node_mcp2_additional_nics_legacy(driver):
                               ex_is_started=False)
     assert node.id == 'e75ead52-692f-4314-8725-c8a4f4d13a87'
     assert node.extra['status'].action == 'DEPLOY_SERVER'
+
 
 def test_create_node_bad_additional_nics_ipv4(driver):
     rootPw = NodeAuthPassword('pass123')
@@ -3381,3 +3384,7 @@ class NttCisMockHttp(MockHttp):
             "drs_delete_consistency_group.xml"
         )
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())

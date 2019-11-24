@@ -147,7 +147,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         auth_conn = self._auth_conn.authenticate()
 
         # Set host to the download server
-        self.host = auth_conn.download_host
+        self._set_host(auth_conn.download_host)
 
         action = '/file/' + action
         method = 'GET'
@@ -162,7 +162,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         auth_conn = self._auth_conn.authenticate()
 
         # Upload host is dynamically retrieved for each upload request
-        self.host = upload_host
+        self._set_host(host=upload_host)
 
         method = 'POST'
         raw = False
@@ -181,7 +181,7 @@ class BackblazeB2Connection(ConnectionUserAndKey):
         auth_conn = self._auth_conn.authenticate()
 
         # Set host
-        self.host = auth_conn.api_host
+        self._set_host(host=auth_conn.api_host)
 
         # Include Content-Type
         if not raw and data:
@@ -222,6 +222,17 @@ class BackblazeB2Connection(ConnectionUserAndKey):
                                                               headers=headers,
                                                               raw=raw)
         return response
+
+    def _set_host(self, host):
+        """
+        Dynamically set host which will be used for the following HTTP
+        requests.
+
+        NOTE: This is needed because Backblaze uses different hosts for API,
+        download and upload requests.
+        """
+        self.host = host
+        self.connection.host = 'https://%s' % (host)
 
 
 class BackblazeB2StorageDriver(StorageDriver):
@@ -318,8 +329,11 @@ class BackblazeB2StorageDriver(StorageDriver):
 
         return self._get_object(obj=obj, callback=read_in_chunks,
                                 response=response,
-                                callback_kwargs={'iterator': response.response,
-                                                 'chunk_size': chunk_size},
+                                callback_kwargs={
+                                    'iterator': response.iter_content(
+                                        chunk_size
+                                    ),
+                                    'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,

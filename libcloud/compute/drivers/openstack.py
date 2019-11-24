@@ -1515,7 +1515,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if 'image' in kwargs:
             server_params['imageRef'] = kwargs.get('image').id
         else:
-            server_params['imageRef'] = node.extra.get('imageId')
+            server_params['imageRef'] = node.extra.get(
+                'imageId', ''
+            ) if node else ''
 
         if 'size' in kwargs:
             server_params['flavorRef'] = kwargs.get('size').id
@@ -2684,7 +2686,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     network_connection = None
 
     # Similarly all image operations are noe exposed through the block-storage
-    # API of the cinde service:
+    # API of the cinder service:
     # https://developer.openstack.org/api-ref/block-storage/
     volumev2_connectionCls = OpenStack_2_VolumeV2Connection
     volumev2_connection = None
@@ -3168,7 +3170,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to detach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3185,7 +3187,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      node: node
         :type       node: :class:`Node`
 
-        :param      port: port interface to remove
+        :param      port: port interface to attach
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
@@ -3256,7 +3258,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         Update a OpenStack_2_PortInterface
 
-        :param      port: port interface to remove
+        :param      port: port interface to update
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :param      description: Description of the port
@@ -3294,7 +3296,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if security_groups is not None:
             data['port']['security_groups'] = security_groups
         response = self.network_connection.request(
-            '/v2.0/ports/{}'.format(port.id), method='PUT'
+            '/v2.0/ports/{}'.format(port.id), method='PUT', data=data
         )
         return self._to_port(response.object['port'])
 
@@ -3320,7 +3322,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self.volumev2_connection.request('/volumes/%s' % volumeId).object)
 
     def create_volume(self, size, name, location=None, snapshot=None,
-                      ex_volume_type=None):
+                      ex_volume_type=None, ex_image_ref=None):
         """
         Create a new volume.
 
@@ -3343,6 +3345,10 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                             (optional)
         :type ex_volume_type: ``str``
 
+        :param ex_image_ref: The image to create the volume from
+                             when creating a bootable volume (optional)
+        :type ex_image_ref: ``str``
+
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
         """
@@ -3357,6 +3363,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         if ex_volume_type:
             volume['volume_type'] = ex_volume_type
+
+        if ex_image_ref:
+            volume['imageRef'] = ex_image_ref
 
         if location:
             volume['availability_zone'] = location
@@ -3563,6 +3572,22 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         resp = self.network_connection.request(
             '/v2.0/security-group-rules/%s' % (rule.id), method='DELETE')
         return resp.status == httplib.NO_CONTENT
+
+    def ex_remove_security_group_from_node(self, security_group, node):
+        """
+        Remove a Security Group from a node.
+
+        :param security_group: Security Group to remove from node.
+        :type  security_group: :class:`OpenStackSecurityGroup`
+
+        :param      node: Node to remove the Security Group.
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        server_params = {'name': security_group.name}
+        resp = self._node_action(node, 'removeSecurityGroup', **server_params)
+        return resp.status == httplib.ACCEPTED
 
     def _to_floating_ip_pool(self, obj):
         return OpenStack_2_FloatingIpPool(obj['id'], obj['name'],

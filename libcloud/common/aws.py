@@ -29,6 +29,8 @@ except ImportError:
     import json  # type: ignore
 
 from libcloud.utils.py3 import ET
+from libcloud.utils.py3 import _real_unicode
+from libcloud.utils.py3 import basestring
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
@@ -50,6 +52,23 @@ __all__ = [
 
 DEFAULT_SIGNATURE_VERSION = '2'
 UNSIGNED_PAYLOAD = 'UNSIGNED-PAYLOAD'
+
+PARAMS_NOT_STRING_ERROR_MSG = """
+"params" dictionary contains an attribute "%s" which value (%s, %s) is not a
+string.
+
+Parameters are sent via query parameters and not via request body and as such,
+all the values need to be of a simple type (string, int, bool).
+
+For arrays and other complex types, you should use notation similar to this
+one:
+
+params['TagSpecification.1.Tag.Value'] = 'foo'
+params['TagSpecification.2.Tag.Value'] = 'bar'
+
+See https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html
+for details.
+""".strip()
 
 
 class AWSBaseResponse(XmlResponse):
@@ -381,6 +400,15 @@ class SignedAWSConnection(AWSTokenConnection):
         params = self.signer.get_request_params(params=params,
                                                 method=self.method,
                                                 path=self.action)
+
+        # Verify that params only contain simple types and no nested
+        # dictionaries.
+        # params are sent via query params so only strings are supported
+        for key, value in params.items():
+            if not isinstance(value, (_real_unicode, basestring, int, bool)):
+                msg = PARAMS_NOT_STRING_ERROR_MSG % (key, value, type(value))
+                raise ValueError(msg)
+
         return params
 
     def pre_connect_hook(self, params, headers):

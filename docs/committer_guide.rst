@@ -74,7 +74,7 @@ preparing a release.
 * Make sure ``CHANGES`` file is up to date
 * Make sure ``__version__`` string in ``libcloud/__init__.py`` is up to date
 * Make sure ``version`` and ``release`` in ``docs/conf.py`` are up to date
-* Update constants: ``python contrib/scrape-ec2-sizes.py > libcloud/compute/constants.py``
+* Update constants, pricing and other auto-generated data: ``tox -e scrape-ec2-sizes,scrape-ec2-prices``
 
 1. Pre-release check list
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -210,7 +210,7 @@ Add information about the new release to the ``doap_libcloud.rdf`` file in the
 root of the main code repository.
 
 Update ``__version__`` attribute in ``libcloud/__init.py__`` file and indicate
-we are now working on a new release by incrementing a number and adding ``dev``
+we are now working on a new release by incrementing a number and adding ``-dev``
 suffix. For example, if version ``2.2.1`` has been released you would change
 it from:
 
@@ -222,7 +222,7 @@ To:
 
 .. sourcecode:: python
 
-    __version__ = '2.2.2dev'
+    __version__ = '2.2.2-dev'
 
 10. Updating website
 ~~~~~~~~~~~~~~~~~~~~

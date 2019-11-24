@@ -109,6 +109,15 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                            default tenant if none is provided.
     :type ex_tenant_name: ``str``
 
+    :param ex_tenant_domain_id: When authenticating, provide this tenant
+                                domain id to the identity service.
+                                A scoped token will be returned.
+                                Some cloud providers require the tenant
+                                domain id to be provided at authentication
+                                time. Others will use a default tenant
+                                domain id if none is provided.
+    :type ex_tenant_domain_id: ``str``
+
     :param ex_force_service_type: Service type to use when selecting an
                                   service. If not specified, a provider
                                   specific default will be used.
@@ -145,6 +154,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_token_scope=OpenStackIdentityTokenScope.PROJECT,
                  ex_domain_name='Default',
                  ex_tenant_name=None,
+                 ex_tenant_domain_id='default',
                  ex_force_service_type=None,
                  ex_force_service_name=None,
                  ex_force_service_region=None,
@@ -163,6 +173,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         self._ex_token_scope = ex_token_scope
         self._ex_domain_name = ex_domain_name
         self._ex_tenant_name = ex_tenant_name
+        self._ex_tenant_domain_id = ex_tenant_domain_id
         self._ex_force_service_type = ex_force_service_type
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
@@ -199,9 +210,11 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                             user_id=self.user_id,
                             key=self.key,
                             tenant_name=self._ex_tenant_name,
+                            tenant_domain_id=self._ex_tenant_domain_id,
                             domain_name=self._ex_domain_name,
                             token_scope=self._ex_token_scope,
                             timeout=self.timeout,
+                            proxy_url=self.proxy_url,
                             parent_conn=self)
 
         return self._osa
@@ -419,6 +432,7 @@ class OpenStackDriverMixin(object):
                  ex_token_scope=OpenStackIdentityTokenScope.PROJECT,
                  ex_domain_name='Default',
                  ex_tenant_name=None,
+                 ex_tenant_domain_id='default',
                  ex_force_service_type=None,
                  ex_force_service_name=None,
                  ex_force_service_region=None, *args, **kwargs):
@@ -429,6 +443,7 @@ class OpenStackDriverMixin(object):
         self._ex_token_scope = ex_token_scope
         self._ex_domain_name = ex_domain_name
         self._ex_tenant_name = ex_tenant_name
+        self._ex_tenant_domain_id = ex_tenant_domain_id
         self._ex_force_service_type = ex_force_service_type
         self._ex_force_service_name = ex_force_service_name
         self._ex_force_service_region = ex_force_service_region
@@ -454,6 +469,8 @@ class OpenStackDriverMixin(object):
             rv['ex_domain_name'] = self._ex_domain_name
         if self._ex_tenant_name:
             rv['ex_tenant_name'] = self._ex_tenant_name
+        if self._ex_tenant_domain_id:
+            rv['ex_tenant_domain_id'] = self._ex_tenant_domain_id
         if self._ex_force_service_type:
             rv['ex_force_service_type'] = self._ex_force_service_type
         if self._ex_force_service_name:

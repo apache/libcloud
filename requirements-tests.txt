@@ -7,5 +7,5 @@ codecov
 coverage<4.0
 requests
 requests_mock
-pytest>=3.4,<3.5
+pytest==4.6.5
 cryptography==2.6.1

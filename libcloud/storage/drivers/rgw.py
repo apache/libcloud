@@ -16,7 +16,7 @@
 from libcloud.common.types import LibcloudError
 from libcloud.common.aws import SignedAWSConnection, DEFAULT_SIGNATURE_VERSION
 from libcloud.storage.drivers.s3 import BaseS3Connection, S3Connection
-from libcloud.storage.drivers.s3 import S3StorageDriver, API_VERSION
+from libcloud.storage.drivers.s3 import BaseS3StorageDriver, API_VERSION
 
 __all__ = [
     'S3RGWStorageDriver',
@@ -68,7 +68,7 @@ class S3RGWConnectionAWS2(S3Connection):
                                                   backoff)
 
 
-class S3RGWStorageDriver(S3StorageDriver):
+class S3RGWStorageDriver(BaseS3StorageDriver):
     name = 'Ceph RGW'
     website = 'http://ceph.com/'
 
