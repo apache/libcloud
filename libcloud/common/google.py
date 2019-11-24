@@ -70,7 +70,7 @@ from __future__ import with_statement
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 import logging
 import base64
@@ -85,6 +85,7 @@ from libcloud.utils.connection import get_response_object
 from libcloud.utils.py3 import b, httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
+from libcloud.common.base import BaseDriver
 from libcloud.common.types import (ProviderError,
                                    LibcloudError)
 
@@ -293,7 +294,7 @@ class GoogleResponse(JsonResponse):
             raise GoogleBaseError(message, self.status, code)
 
 
-class GoogleBaseDriver(object):
+class GoogleBaseDriver(BaseDriver):
     name = "Google API"
 
 
@@ -730,6 +731,7 @@ class GoogleOAuth2Credential(object):
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     """Base connection class for interacting with Google APIs."""
+
     driver = GoogleBaseDriver
     responseCls = GoogleResponse
     host = 'www.googleapis.com'

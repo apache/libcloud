@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+from typing import Type
+
 import base64
 from datetime import datetime
 import hashlib
@@ -23,7 +26,7 @@ from hashlib import sha256
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import _real_unicode
@@ -96,7 +99,7 @@ class AWSGenericResponse(AWSBaseResponse):
     # exception class that is raised immediately.
     # If a custom exception class is not defined, errors are accumulated and
     # returned from the parse_error method.
-    exceptions = {}
+    exceptions = {}  # type: Dict[str, Type[Exception]]
 
     def success(self):
         return self.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]

@@ -600,8 +600,9 @@ class DimensionDataConnection(ConnectionUserAndKey):
             else:
                 object_state = result.status
 
-            if object_state is state or object_state in state:
+            if object_state is state or str(object_state) in state:
                 return result
+
             sleep(poll_interval)
             cnt += 1
 

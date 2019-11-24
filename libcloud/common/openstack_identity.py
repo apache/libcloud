@@ -31,7 +31,7 @@ from libcloud.compute.types import (LibcloudError, InvalidCredsError,
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 AUTH_API_VERSION = '1.1'
 
@@ -573,7 +573,7 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     """
     responseCls = OpenStackAuthResponse
     timeout = None
-    auth_version = None
+    auth_version = None  # type: str
 
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  tenant_domain_id='default', domain_name='Default',

@@ -20,6 +20,8 @@ Provides base classes for working with storage
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
+from typing import Type
+
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
 from os.path import join as pjoin
@@ -29,6 +31,7 @@ from libcloud.utils.py3 import b
 
 import libcloud.utils.files
 from libcloud.common.types import LibcloudError
+from libcloud.common.base import Connection
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.storage.types import ObjectDoesNotExistError
 
@@ -180,14 +183,14 @@ class StorageDriver(BaseDriver):
     A base StorageDriver to derive from.
     """
 
-    connectionCls = ConnectionUserAndKey
-    name = None
-    hash_type = 'md5'
-    supports_chunked_encoding = False
+    connectionCls = ConnectionUserAndKey  # type: Type[Connection]
+    name = None  # type: str
+    hash_type = 'md5'  # type: str
+    supports_chunked_encoding = False  # type: bool
 
     # When strict mode is used, exception will be thrown if no content type is
     # provided and none can be detected when uploading an object
-    strict_mode = False
+    strict_mode = False  # type: bool
 
     def iterate_containers(self):
         """

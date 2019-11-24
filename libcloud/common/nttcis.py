@@ -15,6 +15,9 @@
 """
 NTTCIS Common Components
 """
+
+from typing import Dict
+
 import xml.etree.ElementTree as etree
 import re
 from functools import wraps
@@ -1956,7 +1959,7 @@ class ClassFactory(object):
     pass
 
 
-attrs = {}
+attrs = {}  # type: Dict[str, str]
 
 
 def processor(mapping, name=None):

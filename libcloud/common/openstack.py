@@ -34,7 +34,7 @@ from libcloud.common.openstack_identity import (OpenStackServiceCatalog,
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 AUTH_API_VERSION = '1.1'
 
@@ -134,8 +134,8 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     :type ex_force_service_region: ``str``
     """
 
-    auth_url = None
-    auth_token = None
+    auth_url = None  # type: str
+    auth_token = None  # type: str
     auth_token_expires = None
     auth_user_info = None
     service_catalog = None

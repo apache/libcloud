@@ -23,10 +23,18 @@ Common
 Compute
 -------
 
+- Introduce type annotations for the base compute API methods. This means you
+  can now leverage mypy to type check (with some limitations) your code which
+  utilizes Libcloud compute API standard API methods.
+
+  Keep in mind that at this point, type annotations are only available for
+  standard compute API methods.
+  (GITHUB-1306)
+  [Tomaz Muraus]
 - [Azure ARM] Fix ``attach_volume`` method and allow maximum of 64 disks to be
   added when LUN is not specified. Previously there was a bug and only a
   maximum of 63 disks could be added.
-  (GITHUB-1372
+  (GITHUB-1372)
   [Palash Gandhi - @palashgandhi]
 
 Storage

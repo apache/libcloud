@@ -17,6 +17,8 @@
 Amazon EC2, Eucalyptus, Nimbus and Outscale drivers.
 """
 
+from typing import List
+
 import re
 import base64
 import copy
@@ -1640,6 +1642,7 @@ class BaseEC2NodeDriver(NodeDriver):
     }
 
     def list_nodes(self, ex_node_ids=None, ex_filters=None):
+        # type: (str, str) -> List[Node]
         """
         Lists all nodes.
 

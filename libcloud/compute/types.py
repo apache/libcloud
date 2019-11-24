@@ -16,6 +16,12 @@
 Base types used by other parts of libcloud
 """
 
+from typing import Union
+from typing import cast
+
+from enum import Enum
+
+from libcloud.utils.py3 import _real_unicode
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.types import InvalidCredsError, InvalidCredsException
 
@@ -35,24 +41,58 @@ __all__ = [
 ]
 
 
-class Type(object):
+class Type(Enum):
     @classmethod
     def tostring(cls, value):
+        # type: (Union[Enum, str]) -> str
         """Return the string representation of the state object attribute
         :param str value: the state object to turn into string
         :return: the uppercase string that represents the state object
         :rtype: str
         """
-        return value.upper()
+        value = cast(Enum, value)
+        return str(value._value_).upper()
 
     @classmethod
     def fromstring(cls, value):
+        # type: (str) -> str
         """Return the state object attribute that matches the string
         :param str value: the string to look up
         :return: the state object attribute that matches the string
         :rtype: str
         """
         return getattr(cls, value.upper(), None)
+
+    """
+    NOTE: These methods are here for backward compatibility reasons where
+    Type values were simple strings and Type didn't inherit from Enum.
+    """
+
+    def __eq__(self, other):
+        if isinstance(other, Type):
+            return other.value == self.value
+        elif isinstance(other, (str, _real_unicode)):
+            return self.value == other
+
+        return super(Type, self).__eq__(other)
+
+    def upper(self):
+        return self.value.upper()
+
+    def lower(self):
+        return self.value.lower()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return self.value
+
+    def __hash__(self):
+        return id(self)
 
 
 class Provider(Type):
@@ -112,7 +152,6 @@ class Provider(Type):
     ABIQUO = 'abiquo'
     ALIYUN_ECS = 'aliyun_ecs'
     AURORACOMPUTE = 'aurora_compute'
-    AZURE = 'azure'
     BLUEBOX = 'bluebox'
     BRIGHTBOX = 'brightbox'
     BSNL = 'bsnl'
@@ -121,7 +160,6 @@ class Provider(Type):
     CLOUDSIGMA = 'cloudsigma'
     CLOUDSCALE = 'cloudscale'
     CLOUDSTACK = 'cloudstack'
-    CLOUDWATT = 'cloudwatt'
     DIGITAL_OCEAN = 'digitalocean'
     DIMENSIONDATA = 'dimensiondata'
     EC2 = 'ec2'

@@ -17,6 +17,13 @@
 Wraps multiple ways to communicate over SSH.
 """
 
+from typing import Type
+from typing import Optional
+from typing import Tuple
+from typing import List
+from typing import Union
+from typing import cast
+
 have_paramiko = False
 
 try:
@@ -58,6 +65,7 @@ class SSHCommandTimeoutError(Exception):
     Exception which is raised when an SSH command times out.
     """
     def __init__(self, cmd, timeout):
+        # type: (str, float) -> None
         self.cmd = cmd
         self.timeout = timeout
         message = 'Command didn\'t finish in %s seconds' % (timeout)
@@ -76,8 +84,15 @@ class BaseSSHClient(object):
     Base class representing a connection over SSH/SCP to a remote node.
     """
 
-    def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, key_files=None, timeout=None):
+    def __init__(self,
+                 hostname,  # type: str
+                 port=22,  # type: int
+                 username='root',  # type: str
+                 password=None,  # type: Optional[str]
+                 key=None,  # type: Optional[str]
+                 key_files=None,  # type: Optional[Union[str, List[str]]]
+                 timeout=None  # type: Optional[float]
+                 ):
         """
         :type hostname: ``str``
         :keyword hostname: Hostname or IP address to connect to.
@@ -114,6 +129,7 @@ class BaseSSHClient(object):
         self.timeout = timeout
 
     def connect(self):
+        # type: () -> bool
         """
         Connect to the remote node over SSH.
 
@@ -125,6 +141,7 @@ class BaseSSHClient(object):
             'connect not implemented for this ssh client')
 
     def put(self, path, contents=None, chmod=None, mode='w'):
+        # type: (str, Optional[Union[str, bytes]], Optional[int], str) -> str
         """
         Upload a file to the remote node.
 
@@ -147,6 +164,7 @@ class BaseSSHClient(object):
             'put not implemented for this ssh client')
 
     def delete(self, path):
+        # type: (str) -> bool
         """
         Delete/Unlink a file on the remote node.
 
@@ -161,6 +179,7 @@ class BaseSSHClient(object):
             'delete not implemented for this ssh client')
 
     def run(self, cmd):
+        # type: (str) -> Tuple[str, str, int]
         """
         Run a command on a remote node.
 
@@ -173,6 +192,7 @@ class BaseSSHClient(object):
             'run not implemented for this ssh client')
 
     def close(self):
+        # type: () -> bool
         """
         Shutdown connection to the remote node.
 
@@ -184,6 +204,7 @@ class BaseSSHClient(object):
             'close not implemented for this ssh client')
 
     def _get_and_setup_logger(self):
+        # type: () -> logging.Logger
         logger = logging.getLogger('libcloud.compute.ssh')
         path = os.getenv('LIBCLOUD_DEBUG')
 
@@ -208,8 +229,16 @@ class ParamikoSSHClient(BaseSSHClient):
     # waiting)
     SLEEP_DELAY = 0.2
 
-    def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, key_files=None, key_material=None, timeout=None):
+    def __init__(self,
+                 hostname,  # type: str
+                 port=22,  # type: int
+                 username='root',  # type: str
+                 password=None,  # type: Optional[str]
+                 key=None,  # type: Optional[str]
+                 key_files=None,  # type: Optional[Union[str, List[str]]]
+                 key_material=None,  # type: Optional[str]
+                 timeout=None  # type: Optional[float]
+                 ):
         """
         Authentication is always attempted in the following order:
 
@@ -346,6 +375,7 @@ class ParamikoSSHClient(BaseSSHClient):
         return True
 
     def run(self, cmd, timeout=None):
+        # type: (str, Optional[float]) -> Tuple[str, str, int]
         """
         Note: This function is based on paramiko's exec_command()
         method.
@@ -354,8 +384,8 @@ class ParamikoSSHClient(BaseSSHClient):
                         finish (optional).
         :type timeout: ``float``
         """
-        extra = {'_cmd': cmd}
-        self.logger.debug('Executing command', extra=extra)
+        extra1 = {'_cmd': cmd}
+        self.logger.debug('Executing command', extra=extra1)
 
         # Use the system default buffer size
         bufsize = -1
@@ -414,15 +444,17 @@ class ParamikoSSHClient(BaseSSHClient):
             time.sleep(self.SLEEP_DELAY)
 
         # Receive the exit status code of the command we ran.
-        status = chan.recv_exit_status()
+        status = chan.recv_exit_status()  # type: int
 
-        stdout = stdout.getvalue()
-        stderr = stderr.getvalue()
+        stdout_str = stdout.getvalue()  # type: str
+        stderr_str = stderr.getvalue()  # type: str
 
-        extra = {'_status': status, '_stdout': stdout, '_stderr': stderr}
-        self.logger.debug('Command finished', extra=extra)
+        extra2 = {'_status': status, '_stdout': stdout_str,
+                  '_stderr': stderr_str}
+        self.logger.debug('Command finished', extra=extra2)
 
-        return [stdout, stderr, status]
+        result = (stdout_str, stderr_str, status)  # type: Tuple[str, str, int]
+        return result
 
     def close(self):
         self.logger.debug('Closing server connection')
@@ -526,8 +558,15 @@ class ShellOutSSHClient(BaseSSHClient):
     Note: This client should not be used in production.
     """
 
-    def __init__(self, hostname, port=22, username='root', password=None,
-                 key=None, key_files=None, timeout=None):
+    def __init__(self,
+                 hostname,  # type: str
+                 port=22,  # type: int
+                 username='root',  # type: str
+                 password=None,  # type: Optional[str]
+                 key=None,  # type: Optional[str]
+                 key_files=None,  # type: Optional[str]
+                 timeout=None  # type: Optional[float]
+                 ):
         super(ShellOutSSHClient, self).__init__(hostname=hostname,
                                                 port=port, username=username,
                                                 password=password,
@@ -577,9 +616,11 @@ class ShellOutSSHClient(BaseSSHClient):
         return True
 
     def _get_base_ssh_command(self):
+        # type: () -> List[str]
         cmd = ['ssh']
 
         if self.key_files:
+            self.key_files = cast(str, self.key_files)
             cmd += ['-i', self.key_files]
 
         if self.timeout:
@@ -590,6 +631,7 @@ class ShellOutSSHClient(BaseSSHClient):
         return cmd
 
     def _run_remote_shell_command(self, cmd):
+        # type: (List[str]) -> Tuple[str, str, int]
         """
         Run a command on a remote server.
 
@@ -607,13 +649,17 @@ class ShellOutSSHClient(BaseSSHClient):
         child = subprocess.Popen(full_cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
         stdout, stderr = child.communicate()
-        return (stdout, stderr, child.returncode)
+
+        stdout_str = cast(str, stdout)
+        stderr_str = cast(str, stdout)
+
+        return (stdout_str, stderr_str, child.returncode)
 
 
 class MockSSHClient(BaseSSHClient):
     pass
 
 
-SSHClient = ParamikoSSHClient
+SSHClient = ParamikoSSHClient  # type: Type[BaseSSHClient]
 if not have_paramiko:
-    SSHClient = MockSSHClient
+    SSHClient = MockSSHClient  # type: ignore

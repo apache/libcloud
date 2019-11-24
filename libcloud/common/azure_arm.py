@@ -16,7 +16,7 @@
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 import time
 from libcloud.utils.py3 import urlparse
@@ -24,11 +24,12 @@ from libcloud.utils.py3 import urlparse
 from libcloud.common.base import (ConnectionUserAndKey,
                                   JsonResponse,
                                   RawResponse)
+from libcloud.common.base import BaseDriver
 from libcloud.http import LibcloudConnection
 from libcloud.utils.py3 import basestring, urlencode
 
 
-class AzureBaseDriver(object):
+class AzureBaseDriver(BaseDriver):
     name = "Microsoft Azure Resource Management API"
 
 

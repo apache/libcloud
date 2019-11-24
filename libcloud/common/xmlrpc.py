@@ -12,13 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Base classes for working with xmlrpc APIs
 """
 
+from typing import Dict
+from typing import Type
+
 from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import httplib
 from libcloud.common.base import Response, Connection
+
+from libcloud.common.types import LibcloudError
 
 
 class ProtocolError(Exception):
@@ -33,7 +39,7 @@ class ErrorCodeMixin(object):
     needs from the context and raises it.
     """
 
-    exceptions = {}
+    exceptions = {}  # type: Dict[str, Type[LibcloudError]]
 
     def raise_exception_for_error(self, error_code, message):
         exceptionCls = self.exceptions.get(error_code, None)
@@ -51,7 +57,7 @@ class ErrorCodeMixin(object):
 
 class XMLRPCResponse(ErrorCodeMixin, Response):
 
-    defaultExceptionCls = Exception
+    defaultExceptionCls = Exception  # type: Type[Exception]
 
     def success(self):
         return self.status == httplib.OK
@@ -82,7 +88,7 @@ class XMLRPCConnection(Connection):
     """
 
     responseCls = XMLRPCResponse
-    endpoint = None
+    endpoint = None  # type: str
 
     def add_default_headers(self, headers):
         headers['Content-Type'] = 'text/xml'
