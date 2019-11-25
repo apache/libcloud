@@ -1139,12 +1139,15 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
                     return self._ex_get_node(path)
         return None
 
-    def ex_find_vm_nodes(self, vm_name):
+    def ex_find_vm_nodes(self, vm_name, max_results=50):
         """
         Finds nodes that contain a VM with the specified name.
 
         :param vm_name: The VM name to find nodes for
         :type vm_name: ``str``
+
+        :param max_results: Maximum number of results up to 128
+        :type max_results: ``int``
 
         :return: List of node instances
         :rtype: `list` of :class:`Node`
@@ -1153,7 +1156,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             'vm',
             filter='name=={vm_name}'.format(vm_name=vm_name),
             page=1,
-            page_size=1
+            page_size=max_results
         )
         return [self._ex_get_node(vm['container']) for vm in vms]
 
@@ -2096,7 +2099,8 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
             script = vm_script_text
         else:
             try:
-                script = open(vm_script).read()
+                with open(vm_script, 'r') as fp:
+                    script = fp.read()
             except Exception:
                 return
 
