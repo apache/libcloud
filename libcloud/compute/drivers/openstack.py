@@ -238,9 +238,11 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return self._reboot_node(node, reboot_type='HARD')
 
     def start_node(self, node):
+        # pylint: disable=no-member
         return self._post_simple_node_action(node, 'os-start')
 
     def stop_node(self, node):
+        # pylint: disable=no-member
         return self._post_simple_node_action(node, 'os-stop')
 
     def list_nodes(self, ex_all_tenants=False):
