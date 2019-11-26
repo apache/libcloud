@@ -6734,7 +6734,7 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
-    def ex_start_node(self, node, sync=True):
+    def start_node(self, node, ex_sync=True):
         """
         Start a node that is stopped and in TERMINATED state.
 
@@ -6750,14 +6750,14 @@ class GCENodeDriver(NodeDriver):
         request = '/zones/%s/instances/%s/start' % (node.extra['zone'].name,
                                                     node.name)
 
-        if sync:
+        if ex_sync:
             self.connection.async_request(request, method='POST')
         else:
             self.connection.request(request, method='POST')
 
         return True
 
-    def ex_stop_node(self, node, sync=True):
+    def stop_node(self, node, ex_sync=True):
         """
         Stop a running node.
 
@@ -6772,12 +6772,24 @@ class GCENodeDriver(NodeDriver):
         """
         request = '/zones/%s/instances/%s/stop' % (node.extra['zone'].name,
                                                    node.name)
-        if sync:
+        if ex_sync:
             self.connection.async_request(request, method='POST')
         else:
             self.connection.request(request, method='POST')
 
         return True
+
+    def ex_start_node(self, node, sync=True):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node, ex_sync=sync)
+
+    def ex_stop_node(self, node, sync=True):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node, ex_sync=sync)
 
     def ex_destroy_instancegroupmanager(self, manager):
         """

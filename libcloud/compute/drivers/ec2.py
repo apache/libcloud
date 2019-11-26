@@ -2400,6 +2400,36 @@ class BaseEC2NodeDriver(NodeDriver):
         response = self.connection.request(self.path, params=params).object
         return self._get_boolean(response)
 
+    def start_node(self, node):
+        """
+        Starts the node by passing in the node object, does not work with
+        instance store backed instances.
+
+        :param      node: The node to be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'StartInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
+
+    def stop_node(self, node):
+        """
+        Stops the node by passing in the node object, does not work with
+        instance store backed instances
+
+        :param      node: The node to be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        params = {'Action': 'StopInstances'}
+        params.update(self._pathlist('InstanceId', [node.id]))
+        res = self.connection.request(self.path, params=params).object
+        return self._get_state_boolean(res)
+
     def ex_create_placement_group(self, name):
         """
         Creates a new placement group.
@@ -3873,34 +3903,16 @@ class BaseEC2NodeDriver(NodeDriver):
                                                  attributes=attributes)
 
     def ex_start_node(self, node):
-        """
-        Starts the node by passing in the node object, does not work with
-        instance store backed instances.
-
-        :param      node: The node to be used
-        :type       node: :class:`Node`
-
-        :rtype: ``bool``
-        """
-        params = {'Action': 'StartInstances'}
-        params.update(self._pathlist('InstanceId', [node.id]))
-        res = self.connection.request(self.path, params=params).object
-        return self._get_state_boolean(res)
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
 
     def ex_stop_node(self, node):
-        """
-        Stops the node by passing in the node object, does not work with
-        instance store backed instances
-
-        :param      node: The node to be used
-        :type       node: :class:`Node`
-
-        :rtype: ``bool``
-        """
-        params = {'Action': 'StopInstances'}
-        params.update(self._pathlist('InstanceId', [node.id]))
-        res = self.connection.request(self.path, params=params).object
-        return self._get_state_boolean(res)
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_get_console_output(self, node):
         """

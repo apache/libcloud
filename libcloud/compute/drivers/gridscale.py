@@ -682,14 +682,19 @@ class GridscaleNodeDriver(GridscaleBaseDriver, NodeDriver):
 
         return self._to_node_image(response_dict)
 
-    def ex_start_node(self, node):
-
+    def start_node(self, node):
         result = self._sync_request(data={'power': True},
                                     endpoint='objects/servers/{}/power'
                                     .format(node.id),
                                     method='PATCH')
 
         return result.status == 204
+
+    def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
 
     def ex_link_isoimage_to_node(self, node, isoimage):
         """

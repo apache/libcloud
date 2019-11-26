@@ -237,6 +237,12 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         # pylint: disable=no-member
         return self._reboot_node(node, reboot_type='HARD')
 
+    def start_node(self, node):
+        return self._post_simple_node_action(node, 'os-start')
+
+    def stop_node(self, node):
+        return self._post_simple_node_action(node, 'os-stop')
+
     def list_nodes(self, ex_all_tenants=False):
         """
         List the nodes in a tenant
@@ -2577,11 +2583,17 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def ex_unpause_node(self, node):
         return self._post_simple_node_action(node, 'unpause')
 
-    def ex_stop_node(self, node):
-        return self._post_simple_node_action(node, 'os-stop')
-
     def ex_start_node(self, node):
-        return self._post_simple_node_action(node, 'os-start')
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
+
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_suspend_node(self, node):
         return self._post_simple_node_action(node, 'suspend')

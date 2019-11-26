@@ -125,7 +125,18 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.destroy() == 0
 
+    def start_node(self, node):
+        domain = self._get_domain_for_node(node=node)
+        return domain.create() == 0
+
+    def stop_node(self, node):
+        domain = self._get_domain_for_node(node=node)
+        return domain.shutdown() == 0
+
     def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
         """
         Start a stopped node.
 
@@ -134,10 +145,12 @@ class LibvirtNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        domain = self._get_domain_for_node(node=node)
-        return domain.create() == 0
+        return self.start_node(node=node)
 
     def ex_shutdown_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
         """
         Shutdown a running node.
 
@@ -148,8 +161,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        domain = self._get_domain_for_node(node=node)
-        return domain.shutdown() == 0
+        return self.stop_node(node=node)
 
     def ex_suspend_node(self, node):
         """

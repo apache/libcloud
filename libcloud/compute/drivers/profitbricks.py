@@ -981,6 +981,45 @@ class ProfitBricksNodeDriver(NodeDriver):
 
         return True
 
+    def start_node(self, node):
+        """
+        Starts a node.
+
+        :param  node: The node you wish to start.
+        :type   node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        action = node.extra['href'] + '/start'
+
+        self.connection.request(
+            action=action,
+            method='POST',
+            with_full_url=True
+        )
+        return True
+
+    def stop_node(self, node):
+        """
+        Stops a node.
+
+        This also deallocates the public IP space.
+
+        :param  node: The node you wish to halt.
+        :type   node: :class:`Node`
+
+        :rtype:     : ``bool``
+        """
+        action = node.extra['href'] + '/stop'
+
+        self.connection.request(
+            action=action,
+            method='POST',
+            with_full_url=True
+        )
+
+        return True
+
     """
     Volume Functions
     """
@@ -1282,45 +1321,17 @@ class ProfitBricksNodeDriver(NodeDriver):
     Server Extension Functions
     """
 
-    def ex_stop_node(self, node):
-        """
-        Stops a node.
-
-        This also deallocates the public IP space.
-
-        :param  node: The node you wish to halt.
-        :type   node: :class:`Node`
-
-        :rtype:     : ``bool``
-        """
-        action = node.extra['href'] + '/stop'
-
-        self.connection.request(
-            action=action,
-            method='POST',
-            with_full_url=True
-        )
-
-        return True
-
     def ex_start_node(self, node):
-        """
-        Starts a node.
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
 
-        :param  node: The node you wish to start.
-        :type   node: :class:`Node`
-
-        :rtype: ``bool``
-        """
-        action = node.extra['href'] + '/start'
-
-        self.connection.request(
-            action=action,
-            method='POST',
-            with_full_url=True
-        )
-
-        return True
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_list_availability_zones(self):
         """
