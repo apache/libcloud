@@ -259,6 +259,24 @@ class Node(UuidMixin):
         """
         return self.driver.reboot_node(self)
 
+    def start(self):
+        # type: () -> bool
+        """
+        Start this node.
+
+        :return: ``bool``
+        """
+        return self.driver.start_node(self)
+
+    def stop_node(self):
+        # type: () -> bool
+        """
+        Start this node.
+
+        :return: ``bool``
+        """
+        return self.driver.stop_node(self)
+
     def destroy(self):
         """
         Destroy this node
@@ -1081,6 +1099,34 @@ class NodeDriver(BaseDriver):
         """
         raise NotImplementedError(
             'reboot_node not implemented for this driver')
+
+    def start_node(self, node):
+        # type: (Node) -> bool
+        """
+        Start a node.
+
+        :param node: The node to be started
+        :type node: :class:`.Node`
+
+        :return: True if the start was successful, otherwise False
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'start_node not implemented for this driver')
+
+    def stop_node(self, node):
+        # type: (Node) -> bool
+        """
+        Stop a node
+
+        :param node: The node to be stopped.
+        :type node: :class:`.Node`
+
+        :return: True if the stop was successful, otherwise False
+        :rtype: ``bool``
+        """
+        raise NotImplementedError(
+            'stop_node not implemented for this driver')
 
     def destroy_node(self, node):
         # type: (Node) -> bool
