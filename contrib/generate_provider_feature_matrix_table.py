@@ -62,8 +62,8 @@ HEADER = ('.. NOTE: This file has been generated automatically using '
 
 BASE_API_METHODS = {
     'compute_main': ['list_nodes', 'create_node', 'reboot_node',
-                     'destroy_node', 'list_images', 'list_sizes',
-                     'deploy_node'],
+                     'destroy_node', 'start_node', 'stop_node',
+                     'list_images', 'list_sizes', 'deploy_node'],
     'compute_image_management': ['list_images', 'get_image',
                                  'create_image', 'delete_image', 'copy_image'],
     'compute_block_storage': ['list_volumes', 'create_volume',
@@ -105,6 +105,8 @@ FRIENDLY_METHODS_NAMES = {
         'list_nodes': 'list nodes',
         'create_node': 'create node',
         'reboot_node': 'reboot node',
+        'start_node': 'start node',
+        'stop_node': 'stop node',
         'destroy_node': 'destroy node',
         'list_images': 'list images',
         'list_sizes': 'list sizes',
