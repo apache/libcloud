@@ -1543,6 +1543,17 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
 
+    def test_ex_set_volume_labels(self):
+        volume_name = 'lcdisk'
+        zone = self.driver.zone
+        volume_labels = {'one': '1', 'two': '2', 'three': '3'}
+        size = 10
+        new_vol = self.driver.create_volume(size, volume_name, location=zone)
+        self.assertTrue(self.driver.ex_set_volume_labels(new_vol,
+                                                         labels=volume_labels))
+        exist_vol = self.driver.ex_get_volume(volume_name, self.driver.zone)
+        self.assertEqual(exist_vol.extra['labels'], volume_labels)
+
     def test_ex_update_healthcheck(self):
         healthcheck_name = 'lchealthcheck'
         healthcheck = self.driver.ex_get_healthcheck(healthcheck_name)

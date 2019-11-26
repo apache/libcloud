@@ -2056,6 +2056,31 @@ class GCENodeDriver(NodeDriver):
         self.connection.async_request(request, method='POST', data=body)
         return True
 
+    def ex_set_volume_labels(self, volume, labels):
+        """
+        Set labels for the specified volume (disk).
+
+        :keyword  volume: The existing target StorageVolume for the request.
+        :type     volume: ``StorageVolume``
+
+        :keyword  labels: Set (or clear with None) labels for this image.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+
+        if not isinstance(volume, StorageVolume):
+            raise ValueError("Must specify a valid libcloud volume object.")
+
+        volume_name = volume.name
+        zone_name = volume.extra['zone'].name
+        current_fp = volume.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/zones/%s/disks/%s/setLabels' % (zone_name, volume_name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
     def ex_get_serial_output(self, node):
         """
         Fetch the console/serial port output from the node.
@@ -9049,6 +9074,9 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshot'] = volume.get('sourceSnapshot')
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
+        extra['labels'] = volume.get('labels', {})
+        extra['labelFingerprint'] = volume.get('labelFingerprint')
+
         if 'licenses' in volume:
             lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
             extra['licenses'] = lic_objs
