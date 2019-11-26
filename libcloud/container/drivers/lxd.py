@@ -328,6 +328,7 @@ class LXDContainerDriver(ContainerDriver):
     default_time_out = 30
 
     # default configuration when creating a container
+
     # the assumed architecture if empty the underlying
     # machine architecture is picked up
     default_architecture = ''
@@ -346,6 +347,7 @@ class LXDContainerDriver(ContainerDriver):
                 # We pass two files, a key_file with the
                 # private key and cert_file with the certificate
                 # libcloud will handle them through LibcloudHTTPSConnection
+
                 raise LXDAPIException(message='Need both private key and'
                                               ' certificate files for '
                                               'tls authentication')
@@ -413,11 +415,11 @@ class LXDContainerDriver(ContainerDriver):
 
     def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True,
-                         architecture=default_architecture,
-                         profiles=None,
-                         ephemeral=default_ephemeral,
-                         config=None, devices=None,
-                         instance_type=None):
+                         ex_architecture=default_architecture,
+                         ex_profiles=None,
+                         ex_ephemeral=default_ephemeral,
+                         ex_config=None, ex_devices=None,
+                         ex_instance_type=None):
 
         """
         Create a new container
@@ -467,17 +469,19 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
 
-        if profiles is None:
-            profiles = [LXDContainerDriver.default_profiles]
+        if ex_profiles is None:
+            ex_profiles = [LXDContainerDriver.default_profiles]
 
-        c_params = {"profiles": profiles,
-                    "ephemeral": ephemeral, "config": config,
-                    "devices": devices,
-                    "instance_type": instance_type}
+        c_params = {"profiles": ex_profiles,
+                    "ephemeral": ex_ephemeral,
+                    "config": ex_config,
+                    "devices": ex_devices,
+                    "instance_type": ex_instance_type}
 
-        if architecture is not None\
-            or architecture != '':
-            c_params['architecture'] = architecture
+        if ex_architecture is not None\
+            or ex_architecture != '':
+            c_params['architecture'] = ex_architecture
+
 
         if parameters:
             parameters = json.loads(parameters)
@@ -491,7 +495,7 @@ class LXDContainerDriver(ContainerDriver):
 
         return container
 
-    def get_container(self, id, get_ip_addr=True):
+    def get_container(self, id, ex_get_ip_addr=True):
 
         """
         Get a container by ID
@@ -509,12 +513,14 @@ class LXDContainerDriver(ContainerDriver):
         response = self.connection.request(req)
         result_dict = response.parse_body()
         assert_response(response_dict=result_dict, status_code=200)
+
         metadata = result_dict["metadata"]
 
         ips = []
-        if get_ip_addr:
+        if ex_get_ip_addr:
             req = "/%s/containers/%s/state" % (self.version, id)
             ip_response = self.connection.request(req)
+
             ip_result_dict = ip_response.parse_body()
             assert_response(response_dict=ip_result_dict, status_code=200)
 
@@ -530,7 +536,9 @@ class LXDContainerDriver(ContainerDriver):
         metadata.update({"ips": ips})
         return self._to_container(metadata=metadata)
 
-    def start_container(self, container, ex_timeout=default_time_out):
+    def start_container(self, container, ex_timeout=default_time_out,
+                        ex_force=True, ex_stateful=True):
+
         """
         Start a container
 
@@ -544,24 +552,31 @@ class LXDContainerDriver(ContainerDriver):
         """
         return self._do_container_action(container=container, action='start',
                                          timeout=ex_timeout,
-                                         force=True, stateful=True)
+                                         force=ex_force, stateful=ex_stateful)
 
-    def stop_container(self, container, ex_timeout=default_time_out):
+    def stop_container(self, container, ex_timeout=default_time_out,
+                       ex_force=True, ex_stateful=True):
+
         """
         Stop the given container
 
         :param container: The container to be stopped
         :type  container: :class:`libcloud.container.base.Container`
-        :param timeout: Time to wait for the operation to complete
-        :type  timeout: ``int``
+
+        :param ex_timeout: Time to wait for the operation to complete
+        :type  ex_timeout: ``int``
+
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container
         """
         return self._do_container_action(container=container, action='stop',
-                                         timeout=ex_timeout,
-                                         force=True, stateful=True)
 
-    def restart_container(self, container, ex_timeout=default_time_out):
+                                         timeout=ex_timeout,
+                                         force=ex_force, stateful=ex_stateful)
+
+    def restart_container(self, container, ex_timeout=default_time_out,
+                          ex_force=True, ex_stateful=True):
+
         """
         Restart a deployed container
 
@@ -575,7 +590,7 @@ class LXDContainerDriver(ContainerDriver):
         """
         return self._do_container_action(container=container, action='restart',
                                          timeout=ex_timeout,
-                                         force=True, stateful=True)
+                                         force=ex_force, stateful=ex_stateful)
 
     def ex_freeze_container(self, container, ex_timeout):
 
@@ -592,6 +607,7 @@ class LXDContainerDriver(ContainerDriver):
     def destroy_container(self, container, timeout=default_time_out):
         """
         Destroy a deployed container. Raises and exception
+
         if the container is running
 
         :param container: The container to destroy
@@ -599,6 +615,7 @@ class LXDContainerDriver(ContainerDriver):
 
         :param timeout: Time to wait for the operation to complete
         :type timeout ``int``
+
         :rtype: :class:`.Container`
         """
 
@@ -612,6 +629,7 @@ class LXDContainerDriver(ContainerDriver):
         # Return: background operation or standard error
         req = '/%s/containers/%s' % (self.version, container.name)
         response = self.connection.request(req, method='DELETE')
+
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=100)
 
@@ -650,6 +668,7 @@ class LXDContainerDriver(ContainerDriver):
                               state=ContainerState.TERMINATED,
                               image=None, ip_addresses=[],
                               extra=None)
+
 
         return container
 
@@ -743,6 +762,7 @@ class LXDContainerDriver(ContainerDriver):
 
         :param cluster: Filter to containers in a cluster
         :type  cluster: :class:`.ContainerCluster`
+
         :param detailed
 
         :rtype: ``list`` of :class:`.Container`
@@ -778,7 +798,6 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`.ContainerImage`
         """
-
         req = '/%s/images/%s' % (self.version, fingerprint)
         response = self.connection.request(req)
 
@@ -809,6 +828,7 @@ class LXDContainerDriver(ContainerDriver):
 
         # Return: background operation or standard error
         data = description_dict['image_data']
+
         response = self.connection.request('/%s/images' % (self.version),
                                            method='POST', json=data)
 
@@ -816,7 +836,6 @@ class LXDContainerDriver(ContainerDriver):
 
         # a background operation is expected
         # to be returned status_code = 100 --> Operation created
-
         assert_response(response_dict=response_dict, status_code=100)
 
         timeout = LXDContainerDriver.default_time_out
@@ -837,7 +856,6 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`.ContainerImage`
         """
-
         response = self.connection.request('/%s/images' % (self.version))
 
         #  parse the LXDResponse into a dictionary
@@ -974,7 +992,6 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         # Return: standard return value or standard error
-
         req = "/%s/storage-pools/%s" % (self.version, id)
         response = self.connection.request(req, method='DELETE')
 
@@ -989,7 +1006,6 @@ class LXDContainerDriver(ContainerDriver):
         :param pool_id: the id of the storage pool to query
         :param detailed: boolean flag.
         If True extra API calls are made to fill in the missing details
-
                                        of the storage volumes
 
         Authentication: trusted
@@ -1000,7 +1016,6 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: A list of :class: StorageVolume
         """
-
 
         req = "/%s/storage-pools/%s/volumes" % (self.version, pool_id)
         response = self.connection.request(req)
@@ -1022,7 +1037,7 @@ class LXDContainerDriver(ContainerDriver):
                                                        metadata=metadata))
             else:
                 volume = self.ex_get_storage_pool_volume(pool_id=pool_id,
-                                                      type=type, name=name)
+                                                         type=type, name=name)
                 volumes.append(volume)
 
         return volumes
@@ -1044,10 +1059,12 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
+
         return self._to_storage_volume(pool_id=pool_id,
                                        metadata=response_dict["metadata"])
 
     def ex_create_storage_pool_volume(self, pool_id, definition):
+
 
         """
         Create a new storage volume on a given storage pool
@@ -1064,7 +1081,6 @@ class LXDContainerDriver(ContainerDriver):
         data = json.dumps(definition)
 
         # Return: standard return value or standard error
-
         req = "/%s/storage-pools/%s/volumes" % (self.version, pool_id)
         response = self.connection.request(req, method='POST', data=data)
 
@@ -1083,10 +1099,10 @@ class LXDContainerDriver(ContainerDriver):
         :param type:
         :param name:
         :param definition
+
         """
 
         if not definition:
-
             raise LXDAPIException("Cannot create a storage "
                                   "volume without a definition")
 
@@ -1214,7 +1230,6 @@ class LXDContainerDriver(ContainerDriver):
                                   id=container.name,
                                   state=ContainerState.TERMINATED, image=None,
                                   ip_addresses=[], extra=None)
-
             return container
 
         return self.get_container(id=container.name)
@@ -1256,7 +1271,6 @@ class LXDContainerDriver(ContainerDriver):
     def _deploy_container_from_image(self, name, image, parameters,
                                      cont_params,
                                      timeout=default_time_out):
-
         """
         Deploy a new container from the given image
         :param name: the name of the container
@@ -1318,7 +1332,6 @@ class LXDContainerDriver(ContainerDriver):
 
         # a background operation is expected to
         # be returned status_code = 100 --> Operation created
-
         assert_response(response_dict=response_dict, status_code=100)
 
         # make sure we don't wait indefinitely
@@ -1378,7 +1391,6 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         if hasattr(self, "key_file") and hasattr(self, "cert_file"):
-
             return {"key_file": self.key_file,
                     "cert_file": self.cert_file,
                     "certificate_validator": self.certificate_validator}
