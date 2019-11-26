@@ -31,11 +31,13 @@ Compute
   standard compute API methods.
   (GITHUB-1306)
   [Tomaz Muraus]
+
 - [Azure ARM] Fix ``attach_volume`` method and allow maximum of 64 disks to be
   added when LUN is not specified. Previously there was a bug and only a
   maximum of 63 disks could be added.
   (GITHUB-1372)
   [Palash Gandhi - @palashgandhi]
+
 - New ``start_node`` and ``stop_node`` methods have been added to the base
   Libcloud compute API NodeDriver class.
 
