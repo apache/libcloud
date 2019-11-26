@@ -36,6 +36,18 @@ Compute
   maximum of 63 disks could be added.
   (GITHUB-1372)
   [Palash Gandhi - @palashgandhi]
+- New ``start_node`` and ``stop_node`` methods have been added to the base
+  Libcloud compute API NodeDriver class.
+
+  A lot of the existing compute drivers already implemented that functionality
+  via extension methods (``ex_start_node``, ``ex_stop_node``) so it was decided
+  to promote those methods to be part of the standard Libcloud compute API and
+  update all the affected drivers.
+
+  For backward compatibility reasons, existing ``ex_start`` and ``ex_stop_node``
+  methods will still work until a next major release.
+  (GITHUB-1375)
+  [Tomaz Muraus]
 
 Storage
 ~~~~~~~
