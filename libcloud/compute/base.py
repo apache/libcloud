@@ -271,7 +271,7 @@ class Node(UuidMixin):
     def stop_node(self):
         # type: () -> bool
         """
-        Start this node.
+        Stop (shutdown) this node.
 
         :return: ``bool``
         """
