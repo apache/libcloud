@@ -3400,6 +3400,12 @@ class GCEMockHttp(MockHttp):
             'zones_us-central1-a_disks_lcdisk_resize_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_disks_lcdisk_setLabels(self, method, url,
+                                                    body, header):
+        body = self.fixtures.load(
+            'zones_us-central1-a_disks_lcdisk_setLabel_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_disks_node_name(self, method, url, body, headers):
         body = self.fixtures.load('generic_disk.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
