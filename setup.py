@@ -54,7 +54,7 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 
 SUPPORTED_VERSIONS = ['2.7', 'PyPy', '3.3+']
 
-INSTALL_REQUIREMENTS = ['requests>=2.5.0', 'pylxd']
+INSTALL_REQUIREMENTS = ['requests>=2.5.0']
 
 TEST_REQUIREMENTS = [
     'mock',

@@ -1,52 +1,53 @@
-"""
-Module for handling LXC containers
-"""
-from pylxd import Client
-from pylxd.exceptions import ClientConnectionFailed
-from pylxd.exceptions import LXDAPIException
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from libcloud.container.base import (Container, ContainerDriver, ContainerImage)
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
+class LXDConnection:
+    pass
 
-class LXCContainerDriver(ContainerDriver):
+class LXDContainerDriver(ContainerDriver):
     """
     Driver for LXC containers
     """
     type = Provider.LXC
     name = 'LXC'
-    #website = 'http://docker.io'
-    #connectionCls = DockerConnection
+    website = 'https://linuxcontainers.org/'
+    connectionCls = LXDConnection
     supports_clusters = False
-    version = '2.0'
+    version = '1.0'
 
     def __init__(self, key='', secret='', secure=False, 
                  host='localhost', port='8443', 
                  key_file=None,
                  cert_file=None, ca_cert=None, **kwargs):
 
-        super(LXCContainerDriver, self).__init__(key=key,
-                                                secret=secret,
-                                                secure=secure, 
-                                                host=host,
-                                                port=port,
-                                                key_file=key_file,
-                                                cert_file=cert_file, 
-                                                **kwargs)
-        # the pylxd client
-        # should we try to connect on instantiation?
-        # for the moment try to do so...this may well fail
-        try:
-           self.client = Client(endpoint=host, cert=(cert_file, key_file), 
-                                verify=kwargs.get('verify', False), 
-                                timeout=kwargs.get('timeout', None),
-                                version=kwargs.get('version', LXCContainerDriver.version))
-        except ClientConnectionFailed as e: 
-            raise Exception(str(e))
+        super(LXDContainerDriver, self).__init__(key=key,
+                                                 secret=secret,
+                                                 secure=secure, 
+                                                 host=host,
+                                                 port=port,
+                                                 key_file=key_file,
+                                                 cert_file=cert_file, 
+                                                 **kwargs)
     
-    def deploy_container(self, config, wait,name, image, cluster=None,
+    def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True):
-       
+
         """
         Deploy an installed container image
 
@@ -67,22 +68,8 @@ class LXCContainerDriver(ContainerDriver):
 
         :rtype: :class:`.Container`
         """
-        try: 
 
-            lxc_container = self.client.containers.create(config=config, wait=wait)
-
-            # TODO: what happens if wait=False then this is async call
-            # perhaps we need to treat it differently
-            state= ContainerState.UNKNOWN
-            if start:
-                lxc_container.start()
-                state=ContainerState.RUNNING
-
-            container = Container(id="some-id", driver=self, name="some-name", state=state, ip_addresses="some-ip", image="some-image")
-        except LXDAPIException as e:
-            raise LXDAPIException(e)
-
-        return container
+        return None
 
     def get_container(self, id):
 
@@ -92,15 +79,14 @@ class LXCContainerDriver(ContainerDriver):
         :param id: The ID of the container to get
         :type  id: ``str``
 
-        :rtype: :class: pylxd.models.Container
+        :rtype: :class:`libcloud.container.base.Container`
         """
+        result = self.connection.request("/v%s/containers/%s/" %
+                                         (self.version, id)).object
 
-        # TODO: what happens if the id does not exist
-        container = self.client.containers.get( id)
-        return container
+        return self._to_container(result)
 
     def start_container(self, container):
-        
         """
         Start a ontainer
 
@@ -109,16 +95,6 @@ class LXCContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-
-        if container is not None:
-            # we perhaps want to log this
-            # this may be None??
-            lxc_container = self.get_container(id=container.name)
-            # start the associated LXC container
-            # docs: https://pylxd.readthedocs.io/en/latest/api.html#container
-            # this seems to have a timeout of 30secs
-            lxc_container.start()
-
         return container
 
     def stop_container(self, container):
@@ -131,17 +107,14 @@ class LXCContainerDriver(ContainerDriver):
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container
         """
-      
-        if container is not None:
-
-            # this may be None??
-            lxc_container = self.get_container(id=container.name)
-
-            # stop the associated lxc container
-            # docs: https://pylxd.readthedocs.io/en/latest/api.html#container
-            # this seems to have a timeout of 30secs
-            lxc_container.stop()
-        return container
+        result = self.connection.request('/v%s/containers/%s/state?action=stop&\
+                                         timeout=30&force=true&stateful=true' %
+                                         (self.version, container.name),
+                                         method='PUT')
+         # we have an error                                         
+        if result['type'] == 'error':
+            pass
+        return self.get_container(id=container.name)
 
     def list_containers(self, image=None, cluster=None):
         """
@@ -181,3 +154,28 @@ class LXCContainerDriver(ContainerDriver):
         """
         raise NotImplementedError(
             'destroy_container not implemented for this driver')
+
+
+    def _to_container(self, data):
+        """
+        Convert container in Container instances
+        """
+        arch = data['architecture']
+        config = data['config']
+        created_at = data['created_at']
+        name = data['name']
+        state=data['status']
+
+        if state == 'Running':
+            state = ContainerState.RUNNING
+        else:
+            state = ContainerState.STOPPED
+
+        extra = dict()
+        image = ContainerImage(id="?", name="?", path="/", version="/",
+                               driver="/", extra=None)
+
+        container = Container(driver=self, name=name, id=name,
+                              state=state, image=image, ip_addresses=[], extra=extra)
+
+        return container
