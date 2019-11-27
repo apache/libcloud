@@ -48,8 +48,9 @@ Compute
 
   For backward compatibility reasons, existing ``ex_start`` and ``ex_stop_node``
   methods will still work until a next major release.
-  (GITHUB-1375)
-  [Tomaz Muraus]
+
+  (GITHUB-1375, GITHUB-1364)
+  [Tomaz Muraus, @emakarov]
 
 Storage
 ~~~~~~~
