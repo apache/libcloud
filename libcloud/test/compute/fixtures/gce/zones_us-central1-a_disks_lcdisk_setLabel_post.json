@@ -1,6 +1,6 @@
 {
   "id": "0158330665043557584",
-  "name": "operation-1574861021466-59853e7c15164-5cc58767-a7a679d3",
+  "name": "operation-zones_us-central1-a_disks_lcdisk_setLabels",
   "zone": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a",
   "operationType": "setLabels",
   "targetLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/disks/lcdisk",
@@ -11,6 +11,6 @@
   "insertTime": "2019-11-27T05:23:41.870-08:00",
   "startTime": "2019-11-27T05:23:41.873-08:00",
   "endTime": "2019-11-27T05:23:41.873-08:00",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-1574861021466-59853e7c15164-5cc58767-a7a679d3",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/operations/operation-zones_us-central1-a_disks_lcdisk_setLabels",
   "kind": "compute#operation"
 }
