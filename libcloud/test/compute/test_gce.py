@@ -2980,6 +2980,12 @@ class GCEMockHttp(MockHttp):
             'operations_operation_zones_us-central1-a_disks_lcdisk_resize_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_lcdisk_setLabels_post(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_disks_lcdisk_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
