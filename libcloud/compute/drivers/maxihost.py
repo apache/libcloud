@@ -87,7 +87,6 @@ class MaxihostNodeDriver(NodeDriver):
 
         if ex_ssh_key_ids:
             attr['ssh_keys'] = ex_ssh_key_ids
-
         try:
             res = self.connection.request('/devices',
                                           data=json.dumps(attr), method='POST')
@@ -95,7 +94,8 @@ class MaxihostNodeDriver(NodeDriver):
             error_message = exc.message.get('error_messages', '')
             raise ValueError('Failed to create node: %s' % (error_message))
 
-        node = Node(id=0, name='dummy', private_ips=[], public_ips=[], driver=self, state='unknown', extra={})
+        node = Node(id=res.object['service_id'], name='dummy', private_ips=[],
+                    public_ips=[], driver=self, state='unknown', extra={})
         return node
 
 
@@ -162,7 +162,7 @@ class MaxihostNodeDriver(NodeDriver):
         for key in data:
             extra[key] = data[key]
 
-        node = Node(id=data['id'], name=data['description'], state=state,
+        node = Node(id=data['service_id'], name=data['description'], state=state,
                     private_ips=private_ips, public_ips=public_ips,
                     driver=self, extra=extra)
         return node
@@ -196,7 +196,8 @@ class MaxihostNodeDriver(NodeDriver):
         sizes = []
         data = self._paginated_request('/plans', 'servers')
         for size in data:
-            sizes.append(self._to_size(size))
+            if size.get('deploy_type', '') in ['automated']:
+                sizes.append(self._to_size(size))
         return sizes
 
     def _to_size(self, data):
