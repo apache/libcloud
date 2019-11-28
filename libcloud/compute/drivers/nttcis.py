@@ -1029,6 +1029,46 @@ class NttCisNodeDriver(NodeDriver):
         response_code = findtext(response, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
+    def start_node(self, node):
+        """
+        Powers on an existing deployed server
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+
+        request_elm = ET.Element('startServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/startServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
+    def stop_node(self, node):
+        """
+        This function will attempt to "gracefully" stop a server by
+        initiating a shutdown sequence within the guest operating system.
+        A successful response on this function means the system has
+        successfully passed the request into the operating system.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        request_elm = ET.Element('shutdownServer',
+                                 {'xmlns': TYPES_URN, 'id': node.id})
+        body = self.connection.request_with_orgId_api_2(
+            'server/shutdownServer',
+            method='POST',
+            data=ET.tostring(request_elm)).object
+        response_code = findtext(body, 'responseCode', TYPES_URN)
+        return response_code in ['IN_PROGRESS', 'OK']
+
     def ex_list_nodes_paginated(self, name=None, location=None,
                                 ipv6=None, ipv4=None, vlan=None,
                                 image=None, deployed=None, started=None,
@@ -1132,45 +1172,13 @@ class NttCisNodeDriver(NodeDriver):
         return response_code in ['IN_PROGRESS', 'OK']
 
     def ex_start_node(self, node):
-        """
-        Powers on an existing deployed server
-
-        :param      node: Node which should be used
-        :type       node: :class:`Node`
-
-        :rtype: ``bool``
-        """
-
-        request_elm = ET.Element('startServer',
-                                 {'xmlns': TYPES_URN, 'id': node.id})
-        body = self.connection.request_with_orgId_api_2(
-            'server/startServer',
-            method='POST',
-            data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'responseCode', TYPES_URN)
-        return response_code in ['IN_PROGRESS', 'OK']
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
 
     def ex_shutdown_graceful(self, node):
-        """
-        This function will attempt to "gracefully" stop a server by
-        initiating a shutdown sequence within the guest operating system.
-        A successful response on this function means the system has
-        successfully passed the request into the operating system.
-
-        :param      node: Node which should be used
-        :type       node: :class:`Node`
-
-        :rtype: ``bool``
-        """
-
-        request_elm = ET.Element('shutdownServer',
-                                 {'xmlns': TYPES_URN, 'id': node.id})
-        body = self.connection.request_with_orgId_api_2(
-            'server/shutdownServer',
-            method='POST',
-            data=ET.tostring(request_elm)).object
-        response_code = findtext(body, 'responseCode', TYPES_URN)
-        return response_code in ['IN_PROGRESS', 'OK']
+        return self.stop_node(node=node)
 
     def ex_power_off(self, node):
         """

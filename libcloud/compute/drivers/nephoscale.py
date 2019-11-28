@@ -209,13 +209,13 @@ class NephoscaleNodeDriver(NodeDriver):
                                          % node.id, method='POST').object
         return result.get('response') in VALID_RESPONSE_CODES
 
-    def ex_start_node(self, node):
+    def start_node(self, node):
         """start a stopped node"""
         result = self.connection.request('/server/cloud/%s/initiator/start/'
                                          % node.id, method='POST').object
         return result.get('response') in VALID_RESPONSE_CODES
 
-    def ex_stop_node(self, node):
+    def stop_node(self, node):
         """stop a running node"""
         result = self.connection.request('/server/cloud/%s/initiator/stop/'
                                          % node.id, method='POST').object
@@ -226,6 +226,18 @@ class NephoscaleNodeDriver(NodeDriver):
         result = self.connection.request('/server/cloud/%s/' % node.id,
                                          method='DELETE').object
         return result.get('response') in VALID_RESPONSE_CODES
+
+    def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
+
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_list_keypairs(self, ssh=False, password=False, key_group=None):
         """

@@ -118,7 +118,7 @@ class LinodeNodeDriver(NodeDriver):
         data = self.connection.request(API_ROOT, params=params).objects[0]
         return self._to_nodes(data)
 
-    def ex_start_node(self, node):
+    def start_node(self, node):
         """
         Boot the given Linode
 
@@ -127,7 +127,7 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(API_ROOT, params=params)
         return True
 
-    def ex_stop_node(self, node):
+    def stop_node(self, node):
         """
         Shutdown the given Linode
 
@@ -424,6 +424,18 @@ class LinodeNodeDriver(NodeDriver):
                   "PlanID": size}
         self.connection.request(API_ROOT, params=params)
         return True
+
+    def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
+
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_rename_node(self, node, name):
         """Renames a node"""

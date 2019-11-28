@@ -222,17 +222,29 @@ class SoftLayerNodeDriver(NodeDriver):
         )
         return True
 
-    def ex_stop_node(self, node):
+    def start_node(self, node):
+        self.connection.request(
+            'SoftLayer_Virtual_Guest', 'powerOn', id=node.id
+        )
+        return True
+
+    def stop_node(self, node):
         self.connection.request(
             'SoftLayer_Virtual_Guest', 'powerOff', id=node.id
         )
         return True
 
     def ex_start_node(self, node):
-        self.connection.request(
-            'SoftLayer_Virtual_Guest', 'powerOn', id=node.id
-        )
-        return True
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
+
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def _get_order_information(self, node_id, timeout=1200, check_interval=5):
         mask = {

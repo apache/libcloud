@@ -316,7 +316,20 @@ class VSphereNodeDriver(NodeDriver):
         return True
 
     @wrap_non_libcloud_exceptions
-    def ex_stop_node(self, node):
+    def start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        vm = self._get_vm_for_node(node=node)
+        vm.power_on()
+
+        return True
+
+    @wrap_non_libcloud_exceptions
+    def stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
         vm = self._get_vm_for_node(node=node)
         vm.power_off()
 
@@ -324,10 +337,11 @@ class VSphereNodeDriver(NodeDriver):
 
     @wrap_non_libcloud_exceptions
     def ex_start_node(self, node):
-        vm = self._get_vm_for_node(node=node)
-        vm.power_on()
+        return self.start_node(node=node)
 
-        return True
+    @wrap_non_libcloud_exceptions
+    def ex_stop_node(self, node):
+        return self.stop_node(node=node)
 
     @wrap_non_libcloud_exceptions
     def ex_suspend_node(self, node):

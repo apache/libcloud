@@ -514,6 +514,12 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
         return response.status == 200
 
     def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
+
+    def stop_node(self, node):
         """
         Stop (shutdown) a node.
 
@@ -1240,7 +1246,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
         node = self._to_node(data=response)
         return node
 
-    def ex_start_node(self, node, ex_avoid=None):
+    def start_node(self, node, ex_avoid=None):
         """
         Start a node.
 
@@ -1265,14 +1271,26 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
                                         method='POST')
         return response.status == httplib.ACCEPTED
 
-    def ex_stop_node(self, node):
-        """
-        Stop a node.
-        """
+    def stop_node(self, node):
         path = '/servers/%s/action/' % (node.id)
         response = self._perform_action(path=path, action='stop',
                                         method='POST')
         return response.status == httplib.ACCEPTED
+
+    def ex_start_node(self, node, ex_avoid=None):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node, ex_avoid=ex_avoid)
+
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        """
+        Stop a node.
+        """
+        return self.stop_node(node=node)
 
     def ex_clone_node(self, node, name=None, random_vnc_password=None):
         """

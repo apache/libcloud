@@ -747,7 +747,7 @@ class ECSDriver(NodeDriver):
         resp = self.connection.request(self.path, params)
         return resp.success()
 
-    def ex_start_node(self, node):
+    def start_node(self, node):
         """
         Start node to running state.
 
@@ -763,7 +763,7 @@ class ECSDriver(NodeDriver):
         return resp.success() and \
             self._wait_until_state([node], NodeState.RUNNING)
 
-    def ex_stop_node(self, node, ex_force_stop=False):
+    def stop_node(self, node, ex_force_stop=False):
         """
         Stop a running node.
 
@@ -784,6 +784,18 @@ class ECSDriver(NodeDriver):
         resp = self.connection.request(self.path, params)
         return resp.success() and \
             self._wait_until_state([node], NodeState.STOPPED)
+
+    def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
+
+    def ex_stop_node(self, node, ex_force_stop=False):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node, ex_force_stop=ex_force_stop)
 
     def ex_create_security_group(self, description=None, client_token=None):
         """

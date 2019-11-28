@@ -284,7 +284,24 @@ class HostVirtualNodeDriver(NodeDriver):
         node = self._to_node(result)
         return node
 
-    def ex_stop_node(self, node):
+    def start_node(self, node):
+        """
+        Start a node.
+
+        :param      node: Node which should be used
+        :type       node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        params = {'mbpkgid': node.id}
+        result = self.connection.request(
+            API_ROOT + '/cloud/server/start',
+            data=json.dumps(params),
+            method='POST').object
+
+        return bool(result)
+
+    def stop_node(self, node):
         """
         Stop a node.
 
@@ -302,21 +319,16 @@ class HostVirtualNodeDriver(NodeDriver):
         return bool(result)
 
     def ex_start_node(self, node):
-        """
-        Start a node.
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
 
-        :param      node: Node which should be used
-        :type       node: :class:`Node`
-
-        :rtype: ``bool``
-        """
-        params = {'mbpkgid': node.id}
-        result = self.connection.request(
-            API_ROOT + '/cloud/server/start',
-            data=json.dumps(params),
-            method='POST').object
-
-        return bool(result)
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_provision_node(self, **kwargs):
         """
