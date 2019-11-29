@@ -126,6 +126,7 @@ if PY2_pre_279:
 
 if PY2_or_3_pre_34:
     INSTALL_REQUIREMENTS.append('typing')
+    INSTALL_REQUIREMENTS.append('enum34')
 
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
