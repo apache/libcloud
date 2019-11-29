@@ -35,8 +35,6 @@ except ImportError:
     import json  # type: ignore
     JSONDecodeError = ValueError  # type: ignore
 
-from libcloud.utils.connection import get_response_object
-
 __all__ = [
     'get_pricing',
     'get_size_price',
@@ -200,6 +198,8 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL,
     :type file_path: ``str``
     :param file_path: Path where a download pricing file will be saved.
     """
+    from libcloud.utils.connection import get_response_object
+
     dir_name = os.path.dirname(file_path)
 
     if not os.path.exists(dir_name):

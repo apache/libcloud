@@ -21,13 +21,18 @@ from __future__ import absolute_import
 from typing import Type
 from typing import Union
 from types import ModuleType
+from typing import TYPE_CHECKING
 
 from libcloud.compute.types import Provider
-from libcloud.compute.base import NodeDriver
 from libcloud.common.providers import get_driver as _get_provider_driver
 from libcloud.common.providers import set_driver as _set_provider_driver
 from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.compute.deprecated import DEPRECATED_DRIVERS
+
+
+if TYPE_CHECKING:
+    # NOTE: This is needed to avoid having setup.py depend on requests
+    from libcloud.compute.base import NodeDriver
 
 __all__ = [
     "Provider",

@@ -27,8 +27,6 @@ import time
 
 from libcloud.utils.py3 import ET
 
-import requests
-
 import libcloud
 
 from libcloud.utils.py3 import httplib
@@ -196,6 +194,7 @@ class Response(object):
         :return: ``True`` or ``False``
         """
         # pylint: disable=E1101
+        import requests
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -274,6 +273,7 @@ class RawResponse(Response):
         :return: ``True`` or ``False``
         """
         # pylint: disable=E1101
+        import requests
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
