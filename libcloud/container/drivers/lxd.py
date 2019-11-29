@@ -13,38 +13,193 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.container.base import (Container, ContainerDriver, ContainerImage)
+import base64
+import re
+
+
+try:
+    import simplejson as json
+except Exception:
+    import json
+
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
+
+from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.base import KeyCertificateConnection
+from libcloud.common.types import InvalidCredsError
+
+from libcloud.container.base import (Container, ContainerDriver,
+                                     ContainerImage)
+
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
-class LXDConnection:
-    pass
+
+class LXDResponse(JsonResponse):
+    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
+                            httplib.NO_CONTENT]
+
+    def parse_body(self):
+
+        if len(self.body) == 0 and not self.parse_zero_length_body:
+            return self.body
+
+        try:
+            # error responses are tricky in Docker. Eg response could be
+            # an error, but response status could still be 200
+            content_type = self.headers.get('content-type', 'application/json')
+            if content_type == 'application/json' or content_type == '':
+                if self.headers.get('transfer-encoding') == 'chunked' and \
+                        'fromImage' in self.request.url:
+                    body = [json.loads(chunk) for chunk in
+                            self.body.strip().replace('\r', '').split('\n')]
+                else:
+                    body = json.loads(self.body)
+            else:
+                body = self.body
+        except ValueError:
+            m = re.search('Error: (.+?)"', self.body)
+            if m:
+                error_msg = m.group(1)
+                raise Exception(error_msg)
+            else:
+                raise Exception(
+                    'ConnectionError: Failed to parse JSON response')
+        return body
+
+    def parse_error(self):
+        if self.status == 401:
+            raise InvalidCredsError('Invalid credentials')
+        else:
+            print(self.status)
+        return self.body
+
+    def success(self):
+        return self.status in self.valid_response_codes
+
+
+class LXDConnection(ConnectionUserAndKey):
+    responseCls = LXDResponse
+    timeout = 60
+
+    def add_default_headers(self, headers):
+        """
+        Add parameters that are necessary for every request
+        If user and password are specified, include a base http auth
+        header
+        """
+        headers['Content-Type'] = 'application/json'
+        if self.user_id and self.key:
+            user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
+            headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
+        return headers
+
+class LXDtlsConnection(KeyCertificateConnection):
+
+    responseCls = LXDResponse
+
+    def __init__(self, secure=True,
+                 host='localhost',
+                 port=8443, key_file='', cert_file=''):
+
+        super(LXDtlsConnection, self).__init__(key_file=key_file,
+                                                  cert_file=cert_file,
+                                                  secure=secure, host=host,
+                                                  port=port, url=None,
+                                                  proxy_url=None,
+                                                  timeout=None, backoff=None,
+                                                  retry_delay=None)
+
 
 class LXDContainerDriver(ContainerDriver):
     """
-    Driver for LXC containers
+    Driver for LXD containers
+    https://lxd.readthedocs.io/en/stable-2.0/rest-api/
     """
-    type = Provider.LXC
-    name = 'LXC'
+    type = Provider.LXD
+    name = 'LXD'
     website = 'https://linuxcontainers.org/'
     connectionCls = LXDConnection
     supports_clusters = False
     version = '1.0'
 
-    def __init__(self, key='', secret='', secure=False, 
-                 host='localhost', port='8443', 
-                 key_file=None,
+    def __init__(self, key='', secret='',
+                 secure=False, host='localhost',
+                 port=8443, key_file=None,
                  cert_file=None, ca_cert=None, **kwargs):
 
+        if key_file:
+            self.connectionCls = LXDtlsConnection
+            self.key_file = key_file
+            self.cert_file = cert_file
+            secure = True
+
+        if host.startswith('https://'):
+            secure = True
+
+        # strip the prefix
+        prefixes = ['http://', 'https://']
+        for prefix in prefixes:
+            if host.startswith(prefix):
+                host = host.strip(prefix)
+
+        kwargs = dict()
+        kwargs['api_version'] = LXDContainerDriver.version
         super(LXDContainerDriver, self).__init__(key=key,
                                                  secret=secret,
-                                                 secure=secure, 
+                                                 secure=secure,
                                                  host=host,
                                                  port=port,
                                                  key_file=key_file,
-                                                 cert_file=cert_file, 
+                                                 cert_file=cert_file,
                                                  **kwargs)
-    
+
+        if key_file or cert_file:
+            # LXD tls authentication-
+            # We pass two files, a key_file with the
+            # private key and cert_file with the certificate
+            # libcloud will handle them through LibcloudHTTPSConnection
+            if not (key_file and cert_file):
+                raise Exception(
+                    'Needs both private key file and '
+                    'certificate file for tls authentication')
+
+        if ca_cert:
+            self.connection.connection.ca_cert = ca_cert
+        else:
+            # do not verify SSL certificate
+            self.connection.connection.ca_cert = False
+
+        self.connection.secure = secure
+        self.connection.host = host
+        self.connection.port = port
+        self.version = self._get_api_version()
+
+    def get_api_endpoints(self):
+        """
+        Returns the API endpoints. This is allowed to everyone
+        :return: LXDResponse that describes the API endpoints
+        """
+        return self.connection.request("/")
+
+    def get_to_version(self):
+        """
+        GET to /1.0 This is allowed to everyone
+        :return: LXDResponse 
+        """
+        return self.connection.request("/%s"%(self.version))
+
+    def post_certificate(self, certificate, name, password):
+        """
+        Add a new trusted certificate
+        Authentication: trusted or untrusted
+        Operation: sync
+        Return: standard return value or standard error
+        """
+        return self.connection.request('/%s/certificates?type=client&certificate=%s&\
+                                       name=%s&password=%s'%(self.version, certificate, name, password), method='POST')
+
     def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True):
 
@@ -81,7 +236,7 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request("/v%s/containers/%s/" %
+        result = self.connection.request("/%s/containers/%s/" %
                                          (self.version, id)).object
 
         return self._to_container(result)
@@ -95,7 +250,12 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        return container
+
+        return self._do_container_action(container=container,
+                                         action='start',
+                                         timeout=30,
+                                         force=True,
+                                         stateful=True)
 
     def stop_container(self, container):
         """
@@ -107,14 +267,8 @@ class LXDContainerDriver(ContainerDriver):
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container
         """
-        result = self.connection.request('/v%s/containers/%s/state?action=stop&\
-                                         timeout=30&force=true&stateful=true' %
-                                         (self.version, container.name),
-                                         method='PUT')
-         # we have an error                                         
-        if result['type'] == 'error':
-            pass
-        return self.get_container(id=container.name)
+        return self._do_container_action(container=container, action='stop',
+                                         timeout=30, force=True, stateful=True)
 
     def list_containers(self, image=None, cluster=None):
         """
@@ -128,8 +282,10 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`.Container`
         """
-        raise NotImplementedError(
-            'list_containers not implemented for this driver')
+        result = self.connection.request(action='/%s/containers/'
+                                       %(self.version))
+        containers = [self._to_container(value) for value in result]
+        return containers
 
     def restart_container(self, container):
         """
@@ -140,8 +296,8 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`.Container`
         """
-        raise NotImplementedError(
-            'restart_container not implemented for this driver')
+        return self._do_container_action(container=container, action='restart',
+                                         timeout=30, force=True, stateful=True)
 
     def destroy_container(self, container):
         """
@@ -155,6 +311,18 @@ class LXDContainerDriver(ContainerDriver):
         raise NotImplementedError(
             'destroy_container not implemented for this driver')
 
+    def list_images(self):
+        """
+        List the installed container images
+
+        :rtype: ``list`` of :class:`.ContainerImage`
+        """
+        result = self.connection.request('/%s/images/'%(self.version))
+        images = []
+
+        for image in result:
+            images.append(self._do_get_image(fingerprint=image.split("/")[-1]))
+        return images
 
     def _to_container(self, data):
         """
@@ -164,7 +332,7 @@ class LXDContainerDriver(ContainerDriver):
         config = data['config']
         created_at = data['created_at']
         name = data['name']
-        state=data['status']
+        state = data['status']
 
         if state == 'Running':
             state = ContainerState.RUNNING
@@ -176,6 +344,47 @@ class LXDContainerDriver(ContainerDriver):
                                driver="/", extra=None)
 
         container = Container(driver=self, name=name, id=name,
-                              state=state, image=image, ip_addresses=[], extra=extra)
+                              state=state, image=image,
+                              ip_addresses=[], extra=extra)
 
         return container
+
+    def _do_container_action(self, container, action,
+                             timeout, force, stateful):
+        """
+        change the container state by performing the given action
+        """
+        if action == 'start' or action == 'restart':
+            force = 'false'
+        else:
+            force = str(force).lower()
+
+        result = self.connection.request('/%s/containers/%s/state?action=%s&\
+                                         timeout=%s&force=%s&stateful=%s'%
+                                         (self.version, action, timeout,
+                                          force, stateful, container.name),
+                                         method='PUT')
+        if result['type'] == 'error':
+            pass
+
+        return self.get_container(id=container.name)
+
+    def _do_get_image(self, fingerprint):
+        """
+        Returns a container image from the given image url
+
+        :param image_url: URL of image
+        :type  path: ``str``
+
+        :rtype: :class:`.ContainerImage`
+        """
+        result = self.connection.request('/%s/images/%s'%(self.version, fingerprint))
+        name = result["aliases"][0]["name"]
+        extra=dict()
+        return ContainerImage(id=name, name=name, version=None, driver=self.connection.driver, extra=None)
+
+    def _get_api_version(self):
+        """
+        Get the LXD API version
+        """
+        return LXDContainerDriver.version
