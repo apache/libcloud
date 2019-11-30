@@ -19,7 +19,7 @@ driver = vcloud('you username@organisation', 'your password',
 # List all instantiated vApps
 nodes = driver.list_nodes()
 # List all VMs within the first vApp instance
-print nodes[0].extra['vms']
+print(nodes[0].extra['vms'])
 
 # List all available vApp Templates
 images = driver.list_images()

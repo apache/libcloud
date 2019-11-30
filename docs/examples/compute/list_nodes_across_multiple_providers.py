@@ -15,7 +15,7 @@ drivers = [EC2Driver(EC2_ACCESS_ID, EC2_SECRET_KEY),
 nodes = []
 for driver in drivers:
     nodes += driver.list_nodes()
-print nodes
+print(nodes)
 # [ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,
 #   <Node: provider=Rackspace, status=REBOOT, name=korine, ip=6.7.8.9>, ... ]
 

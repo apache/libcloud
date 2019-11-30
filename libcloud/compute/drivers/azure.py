@@ -49,10 +49,10 @@ from libcloud.utils.misc import ReprMixin
 HTTPSConnection = httplib.HTTPSConnection
 
 if sys.version_info < (3,):
-    _unicode_type = unicode
+    _unicode_type = unicode  # NOQA
 
     def _str(value):
-        if isinstance(value, unicode):
+        if isinstance(value, unicode):  # NOQA
             return value.encode('utf-8')
 
         return str(value)
