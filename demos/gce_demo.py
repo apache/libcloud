@@ -81,7 +81,7 @@ if PY3:
     # pylint: disable=no-name-in-module,import-error
     import urllib.request as url_req
 else:
-    import urllib2 as url_req
+    import urllib2 as url_req  # pylint: disable=import-error
 
 # Maximum number of 1-CPU nodes to allow to run simultaneously
 MAX_NODES = 5
