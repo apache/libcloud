@@ -58,7 +58,7 @@ install:
   - pip install --upgrade "pip==19.1.1"
   - pip install --upgrade "setuptools==41.6.0"
   - pip install "virtualenv==16.7.7"
-  - pip install "tox==3.14.1"
+  - pip install "tox==3.14.0"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:
