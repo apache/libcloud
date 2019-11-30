@@ -18,7 +18,7 @@ matrix:
     - python: 3.7
       before_script: TOX_ENV=py3.7,py3.7-dist
     - python: 3.8
-    - python: pypy3
+    - python: pypy3.5
     - env: ENV=checks
       python: 3.7
       before_script: TOX_ENV=checks
