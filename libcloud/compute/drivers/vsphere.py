@@ -21,6 +21,8 @@ Note: This driver requires pysphere package
 more information, please refer to the official documentation.
 """
 
+# pylint: skip-file
+
 import os
 import atexit
 
@@ -32,7 +34,7 @@ except ImportError:
                       'using pip - pip install pysphere')
 
 from pysphere import VIServer
-from pysphere.vi_task import VITask
+from pysphere.vi_task import VITask  # pylint: disable=no-name-in-module
 from pysphere.vi_mor import VIMor, MORTypes
 from pysphere.resources import VimService_services as VI
 from pysphere.vi_virtual_machine import VIVirtualMachine
@@ -90,9 +92,11 @@ class VSphereConnection(ConnectionUserAndKey):
                                 sock_timeout=DEFAULT_CONNECTION_TIMEOUT,
                                 trace_file=trace_file)
         except Exception as e:
-            message = e.message
+            message = str(e)
             if hasattr(e, 'strerror'):
+                # pylint: disable=no-member
                 message = getattr(e, 'strerror', e.message)
+                # pylint: enable=no-member
 
             fault = getattr(e, 'fault', None)
 

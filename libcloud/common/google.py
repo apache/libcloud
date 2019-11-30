@@ -421,7 +421,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         if PY3:
             code = input('Enter Code: ')
         else:
-            code = raw_input('Enter Code: ')  # NOQA
+            code = raw_input('Enter Code: ')  # NOQA pylint: disable=undefined-variable
         return code
 
     def get_new_token(self):

@@ -77,10 +77,10 @@ class Type(Enum):
         return super(Type, self).__eq__(other)
 
     def upper(self):
-        return self.value.upper()
+        return self.value.upper()  # pylint: disable=no-member
 
     def lower(self):
-        return self.value.lower()
+        return self.value.lower()  # pylint: disable=no-member
 
     def __ne__(self, other):
         return not self.__eq__(other)

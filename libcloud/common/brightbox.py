@@ -74,6 +74,7 @@ class BrightboxConnection(ConnectionUserAndKey):
             'Content-Length': str(len(body))
         }
 
+        # pylint: disable=assignment-from-no-return
         response = self.connection.request(method='POST', url='/token',
                                            body=body, headers=headers)
 

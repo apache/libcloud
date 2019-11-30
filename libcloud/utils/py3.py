@@ -18,7 +18,7 @@
 # clause BSD license
 # https://bitbucket.org/loewis/django-3k
 
-# pylint: disable=import-error,no-member
+# pylint: skip-file
 
 from __future__ import absolute_import
 

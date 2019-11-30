@@ -737,7 +737,7 @@ def _izip_longest(*args, **kwds):
     fillers = itertools.repeat(fillvalue)
     iters = [itertools.chain(it, sentinel(), fillers) for it in args]
     try:
-        for tup in itertools.izip(*iters):
+        for tup in itertools.izip(*iters):  # pylint: disable=no-member
             yield tup
     except IndexError:
         pass

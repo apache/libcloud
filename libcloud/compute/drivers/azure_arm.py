@@ -1996,7 +1996,7 @@ class AzureNodeDriver(NodeDriver):
                                     method='POST')
         return r.object
 
-    def stop_node(self, node, deallocate=True):
+    def stop_node(self, node, ex_deallocate=True):
         """
         Stop a running node.
 
@@ -2010,8 +2010,7 @@ class AzureNodeDriver(NodeDriver):
         were running.
         :type deallocate: ``bool``
         """
-
-        if deallocate:
+        if ex_deallocate:
             target = "%s/deallocate" % node.id
         else:
             target = "%s/powerOff" % node.id
