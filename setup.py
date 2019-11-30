@@ -152,7 +152,7 @@ def get_data_files(dname, ignore=None, parent=None):
 # Different versions of python have different requirements.  We can't use
 # libcloud.utils.py3 here because it relies on backports dependency being
 # installed / available
-PY_pre_34 = sys.version_info < (3, 4, 0)
+PY_pre_35 = sys.version_info < (3, 5, 0)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'https://libcloud.apache.org'
@@ -166,7 +166,7 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.container.drivers.dummy',
                     'libcloud.backup.drivers.dummy']
 
-SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.4+']
+SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 
 INSTALL_REQUIREMENTS = ['requests>=2.5.0']
 
@@ -177,10 +177,10 @@ TEST_REQUIREMENTS = [
     'pytest-runner'
 ] + INSTALL_REQUIREMENTS
 
-if PY_pre_34:
+if PY_pre_35:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are: %s.'
-          'Latest version which supports Python 2.7 and Python 3 < 3.4.0 is '
+          'Latest version which supports Python 2.7 and Python 3 < 3.5.0 is '
           'Libcloud v2.7.0' % ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
