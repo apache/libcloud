@@ -15,6 +15,7 @@
 
 import base64
 import re
+import os
 
 
 try:
@@ -101,7 +102,9 @@ class LXDtlsConnection(KeyCertificateConnection):
 
     def __init__(self, key, secret, secure=True,
                  host='localhost',
-                 port=8443, ca_cert='', key_file='', cert_file='', **kwargs):
+                 port=8443, ca_cert='', key_file=None, cert_file=None, **kwargs):
+
+        self._check_certificates(key_file=key_file, cert_file=cert_file, **kwargs)
 
         super(LXDtlsConnection, self).__init__(key_file=key_file,
                                                cert_file=cert_file,
@@ -110,29 +113,60 @@ class LXDtlsConnection(KeyCertificateConnection):
                                                proxy_url=None,
                                                timeout=None, backoff=None,
                                                retry_delay=None)
-        if key_file:
-            keypath = os.path.expanduser(key_file)
-            is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
-            if not is_file_path:
-                raise InvalidCredsError(
-                    'You need an key PEM file to authenticate with '
-                    'Docker tls. This can be found in the server.'
-                )
-            self.key_file = key_file
 
-            certpath = os.path.expanduser(cert_file)
-            is_file_path = os.path.exists(
-                certpath) and os.path.isfile(certpath)
-            if not is_file_path:
-                raise InvalidCredsError(
-                    'You need an certificate PEM file to authenticate with '
-                    'Docker tls. This can be found in the server.'
-                )
-            self.cert_file = cert_file
+        self.key_file = key_file
+        self.cert_file = cert_file
 
     def add_default_headers(self, headers):
         headers['Content-Type'] = 'application/json'
         return headers
+
+    def _check_certificates(self, key_file, cert_file, **kwargs):
+
+        """
+        Basic checks for the provided certificates
+        """
+
+        # there is no point attempting to connect if either is missing
+        if key_file is None or cert_file is None:
+            raise InvalidCredsError("TLS Connection requires specification "
+                                    "of a key file and a certificate file")
+
+        # if they are not none they may be empty strings
+        # or certificates that are not appropriate
+        if key_file == '' or cert_file == '':
+            raise InvalidCredsError("TLS Connection requires specification "
+                                    "of a key file and a certificate file")
+
+        # if none of the above check the types
+        if 'key_files_allowed' in kwargs.keys():
+            key_file_suffix = key_file.split('.')
+
+            if key_file_suffix[-1] not in kwargs['key_files_allowed']:
+                raise InvalidCredsError("Valid key files are: "+str(kwargs['key_files_allowed'])+
+                                        "you provided: "+key_file_suffix[-1])
+
+                # if none of the above check the types
+        if 'cert_files_allowed' in kwargs.keys():
+                cert_file_suffix = cert_file.split('.')
+
+                if cert_file_suffix[-1] not in kwargs['cert_files_allowed']:
+                    raise InvalidCredsError("Valid certification files are: " + str(kwargs['cert_files_allowed']) +
+                                                "you provided: " + cert_file_suffix[-1])
+
+        # if all these are good check the paths
+        keypath = os.path.expanduser(key_file)
+        is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+        if not is_file_path:
+            raise InvalidCredsError('You need a key file to authenticate with '
+                                    'LXD tls. This can be found in the server.')
+
+        certpath = os.path.expanduser(cert_file)
+        is_file_path = os.path.exists(certpath) and os.path.isfile(certpath)
+        if not is_file_path:
+            raise InvalidCredsError('You need a certificate file to authenticate with '
+                                    'LXD tls. This can be found in the server.')
+
 
 
 class LXDContainerDriver(ContainerDriver):
@@ -150,7 +184,8 @@ class LXDContainerDriver(ContainerDriver):
     def __init__(self, key='', secret='',
                  secure=False, host='localhost',
                  port=8443, key_file=None,
-                 cert_file=None, ca_cert=None, **kwargs):
+                 cert_file=None, ca_cert=None):
+
         if key_file:
             self.connectionCls = LXDtlsConnection
             self.key_file = key_file
@@ -166,16 +201,13 @@ class LXDContainerDriver(ContainerDriver):
             if host.startswith(prefix):
                 host = host.strip(prefix)
 
-        kwargs = dict()
-        kwargs['api_version'] = LXDContainerDriver.version
         super(LXDContainerDriver, self).__init__(key=key,
                                                  secret=secret,
                                                  secure=secure,
                                                  host=host,
                                                  port=port,
                                                  key_file=key_file,
-                                                 cert_file=cert_file,
-                                                 **kwargs)
+                                                 cert_file=cert_file)
 
         if key_file or cert_file:
             # LXD tls authentication-
@@ -305,10 +337,10 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: ``list`` of :class:`.Container`
         """
         
-        result = self.connection.request(action='/%s/containers/'
+        result = self.connection.request(action='/%s/containers'
                                        %(self.version))
-        containers = [self._to_container(value) for value in result]
-        return containers
+        #containers = [self._to_container(value) for value in result]
+        return result #containers
 
     def restart_container(self, container):
         """
@@ -411,3 +443,10 @@ class LXDContainerDriver(ContainerDriver):
         Get the LXD API version
         """
         return LXDContainerDriver.version
+
+    def _ex_connection_class_kwargs(self):
+        """
+        Return extra connection keyword arguments which are passed to the
+        Connection class constructor.
+        """
+        return {"key_file":self.key_file, "cert_file":self.cert_file}
