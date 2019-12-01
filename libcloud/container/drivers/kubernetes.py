@@ -78,7 +78,8 @@ class KubernetesConnection(ConnectionUserAndKey):
         If user and password are specified, include a base http auth
         header
         """
-        headers['Content-Type'] = 'application/json'
+        if 'Content-Type' not in headers:
+            headers['Content-Type'] = 'application/json'
         if self.key and self.secret:
             user_b64 = base64.b64encode(b('%s:%s' % (self.key, self.secret)))
             headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
@@ -136,7 +137,7 @@ class KubernetesContainerDriver(ContainerDriver):
             prefixes = ['http://', 'https://']
             for prefix in prefixes:
                 if host.startswith(prefix):
-                    host = host.strip(prefix)
+                    host = host.lstrip(prefix)
 
             self.connection.host = host
             self.connection.port = port
