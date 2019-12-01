@@ -36,6 +36,102 @@ from libcloud.container.base import (Container, ContainerDriver,
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
+# Acceptable success strings comping from LXD API
+LXD_API_SUCCESS_STATUS = ['Success']
+
+
+# helpers
+def strip_http_prefix(host):
+    # strip the prefix
+    prefixes = ['http://', 'https://']
+    for prefix in prefixes:
+        if host.startswith(prefix):
+            host = host.strip(prefix)
+    return host
+
+
+def check_certificates(key_file, cert_file, **kwargs):
+    """
+    Basic checks for the provided certificates in LXDtlsConnection
+    """
+
+    # there is no point attempting to connect if either is missing
+    if key_file is None or cert_file is None:
+        raise InvalidCredsError("TLS Connection requires specification "
+                                "of a key file and a certificate file")
+
+    # if they are not none they may be empty strings
+    # or certificates that are not appropriate
+    if key_file == '' or cert_file == '':
+        raise InvalidCredsError("TLS Connection requires specification "
+                                "of a key file and a certificate file")
+
+    # if none of the above check the types
+    if 'key_files_allowed' in kwargs.keys():
+        key_file_suffix = key_file.split('.')
+
+        if key_file_suffix[-1] not in kwargs['key_files_allowed']:
+            raise InvalidCredsError("Valid key files are: " + str(kwargs['key_files_allowed']) +
+                                    "you provided: " + key_file_suffix[-1])
+
+            # if none of the above check the types
+    if 'cert_files_allowed' in kwargs.keys():
+        cert_file_suffix = cert_file.split('.')
+
+        if cert_file_suffix[-1] not in kwargs['cert_files_allowed']:
+            raise InvalidCredsError("Valid certification files are: " + str(kwargs['cert_files_allowed']) +
+                                    "you provided: " + cert_file_suffix[-1])
+
+    # if all these are good check the paths
+    keypath = os.path.expanduser(key_file)
+    is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+    if not is_file_path:
+        raise InvalidCredsError('You need a key file to authenticate with '
+                                'LXD tls. This can be found in the server.')
+
+    certpath = os.path.expanduser(cert_file)
+    is_file_path = os.path.exists(certpath) and os.path.isfile(certpath)
+    if not is_file_path:
+        raise InvalidCredsError('You need a certificate file to authenticate with '
+                                'LXD tls. This can be found in the server.')
+
+
+class LXDApiException(Exception):
+    """
+    Basic exception to be thrown when LXD API
+    returns with some kind of error
+    """
+
+    def __init__(self, response):
+        self.lxd_response = response
+
+    def __str__(self):
+
+        response = " "
+
+        if 'type' in self.lxd_response.keys():
+            response += 'type: {0} '.format(self.lxd_response['type'])
+
+        if 'status' in self.lxd_response.keys():
+            response += 'status: {0} '.format(self.lxd_response['status'])
+
+        if 'status_code' in self.lxd_response.keys():
+            response = 'status_code: {0} '.format(self.lxd_response['status_code'])
+
+        if 'operation' in self.lxd_response.keys():
+            response = 'operation: {0} '.format(self.lxd_response['operation'])
+
+        if 'error_code' in self.lxd_response.keys():
+            response = 'error_code: {0} '.format(self.lxd_response['error_code'])
+
+        if 'error' in self.lxd_response.keys():
+            response = 'error: {0} '.format(self.lxd_response['error'])
+
+        if response == "":
+            response = "Empty LXDResponse"
+
+        return str(response)
+
 
 class LXDResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
@@ -96,6 +192,7 @@ class LXDConnection(ConnectionUserAndKey):
             headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
 
+
 class LXDtlsConnection(KeyCertificateConnection):
 
     responseCls = LXDResponse
@@ -104,7 +201,10 @@ class LXDtlsConnection(KeyCertificateConnection):
                  host='localhost',
                  port=8443, ca_cert='', key_file=None, cert_file=None, **kwargs):
 
-        self._check_certificates(key_file=key_file, cert_file=cert_file, **kwargs)
+        if 'certificate_validator' in kwargs.keys():
+            kwargs['certificate_validator'](key_file=key_file, cert_file=cert_file)
+        else:
+            check_certificates(key_file=key_file, cert_file=cert_file, **kwargs)
 
         super(LXDtlsConnection, self).__init__(key_file=key_file,
                                                cert_file=cert_file,
@@ -120,53 +220,6 @@ class LXDtlsConnection(KeyCertificateConnection):
     def add_default_headers(self, headers):
         headers['Content-Type'] = 'application/json'
         return headers
-
-    def _check_certificates(self, key_file, cert_file, **kwargs):
-
-        """
-        Basic checks for the provided certificates
-        """
-
-        # there is no point attempting to connect if either is missing
-        if key_file is None or cert_file is None:
-            raise InvalidCredsError("TLS Connection requires specification "
-                                    "of a key file and a certificate file")
-
-        # if they are not none they may be empty strings
-        # or certificates that are not appropriate
-        if key_file == '' or cert_file == '':
-            raise InvalidCredsError("TLS Connection requires specification "
-                                    "of a key file and a certificate file")
-
-        # if none of the above check the types
-        if 'key_files_allowed' in kwargs.keys():
-            key_file_suffix = key_file.split('.')
-
-            if key_file_suffix[-1] not in kwargs['key_files_allowed']:
-                raise InvalidCredsError("Valid key files are: "+str(kwargs['key_files_allowed'])+
-                                        "you provided: "+key_file_suffix[-1])
-
-                # if none of the above check the types
-        if 'cert_files_allowed' in kwargs.keys():
-                cert_file_suffix = cert_file.split('.')
-
-                if cert_file_suffix[-1] not in kwargs['cert_files_allowed']:
-                    raise InvalidCredsError("Valid certification files are: " + str(kwargs['cert_files_allowed']) +
-                                                "you provided: " + cert_file_suffix[-1])
-
-        # if all these are good check the paths
-        keypath = os.path.expanduser(key_file)
-        is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
-        if not is_file_path:
-            raise InvalidCredsError('You need a key file to authenticate with '
-                                    'LXD tls. This can be found in the server.')
-
-        certpath = os.path.expanduser(cert_file)
-        is_file_path = os.path.exists(certpath) and os.path.isfile(certpath)
-        if not is_file_path:
-            raise InvalidCredsError('You need a certificate file to authenticate with '
-                                    'LXD tls. This can be found in the server.')
-
 
 
 class LXDContainerDriver(ContainerDriver):
@@ -195,11 +248,7 @@ class LXDContainerDriver(ContainerDriver):
         if host.startswith('https://'):
             secure = True
 
-        # strip the prefix
-        prefixes = ['http://', 'https://']
-        for prefix in prefixes:
-            if host.startswith(prefix):
-                host = host.strip(prefix)
+        host = strip_http_prefix(host=host)
 
         super(LXDContainerDriver, self).__init__(key=key,
                                                  secret=secret,
@@ -290,10 +339,15 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request("/%s/containers/%s/" %
-                                         (self.version, id)).object
+        result = self.connection.request("/%s/containers/%s" %
+                                         (self.version, id))
 
-        return self._to_container(result)
+        result = result.parse_body()
+
+        if result['status'] not in LXD_API_SUCCESS_STATUS:
+            raise LXDApiException(response=result)
+
+        return self._to_container(result['metadata'])
 
     def start_container(self, container):
         """
@@ -336,11 +390,22 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: ``list`` of :class:`.Container`
         """
-        
-        result = self.connection.request(action='/%s/containers'
-                                       %(self.version))
-        #containers = [self._to_container(value) for value in result]
-        return result #containers
+
+        result = self.connection.request(action='/%s/containers' % self.version)
+        result = result.parse_body()
+
+        # how to treat the errors????
+        if result['status'] not in LXD_API_SUCCESS_STATUS:
+            raise LXDApiException(response=result)
+
+        meta = result['metadata']
+        containers = []
+        for item in meta:
+            container_id = item.split('/')[-1]
+            container = self.get_container(id=container_id)
+            containers.append(container)
+
+        return containers
 
     def restart_container(self, container):
         """
@@ -381,8 +446,11 @@ class LXDContainerDriver(ContainerDriver):
 
     def _to_container(self, data):
         """
-        Convert container in Container instances
+        Convert container in Container instances given the
+        the data received from the LXD API call parsed in a dictionary
         """
+
+        print(data)
         arch = data['architecture']
         config = data['config']
         created_at = data['created_at']
@@ -396,7 +464,7 @@ class LXDContainerDriver(ContainerDriver):
 
         extra = dict()
         image = ContainerImage(id="?", name="?", path="/", version="/",
-                               driver="/", extra=None)
+                               driver="/", extra=extra)
 
         container = Container(driver=self, name=name, id=name,
                               state=state, image=image,
