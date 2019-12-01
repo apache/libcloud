@@ -4,7 +4,7 @@ astroid==2.3.3
 pylint==2.4.4
 mock==3.0.5
 codecov
-coverage<4.0
+coverage==4.5.4
 requests
 requests_mock
 pytest==4.6.5
