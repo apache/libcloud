@@ -160,7 +160,9 @@ DRIVERS = {
     Provider.MAXIHOST:
     ('libcloud.compute.drivers.maxihost', 'MaxihostNodeDriver'),
     Provider.GRIDSCALE:
-    ('libcloud.compute.drivers.gridscale', 'GridscaleNodeDriver')
+    ('libcloud.compute.drivers.gridscale', 'GridscaleNodeDriver'),
+    Provider.KUBEVIRT:
+    ('libcloud.compute.drivers.kubevirt', 'KubeVirtNodeDriver')
 }
 
 
