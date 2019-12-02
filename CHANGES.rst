@@ -52,6 +52,11 @@ Compute
   (GITHUB-1375, GITHUB-1364)
   [Tomaz Muraus, @emakarov]
 
+ - [GCE] Add new ``ex_set_volume_labels`` method for managing volume labels to
+   the driver.
+   (GITHUB-1376)
+   [Rob Zimmerman - @zimventures]
+
 Storage
 ~~~~~~~
 
