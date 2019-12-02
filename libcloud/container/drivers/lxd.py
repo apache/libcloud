@@ -351,7 +351,7 @@ class LXDContainerDriver(ContainerDriver):
 
     def start_container(self, container):
         """
-        Start a ontainer
+        Start a container
 
         :param container: The container to start
         :type  container: :class:`libcloud.container.base.Container`
@@ -482,11 +482,10 @@ class LXDContainerDriver(ContainerDriver):
         else:
             force = str(force).lower()
 
-        result = self.connection.request('/%s/containers/%s/state?action=%s&\
-                                         timeout=%s&force=%s&stateful=%s'%
-                                         (self.version, action, timeout,
-                                          force, stateful, container.name),
-                                         method='PUT')
+        result = self.connection.request('/%s/containers/%s/state?action="%s"&'
+                                         'timeout=%s&force=%s&stateful=%s' %
+                                         (self.version, container.name, action, timeout,
+                                          force, stateful), method='PUT')
         if result['type'] == 'error':
             pass
 

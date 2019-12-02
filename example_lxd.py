@@ -15,7 +15,7 @@
 
 from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
-
+import requests
 
 def main():
 
@@ -50,6 +50,20 @@ def main():
     # get the list of the containers
     containers = conn.list_containers()
     print(containers)
+
+    container_id = containers[0].name
+
+    container_url = '%s:%s/1.0/containers/%s/state?action=%s&timeout=%s&force=%s&stateful=%s'%('https://192.168.2.4', port_id, container_id, 'start', 30, 'false', 'true',)
+
+    cert=('lxd.crt', 'lxd.key' )
+    r = requests.put(container_url, verify=False, cert=cert)
+    print("put of 1.0/containers/%s/state returned: "%(container_id) + r.text)
+
+    # start a container
+    #container = conn.start_container(container=containers[0])
+    #print(container)
+
+    # stop the container
 
 
 if __name__ == '__main__':
