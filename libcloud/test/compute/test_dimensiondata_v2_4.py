@@ -2234,7 +2234,7 @@ class DimensionDataMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _oec_0_9_8a8f6abc_2745_4d8a_9cbc_8dabe5a7d0e4_networkWithLocation(self, method, url, body, headers):
-        if method is "POST":
+        if method == "POST":
             request = ET.fromstring(body)
             if request.tag != "{http://oec.api.opsource.net/schemas/network}NewNetworkWithLocation":
                 raise InvalidRequestError(request.tag)

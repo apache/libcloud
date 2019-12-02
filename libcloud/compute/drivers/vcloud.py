@@ -1691,7 +1691,7 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         if names is None:
             return
         hname_re = re.compile(
-            '^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9]*)[\-])*([A-Za-z]|[A-Za-z][A-Za-z0-9]*[A-Za-z0-9])$')  # NOQA
+            r'^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9]*)[\-])*([A-Za-z]|[A-Za-z][A-Za-z0-9]*[A-Za-z0-9])$')  # NOQA
         for name in names:
             if len(name) > 15:
                 raise ValueError(
