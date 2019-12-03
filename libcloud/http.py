@@ -217,7 +217,7 @@ class LibcloudConnection(LibcloudBaseConnection):
         return self.ca_cert if self.ca_cert is not None else self.verify
 
     def request(self, method, url, body=None, headers=None, raw=False,
-                stream=False):
+                stream=False, json=None):
         url = urlparse.urljoin(self.host, url)
         headers = self._normalize_headers(headers=headers)
 
@@ -228,7 +228,8 @@ class LibcloudConnection(LibcloudBaseConnection):
             headers=headers,
             allow_redirects=ALLOW_REDIRECTS,
             stream=stream,
-            verify=self.verification
+            verify=self.verification,
+            json=json
         )
 
     def prepared_request(self, method, url, body=None,
