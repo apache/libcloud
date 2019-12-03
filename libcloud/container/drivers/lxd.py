@@ -38,6 +38,7 @@ from libcloud.container.types import ContainerState
 
 # Acceptable success strings comping from LXD API
 LXD_API_SUCCESS_STATUS = ['Success']
+LXD_API_STATE_ACTIONS = ['stop', 'start', 'restart', 'freeze', 'unfreeze']
 
 
 # helpers
@@ -202,7 +203,8 @@ class LXDtlsConnection(KeyCertificateConnection):
                  port=8443, ca_cert='', key_file=None, cert_file=None, **kwargs):
 
         if 'certificate_validator' in kwargs.keys():
-            kwargs['certificate_validator'](key_file=key_file, cert_file=cert_file)
+            certificate_validator = kwargs.pop('certificate_validator')
+            certificate_validator(key_file=key_file, cert_file=cert_file)
         else:
             check_certificates(key_file=key_file, cert_file=cert_file, **kwargs)
 
@@ -378,6 +380,33 @@ class LXDContainerDriver(ContainerDriver):
         return self._do_container_action(container=container, action='stop',
                                          timeout=30, force=True, stateful=True)
 
+    def restart_container(self, container):
+        """
+        Restart a deployed container
+
+        :param container: The container to restart
+        :type  container: :class:`.Container`
+
+        :rtype: :class:`.Container`
+        """
+        return self._do_container_action(container=container, action='restart',
+                                         timeout=30, force=True, stateful=True)
+
+    def destroy_container(self, container):
+        """
+        Destroy a deployed container
+
+        :param container: The container to destroy
+        :type  container: :class:`.Container`
+
+        :rtype: :class:`.Container`
+        """
+        result =  self.connection.request('/%s/containers/%s' %
+                                       (self.version, container.name), method='DELETE')
+
+        return result
+
+
     def list_containers(self, image=None, cluster=None):
         """
         List the deployed container images
@@ -407,30 +436,6 @@ class LXDContainerDriver(ContainerDriver):
 
         return containers
 
-    def restart_container(self, container):
-        """
-        Restart a deployed container
-
-        :param container: The container to restart
-        :type  container: :class:`.Container`
-
-        :rtype: :class:`.Container`
-        """
-        return self._do_container_action(container=container, action='restart',
-                                         timeout=30, force=True, stateful=True)
-
-    def destroy_container(self, container):
-        """
-        Destroy a deployed container
-
-        :param container: The container to destroy
-        :type  container: :class:`.Container`
-
-        :rtype: :class:`.Container`
-        """
-        raise NotImplementedError(
-            'destroy_container not implemented for this driver')
-
     def list_images(self):
         """
         List the installed container images
@@ -450,7 +455,7 @@ class LXDContainerDriver(ContainerDriver):
         the data received from the LXD API call parsed in a dictionary
         """
 
-        print(data)
+        #print(data)
         arch = data['architecture']
         config = data['config']
         created_at = data['created_at']
@@ -476,18 +481,22 @@ class LXDContainerDriver(ContainerDriver):
                              timeout, force, stateful):
         """
         change the container state by performing the given action
+        action may be either stop, start, restart, freeze or unfreeze
         """
-        if action == 'start' or action == 'restart':
-            force = 'false'
-        else:
-            force = str(force).lower()
 
-        result = self.connection.request('/%s/containers/%s/state?action="%s"&'
-                                         'timeout=%s&force=%s&stateful=%s' %
-                                         (self.version, container.name, action, timeout,
-                                          force, stateful), method='PUT')
-        if result['type'] == 'error':
-            pass
+        if action not in LXD_API_STATE_ACTIONS:
+            raise ValueError("Invalid action specified")
+
+        if action == 'start' or action == 'restart':
+            force = False
+
+        json = {"action":action, "timeout":timeout,
+                "stateful":stateful, "force":force}
+
+        result = self.connection.request('/%s/containers/%s/state' %
+                                         (self.version, container.name), method='PUT', json=json)
+        #if result['type'] == 'error':
+        #    pass
 
         return self.get_container(id=container.name)
 

@@ -41,23 +41,56 @@ def main():
 
     # this API call does not require authentication
     api_end_points = conn.get_api_endpoints()
-    print(api_end_points.parse_body())
+    #print(api_end_points.parse_body())
 
     # this API call is allowed for everyone (but result varies)
     api_version = conn.get_to_version()
-    print(api_version.parse_body())
+    #print(api_version.parse_body())
 
     # get the list of the containers
     containers = conn.list_containers()
-    print(containers)
 
-    container_id = containers[0].name
+    if len(containers) == 0:
+        print("No containers have been created")
+    else:
+        print("Number of containers: %s" % len(containers))
+        for container in containers:
+            print("Container: %s is: %s" % (container.name, container.state))
 
-    container_url = '%s:%s/1.0/containers/%s/state?action=%s&timeout=%s&force=%s&stateful=%s'%('https://192.168.2.4', port_id, container_id, 'start', 30, 'false', 'true',)
 
-    cert=('lxd.crt', 'lxd.key' )
-    r = requests.put(container_url, verify=False, cert=cert)
-    print("put of 1.0/containers/%s/state returned: "%(container_id) + r.text)
+    # start the first container
+    print("Starting container: %s" % containers[0].name)
+    container = conn.start_container(container=containers[0])
+    print("Container: %s is: %s" % (container.name, container.state))
+
+    # stop the container returned
+    print("Stopping container: %s" % containers[0].name)
+    container = conn.stop_container(container=container)
+    print("Container: %s is: %s" % (container.name, container.state))
+
+    # restart the container
+    print("Restarting container: %s" % container.name)
+    container = conn.restart_container(container=container)
+    print("Container: %s is: %s" % (container.name, container.state))
+
+    if len(containers) == 2:
+
+        # delete the second container
+        print("Deleting container: %s" % containers[1].name)
+        response = conn.destroy_container(container=containers[1])
+        print("Response from attempting to delete container %s " % (containers[1].name), " ", response)
+
+    #container_id = containers[0].name
+    #container_url = '%s:%s/1.0/containers/%s/state' % ('https://192.168.2.4', port_id, container_id)
+    #cert=('lxd.crt', 'lxd.key' )
+    #data = {"action":'start', "timeout":30, "statefule":True}
+    #r = requests.put(container_url, json=data, verify=False, cert=cert)
+    #print("put of 1.0/containers/%s/state returned: "%(container_id) + r.text)
+
+    #data['action'] = 'stop'
+    #r = requests.put(container_url, json=data, verify=False, cert=cert)
+    #print("put of 1.0/containers/%s/state returned: " % (container_id) + r.text)
+
 
     # start a container
     #container = conn.start_container(container=containers[0])
