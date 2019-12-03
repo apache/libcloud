@@ -15,9 +15,31 @@
 
 from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
+from pylxd import Client
 import requests
 
+
+def pylxdFunc():
+
+    # LXD host change accordingly
+    endpoint = 'https://192.168.2.4:8443'
+
+    cert = ('lxd.crt', 'lxd.key' )
+
+    client = Client(endpoint=endpoint, cert=cert, verify=False)
+
+    client.containers.all()
+    config = {'name': 'fourth-lxd-container', 'source': {'type': 'none',
+                                                         #"properties": {                                          # Properties
+                                                         #                   "os": "ubuntu",
+                                                         #                   "release": "18.04",
+                                                         #                   "architecture": "amd64"
+                                                        }}#}
+    container = client.containers.create(config, wait=True)
+
+
 def main():
+    #pylxdFunc()
 
     #   LXD API specification can be found at:
     # https://github.com/lxc/lxd/blob/master/doc/rest-api.md#10containersnamemetadata
@@ -79,6 +101,23 @@ def main():
         print("Deleting container: %s" % containers[1].name)
         response = conn.destroy_container(container=containers[1])
         print("Response from attempting to delete container %s " % (containers[1].name), " ", response)
+
+    # create a new container
+    name = 'third-lxd-container'
+    print("Creating container: %s" % name)
+    container = conn.deploy_container(name=name, image=None)
+    print("Response from attempting to create container: ", container)
+
+    # get the list of the containers
+    containers = conn.list_containers()
+
+    if len(containers) == 0:
+        print("No containers have been created")
+    else:
+        print("Number of containers: %s" % len(containers))
+        for container in containers:
+            print("Container: %s is: %s" % (container.name, container.state))
+
 
     #container_id = containers[0].name
     #container_url = '%s:%s/1.0/containers/%s/state' % ('https://192.168.2.4', port_id, container_id)

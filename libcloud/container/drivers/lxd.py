@@ -329,7 +329,29 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
 
-        return None
+        """
+        data = {
+                "name": name,  # 64 chars max, ASCII, no slash, no colon and no comma
+                "architecture": "x86_64",
+                "profiles": ["default"],                                            # List of profiles
+                "ephemeral": False,                                                  # Whether to destroy the container on shutdown
+                "config": {"limits.cpu": "2"},                                      # Config override.
+                "devices": {                                                        # optional list of devices the container should have
+                "kvm": {
+                    "path": "/dev/kvm",
+                    "type": "unix-char"
+                    },
+                },
+                #"instance_type": "c2.micro",                                        # An optional instance type to use as basis for limits
+                "source": {"type": "image",                                         # Can be: "image", "migration", "copy" or "none"
+                        "alias": "ubuntu/devel"},                                # Name of the alias
+        }
+        """
+        data = {'name': name, 'source': {'type': 'none'}} #, 'alias': 'ubuntu/trusty'}}
+        result = self.connection.request('/%s/containers' %(self.version),
+                                         method='POST', json=data)
+
+        return result
 
     def get_container(self, id):
 
