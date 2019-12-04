@@ -243,13 +243,16 @@ class LXDtlsConnection(KeyCertificateConnection):
 
 class LXDContainerDriver(ContainerDriver):
     """
-    Driver for LXD containers
+    Driver for LXD REST API of LXC containers
     https://lxd.readthedocs.io/en/stable-2.0/rest-api/
+    https://github.com/lxc/lxd/blob/master/doc/rest-api.md
     """
     type = Provider.LXD
     name = 'LXD'
     website = 'https://linuxcontainers.org/'
     connectionCls = LXDConnection
+    # LXD supports clustering but still the functionality
+    # is not implemented yet on our side
     supports_clusters = False
     version = '1.0'
 
@@ -326,7 +329,11 @@ class LXDContainerDriver(ContainerDriver):
                          parameters=None, start=True):
 
         """
-        Deploy an installed container image
+
+        Create a new container
+        Authentication: trusted
+        Operation: async
+        Return: background operation or standard error
 
         :param name: The name of the new container
         :type  name: ``str``
@@ -346,29 +353,24 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
 
-        """
-        data = {
-                "name": name,  # 64 chars max, ASCII, no slash, no colon and no comma
-                "architecture": "x86_64",
-                "profiles": ["default"],                                            # List of profiles
-                "ephemeral": False,                                                  # Whether to destroy the container on shutdown
-                "config": {"limits.cpu": "2"},                                      # Config override.
-                "devices": {                                                        # optional list of devices the container should have
-                "kvm": {
-                    "path": "/dev/kvm",
-                    "type": "unix-char"
-                    },
-                },
-                #"instance_type": "c2.micro",                                        # An optional instance type to use as basis for limits
-                "source": {"type": "image",                                         # Can be: "image", "migration", "copy" or "none"
-                        "alias": "ubuntu/devel"},                                # Name of the alias
-        }
-        """
-        data = {'name': name, 'source': {'type': 'none'}} #, 'alias': 'ubuntu/trusty'}}
-        result = self.connection.request('/%s/containers' %(self.version),
-                                         method='POST', json=data)
+        if isinstance(image, ContainerImage):
+            # if we are given a ContainerImage then use it
+            # to create the containers
+            data = {'name': name, 'source': {'type': 'image', 'alias':image.name}}
 
-        return result
+            if parameters is not None:
+                data.update(parameters)
+
+            response = self.connection.request('/%s/containers' % (self.version),
+                                               method='POST', json=data)
+
+            response_dict = response.parse_body()
+
+            # a background operation is expected to be returned status_code = 100 --> Operation created
+            assert_response(response_dict=response_dict, status_code=100)
+
+            # need sth else here like Container...perhaps self.get_container(id=name)
+            return response_dict
 
     def get_container(self, id):
 
@@ -486,6 +488,21 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict)
         return self._do_get_image(metadata=response_dict['metadata'])
 
+    def get_img_by_name(self, img_name):
+        """
+        Returns the ContainerImage that has the given name
+        :param img_name: the name of the image to retrieve
+        :return:
+        """
+
+        images = self.list_images()
+
+        for img in images:
+            if img.name == img_name:
+                return img
+
+        raise ValueError("Image: {} does not exist".format(img_name))
+
     def list_images(self):
         """
         List the installed container images
@@ -506,6 +523,72 @@ class LXDContainerDriver(ContainerDriver):
             fingerprint = image.split("/")[-1]
             images.append(self.get_image(fingerprint=fingerprint))
         return images
+
+    def list_storage_pools(self):
+        """
+        Returns a list of storage pools defined by the host
+        [ "/1.0/storage-pools/default", ]
+        """
+
+        response = self.connection.request("/%s/storage-pools" % (self.version))
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict)
+        return response_dict['metadata']
+
+    def create_storage_pool(self, definition):
+
+        """Create a storage_pool from config.
+
+        Implements POST /1.0/storage-pools
+
+        The `definition` parameter defines what the storage pool will be.  An
+        example config for the zfs driver is:
+
+                   {
+                       "config": {
+                           "size": "10GB"
+                       },
+                       "driver": "zfs",
+                       "name": "pool1"
+                   }
+
+        Note that **all** fields in the `definition` parameter are strings.
+
+        For further details on the storage pool types see:
+        https://lxd.readthedocs.io/en/latest/storage/
+
+        The function returns the a `StoragePool` instance, if it is
+        successfully created, otherwise an Exception is raised.
+
+        :param definition: the fields to pass to the LXD API endpoint
+        :type definition: dict
+        :returns: a storage pool if successful, raises NotFound if not found
+        :rtype: :class:`pylxd.models.storage_pool.StoragePool`
+        :raises: :class:`pylxd.exceptions.LXDAPIExtensionNotAvailable` if the
+                   'storage' api extension is missing.
+        :raises: :class:`pylxd.exceptions.LXDAPIException` if the storage pool
+                   couldn't be created.
+        """
+
+        response = self.connection.request("/%s/storage-pools" % (self.version),
+                                           method='POST', json=definition)
+
+        raise NotImplementedError("This function has not been finished yet")
+
+    def delete_storage_pool(self):
+        """Delete the storage pool.
+
+        Implements DELETE /1.0/storage-pools/<self.name>
+
+        Deleting a storage pool may fail if it is being used.  See the LXD
+        documentation for further details.
+
+        :raises: :class:`pylxd.exceptions.LXDAPIException` if the storage pool
+                   can't be deleted.
+        """
+
+        raise NotImplementedError("This function has not been yet")
 
     def _to_container(self, data):
         """

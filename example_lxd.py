@@ -119,13 +119,25 @@ def main():
         response = conn.destroy_container(container=containers[1])
         print("Response from attempting to delete container %s " % (containers[1].name), " ", response)
 
+    # get the list of the containers
+    containers = conn.list_containers()
+
+
     # create a new container
     name = 'third-lxd-container'
 
     if name not in [container.name for container in containers]:
 
         print("Creating container: %s" % name)
-        container = conn.deploy_container(name=name, image=None)
+
+        try:
+            image = conn.get_img_by_name(img_name='ubuntu-xenial')
+        except ValueError as e:
+            print(str(e))
+            image = None
+
+        parameters = {'public': False, "ephemeral": False,  "architecture": "x86_64", "config": {"limits.cpu": "2"},}
+        container = conn.deploy_container(name=name, image=image, parameters=parameters)
         print("Response from attempting to create container: ", container)
 
         # get the list of the containers
