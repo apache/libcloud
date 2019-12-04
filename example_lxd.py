@@ -24,22 +24,39 @@ def pylxdFunc():
     # LXD host change accordingly
     endpoint = 'https://192.168.2.4:8443'
 
-    cert = ('lxd.crt', 'lxd.key' )
+    cert = ('lxd.crt', 'lxd.key')
 
     client = Client(endpoint=endpoint, cert=cert, verify=False)
 
-    client.containers.all()
-    config = {'name': 'fourth-lxd-container', 'source': {'type': 'none',
+    containers = client.containers.all()
+
+    print("Number of containers: ", len(containers))
+
+    for container in containers:
+        print("Container name: ", container.name)
+
+    new_container = 'fourth-lxd-container'
+
+
+    if new_container not in [container.name for container in containers]:
+        config = {'name': new_container, 'source': {'type': 'none',
                                                          #"properties": {                                          # Properties
                                                          #                   "os": "ubuntu",
                                                          #                   "release": "18.04",
                                                          #                   "architecture": "amd64"
                                                         }}#}
-    container = client.containers.create(config, wait=True)
+
+        container = client.containers.create(config, wait=True)
+
+    # get all images
+    images = client.images.all()
+    print("Number of images: ",len(images))
+
+    for image in images:
+        print("Image name: ", image.filename)
 
 
 def main():
-    #pylxdFunc()
 
     #   LXD API specification can be found at:
     # https://github.com/lxc/lxd/blob/master/doc/rest-api.md#10containersnamemetadata
@@ -63,11 +80,11 @@ def main():
 
     # this API call does not require authentication
     api_end_points = conn.get_api_endpoints()
-    #print(api_end_points.parse_body())
+    print(api_end_points.parse_body())
 
     # this API call is allowed for everyone (but result varies)
     api_version = conn.get_to_version()
-    #print(api_version.parse_body())
+    print(api_version.parse_body())
 
     # get the list of the containers
     containers = conn.list_containers()
@@ -104,20 +121,32 @@ def main():
 
     # create a new container
     name = 'third-lxd-container'
-    print("Creating container: %s" % name)
-    container = conn.deploy_container(name=name, image=None)
-    print("Response from attempting to create container: ", container)
 
-    # get the list of the containers
-    containers = conn.list_containers()
+    if name not in [container.name for container in containers]:
 
-    if len(containers) == 0:
-        print("No containers have been created")
-    else:
-        print("Number of containers: %s" % len(containers))
-        for container in containers:
-            print("Container: %s is: %s" % (container.name, container.state))
+        print("Creating container: %s" % name)
+        container = conn.deploy_container(name=name, image=None)
+        print("Response from attempting to create container: ", container)
 
+        # get the list of the containers
+        containers = conn.list_containers()
+
+        if len(containers) == 0:
+            print("No containers have been created")
+        else:
+            print("Number of containers: %s" % len(containers))
+            for container in containers:
+                print("Container: %s is: %s" % (container.name, container.state))
+
+    # get the images this LXD server is publishing
+    images = conn.list_images()
+
+    print("Number of images: ", len(images))
+
+    for image in images:
+        print("Image: ", image.name)
+        print("\tPath ",image.path)
+        print("\tVersion ", image.version)
 
     #container_id = containers[0].name
     #container_url = '%s:%s/1.0/containers/%s/state' % ('https://192.168.2.4', port_id, container_id)
@@ -139,4 +168,5 @@ def main():
 
 
 if __name__ == '__main__':
+    #pylxdFunc()
     main()

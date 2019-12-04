@@ -40,6 +40,10 @@ from libcloud.container.types import ContainerState
 LXD_API_SUCCESS_STATUS = ['Success']
 LXD_API_STATE_ACTIONS = ['stop', 'start', 'restart', 'freeze', 'unfreeze']
 
+# the wording used by LXD to indicate that an error
+# occurred for a request
+LXD_ERROR_TYPE_RESP = 'error'
+
 
 # helpers
 def strip_http_prefix(host):
@@ -97,7 +101,28 @@ def check_certificates(key_file, cert_file, **kwargs):
                                 'LXD tls. This can be found in the server.')
 
 
-class LXDApiException(Exception):
+def assert_response(response_dict, status_code=200):
+
+    if response_dict['type'] == LXD_ERROR_TYPE_RESP:
+        # an error returned
+        raise LXDAPIException(response=response_dict)
+
+    # anything else apart from 200 should be treated as error
+    if response_dict['status_code'] != status_code:
+        # we have an unknown error
+        raise LXDAPIException(response=None)
+
+def get_img_extra_from_meta(metadata):
+    """
+    A ContainerImage type only allows for some basic image data
+    and encapsulates any further image info into the extra dictionary
+    This function is meant to construct this dictionaly for LXD
+    :param metadata: dictionary with the metadata of the image
+    """
+    return metadata
+
+
+class LXDAPIException(Exception):
     """
     Basic exception to be thrown when LXD API
     returns with some kind of error
@@ -108,28 +133,20 @@ class LXDApiException(Exception):
 
     def __str__(self):
 
-        response = " "
+        response = ""
 
-        if 'type' in self.lxd_response.keys():
-            response += 'type: {0} '.format(self.lxd_response['type'])
+        if self.lxd_response is not None:
+            if 'type' in self.lxd_response.keys():
+                response += 'type: {0} '.format(self.lxd_response['type'])
 
-        if 'status' in self.lxd_response.keys():
-            response += 'status: {0} '.format(self.lxd_response['status'])
+            if 'error_code' in self.lxd_response.keys():
+                response = 'error_code: {0} '.format(self.lxd_response['error_code'])
 
-        if 'status_code' in self.lxd_response.keys():
-            response = 'status_code: {0} '.format(self.lxd_response['status_code'])
-
-        if 'operation' in self.lxd_response.keys():
-            response = 'operation: {0} '.format(self.lxd_response['operation'])
-
-        if 'error_code' in self.lxd_response.keys():
-            response = 'error_code: {0} '.format(self.lxd_response['error_code'])
-
-        if 'error' in self.lxd_response.keys():
-            response = 'error: {0} '.format(self.lxd_response['error'])
+            if 'error' in self.lxd_response.keys():
+                response = 'error: {0} '.format(self.lxd_response['error'])
 
         if response == "":
-            response = "Empty LXDResponse"
+            response = "Unknown Error Occurred"
 
         return str(response)
 
@@ -365,12 +382,8 @@ class LXDContainerDriver(ContainerDriver):
         """
         result = self.connection.request("/%s/containers/%s" %
                                          (self.version, id))
-
         result = result.parse_body()
-
-        if result['status'] not in LXD_API_SUCCESS_STATUS:
-            raise LXDApiException(response=result)
-
+        assert_response(response_dict=result)
         return self._to_container(result['metadata'])
 
     def start_container(self, container):
@@ -428,7 +441,6 @@ class LXDContainerDriver(ContainerDriver):
 
         return result
 
-
     def list_containers(self, image=None, cluster=None):
         """
         List the deployed container images
@@ -446,8 +458,7 @@ class LXDContainerDriver(ContainerDriver):
         result = result.parse_body()
 
         # how to treat the errors????
-        if result['status'] not in LXD_API_SUCCESS_STATUS:
-            raise LXDApiException(response=result)
+        assert_response(response_dict=result)
 
         meta = result['metadata']
         containers = []
@@ -458,17 +469,42 @@ class LXDContainerDriver(ContainerDriver):
 
         return containers
 
+    def get_image(self, fingerprint):
+        """
+        Returns a container image from the given image fingerprint
+
+        :type  fingerprint: ``str``
+
+        :rtype: :class:`.ContainerImage`
+        """
+
+        response = self.connection.request('/%s/images/%s' % (self.version, fingerprint))
+
+        #  parse the LXDResponse into a dictionary
+        response_dict = response.parse_body()
+
+        assert_response(response_dict=response_dict)
+        return self._do_get_image(metadata=response_dict['metadata'])
+
     def list_images(self):
         """
         List the installed container images
 
         :rtype: ``list`` of :class:`.ContainerImage`
         """
-        result = self.connection.request('/%s/images/'%(self.version))
+        response = self.connection.request('/%s/images'%(self.version))
+
+        #  parse the LXDResponse into a dictionary
+        response_dict = response.parse_body()
+
+        assert_response(response_dict=response_dict)
+
+        metadata = response_dict['metadata']
         images = []
 
-        for image in result:
-            images.append(self._do_get_image(fingerprint=image.split("/")[-1]))
+        for image in metadata:
+            fingerprint = image.split("/")[-1]
+            images.append(self.get_image(fingerprint=fingerprint))
         return images
 
     def _to_container(self, data):
@@ -517,24 +553,24 @@ class LXDContainerDriver(ContainerDriver):
 
         result = self.connection.request('/%s/containers/%s/state' %
                                          (self.version, container.name), method='PUT', json=json)
-        #if result['type'] == 'error':
-        #    pass
 
         return self.get_container(id=container.name)
 
-    def _do_get_image(self, fingerprint):
+    def _do_get_image(self, metadata):
         """
-        Returns a container image from the given image url
+        Returns a container image from the given image
 
         :param image_url: URL of image
         :type  path: ``str``
 
         :rtype: :class:`.ContainerImage`
         """
-        result = self.connection.request('/%s/images/%s'%(self.version, fingerprint))
-        name = result["aliases"][0]["name"]
-        extra=dict()
-        return ContainerImage(id=name, name=name, version=None, driver=self.connection.driver, extra=None)
+        name = metadata.get('aliases')[0].get('name')
+        id = name
+        version = metadata.get('update_source').get('alias')
+
+        extra= get_img_extra_from_meta(metadata=metadata)
+        return ContainerImage(id=id, name=name, path=None, version=version,  driver=self.connection.driver, extra=extra)
 
     def _get_api_version(self):
         """
@@ -548,3 +584,5 @@ class LXDContainerDriver(ContainerDriver):
         Connection class constructor.
         """
         return {"key_file":self.key_file, "cert_file":self.cert_file}
+
+
