@@ -216,8 +216,8 @@ class LXDtlsConnection(KeyCertificateConnection):
     responseCls = LXDResponse
 
     def __init__(self, key, secret, secure=True,
-                 host='localhost',
-                 port=8443, ca_cert='', key_file=None, cert_file=None, **kwargs):
+                 host='localhost', port=8443, ca_cert='',
+                 key_file=None, cert_file=None, **kwargs):
 
         if 'certificate_validator' in kwargs.keys():
             certificate_validator = kwargs.pop('certificate_validator')
@@ -256,15 +256,15 @@ class LXDContainerDriver(ContainerDriver):
     supports_clusters = False
     version = '1.0'
 
-    def __init__(self, key='', secret='',
-                 secure=False, host='localhost',
-                 port=8443, key_file=None,
-                 cert_file=None, ca_cert=None):
+    def __init__(self, key='', secret='', secure=False,
+                 host='localhost', port=8443,
+                 key_file=None, cert_file=None, ca_cert=None, certificate_validator=check_certificates ):
 
         if key_file:
             self.connectionCls = LXDtlsConnection
             self.key_file = key_file
             self.cert_file = cert_file
+            self.certificate_validator = certificate_validator
             secure = True
 
         if host.startswith('https://'):
@@ -671,7 +671,6 @@ class LXDContainerDriver(ContainerDriver):
         return self.get_container(id=name)
         #return response_dict
 
-
     def _get_api_version(self):
         """
         Get the LXD API version
@@ -683,6 +682,11 @@ class LXDContainerDriver(ContainerDriver):
         Return extra connection keyword arguments which are passed to the
         Connection class constructor.
         """
-        return {"key_file":self.key_file, "cert_file":self.cert_file}
+
+        if hasattr(self, "key_file") and hasattr(self, "cert_file"):
+            return {"key_file":self.key_file,
+                    "cert_file":self.cert_file,
+                    "certificate_validator":self.certificate_validator}
+        return  super(LXDContainerDriver, self)._ex_connection_class_kwargs()
 
 

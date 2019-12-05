@@ -127,7 +127,7 @@ class MockHttp(LibcloudConnection):
             self.test._add_executed_mock_method(method_name=meth_name)
         return meth(method, url, body, headers)
 
-    def request(self, method, url, body=None, headers=None, raw=False, stream=False):
+    def request(self, method, url, body=None, headers=None, raw=False, stream=False, json=None):
         headers = self._normalize_headers(headers=headers)
         r_status, r_body, r_headers, r_reason = self._get_request(method, url, body, headers)
         if r_body is None:
