@@ -1,6 +1,34 @@
 Developer Information
 =====================
 
+Type Annotations
+----------------
+
+Python type annotations / hints for the base Libcloud compute API have been
+added in v2.7.0.
+
+The goal behind type annotations is to make developer lives easier by
+introducing optional static typing for Python programs.
+
+This allows you to catch bugs and issues which are related to variable types
+earlier and faster (aka when you run ``mypy`` locally either manually or
+integrated in your editor / IDE and also as part of you CI/CD build
+pipeline).
+
+An example of how to use type annotations correctly is shown below.
+
+.. literalinclude:: /examples/compute/example_compute.py
+
+If you are using driver methods which are not part of the Libcloud standard
+API, you need to use ``cast()`` method as shown below to cast the driver class
+to the correct type. If you don't do that, ``mypy`` will only be aware of the
+methods which are part of the Libcloud base compute API (aka
+``BaseNodeDriver`` class).
+
+This is needed because of how Libcloud utilizes meta programming for the
+``get_driver()`` and related methods (there is no other way without writing
+a mypy plugin to achieve that).
+
 .. _mailing-lists:
 
 Mailing Lists
