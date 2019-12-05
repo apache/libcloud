@@ -24,6 +24,11 @@ management software.
 Supported private SSH key types
 -------------------------------
 
+.. note::
+
+  paramiko v2.7.0 introduced support for OpenSSH 6.5 style private key files
+  so this section is only relevant for users using older versions of paramiko.
+
 `paramiko`_ Python library we use for deployment only supports RSA, DSS and
 ECDSA private keys in PEM format.
 
