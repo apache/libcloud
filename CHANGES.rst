@@ -57,6 +57,9 @@ Compute
    (GITHUB-1376)
    [Rob Zimmerman - @zimventures]
 
+- [EC2] Add support for new ``inf1.*`` instance types.
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 
