@@ -1012,7 +1012,7 @@ class NttCisFirewallAddress(object):
                  port_begin=None, port_end=None, address_list_id=None,
                  port_list_id=None):
         """
-        param any_ip: used to set ip address to "ANY"
+        :param any_ip: used to set ip address to "ANY"
         :param ip_address: Optional, an ip address of either IPv4 decimal
                            notation or an IPv6 address
         :type ``str``
@@ -1479,7 +1479,8 @@ class NttCisBackupClient(object):
                  schedule_policy, storage_policy, download_url,
                  alert=None, running_job=None):
         """
-        Initialize an instance of :class:`NttCisBackupClient`
+        Initialize an instance of this class.
+
         :param id: Unique ID for the client
         :type  id: ``str``
         :param type: The type of client that this client is
