@@ -107,7 +107,7 @@ def assert_response(response_dict, status_code=200):
         # an error returned
         raise LXDAPIException(response=response_dict)
 
-    # anything else apart from 200 should be treated as error
+    # anything else apart from the status_code given should be treated as error
     if response_dict['status_code'] != status_code:
         # we have an unknown error
         raise LXDAPIException(response=None)
@@ -323,7 +323,8 @@ class LXDContainerDriver(ContainerDriver):
         Return: standard return value or standard error
         """
         return self.connection.request('/%s/certificates?type=client&certificate=%s&\
-                                       name=%s&password=%s'%(self.version, certificate, name, password), method='POST')
+                                       name=%s&password=%s' % (self.version, certificate, 
+                                                                name, password), method='POST')
 
     def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True):
@@ -353,24 +354,16 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
 
+        # TODO: Perhaps we should save us the trouble and
+        # check if the container exists. If yes then simply
+        # return this container?
+
         if isinstance(image, ContainerImage):
-            # if we are given a ContainerImage then use it
-            # to create the containers
-            data = {'name': name, 'source': {'type': 'image', 'alias':image.name}}
-
-            if parameters is not None:
-                data.update(parameters)
-
-            response = self.connection.request('/%s/containers' % (self.version),
-                                               method='POST', json=data)
-
-            response_dict = response.parse_body()
-
-            # a background operation is expected to be returned status_code = 100 --> Operation created
-            assert_response(response_dict=response_dict, status_code=100)
-
-            # need sth else here like Container...perhaps self.get_container(id=name)
-            return response_dict
+            return self._deploy_container_from_image(name=name, image=image, parameters=parameters)
+        elif image is not None:
+            # assume that the image is a fingerprint
+            image = self.get_image(fingerprint=image)
+            return self._deploy_container_from_image(name=name, image=image, parameters=parameters)
 
     def get_container(self, id):
 
@@ -652,8 +645,32 @@ class LXDContainerDriver(ContainerDriver):
         id = name
         version = metadata.get('update_source').get('alias')
 
-        extra= get_img_extra_from_meta(metadata=metadata)
-        return ContainerImage(id=id, name=name, path=None, version=version,  driver=self.connection.driver, extra=extra)
+        extra = get_img_extra_from_meta(metadata=metadata)
+        return ContainerImage(id=id, name=name, path=None, version=version, 
+                              driver=self.connection.driver, extra=extra)
+
+    def _deploy_container_from_image(self, name, image, parameters):
+        """Deploy a new container from the given image"""
+
+        # if we are given a ContainerImage then use it
+        # to create the containers
+        data = {'name': name, 'source': {'type': 'image', 'alias':image.name}}
+
+        if parameters is not None:
+            data.update(parameters)
+
+        response = self.connection.request('/%s/containers' % (self.version),
+                                               method='POST', json=data)
+
+        response_dict = response.parse_body()
+
+        # a background operation is expected to be returned status_code = 100 --> Operation created
+        assert_response(response_dict=response_dict, status_code=100)
+
+        # need sth else here like Container...perhaps self.get_container(id=name)
+        return self.get_container(id=name)
+        #return response_dict
+
 
     def _get_api_version(self):
         """
