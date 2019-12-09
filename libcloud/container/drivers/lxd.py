@@ -330,7 +330,6 @@ class LXDContainerDriver(ContainerDriver):
                          parameters=None, start=True):
 
         """
-
         Create a new container
         Authentication: trusted
         Operation: async
