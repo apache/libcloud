@@ -14,28 +14,28 @@ Libcloud 2.7.0
 
   Before:
 
-.. sourcecode:: python
+  .. sourcecode:: python
 
-    from libcloud.storage.types import Provider
-    from libcloud.storage.providers import get_driver
+      from libcloud.storage.types import Provider
+      from libcloud.storage.providers import get_driver
 
-    S3_EU_CENTRAL = get_driver(Provider.S3_EU_CENTRAL)
-    S3_EU_WEST_1 = get_driver(Provider.S3_EU_WEST)
+      S3_EU_CENTRAL = get_driver(Provider.S3_EU_CENTRAL)
+      S3_EU_WEST_1 = get_driver(Provider.S3_EU_WEST)
 
-    driver_eu_central = S3_EU_CENTRAL('api key', 'api secret')
-    driver_eu_west_1 = S3_EU_WEST_1('api key', 'api secret')
+      driver_eu_central = S3_EU_CENTRAL('api key', 'api secret')
+      driver_eu_west_1 = S3_EU_WEST_1('api key', 'api secret')
 
   After:
 
-.. sourcecode:: python
+  .. sourcecode:: python
 
-    from libcloud.storage.types import Provider
-    from libcloud.storage.providers import get_driver
+      from libcloud.storage.types import Provider
+      from libcloud.storage.providers import get_driver
 
-    S3 = get_driver(Provider.S3)
+      S3 = get_driver(Provider.S3)
 
-    driver_eu_central = S3('api key', 'api secret', region='eu-central-1')
-    driver_eu_west_1 = S3('api key', 'api secret', region='eu-west-1')
+      driver_eu_central = S3('api key', 'api secret', region='eu-central-1')
+      driver_eu_west_1 = S3('api key', 'api secret', region='eu-west-1')
 
   For now, old approach will still work, but it will be deprecated and fully
   removed in a future release. Deprecation and removal will be announced well in
