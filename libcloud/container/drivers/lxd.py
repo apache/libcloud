@@ -358,11 +358,17 @@ class LXDContainerDriver(ContainerDriver):
         # return this container?
 
         if isinstance(image, ContainerImage):
-            return self._deploy_container_from_image(name=name, image=image, parameters=parameters)
+            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters)
         elif image is not None:
             # assume that the image is a fingerprint
             image = self.get_image(fingerprint=image)
-            return self._deploy_container_from_image(name=name, image=image, parameters=parameters)
+            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters)
+        else:
+            raise ValueError(" image parameter must either be a footprint or a ContainerImage")
+
+        if start:
+            container.start()
+        return container
 
     def get_container(self, id):
 
@@ -616,8 +622,8 @@ class LXDContainerDriver(ContainerDriver):
         if action not in LXD_API_STATE_ACTIONS:
             raise ValueError("Invalid action specified")
 
-        if action == 'start' or action == 'restart':
-            force = False
+        #if action == 'start' or action == 'restart':
+        #    force = False
 
         json = {"action":action, "timeout":timeout, "force":force}
 
@@ -626,8 +632,13 @@ class LXDContainerDriver(ContainerDriver):
         # in the response when stateful is True so remove it for now
                 #"stateful":stateful, "force":force}
 
-        result = self.connection.request('/%s/containers/%s/state' %
+        response = self.connection.request('/%s/containers/%s/state' %
                                          (self.version, container.name), method='PUT', json=json)
+
+        response_dict = response.parse_body()
+
+        # a background operation is expected to be returned status_code = 100 --> Operation created
+        assert_response(response_dict=response_dict, status_code=100)
 
         return self.get_container(id=container.name)
 
