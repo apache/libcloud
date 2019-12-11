@@ -1,0 +1,6 @@
+{
+    "type": "sync",
+    "status": "Success",
+    "status_code": 200,
+    "metadata": ["/1.0/containers/first_lxd_container", "/1.0/containers/second_lxd_container" ]
+}

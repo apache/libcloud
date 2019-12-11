@@ -1,0 +1,10 @@
+{
+  "type": "sync",
+  "status": "Success",
+  "status_code": 200,
+  "metadata": {
+    "name": "second_lxd_container",
+    "status": "Stopped",
+    "architecture": "x86_64"
+  }
+}
