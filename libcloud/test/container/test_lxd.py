@@ -58,6 +58,20 @@ class LXDContainerDriverTestCase(unittest.TestCase):
             self.assertEqual(containers[0].name, 'first_lxd_container')
             self.assertEqual(containers[1].name, 'second_lxd_container')
 
+    def test_get_container(self):
+        for driver in self.drivers:
+            container = driver.get_container(id='second_lxd_container')
+            self.assertIsInstance(container, Container)
+            self.assertEqual(container.name, 'second_lxd_container')
+            self.assertEqual(container.id, 'second_lxd_container')
+            self.assertEqual(container.state, 'stopped')
+
+    def test_start_container(self):
+        for driver in self.drivers:
+            container = driver.get_container(id='first_lxd_container')
+            container.start()
+            self.assertEqual(container.state, 'running')
+
 
 class LXDMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('lxd')
@@ -88,14 +102,6 @@ class LXDMockHttp(MockHttp):
                 {'Content-Type': 'application/json', 'transfer-encoding': 'chunked'},
                 httplib.responses[httplib.OK])
 
-    """
-    def _vmac_124_images_create(
-        self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('mac_124/create_image.txt'),
-                {'Content-Type': 'application/json', 'transfer-encoding': 'chunked'},
-                httplib.responses[httplib.OK])
-    """
-
     def _linux_124_containers(
         self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/containers.json'), {}, httplib.responses[httplib.OK])
@@ -108,11 +114,9 @@ class LXDMockHttp(MockHttp):
         self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/second_lxd_container.json'), {}, httplib.responses[httplib.OK])
 
-    """
-    def _vmac_124_containers_json(
-        self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('mac_124/containers.json'), {}, httplib.responses[httplib.OK])
-    """
+    def _linux_124_containers_first_lxd_container_state(self, method, url, body, headers):
+        json = self.fixtures.load('linux_124/first_lxd_container.json')
+        return (httplib.OK, json, {}, httplib.responses[httplib.OK])
 
     def _vlinux_124_containers_create(
         self, method, url, body, headers):
@@ -185,13 +189,6 @@ class LXDMockHttp(MockHttp):
         self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/logs.txt'), {'content-type': 'text/plain'},
                 httplib.responses[httplib.OK])
-
-    """
-    def _vmac_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
-        self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_124/logs.txt'), {'content-type': 'text/plain'},
-                httplib.responses[httplib.OK])
-    """
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
