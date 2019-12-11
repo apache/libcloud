@@ -588,10 +588,6 @@ class LXDContainerDriver(ContainerDriver):
         the data received from the LXD API call parsed in a dictionary
         """
 
-        #print(data)
-        arch = data['architecture']
-        config = data['config']
-        created_at = data['created_at']
         name = data['name']
         state = data['status']
 
@@ -623,8 +619,12 @@ class LXDContainerDriver(ContainerDriver):
         if action == 'start' or action == 'restart':
             force = False
 
-        json = {"action":action, "timeout":timeout,
-                "stateful":stateful, "force":force}
+        json = {"action":action, "timeout":timeout, "force":force}
+
+        # checkout this for stateful: https://discuss.linuxcontainers.org/t/error-in-live-migration/1928
+        # looks like we are getting "err":"Unable to perform container live migration. CRIU isn't installed"
+        # in the response when stateful is True so remove it for now
+                #"stateful":stateful, "force":force}
 
         result = self.connection.request('/%s/containers/%s/state' %
                                          (self.version, container.name), method='PUT', json=json)
@@ -668,7 +668,6 @@ class LXDContainerDriver(ContainerDriver):
 
         # need sth else here like Container...perhaps self.get_container(id=name)
         return self.get_container(id=name)
-        #return response_dict
 
     def _get_api_version(self):
         """
