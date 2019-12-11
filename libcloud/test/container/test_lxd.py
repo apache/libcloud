@@ -6,6 +6,7 @@ from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
 
 from libcloud.container.base import ContainerImage
+from libcloud.container.base import Container
 
 from libcloud.container.drivers.lxd import LXDContainerDriver
 
@@ -34,34 +35,11 @@ class LXDContainerDriverTestCase(unittest.TestCase):
                 LXDMockHttp
             LXDMockHttp.type = None
             LXDMockHttp.use_param = 'a'
-            driver = LXDContainerDriver(key=CONTAINER_PARAMS_LXD[0],
-                                        secret=CONTAINER_PARAMS_LXD[1],
-                                        secure=CONTAINER_PARAMS_LXD[2],
-                                        host=CONTAINER_PARAMS_LXD[3],
-                                        port=CONTAINER_PARAMS_LXD[4],
-                                        key_file=None, #CONTAINER_PARAMS_LXD[5],
-                                        cert_file=None, #CONTAINER_PARAMS_LXD[6],
-                                        ca_cert=CONTAINER_PARAMS_LXD[7],
-                                        certificate_validator=LXDContainerDriverTestCase.dummy_certificate_validator)
+            driver = LXDContainerDriver(*CONTAINER_PARAMS_LXD)
             driver.connectionCls.conn_class = \
                 LXDMockHttp
             driver.version = version
             self.drivers.append(driver)
-
-    """
-    Test Scenario: Application attempts to generate an action that is not in LXD_API_STATE_ACTIONS
-    Expected Output: InvalidArgument exception should be thrown
-    """
-    """
-    def test_invalid_action_given(self):
-
-        conn = LXDContainerDriverTestCase.get_lxd_connection()
-
-        with ValueError as e:
-            conn._do_container_action(container=None, action="INVALID",
-                                  timeout=None, stateful=None, force=None)
-            self.assertEqual(str(e), "Invalid action specified")
-    """
 
     def test_list_images(self):
         for driver in self.drivers:
@@ -70,6 +48,15 @@ class LXDContainerDriverTestCase(unittest.TestCase):
             self.assertIsInstance(images[0], ContainerImage)
             self.assertEqual(images[0].id, 'trusty')
             self.assertEqual(images[0].name, 'trusty')
+
+    def test_list_containers(self):
+        for driver in self.drivers:
+            containers = driver.list_containers()
+            self.assertEqual(len(containers), 2)
+            self.assertIsInstance(containers[0], Container)
+            self.assertIsInstance(containers[1], Container)
+            self.assertEqual(containers[0].name, 'first_lxd_container')
+            self.assertEqual(containers[1].name, 'second_lxd_container')
 
 
 class LXDMockHttp(MockHttp):
@@ -88,23 +75,12 @@ class LXDMockHttp(MockHttp):
         self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/search.json'), {}, httplib.responses[httplib.OK])
 
-    """
-    def _vmac_124_images_search(
-        self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('mac_124/search.json'), {}, httplib.responses[httplib.OK])
-    """
     def _linux_124_images(
         self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/images.json'), {}, httplib.responses[httplib.OK])
 
     def _linux_124_images_54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473(self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/image.json'), {}, httplib.responses[httplib.OK])
-
-    """
-    def _vmac_124_images_json(
-        self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_124/images.json'), {}, httplib.responses[httplib.OK])
-    """
 
     def _vlinux_124_images_create(
         self, method, url, body, headers):
@@ -120,9 +96,17 @@ class LXDMockHttp(MockHttp):
                 httplib.responses[httplib.OK])
     """
 
-    def _vlinux_124_containers_json(
+    def _linux_124_containers(
         self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/containers.json'), {}, httplib.responses[httplib.OK])
+
+    def _linux_124_containers_first_lxd_container(
+        self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('linux_124/first_lxd_container.json'), {}, httplib.responses[httplib.OK])
+
+    def _linux_124_containers_second_lxd_container(
+        self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('linux_124/second_lxd_container.json'), {}, httplib.responses[httplib.OK])
 
     """
     def _vmac_124_containers_json(
