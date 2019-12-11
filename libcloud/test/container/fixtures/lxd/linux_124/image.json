@@ -1,5 +1,6 @@
 {
-    "type": "Success",
+    "type": "sync",
+    "status": "Success",
     "status_code": 200,
     "metadata": {
       "aliases": [
