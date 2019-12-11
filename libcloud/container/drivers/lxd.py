@@ -42,7 +42,7 @@ LXD_API_STATE_ACTIONS = ['stop', 'start', 'restart', 'freeze', 'unfreeze']
 
 # the wording used by LXD to indicate that an error
 # occurred for a request
-LXD_ERROR_TYPE_RESP = 'error'
+LXD_ERROR_STATUS_RESP = 'error'
 
 
 # helpers
@@ -103,7 +103,7 @@ def check_certificates(key_file, cert_file, **kwargs):
 
 def assert_response(response_dict, status_code=200):
 
-    if response_dict['type'] == LXD_ERROR_TYPE_RESP:
+    if response_dict['status'] == LXD_ERROR_STATUS_RESP:
         # an error returned
         raise LXDAPIException(response=response_dict)
 
