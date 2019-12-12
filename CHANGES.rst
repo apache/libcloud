@@ -1,6 +1,17 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+-------
+
+- [DigitalOcean] Fix ``attach_volume`` and ``detach_volume`` methods.
+  Previously those two methods incorrectly passed volume id instead of
+  volume name to the API. (GITHUB-1380)
+  [@mpempekos]
+
 Changes in Apache Libcloud v2.7.0
 ---------------------------------
 
