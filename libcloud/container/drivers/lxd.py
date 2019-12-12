@@ -620,12 +620,12 @@ class LXDContainerDriver(ContainerDriver):
                    couldn't be created.
         """
 
-        response = self.connection.request("/%s/storage-pools" % (self.version),
+        response = self.connection.request("/%s/storage-pools" % self.version,
                                            method='POST', json=definition)
 
         raise NotImplementedError("This function has not been finished yet")
 
-    def delete_storage_pool(self):
+    def delete_storage_pool(self, id):
         """Delete the storage pool.
 
         Implements DELETE /1.0/storage-pools/<self.name>
@@ -633,11 +633,15 @@ class LXDContainerDriver(ContainerDriver):
         Deleting a storage pool may fail if it is being used.  See the LXD
         documentation for further details.
 
-        :raises: :class:`pylxd.exceptions.LXDAPIException` if the storage pool
-                   can't be deleted.
+        :raises: :class:`LXDAPIException` if the storage pool can't be deleted.
         """
 
-        raise NotImplementedError("This function has not been yet")
+        # Return: standard return value or standard error
+        response = self.connection.request("/%s/storage-pools/%s" %(self.version, id),
+                                           method='DELETE')
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
 
     def _to_container(self, data):
         """

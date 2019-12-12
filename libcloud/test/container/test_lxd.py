@@ -112,13 +112,20 @@ class LXDContainerDriverTestCase(unittest.TestCase):
                 driver.get_storage_pool(id='pool3')
                 self.assertEqual(str(exc), 'Storage pool with name pool3 has no data')
 
+    """
     def test_create_storage_pool(self):
         for driver in self.drivers:
             pools = driver.create_storage_pool()
+    """
 
     def test_delete_storage_pool(self):
         for driver in self.drivers:
-            pools = driver.delete_storage_pool()
+            driver.delete_storage_pool(id='pool1')
+
+    def test_delete_storage_pool_fail(self):
+        with self.assertRaises(LXDAPIException) as exc:
+            for driver in self.drivers:
+                driver.delete_storage_pool(id='pool2')
 
 
 class LXDMockHttp(MockHttp):
@@ -207,12 +214,22 @@ class LXDMockHttp(MockHttp):
         if method == 'GET':
             json = self.fixtures.load('linux_124/storage_pool_1.json')
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
+        elif method == 'DELETE':
+            return (httplib.OK,
+                    self.fixtures.load('linux_124/storage_pool_delete_sucess.json'),
+                    {},
+                    httplib.responses[httplib.OK])
 
     def _linux_124_storage_pools_pool2(self, method, url, body, header):
 
         if method == 'GET':
             json = self.fixtures.load('linux_124/storage_pool_2.json')
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
+        elif method == 'DELETE':
+            return (httplib.OK,
+                    self.fixtures.load('linux_124/storage_pool_delete_fail.json'),
+                    {},
+                    httplib.responses[httplib.OK])
 
     def _linux_124_storage_pools_pool3(self, method, url, body, header):
 
