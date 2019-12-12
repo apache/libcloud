@@ -16,8 +16,6 @@
 from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
 from pylxd import Client
-import requests
-
 
 def pylxdFunc():
 
@@ -56,9 +54,9 @@ def pylxdFunc():
         print("Image name: ", image.filename)
 
 
-def main():
+def work_with_containers():
 
-    #   LXD API specification can be found at:
+    # LXD API specification can be found at:
     # https://github.com/lxc/lxd/blob/master/doc/rest-api.md#10containersnamemetadata
 
     # LXD host change accordingly
@@ -122,7 +120,6 @@ def main():
     # get the list of the containers
     containers = conn.list_containers()
 
-
     # create a new container
     name = 'third-lxd-container'
 
@@ -150,6 +147,24 @@ def main():
             for container in containers:
                 print("Container: %s is: %s" % (container.name, container.state))
 
+def work_with_images():
+    # LXD host change accordingly
+    host_lxd = 'https://192.168.2.4'
+
+    # port that LXD server is listening at
+    # change this according to your configuration
+    port_id = 8443
+
+    # get the libcloud LXD driver
+    lxd_driver = get_driver(Provider.LXD)
+
+    # acquire the connection.
+    # certificates should  have been  added to the LXD server
+    # here we assume they are on the same directory change
+    # accordingly
+    conn = lxd_driver(key='', secret='', secure=False,
+                      host=host_lxd, port=port_id, key_file='lxd.key', cert_file='lxd.crt')
+
     # get the images this LXD server is publishing
     images = conn.list_images()
 
@@ -157,28 +172,15 @@ def main():
 
     for image in images:
         print("Image: ", image.name)
-        print("\tPath ",image.path)
+        print("\tPath ", image.path)
         print("\tVersion ", image.version)
 
-    #container_id = containers[0].name
-    #container_url = '%s:%s/1.0/containers/%s/state' % ('https://192.168.2.4', port_id, container_id)
-    #cert=('lxd.crt', 'lxd.key' )
-    #data = {"action":'start', "timeout":30, "statefule":True}
-    #r = requests.put(container_url, json=data, verify=False, cert=cert)
-    #print("put of 1.0/containers/%s/state returned: "%(container_id) + r.text)
-
-    #data['action'] = 'stop'
-    #r = requests.put(container_url, json=data, verify=False, cert=cert)
-    #print("put of 1.0/containers/%s/state returned: " % (container_id) + r.text)
-
-
-    # start a container
-    #container = conn.start_container(container=containers[0])
-    #print(container)
-
-    # stop the container
+def work_with_storage_pools():
+    pass
 
 
 if __name__ == '__main__':
-    #pylxdFunc()
-    main()
+
+    work_with_containers()
+    work_with_images()
+    work_with_storage_pools()
