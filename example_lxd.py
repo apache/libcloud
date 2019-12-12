@@ -55,6 +55,7 @@ def pylxdFunc():
 
 
 def work_with_containers():
+    print("Working with containers...")
 
     # LXD API specification can be found at:
     # https://github.com/lxc/lxd/blob/master/doc/rest-api.md#10containersnamemetadata
@@ -88,34 +89,33 @@ def work_with_containers():
     containers = conn.list_containers()
 
     if len(containers) == 0:
-        print("No containers have been created")
+        print("\tNo containers have been created")
     else:
-        print("Number of containers: %s" % len(containers))
+        print("\tNumber of containers: %s" % len(containers))
         for container in containers:
-            print("Container: %s is: %s" % (container.name, container.state))
-
+            print("\t\tContainer: %s is: %s" % (container.name, container.state))
 
     # start the first container
-    print("Starting container: %s" % containers[0].name)
+    print("\tStarting container: %s" % containers[0].name)
     container = conn.start_container(container=containers[0])
-    print("Container: %s is: %s" % (container.name, container.state))
+    print("\tContainer: %s is: %s" % (container.name, container.state))
 
     # stop the container returned
-    print("Stopping container: %s" % containers[0].name)
+    print("\tStopping container: %s" % containers[0].name)
     container = conn.stop_container(container=container)
-    print("Container: %s is: %s" % (container.name, container.state))
+    print("\tContainer: %s is: %s" % (container.name, container.state))
 
     # restart the container
-    print("Restarting container: %s" % container.name)
+    print("\tRestarting container: %s" % container.name)
     container = conn.restart_container(container=container)
-    print("Container: %s is: %s" % (container.name, container.state))
+    print("\tContainer: %s is: %s" % (container.name, container.state))
 
     if len(containers) == 2:
 
         # delete the second container
-        print("Deleting container: %s" % containers[1].name)
+        print("\tDeleting container: %s" % containers[1].name)
         response = conn.destroy_container(container=containers[1])
-        print("Response from attempting to delete container %s " % (containers[1].name), " ", response)
+        print("\tResponse from attempting to delete container %s " % (containers[1].name), " ", response)
 
     # get the list of the containers
     containers = conn.list_containers()
@@ -125,7 +125,7 @@ def work_with_containers():
 
     if name not in [container.name for container in containers]:
 
-        print("Creating container: %s" % name)
+        print("\tCreating container: %s" % name)
 
         try:
             image = conn.get_img_by_name(img_name='ubuntu-xenial')
@@ -135,19 +135,22 @@ def work_with_containers():
 
         parameters = {'public': False, "ephemeral": False,  "architecture": "x86_64", "config": {"limits.cpu": "2"},}
         container = conn.deploy_container(name=name, image=image, parameters=parameters)
-        print("Response from attempting to create container: ", container)
+        print("\tResponse from attempting to create container: ", container)
 
         # get the list of the containers
         containers = conn.list_containers()
 
         if len(containers) == 0:
-            print("No containers have been created")
+            print("\tNo containers have been created")
         else:
-            print("Number of containers: %s" % len(containers))
+            print("\tNumber of containers: %s" % len(containers))
             for container in containers:
-                print("Container: %s is: %s" % (container.name, container.state))
+                print("\t\tContainer: %s is: %s" % (container.name, container.state))
 
 def work_with_images():
+
+    print("Working with images...")
+
     # LXD host change accordingly
     host_lxd = 'https://192.168.2.4'
 
@@ -175,12 +178,43 @@ def work_with_images():
         print("\tPath ", image.path)
         print("\tVersion ", image.version)
 
+
+    conn.create_image()
+
 def work_with_storage_pools():
-    pass
+    print("Working with storage pools...")
+
+    # LXD host change accordingly
+    host_lxd = 'https://192.168.2.4'
+
+    # port that LXD server is listening at
+    # change this according to your configuration
+    port_id = 8443
+
+    # get the libcloud LXD driver
+    lxd_driver = get_driver(Provider.LXD)
+
+    # acquire the connection.
+    # certificates should  have been  added to the LXD server
+    # here we assume they are on the same directory change
+    # accordingly
+    conn = lxd_driver(key='', secret='', secure=False,
+                      host=host_lxd, port=port_id, key_file='lxd.key', cert_file='lxd.crt')
+
+    # get the images this LXD server is publishing
+    pools = conn.list_storage_pools()
+
+    print("Number of storage pools: ", len(pools))
+
+    for pool in pools:
+        print("\tPool: ",pool.name)
+        print("\t\tDriver: ", pool.driver)
+        print("\t\tUsed by: ", pool.used_by)
+        print("\t\tConfig: ", pool.config)
 
 
 if __name__ == '__main__':
 
-    work_with_containers()
+    #work_with_containers()
     work_with_images()
     work_with_storage_pools()
