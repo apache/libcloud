@@ -76,7 +76,7 @@
         "name": "node-name",
         "type": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/diskTypes/pd-standard",
         "selfLink": "https://www.googleapis.com/compute/v1/projects/project_name/zones/us-central1-a/disks/node-name",
-        "sizeGb": "10",
+        "sizeGb": "25",
         "sourceImage": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-7-wheezy-v20131120",
         "sourceImageId": "17312518942796567788",
         "status": "READY",
