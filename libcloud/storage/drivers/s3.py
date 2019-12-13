@@ -1050,7 +1050,9 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
 
         self.name = 'Amazon S3 (%s)' % (region)
 
-        host = REGION_TO_HOST_MAP[region]
+        if host is None:
+            host = REGION_TO_HOST_MAP[region]
+
         super(S3StorageDriver, self).__init__(key=key, secret=secret,
                                               secure=secure, host=host,
                                               port=port,
