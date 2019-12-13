@@ -12,6 +12,18 @@ Compute
   volume name to the API. (GITHUB-1380)
   [@mpempekos]
 
+Storage
+-------
+
+- [AWS S3] Make sure ``host`` driver constructor argument has priority
+  over ``region`` argument.
+
+  This means if you specify ``host`` and ``region`` argument, host won't be
+  inferred from the region, but ``host`` argument will be used for the actual
+  connection host value.
+  (GITHUB-1384, GITHUB-1383)
+  [@gluap]
+
 Changes in Apache Libcloud v2.7.0
 ---------------------------------
 
