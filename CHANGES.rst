@@ -12,6 +12,10 @@ Compute
   volume name to the API. (GITHUB-1380)
   [@mpempekos]
 
+- [GCE] Add ``ex_disk_size`` argument to the ``create_node`` method.
+  (GITHUB-1386)
+  [Peter Yu - @yukw777]
+
 Storage
 -------
 
