@@ -8281,6 +8281,10 @@ class GCENodeDriver(NodeDriver):
         :param  ex_accelerator_count: The number of accelerators to associate
                                       with the node.
         :type   ex_accelerator_count: ``int`` or ``None``
+        
+        :keyword  ex_disk_size: Specify size of the boot disk.
+                                Integer in gigabytes.
+        :type     ex_disk_size: ``int`` or ``None``
 
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
