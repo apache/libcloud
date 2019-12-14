@@ -33,6 +33,8 @@ from libcloud.common.types import InvalidCredsError
 from libcloud.container.base import (Container, ContainerDriver,
                                      ContainerImage)
 
+from libcloud.compute.base import StorageVolume
+
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
@@ -181,7 +183,6 @@ class StoragePool(object):
         # Boolean that indicates whether LXD manages the pool or not.
         self.managed = managed
 
-
 class LXDResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                             httplib.NO_CONTENT]
@@ -288,6 +289,17 @@ class LXDContainerDriver(ContainerDriver):
                  cert_file=None, ca_cert=None, certificate_validator=check_certificates ):
 
         if key_file:
+
+            if not cert_file:
+                # LXD tls authentication-
+                # We pass two files, a key_file with the
+                # private key and cert_file with the certificate
+                # libcloud will handle them through LibcloudHTTPSConnection
+
+                raise LXDAPIException.with_other_msg(other_msg=
+                    'Needs both private key file and '
+                    'certificate file for tls authentication')
+
             self.connectionCls = LXDtlsConnection
             self.key_file = key_file
             self.cert_file = cert_file
@@ -301,16 +313,6 @@ class LXDContainerDriver(ContainerDriver):
 
         super(LXDContainerDriver, self).__init__(key=key, secret=secret, secure=secure, host=host,
                                                  port=port, key_file=key_file, cert_file=cert_file)
-
-        if key_file or cert_file:
-            # LXD tls authentication-
-            # We pass two files, a key_file with the
-            # private key and cert_file with the certificate
-            # libcloud will handle them through LibcloudHTTPSConnection
-            if not (key_file and cert_file):
-                raise Exception(
-                    'Needs both private key file and '
-                    'certificate file for tls authentication')
 
         if ca_cert:
             self.connection.connection.ca_cert = ca_cert
@@ -463,7 +465,7 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response, status_code=100)
         return response
 
-    def list_containers(self, image=None, cluster=None):
+    def list_containers(self, image=None, cluster=None, detailed=True):
         """
         List the deployed container images
 
@@ -480,13 +482,18 @@ class LXDContainerDriver(ContainerDriver):
         result = result.parse_body()
 
         # how to treat the errors????
-        assert_response(response_dict=result)
+        assert_response(response_dict=result, status_code=200)
 
         meta = result['metadata']
         containers = []
         for item in meta:
             container_id = item.split('/')[-1]
-            container = self.get_container(id=container_id)
+            if not detailed:
+
+                container = Container(driver=self, name=container_id, id=container_id,
+                                      image=image, ip_addresses=[], extra={})
+            else:
+                container = self.get_container(id=container_id)
             containers.append(container)
 
         return containers
@@ -544,7 +551,7 @@ class LXDContainerDriver(ContainerDriver):
             images.append(self.get_image(fingerprint=fingerprint))
         return images
 
-    def list_storage_pools(self):
+    def exc_list_storage_pools(self, detailed=True):
         """
         Returns a list of storage pools defined currently defined on the host
         e.g. [ "/1.0/storage-pools/default", ]
@@ -563,11 +570,17 @@ class LXDContainerDriver(ContainerDriver):
         pools = []
         for pool_item in response_dict['metadata']:
             pool_name = pool_item.split('/')[-1]
-            pools.append(self.get_storage_pool(id=pool_name))
+
+            if not detailed:
+                pools.append(self._to_storage_pool({"name": pool_name,
+                                                    "driver":None, "used_by":None,
+                                                    "config":None, "managed": None}))
+            else:
+                pools.append(self.get_storage_pool(id=pool_name))
 
         return pools
 
-    def get_storage_pool(self, id):
+    def exc_get_storage_pool(self, id):
         """
         Returns  information about a storage pool
         :param id: the name of the storage pool
@@ -585,7 +598,7 @@ class LXDContainerDriver(ContainerDriver):
 
         return self._to_storage_pool(data=response_dict['metadata'])
 
-    def create_storage_pool(self, definition):
+    def exc_create_storage_pool(self, definition):
 
         """Create a storage_pool from config.
 
@@ -643,6 +656,56 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
+    def exc_list_storage_pool_volumes(self, storage_pool_id, detailed=True):
+        """
+        Description: list of storage volumes associated with the given storage pool
+
+        :param storage_pool_id: the id of the storage pool to query
+        :param detailed: boolean flag. If True extra API calls are made to fill in the missing details
+                                       of the storage volumes
+
+        Authentication: trusted
+        Operation: sync
+        Return: list of storage volumes that currently exist on a given storage pool
+
+        :rtype: A list of :class: StorageVolume
+        """
+
+        response = self.connection.request("/%s/storage-pools/%s/volumes" % (self.version, storage_pool_id))
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+
+        volumes=[]
+
+        for volume in response_dict['metadata']:
+            volume = volume.split("/")
+            name = volume[-1]
+            type = volume[-2]
+
+            if not detailed:
+                volumes.append(self._to_storage_volume(**{'config': {'size': None },
+                                                           "name": name, "type": type, "used_by": None}))
+            else:
+                volumes.append(self.get_storage_pool_volume(storage_pool_id=storage_pool_id, type=type, name=name))
+
+        return volumes
+
+    def get_storage_pool_volume(self, storage_pool_id, type, name):
+        """
+        Description: information about a storage volume of a given type on a storage pool
+        Introduced: with API extension storage
+        Authentication: trusted
+        Operation: sync
+        Return: A StorageVolume  representing a storage volume
+
+        """
+
+        response = self.connection.request("/%s/storage-pools/%s/volumes/%s/%s"
+                                           % (self.version, storage_pool_id, type, name))
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return self._to_storage_volume(**response_dict["metadata"])
+
     def _to_container(self, data):
         """
         Convert container in Container instances given the
@@ -685,8 +748,6 @@ class LXDContainerDriver(ContainerDriver):
         # checkout this for stateful: https://discuss.linuxcontainers.org/t/error-in-live-migration/1928
         # looks like we are getting "err":"Unable to perform container live migration. CRIU isn't installed"
         # in the response when stateful is True so remove it for now
-                #"stateful":stateful, "force":force}
-
         response = self.connection.request('/%s/containers/%s/state' %
                                          (self.version, container.name), method='PUT', json=json)
 
@@ -714,7 +775,7 @@ class LXDContainerDriver(ContainerDriver):
         return ContainerImage(id=id, name=name, path=None, version=version, 
                               driver=self.connection.driver, extra=extra)
 
-    def _to_storage_pool(self, data):
+    def _to_storage_pool(self, **data):
         """
         Given a dictionary with the storage pool configuration
         it returns a StoragePool object
@@ -752,6 +813,22 @@ class LXDContainerDriver(ContainerDriver):
         # need sth else here like Container...perhaps self.get_container(id=name)
         return self.get_container(id=name)
 
+    def _to_storage_volume(self, **metadata):
+        """
+        Returns StorageVolume object from metadata
+        :param metadata: dict representing the volume
+        :rtype: StorageVolume
+        """
+        size = LXDContainerDriver._to_gb(metadata['config'].pop('size'))
+
+        extra = {"type": metadata["type"],
+                 "used_by":metadata["used_by"],
+                 "config": metadata['config']}
+
+        return StorageVolume(id=metadata['name'],
+                            name=metadata['name'],
+                            driver=self, size=size, extra=extra)
+
     def _get_api_version(self):
         """
         Get the LXD API version
@@ -769,5 +846,15 @@ class LXDContainerDriver(ContainerDriver):
                     "cert_file":self.cert_file,
                     "certificate_validator":self.certificate_validator}
         return  super(LXDContainerDriver, self)._ex_connection_class_kwargs()
+
+    @staticmethod
+    def _to_gb(size):
+        """
+        Convert the given size in bytes to gigabyte
+        :param size: in bytes
+        :return: int representing the gigabytes
+        """
+        size = int(size)
+        return size * 10**-9
 
 
