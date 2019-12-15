@@ -210,6 +210,12 @@ class LXDServerInfo(object):
         self.environment = None  # Various information about the host (OS, kernel, ...)
         self.public = None
 
+    def __str__(self):
+        return str(self.api_extensions) + str(self.api_status)+\
+               str(self.api_version) + str(self.auth) + str(self.config) +\
+               str(self.environment) + str(self.public)
+
+
 class LXDResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                             httplib.NO_CONTENT]
@@ -384,7 +390,10 @@ class LXDContainerDriver(ContainerDriver):
         return LXDServerInfo.build_from_response(metadata=response_dict["metadata"])
 
     def deploy_container(self, name, image, cluster=None,
-                         parameters=None, start=True):
+                         parameters=None, start=True,
+                         architecture=None, profiles=None,
+                         ephemeral=True, config=None, devices=None,
+                         instance_type=None):
 
         """
         Create a new container
@@ -392,7 +401,7 @@ class LXDContainerDriver(ContainerDriver):
         Operation: async
         Return: background operation or standard error
 
-        :param name: The name of the new container
+        :param name: The name of the new container. 64 chars max, ASCII, no slash, no colon and no comma
         :type  name: ``str``
 
         :param image: The container image to deploy
@@ -407,6 +416,24 @@ class LXDContainerDriver(ContainerDriver):
         :param start: Start the container on deployment
         :type  start: ``bool``
 
+        :param architecture: string e.g. x86_64
+        :type  architecture: ``str``
+
+        :param profiles: List of profiles
+        :type  profiles: ``list``
+
+        :param ephemeral: Whether to destroy the container on shutdown
+        :type  ephemeral: ``bool``
+
+        :param config: Config override e.g.  {"limits.cpu": "2"}
+        :type  config: ``dict``
+
+        :param devices: optional list of devices the container should have
+        :type  devices: ``dict``
+
+        :param instance_type: An optional instance type to use as basis for limits e.g. "c2.micro"
+        :type  instance_type: ``str``
+
         :rtype: :class:`.Container`
         """
 
@@ -414,14 +441,14 @@ class LXDContainerDriver(ContainerDriver):
         # check if the container exists. If yes then simply
         # return this container?
 
+        container_params = {"architecture": architecture, "profiles":profiles,
+                            "ephemeral": ephemeral, "config": config,
+                            "devices": devices, "instance_type": instance_type}
+
         if isinstance(image, ContainerImage):
-            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters)
-        elif image is not None:
-            # assume that the image is a fingerprint
-            image = self.get_image(fingerprint=image)
-            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters)
+            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters, container_params=container_params)
         else:
-            raise ValueError(" image parameter must either be a footprint or a ContainerImage")
+            raise LXDAPIException.with_other_msg(other_msg=" image parameter must either be a footprint or a ContainerImage")
 
         if start:
             container.start()
@@ -458,7 +485,7 @@ class LXDContainerDriver(ContainerDriver):
 
     def stop_container(self, container):
         """
-        Stop a container
+        Stop the given container
 
         :param container: The container to be stopped
         :type  container: :class:`libcloud.container.base.Container`
@@ -535,6 +562,7 @@ class LXDContainerDriver(ContainerDriver):
         """
         Returns a container image from the given image fingerprint
 
+        :param fingerprint: image fingerprint
         :type  fingerprint: ``str``
 
         :rtype: :class:`.ContainerImage`
@@ -741,8 +769,18 @@ class LXDContainerDriver(ContainerDriver):
             state = ContainerState.STOPPED
 
         extra = dict()
-        image = ContainerImage(id="?", name="?", path="/", version="/",
-                               driver="/", extra=extra)
+        img_id = data['config']['volatile.base_image']
+        img_version = data['config']['image.version']
+        extra["architecture"] = data['config']["image.architecture"]
+        extra["description"] = data['config']["image.description"]
+        extra["label"] = data['config']["image.description"]
+        extra["os"] = data['config']["image.os"]
+        extra["release"] = data['config']["image.release"]
+        extra["serial"] = data['config']["image.serial"]
+        extra["type"] = data['config']["image.type"]
+
+        image = ContainerImage(id=img_id, name=img_id, path=None,
+                               version=img_version, driver=self, extra=extra)
 
         container = Container(driver=self, name=name, id=name,
                               state=state, image=image,
@@ -807,7 +845,7 @@ class LXDContainerDriver(ContainerDriver):
                               used_by=data['used_by'], config=['config'],
                               managed=False)
 
-    def _deploy_container_from_image(self, name, image, parameters):
+    def _deploy_container_from_image(self, name, image, parameters, container_params, timeout=None):
         """
         Deploy a new container from the given image
         :param name: the name of the container
@@ -815,13 +853,19 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class: .Container
         """
+        # container without a pre-populated rootfs
+        # see https://github.com/lxc/lxd/blob/master/doc/rest-api.md
+        data = {'name': name, 'source': {'type': 'none'}}
 
-        # if we are given a ContainerImage then use it
-        # to create the containers
-        data = {'name': name, 'source': {'type': 'image', 'alias':image.name}}
+        if parameters:
+            data['source'].update(parameters)
 
-        if parameters is not None:
-            data.update(parameters)
+        if image.extra:
+            data['source'].update(image.extra)
+
+        if container_params:
+            # add also the other container parameters
+            data.update(container_params)
 
         # Return: background operation or standard error
         response = self.connection.request('/%s/containers' % self.version, method='POST', json=data)
@@ -829,6 +873,14 @@ class LXDContainerDriver(ContainerDriver):
 
         # a background operation is expected to be returned status_code = 100 --> Operation created
         assert_response(response_dict=response_dict, status_code=100)
+
+        # wait indefinitely until the operation is done
+        if not timeout:
+            response = self.connection.request('/%s/operations/%s/wait' %
+                                               (self.version, response_dict['metadata']['id']))
+        else:
+            response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
+                                               (self.version, response_dict['metadata']['id']), timeout)
 
         # need sth else here like Container...perhaps self.get_container(id=name)
         return self.get_container(id=name)

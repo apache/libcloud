@@ -15,43 +15,7 @@
 
 from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
-from pylxd import Client
-
-def pylxdFunc():
-
-    # LXD host change accordingly
-    endpoint = 'https://192.168.2.4:8443'
-
-    cert = ('lxd.crt', 'lxd.key')
-
-    client = Client(endpoint=endpoint, cert=cert, verify=False)
-
-    containers = client.containers.all()
-
-    print("Number of containers: ", len(containers))
-
-    for container in containers:
-        print("Container name: ", container.name)
-
-    new_container = 'fourth-lxd-container'
-
-
-    if new_container not in [container.name for container in containers]:
-        config = {'name': new_container, 'source': {'type': 'none',
-                                                         #"properties": {                                          # Properties
-                                                         #                   "os": "ubuntu",
-                                                         #                   "release": "18.04",
-                                                         #                   "architecture": "amd64"
-                                                        }}#}
-
-        container = client.containers.create(config, wait=True)
-
-    # get all images
-    images = client.images.all()
-    print("Number of images: ",len(images))
-
-    for image in images:
-        print("Image name: ", image.filename)
+from libcloud.container.base import Container, ContainerImage
 
 
 def work_with_containers():
@@ -78,12 +42,12 @@ def work_with_containers():
                       host=host_lxd, port=port_id, key_file='lxd.key', cert_file='lxd.crt')
 
     # this API call does not require authentication
-    api_end_points = conn.get_api_endpoints()
-    print(api_end_points.parse_body())
+    api_end_points = conn.ex_get_api_endpoints()
+    print(api_end_points)
 
     # this API call is allowed for everyone (but result varies)
-    api_version = conn.get_to_version()
-    print(api_version.parse_body())
+    api_version = conn.ex_get_server_configuration()
+    print(api_version)
 
     # get the list of the containers
     containers = conn.list_containers()
@@ -127,14 +91,15 @@ def work_with_containers():
 
         print("\tCreating container: %s" % name)
 
-        try:
-            image = conn.get_img_by_name(img_name='ubuntu-xenial')
-        except ValueError as e:
-            print(str(e))
-            image = None
+        image = ContainerImage(id='ubuntu-xenial',  name='ubuntu-xenial',
+                               path=None, version=None, driver=lxd_driver)
 
-        parameters = {'public': False, "ephemeral": False,  "architecture": "x86_64", "config": {"limits.cpu": "2"},}
-        container = conn.deploy_container(name=name, image=image, parameters=parameters)
+        # Input (container based on a local image identified by its fingerprint):
+        # change fingerprint accordingly
+        img_parameters = {"type": "image", "alias":image.name,
+                      "fingerprint": "7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b"}
+        container = conn.deploy_container(name=name, image=image, parameters=img_parameters,
+                                          architecture="x86_64", ephemeral=False, profiles=["default"])
         print("\tResponse from attempting to create container: ", container)
 
         # get the list of the containers
@@ -146,6 +111,7 @@ def work_with_containers():
             print("\tNumber of containers: %s" % len(containers))
             for container in containers:
                 print("\t\tContainer: %s is: %s" % (container.name, container.state))
+
 
 def work_with_images():
 
@@ -177,7 +143,6 @@ def work_with_images():
         print("Image: ", image.name)
         print("\tPath ", image.path)
         print("\tVersion ", image.version)
-
 
     conn.create_image()
 
@@ -215,6 +180,6 @@ def work_with_storage_pools():
 
 if __name__ == '__main__':
 
-    #work_with_containers()
+    work_with_containers()
     work_with_images()
     work_with_storage_pools()
