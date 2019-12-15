@@ -339,17 +339,6 @@ class LXDContainerDriver(ContainerDriver):
         """
         return self.connection.request("/%s"%(self.version))
 
-    def post_certificate(self, certificate, name, password):
-        """
-        Add a new trusted certificate
-        Authentication: trusted or untrusted
-        Operation: sync
-        Return: standard return value or standard error
-        """
-        return self.connection.request('/%s/certificates?type=client&certificate=%s&\
-                                       name=%s&password=%s' % (self.version, certificate, 
-                                                                name, password), method='POST')
-
     def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True):
 
@@ -514,21 +503,6 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict)
 
         return self._do_get_image(metadata=response_dict['metadata'])
-
-    def get_img_by_name(self, img_name):
-        """
-        Returns the ContainerImage that has the given name
-        :param img_name: the name of the image to retrieve
-        :return:
-        """
-
-        images = self.list_images()
-
-        for img in images:
-            if img.name == img_name:
-                return img
-
-        raise ValueError("Image: {} does not exist".format(img_name))
 
     def list_images(self):
         """
