@@ -159,7 +159,7 @@ class LXDAPIException(Exception):
 
         return str(response)
 
-class StoragePool(object):
+class LXDStoragePool(object):
     """
     Utility class representing an LXD storage pool
     https://lxd.readthedocs.io/en/latest/storage/
@@ -182,6 +182,33 @@ class StoragePool(object):
 
         # Boolean that indicates whether LXD manages the pool or not.
         self.managed = managed
+
+class LXDServerInfo(object):
+    """
+    Wraps the response form /1.0
+    """
+
+    @classmethod
+    def build_from_response(cls, metadata):
+
+        server_info = LXDServerInfo()
+        server_info.api_extensions = metadata.get("api_extensions", None)
+        server_info.api_status = metadata.get("api_status", None)
+        server_info.api_version = metadata.get("api_version", None)
+        server_info.auth = metadata.get("auth", None)
+        server_info.config = metadata.get("config", None)
+        server_info.environment = metadata.get("environment", None)
+        server_info.public = metadata.get("public", None)
+        return server_info
+
+    def __init__(self):
+        self.api_extensions = None # List of API extensions added after the API was marked stable
+        self.api_status = None  # API implementation status (one of, development, stable or deprecated)
+        self.api_version = None  # The API version as a string
+        self.auth = None  # Authentication state, one of "guest", "untrusted" or "trusted"
+        self.config = None
+        self.environment = None  # Various information about the host (OS, kernel, ...)
+        self.public = None
 
 class LXDResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
@@ -325,19 +352,36 @@ class LXDContainerDriver(ContainerDriver):
         self.connection.port = port
         self.version = self._get_api_version()
 
-    def get_api_endpoints(self):
+    def ex_get_api_endpoints(self):
         """
-        Returns the API endpoints. This is allowed to everyone
-        :return: LXDResponse that describes the API endpoints
-        """
-        return self.connection.request("/")
+        Description: List of supported APIs
+        Authentication: guest
+        Operation: sync
+        Return: list of supported API endpoint URLs
 
-    def get_to_version(self):
         """
-        GET to /1.0 This is allowed to everyone
-        :return: LXDResponse 
+        response = self.connection.request("/")
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return response_dict["metadata"]
+
+    def ex_get_server_configuration(self):
         """
-        return self.connection.request("/%s"%(self.version))
+
+        Description: Server configuration and environment information
+        Authentication: guest, untrusted or trusted
+        Operation: sync
+        Return: Dict representing server state
+
+        The returned configuration depends on whether the connection
+        is trusted or not
+        :rtype: :class: .LXDServerInfo
+
+        """
+        response = self.connection.request("/%s"%(self.version))
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return LXDServerInfo.build_from_response(metadata=response_dict["metadata"])
 
     def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True):
@@ -759,9 +803,9 @@ class LXDContainerDriver(ContainerDriver):
         :return: :class: .StoragePool
         """
 
-        return StoragePool(name=data['name'], driver=data['driver'],
-                           used_by=data['used_by'], config=['config'],
-                           managed=False)
+        return LXDStoragePool(name=data['name'], driver=data['driver'],
+                              used_by=data['used_by'], config=['config'],
+                              managed=False)
 
     def _deploy_container_from_image(self, name, image, parameters):
         """

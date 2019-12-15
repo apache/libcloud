@@ -7,10 +7,11 @@ from libcloud.container.providers import get_driver
 
 from libcloud.container.base import ContainerImage
 from libcloud.container.base import Container
-from libcloud.container.drivers.lxd import StoragePool
-from libcloud.container.drivers.lxd import LXDAPIException
 
+from libcloud.container.drivers.lxd import LXDStoragePool
+from libcloud.container.drivers.lxd import LXDAPIException
 from libcloud.container.drivers.lxd import LXDContainerDriver
+from libcloud.container.drivers.lxd import LXDServerInfo
 
 from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import CONTAINER_PARAMS_LXD
@@ -38,6 +39,21 @@ class LXDContainerDriverTestCase(unittest.TestCase):
                 LXDMockHttp
             driver.version = version
             self.drivers.append(driver)
+
+    def test_ex_get_api_endpoints_trusted(self):
+        for driver in self.drivers:
+            api = driver.ex_get_api_endpoints()
+            self.assertEqual(api[0], driver.version)
+
+    def test_ex_get_server_configuration(self):
+        for driver in self.drivers:
+            server_config = driver.ex_get_server_configuration()
+            self.assertIsInstance(server_config, LXDServerInfo)
+            self.assertEqual(server_config.api_extensions, [])
+            self.assertEqual(server_config.api_status, "stable")
+            self.assertEqual(server_config.api_version, "linux_124")
+            self.assertEqual(server_config.auth, "guest")
+            self.assertEqual(server_config.public, False)
 
     def test_list_images(self):
         for driver in self.drivers:
@@ -101,8 +117,8 @@ class LXDContainerDriverTestCase(unittest.TestCase):
         for driver in self.drivers:
             pools = driver.ex_list_storage_pools()
             self.assertEqual(len(pools), 2)
-            self.assertIsInstance(pools[0], StoragePool)
-            self.assertIsInstance(pools[1], StoragePool)
+            self.assertIsInstance(pools[0], LXDStoragePool)
+            self.assertIsInstance(pools[1], LXDStoragePool)
             self.assertEqual(pools[0].name, 'pool1')
             self.assertEqual(pools[1].name, 'pool2')
 
@@ -145,6 +161,14 @@ class LXDMockHttp(MockHttp):
         self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/search.json'), {}, httplib.responses[httplib.OK])
     """
+
+    def root(self, method, url, body, headers):
+        json = self.fixtures.load('linux_124/endpoints_sucess.json')
+        return (httplib.OK, json, {}, httplib.responses[httplib.OK])
+
+    def _linux_124(
+        self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('linux_124/version.json'), {}, httplib.responses[httplib.OK])
 
     def _linux_124_images(
         self, method, url, body, headers):
