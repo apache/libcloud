@@ -551,16 +551,17 @@ class LXDContainerDriver(ContainerDriver):
             images.append(self.get_image(fingerprint=fingerprint))
         return images
 
-    def exc_list_storage_pools(self, detailed=True):
+    def ex_list_storage_pools(self, detailed=True):
         """
         Returns a list of storage pools defined currently defined on the host
-        e.g. [ "/1.0/storage-pools/default", ]
 
         Description: list of storage pools
         Authentication: trusted
         Operation: sync
 
+        ":rtype: list of StoragePool items
         """
+
         # Return: list of storage pools that are currently defined on the host
         response = self.connection.request("/%s/storage-pools" % self.version)
 
@@ -572,15 +573,16 @@ class LXDContainerDriver(ContainerDriver):
             pool_name = pool_item.split('/')[-1]
 
             if not detailed:
+                # attempt to create a minimal StoragePool
                 pools.append(self._to_storage_pool({"name": pool_name,
                                                     "driver":None, "used_by":None,
                                                     "config":None, "managed": None}))
             else:
-                pools.append(self.get_storage_pool(id=pool_name))
+                pools.append(self.ex_get_storage_pool(id=pool_name))
 
         return pools
 
-    def exc_get_storage_pool(self, id):
+    def ex_get_storage_pool(self, id):
         """
         Returns  information about a storage pool
         :param id: the name of the storage pool
@@ -598,7 +600,7 @@ class LXDContainerDriver(ContainerDriver):
 
         return self._to_storage_pool(data=response_dict['metadata'])
 
-    def exc_create_storage_pool(self, definition):
+    def ex_create_storage_pool(self, definition):
 
         """Create a storage_pool from config.
 
@@ -638,7 +640,7 @@ class LXDContainerDriver(ContainerDriver):
 
         raise NotImplementedError("This function has not been finished yet")
 
-    def delete_storage_pool(self, id):
+    def ex_delete_storage_pool(self, id):
         """Delete the storage pool.
 
         Implements DELETE /1.0/storage-pools/<self.name>
@@ -656,7 +658,7 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-    def exc_list_storage_pool_volumes(self, storage_pool_id, detailed=True):
+    def ex_list_storage_pool_volumes(self, storage_pool_id, detailed=True):
         """
         Description: list of storage volumes associated with the given storage pool
 
@@ -690,7 +692,7 @@ class LXDContainerDriver(ContainerDriver):
 
         return volumes
 
-    def get_storage_pool_volume(self, storage_pool_id, type, name):
+    def ex_get_storage_pool_volume(self, storage_pool_id, type, name):
         """
         Description: information about a storage volume of a given type on a storage pool
         Introduced: with API extension storage
@@ -775,7 +777,7 @@ class LXDContainerDriver(ContainerDriver):
         return ContainerImage(id=id, name=name, path=None, version=version, 
                               driver=self.connection.driver, extra=extra)
 
-    def _to_storage_pool(self, **data):
+    def _to_storage_pool(self, data):
         """
         Given a dictionary with the storage pool configuration
         it returns a StoragePool object

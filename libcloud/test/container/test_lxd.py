@@ -99,7 +99,7 @@ class LXDContainerDriverTestCase(unittest.TestCase):
 
     def test_list_storage_pools(self):
         for driver in self.drivers:
-            pools = driver.list_storage_pools()
+            pools = driver.ex_list_storage_pools()
             self.assertEqual(len(pools), 2)
             self.assertIsInstance(pools[0], StoragePool)
             self.assertIsInstance(pools[1], StoragePool)
@@ -109,7 +109,7 @@ class LXDContainerDriverTestCase(unittest.TestCase):
     def test_get_storage_pool_no_metadata(self):
         with self.assertRaises(LXDAPIException) as exc:
             for driver in self.drivers:
-                driver.get_storage_pool(id='pool3')
+                driver.ex_get_storage_pool(id='pool3')
                 self.assertEqual(str(exc), 'Storage pool with name pool3 has no data')
 
     """
@@ -120,12 +120,12 @@ class LXDContainerDriverTestCase(unittest.TestCase):
 
     def test_delete_storage_pool(self):
         for driver in self.drivers:
-            driver.delete_storage_pool(id='pool1')
+            driver.ex_delete_storage_pool(id='pool1')
 
     def test_delete_storage_pool_fail(self):
         with self.assertRaises(LXDAPIException) as exc:
             for driver in self.drivers:
-                driver.delete_storage_pool(id='pool2')
+                driver.ex_delete_storage_pool(id='pool2')
 
 
 class LXDMockHttp(MockHttp):
