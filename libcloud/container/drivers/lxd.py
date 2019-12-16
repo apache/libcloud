@@ -32,6 +32,7 @@ from libcloud.common.types import InvalidCredsError
 
 from libcloud.container.base import (Container, ContainerDriver,
                                      ContainerImage)
+from libcloud.common.exceptions import BaseHTTPError
 
 from libcloud.compute.base import StorageVolume
 
@@ -448,7 +449,7 @@ class LXDContainerDriver(ContainerDriver):
         if isinstance(image, ContainerImage):
             container = self._deploy_container_from_image(name=name, image=image, parameters=parameters, container_params=container_params)
         else:
-            raise LXDAPIException.with_other_msg(other_msg=" image parameter must either be a footprint or a ContainerImage")
+            raise LXDAPIException.with_other_msg(other_msg="'image' parameter must be a ContainerImage")
 
         if start:
             container.start()
@@ -510,16 +511,28 @@ class LXDContainerDriver(ContainerDriver):
 
     def destroy_container(self, container):
         """
-        Destroy a deployed container
+        Destroy a deployed container. Raises and exception if he container is running
 
         :param container: The container to destroy
         :type  container: :class:`.Container`
 
         :rtype: :class:`.Container`
         """
-        # Return: background operation or standard error
-        response =  self.connection.request('/%s/containers/%s' %
-                                       (self.version, container.name), method='DELETE')
+
+        try:
+
+            # Return: background operation or standard error
+            response =  self.connection.request('/%s/containers/%s' %
+                                        (self.version, container.name), method='DELETE')
+        except BaseHTTPError as e:
+
+            message_list = e.message.split(",")
+            message = message_list[0].split(":")[-1]
+            if message == '"container is running"':
+                msg = "You cannot delete container %s because it is running" % container.name
+                raise LXDAPIException.with_other_msg(other_msg=msg)
+
+            raise e
 
         response = response.parse_body()
         assert_response(response_dict=response, status_code=100)
@@ -574,11 +587,53 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict)
 
-        return self._do_get_image(metadata=response_dict['metadata'])
+        return self._to_image(metadata=response_dict['metadata'])
+
+    def install_image(self, path, **description_dict):
+
+        """
+        Install a container image from a remote path. Not that the
+        path currently is not used. Image data should be provided
+        int the description_dict under the key 'image_data'. Creating
+        an image in LXD is an asynchronous operation
+
+        :param path: Path to the container image
+        :type  path: ``str``
+
+        :rtype: :class:`.ContainerImage`
+        """
+
+        if not description_dict:
+            msg = "Install an image for LXD requires specification of image_data"
+            raise LXDAPIException.with_other_msg(other_msg=msg)
+
+        # Return: background operation or standard error
+        data = description_dict['image_data']
+
+        response = self.connection.request('/%s/images' % (self.version),
+                                           method='POST', data=data)
+
+        response_dict = response.parse_body()
+        # a background operation is expected to be returned status_code = 100 --> Operation created
+        assert_response(response_dict=response_dict, status_code=100)
+
+        # wait indefinitely until the operation is done
+        if not 'timeout' in description_dict.keys():
+            response = self.connection.request('/%s/operations/%s/wait' %
+                                               (self.version, response_dict['metadata']['id']))
+        else:
+            timeout = description_dict.keys()['timeout']
+            response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
+                                               (self.version, response_dict['metadata']['id'], timeout))
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return self._to_image(metadata=response_dict['metadata'])
+
 
     def list_images(self):
         """
-        List the installed container images
+        List of URLs for images this server publishes
 
         :rtype: ``list`` of :class:`.ContainerImage`
         """
@@ -752,7 +807,8 @@ class LXDContainerDriver(ContainerDriver):
                                            % (self.version, storage_pool_id, type, name))
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
-        return self._to_storage_volume(**response_dict["metadata"])
+
+        return self._to_storage_volume(response_dict["metadata"])
 
     def _to_container(self, data):
         """
@@ -816,7 +872,7 @@ class LXDContainerDriver(ContainerDriver):
 
         return self.get_container(id=container.name)
 
-    def _do_get_image(self, metadata):
+    def _to_image(self, metadata):
         """
         Returns a container image from the given image
 
@@ -831,7 +887,7 @@ class LXDContainerDriver(ContainerDriver):
 
         extra = get_img_extra_from_meta(metadata=metadata)
         return ContainerImage(id=id, name=name, path=None, version=version, 
-                              driver=self.connection.driver, extra=extra)
+                              driver=self, extra=extra)
 
     def _to_storage_pool(self, data):
         """
@@ -880,12 +936,12 @@ class LXDContainerDriver(ContainerDriver):
                                                (self.version, response_dict['metadata']['id']))
         else:
             response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
-                                               (self.version, response_dict['metadata']['id']), timeout)
+                                               (self.version, response_dict['metadata']['id'], timeout))
 
         # need sth else here like Container...perhaps self.get_container(id=name)
         return self.get_container(id=name)
 
-    def _to_storage_volume(self, **metadata):
+    def _to_storage_volume(self, metadata):
         """
         Returns StorageVolume object from metadata
         :param metadata: dict representing the volume
