@@ -102,14 +102,31 @@ class LXDContainerDriverTestCase(unittest.TestCase):
             container = driver.get_container(id='second_lxd_container')
             container.destroy()
 
+
+    def test_deploy_container_without_image(self):
+        with self.assertRaises(LXDAPIException) as exc:
+            for driver in self.drivers:
+                container = driver.deploy_container(name='first_lxd_container',
+                                                image='', parameters={})
+
+            self.assertEqual(str(exc), "'image' parameter must be a ContainerImage")
+
     def test_deploy_container(self):
         for driver in self.drivers:
+            image = ContainerImage(id='54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473',
+                                   name='54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473',
+                                   path=None, version=None, driver=driver)
             container = driver.deploy_container(name='first_lxd_container',
-                                                image='54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473',
-                                                parameters={})
+                                                image=image, parameters={})
             self.assertIsInstance(container, Container)
             self.assertEqual(container.name, 'first_lxd_container')
 
+    # test images
+    def test_install_image_no_dict(self):
+        with self.assertRaises(LXDAPIException) as exc:
+            for driver in self.drivers:
+                container = driver.install_image(path=None)
+                self.assertEqual(str(exc), "Install an image for LXD requires specification of image_data")
 
     # test storage pools
 
@@ -156,12 +173,6 @@ class LXDMockHttp(MockHttp):
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    """
-    def _vlinux_124_images_search(
-        self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_124/search.json'), {}, httplib.responses[httplib.OK])
-    """
-
     def root(self, method, url, body, headers):
         json = self.fixtures.load('linux_124/endpoints_sucess.json')
         return (httplib.OK, json, {}, httplib.responses[httplib.OK])
@@ -177,14 +188,6 @@ class LXDMockHttp(MockHttp):
     def _linux_124_images_54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473(self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/image.json'), {}, httplib.responses[httplib.OK])
 
-    """
-    def _vlinux_124_images_create(
-        self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('linux_124/create_image.txt'),
-                {'Content-Type': 'application/json', 'transfer-encoding': 'chunked'},
-                httplib.responses[httplib.OK])
-    """
-
     def _linux_124_containers(
         self, method, url, body, headers):
 
@@ -195,8 +198,7 @@ class LXDMockHttp(MockHttp):
             # we will return a dummy background operation
             return (httplib.OK, self.fixtures.load('linux_124/background_op.json'), {}, httplib.responses[httplib.OK])
 
-    def _linux_124_containers_first_lxd_container(
-        self, method, url, body, headers):
+    def _linux_124_containers_first_lxd_container(self, method, url, body, headers):
         return (httplib.OK, self.fixtures.load('linux_124/first_lxd_container.json'), {}, httplib.responses[httplib.OK])
 
     def _linux_124_containers_second_lxd_container(
@@ -226,6 +228,8 @@ class LXDMockHttp(MockHttp):
             json = self.fixtures.load('linux_124/second_lxd_container.json')
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
 
+    def _linux_124_operations_1_wait(self, method, url, body, header):
+        return (httplib.OK, self.fixtures.load("linux_124/operation_1_wait.json"), {}, httplib.responses[httplib.OK])
 
     def _linux_124_storage_pools(self, method, url, body, header):
 

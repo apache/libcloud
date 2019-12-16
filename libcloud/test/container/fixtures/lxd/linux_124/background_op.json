@@ -2,6 +2,6 @@
     "type": "async",
     "status": "OK",
     "status_code": 100,
-    "operation": "/1.0/containers/<id>",
-    "metadata": {}
+    "operation": "/1.0/operations/1",
+    "metadata": {"id": 1}
 }

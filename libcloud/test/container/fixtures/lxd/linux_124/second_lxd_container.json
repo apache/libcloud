@@ -5,6 +5,17 @@
   "metadata": {
     "name": "second_lxd_container",
     "status": "Stopped",
-    "architecture": "x86_64"
+    "architecture": "x86_64",
+    "config":
+    {
+      "volatile.base_image": "7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b",
+      "image.version": "ubuntu",
+      "image.architecture": "amd64",
+      "image.description": "Ubuntu 16.04 LTS",
+      "image.os": "Linux",
+      "image.release": "16.04",
+      "image.serial": "7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b",
+      "image.type": "container"
+    }
   }
 }
