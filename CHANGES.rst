@@ -16,6 +16,10 @@ Compute
   (GITHUB-1386)
   [Peter Yu - @yukw777]
 
+- [VMware vCloud] Various improvements, fixes and additions to the driver.
+  (GITHUB-1373)
+  [OpenText Corporation]
+
 Storage
 -------
 
