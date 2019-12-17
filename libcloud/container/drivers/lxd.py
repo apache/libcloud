@@ -317,6 +317,7 @@ class LXDContainerDriver(ContainerDriver):
     # is not implemented yet on our side
     supports_clusters = False
     version = '1.0'
+    default_time_out = 30
 
     def __init__(self, key='', secret='', secure=False,
                  host='localhost', port=8443, key_file=None,
@@ -385,7 +386,7 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class: .LXDServerInfo
 
         """
-        response = self.connection.request("/%s"%(self.version))
+        response = self.connection.request("/%s" % (self.version))
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
         return LXDServerInfo.build_from_response(metadata=response_dict["metadata"])
@@ -447,7 +448,8 @@ class LXDContainerDriver(ContainerDriver):
                             "devices": devices, "instance_type": instance_type}
 
         if isinstance(image, ContainerImage):
-            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters, container_params=container_params)
+            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters,
+                                                          container_params=container_params)
         else:
             raise LXDAPIException.with_other_msg(other_msg="'image' parameter must be a ContainerImage")
 
@@ -611,25 +613,21 @@ class LXDContainerDriver(ContainerDriver):
         data = description_dict['image_data']
 
         response = self.connection.request('/%s/images' % (self.version),
-                                           method='POST', data=data)
+                                           method='POST', json=data)
 
         response_dict = response.parse_body()
         # a background operation is expected to be returned status_code = 100 --> Operation created
         assert_response(response_dict=response_dict, status_code=100)
 
-        # wait indefinitely until the operation is done
-        if not 'timeout' in description_dict.keys():
-            response = self.connection.request('/%s/operations/%s/wait' %
-                                               (self.version, response_dict['metadata']['id']))
-        else:
+        timeout = LXDContainerDriver.default_time_out
+        if 'timeout' in description_dict.keys():
             timeout = description_dict.keys()['timeout']
-            response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
-                                               (self.version, response_dict['metadata']['id'], timeout))
+        response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
+                                            (self.version, response_dict['metadata']['id'], timeout))
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
         return self._to_image(metadata=response_dict['metadata'])
-
 
     def list_images(self):
         """
@@ -824,23 +822,24 @@ class LXDContainerDriver(ContainerDriver):
         else:
             state = ContainerState.STOPPED
 
-        extra = dict()
-        img_id = data['config']['volatile.base_image']
-        img_version = data['config']['image.version']
-        extra["architecture"] = data['config']["image.architecture"]
-        extra["description"] = data['config']["image.description"]
-        extra["label"] = data['config']["image.description"]
-        extra["os"] = data['config']["image.os"]
-        extra["release"] = data['config']["image.release"]
-        extra["serial"] = data['config']["image.serial"]
-        extra["type"] = data['config']["image.type"]
+        if 'config' in data.keys():
+            extra = dict()
+            config = data['config']
+            img_id = config.get('volatile.base_image', None)
+            img_version = config.get('image.version', None)
+            extra["architecture"] = config.get("image.architecture", None)
+            extra["description"] = config.get("image.description", None)
+            extra["label"] = config.get("image.description", None)
+            extra["os"] = config.get("image.os", None)
+            extra["release"] = config.get("image.release", None)
+            extra["serial"] = config.get("image.serial", None)
+            extra["type"] = config.get("image.type", None)
 
         image = ContainerImage(id=img_id, name=img_id, path=None,
                                version=img_version, driver=self, extra=extra)
 
         container = Container(driver=self, name=name, id=name,
-                              state=state, image=image,
-                              ip_addresses=[], extra=extra)
+                              state=state, image=image, ip_addresses=[], extra=extra)
 
         return container
 
@@ -857,7 +856,7 @@ class LXDContainerDriver(ContainerDriver):
         # if action == 'start' or action == 'restart':
         #    force = False
 
-        json = {"action":action, "timeout":timeout, "force":force}
+        json = {"action": action, "timeout": timeout, "force": force}
 
         # checkout this for stateful: https://discuss.linuxcontainers.org/t/error-in-live-migration/1928
         # looks like we are getting "err":"Unable to perform container live migration. CRIU isn't installed"
@@ -870,6 +869,15 @@ class LXDContainerDriver(ContainerDriver):
         # a background operation is expected to be returned status_code = 100 --> Operation created
         assert_response(response_dict=response_dict, status_code=100)
 
+        if not timeout:
+            timeout = LXDContainerDriver.default_time_out
+
+        response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
+                                           (self.version, response_dict['metadata']['id'], timeout))
+
+        response_dict = response.parse_body()
+        assert_response(response_dict, status_code=200)
+
         return self.get_container(id=container.name)
 
     def _to_image(self, metadata):
@@ -881,7 +889,13 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`.ContainerImage`
         """
-        name = metadata.get('aliases')[0].get('name')
+        aliases = metadata.get('aliases', [])
+
+        if  aliases:
+            name = metadata.get('aliases')[0].get('name')
+        else:
+            name = metadata.get('fingerprint')
+
         id = name
         version = metadata.get('update_source').get('alias')
 
@@ -932,11 +946,10 @@ class LXDContainerDriver(ContainerDriver):
 
         # wait indefinitely until the operation is done
         if not timeout:
-            response = self.connection.request('/%s/operations/%s/wait' %
-                                               (self.version, response_dict['metadata']['id']))
-        else:
-            response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
-                                               (self.version, response_dict['metadata']['id'], timeout))
+            timeout = LXDContainerDriver.default_time_out
+
+        response = self.connection.request('/%s/operations/%s/wait?timeout=%s' %
+                                            (self.version, response_dict['metadata']['id'], timeout))
 
         # need sth else here like Container...perhaps self.get_container(id=name)
         return self.get_container(id=name)
