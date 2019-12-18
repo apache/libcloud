@@ -4133,7 +4133,7 @@ class GCENodeDriver(NodeDriver):
                                         accelerators to attach to the node.
         :type     ex_accelerator_count: ``int`` or ``None``
 
-        :keyword  ex_disk_size: Specify size of the boot disk.
+        :keyword  ex_disk_size: Defines size of the boot disk.
                                 Integer in gigabytes.
         :type     ex_disk_size: ``int`` or ``None``
 
@@ -4193,19 +4193,27 @@ class GCENodeDriver(NodeDriver):
                 'deviceName': name,
                 'initializeParams': {
                     'diskName': name,
+                    'diskSizeGb': ex_disk_size,
                     'diskType': ex_disk_type.extra['selfLink'],
                     'sourceImage': image.extra['selfLink']
                 }
             }]
 
         request, node_data = self._create_node_req(
-            name, size, image, location, ex_network, ex_tags, ex_metadata,
-            ex_boot_disk, external_ip, internal_ip, ex_disk_type,
-            ex_disk_auto_delete, ex_service_accounts, description,
-            ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
-            ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
-            ex_subnetwork, ex_labels, ex_accelerator_type,
-            ex_accelerator_count, ex_disk_size)
+            name, size, image, location,
+            network=ex_network, tags=ex_tags, metadata=ex_metadata,
+            boot_disk=ex_boot_disk, external_ip=external_ip,
+            internal_ip=internal_ip, ex_disk_type=ex_disk_type,
+            ex_disk_auto_delete=ex_disk_auto_delete,
+            ex_service_accounts=ex_service_accounts, description=description,
+            ex_can_ip_forward=ex_can_ip_forward,
+            ex_disks_gce_struct=ex_disks_gce_struct,
+            ex_nic_gce_struct=ex_nic_gce_struct,
+            ex_on_host_maintenance=ex_on_host_maintenance,
+            ex_automatic_restart=ex_automatic_restart,
+            ex_preemptible=ex_preemptible, ex_subnetwork=ex_subnetwork,
+            ex_labels=ex_labels, ex_accelerator_type=ex_accelerator_type,
+            ex_accelerator_count=ex_accelerator_count)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
