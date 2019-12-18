@@ -70,8 +70,9 @@ def get_driver(drivers, provider, deprecated_providers=None,
         _mod = __import__(mod_name, globals(), locals(), [driver_name])
         return getattr(_mod, driver_name)
 
-    # NOTE: This is for backward compatibility reasons where user user a
-    # string provider name instead of a Provider.FOO enum constant.
+    # NOTE: This is for backward compatibility reasons where user could use
+    # a string value instead of a Provider.FOO enum constant and this function
+    # would still work
     for provider_name, (mod_name, driver_name) in drivers.items():
         # NOTE: This works because Provider enum class overloads __eq__
         if provider.lower() == provider_name.lower():
