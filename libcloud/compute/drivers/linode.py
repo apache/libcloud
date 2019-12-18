@@ -175,8 +175,8 @@ class LinodeNodeDriver(NodeDriver):
 
     def create_node(self, name, image, size, auth, location=None, ex_swap=None,
                     ex_rsize=None, ex_kernel=None, ex_payment=None,
-                    ex_comment=None, ex_private=False, lconfig=None, lroot=None,
-                    lswap=None):
+                    ex_comment=None, ex_private=False, lconfig=None,
+                    lroot=None, lswap=None):
         """Create a new Linode, deploy a Linux distribution, and boot
 
         This call abstracts much of the functionality of provisioning a Linode
@@ -270,7 +270,7 @@ class LinodeNodeDriver(NodeDriver):
 
         # Swap size
         try:
-            swap = 128 if not ex_swap else int(kwargs["ex_swap"])
+            swap = 128 if not ex_swap else int(ex_swap)
         except Exception:
             raise LinodeException(0xFB, "Need an integer swap size")
 

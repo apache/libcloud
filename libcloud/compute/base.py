@@ -927,9 +927,10 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'create_node not implemented for this driver')
 
-    def deploy_node(self, deploy, ssh_username='root', ssh_alternate_usernames=None,
-                    ssh_port=22, ssh_timeout=10, ssh_key=None, auth=None,
-                    timeout=SSH_CONNECT_TIMEOUT, max_tries=3, ssh_interface='public_ips',
+    def deploy_node(self, deploy, ssh_username='root',
+                    ssh_alternate_usernames=None, ssh_port=22, ssh_timeout=10,
+                    ssh_key=None, auth=None, timeout=SSH_CONNECT_TIMEOUT,
+                    max_tries=3, ssh_interface='public_ips',
                     **create_node_kwargs):
         # type: (...) -> Node
         """
@@ -1055,17 +1056,18 @@ class NodeDriver(BaseDriver):
                         'positional arguments.*')
             msg_2_re = r'create_node\(\) takes at least \d+ arguments.*'
             if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
-                node = self.create_node(deploy=deploy,
-                                        ssh_username=ssh_username,
-                                        ssh_alternate_usernames=ssh_alternate_usernames,
-                                        ssh_port=ssh_port,
-                                        ssh_timeout=ssh_timeout,
-                                        ssh_key=ssh_key,
-                                        auth=auth,
-                                        timeout=timeout,
-                                        max_tries=max_tries,
-                                        ssh_interface=ssh_interface,
-                                        **create_node_kwargs)
+                node = self.create_node(
+                    deploy=deploy,
+                    ssh_username=ssh_username,
+                    ssh_alternate_usernames=ssh_alternate_usernames,
+                    ssh_port=ssh_port,
+                    ssh_timeout=ssh_timeout,
+                    ssh_key=ssh_key,
+                    auth=auth,
+                    timeout=timeout,
+                    max_tries=max_tries,
+                    ssh_interface=ssh_interface,
+                    **create_node_kwargs)
             else:
                 raise e
 
