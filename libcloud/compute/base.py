@@ -1031,7 +1031,29 @@ class NodeDriver(BaseDriver):
             raise NotImplementedError(
                 'deploy_node not implemented for this driver')
 
-        node = self.create_node(**kwargs)
+        # NOTE 1: This is a workaround for legacy code. Sadly a lot of legacy code
+        # uses **kwargs in "create_node()" method and simply ignores
+        # "deploy_node()" arguments which are passed to it.
+        # That's obviously far from idea that's why we first try to pass only
+        # non-deploy node arguments to the "create_node()" methods and if it that
+        # doesn't work, fall back to the old approach and simply pass in all the
+        # arguments
+        # NOTE 2: Some drivers which use password based SSH authentication rely on
+        # password being stored on the "auth" argument and that's why we also
+        # propagate that argument to "create_node()" method.
+        deploy_node_kwargs = ['deploy', 'ssh_username', 'ssh_alternate_usernames',
+                              'ssh_port', 'ssh_timeout', 'ssh_key', 'timeout',
+                              'max_tries', 'ssh_interface']
+        create_node_kwargs = dict([(key, value) for key, value in kwargs.items() if
+                                   key not in deploy_node_kwargs])
+
+        try:
+            node = self.create_node(**create_node_kwargs)
+        except TypeError as e:
+            if 'create_node() got an unexpected keyword argument' in str(e):
+                node = self.create_node(**kwargs)
+            raise e
+
         max_tries = kwargs.get('max_tries', 3)
 
         password = None
