@@ -447,7 +447,6 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(self.node.id, node.id)
         self.assertEqual(call_count, 2)
 
-        global call_count
         call_count = 0
         def create_node(name, image, size, ex_custom_arg_1, ex_custom_arg_2,
                         ex_foo=None, auth=None, **kwargs):

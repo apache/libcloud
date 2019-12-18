@@ -1046,13 +1046,15 @@ class NodeDriver(BaseDriver):
         # NOTE 2: Some drivers which use password based SSH authentication
         # rely on password being stored on the "auth" argument and that's why
         # we also propagate that argument to "create_node()" method.
-        create_node_kwargs = dict([(key, value) for key, value in kwargs.items()
-                                   if key not in DEPLOY_NODE_KWARGS])
+        create_node_kwargs = dict([(key, value) for key, value in
+                                   kwargs.items() if key
+                                   not in DEPLOY_NODE_KWARGS])
 
         try:
             node = self.create_node(**create_node_kwargs)
         except TypeError as e:
-            msg_1_re = r'create_node\(\) missing \d+ required positional arguments.*'
+            msg_1_re = (r'create_node\(\) missing \d+ required '
+                        'positional arguments.*')
             msg_2_re = r'create_node\(\) takes at least \d+ arguments.*'
             if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
                 node = self.create_node(**kwargs)
