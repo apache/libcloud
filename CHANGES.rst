@@ -15,6 +15,9 @@ Common
   ``Provider.FOO`` enum type constant, but since the string notation was
   unofficially supported in the past, we will still support it until the next
   major release.
+
+  Reported by @dpeschman.
+  (GITHUB-1391, GITHUB-1390)
   [Tomaz Muraus]
 
 Compute
