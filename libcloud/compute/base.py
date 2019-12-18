@@ -29,6 +29,7 @@ from typing import Any
 import time
 import hashlib
 import os
+import re
 import socket
 import random
 import binascii
@@ -1035,25 +1036,28 @@ class NodeDriver(BaseDriver):
             raise NotImplementedError(
                 'deploy_node not implemented for this driver')
 
-        # NOTE 1: This is a workaround for legacy code. Sadly a lot of legacy code
-        # uses **kwargs in "create_node()" method and simply ignores
+        # NOTE 1: This is a workaround for legacy code. Sadly a lot of legacy
+        # code uses **kwargs in "create_node()" method and simply ignores
         # "deploy_node()" arguments which are passed to it.
         # That's obviously far from idea that's why we first try to pass only
-        # non-deploy node arguments to the "create_node()" methods and if it that
-        # doesn't work, fall back to the old approach and simply pass in all the
-        # arguments
-        # NOTE 2: Some drivers which use password based SSH authentication rely on
-        # password being stored on the "auth" argument and that's why we also
-        # propagate that argument to "create_node()" method.
-        create_node_kwargs = dict([(key, value) for key, value in kwargs.items() if
-                                   key not in DEPLOY_NODE_KWARGS])
+        # non-deploy node arguments to the "create_node()" methods and if it
+        # that doesn't work, fall back to the old approach and simply pass in
+        # all the arguments
+        # NOTE 2: Some drivers which use password based SSH authentication
+        # rely on password being stored on the "auth" argument and that's why
+        # we also propagate that argument to "create_node()" method.
+        create_node_kwargs = dict([(key, value) for key, value in kwargs.items()
+                                   if key not in DEPLOY_NODE_KWARGS])
 
         try:
             node = self.create_node(**create_node_kwargs)
         except TypeError as e:
-            if 'create_node() got an unexpected keyword argument' in str(e):
+            msg_1_re = r'create_node\(\) missing \d+ required positional arguments.*'
+            msg_2_re = r'create_node\(\) takes at least \d+ arguments.*'
+            if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
                 node = self.create_node(**kwargs)
-            raise e
+            else:
+                raise e
 
         max_tries = kwargs.get('max_tries', 3)
 
@@ -1071,7 +1075,7 @@ class NodeDriver(BaseDriver):
             node, ip_addresses = self.wait_until_running(
                 nodes=[node],
                 wait_period=3,
-                timeout=kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT),
+                timeout=float(kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT)),
                 ssh_interface=ssh_interface)[0]
         except Exception as e:
             raise DeploymentError(node=node, original_exception=e, driver=self)
