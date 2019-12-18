@@ -70,6 +70,14 @@ def get_driver(drivers, provider, deprecated_providers=None,
         _mod = __import__(mod_name, globals(), locals(), [driver_name])
         return getattr(_mod, driver_name)
 
+    # NOTE: This is for backward compatibility reasons where user user a
+    # string provider name instead of a Provider.FOO enum constant.
+    for provider_name, (mod_name, driver_name) in drivers.items():
+        # NOTE: This works because Provider enum class overloads __eq__
+        if provider.lower() == provider_name.lower():
+            _mod = __import__(mod_name, globals(), locals(), [driver_name])
+            return getattr(_mod, driver_name)
+
     raise AttributeError('Provider %s does not exist' % (provider))
 
 
