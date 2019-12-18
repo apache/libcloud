@@ -13,7 +13,7 @@ Compute
   [@mpempekos]
 
 - [GCE] Add ``ex_disk_size`` argument to the ``create_node`` method.
-  (GITHUB-1386)
+  (GITHUB-1386, GITHUB-1388)
   [Peter Yu - @yukw777]
 
 - [VMware vCloud] Various improvements, fixes and additions to the driver.
