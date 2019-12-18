@@ -69,7 +69,11 @@ NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
 # script.
 SSH_CONNECT_TIMEOUT = 5 * 60
 
-
+# Keyword arguments which are specific to deploy_node() method, but not
+# create_node()
+DEPLOY_NODE_KWARGS = ['deploy', 'ssh_username', 'ssh_alternate_usernames',
+                      'ssh_port', 'ssh_timeout', 'ssh_key', 'timeout',
+                      'max_tries', 'ssh_interface']
 __all__ = [
     'Node',
     'NodeState',
@@ -1041,11 +1045,8 @@ class NodeDriver(BaseDriver):
         # NOTE 2: Some drivers which use password based SSH authentication rely on
         # password being stored on the "auth" argument and that's why we also
         # propagate that argument to "create_node()" method.
-        deploy_node_kwargs = ['deploy', 'ssh_username', 'ssh_alternate_usernames',
-                              'ssh_port', 'ssh_timeout', 'ssh_key', 'timeout',
-                              'max_tries', 'ssh_interface']
         create_node_kwargs = dict([(key, value) for key, value in kwargs.items() if
-                                   key not in deploy_node_kwargs])
+                                   key not in DEPLOY_NODE_KWARGS])
 
         try:
             node = self.create_node(**create_node_kwargs)
@@ -1535,7 +1536,7 @@ class NodeDriver(BaseDriver):
             return [address for address in addresses if is_supported(address)]
 
         if ssh_interface not in ['public_ips', 'private_ips']:
-            raise ValueError('ssh_interface argument must either be' +
+            raise ValueError('ssh_interface argument must either be ' +
                              'public_ips or private_ips')
 
         start = time.time()
