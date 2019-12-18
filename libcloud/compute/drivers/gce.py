@@ -3994,8 +3994,7 @@ class GCENodeDriver(NodeDriver):
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_image_family=None, ex_labels=None,
-            ex_accelerator_type=None, ex_accelerator_count=None,
-            ex_disk_size=None):
+            ex_accelerator_type=None, ex_accelerator_count=None):
         """
         Create a new node and return a node object for the node.
 
@@ -4133,9 +4132,6 @@ class GCENodeDriver(NodeDriver):
                                         accelerators to attach to the node.
         :type     ex_accelerator_count: ``int`` or ``None``
 
-        :keyword  ex_disk_size: Specify size of the boot disk.
-                                Integer in gigabytes.
-        :type     ex_disk_size: ``int`` or ``None``
 
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
@@ -4205,7 +4201,7 @@ class GCENodeDriver(NodeDriver):
             ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
             ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
             ex_subnetwork, ex_labels, ex_accelerator_type,
-            ex_accelerator_count, ex_disk_size)
+            ex_accelerator_count)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 

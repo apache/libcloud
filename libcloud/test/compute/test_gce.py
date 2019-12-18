@@ -1409,15 +1409,6 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertRaises(ResourceExistsError, self.driver.create_node,
                           node_name, size, image, location='europe-west1-a')
 
-    def test_create_node_ex_disk_size(self):
-        node_name = 'node-name'
-        image = self.driver.ex_get_image('debian-7')
-        size = self.driver.ex_get_size('n1-standard-1')
-        ex_disk_size = 25
-        node = self.driver.create_node(node_name, size, image,
-                                       ex_disk_size=ex_disk_size)
-        self.assertEqual(node.extra['boot_disk'].size, str(ex_disk_size))
-
     def test_ex_create_multiple_nodes(self):
         base_name = 'lcnode'
         image = self.driver.ex_get_image('debian-7')
