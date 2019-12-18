@@ -927,7 +927,10 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'create_node not implemented for this driver')
 
-    def deploy_node(self, **kwargs):
+    def deploy_node(self, deploy, ssh_username='root', ssh_alternate_usernames=None,
+                    ssh_port=22, ssh_timeout=10, ssh_key=None, auth=None,
+                    timeout=SSH_CONNECT_TIMEOUT, max_tries=3, ssh_interface='public_ips',
+                    **create_node_kwargs):
         # type: (...) -> Node
         """
         Create a new node, and start deployment.
@@ -1018,13 +1021,12 @@ class NodeDriver(BaseDriver):
             raise RuntimeError('paramiko is not installed. You can install ' +
                                'it using pip: pip install paramiko')
 
-        if 'auth' in kwargs:
-            auth = kwargs['auth']
+        if auth:
             if not isinstance(auth, (NodeAuthSSHKey, NodeAuthPassword)):
                 raise NotImplementedError(
                     'If providing auth, only NodeAuthSSHKey or'
                     'NodeAuthPassword is supported')
-        elif 'ssh_key' in kwargs:
+        elif ssh_key:
             # If an ssh_key is provided we can try deploy_node
             pass
         elif 'create_node' in self.features:
@@ -1046,59 +1048,59 @@ class NodeDriver(BaseDriver):
         # NOTE 2: Some drivers which use password based SSH authentication
         # rely on password being stored on the "auth" argument and that's why
         # we also propagate that argument to "create_node()" method.
-        create_node_kwargs = dict([(key, value) for key, value in
-                                   kwargs.items() if key
-                                   not in DEPLOY_NODE_KWARGS])
-
         try:
-            node = self.create_node(**create_node_kwargs)
+            node = self.create_node(auth=auth, **create_node_kwargs)
         except TypeError as e:
             msg_1_re = (r'create_node\(\) missing \d+ required '
                         'positional arguments.*')
             msg_2_re = r'create_node\(\) takes at least \d+ arguments.*'
             if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
-                node = self.create_node(**kwargs)
+                node = self.create_node(deploy=deploy,
+                                        ssh_username=ssh_username,
+                                        ssh_alternate_usernames=ssh_alternate_usernames,
+                                        ssh_port=ssh_port,
+                                        ssh_timeout=ssh_timeout,
+                                        ssh_key=ssh_key,
+                                        auth=auth,
+                                        timeout=timeout,
+                                        max_tries=max_tries,
+                                        ssh_interface=ssh_interface,
+                                        **create_node_kwargs)
             else:
                 raise e
 
-        max_tries = kwargs.get('max_tries', 3)
-
         password = None
-        if 'auth' in kwargs:
-            if isinstance(kwargs['auth'], NodeAuthPassword):
-                password = kwargs['auth'].password
+        if auth:
+            if isinstance(auth, NodeAuthPassword):
+                password = auth.password
         elif 'password' in node.extra:
             password = node.extra['password']
 
-        ssh_interface = kwargs.get('ssh_interface', 'public_ips')
+        wait_timeout = timeout or NODE_ONLINE_WAIT_TIMEOUT
 
         # Wait until node is up and running and has IP assigned
         try:
             node, ip_addresses = self.wait_until_running(
                 nodes=[node],
                 wait_period=3,
-                timeout=float(kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT)),
+                timeout=wait_timeout,
                 ssh_interface=ssh_interface)[0]
         except Exception as e:
             raise DeploymentError(node=node, original_exception=e, driver=self)
 
-        ssh_username = kwargs.get('ssh_username', 'root')
-        ssh_alternate_usernames = kwargs.get('ssh_alternate_usernames', [])
-        ssh_port = kwargs.get('ssh_port', 22)
-        ssh_timeout = kwargs.get('ssh_timeout', 10)
-        ssh_key_file = kwargs.get('ssh_key', None)
-        timeout = kwargs.get('timeout', SSH_CONNECT_TIMEOUT)
+        ssh_alternate_usernames = ssh_alternate_usernames or []
+        deploy_timeout = timeout or SSH_CONNECT_TIMEOUT
 
         deploy_error = None
 
         for username in ([ssh_username] + ssh_alternate_usernames):
             try:
                 self._connect_and_run_deployment_script(
-                    task=kwargs['deploy'], node=node,
+                    task=deploy, node=node,
                     ssh_hostname=ip_addresses[0], ssh_port=ssh_port,
                     ssh_username=username, ssh_password=password,
-                    ssh_key_file=ssh_key_file, ssh_timeout=ssh_timeout,
-                    timeout=timeout, max_tries=max_tries)
+                    ssh_key_file=ssh_key, ssh_timeout=ssh_timeout,
+                    timeout=deploy_timeout, max_tries=max_tries)
             except Exception as e:
                 # Try alternate username
                 # Todo: Need to fix paramiko so we can catch a more specific
