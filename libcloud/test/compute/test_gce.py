@@ -1241,6 +1241,17 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
 
+    def test_create_node_disk_size(self):
+        node_name = 'node-name'
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+        disk_size = 25
+        node = self.driver.create_node(node_name, size, image,
+                                       ex_disk_size=disk_size)
+        self.assertTrue(isinstance(node, Node))
+        self.assertEqual(node.name, node_name)
+        self.assertEqual(node.extra['boot_disk'].size, str(disk_size))
+
     def test_create_node_image_family(self):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
