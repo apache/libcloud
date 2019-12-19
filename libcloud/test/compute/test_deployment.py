@@ -29,7 +29,6 @@ from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
 from libcloud.compute.deployment import ScriptFileDeployment, FileDeployment
 from libcloud.compute.base import Node
-from libcloud.compute.base import DEPLOY_NODE_KWARGS
 from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
@@ -40,6 +39,12 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 from mock import Mock, patch
 
 from libcloud.test.secrets import RACKSPACE_PARAMS
+
+# Keyword arguments which are specific to deploy_node() method, but not
+# create_node()
+DEPLOY_NODE_KWARGS = ['deploy', 'ssh_username', 'ssh_alternate_usernames',
+                      'ssh_port', 'ssh_timeout', 'ssh_key', 'timeout',
+                      'max_tries', 'ssh_interface']
 
 
 class MockDeployment(Deployment):
