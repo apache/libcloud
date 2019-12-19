@@ -25,6 +25,8 @@ from typing import Tuple
 from typing import Type
 from typing import Optional
 from typing import Any
+from typing import Union
+from typing import TYPE_CHECKING
 
 import time
 import hashlib
@@ -41,6 +43,8 @@ import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, StorageVolumeState,\
     DeploymentError
+if TYPE_CHECKING:
+    from libcloud.compute.deployment import Deployment
 from libcloud.compute.types import Provider
 from libcloud.compute.types import NodeImageMemberState
 from libcloud.compute.ssh import SSHClient
@@ -62,6 +66,8 @@ if have_paramiko:
 else:
     SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror,  # type: ignore
                                      socket.error)  # type: ignore
+
+T_Auth = Union['NodeAuthSSHKey', 'NodeAuthPassword']
 
 # How long to wait for the node to come online after creating it
 NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
@@ -843,7 +849,13 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'list_locations not implemented for this driver')
 
-    def create_node(self, **kwargs):
+    def create_node(self,
+                    name,  # type: str
+                    size,  # type: NodeSize
+                    image,  # type: NodeImage
+                    location=None,  # type: Optional[NodeLocation]
+                    auth=None  # type: T_Auth
+                    ):
         # type: (...) -> Node
         """
         Create a new node instance. This instance will be started
@@ -927,10 +939,17 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'create_node not implemented for this driver')
 
-    def deploy_node(self, deploy, ssh_username='root',
-                    ssh_alternate_usernames=None, ssh_port=22, ssh_timeout=10,
-                    ssh_key=None, auth=None, timeout=SSH_CONNECT_TIMEOUT,
-                    max_tries=3, ssh_interface='public_ips',
+    def deploy_node(self,
+                    deploy,  # type: Deployment
+                    ssh_username='root',  # type: str
+                    ssh_alternate_usernames=None,  # type: Optional[List[str]]
+                    ssh_port=22,  # type: int
+                    ssh_timeout=10,  # type: int
+                    ssh_key=None,  # type: Optional[str]
+                    auth=None,  # type: T_Auth
+                    timeout=SSH_CONNECT_TIMEOUT,  # type: int
+                    max_tries=3,  # type: int
+                    ssh_interface='public_ips',  # type: str
                     **create_node_kwargs):
         # type: (...) -> Node
         """
@@ -1056,7 +1075,7 @@ class NodeDriver(BaseDriver):
                         'positional arguments.*')
             msg_2_re = r'create_node\(\) takes at least \d+ arguments.*'
             if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
-                node = self.create_node(
+                node = self.create_node(  # type: ignore
                     deploy=deploy,
                     ssh_username=ssh_username,
                     ssh_alternate_usernames=ssh_alternate_usernames,
