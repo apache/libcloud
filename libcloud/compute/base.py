@@ -1070,6 +1070,7 @@ class NodeDriver(BaseDriver):
                         'positional arguments.*')
             msg_2_re = r'create_node\(\) takes at least \d+ arguments.*'
             if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
+                # pylint: disable=unexpected-keyword-arg
                 node = self.create_node(  # type: ignore
                     deploy=deploy,
                     ssh_username=ssh_username,
@@ -1082,6 +1083,7 @@ class NodeDriver(BaseDriver):
                     max_tries=max_tries,
                     ssh_interface=ssh_interface,
                     **create_node_kwargs)
+                # pylint: enable=unexpected-keyword-arg
             else:
                 raise e
 
