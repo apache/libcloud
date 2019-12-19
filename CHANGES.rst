@@ -28,6 +28,15 @@ Compute
   Because of that, a lot of the compute drivers which support deploy
   functionality needed to use ``**kwargs`` in ``create_node()`` method
   signature which made code hard to read and error prone.
+
+  Also update various affected drivers to explicitly declare supported
+  arguments in the  ``create_node()`` method signature (Dummy, Abiquo,
+  Joyent, Bluebox, OpenStack, Gandy, VCL, vCloud, CloudStack, GoGrid
+  HostVirtual, CloudSigma, ElasticStack, RimuHosting, SoftLayer, Voxel,
+  Vpsnet, KTUcloud, BrightBox, ECP, OpenNebula, UPcloud).
+
+  As part of this change, also various issues with invalid argument names
+  were identified and fixed.
   (GITHUB-1389)
   [Tomaz Muraus]
 
