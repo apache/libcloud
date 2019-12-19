@@ -779,8 +779,8 @@ class NttCisLBDriver(Driver):
         try:
             import OpenSSL
         except ImportError:
-            raise ImportError('Missing "OpenSSL" dependency. You can install it '
-                            'using pip - pip install pyopenssl')
+            raise ImportError('Missing "OpenSSL" dependency. You can install '
+                              'it using pip - pip install pyopenssl')
 
         with open(crt_file) as fp:
             c = OpenSSL.crypto.load_certificate(
@@ -848,8 +848,8 @@ class NttCisLBDriver(Driver):
             import OpenSSL
             from OpenSSL import crypto
         except ImportError:
-            raise ImportError('Missing "OpenSSL" dependency. You can install it '
-                            'using pip - pip install pyopenssl')
+            raise ImportError('Missing "OpenSSL" dependency. You can install '
+                              'it using pip - pip install pyopenssl')
 
         c = crypto.load_certificate(
             crypto.FILETYPE_PEM, open(chain_crt_file).read())
