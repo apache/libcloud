@@ -20,6 +20,17 @@ Compute
   (GITHUB-1373)
   [OpenText Corporation]
 
+- Update ``deploy_node()`` method so it now only passes non-deploy node
+  keyword arguments + ``auth`` argument to the underlying ``create_node()``
+  method. Previously it also passed ``deploy_node()`` specific arguments
+  such as ``deploy``, ``ssh_username``, ``max_tries``, etc. to it.
+
+  Because of that, a lot of the compute drivers which support deploy
+  functionality needed to use ``**kwargs`` in ``create_node()`` method
+  signature which made code hard to read and error prone.
+  (GITHUB-1389)
+  [Tomaz Muraus]
+
 Storage
 -------
 
