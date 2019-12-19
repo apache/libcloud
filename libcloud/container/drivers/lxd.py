@@ -434,11 +434,8 @@ class LXDContainerDriver(ContainerDriver):
         if parameters:
             parameters = json.loads(parameters)
 
-        if isinstance(image, ContainerImage):
-            container = self._deploy_container_from_image(name=name, image=image, parameters=parameters,
+        container = self._deploy_container_from_image(name=name, image=image, parameters=parameters,
                                                           container_params=container_params)
-        else:
-            raise LXDAPIException(message="'image' parameter must be a ContainerImage")
 
         if start:
             container.start()
