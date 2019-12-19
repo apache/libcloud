@@ -102,7 +102,6 @@ class LXDContainerDriverTestCase(unittest.TestCase):
             container = driver.get_container(id='second_lxd_container')
             container.destroy()
 
-
     def test_deploy_container_without_image(self):
         with self.assertRaises(LXDAPIException) as exc:
             for driver in self.drivers:
@@ -113,11 +112,12 @@ class LXDContainerDriverTestCase(unittest.TestCase):
 
     def test_deploy_container(self):
         for driver in self.drivers:
-            image = ContainerImage(id='54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473',
-                                   name='54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473',
+            image = ContainerImage(id=None,
+                                   name=None,
                                    path=None, version=None, driver=driver)
             container = driver.deploy_container(name='first_lxd_container',
-                                                image=image, parameters={})
+                                                image=image,
+                                                parameters='{"source":{"type":"image", "fingerprint":"7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b"}}')
             self.assertIsInstance(container, Container)
             self.assertEqual(container.name, 'first_lxd_container')
 
@@ -206,7 +206,7 @@ class LXDMockHttp(MockHttp):
 
     def _linux_124_containers_first_lxd_container_state(self, method, url, body, headers):
 
-        if method == 'PUT' or 'DELETE':
+        if method == 'PUT' or method == 'DELETE':
             json = self.fixtures.load('linux_124/background_op.json')
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
         elif method == 'GET':
@@ -215,7 +215,7 @@ class LXDMockHttp(MockHttp):
 
     def _linux_124_containers_second_lxd_container_state(self, method, url, body, headers):
 
-        if method == 'PUT':
+        if method == 'PUT' or method == 'DELETE':
             json = self.fixtures.load('linux_124/background_op.json')
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
         elif method == 'GET':
