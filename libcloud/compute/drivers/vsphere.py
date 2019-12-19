@@ -819,12 +819,49 @@ class VSphereNodeDriver(NodeDriver):
         else:
             resource_pool = cluster.resourcePool
 
+        devices = []
+        vmconf = vim.vm.ConfigSpec(
+            numCPUs=int(size.extra.get('cpu', 1)),
+            memoryMB=int(size.ram),
+            deviceChange=devices
+        )
+
+        datastore = None
+        pod = None
+        podsel = vim.storageDrs.PodSelectionSpec()
+        if kwargs.get('datastore_cluster'):
+            pod = self.get_obj([vim.StoragePod], kwargs.get('datastore_cluster'))
+        else:
+            content = self.connection.RetrieveContent()
+            pods = content.viewManager.CreateContainerView(
+                content.rootFolder, [vim.StoragePod], True).view
+            for pod in pods:
+                if cluster.name.lower() in pod.name:
+                    break
+        podsel.storagePod = pod
+        storagespec = vim.storageDrs.StoragePlacementSpec()
+        storagespec.podSelectionSpec = podsel
+        storagespec.type = 'create'
+        storagespec.folder = folder
+        storagespec.resourcePool = resource_pool
+        storagespec.configSpec = vmconf
+
+        try:
+            content = self.connection.RetrieveContent()
+            rec = content.storageResourceManager.RecommendDatastores(
+                storageSpec=storagespec)
+            rec_action = rec.recommendations[0].action[0]
+            real_datastore_name = rec_action.destination.name
+        except:
+            real_datastore_name = template.datastore[0].info.name
+
+        datastore = self.get_obj([vim.Datastore], real_datastore_name)
+
         if kwargs.get('datastore'):
             datastore = self.get_obj([vim.Datastore], kwargs.get('datastore'))
-        else:
+        elif not datastore:
             datastore = self.get_obj([vim.Datastore], template.datastore[0].info.name)
 
-        devices = []
 
         if network:
             nicspec = vim.vm.device.VirtualDeviceSpec()
@@ -863,34 +900,6 @@ class VSphereNodeDriver(NodeDriver):
         # disk_spec.device.capacityInKB = new_disk_kb
         # disk_spec.device.controllerKey = controller.key
         # devices.append(disk_spec)
-
-        vmconf = vim.vm.ConfigSpec(
-            numCPUs=int(size.extra.get('cpu', 1)),
-            memoryMB=int(size.ram),
-            deviceChange=devices
-        )
-
-        if kwargs.get('datastore_cluster'):
-            podsel = vim.storageDrs.PodSelectionSpec()
-            pod = self.get_obj([vim.StoragePod], kwargs.get('datastore_cluster'))
-            podsel.storagePod = pod
-            storagespec = vim.storageDrs.StoragePlacementSpec()
-            storagespec.podSelectionSpec = podsel
-            storagespec.type = 'create'
-            storagespec.folder = folder
-            storagespec.resourcePool = resource_pool
-            storagespec.configSpec = vmconf
-
-            try:
-                content = self.connection.RetrieveContent()
-                rec = content.storageResourceManager.RecommendDatastores(
-                    storageSpec=storagespec)
-                rec_action = rec.recommendations[0].action[0]
-                real_datastore_name = rec_action.destination.name
-            except:
-                real_datastore_name = template.datastore[0].info.name
-
-            datastore = self.get_obj([vim.Datastore], real_datastore_name)
 
         clonespec = vim.vm.CloneSpec(config=vmconf)
         relospec = vim.vm.RelocateSpec()
