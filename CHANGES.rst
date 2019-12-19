@@ -40,6 +40,11 @@ Compute
   (GITHUB-1389)
   [Tomaz Muraus]
 
+- Add MyPy type annotations for ``create_node()`` and ``deploy_node()``
+  method.
+  (GITHUB-1389)
+  [Tomaz Muraus]
+
 Storage
 -------
 
