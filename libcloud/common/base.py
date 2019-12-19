@@ -607,7 +607,7 @@ class Connection(object):
                                                            stream=stream)
                 else:
                     self.connection.request(method=method, url=url, body=data,
-                                            headers=headers, stream=stream, json=json)
+                                            headers=headers, stream=stream)
         except socket.gaierror as e:
             message = str(e)
             errno = getattr(e, 'errno', None)
