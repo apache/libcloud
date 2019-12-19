@@ -4,6 +4,22 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+-------
+
+- Fix a regression with ``get_driver()`` method not working if ``provider``
+  argument value was a string (e.g. using ``get_driver('openstack')``
+  instead of ``get_driver(Provider.OPENSTACK)``).
+
+  Only officially supported and recommended approach still is to use
+  ``Provider.FOO`` enum type constant, but since the string notation was
+  unofficially supported in the past, we will still support it until the next
+  major release.
+
+  Reported by @dpeschman.
+  (GITHUB-1391, GITHUB-1390)
+  [Tomaz Muraus]
+
 Compute
 -------
 
