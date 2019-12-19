@@ -145,12 +145,6 @@ class LXDContainerDriverTestCase(unittest.TestCase):
                 driver.ex_get_storage_pool(id='pool3')
                 self.assertEqual(str(exc), 'Storage pool with name pool3 has no data')
 
-    """
-    def test_create_storage_pool(self):
-        for driver in self.drivers:
-            pools = driver.create_storage_pool()
-    """
-
     def test_delete_storage_pool(self):
         for driver in self.drivers:
             driver.ex_delete_storage_pool(id='pool1')

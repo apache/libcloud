@@ -391,16 +391,19 @@ class LXDContainerDriver(ContainerDriver):
         :param name: The name of the new container. 64 chars max, ASCII, no slash, no colon and no comma
         :type  name: ``str``
 
-        :param image: The container image to deploy
+        :param image: The container image to deploy. Currently not used
         :type  image: :class:`.ContainerImage`
 
         :param cluster: The cluster to deploy to, None is default
         :type  cluster: :class:`.ContainerCluster`
 
-        :param parameters: Container configuration parameters
+        :param parameters: Container Image parameters. This parameter should represent the
+                            the ``source`` dictioanry expected by the  LXD API call for more
+                            information how this parameter should be structured see
+                            https://github.com/lxc/lxd/blob/master/doc/rest-api.md
         :type  parameters: ``str``
 
-        :param start: Start the container on deployment
+        :param start: Start the container on deployment. True is the default
         :type  start: ``bool``
 
         :param architecture: string e.g. x86_64
@@ -424,13 +427,12 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
 
-        # TODO: Perhaps we should save us the trouble and
-        # check if the container exists. If yes then simply
-        # return this container?
-
         container_params = {"architecture": architecture, "profiles":profiles,
                             "ephemeral": ephemeral, "config": config,
                             "devices": devices, "instance_type": instance_type}
+
+        if parameters:
+            parameters = json.loads(parameters)
 
         if isinstance(image, ContainerImage):
             container = self._deploy_container_from_image(name=name, image=image, parameters=parameters,
@@ -440,9 +442,10 @@ class LXDContainerDriver(ContainerDriver):
 
         if start:
             container.start()
+
         return container
 
-    def get_container(self, id):
+    def get_container(self, id, get_ip_addr=True):
 
         """
         Get a container by ID
@@ -450,15 +453,42 @@ class LXDContainerDriver(ContainerDriver):
         :param id: The ID of the container to get
         :type  id: ``str``
 
+        :param get_ip_addr: Indicates whether ip addresses should also be included. This requires an extra GET request
+        :type  get_ip_addr: ``boolean```
+
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request("/%s/containers/%s" %
+        response = self.connection.request("/%s/containers/%s" %
                                          (self.version, id))
-        result = result.parse_body()
-        assert_response(response_dict=result)
-        return self._to_container(result['metadata'])
+        result_dict = response.parse_body()
+        assert_response(response_dict=result_dict, status_code=200)
 
-    def start_container(self, container):
+        #import pdb; pdb.set_trace()
+        metadata = result_dict["metadata"]
+
+        ips = []
+        if get_ip_addr:
+            ip_response = self.connection.request("/%s/containers/%s/state" %
+                                                (self.version, id))
+
+            ip_result_dict = ip_response.parse_body()
+            assert_response(response_dict=ip_result_dict, status_code=200)
+
+            networks = None
+
+            if ip_result_dict["metadata"]["network"] is not None:
+                networks = ip_result_dict["metadata"]["network"]["eth0"]
+
+                # the list of addresses
+                addresses = networks["addresses"]
+
+                for item in addresses:
+                    ips.append(item["address"])
+
+        metadata.update({"ips":ips})
+        return self._to_container(metadata=metadata)
+
+    def start_container(self, container, timeout=default_time_out):
         """
         Start a container
 
@@ -468,9 +498,9 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container`
         """
         return self._do_container_action(container=container, action='start',
-                                         timeout=30, force=True, stateful=True)
+                                         timeout=timeout, force=True, stateful=True)
 
-    def stop_container(self, container):
+    def stop_container(self, container, timeout=default_time_out):
         """
         Stop the given container
 
@@ -481,9 +511,9 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container
         """
         return self._do_container_action(container=container, action='stop',
-                                         timeout=30, force=True, stateful=True)
+                                         timeout=timeout, force=True, stateful=True)
 
-    def restart_container(self, container):
+    def restart_container(self, container, timeout=default_time_out):
         """
         Restart a deployed container
 
@@ -493,7 +523,7 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
         return self._do_container_action(container=container, action='restart',
-                                         timeout=30, force=True, stateful=True)
+                                         timeout=timeout, force=True, stateful=True)
 
     def destroy_container(self, container, timeout=default_time_out):
         """
@@ -616,6 +646,7 @@ class LXDContainerDriver(ContainerDriver):
 
         # Return: background operation or standard error
         data = description_dict['image_data']
+
 
         response = self.connection.request('/%s/images' % (self.version),
                                            method='POST', json=data)
@@ -740,8 +771,9 @@ class LXDContainerDriver(ContainerDriver):
                    couldn't be created.
         """
 
+        data = json.dumps(definition)
         response = self.connection.request("/%s/storage-pools" % self.version,
-                                           method='POST', json=definition)
+                                           method='POST', data=data)
 
         raise NotImplementedError("This function has not been finished yet")
 
@@ -804,7 +836,6 @@ class LXDContainerDriver(ContainerDriver):
         Authentication: trusted
         Operation: sync
         Return: A StorageVolume  representing a storage volume
-
         """
 
         response = self.connection.request("/%s/storage-pools/%s/volumes/%s/%s"
@@ -814,35 +845,26 @@ class LXDContainerDriver(ContainerDriver):
 
         return self._to_storage_volume(response_dict["metadata"])
 
-    def _to_container(self, data):
+    def _to_container(self, metadata):
         """
         Convert container in Container instances given the
         the data received from the LXD API call parsed in a dictionary
         """
 
-        name = data['name']
-        state = data['status']
+        name = metadata['name']
+        state = metadata['status']
 
         if state == 'Running':
             state = ContainerState.RUNNING
         else:
             state = ContainerState.STOPPED
 
-        if 'config' in data.keys():
-            extra = dict()
-            config = data['config']
-            img_id = config.get('volatile.base_image', None)
-            img_version = config.get('image.version', None)
-            extra["architecture"] = config.get("image.architecture", None)
-            extra["description"] = config.get("image.description", None)
-            extra["label"] = config.get("image.description", None)
-            extra["os"] = config.get("image.os", None)
-            extra["release"] = config.get("image.release", None)
-            extra["serial"] = config.get("image.serial", None)
-            extra["type"] = config.get("image.type", None)
+        extra = metadata
+        img_id = metadata['config'].get('volatile.base_image', None)
+        img_version = metadata['config'].get('image.version', None)
 
         image = ContainerImage(id=img_id, name=img_id, path=None,
-                               version=img_version, driver=self, extra=extra)
+                               version=img_version, driver=self, extra=None)
 
         container = Container(driver=self, name=name, id=name,
                               state=state, image=image, ip_addresses=[], extra=extra)
@@ -859,13 +881,17 @@ class LXDContainerDriver(ContainerDriver):
         if action not in LXD_API_STATE_ACTIONS:
             raise ValueError("Invalid action specified")
 
-        json = {"action": action, "timeout": timeout, "force": force}
+        # cache the state of the container
+        state = container.state
+
+        data = {"action": action, "timeout": timeout, "force": force}
+        data = json.dumps(data)
 
         # checkout this for stateful: https://discuss.linuxcontainers.org/t/error-in-live-migration/1928
         # looks like we are getting "err":"Unable to perform container live migration. CRIU isn't installed"
         # in the response when stateful is True so remove it for now
         response = self.connection.request('/%s/containers/%s/state' %
-                                         (self.version, container.name), method='PUT', json=json)
+                                         (self.version, container.name), method='PUT', data=data)
 
         response_dict = response.parse_body()
 
@@ -886,22 +912,28 @@ class LXDContainerDriver(ContainerDriver):
                 # somthing is wrong
                 raise LXDAPIException(message=e.message)
 
-        #response_dict = response.parse_body()
-        #assert_response(response_dict, status_code=200)
+        # if the container is ephemeral and the action is to stop
+        # then the container is removed so return sth dummy
+        if state == ContainerState.RUNNING and container.extra['ephemeral'] and action == 'stop':
+            # return a dummy container
+            container = Container(driver=self, name=container.name, id=container.name,
+                                  state=ContainerState.TERMINATED, image=None, ip_addresses=[], extra=None)
+            return container
+
         return self.get_container(id=container.name)
 
     def _to_image(self, metadata):
         """
-        Returns a container image from the given image
+        Returns a container image from the given metadata
 
-        :param image_url: URL of image
-        :type  path: ``str``
+        :param metadata:
+        :type  metadata: ``dict``
 
         :rtype: :class:`.ContainerImage`
         """
         aliases = metadata.get('aliases', [])
 
-        if  aliases:
+        if aliases:
             name = metadata.get('aliases')[0].get('name')
         else:
             name = metadata.get('fingerprint')
@@ -909,13 +941,9 @@ class LXDContainerDriver(ContainerDriver):
         id = name
         version = metadata.get('update_source').get('alias')
 
-        path = None
-        if 'root' in metadata.keys() and 'path' in metadata['root'].keys():
-            path = metadata['root']['path']
-
         extra = get_img_extra_from_meta(metadata=metadata)
 
-        return ContainerImage(id=id, name=name, path=path,
+        return ContainerImage(id=id, name=name, path=None,
                               version=version,  driver=self, extra=extra)
 
     def _to_storage_pool(self, data):
@@ -949,10 +977,7 @@ class LXDContainerDriver(ContainerDriver):
         data = {'name': name, 'source': {'type': 'none'}}
 
         if parameters:
-            data['source'].update(parameters)
-
-        if image.extra:
-            data['source'].update(image.extra)
+            data['source'].update(parameters["source"])
 
         if data['source']['type'] not in LXD_API_IMAGE_SOURCE_TYPE:
             msg="source type must in "+str(LXD_API_IMAGE_SOURCE_TYPE)
@@ -986,8 +1011,10 @@ class LXDContainerDriver(ContainerDriver):
             container_params["instance_type"] is not None:
             data["instance_type"] = container_params["instance_type"]
 
+        data = json.dumps(data)
+
         # Return: background operation or standard error
-        response = self.connection.request('/%s/containers' % self.version, method='POST', json=data)
+        response = self.connection.request('/%s/containers' % self.version, method='POST', data=data)
         response_dict = response.parse_body()
 
         # a background operation is expected to be returned status_code = 100 --> Operation created
