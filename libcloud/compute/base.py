@@ -76,11 +76,6 @@ NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
 # script.
 SSH_CONNECT_TIMEOUT = 5 * 60
 
-# Keyword arguments which are specific to deploy_node() method, but not
-# create_node()
-DEPLOY_NODE_KWARGS = ['deploy', 'ssh_username', 'ssh_alternate_usernames',
-                      'ssh_port', 'ssh_timeout', 'ssh_key', 'timeout',
-                      'max_tries', 'ssh_interface']
 __all__ = [
     'Node',
     'NodeState',
