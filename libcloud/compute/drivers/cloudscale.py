@@ -107,7 +107,8 @@ class CloudscaleNodeDriver(NodeDriver):
         """
         return self._list_resources('/v1/images', self._to_image)
 
-    def create_node(self, name, size, image, location=None, ex_create_attr={}):
+    def create_node(self, name, size, image, location=None,
+                    ex_create_attr=None):
         """
         Create a node.
 
@@ -131,6 +132,7 @@ class CloudscaleNodeDriver(NodeDriver):
         :return: The newly created node.
         :rtype: :class:`Node`
         """
+        ex_create_attr = ex_create_attr or {}
         attr = dict(ex_create_attr)
         attr.update(
             name=name,

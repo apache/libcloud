@@ -269,7 +269,11 @@ class SoftLayerNodeDriver(NodeDriver):
 
         raise SoftLayerException('Timeout on getting node details')
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size=None, image=None, location=None,
+                    ex_domain=None, ex_cpus=None,
+                    ex_disk=None, ex_ram=None, ex_bandwidth=None,
+                    ex_local_disk=None, ex_datacenter=None, ex_os=None,
+                    ex_keyname=None, ex_hourly=True):
         """Create a new SoftLayer node
 
         @inherits: :class:`NodeDriver.create_node`
@@ -293,46 +297,45 @@ class SoftLayerNodeDriver(NodeDriver):
         :keyword    ex_keyname: The name of the key pair
         :type       ex_keyname: ``str``
         """
-        name = kwargs['name']
         os = 'DEBIAN_LATEST'
-        if 'ex_os' in kwargs:
-            os = kwargs['ex_os']
-        elif 'image' in kwargs:
-            os = kwargs['image'].id
+        if ex_os:
+            os = ex_os
+        elif image:
+            os = image.id
 
-        size = kwargs.get('size', NodeSize(id=123, name='Custom', ram=None,
-                                           disk=None, bandwidth=None,
-                                           price=None,
-                                           driver=self.connection.driver))
+        size = size or NodeSize(id=123, name='Custom', ram=None,
+                                disk=None, bandwidth=None,
+                                price=None,
+                                driver=self.connection.driver)
         ex_size_data = SL_TEMPLATES.get(int(size.id)) or {}
         # plan keys are ints
-        cpu_count = kwargs.get('ex_cpus') or ex_size_data.get('cpus') or \
+        cpu_count = ex_cpus or ex_size_data.get('cpus') or \
             DEFAULT_CPU_SIZE
-        ram = kwargs.get('ex_ram') or ex_size_data.get('ram') or \
+        ram = ex_ram or ex_size_data.get('ram') or \
             DEFAULT_RAM_SIZE
-        bandwidth = kwargs.get('ex_bandwidth') or size.bandwidth or 10
-        hourly = kwargs.get('ex_hourly', True)
+        bandwidth = ex_bandwidth or size.bandwidth or 10
+        hourly = ex_hourly
 
         local_disk = 'true'
         if ex_size_data.get('local_disk') is False:
             local_disk = 'false'
 
-        if kwargs.get('ex_local_disk') is False:
+        if ex_local_disk is False:
             local_disk = 'false'
 
         disk_size = DEFAULT_DISK_SIZE
         if size.disk:
             disk_size = size.disk
-        if kwargs.get('ex_disk'):
-            disk_size = kwargs.get('ex_disk')
+        if ex_disk:
+            disk_size = ex_disk
 
         datacenter = ''
-        if 'ex_datacenter' in kwargs:
-            datacenter = kwargs['ex_datacenter']
-        elif 'location' in kwargs:
-            datacenter = kwargs['location'].id
+        if ex_datacenter:
+            datacenter = ex_datacenter
+        elif location:
+            datacenter = location.id
 
-        domain = kwargs.get('ex_domain')
+        domain = ex_domain
         if domain is None:
             if name.find('.') != -1:
                 domain = name[name.find('.') + 1:]
@@ -364,10 +367,10 @@ class SoftLayerNodeDriver(NodeDriver):
         if datacenter:
             newCCI['datacenter'] = {'name': datacenter}
 
-        if 'ex_keyname' in kwargs:
+        if ex_keyname:
             newCCI['sshKeys'] = [
                 {
-                    'id': self._key_name_to_id(kwargs['ex_keyname'])
+                    'id': self._key_name_to_id(ex_keyname)
                 }
             ]
 

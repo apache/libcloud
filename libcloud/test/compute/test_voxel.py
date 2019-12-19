@@ -109,7 +109,7 @@ class VoxelTest(unittest.TestCase):
         self.assertEqual(node.id, '1234')
 
         node = self.driver.create_node(name='foo', image=image, size=size,
-                                       location=location, voxel_access=True)
+                                       location=location, ex_voxel_access=True)
         self.assertEqual(node.id, '1234')
 
     def test_reboot_node(self):

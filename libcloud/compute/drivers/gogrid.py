@@ -254,7 +254,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
                                     params={'lookup': 'ip.datacenter'}).object)
         return locations
 
-    def ex_create_node_nowait(self, **kwargs):
+    def ex_create_node_nowait(self, name, size, image, location=None,
+                              ex_description=None, ex_ip=None):
         """Don't block until GoGrid allocates id for a node
         but return right away with id == None.
 
@@ -282,17 +283,12 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         :rtype: :class:`GoGridNode`
         """
-        name = kwargs['name']
-        image = kwargs['image']
-        size = kwargs['size']
-        try:
-            ip = kwargs['ex_ip']
-        except KeyError:
-            ip = self._get_first_ip(kwargs.get('location'))
+        if not ex_ip:
+            ip = self._get_first_ip(location)
 
         params = {'name': name,
                   'image': image.id,
-                  'description': kwargs.get('ex_description', ''),
+                  'description': ex_description or '',
                   'server.ram': size.id,
                   'ip': ip}
 
@@ -302,7 +298,8 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         return node
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location=None,
+                    ex_description=None, ex_ip=None):
         """Create a new GoGird node
 
         @inherits: :class:`NodeDriver.create_node`
@@ -316,7 +313,9 @@ class GoGridNodeDriver(BaseGoGridDriver, NodeDriver):
 
         :rtype: :class:`GoGridNode`
         """
-        node = self.ex_create_node_nowait(**kwargs)
+        node = self.ex_create_node_nowait(name=name, size=size, image=image,
+                                          ex_description=ex_description,
+                                          ex_ip=ex_ip)
 
         timeout = 60 * 20
         waittime = 0

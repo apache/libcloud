@@ -264,7 +264,8 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
                 nodes.append(node)
         return nodes
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, smp='auto', nic_model='e1000',
+                    vnc_password=None, drive_type='hdd'):
         """
         Creates a CloudSigma instance
 
@@ -287,13 +288,6 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
         :keyword    drive_type: Drive type (ssd|hdd). Defaults to hdd.
         :type       drive_type: ``str``
         """
-        size = kwargs['size']
-        image = kwargs['image']
-        smp = kwargs.get('smp', 'auto')
-        nic_model = kwargs.get('nic_model', 'e1000')
-        vnc_password = kwargs.get('vnc_password', None)
-        drive_type = kwargs.get('drive_type', 'hdd')
-
         if nic_model not in ['e1000', 'rtl8139', 'virtio']:
             raise CloudSigmaException('Invalid NIC model specified')
 
@@ -302,8 +296,8 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
                                       ' are: hdd, ssd' % (drive_type))
 
         drive_data = {}
-        drive_data.update({'name': kwargs['name'],
-                           'size': '%sG' % (kwargs['size'].disk),
+        drive_data.update({'name': name,
+                           'size': '%sG' % (size.disk),
                            'driveType': drive_type})
 
         response = self.connection.request(
@@ -330,7 +324,7 @@ class CloudSigma_1_0_NodeDriver(CloudSigmaNodeDriver):
 
         node_data = {}
         node_data.update(
-            {'name': kwargs['name'], 'cpu': size.cpu, 'mem': size.ram,
+            {'name': name, 'cpu': size.cpu, 'mem': size.ram,
              'ide:0:0': drive_uuid, 'boot': 'ide:0:0', 'smp': smp})
         node_data.update({'nic:0:model': nic_model, 'nic:0:dhcp': 'auto'})
 

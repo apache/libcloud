@@ -329,7 +329,7 @@ class ECPNodeDriver(NodeDriver):
                              driver=self),
                 ]
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image):
         """
         Creates a virtual machine.
 
@@ -356,9 +356,9 @@ class ECPNodeDriver(NodeDriver):
 
         # Prepare to make the VM
         data = {
-            'name': str(kwargs['name']),
-            'package': str(kwargs['image'].id),
-            'hardware': str(kwargs['size'].id),
+            'name': str(name),
+            'package': str(image.id),
+            'hardware': str(size.id),
             'network_uuid': str(network),
             'disk': ''
         }

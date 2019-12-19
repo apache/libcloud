@@ -126,7 +126,7 @@ class HostVirtualNodeDriver(NodeDriver):
             images.append(i)
         return images
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, name, image, size, location=None, auth=None):
         """
         Creates a node
 
@@ -148,7 +148,7 @@ class HostVirtualNodeDriver(NodeDriver):
 
         dc = None
 
-        auth = self._get_and_check_auth(kwargs.get('auth'))
+        auth = self._get_and_check_auth(auth)
 
         if not self._is_valid_fqdn(name):
             raise HostVirtualException(
@@ -157,8 +157,8 @@ class HostVirtualNodeDriver(NodeDriver):
         # simply order a package first
         pkg = self.ex_order_package(size)
 
-        if 'location' in kwargs:
-            dc = kwargs['location'].id
+        if location:
+            dc = location.id
         else:
             dc = DEFAULT_NODE_LOCATION_ID
 

@@ -55,15 +55,14 @@ class UpcloudCreateNodeRequestBody(object):
     """
 
     def __init__(self, name, size, image, location, auth=None,
-                 **kwargs):
-        username = kwargs.get('ex_username', 'root')
+                 ex_hostname='localhost', ex_username='root'):
         self.body = {
             'server': {
                 'title': name,
-                'hostname': kwargs.get('ex_hostname', 'localhost'),
+                'hostname': ex_hostname,
                 'plan': size.id,
                 'zone': location.id,
-                'login_user': _LoginUser(username, auth).to_dict(),
+                'login_user': _LoginUser(ex_username, auth).to_dict(),
                 'storage_devices': _StorageDevice(image, size).to_dict()
             }
         }

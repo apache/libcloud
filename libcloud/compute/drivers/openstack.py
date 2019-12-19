@@ -564,7 +564,8 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         return resp.status == httplib.NO_CONTENT
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, ex_metadata=None, ex_files=None,
+                    ex_shared_ip_group=None, ex_shared_ip_group_id=None):
         """
         Create a new node
 
@@ -581,33 +582,28 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
             that shared IP group
         :type       ex_shared_ip_group_id: ``str``
         """
-        name = kwargs['name']
-        image = kwargs['image']
-        size = kwargs['size']
-
         attributes = {'xmlns': self.XML_NAMESPACE,
                       'name': name,
                       'imageId': str(image.id),
                       'flavorId': str(size.id)}
 
-        if 'ex_shared_ip_group' in kwargs:
+        if ex_shared_ip_group:
             # Deprecate this. Be explicit and call the variable
             # ex_shared_ip_group_id since user needs to pass in the id, not the
             # name.
             warnings.warn('ex_shared_ip_group argument is deprecated.'
                           ' Please use ex_shared_ip_group_id')
 
-        if 'ex_shared_ip_group_id' in kwargs:
-            shared_ip_group_id = kwargs['ex_shared_ip_group_id']
-            attributes['sharedIpGroupId'] = shared_ip_group_id
+        if ex_shared_ip_group_id:
+            attributes['sharedIpGroupId'] = ex_shared_ip_group_id
 
         server_elm = ET.Element('server', attributes)
 
-        metadata_elm = self._metadata_to_xml(kwargs.get("ex_metadata", {}))
+        metadata_elm = self._metadata_to_xml(ex_metadata or {})
         if metadata_elm:
             server_elm.append(metadata_elm)
 
-        files_elm = self._files_to_xml(kwargs.get("ex_files", {}))
+        files_elm = self._files_to_xml(ex_files or {})
         if files_elm:
             server_elm.append(files_elm)
 
@@ -1331,7 +1327,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                                                     None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image=None, ex_keyname=None,
+                    ex_userdata=None,
+                    ex_config_drive=None, ex_security_groups=None,
+                    ex_metadata=None, ex_files=None, networks=None,
+                    ex_disk_config=None,
+                    ex_admin_pass=None,
+                    ex_availability_zone=None, ex_blockdevicemappings=None):
         """Create a new node
 
         @inherits:  :class:`NodeDriver.create_node`
@@ -1379,8 +1381,21 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :keyword    ex_availability_zone: Nova availability zone for the node
         :type       ex_availability_zone: ``str``
         """
+        ex_metadata = ex_metadata or {}
+        ex_files = ex_files or {}
+        networks = networks or []
+        ex_security_groups = ex_security_groups or []
 
-        server_params = self._create_args_to_params(None, **kwargs)
+        server_params = self._create_args_to_params(
+            node=None,
+            name=name,
+            size=size, image=image, ex_keyname=ex_keyname,
+            ex_userdata=ex_userdata, ex_config_drive=ex_config_drive,
+            ex_security_groups=ex_security_groups, ex_metadata=ex_metadata,
+            ex_files=ex_files, networks=networks,
+            ex_disk_config=ex_disk_config,
+            ex_availability_zone=ex_availability_zone,
+            ex_blockdevicemappings=ex_blockdevicemappings)
 
         resp = self.connection.request("/servers",
                                        method='POST',
@@ -1488,9 +1503,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             server_params['user_data'] = base64.b64encode(
                 b(kwargs['ex_userdata'])).decode('ascii')
 
-        if 'ex_config_drive' in kwargs:
-            server_params['config_drive'] = kwargs['ex_config_drive']
-
         if 'ex_disk_config' in kwargs:
             server_params['OS-DCF:diskConfig'] = kwargs['ex_disk_config']
 
@@ -1520,7 +1532,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         else:
             server_params['name'] = node.name
 
-        if 'image' in kwargs:
+        if 'image' in kwargs and kwargs['image']:
             server_params['imageRef'] = kwargs.get('image').id
         else:
             server_params['imageRef'] = node.extra.get(

@@ -94,9 +94,9 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
             name='testerpart2',
             image=image,
             size=size,
-            vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
-            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725',
-            cpus=2,
+            ex_vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
+            ex_network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725',
+            ex_cpus=2,
         )
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(
