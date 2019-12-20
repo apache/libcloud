@@ -167,7 +167,7 @@ def work_with_storage_pools():
                       host=host_lxd, port=port_id, key_file='lxd.key', cert_file='lxd.crt')
 
     # get the images this LXD server is publishing
-    pools = conn.list_storage_pools()
+    pools = conn.ex_list_storage_pools()
 
     print("Number of storage pools: ", len(pools))
 
@@ -177,9 +177,54 @@ def work_with_storage_pools():
         print("\t\tUsed by: ", pool.used_by)
         print("\t\tConfig: ", pool.config)
 
+    #conn.ex_delete_storage_pool(id="Pool100")
+
+    definition={
+        "driver": "zfs",
+        "name": "Pool100",
+        "config":{
+            "size":"70MB"
+        }
+    }
+
+    #conn.ex_create_storage_pool(definition=definition)
+
+
+    #conn.ex_delete_storage_pool_volume(storage_pool_id="Pool100", type="custom", name="vol1")
+
+    volumes = conn.ex_list_storage_pool_volumes(storage_pool_id="Pool100")
+
+    for volume in volumes:
+        print(volume.name)
+
+    definition={"config":
+                    { "block.filesystem": "ext4",
+                            "block.mount_options": "discard",
+                            "size": "10737418240"
+                    },
+
+                "name": "vol1",
+                "type": "custom"}
+    volume = conn.ex_create_storage_pool_volume(storage_pool_id="Pool100", definition=definition)
+
+    print("Volume name: ", volume.name)
+    print("Volume size: ", volume.size)
+
+    definition = {"config":
+                      {"block.filesystem": "ext4",
+                       "block.mount_options": "discard",
+                       "size": "8737418240"
+                       }
+                  }
+    volume = conn.ex_replace_storage_volume_config(storage_pool_id="Pool100",
+                                                   type="custom", name="vol1", definition=definition)
+
+    print("Volume name: ", volume.name)
+    print("Volume size: ", volume.size)
+
 
 if __name__ == '__main__':
 
-    work_with_containers()
-    work_with_images()
+    #work_with_containers()
+    #work_with_images()
     work_with_storage_pools()

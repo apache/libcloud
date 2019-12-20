@@ -398,7 +398,7 @@ class LXDContainerDriver(ContainerDriver):
         :type  cluster: :class:`.ContainerCluster`
 
         :param parameters: Container Image parameters. This parameter should represent the
-                            the ``source`` dictioanry expected by the  LXD API call for more
+                            the ``source`` dictioanry expected by the  LXD API call. For more
                             information how this parameter should be structured see
                             https://github.com/lxc/lxd/blob/master/doc/rest-api.md
         :type  parameters: ``str``
@@ -699,7 +699,7 @@ class LXDContainerDriver(ContainerDriver):
         response = self.connection.request("/%s/storage-pools" % self.version)
 
         response_dict = response.parse_body()
-        assert_response(response_dict=response_dict)
+        assert_response(response_dict=response_dict, status_code=200)
 
         pools = []
         for pool_item in response_dict['metadata']:
@@ -726,7 +726,7 @@ class LXDContainerDriver(ContainerDriver):
         response = self.connection.request("/%s/storage-pools/%s" % (self.version, id))
 
         response_dict = response.parse_body()
-        assert_response(response_dict=response_dict)
+        assert_response(response_dict=response_dict, status_code=200)
 
         if not response_dict['metadata']:
             raise LXDAPIException(message="Storage pool with name {0} has no data".format(id))
@@ -735,7 +735,8 @@ class LXDContainerDriver(ContainerDriver):
 
     def ex_create_storage_pool(self, definition):
 
-        """Create a storage_pool from config.
+        """
+        Create a storage_pool from definition.
 
         Implements POST /1.0/storage-pools
 
@@ -751,28 +752,37 @@ class LXDContainerDriver(ContainerDriver):
                    }
 
         Note that **all** fields in the `definition` parameter are strings.
+        Note that size has to be at least 64M in order to create the pool
 
         For further details on the storage pool types see:
         https://lxd.readthedocs.io/en/latest/storage/
 
         The function returns the a `StoragePool` instance, if it is
-        successfully created, otherwise an Exception is raised.
+        successfully created, otherwise an LXDAPIException is raised.
 
         :param definition: the fields to pass to the LXD API endpoint
         :type definition: dict
+
         :returns: a storage pool if successful, raises NotFound if not found
-        :rtype: :class:`pylxd.models.storage_pool.StoragePool`
-        :raises: :class:`pylxd.exceptions.LXDAPIExtensionNotAvailable` if the
-                   'storage' api extension is missing.
-        :raises: :class:`pylxd.exceptions.LXDAPIException` if the storage pool
-                   couldn't be created.
+        :rtype: :class:`StoragePool`
+
+        :raises: :class:`LXDAPIExtensionNotAvailable` if the 'storage' api extension is missing.
+        :raises: :class:`LXDAPIException` if the storage pool couldn't be created.
         """
 
+        if not definition:
+            raise LXDAPIException("Cannot create a storage pool without a definition")
+
         data = json.dumps(definition)
+
+        # Return: standard return value or standard error
         response = self.connection.request("/%s/storage-pools" % self.version,
                                            method='POST', data=data)
 
-        raise NotImplementedError("This function has not been finished yet")
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+
+        return self.ex_get_storage_pool(id=definition["name"])
 
     def ex_delete_storage_pool(self, id):
         """Delete the storage pool.
@@ -842,6 +852,71 @@ class LXDContainerDriver(ContainerDriver):
 
         return self._to_storage_volume(response_dict["metadata"])
 
+    def ex_create_storage_pool_volume(self, storage_pool_id, definition):
+        """
+        Create a new storage volume on a given storage pool
+
+        Operation: sync or async (when copying an existing volume)
+
+        :return: A StorageVolume  representing a storage volume
+        """
+
+        if not definition:
+            raise LXDAPIException("Cannot create a storage volume without a definition")
+
+        data = json.dumps(definition)
+
+        # Return: standard return value or standard error
+        response = self.connection.request("/%s/storage-pools/%s/volumes" % (self.version, storage_pool_id),
+                                           method='POST', data=data)
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+
+        return self.ex_get_storage_pool_volume(storage_pool_id=storage_pool_id, type=definition["type"], name=definition["name"])
+
+    def ex_replace_storage_volume_config(self, storage_pool_id, type, name, definition):
+        """
+        Replace the storage volume information
+        :param storage_pool_id:
+        :param type:
+        :param name:
+        :return:
+        """
+
+        if not definition:
+            raise LXDAPIException("Cannot create a storage volume without a definition")
+
+        data = json.dumps(definition)
+        response = self.connection.request("/%s/storage-pools/%s/volumes/%s/%s"
+                                           % (self.version, storage_pool_id, type, name),
+                                           method="PUT", data=data)
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return self.ex_get_storage_pool_volume(storage_pool_id=storage_pool_id, type=type, name=name)
+
+    def ex_delete_storage_pool_volume(self, storage_pool_id, type, name ):
+        """
+        Delete a storage volume of a given type on a given storage pool
+
+        :param storage_pool_id:
+        :type ``str``
+
+        :param type:
+        :type  ``str``
+
+        :param name:
+        :type ``str``
+
+        :return:
+        """
+
+        response = self.connection.request("/%s/storage-pools/%s/volumes/%s/%s"
+                                           % (self.version, storage_pool_id, type, name), method="DELETE")
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return True
+
     def _to_container(self, metadata):
         """
         Convert container in Container instances given the
@@ -859,12 +934,14 @@ class LXDContainerDriver(ContainerDriver):
         extra = metadata
         img_id = metadata['config'].get('volatile.base_image', None)
         img_version = metadata['config'].get('image.version', None)
+        ips = metadata["ips"]
 
         image = ContainerImage(id=img_id, name=img_id, path=None,
                                version=img_version, driver=self, extra=None)
 
         container = Container(driver=self, name=name, id=name,
-                              state=state, image=image, ip_addresses=[], extra=extra)
+                              state=state, image=image,
+                              ip_addresses=ips, extra=extra)
 
         return container
 
@@ -906,13 +983,13 @@ class LXDContainerDriver(ContainerDriver):
             message_list = e.message.split(",")
             message = message_list[0].split(":")[-1]
             if message != '"not found"':  # if not found assume the operation completed
-                # somthing is wrong
+                # something is wrong
                 raise LXDAPIException(message=e.message)
 
         # if the container is ephemeral and the action is to stop
         # then the container is removed so return sth dummy
         if state == ContainerState.RUNNING and container.extra['ephemeral'] and action == 'stop':
-            # return a dummy container
+            # return a dummy container otherwise we get 404 error
             container = Container(driver=self, name=container.name, id=container.name,
                                   state=ContainerState.TERMINATED, image=None, ip_addresses=[], extra=None)
             return container
@@ -1043,7 +1120,10 @@ class LXDContainerDriver(ContainerDriver):
         :param metadata: dict representing the volume
         :rtype: StorageVolume
         """
-        size = LXDContainerDriver._to_gb(metadata['config'].pop('size'))
+
+        size = 0
+        if "size" in metadata['config'].keys():
+            size = LXDContainerDriver._to_gb(metadata['config'].pop('size'))
 
         extra = {"type": metadata["type"],
                  "used_by":metadata["used_by"],
@@ -1079,6 +1159,4 @@ class LXDContainerDriver(ContainerDriver):
         :return: int representing the gigabytes
         """
         size = int(size)
-        return size * 10**-9
-
-
+        return size // 10**9
