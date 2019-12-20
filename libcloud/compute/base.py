@@ -1064,7 +1064,12 @@ class NodeDriver(BaseDriver):
         # rely on password being stored on the "auth" argument and that's why
         # we also propagate that argument to "create_node()" method.
         try:
-            node = self.create_node(auth=auth, **create_node_kwargs)
+            # NOTE: We only pass auth to the method if auth argument is
+            # provided
+            if auth:
+                node = self.create_node(auth=auth, **create_node_kwargs)
+            else:
+                node = self.create_node(**create_node_kwargs)
         except TypeError as e:
             msg_1_re = (r'create_node\(\) missing \d+ required '
                         'positional arguments.*')

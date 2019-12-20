@@ -3998,9 +3998,7 @@ class GCENodeDriver(NodeDriver):
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_image_family=None, ex_labels=None,
             ex_accelerator_type=None, ex_accelerator_count=None,
-            ex_disk_size=None, auth=None):
-        # NOTE: "auth" argument is unused, but it's needed for "deploy_node()"
-        # functionality to work
+            ex_disk_size=None):
         """
         Create a new node and return a node object for the node.
 
