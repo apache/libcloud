@@ -456,9 +456,9 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node1 = self.driver.create_node(name='foo', image=image, size=size)
         EC2MockHttp.type = 'ex_iam_profile'
         node2 = self.driver.create_node(name='bar', image=image, size=size,
-                                        ex_iam_profile=iamProfile['name'])
+                                        ex_iamprofile=iamProfile['name'])
         node3 = self.driver.create_node(name='bar', image=image, size=size,
-                                        ex_iam_profile=iamProfile['arn'])
+                                        ex_iamprofile=iamProfile['arn'])
 
         self.assertFalse(node1.extra['iam_profile'])
         self.assertEqual(node2.extra['iam_profile'], iamProfile['id'])
@@ -1991,6 +1991,18 @@ class OutscaleTests(EC2Tests):
         self.assertTrue('m1.small' in ids)
         self.assertTrue('m1.large' in ids)
         self.assertTrue('m1.xlarge' in ids)
+
+    def test_ex_create_node_with_ex_iam_profile(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        self.assertRaises(NotImplementedError, self.driver.create_node,
+                          name='foo',
+                          image=image, size=size,
+                          ex_iamprofile='foo')
 
 
 class FCUMockHttp(EC2MockHttp):

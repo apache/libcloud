@@ -1535,7 +1535,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
                                   0, self, extra=extra))
         return sizes
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location=None, networks=None,
+                    project=None, diskoffering=None, ex_keyname=None,
+                    ex_userdata=None,
+                    ex_security_groups=None, ex_displayname=None,
+                    ex_ip_address=None, ex_start_vm=False,
+                    ex_rootdisksize=None, ex_affinity_groups=None):
         """
         Create a new node
 
@@ -1585,7 +1590,15 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         :rtype:     :class:`.CloudStackNode`
         """
 
-        server_params = self._create_args_to_params(None, **kwargs)
+        server_params = self._create_args_to_params(
+            node=None,
+            name=name, size=size, image=image, location=location,
+            networks=networks, diskoffering=diskoffering,
+            ex_keyname=ex_keyname, ex_userdata=ex_userdata,
+            ex_security_groups=ex_security_groups,
+            ex_displayname=ex_displayname, ex_ip_address=ex_ip_address,
+            ex_start_vm=ex_start_vm, ex_rootdisksize=ex_rootdisksize,
+            ex_affinity_groups=ex_affinity_groups)
 
         data = self._async_request(command='deployVirtualMachine',
                                    params=server_params,
@@ -1593,25 +1606,14 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         node = self._to_node(data=data)
         return node
 
-    def _create_args_to_params(self, node, **kwargs):
+    def _create_args_to_params(self, node, name, size, image, location=None,
+                               networks=None,
+                               project=None, diskoffering=None,
+                               ex_keyname=None, ex_userdata=None,
+                               ex_security_groups=None, ex_displayname=None,
+                               ex_ip_address=None, ex_start_vm=False,
+                               ex_rootdisksize=None, ex_affinity_groups=None):
         server_params = {}
-
-        # TODO: Refactor and use "kwarg_to_server_params" map
-        name = kwargs.get('name', None)
-        size = kwargs.get('size', None)
-        image = kwargs.get('image', None)
-        location = kwargs.get('location', None)
-        networks = kwargs.get('networks', None)
-        project = kwargs.get('project', None)
-        diskoffering = kwargs.get('diskoffering', None)
-        ex_key_name = kwargs.get('ex_keyname', None)
-        ex_user_data = kwargs.get('ex_userdata', None)
-        ex_security_groups = kwargs.get('ex_security_groups', None)
-        ex_displayname = kwargs.get('ex_displayname', None)
-        ex_ip_address = kwargs.get('ex_ip_address', None)
-        ex_start_vm = kwargs.get('ex_start_vm', None)
-        ex_rootdisksize = kwargs.get('ex_rootdisksize', None)
-        ex_affinity_groups = kwargs.get('ex_affinity_groups', None)
 
         if name:
             server_params['name'] = name
@@ -1641,12 +1643,12 @@ class CloudStackNodeDriver(CloudStackDriverMixIn, NodeDriver):
         if diskoffering:
             server_params['diskofferingid'] = diskoffering.id
 
-        if ex_key_name:
-            server_params['keypair'] = ex_key_name
+        if ex_keyname:
+            server_params['keypair'] = ex_keyname
 
-        if ex_user_data:
-            ex_user_data = base64.b64encode(b(ex_user_data)).decode('ascii')
-            server_params['userdata'] = ex_user_data
+        if ex_userdata:
+            ex_userdata = base64.b64encode(b(ex_userdata)).decode('ascii')
+            server_params['userdata'] = ex_userdata
 
         if ex_security_groups:
             ex_security_groups = ','.join(ex_security_groups)

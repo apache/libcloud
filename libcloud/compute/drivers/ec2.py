@@ -1817,7 +1817,15 @@ class BaseEC2NodeDriver(NodeDriver):
         ]
         return volumes
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location=None, auth=None,
+                    ex_keyname=None, ex_userdata=None,
+                    ex_security_groups=None, ex_securitygroup=None,
+                    ex_security_group_ids=None,
+                    ex_metadata=None, ex_mincount=1, ex_maxcount=1,
+                    ex_clienttoken=None, ex_blockdevicemappings=None,
+                    ex_iamprofile=None, ex_ebs_optimized=None,
+                    ex_subnet=None, ex_placement_group=None,
+                    ex_assign_public_ip=False, ex_terminate_on_shutdown=False):
         """
         Create a new EC2 node.
 
@@ -1855,8 +1863,8 @@ class BaseEC2NodeDriver(NodeDriver):
                     mappings.
         :type       ex_blockdevicemappings: ``list`` of ``dict``
 
-        :keyword    ex_iamprofile: Name or ARN of IAM profile
-        :type       ex_iamprofile: ``str``
+        :keyword    ex_iam_profile: Name or ARN of IAM profile
+        :type       ex_iam_profile: ``str``
 
         :keyword    ex_ebs_optimized: EBS-Optimized if True
         :type       ex_ebs_optimized: ``bool``
@@ -1884,26 +1892,22 @@ class BaseEC2NodeDriver(NodeDriver):
                                               for system shutdown.
         :type       ex_terminate_on_shutdown: ``bool``
         """
-        image = kwargs["image"]
-        size = kwargs["size"]
         params = {
             'Action': 'RunInstances',
             'ImageId': image.id,
-            'MinCount': str(kwargs.get('ex_mincount', '1')),
-            'MaxCount': str(kwargs.get('ex_maxcount', '1')),
+            'MinCount': str(ex_mincount),
+            'MaxCount': str(ex_maxcount),
             'InstanceType': size.id
         }
 
-        if kwargs.get("ex_terminate_on_shutdown", False):
+        if ex_terminate_on_shutdown:
             params["InstanceInitiatedShutdownBehavior"] = "terminate"
 
-        if 'ex_security_groups' in kwargs and 'ex_securitygroup' in kwargs:
+        if ex_security_groups and ex_securitygroup:
             raise ValueError('You can only supply ex_security_groups or'
                              ' ex_securitygroup')
 
         # ex_securitygroup is here for backward compatibility
-        ex_security_groups = kwargs.get('ex_security_groups', None)
-        ex_securitygroup = kwargs.get('ex_securitygroup', None)
         security_groups = ex_security_groups or ex_securitygroup
 
         if security_groups:
@@ -1914,11 +1918,11 @@ class BaseEC2NodeDriver(NodeDriver):
                 params['SecurityGroup.%d' % (sig + 1,)] =\
                     security_groups[sig]
 
-        if 'ex_security_group_ids' in kwargs and 'ex_subnet' not in kwargs:
+        if ex_security_group_ids and not ex_subnet:
             raise ValueError('You can only supply ex_security_group_ids'
                              ' combinated with ex_subnet')
 
-        security_group_ids = kwargs.get('ex_security_group_ids', None)
+        security_group_ids = ex_security_group_ids
         security_group_id_params = {}
 
         if security_group_ids:
@@ -1929,58 +1933,57 @@ class BaseEC2NodeDriver(NodeDriver):
                 security_group_id_params['SecurityGroupId.%d' % (sig + 1,)] =\
                     security_group_ids[sig]
 
-        if 'location' in kwargs:
-            availability_zone = getattr(kwargs['location'],
-                                        'availability_zone', None)
+        if location:
+            availability_zone = getattr(location, 'availability_zone', None)
             if availability_zone:
                 if availability_zone.region_name != self.region_name:
                     raise AttributeError('Invalid availability zone: %s'
                                          % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
 
-        if 'auth' in kwargs and 'ex_keyname' in kwargs:
+        if auth and ex_keyname:
             raise AttributeError('Cannot specify auth and ex_keyname together')
 
-        if 'auth' in kwargs:
-            auth = self._get_and_check_auth(kwargs['auth'])
+        if auth:
+            auth = self._get_and_check_auth(auth)
             # pylint: disable=no-member
             key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
             params['KeyName'] = key['keyName']
 
-        if 'ex_keyname' in kwargs:
-            params['KeyName'] = kwargs['ex_keyname']
+        if ex_keyname:
+            params['KeyName'] = ex_keyname
 
-        if 'ex_userdata' in kwargs:
-            params['UserData'] = base64.b64encode(b(kwargs['ex_userdata']))\
+        if ex_userdata:
+            params['UserData'] = base64.b64encode(b('ex_userdata'))\
                 .decode('utf-8')
 
-        if 'ex_clienttoken' in kwargs:
-            params['ClientToken'] = kwargs['ex_clienttoken']
+        if ex_clienttoken:
+            params['ClientToken'] = ex_clienttoken
 
-        if 'ex_blockdevicemappings' in kwargs:
+        if ex_blockdevicemappings:
             params.update(self._get_block_device_mapping_params(
-                          kwargs['ex_blockdevicemappings']))
+                          ex_blockdevicemappings))
 
-        if 'ex_iamprofile' in kwargs:
-            if not isinstance(kwargs['ex_iamprofile'], basestring):
+        if ex_iamprofile:
+            if not isinstance(ex_iamprofile, basestring):
                 raise AttributeError('ex_iamprofile not string')
 
-            if kwargs['ex_iamprofile'].startswith('arn:aws:iam:'):
-                params['IamInstanceProfile.Arn'] = kwargs['ex_iamprofile']
+            if ex_iamprofile.startswith('arn:aws:iam:'):
+                params['IamInstanceProfile.Arn'] = ex_iamprofile
             else:
-                params['IamInstanceProfile.Name'] = kwargs['ex_iamprofile']
+                params['IamInstanceProfile.Name'] = ex_iamprofile
 
-        if 'ex_ebs_optimized' in kwargs:
-            params['EbsOptimized'] = kwargs['ex_ebs_optimized']
+        if ex_ebs_optimized:
+            params['EbsOptimized'] = ex_ebs_optimized
 
         subnet_id = None
-        if 'ex_subnet' in kwargs:
-            subnet_id = kwargs['ex_subnet'].id
+        if ex_subnet:
+            subnet_id = ex_subnet.id
 
-        if 'ex_placement_group' in kwargs and kwargs['ex_placement_group']:
-            params['Placement.GroupName'] = kwargs['ex_placement_group']
+        if ex_placement_group:
+            params['Placement.GroupName'] = ex_placement_group
 
-        assign_public_ip = kwargs.get('ex_assign_public_ip', False)
+        assign_public_ip = ex_assign_public_ip
         # In the event that a public ip is requested a NetworkInterface
         # needs to be specified.  Some properties that would
         # normally be at the root (security group ids and subnet id)
@@ -2008,9 +2011,9 @@ class BaseEC2NodeDriver(NodeDriver):
                 params['SubnetId'] = subnet_id
 
         # Specify tags at instance creation time
-        tags = {'Name': kwargs['name']}
-        if 'ex_metadata' in kwargs:
-            tags.update(kwargs['ex_metadata'])
+        tags = {'Name': name}
+        if ex_metadata:
+            tags.update(ex_metadata)
         tagspec_root = 'TagSpecification.1.'
         params[tagspec_root + 'ResourceType'] = 'instance'
         tag_nr = 1
@@ -2024,7 +2027,7 @@ class BaseEC2NodeDriver(NodeDriver):
         nodes = self._to_nodes(object, 'instancesSet/item')
 
         for node in nodes:
-            node.name = kwargs['name']
+            node.name = name
             node.extra.update({'tags': tags})
 
         if len(nodes) == 1:

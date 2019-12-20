@@ -314,7 +314,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         metadata = {'a': 'b', 'c': 'd'}
         files = {'/file1': 'content1', '/file2': 'content2'}
         node = self.driver.create_node(name='racktest', image=image, size=size,
-                                       metadata=metadata, files=files)
+                                       ex_metadata=metadata, ex_files=files)
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
         self.assertEqual(node.extra.get('metadata'), metadata)
@@ -950,7 +950,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         size = NodeSize(
             1, '256 slice', None, None, None, None, driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size,
-                                       availability_zone='testaz')
+                                       ex_availability_zone='testaz')
         self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra['password'], 'racktestvJq7d3')

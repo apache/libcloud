@@ -105,7 +105,7 @@ class VCLNodeDriver(NodeDriver):
             raise LibcloudError(res['errormsg'], driver=self)
         return res
 
-    def create_node(self, **kwargs):
+    def create_node(self, image, start=None, length='60'):
         """Create a new VCL reservation
         size and name ignored, image is the id from list_image
 
@@ -121,12 +121,10 @@ class VCLNodeDriver(NodeDriver):
         :type       length: ``str``
         """
 
-        image = kwargs["image"]
-
         # Special case for xmlrpclib not handling 64 bit integers when writting
         # XML - we always  cast value to string.
-        start = str(kwargs.get('start', str(time.time())))
-        length = kwargs.get('length', '60')
+        start = start or str(time.time())
+        length = length or '60'
 
         res = self._vcl_request(
             "XMLRPCaddRequest",

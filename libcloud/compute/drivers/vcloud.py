@@ -552,11 +552,11 @@ class VCloudNodeDriver(NodeDriver):
             vdc = self.vdcs[0]
         else:
             for v in self.vdcs:
-                if v.name == vdc_name:
+                if v.name == vdc_name or v.id == vdc_name:
                     vdc = v
             if vdc is None:
-                raise ValueError('%s virtual data centre could not be found',
-                                 vdc_name)
+                raise ValueError('%s virtual data centre could not be found' %
+                                 (vdc_name))
         return vdc
 
     @property
@@ -820,7 +820,8 @@ class VCloudNodeDriver(NodeDriver):
             result.append(item)
         return result
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, auth=None, ex_network=None,
+                    ex_vdc=None, ex_cpus=1, ex_row=None, ex_group=None):
         """
         Creates and returns node.
 
@@ -839,32 +840,28 @@ class VCloudNodeDriver(NodeDriver):
 
         :type       ex_group: ``str``
         """
-        name = kwargs['name']
-        image = kwargs['image']
-        size = kwargs['size']
-
         # Some providers don't require a network link
         try:
-            network = kwargs.get('ex_network', self.networks[0].get('href'))
+            network = ex_network or self.networks[0].get('href')
         except IndexError:
             network = ''
 
         password = None
-        auth = self._get_and_check_auth(kwargs.get('auth'))
+        auth = self._get_and_check_auth(auth)
         password = auth.password
 
         instantiate_xml = InstantiateVAppXML(
             name=name,
             template=image.id,
             net_href=network,
-            cpus=str(kwargs.get('ex_cpus', 1)),
+            cpus=str(ex_cpus),
             memory=str(size.ram),
             password=password,
-            row=kwargs.get('ex_row', None),
-            group=kwargs.get('ex_group', None)
+            row=ex_row,
+            group=ex_group
         )
 
-        vdc = self._get_vdc(kwargs.get('ex_vdc', None))
+        vdc = self._get_vdc(ex_vdc)
 
         # Instantiate VM and get identifier.
         content_type = \

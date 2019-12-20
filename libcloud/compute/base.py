@@ -25,10 +25,13 @@ from typing import Tuple
 from typing import Type
 from typing import Optional
 from typing import Any
+from typing import Union
+from typing import TYPE_CHECKING
 
 import time
 import hashlib
 import os
+import re
 import socket
 import random
 import binascii
@@ -40,6 +43,8 @@ import libcloud.compute.ssh
 from libcloud.pricing import get_size_price
 from libcloud.compute.types import NodeState, StorageVolumeState,\
     DeploymentError
+if TYPE_CHECKING:
+    from libcloud.compute.deployment import Deployment
 from libcloud.compute.types import Provider
 from libcloud.compute.types import NodeImageMemberState
 from libcloud.compute.ssh import SSHClient
@@ -62,13 +67,14 @@ else:
     SSH_TIMEOUT_EXCEPTION_CLASSES = (IOError, socket.gaierror,  # type: ignore
                                      socket.error)  # type: ignore
 
+T_Auth = Union['NodeAuthSSHKey', 'NodeAuthPassword']
+
 # How long to wait for the node to come online after creating it
 NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
 
 # How long to try connecting to a remote SSH server when running a deployment
 # script.
 SSH_CONNECT_TIMEOUT = 5 * 60
-
 
 __all__ = [
     'Node',
@@ -838,7 +844,13 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'list_locations not implemented for this driver')
 
-    def create_node(self, **kwargs):
+    def create_node(self,
+                    name,  # type: str
+                    size,  # type: NodeSize
+                    image,  # type: NodeImage
+                    location=None,  # type: Optional[NodeLocation]
+                    auth=None  # type: T_Auth
+                    ):
         # type: (...) -> Node
         """
         Create a new node instance. This instance will be started
@@ -922,7 +934,18 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'create_node not implemented for this driver')
 
-    def deploy_node(self, **kwargs):
+    def deploy_node(self,
+                    deploy,  # type: Deployment
+                    ssh_username='root',  # type: str
+                    ssh_alternate_usernames=None,  # type: Optional[List[str]]
+                    ssh_port=22,  # type: int
+                    ssh_timeout=10,  # type: int
+                    ssh_key=None,  # type: Optional[str]
+                    auth=None,  # type: T_Auth
+                    timeout=SSH_CONNECT_TIMEOUT,  # type: int
+                    max_tries=3,  # type: int
+                    ssh_interface='public_ips',  # type: str
+                    **create_node_kwargs):
         # type: (...) -> Node
         """
         Create a new node, and start deployment.
@@ -1013,13 +1036,12 @@ class NodeDriver(BaseDriver):
             raise RuntimeError('paramiko is not installed. You can install ' +
                                'it using pip: pip install paramiko')
 
-        if 'auth' in kwargs:
-            auth = kwargs['auth']
+        if auth:
             if not isinstance(auth, (NodeAuthSSHKey, NodeAuthPassword)):
                 raise NotImplementedError(
                     'If providing auth, only NodeAuthSSHKey or'
                     'NodeAuthPassword is supported')
-        elif 'ssh_key' in kwargs:
+        elif ssh_key:
             # If an ssh_key is provided we can try deploy_node
             pass
         elif 'create_node' in self.features:
@@ -1031,45 +1053,72 @@ class NodeDriver(BaseDriver):
             raise NotImplementedError(
                 'deploy_node not implemented for this driver')
 
-        node = self.create_node(**kwargs)
-        max_tries = kwargs.get('max_tries', 3)
+        # NOTE 1: This is a workaround for legacy code. Sadly a lot of legacy
+        # code uses **kwargs in "create_node()" method and simply ignores
+        # "deploy_node()" arguments which are passed to it.
+        # That's obviously far from idea that's why we first try to pass only
+        # non-deploy node arguments to the "create_node()" methods and if it
+        # that doesn't work, fall back to the old approach and simply pass in
+        # all the arguments
+        # NOTE 2: Some drivers which use password based SSH authentication
+        # rely on password being stored on the "auth" argument and that's why
+        # we also propagate that argument to "create_node()" method.
+        try:
+            node = self.create_node(auth=auth, **create_node_kwargs)
+        except TypeError as e:
+            msg_1_re = (r'create_node\(\) missing \d+ required '
+                        'positional arguments.*')
+            msg_2_re = r'create_node\(\) takes at least \d+ arguments.*'
+            if re.match(msg_1_re, str(e)) or re.match(msg_2_re, str(e)):
+                # pylint: disable=unexpected-keyword-arg
+                node = self.create_node(  # type: ignore
+                    deploy=deploy,
+                    ssh_username=ssh_username,
+                    ssh_alternate_usernames=ssh_alternate_usernames,
+                    ssh_port=ssh_port,
+                    ssh_timeout=ssh_timeout,
+                    ssh_key=ssh_key,
+                    auth=auth,
+                    timeout=timeout,
+                    max_tries=max_tries,
+                    ssh_interface=ssh_interface,
+                    **create_node_kwargs)
+                # pylint: enable=unexpected-keyword-arg
+            else:
+                raise e
 
         password = None
-        if 'auth' in kwargs:
-            if isinstance(kwargs['auth'], NodeAuthPassword):
-                password = kwargs['auth'].password
+        if auth:
+            if isinstance(auth, NodeAuthPassword):
+                password = auth.password
         elif 'password' in node.extra:
             password = node.extra['password']
 
-        ssh_interface = kwargs.get('ssh_interface', 'public_ips')
+        wait_timeout = timeout or NODE_ONLINE_WAIT_TIMEOUT
 
         # Wait until node is up and running and has IP assigned
         try:
             node, ip_addresses = self.wait_until_running(
                 nodes=[node],
                 wait_period=3,
-                timeout=kwargs.get('timeout', NODE_ONLINE_WAIT_TIMEOUT),
+                timeout=wait_timeout,
                 ssh_interface=ssh_interface)[0]
         except Exception as e:
             raise DeploymentError(node=node, original_exception=e, driver=self)
 
-        ssh_username = kwargs.get('ssh_username', 'root')
-        ssh_alternate_usernames = kwargs.get('ssh_alternate_usernames', [])
-        ssh_port = kwargs.get('ssh_port', 22)
-        ssh_timeout = kwargs.get('ssh_timeout', 10)
-        ssh_key_file = kwargs.get('ssh_key', None)
-        timeout = kwargs.get('timeout', SSH_CONNECT_TIMEOUT)
+        ssh_alternate_usernames = ssh_alternate_usernames or []
+        deploy_timeout = timeout or SSH_CONNECT_TIMEOUT
 
         deploy_error = None
 
         for username in ([ssh_username] + ssh_alternate_usernames):
             try:
                 self._connect_and_run_deployment_script(
-                    task=kwargs['deploy'], node=node,
+                    task=deploy, node=node,
                     ssh_hostname=ip_addresses[0], ssh_port=ssh_port,
                     ssh_username=username, ssh_password=password,
-                    ssh_key_file=ssh_key_file, ssh_timeout=ssh_timeout,
-                    timeout=timeout, max_tries=max_tries)
+                    ssh_key_file=ssh_key, ssh_timeout=ssh_timeout,
+                    timeout=deploy_timeout, max_tries=max_tries)
             except Exception as e:
                 # Try alternate username
                 # Todo: Need to fix paramiko so we can catch a more specific
@@ -1513,7 +1562,7 @@ class NodeDriver(BaseDriver):
             return [address for address in addresses if is_supported(address)]
 
         if ssh_interface not in ['public_ips', 'private_ips']:
-            raise ValueError('ssh_interface argument must either be' +
+            raise ValueError('ssh_interface argument must either be ' +
                              'public_ips or private_ips')
 
         start = time.time()
