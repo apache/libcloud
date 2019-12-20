@@ -3995,7 +3995,7 @@ class GCENodeDriver(NodeDriver):
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_image_family=None, ex_labels=None,
             ex_accelerator_type=None, ex_accelerator_count=None,
-            ex_disk_size=None):
+            ex_disk_size=None, **kwargs):
         """
         Create a new node and return a node object for the node.
 
@@ -6339,61 +6339,6 @@ class GCENodeDriver(NodeDriver):
             success = False
 
         return success
-
-    def deploy_node(self, name, size, image, script, location=None,
-                    ex_network='default', ex_tags=None,
-                    ex_service_accounts=None):
-        """
-        Create a new node and run a script on start-up.
-
-        :param  name: The name of the node to create.
-        :type   name: ``str``
-
-        :param  size: The machine type to use.
-        :type   size: ``str`` or :class:`GCENodeSize`
-
-        :param  image: The image to use to create the node.
-        :type   image: ``str`` or :class:`GCENodeImage`
-
-        :param  script: File path to start-up script
-        :type   script: ``str``
-
-        :keyword  location: The location (zone) to create the node in.
-        :type     location: ``str`` or :class:`NodeLocation` or
-                            :class:`GCEZone` or ``None``
-
-        :keyword  ex_network: The network to associate with the node.
-        :type     ex_network: ``str`` or :class:`GCENetwork`
-
-        :keyword  ex_tags: A list of tags to associate with the node.
-        :type     ex_tags: ``list`` of ``str`` or ``None``
-
-        :keyword  ex_service_accounts: Specify a list of serviceAccounts when
-                                       creating the instance. The format is a
-                                       list of dictionaries containing email
-                                       and list of scopes, e.g.
-                                       [{'email':'default',
-                                       'scopes':['compute', ...]}, ...]
-                                       Scopes can either be full URLs or short
-                                       names. If not provided, use the
-                                       'default' service account email and a
-                                       scope of 'devstorage.read_only'. Also
-                                       accepts the aliases defined in
-                                       'gcloud compute'.
-        :type     ex_service_accounts: ``list``
-
-        :return:  A Node object for the new node.
-        :rtype:   :class:`Node`
-        """
-        with open(script, 'r') as f:
-            script_data = f.read()
-        # TODO(erjohnso): allow user defined metadata here...
-        metadata = {'items': [{'key': 'startup-script', 'value': script_data}]}
-
-        return self.create_node(name, size, image, location=location,
-                                ex_network=ex_network, ex_tags=ex_tags,
-                                ex_metadata=metadata,
-                                ex_service_accounts=ex_service_accounts)
 
     def attach_volume(self, node, volume, device=None, ex_mode=None,
                       ex_boot=False, ex_type=None, ex_source=None,
