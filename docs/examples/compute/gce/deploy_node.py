@@ -39,7 +39,13 @@ image = [i for i in images if i.name == 'ubuntu-1604-xenial-v20191217'][0]
 size = [s for s in sizes if s.name == 'e2-micro'][0]
 
 # NOTE: We specify which public key is installed on the instance using
-# metadata functionality
+# metadata functionality.
+# Keep in mind that this step is only needed if you want to install a specific
+# key which is used to run the deployment script.
+# If you are using a VM image with a public SSH key already pre-baked in or if
+# you use project wide ssh-keys GCP functionality, you can remove ex_metadata
+# argument, but you still need to make sure the private key you use inside this
+# script matches the one which is installed / available on the server.
 ex_metadata = metadata = {
     'items': [
         {
