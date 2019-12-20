@@ -12,9 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Module for Google Compute Engine Driver.
 """
+
 from __future__ import with_statement
 
 import datetime
@@ -1735,6 +1737,7 @@ class GCENodeDriver(NodeDriver):
     name = "Google Compute Engine"
     type = Provider.GCE
     website = 'https://cloud.google.com/'
+    features = {'create_node': ['ssh_key']}
 
     # Google Compute Engine node states are mapped to Libcloud node states
     # per the following dict. GCE does not have an actual 'stopped' state
@@ -3995,7 +3998,7 @@ class GCENodeDriver(NodeDriver):
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_image_family=None, ex_labels=None,
             ex_accelerator_type=None, ex_accelerator_count=None,
-            ex_disk_size=None, **kwargs):
+            ex_disk_size=None, auth=None):
         """
         Create a new node and return a node object for the node.
 
