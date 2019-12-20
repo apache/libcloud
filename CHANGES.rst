@@ -61,6 +61,14 @@ Compute
   (GITHUB-1389)
   [Tomaz Muraus]
 
+- [GCE] Update ``deploy_node()`` method so it complies with the base compute
+  API and accepts ``deploy`` argument.
+
+  This method now also takes all the same keyword arguments which original
+  ``create_node()`` takes.
+  (GITHUB-1387)
+  [Peter Yu - @yukw777, Tomaz Muraus]
+
 Storage
 -------
 
