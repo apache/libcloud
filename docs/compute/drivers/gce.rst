@@ -172,6 +172,11 @@ https://github.com/apache/libcloud/blob/trunk/demos/gce_demo.py
 
 .. literalinclude:: /examples/compute/gce/gce_internal_auth.py
 
+6. Using deploy_node() functionality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/gce/deploy_node.py
+
 API Docs
 --------
 
