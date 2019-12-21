@@ -5,7 +5,7 @@ Changes in Apache Libcloud in development
 -----------------------------------------
 
 Common
--------
+------
 
 - Fix a regression with ``get_driver()`` method not working if ``provider``
   argument value was a string (e.g. using ``get_driver('openstack')``
@@ -25,6 +25,13 @@ Common
 
   NOTE: At the moment, type annotations are only available for the base
   compute API.
+  [Tomaz Muraus]
+
+- Fix universal wheel METADATA and ensure conditional dependencies
+  (backports.ssl_match_hostname, typing, enum34) are handled correctly.
+
+  Reported by Adam Terrey (@arterrey).
+  (GITHUB-1392, GITHUB-1393)
   [Tomaz Muraus]
 
 Compute
