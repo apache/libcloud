@@ -220,6 +220,7 @@ class ScriptDeployment(Deployment):
             stdout = self.stdout[:30] + '...'
             stderr = self.stderr[:30] + '...'
         else:
+            exit_status = 'script didn\'t run yet'
             stdout = None
             stderr = None
         return ("<ScriptDeployment script=%s, exit_status=%s, stdout=%s, "
