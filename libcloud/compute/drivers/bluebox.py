@@ -161,14 +161,10 @@ class BlueboxNodeDriver(NodeDriver):
 
         return images
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, auth=None, ex_username=None):
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-        name = kwargs['name']
-        image = kwargs['image']
-        size = kwargs['size']
-
-        auth = self._get_and_check_auth(kwargs.get('auth'))
+        auth = self._get_and_check_auth(auth)
 
         data = {
             'hostname': name,
@@ -186,8 +182,8 @@ class BlueboxNodeDriver(NodeDriver):
             password = auth.password
             data.update(password=password)
 
-        if "ex_username" in kwargs:
-            data.update(username=kwargs["ex_username"])
+        if ex_username:
+            data.update(username=ex_username)
 
         if not ssh and not password:
             raise Exception("SSH public key or password required.")

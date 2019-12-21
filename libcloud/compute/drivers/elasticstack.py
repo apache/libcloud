@@ -228,7 +228,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         return nodes
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, smp='auto', nic_model='e1000',
+                    vnc_password=None, drive_type='hdd'):
         """Creates an ElasticStack instance
 
         @inherits: :class:`NodeDriver.create_node`
@@ -250,11 +251,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
                                   no SSH login is possible.
         :type       vnc_password: ``str``
         """
-        size = kwargs['size']
-        image = kwargs['image']
-        smp = kwargs.get('smp', 'auto')
-        nic_model = kwargs.get('nic_model', 'e1000')
-        vnc_password = ssh_password = kwargs.get('vnc_password', None)
+        ssh_password = vnc_password
 
         if nic_model not in ('e1000', 'rtl8139', 'virtio'):
             raise ElasticStackException('Invalid NIC model specified')
@@ -263,8 +260,8 @@ class ElasticStackBaseNodeDriver(NodeDriver):
 
         # First we create a drive with the specified size
         drive_data = {}
-        drive_data.update({'name': kwargs['name'],
-                           'size': '%sG' % (kwargs['size'].disk)})
+        drive_data.update({'name': name,
+                           'size': '%sG' % (size.disk)})
 
         response = self.connection.request(action='/drives/create',
                                            data=json.dumps(drive_data),
@@ -304,7 +301,7 @@ class ElasticStackBaseNodeDriver(NodeDriver):
             time.sleep(1)
 
         node_data = {}
-        node_data.update({'name': kwargs['name'],
+        node_data.update({'name': name,
                           'cpu': size.cpu,
                           'mem': size.ram,
                           'ide:0:0': drive_uuid,

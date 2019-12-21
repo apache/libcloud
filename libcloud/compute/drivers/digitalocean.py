@@ -437,7 +437,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :rytpe: ``bool``
         """
         attr = {'type': 'attach', 'droplet_id': node.id,
-                'volume_id': volume.id, 'region': volume.extra['region_slug']}
+                'volume_name': volume.name,
+                'region': volume.extra['region_slug']}
 
         res = self.connection.request('/v2/volumes/actions',
                                       data=json.dumps(attr), method='POST')
@@ -453,7 +454,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         :rtype: ``bool``
         """
-        attr = {'type': 'detach', 'volume_id': volume.id,
+        attr = {'type': 'detach', 'volume_name': volume.name,
                 'region': volume.extra['region_slug']}
 
         responses = []

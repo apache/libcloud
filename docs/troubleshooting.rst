@@ -41,6 +41,15 @@ only works for non-chunked responses.
 Example 1 - Logging output to standard error
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+
+    Some Linux distributions don't allow /dev/{stderr,stdout} to be opened in
+    append  mode which means paramiko logger will return and error that it
+    can't log to that file.
+    In such scenario, it's recommended you specify actual file path and then
+    you can use "tail -F" in another terminal window to view the output in
+    real-time.
+
 If you want the output to be logged to the standard error (on
 Linux) you can set it to ``/dev/stderr``:
 

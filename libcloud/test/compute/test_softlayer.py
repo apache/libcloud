@@ -157,7 +157,7 @@ class SoftLayerTests(unittest.TestCase):
                                 ex_cpus=2,
                                 ex_ram=2048,
                                 ex_disk=100,
-                                ex_key='test1',
+                                ex_keyname='test1',
                                 ex_bandwidth=10,
                                 ex_local_disk=False,
                                 ex_datacenter='Dal05',

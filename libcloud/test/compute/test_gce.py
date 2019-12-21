@@ -1241,6 +1241,17 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
 
+    def test_create_node_disk_size(self):
+        node_name = 'node-name'
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+        disk_size = 25
+        node = self.driver.create_node(node_name, size, image,
+                                       ex_disk_size=disk_size)
+        self.assertTrue(isinstance(node, Node))
+        self.assertEqual(node.name, node_name)
+        self.assertEqual(node.extra['boot_disk'].size, str(disk_size))
+
     def test_create_node_image_family(self):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
@@ -1542,6 +1553,17 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         volume = self.driver.create_volume(size, volume_name)
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
+
+    def test_ex_set_volume_labels(self):
+        volume_name = 'lcdisk'
+        zone = self.driver.zone
+        volume_labels = {'one': '1', 'two': '2', 'three': '3'}
+        size = 10
+        new_vol = self.driver.create_volume(size, volume_name, location=zone)
+        self.assertTrue(self.driver.ex_set_volume_labels(new_vol,
+                                                         labels=volume_labels))
+        exist_vol = self.driver.ex_get_volume(volume_name, self.driver.zone)
+        self.assertEqual(exist_vol.extra['labels'], volume_labels)
 
     def test_ex_update_healthcheck(self):
         healthcheck_name = 'lchealthcheck'
@@ -2969,6 +2991,12 @@ class GCEMockHttp(MockHttp):
             'operations_operation_zones_us-central1-a_disks_lcdisk_resize_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_lcdisk_setLabels_post(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_disks_lcdisk_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -3387,6 +3415,12 @@ class GCEMockHttp(MockHttp):
                                                  body, headers):
         body = self.fixtures.load(
             'zones_us-central1-a_disks_lcdisk_resize_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_disks_lcdisk_setLabels(self, method, url,
+                                                    body, header):
+        body = self.fixtures.load(
+            'zones_us-central1-a_disks_lcdisk_setLabel_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_disks_node_name(self, method, url, body, headers):

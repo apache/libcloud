@@ -13,13 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import OpenSSL
-    OpenSSL
-except ImportError:
-    raise ImportError('Missing "OpenSSL" dependency. You can install it '
-                      'using pip - pip install pyopenssl')
-from OpenSSL import crypto
 from libcloud.utils.py3 import ET
 from libcloud.common.nttcis import NttCisConnection
 from libcloud.common.nttcis import NttCisPool
@@ -783,6 +776,11 @@ class NttCisLBDriver(Driver):
         :type `description: `str``
         :return: ``bool``
         """
+        try:
+            import OpenSSL
+        except ImportError:
+            raise ImportError('Missing "OpenSSL" dependency. You can install '
+                              'it using pip - pip install pyopenssl')
 
         with open(crt_file) as fp:
             c = OpenSSL.crypto.load_certificate(
@@ -846,6 +844,13 @@ class NttCisLBDriver(Driver):
         :type description: ``str``
         :return: ``bool``
         """
+        try:
+            import OpenSSL
+            from OpenSSL import crypto
+        except ImportError:
+            raise ImportError('Missing "OpenSSL" dependency. You can install '
+                              'it using pip - pip install pyopenssl')
+
         c = crypto.load_certificate(
             crypto.FILETYPE_PEM, open(chain_crt_file).read())
         cert = OpenSSL.crypto.dump_certificate(

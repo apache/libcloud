@@ -136,7 +136,8 @@ class UpcloudDriver(NodeDriver):
         obj['storages']['storage'].extend(storage)
         return self._to_node_images(obj['storages']['storage'])
 
-    def create_node(self, name, size, image, location, auth=None, **kwargs):
+    def create_node(self, name, size, image, location, auth=None,
+                    ex_hostname='localhost', ex_username='root'):
         """
         Creates instance to upcloud.
 
@@ -172,7 +173,8 @@ class UpcloudDriver(NodeDriver):
         """
         body = UpcloudCreateNodeRequestBody(name=name, size=size, image=image,
                                             location=location, auth=auth,
-                                            **kwargs)
+                                            ex_hostname=ex_hostname,
+                                            ex_username=ex_username)
         response = self.connection.request('1.2/server',
                                            method='POST',
                                            data=body.to_json())

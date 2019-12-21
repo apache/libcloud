@@ -167,11 +167,7 @@ class JoyentNodeDriver(NodeDriver):
                                          method='DELETE')
         return result.status == httplib.NO_CONTENT
 
-    def create_node(self, **kwargs):
-        name = kwargs['name']
-        size = kwargs['size']
-        image = kwargs['image']
-
+    def create_node(self, name, size, image):
         data = json.dumps({'name': name, 'package': size.id,
                            'dataset': image.id})
         result = self.connection.request('/my/machines', data=data,

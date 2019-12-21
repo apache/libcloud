@@ -12,9 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 Module for Google Compute Engine Driver.
 """
+
 from __future__ import with_statement
 
 import datetime
@@ -1735,6 +1737,7 @@ class GCENodeDriver(NodeDriver):
     name = "Google Compute Engine"
     type = Provider.GCE
     website = 'https://cloud.google.com/'
+    features = {'create_node': ['ssh_key']}
 
     # Google Compute Engine node states are mapped to Libcloud node states
     # per the following dict. GCE does not have an actual 'stopped' state
@@ -2061,6 +2064,31 @@ class GCENodeDriver(NodeDriver):
         current_fp = image.extra['labelFingerprint']
         body = {'labels': labels, 'labelFingerprint': current_fp}
         request = '/global/%s/setLabels' % (image.name)
+        self.connection.async_request(request, method='POST', data=body)
+        return True
+
+    def ex_set_volume_labels(self, volume, labels):
+        """
+        Set labels for the specified volume (disk).
+
+        :keyword  volume: The existing target StorageVolume for the request.
+        :type     volume: ``StorageVolume``
+
+        :keyword  labels: Set (or clear with None) labels for this image.
+        :type     labels: ``dict`` or ``None``
+
+        :return: True if successful
+        :rtype:  ``bool``
+        """
+
+        if not isinstance(volume, StorageVolume):
+            raise ValueError("Must specify a valid libcloud volume object.")
+
+        volume_name = volume.name
+        zone_name = volume.extra['zone'].name
+        current_fp = volume.extra['labelFingerprint']
+        body = {'labels': labels, 'labelFingerprint': current_fp}
+        request = '/zones/%s/disks/%s/setLabels' % (zone_name, volume_name)
         self.connection.async_request(request, method='POST', data=body)
         return True
 
@@ -3969,7 +3997,8 @@ class GCENodeDriver(NodeDriver):
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
             ex_on_host_maintenance=None, ex_automatic_restart=None,
             ex_preemptible=None, ex_image_family=None, ex_labels=None,
-            ex_accelerator_type=None, ex_accelerator_count=None):
+            ex_accelerator_type=None, ex_accelerator_count=None,
+            ex_disk_size=None):
         """
         Create a new node and return a node object for the node.
 
@@ -4107,6 +4136,9 @@ class GCENodeDriver(NodeDriver):
                                         accelerators to attach to the node.
         :type     ex_accelerator_count: ``int`` or ``None``
 
+        :keyword  ex_disk_size: Defines size of the boot disk.
+                                Integer in gigabytes.
+        :type     ex_disk_size: ``int`` or ``None``
 
         :return:  A Node object for the new node.
         :rtype:   :class:`Node`
@@ -4164,19 +4196,27 @@ class GCENodeDriver(NodeDriver):
                 'deviceName': name,
                 'initializeParams': {
                     'diskName': name,
+                    'diskSizeGb': ex_disk_size,
                     'diskType': ex_disk_type.extra['selfLink'],
                     'sourceImage': image.extra['selfLink']
                 }
             }]
 
         request, node_data = self._create_node_req(
-            name, size, image, location, ex_network, ex_tags, ex_metadata,
-            ex_boot_disk, external_ip, internal_ip, ex_disk_type,
-            ex_disk_auto_delete, ex_service_accounts, description,
-            ex_can_ip_forward, ex_disks_gce_struct, ex_nic_gce_struct,
-            ex_on_host_maintenance, ex_automatic_restart, ex_preemptible,
-            ex_subnetwork, ex_labels, ex_accelerator_type,
-            ex_accelerator_count)
+            name, size, image, location,
+            network=ex_network, tags=ex_tags, metadata=ex_metadata,
+            boot_disk=ex_boot_disk, external_ip=external_ip,
+            internal_ip=internal_ip, ex_disk_type=ex_disk_type,
+            ex_disk_auto_delete=ex_disk_auto_delete,
+            ex_service_accounts=ex_service_accounts, description=description,
+            ex_can_ip_forward=ex_can_ip_forward,
+            ex_disks_gce_struct=ex_disks_gce_struct,
+            ex_nic_gce_struct=ex_nic_gce_struct,
+            ex_on_host_maintenance=ex_on_host_maintenance,
+            ex_automatic_restart=ex_automatic_restart,
+            ex_preemptible=ex_preemptible, ex_subnetwork=ex_subnetwork,
+            ex_labels=ex_labels, ex_accelerator_type=ex_accelerator_type,
+            ex_accelerator_count=ex_accelerator_count)
         self.connection.async_request(request, method='POST', data=node_data)
         return self.ex_get_node(name, location.name)
 
@@ -6303,61 +6343,6 @@ class GCENodeDriver(NodeDriver):
 
         return success
 
-    def deploy_node(self, name, size, image, script, location=None,
-                    ex_network='default', ex_tags=None,
-                    ex_service_accounts=None):
-        """
-        Create a new node and run a script on start-up.
-
-        :param  name: The name of the node to create.
-        :type   name: ``str``
-
-        :param  size: The machine type to use.
-        :type   size: ``str`` or :class:`GCENodeSize`
-
-        :param  image: The image to use to create the node.
-        :type   image: ``str`` or :class:`GCENodeImage`
-
-        :param  script: File path to start-up script
-        :type   script: ``str``
-
-        :keyword  location: The location (zone) to create the node in.
-        :type     location: ``str`` or :class:`NodeLocation` or
-                            :class:`GCEZone` or ``None``
-
-        :keyword  ex_network: The network to associate with the node.
-        :type     ex_network: ``str`` or :class:`GCENetwork`
-
-        :keyword  ex_tags: A list of tags to associate with the node.
-        :type     ex_tags: ``list`` of ``str`` or ``None``
-
-        :keyword  ex_service_accounts: Specify a list of serviceAccounts when
-                                       creating the instance. The format is a
-                                       list of dictionaries containing email
-                                       and list of scopes, e.g.
-                                       [{'email':'default',
-                                       'scopes':['compute', ...]}, ...]
-                                       Scopes can either be full URLs or short
-                                       names. If not provided, use the
-                                       'default' service account email and a
-                                       scope of 'devstorage.read_only'. Also
-                                       accepts the aliases defined in
-                                       'gcloud compute'.
-        :type     ex_service_accounts: ``list``
-
-        :return:  A Node object for the new node.
-        :rtype:   :class:`Node`
-        """
-        with open(script, 'r') as f:
-            script_data = f.read()
-        # TODO(erjohnso): allow user defined metadata here...
-        metadata = {'items': [{'key': 'startup-script', 'value': script_data}]}
-
-        return self.create_node(name, size, image, location=location,
-                                ex_network=ex_network, ex_tags=ex_tags,
-                                ex_metadata=metadata,
-                                ex_service_accounts=ex_service_accounts)
-
     def attach_volume(self, node, volume, device=None, ex_mode=None,
                       ex_boot=False, ex_type=None, ex_source=None,
                       ex_auto_delete=None, ex_initialize_params=None,
@@ -8253,6 +8238,10 @@ class GCENodeDriver(NodeDriver):
                                       with the node.
         :type   ex_accelerator_count: ``int`` or ``None``
 
+        :keyword  ex_disk_size: Specify size of the boot disk.
+                                Integer in gigabytes.
+        :type     ex_disk_size: ``int`` or ``None``
+
         :return:  A tuple containing a request string and a node_data dict.
         :rtype:   ``tuple`` of ``str`` and ``dict``
         """
@@ -9091,6 +9080,9 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshot'] = volume.get('sourceSnapshot')
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
+        extra['labels'] = volume.get('labels', {})
+        extra['labelFingerprint'] = volume.get('labelFingerprint')
+
         if 'licenses' in volume:
             lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
             extra['licenses'] = lic_objs

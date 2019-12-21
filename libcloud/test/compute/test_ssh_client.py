@@ -36,8 +36,10 @@ from mock import patch, Mock, MagicMock
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA
+    paramiko_version = '0.0.0'
 else:
     import paramiko
+    paramiko_version = paramiko.__version__
 
 
 @unittest.skipIf(not have_paramiko, 'Skipping because paramiko is not available')
@@ -140,6 +142,8 @@ class ParamikoSSHClientTests(LibcloudTestCase):
                           expected_msg, mock.connect)
 
     @patch('paramiko.SSHClient', Mock)
+    @unittest.skipIf(paramiko_version >= '2.7.0',
+                     'New versions of paramiko support OPENSSH key format')
     def test_key_file_non_pem_format_error(self):
         path = os.path.join(os.path.dirname(__file__),
                             'fixtures', 'misc',

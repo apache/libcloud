@@ -1071,6 +1071,14 @@ class S3Tests(unittest.TestCase):
         self.assertRaisesRegexp(ValueError, expected_msg, S3StorageDriver,
                                 *self.driver_args, region='foo')
 
+        # host argument still has precedence over reguin
+        driver3  = S3StorageDriver(*self.driver_args, region='ap-south-1', host='host1.bar.com')
+        self.assertEqual(driver3.region, 'ap-south-1')
+        self.assertEqual(driver3.connection.host, 'host1.bar.com')
+
+        driver4  = S3StorageDriver(*self.driver_args, host='host2.bar.com')
+        self.assertEqual(driver4.connection.host, 'host2.bar.com')
+
     def test_deprecated_driver_class_per_region(self):
         driver = S3USWestStorageDriver(*self.driver_args)
         self.assertEqual(driver.region, 'us-west-1')

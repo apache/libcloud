@@ -114,7 +114,7 @@ class CloudSigmaAPI10BaseTestCase(object):
         self.assertTrue(result)
 
     def test_str2dicts(self):
-        string = 'mem 1024\ncpu 2200\n\nmem2048\cpu 1100'
+        string = 'mem 1024\ncpu 2200\n\nmem2048\\cpu 1100'
         result = str2dicts(string)
         self.assertEqual(len(result), 2)
 

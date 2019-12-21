@@ -4,6 +4,101 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+-------
+
+- Fix a regression with ``get_driver()`` method not working if ``provider``
+  argument value was a string (e.g. using ``get_driver('openstack')``
+  instead of ``get_driver(Provider.OPENSTACK)``).
+
+  Only officially supported and recommended approach still is to use
+  ``Provider.FOO`` enum type constant, but since the string notation was
+  unofficially supported in the past, we will still support it until the next
+  major release.
+
+  Reported by @dpeschman.
+  (GITHUB-1391, GITHUB-1390)
+  [Tomaz Muraus]
+
+- Include ``py.typed`` data file to signal that this package contains type
+  annotations / hints.
+
+  NOTE: At the moment, type annotations are only available for the base
+  compute API.
+  [Tomaz Muraus]
+
+Compute
+-------
+
+- [DigitalOcean] Fix ``attach_volume`` and ``detach_volume`` methods.
+  Previously those two methods incorrectly passed volume id instead of
+  volume name to the API. (GITHUB-1380)
+  [@mpempekos]
+
+- [GCE] Add ``ex_disk_size`` argument to the ``create_node`` method.
+  (GITHUB-1386, GITHUB-1388)
+  [Peter Yu - @yukw777]
+
+- [VMware vCloud] Various improvements, fixes and additions to the driver.
+  (GITHUB-1373)
+  [OpenText Corporation]
+
+- Update ``deploy_node()`` method so it now only passes non-deploy node
+  keyword arguments + ``auth`` argument to the underlying ``create_node()``
+  method. Previously it also passed ``deploy_node()`` specific arguments
+  such as ``deploy``, ``ssh_username``, ``max_tries``, etc. to it.
+
+  Because of that, a lot of the compute drivers which support deploy
+  functionality needed to use ``**kwargs`` in ``create_node()`` method
+  signature which made code hard to read and error prone.
+
+  Also update various affected drivers to explicitly declare supported
+  arguments in the  ``create_node()`` method signature (Dummy, Abiquo,
+  Joyent, Bluebox, OpenStack, Gandy, VCL, vCloud, CloudStack, GoGrid
+  HostVirtual, CloudSigma, ElasticStack, RimuHosting, SoftLayer, Voxel,
+  Vpsnet, KTUcloud, BrightBox, ECP, OpenNebula, UPcloud).
+
+  As part of this change, also various issues with invalid argument names
+  were identified and fixed.
+  (GITHUB-1389)
+  [Tomaz Muraus]
+
+- Add MyPy type annotations for ``create_node()`` and ``deploy_node()``
+  method.
+  (GITHUB-1389)
+  [Tomaz Muraus]
+
+- [GCE] Update ``deploy_node()`` method so it complies with the base compute
+  API and accepts ``deploy`` argument.
+
+  This method now also takes all the same keyword arguments which original
+  ``create_node()`` takes.
+  (GITHUB-1387)
+  [Peter Yu - @yukw777, Tomaz Muraus]
+
+- [Common] To make debugging and troubleshooting easier, add ``__repr__``
+  and ``__str__`` method to the ``ScriptDeployment`` class.
+  [Tomaz Muraus]
+
+- [Common] Add type annotations / hints for rest of the base compute API
+  classes and methods.
+  [Tomaz Muraus]
+
+Storage
+-------
+
+- [AWS S3] Make sure ``host`` driver constructor argument has priority
+  over ``region`` argument.
+
+  This means if you specify ``host`` and ``region`` argument, host won't be
+  inferred from the region, but ``host`` argument will be used for the actual
+  connection host value.
+  (GITHUB-1384, GITHUB-1383)
+  [@gluap]
+
+Changes in Apache Libcloud v2.7.0
+---------------------------------
+
 General
 -------
 
@@ -51,6 +146,14 @@ Compute
 
   (GITHUB-1375, GITHUB-1364)
   [Tomaz Muraus, @emakarov]
+
+ - [GCE] Add new ``ex_set_volume_labels`` method for managing volume labels to
+   the driver.
+   (GITHUB-1376)
+   [Rob Zimmerman - @zimventures]
+
+- [EC2] Add support for new ``inf1.*`` instance types.
+  [Tomaz Muraus]
 
 Storage
 ~~~~~~~

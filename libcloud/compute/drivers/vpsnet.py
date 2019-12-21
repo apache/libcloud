@@ -125,7 +125,8 @@ class VPSNetNodeDriver(NodeDriver):
         single_node_price = self._get_size_price(size_id='1')
         return num * single_node_price
 
-    def create_node(self, name, image, size, **kwargs):
+    def create_node(self, name, image, size, ex_backups_enabled=False,
+                    ex_fqdn=None):
         """Create a new VPS.net node
 
         @inherits: :class:`NodeDriver.create_node`
@@ -136,12 +137,13 @@ class VPSNetNodeDriver(NodeDriver):
         :keyword    ex_fqdn:   Fully Qualified domain of the node
         :type       ex_fqdn:   ``str``
         """
+        ex_backups_enabled = 1 if ex_backups_enabled else 0
         headers = {'Content-Type': 'application/json'}
         request = {'virtual_machine':
                    {'label': name,
-                    'fqdn': kwargs.get('ex_fqdn', ''),
+                    'fqdn': ex_fqdn or '',
                     'system_template_id': image.id,
-                    'backups_enabled': kwargs.get('ex_backups_enabled', 0),
+                    'backups_enabled': ex_backups_enabled,
                     'slices_required': size.id}}
 
         res = self.connection.request('/virtual_machines.%s' % (API_VERSION,),

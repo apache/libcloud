@@ -90,7 +90,7 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
         Test the 'create_node' function without 'image' parameter raises
         an Exception
         """
-        self.assertRaises(LibcloudError, self.driver.create_node)
+        self.assertRaises(TypeError, self.driver.create_node)
 
     def test_list_locations_response(self):
         if not self.should_list_locations:
@@ -135,7 +135,7 @@ class AbiquoNodeDriverTest(TestCaseMixin, unittest.TestCase):
         Test 'create_node' into a concrete group.
         """
         image = self.driver.list_images()[0]
-        self.driver.create_node(image=image, group_name='new_group_name')
+        self.driver.create_node(image=image, ex_group_name='new_group_name')
 
     def test_create_group_location_does_not_exist(self):
         """

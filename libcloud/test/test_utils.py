@@ -39,6 +39,7 @@ from libcloud.utils.py3 import hexadigits
 from libcloud.utils.py3 import urlquote
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
+from libcloud.compute.drivers.dummy import DummyNodeDriver
 from libcloud.utils.misc import get_secure_random_string
 from libcloud.utils.networking import is_public_subnet
 from libcloud.utils.networking import is_private_subnet
@@ -94,6 +95,16 @@ class TestUtils(unittest.TestCase):
             pass
         else:
             self.fail('Invalid provider, but an exception was not thrown')
+
+    def test_get_driver_string_and_enum_notation(self):
+        driver = get_driver(drivers=DRIVERS, provider=Provider.DUMMY)
+        self.assertEqual(driver, DummyNodeDriver)
+
+        driver = get_driver(drivers=DRIVERS, provider='dummy')
+        self.assertEqual(driver, DummyNodeDriver)
+
+        driver = get_driver(drivers=DRIVERS, provider='DUMMY')
+        self.assertEqual(driver, DummyNodeDriver)
 
     def test_set_driver(self):
         # Set an existing driver

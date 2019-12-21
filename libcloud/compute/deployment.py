@@ -209,6 +209,23 @@ class ScriptDeployment(Deployment):
 
         return node
 
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        script = self.script[:15] + '...'
+        exit_status = self.exit_status
+
+        if exit_status is not None:
+            stdout = self.stdout[:30] + '...'
+            stderr = self.stderr[:30] + '...'
+        else:
+            exit_status = 'script didn\'t run yet'
+            stdout = None
+            stderr = None
+        return ("<ScriptDeployment script=%s, exit_status=%s, stdout=%s, "
+                "stderr=%s>" % (script, exit_status, stdout, stderr))
+
 
 class ScriptFileDeployment(ScriptDeployment):
     """
