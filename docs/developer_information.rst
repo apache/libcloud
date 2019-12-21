@@ -5,7 +5,7 @@ Type Annotations
 ----------------
 
 Python type annotations / hints for the base Libcloud compute API have been
-added in v2.7.0.
+added in v2.8.0.
 
 The goal behind type annotations is to make developer lives easier by
 introducing optional static typing for Python programs.
@@ -18,6 +18,25 @@ pipeline).
 An example of how to use type annotations correctly is shown below.
 
 .. literalinclude:: /examples/compute/example_compute.py
+
+If you reference an invalid object attribute or a method, you would
+see an error similar to the one beloe when running mypy:
+
+.. sourcecode:: python
+
+    ...
+    print(nodes[0].name)
+    print(nodes[0].invalid)
+    print(nodes[0].rebbot())
+    print(nodes[0].reboot(foo='invalid'))
+    ...
+
+.. sourcecode:: bash
+
+    $ mypy --no-incremental example_compute.py
+    example_compute.py:41: error: "Node" has no attribute "invalid"
+    example_compute.py:42: error: "Node" has no attribute "rebbot"; maybe "reboot"?
+    example_compute.py:43: error: Unexpected keyword argument "foo" for "reboot" of "Node"
 
 If you are using driver methods which are not part of the Libcloud standard
 API, you need to use ``cast()`` method as shown below to cast the driver class
