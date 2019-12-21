@@ -69,6 +69,10 @@ Compute
   (GITHUB-1387)
   [Peter Yu - @yukw777, Tomaz Muraus]
 
+- [Common] To make debugging and troubleshooting easier, add ``__repr__``
+  and ``__str__`` method to the ``ScriptDeployment`` class.
+  [Tomaz Muraus]
+
 Storage
 -------
 
