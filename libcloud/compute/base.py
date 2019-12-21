@@ -247,6 +247,7 @@ class Node(UuidMixin):
         UuidMixin.__init__(self)
 
     def reboot(self):
+        # type: () -> bool
         """
         Reboot this node
 
@@ -287,6 +288,7 @@ class Node(UuidMixin):
         return self.driver.stop_node(self)
 
     def destroy(self):
+        # type: () -> bool
         """
         Destroy this node
 
@@ -568,7 +570,7 @@ class NodeAuthSSHKey(object):
     def __init__(self, pubkey):
         # type: (str) -> None
         """
-        :param pubkey: Public key matetiral.
+        :param pubkey: Public key material.
         :type pubkey: ``str``
         """
         self.pubkey = pubkey
@@ -582,6 +584,7 @@ class NodeAuthPassword(object):
     A password to be used for authentication to a node.
     """
     def __init__(self, password, generated=False):
+        # type: (str, bool) -> None
         """
         :param password: Password.
         :type password: ``str``
@@ -601,8 +604,15 @@ class StorageVolume(UuidMixin):
     A base StorageVolume class to derive from.
     """
 
-    def __init__(self, id, name, size, driver,
-                 state=None, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 size,  # type: int
+                 driver,  # type: NodeDriver
+                 state=None,  # type: Optional[StorageVolumeState]
+                 extra=None  # type: Optional[Dict]
+                 ):
+        # type: (...) -> None
         """
         :param id: Storage volume ID.
         :type id: ``str``
@@ -632,12 +642,14 @@ class StorageVolume(UuidMixin):
         UuidMixin.__init__(self)
 
     def list_snapshots(self):
+        # type: () -> List[VolumeSnapshot]
         """
         :rtype: ``list`` of ``VolumeSnapshot``
         """
         return self.driver.list_volume_snapshots(volume=self)
 
     def attach(self, node, device=None):
+        # type: (Node, Optional[str]) -> bool
         """
         Attach this volume to a node.
 
@@ -651,20 +663,20 @@ class StorageVolume(UuidMixin):
         :return: ``True`` if attach was successful, ``False`` otherwise.
         :rtype: ``bool``
         """
-
         return self.driver.attach_volume(node=node, volume=self, device=device)
 
     def detach(self):
+        # type: () -> bool
         """
         Detach this volume from its node
 
         :return: ``True`` if detach was successful, ``False`` otherwise.
         :rtype: ``bool``
         """
-
         return self.driver.detach_volume(volume=self)
 
     def snapshot(self, name):
+        # type: (str) -> VolumeSnapshot
         """
         Creates a snapshot of this volume.
 
@@ -674,6 +686,7 @@ class StorageVolume(UuidMixin):
         return self.driver.create_volume_snapshot(volume=self, name=name)
 
     def destroy(self):
+        # type: () -> bool
         """
         Destroy this storage volume.
 
@@ -692,8 +705,16 @@ class VolumeSnapshot(object):
     """
     A base VolumeSnapshot class to derive from.
     """
-    def __init__(self, id, driver, size=None, extra=None, created=None,
-                 state=None, name=None):
+    def __init__(self,
+                 id,  # type: str
+                 driver,  # type: NodeDriver
+                 size=None,  # type: int
+                 extra=None,  # type: Optional[Dict]
+                 created=None,  # type: Optional[datetime.datetime]
+                 state=None,  # type: StorageVolumeState
+                 name=None  # type: Optional[str]
+                 ):
+        # type: (...) -> None
         """
         VolumeSnapshot constructor.
 
@@ -716,7 +737,7 @@ class VolumeSnapshot(object):
 
         :param      state: A string representing the state the snapshot is
                            in. See `libcloud.compute.types.StorageVolumeState`.
-        :type       state: ``str``
+        :type       state: ``StorageVolumeState``
 
         :param      name: A string representing the name of the snapshot
         :type       name: ``str``
@@ -730,6 +751,7 @@ class VolumeSnapshot(object):
         self.name = name
 
     def destroy(self):
+        # type: () -> bool
         """
         Destroys this snapshot.
 
@@ -747,8 +769,15 @@ class KeyPair(object):
     Represents a SSH key pair.
     """
 
-    def __init__(self, name, public_key, fingerprint, driver, private_key=None,
-                 extra=None):
+    def __init__(self,
+                 name,  # type: str
+                 public_key,  # type: str
+                 fingerprint,  # type: str
+                 driver,  # type: NodeDriver
+                 private_key=None,  # type: Optional[str]
+                 extra=None  # type: Optional[Dict]
+                 ):
+        # type: (...) -> None
         """
         Constructor.
 
@@ -1613,6 +1642,7 @@ class NodeDriver(BaseDriver):
                             driver=self)
 
     def _get_and_check_auth(self, auth):
+        # type: (T_Auth) -> T_Auth
         """
         Helper function for providers supporting :class:`.NodeAuthPassword` or
         :class:`.NodeAuthSSHKey`
@@ -1799,6 +1829,7 @@ class NodeDriver(BaseDriver):
         return node
 
     def _get_size_price(self, size_id):
+        # type: (str) -> float
         """
         Return pricing information for the provided size id.
         """

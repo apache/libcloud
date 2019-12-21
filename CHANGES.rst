@@ -73,6 +73,10 @@ Compute
   and ``__str__`` method to the ``ScriptDeployment`` class.
   [Tomaz Muraus]
 
+- [Common] Add type annotations / hints for rest of the base compute API
+  classes and methods.
+  [Tomaz Muraus]
+
 Storage
 -------
 
