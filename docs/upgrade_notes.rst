@@ -5,6 +5,22 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 2.8.0
+--------------
+
+* ``deploy_node()`` method in the GCE driver has been updated so it complies
+  with the base compute API.
+
+  This means that the method now takes the same argument as the base
+  ``deploy_node()`` method (``deployment``, ``ssh_username``, ``ssh_port``,
+  etc.) plus all the keyword arguments which are supported by the
+  ``create_node()`` method.
+
+* ``group_name`` keyword argument in the ``create_node()`` method in the
+  Abiquo driver has been renamed to ``ex_group_name`` to comply with the
+  convention for naming non-standard arguments (arguments which are not
+  part of the standard compute API).
+
 Libcloud 2.7.0
 --------------
 
