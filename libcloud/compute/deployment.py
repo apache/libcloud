@@ -222,7 +222,7 @@ class ScriptDeployment(Deployment):
         else:
             stdout = None
             stderr = None
-        return ("<ScriptDeployment script=%s, exit_status=%s, stdout=%s,"
+        return ("<ScriptDeployment script=%s, exit_status=%s, stdout=%s, "
                 "stderr=%s>" % (script, exit_status, stdout, stderr))
 
 
