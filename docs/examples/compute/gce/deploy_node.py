@@ -24,9 +24,9 @@ PROJECT_ID = 'my-gcp-project'
 
 Driver = get_driver(Provider.GCE)
 driver = Driver(SERVICE_ACCOUNT_USERNAME,
-              SERVICE_ACCOUNT_CREDENTIALS_JSON_FILE_PATH,
-              project=PROJECT_ID,
-              datacenter='us-central1-a')
+                SERVICE_ACCOUNT_CREDENTIALS_JSON_FILE_PATH,
+                project=PROJECT_ID,
+                datacenter='us-central1-a')
 
 step = ScriptDeployment("echo whoami ; date ; ls -la")
 
@@ -57,9 +57,9 @@ ex_metadata = metadata = {
 }
 
 # deploy_node takes the same base keyword arguments as create_node.
-node = driver.deploy_node(name='libcloud-deploy-demo-1', image=image, size=size,
-                        ex_metadata=metadata,
-                        deploy=step, ssh_key=PRIVATE_SSH_KEY_PATH)
+node = driver.deploy_node(name='libcloud-deploy-demo-1', image=image,
+                          size=size, ex_metadata=metadata,
+                          deploy=step, ssh_key=PRIVATE_SSH_KEY_PATH)
 
 print('')
 print('Node: %s' % (node))
