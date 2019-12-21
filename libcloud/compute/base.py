@@ -48,6 +48,7 @@ if TYPE_CHECKING:
 from libcloud.compute.types import Provider
 from libcloud.compute.types import NodeImageMemberState
 from libcloud.compute.ssh import SSHClient
+from libcloud.compute.ssh import BaseSSHClient
 from libcloud.common.base import Connection
 from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
@@ -68,6 +69,8 @@ else:
                                      socket.error)  # type: ignore
 
 T_Auth = Union['NodeAuthSSHKey', 'NodeAuthPassword']
+
+T_Ssh_key = Union[List[str], str]
 
 # How long to wait for the node to come online after creating it
 NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
@@ -940,7 +943,7 @@ class NodeDriver(BaseDriver):
                     ssh_alternate_usernames=None,  # type: Optional[List[str]]
                     ssh_port=22,  # type: int
                     ssh_timeout=10,  # type: int
-                    ssh_key=None,  # type: Optional[str]
+                    ssh_key=None,  # type: Optional[T_Ssh_key]
                     auth=None,  # type: T_Auth
                     timeout=SSH_CONNECT_TIMEOUT,  # type: int
                     max_tries=3,  # type: int
@@ -1509,9 +1512,14 @@ class NodeDriver(BaseDriver):
         raise NotImplementedError(
             'delete_key_pair not implemented for this driver')
 
-    def wait_until_running(self, nodes, wait_period=3,
-                           timeout=600, ssh_interface='public_ips',
-                           force_ipv4=True, ex_list_nodes_kwargs=None):
+    def wait_until_running(self,
+                           nodes,  # type: List[Node]
+                           wait_period=3,  # type: float
+                           timeout=600,  # type: int
+                           ssh_interface='public_ips',  # type: str
+                           force_ipv4=True,  # type: bool
+                           ex_list_nodes_kwargs=None  # type: Optional[Dict]
+                           ):
         # type: (...) -> List[Tuple[Node, List[str]]]
         """
         Block until the provided nodes are considered running.
@@ -1653,6 +1661,7 @@ class NodeDriver(BaseDriver):
 
     def _wait_until_running(self, node, wait_period=3, timeout=600,
                             ssh_interface='public_ips', force_ipv4=True):
+        # type: (Node, float, int, str, bool) -> List[Tuple[Node, List[str]]]
         # This is here for backward compatibility and will be removed in the
         # next major release
         return self.wait_until_running(nodes=[node], wait_period=wait_period,
@@ -1661,6 +1670,7 @@ class NodeDriver(BaseDriver):
                                        force_ipv4=force_ipv4)
 
     def _ssh_client_connect(self, ssh_client, wait_period=1.5, timeout=300):
+        # type: (BaseSSHClient, float, int) -> BaseSSHClient
         """
         Try to connect to the remote SSH server. If a connection times out or
         is refused it is retried up to timeout number of seconds.
@@ -1713,10 +1723,19 @@ class NodeDriver(BaseDriver):
         raise LibcloudError(value='Could not connect to the remote SSH ' +
                             'server. Giving up.', driver=self)
 
-    def _connect_and_run_deployment_script(self, task, node, ssh_hostname,
-                                           ssh_port, ssh_username,
-                                           ssh_password, ssh_key_file,
-                                           ssh_timeout, timeout, max_tries):
+    def _connect_and_run_deployment_script(
+        self,
+        task,  # type: Deployment
+        node,  # type: Node
+        ssh_hostname,  # type: str
+        ssh_port,  # type: int
+        ssh_username,  # type: str
+        ssh_password,  # type: Optional[str]
+        ssh_key_file,  # type:Optional[T_Ssh_key]
+        ssh_timeout,  # type: int
+        timeout,  # type: int
+        max_tries  # type: int
+    ):
         """
         Establish an SSH connection to the node and run the provided deployment
         task.
@@ -1740,6 +1759,7 @@ class NodeDriver(BaseDriver):
         return node
 
     def _run_deployment_script(self, task, node, ssh_client, max_tries=3):
+        # type: (Deployment, Node, BaseSSHClient, int) -> Node
         """
         Run the deployment script on the provided node. At this point it is
         assumed that SSH connection has already been established.
@@ -1775,6 +1795,8 @@ class NodeDriver(BaseDriver):
                 # Deployment succeeded
                 ssh_client.close()
                 return node
+
+        return node
 
     def _get_size_price(self, size_id):
         """
