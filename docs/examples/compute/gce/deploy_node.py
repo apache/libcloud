@@ -64,7 +64,6 @@ node = driver.deploy_node(name='libcloud-deploy-demo-1', image=image,
 print('')
 print('Node: %s' % (node))
 print('')
-print('stdout: %s' % (step))
 print('stdout: %s' % (step.stdout))
 print('stderr: %s' % (step.stderr))
 print('exit_code: %s' % (step.exit_status))

@@ -117,9 +117,27 @@ method and a couple of additional arguments. The most important ones are
   authenticate. Key needs to be in a format which is supported by paramiko
   (see section on supported key types above).
 * ``ssh_username`` - SSH username used to login. If not provided, it defaults
-  to ``root``
+  to ``root``.
 * ``ssh_port`` - Port of the SSH server. If not provided, it defaults to
   ``22``.
+
+To view the output (stdout, stderr) and exit code of a specific deployment
+step, you can access ``stdout``, ``stderr`` and ``exit_status`` instance
+variables on the deployment class instance (``ScriptDeployment``,
+``ScriptFileDeployment``) in question.
+
+For example:
+
+.. sourcecode:: python
+
+    ...
+    step = ScriptDeployment("echo whoami ; date ; ls -la")
+
+    node = driver.deploy_node(...)
+
+    print('stdout: %s' % (step.stdout))
+    print('stderr: %s' % (step.stderr))
+    print('exit_code: %s' % (step.exit_status))
 
 Some examples which demonstrate how this method can be used are displayed
 below.
