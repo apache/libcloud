@@ -20,6 +20,13 @@ Common
   (GITHUB-1391, GITHUB-1390)
   [Tomaz Muraus]
 
+- Include ``py.typed`` data file to signal that this package contains type
+  annotations / hints.
+
+  NOTE: At the moment, type annotations are only available for the base
+  compute API.
+  [Tomaz Muraus]
+
 Compute
 -------
 

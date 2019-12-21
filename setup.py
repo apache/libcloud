@@ -273,7 +273,9 @@ setup(
     package_dir={
         'libcloud': 'libcloud',
     },
-    package_data={'libcloud': get_data_files('libcloud', parent='libcloud')},
+    package_data={
+        'libcloud': get_data_files('libcloud', parent='libcloud') + ['py.typed'],
+    },
     license='Apache License (2.0)',
     url='http://libcloud.apache.org/',
     setup_requires=pytest_runner,
