@@ -23,20 +23,21 @@ SERVICE_ACCOUNT_CREDENTIALS_JSON_FILE_PATH = '/path/to/sac.json'
 PROJECT_ID = 'my-gcp-project'
 
 Driver = get_driver(Provider.GCE)
-conn = Driver(SERVICE_ACCOUNT_USERNAME,
+driver = Driver(SERVICE_ACCOUNT_USERNAME,
               SERVICE_ACCOUNT_CREDENTIALS_JSON_FILE_PATH,
               project=PROJECT_ID,
               datacenter='us-central1-a')
 
-# NOTE: To view the output of this command, you need to set
-# LIBCLOUD_DEBUG variable and then tail that file for the log output
 step = ScriptDeployment("echo whoami ; date ; ls -la")
 
-images = conn.list_images()
-sizes = conn.list_sizes()
+images = driver.list_images()
+sizes = driver.list_sizes()
 
 image = [i for i in images if i.name == 'ubuntu-1604-xenial-v20191217'][0]
 size = [s for s in sizes if s.name == 'e2-micro'][0]
+
+print('Using image: %s' % (image))
+print('Using size: %s' % (size))
 
 # NOTE: We specify which public key is installed on the instance using
 # metadata functionality.
@@ -56,7 +57,14 @@ ex_metadata = metadata = {
 }
 
 # deploy_node takes the same base keyword arguments as create_node.
-node = conn.deploy_node(name='libcloud-deploy-demo-1', image=image, size=size,
+node = driver.deploy_node(name='libcloud-deploy-demo-1', image=image, size=size,
                         ex_metadata=metadata,
                         deploy=step, ssh_key=PRIVATE_SSH_KEY_PATH)
-print(node)
+
+print('')
+print('Node: %s' % (node))
+print('')
+print('stdout: %s' % (step))
+print('stdout: %s' % (step.stdout))
+print('stderr: %s' % (step.stderr))
+print('exit_code: %s' % (step.exit_status))
