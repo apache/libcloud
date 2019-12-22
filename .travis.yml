@@ -1,5 +1,4 @@
 language: python
-sudo: required
 dist: xenial
 os: linux
 
@@ -30,8 +29,6 @@ matrix:
       before_script: TOX_ENV=pylint
     - env: ENV=mypy
       python: 3.7
-      dist: xenial
-      sudo: required
       before_script: TOX_ENV=mypy
     - env: ENV=coverage
       python: 3.7
