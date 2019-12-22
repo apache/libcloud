@@ -42,6 +42,7 @@ Main
 
     getting_started
     supported_providers
+    supported_python_versions
     third_party_drivers
     compute/index
     storage/index
