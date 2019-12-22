@@ -18,6 +18,7 @@ import sys
 import re
 import fnmatch
 
+import setuptools
 from setuptools import setup
 from distutils.core import Command
 
@@ -168,7 +169,26 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
 
 SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 
-INSTALL_REQUIREMENTS = ['requests>=2.5.0']
+# NOTE: python_version syntax is only supported when build system has
+# setuptools >= 36.2
+# For installation, minimum required pip version is 1.4
+# Reference: https://hynek.me/articles/conditional-python-dependencies/
+INSTALL_REQUIREMENTS = [
+    'requests>=2.5.0',
+    'backports.ssl_match_hostname ; python_version<"2.7.9"',
+    'typing ; python_version<"3.4.0"',
+    'enum34 ; python_version<"3.4.0"',
+]
+
+setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
+setuptools_version = tuple([int(c) for c in setuptools_version])
+
+if setuptools_version < (36, 2):
+    if 'bdist_wheel' in sys.argv:
+        # NOTE: We need to do that because we use universal wheel
+        msg = ('Need to use latest version of setuptools when building wheels to ensure included '
+               'metadata is correct. Current version: %s' % (setuptools.__version__))
+        raise RuntimeError(msg)
 
 TEST_REQUIREMENTS = [
     'mock',

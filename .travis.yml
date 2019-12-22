@@ -13,10 +13,13 @@ addons:
 matrix:
   fast_finish: true
   include:
+<<<<<<< HEAD
     - python: 3.5
     - python: 3.6
     - python: 3.7
-      before_script: TOX_ENV=py3.7,py3.7-dist
+      dist: xenial
+      sudo: required
+      before_script: TOX_ENV=py3.7,py3.7-dist,py3.7-dist-wheel
     - python: 3.8
     - python: pypy3.5
     - env: ENV=checks
