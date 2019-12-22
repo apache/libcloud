@@ -14,6 +14,9 @@ Libcloud 3.0.0
   that by using the latest release which still supported those Python versions
   (Libcloud v2.8.0).
 
+* This release removes VMware vSphere driver which relied on old and
+  unmaintained ``pysphere`` library which doesn't support Python 3.
+
 Libcloud 2.8.0
 --------------
 
