@@ -95,6 +95,12 @@ preparing a release.
 3. Creating release artifacts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+
+  It's important that you have the latest versions of ``setuptools``, ``wheel``
+  and ``pip`` installed to ensure the generated wheel files contain correct
+  metadata.
+
 We have a script that runs the required setup.py commands and then hashes
 and signs the files. You will need the latest version of ``pip`` and the ``wheel``
 package. To run it:

@@ -14,14 +14,14 @@ matrix:
   fast_finish: true
   include:
     - python: 2.7
-      before_script: TOX_ENV=py2.7,py2.7-dist
+      before_script: TOX_ENV=py2.7,py2.7-dist,py2.7-dist-wheel
     - python: 3.4
     - python: 3.5
     - python: 3.6
     - python: 3.7
       dist: xenial
       sudo: required
-      before_script: TOX_ENV=py3.7,py3.7-dist
+      before_script: TOX_ENV=py3.7,py3.7-dist,py3.7-dist-wheel
     - python: 3.8
       dist: xenial
       sudo: required
