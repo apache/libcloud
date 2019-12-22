@@ -1,6 +1,21 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development (3.0.0)
+-------------------------------------------------
+
+General
+-------
+
+* This release drops support for Python versions older than 3.5.0.
+
+  If you still need to use Libcloud with Python 2.7 or Python 3.4 you can do
+  that by using the latest release which still supported those Python versions
+  (Libcloud v2.8.0).
+
+  (GITHUB-1377)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud in development
 -----------------------------------------
 
