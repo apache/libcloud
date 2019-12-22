@@ -23,8 +23,6 @@ matrix:
       python: 3.8
     - name: Unit Tests (PyPy 3.5)
       python: pypy3.5
-    - name: Unit Tests (PyPy 3.6)
-      python: pypy3.6
     - name: License and File name Checks
       env: ENV=checks
       python: 3.7
