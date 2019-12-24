@@ -60,6 +60,10 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         _init_once()
         self.ssh_cli = ParamikoSSHClient(**conn_params)
 
+    def tearDown(self):
+        if 'LIBCLOUD_DEBUG' in os.environ:
+            del os.environ['LIBCLOUD_DEBUG']
+
     @patch('paramiko.SSHClient', Mock)
     def test_create_with_password(self):
         conn_params = {'hostname': 'dummy.host.org',

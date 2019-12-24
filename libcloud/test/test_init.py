@@ -34,6 +34,10 @@ from libcloud.test import unittest
 
 
 class TestUtils(unittest.TestCase):
+    def tearDown(self):
+        if 'LIBCLOUD_DEBUG' in os.environ:
+            del os.environ['LIBCLOUD_DEBUG']
+
     def test_init_once_and_debug_mode(self):
         if have_paramiko:
             paramiko_logger = logging.getLogger('paramiko')
