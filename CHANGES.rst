@@ -1,6 +1,19 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] Fix ``ex_list_instancegroups`` method so it doesn't throw if ``zone``
+  attribute is not present in the response.
+
+  Reported by Kartik Subbarao (@kartiksubbarao)
+  (GITHUB-1346)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
