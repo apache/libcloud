@@ -333,6 +333,7 @@ class NetworkingUtilsTestCase(unittest.TestCase):
             self.assertFalse(is_public)
             self.assertTrue(is_private)
 
+    @unittest.skipIf(platform.platform().lower() == 'windows', 'Unsupported on Windows')
     def test_is_valid_ip_address(self):
         valid_ipv4_addresses = [
             '192.168.1.100',
