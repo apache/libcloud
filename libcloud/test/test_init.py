@@ -49,7 +49,7 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(paramiko_log_level, logging.INFO)
 
         # Enable debug mode
-        os.environ['LIBCLOUD_DEBUG'] = '/dev/null'
+        os.environ['LIBCLOUD_DEBUG'] = '/tmp/foobartest'
         _init_once()
 
         self.assertTrue(LoggingConnection.log is not None)

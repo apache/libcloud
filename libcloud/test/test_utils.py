@@ -20,6 +20,7 @@ import socket
 import codecs
 import unittest
 import warnings
+import platform
 import os.path
 import requests_mock
 from itertools import chain
@@ -65,6 +66,7 @@ if PY3:
 def show_warning(msg, cat, fname, lno, file=None, line=None):
     WARNINGS_BUFFER.append((msg, cat, fname, lno))
 
+
 original_func = warnings.showwarning
 
 
@@ -78,6 +80,7 @@ class TestUtils(unittest.TestCase):
         WARNINGS_BUFFER = []
         warnings.showwarning = original_func
 
+    @unittest.skipIf(platform.platform().lower() == 'windows', 'Unsupported on Windows')
     def test_guess_file_mime_type(self):
         file_path = os.path.abspath(__file__)
         mimetype, encoding = libcloud.utils.files.guess_file_mime_type(
@@ -210,32 +213,32 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(result, b('aaaaaaaaaa'))
 
     def test_read_in_chunks_filelike(self):
-            class FakeFile(file):
-                def __init__(self):
-                    self.remaining = 500
+        class FakeFile(file):
+            def __init__(self):
+                self.remaining = 500
 
-                def read(self, size):
-                    self.remaining -= 1
-                    if self.remaining == 0:
-                        return ''
-                    return 'b' * (size + 1)
+            def read(self, size):
+                self.remaining -= 1
+                if self.remaining == 0:
+                    return ''
+                return 'b' * (size + 1)
 
-            for index, result in enumerate(libcloud.utils.files.read_in_chunks(
-                                           FakeFile(), chunk_size=10,
-                                           fill_size=False)):
-                self.assertEqual(result, b('b' * 11))
+        for index, result in enumerate(libcloud.utils.files.read_in_chunks(
+                                       FakeFile(), chunk_size=10,
+                                       fill_size=False)):
+            self.assertEqual(result, b('b' * 11))
 
-            self.assertEqual(index, 498)
+        self.assertEqual(index, 498)
 
-            for index, result in enumerate(libcloud.utils.files.read_in_chunks(
-                                           FakeFile(), chunk_size=10,
-                                           fill_size=True)):
-                if index != 548:
-                    self.assertEqual(result, b('b' * 10))
-                else:
-                    self.assertEqual(result, b('b' * 9))
+        for index, result in enumerate(libcloud.utils.files.read_in_chunks(
+                                       FakeFile(), chunk_size=10,
+                                       fill_size=True)):
+            if index != 548:
+                self.assertEqual(result, b('b' * 10))
+            else:
+                self.assertEqual(result, b('b' * 9))
 
-            self.assertEqual(index, 548)
+        self.assertEqual(index, 548)
 
     def test_exhaust_iterator(self):
         def iterator_func():
@@ -301,6 +304,7 @@ class TestUtils(unittest.TestCase):
 
 
 class NetworkingUtilsTestCase(unittest.TestCase):
+    @unittest.skipIf(platform.platform().lower() == 'windows', 'Unsupported on Windows')
     def test_is_public_and_is_private_subnet(self):
         public_ips = [
             '213.151.0.8',
@@ -435,6 +439,7 @@ def test_get_response_object():
         m.get('http://test.com/test', text='data')
         response = get_response_object('http://test.com/test')
         assert response.body == 'data'
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
