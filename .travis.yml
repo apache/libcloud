@@ -24,7 +24,7 @@ matrix:
       python: 3.7
       language: shell
       before_install:
-        - choco install python3.7
+        - choco install python --version 3.7.5
         - export PATH="/c/Python:/c/Python/Scripts:$PATH"
         - python -m pip install --upgrade pip
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
