@@ -79,14 +79,17 @@ class CloudSigmaNodeDriver(NodeDriver):
 
 class CloudSigmaException(Exception):
     def __str__(self):
+        # pylint: disable=unsubscriptable-object
         return self.args[0]
 
     def __repr__(self):
+        # pylint: disable=unsubscriptable-object
         return "<CloudSigmaException '%s'>" % (self.args[0])
 
 
 class CloudSigmaInsufficientFundsException(Exception):
     def __repr__(self):
+        # pylint: disable=unsubscriptable-object
         return "<CloudSigmaInsufficientFundsException '%s'>" % (self.args[0])
 
 

@@ -129,9 +129,11 @@ STANDARD_DRIVES = {
 
 class ElasticHostsException(Exception):
     def __str__(self):
+        # pylint: disable=unsubscriptable-object
         return self.args[0]
 
     def __repr__(self):
+        # pylint: disable=unsubscriptable-object
         return "<ElasticHostsException '%s'>" % (self.args[0])
 
 

@@ -35,7 +35,7 @@ result = driver.ex_create_ip_address_list(my_network_domain.id,
 
 try:
     assert result is True
-except Exception as e:
+except Exception:
     raise RuntimeError("Something went wrong in address list creation.")
 else:
     addr_list = driver.ex_list_ip_address_list(my_network_domain.id)
@@ -55,7 +55,7 @@ result = driver.ex_create_portlist(my_network_domain.id,
 
 try:
     assert result is True
-except Exception as e:
+except Exception:
     raise RuntimeError("Something went wrong in address list creation.")
 else:
     port_list = driver.ex_list_portlist(my_network_domain.id)

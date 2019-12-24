@@ -23,7 +23,7 @@ Provider                              list nodes create node reboot node destroy
 `Eucalyptus`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Exoscale`_                           yes        yes         yes         yes          no         no        yes         yes        yes        
 `Gandi`_                              yes        yes         yes         yes          no         no        yes         yes        no         
-`Google Compute Engine`_              yes        yes         yes         yes          yes        yes       yes         yes        no         
+`Google Compute Engine`_              yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `GoGrid`_                             yes        yes         yes         yes          no         no        yes         yes        yes        
 `Gridscale`_                          yes        yes         yes         yes          yes        no        yes         no         yes        
 `HostVirtual`_                        yes        yes         yes         yes          yes        yes       yes         yes        yes        
@@ -63,7 +63,6 @@ Provider                              list nodes create node reboot node destroy
 `vCloud`_                             yes        yes         yes         yes          no         no        yes         yes        yes        
 `Voxel VoxCLOUD`_                     yes        yes         yes         yes          no         no        yes         yes        no         
 `vps.net`_                            yes        yes         yes         yes          no         no        yes         yes        no         
-`VMware vSphere`_                     yes        no          yes         yes          yes        yes       yes         no         no         
 `Vultr`_                              yes        yes         yes         yes          no         no        yes         yes        no         
 ===================================== ========== =========== =========== ============ ========== ========= =========== ========== ===========
 
@@ -127,5 +126,4 @@ Provider                              list nodes create node reboot node destroy
 .. _`vCloud`: http://www.vmware.com/products/vcloud/
 .. _`Voxel VoxCLOUD`: http://www.voxel.net/
 .. _`vps.net`: http://vps.net/
-.. _`VMware vSphere`: http://www.vmware.com/products/vsphere/
 .. _`Vultr`: https://www.vultr.com

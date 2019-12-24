@@ -107,9 +107,11 @@ INSTANCE_TYPES = {
 
 class ElasticStackException(Exception):
     def __str__(self):
+        # pylint: disable=unsubscriptable-object
         return self.args[0]
 
     def __repr__(self):
+        # pylint: disable=unsubscriptable-object
         return "<ElasticStackException '%s'>" % (self.args[0])
 
 

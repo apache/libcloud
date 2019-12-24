@@ -1,6 +1,5 @@
 language: python
-sudo: false
-dist: trusty
+dist: xenial
 os: linux
 
 # Note: graphviz is needed for grapgs embedded in the docs
@@ -13,41 +12,42 @@ addons:
 matrix:
   fast_finish: true
   include:
-    - python: 2.7
-      before_script: TOX_ENV=py2.7,py2.7-dist,py2.7-dist-wheel
-    - python: 3.4
-    - python: 3.5
-    - python: 3.6
-    - python: 3.7
-      dist: xenial
-      sudo: required
-      before_script: TOX_ENV=py3.7,py3.7-dist,py3.7-dist-wheel
-    - python: 3.8
-      dist: xenial
-      sudo: required
-    - python: pypy
-    - python: pypy3
-    - env: ENV=checks
-      python: 2.7
-      before_script: TOX_ENV=checks
-    - env: ENV=lint
-      python: 2.7
-      before_script: TOX_ENV=lint
-    - env: ENV=pylint
-      python: 2.7
-      before_script: TOX_ENV=pylint
-    - env: ENV=mypy
+    - name: Unit Tests (Python 3.5)
+      python: 3.5
+    - name: Unit Tests (Python 3.6)
+      python: 3.6
+    - name: Unit Tests, Installation Checks (Python 3.7)
       python: 3.7
-      dist: xenial
-      sudo: required
+      before_script: TOX_ENV=py3.7,py3.7-dist,py3.7-dist-wheel
+    - name: Unit Tests (Python 3.8)
+      python: 3.8
+    - name: Unit Tests (PyPy 3.5)
+      python: pypy3.5
+    - name: License and File name Checks
+      env: ENV=checks
+      python: 3.7
+      before_script: TOX_ENV=checks
+    - name: Lint (flake8)
+      env: ENV=lint
+      python: 3.7
+      before_script: TOX_ENV=lint
+    - name: Lint (pylint)
+      env: ENV=pylint
+      python: 3.7
+      before_script: TOX_ENV=pylint
+    - name: MyPy
+      env: ENV=mypy
+      python: 3.7
       before_script: TOX_ENV=mypy
-    - env: ENV=coverage
-      python: 2.7
+    - name: Code Coverage (Unit tests)
+      env: ENV=coverage
+      python: 3.7
       before_script: TOX_ENV=coverage-travis
-    - env:
+    - name: Documentation
+      env:
         - ENV=docs
         - secure: "d4F2RE2iWFh6yqE5MUxnakDihBMsY/hMsaMWllVAYU/fvCMKhaW97d51EiS55kur/eNVX2jpEqkVkSu5VeNSxC3w9sZTG+dHVb8A43o9QaSCPngvHTZ4X9fx8lB96G7uju6pmm5ovKt85hxZW2uQNYo3ugwCUl94lVDYqo+KJUM="
-      python: 3.5
+      python: 3.7
       before_script: TOX_ENV=docs-travis
       # Note: graphviz is needed for grapgs embedded in the docs
       addons:
@@ -62,10 +62,10 @@ matrix:
         - python3 ./contrib/trigger_rtd_build.py
 
 install:
-  - pip install --upgrade "pip==19.1.1"
-  - pip install --upgrade "setuptools==41.6.0"
-  - pip install "virtualenv==16.7.7"
-  - pip install "tox==3.14.0"
+  - pip install --upgrade "pip==19.2.1"
+  - pip install --upgrade "setuptools==42.0.2"
+  - pip install "virtualenv==16.7.6"
+  - pip install "tox==3.14.2"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:

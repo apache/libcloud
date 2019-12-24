@@ -427,7 +427,7 @@ class DockerContainerDriver(ContainerDriver):
                                              data=data,
                                              params=params, method='POST')
         except Exception as e:
-            message = e.message or str(e)
+            message = e.message or str(e)  # pylint: disable=no-member
             if message.startswith('No such image:'):
                 raise DockerException(None, 'No such image: %s' % image.name)
             else:

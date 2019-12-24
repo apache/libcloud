@@ -20,7 +20,7 @@ def download_obj(container, obj):
                             object_name=obj.name)
     filename = os.path.basename(obj.name)
     path = os.path.join(os.path.expanduser('~/Downloads'), filename)
-    print 'Downloading: %s to %s' % (obj.name, path)
+    print('Downloading: %s to %s' % (obj.name, path))
     obj.download(destination_path=path)
 
 
@@ -36,4 +36,4 @@ for index, container in enumerate(containers):
         pool.spawn(download_obj, container, obj)
 
 pool.join()
-print 'Done'
+print('Done')

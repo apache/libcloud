@@ -49,10 +49,10 @@ from libcloud.utils.misc import ReprMixin
 HTTPSConnection = httplib.HTTPSConnection
 
 if sys.version_info < (3,):
-    _unicode_type = unicode
+    _unicode_type = unicode  # NOQA  pylint: disable=undefined-variable
 
     def _str(value):
-        if isinstance(value, unicode):
+        if isinstance(value, unicode):  # NOQA  pylint: disable=undefined-variable
             return value.encode('utf-8')
 
         return str(value)
@@ -944,6 +944,7 @@ class AzureNodeDriver(NodeDriver):
         ]
 
         all_endpoints.extend(endpoints)
+        # pylint: disable=assignment-from-no-return
         result = self.ex_set_instance_endpoints(node, all_endpoints,
                                                 ex_deployment_slot)
         return result

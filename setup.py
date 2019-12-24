@@ -153,15 +153,10 @@ def get_data_files(dname, ignore=None, parent=None):
 # Different versions of python have different requirements.  We can't use
 # libcloud.utils.py3 here because it relies on backports dependency being
 # installed / available
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-PY3_pre_34 = PY3 and sys.version_info < (3, 4)
-PY2_pre_27 = PY2 and sys.version_info < (2, 7)
-PY2_pre_279 = PY2 and sys.version_info < (2, 7, 9)
-PY2_or_3_pre_34 = sys.version_info < (3, 4, 0)
+PY_pre_35 = sys.version_info < (3, 5, 0)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
-PROJECT_BASE_DIR = 'http://libcloud.apache.org'
+PROJECT_BASE_DIR = 'https://libcloud.apache.org'
 TEST_PATHS = ['libcloud/test', 'libcloud/test/common', 'libcloud/test/compute',
               'libcloud/test/storage', 'libcloud/test/loadbalancer',
               'libcloud/test/dns', 'libcloud/test/container',
@@ -172,7 +167,7 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.container.drivers.dummy',
                     'libcloud.backup.drivers.dummy']
 
-SUPPORTED_VERSIONS = ['2.7', 'PyPy', '3.3+']
+SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 
 # NOTE: python_version syntax is only supported when build system has
 # setuptools >= 36.2
@@ -185,8 +180,6 @@ INSTALL_REQUIREMENTS = [
     'enum34 ; python_version<"3.4.0"',
 ]
 
-EXTRAS_REQUIRE = {}
-
 setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
 setuptools_version = tuple([int(c) for c in setuptools_version])
 
@@ -197,17 +190,6 @@ if setuptools_version < (36, 2):
                'metadata is correct. Current version: %s' % (setuptools.__version__))
         raise RuntimeError(msg)
 
-if setuptools_version < (18, 0):
-    if PY2_pre_279:
-        INSTALL_REQUIREMENTS.append('backports.ssl_match_hostname')
-
-    if PY2_or_3_pre_34:
-        INSTALL_REQUIREMENTS.append('typing')
-        INSTALL_REQUIREMENTS.append('enum34')
-else:
-    EXTRAS_REQUIRE[":python_version<'2.7.9'"] = ['backports.ssl_match_hostname']
-    EXTRAS_REQUIRE[":python_version<'3.4.0'"] = ['typing', 'enum34']
-
 TEST_REQUIREMENTS = [
     'mock',
     'requests_mock',
@@ -215,13 +197,11 @@ TEST_REQUIREMENTS = [
     'pytest-runner'
 ] + INSTALL_REQUIREMENTS
 
-if PY2_pre_279:
-    TEST_REQUIREMENTS.append('backports.ssl_match_hostname')
-
-if PY2_pre_27 or PY3_pre_34:
+if PY_pre_35:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
-    print('Version ' + version + ' is not supported. Supported versions are ' +
-          ', '.join(SUPPORTED_VERSIONS))
+    print('Version ' + version + ' is not supported. Supported versions are: %s.'
+          'Latest version which supports Python 2.7 and Python 3 < 3.5.0 is '
+          'Libcloud v2.7.0' % ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
 
@@ -289,13 +269,12 @@ setup(
     version=read_version_string(),
     description='A standard Python library that abstracts away differences' +
                 ' among multiple cloud provider APIs. For more information' +
-                ' and documentation, please see http://libcloud.apache.org',
+                ' and documentation, please see https://libcloud.apache.org',
     long_description=open('README.rst').read(),
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     install_requires=INSTALL_REQUIREMENTS,
-    extras_requires=EXTRAS_REQUIRE,
-    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4",
+    python_requires=">=3.5.*, <4",
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
@@ -304,7 +283,7 @@ setup(
         'libcloud': get_data_files('libcloud', parent='libcloud') + ['py.typed'],
     },
     license='Apache License (2.0)',
-    url='http://libcloud.apache.org/',
+    url='https://libcloud.apache.org/',
     setup_requires=pytest_runner,
     tests_require=TEST_REQUIREMENTS,
     cmdclass={
@@ -320,7 +299,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',

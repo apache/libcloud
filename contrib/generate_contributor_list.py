@@ -112,7 +112,7 @@ def convert_to_markdown(contributors_map, include_tickets=False):
     def compare(item1, item2):
         lastname1 = item1.split(' ')[-1].lower()
         lastname2 = item2.split(' ')[-1].lower()
-        return cmp(lastname1, lastname2)
+        return (lastname1 > lastname2) - (lastname1 < lastname2)
 
     names = contributors_map.keys()
     names = sorted(names, cmp=compare)

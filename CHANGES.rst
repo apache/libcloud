@@ -1,6 +1,31 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development (3.0.0)
+-------------------------------------------------
+
+General
+-------
+
+- This release drops support for Python versions older than 3.5.0.
+
+  If you still need to use Libcloud with Python 2.7 or Python 3.4 you can do
+  that by using the latest release which still supported those Python versions
+  (Libcloud v2.8.0).
+  (GITHUB-1377)
+  [Tomaz Muraus]
+
+Compute
+-------
+
+- [VMware vSphere] vSphere driver relies on ``pysphere`` Python library which
+  doesn't support Python 3 so it has been removed.
+
+  There is an unofficial ``pysphere`` fork which adds Python 3 support, but
+  it's out of date and not maintained (https://github.com/machalekj/pysphere/tree/2to3).
+  (GITHUB-1377)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud in development
 -----------------------------------------
 
