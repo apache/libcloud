@@ -27,7 +27,7 @@ matrix:
         - choco install python --version 3.7.5
         - export PATH="/c/Python:/c/Python/Scripts:$PATH"
         - python -m pip install --upgrade pip
-      before_script: TOX_ENV=py3.7
+      before_script: TOX_ENV=py3.7-windows
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
     - name: Unit Tests (Python 3.8)
       python: 3.8
