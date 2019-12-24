@@ -396,6 +396,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(actual[0].name, 'myname')
         self.assertEqual(actual[1].name, 'myname2')
 
+    def test_ex_list_instancegroups_zone_attribute_not_present_in_response(self):
+        GCEMockHttp.type = 'zone_attribute_not_present'
+        loc = 'us-central1-a'
+        actual = self.driver.ex_list_instancegroups(loc)
+        self.assertTrue(len(actual) == 2)
+        self.assertEqual(actual[0].name, 'myname')
+        self.assertEqual(actual[1].name, 'myname2')
+
     def test_ex_instancegroup_list_instances(self):
         name = 'myname'
         loc = 'us-central1-a'
@@ -3781,6 +3789,13 @@ class GCEMockHttp(MockHttp):
             # get or list call
             body = self.fixtures.load(
                 'zones_us_central1_a_instanceGroups.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups_zone_attribute_not_present(self, method, url, body, headers):
+        if method == 'GET':
+            # get or list call
+            body = self.fixtures.load(
+                'zones_us_central1_a_instanceGroups_zone_attribute_not_present.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_insert(
