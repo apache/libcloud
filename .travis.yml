@@ -21,9 +21,11 @@ matrix:
       before_script: TOX_ENV=py3.7,py3.7-dist,py3.7-dist-wheel
     - name: Unit Tests (Python 3.7 on Windows)
       os: windows
+      python: 3.7
       language: shell
       before_install:
-        - choco install python  # this install takes at least 1 min 30 sec
+        - choco install python3.7
+        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
         - python -m pip install --upgrade pip
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
     - name: Unit Tests (Python 3.8)
@@ -69,10 +71,10 @@ matrix:
         - python3 ./contrib/trigger_rtd_build.py
 
 install:
-  - pip3 install --upgrade "pip==19.3.1"
-  - pip3 install --upgrade "setuptools==42.0.2"
-  - pip3 install "virtualenv==16.7.6"
-  - pip3 install "tox==3.14.2"
+  - pip install --upgrade "pip==19.3.1"
+  - pip install --upgrade "setuptools==42.0.2"
+  - pip install "virtualenv==16.7.6"
+  - pip install "tox==3.14.2"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:
