@@ -19,6 +19,13 @@ matrix:
     - name: Unit Tests, Installation Checks (Python 3.7)
       python: 3.7
       before_script: TOX_ENV=py3.7,py3.7-dist,py3.7-dist-wheel
+    - name: Unit Tests (Python 3.7 on Windows)
+      os: windows
+      language: shell
+      before_install:
+        - choco install python  # this install takes at least 1 min 30 sec
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
     - name: Unit Tests (Python 3.8)
       python: 3.8
     - name: Unit Tests (PyPy 3.5)
