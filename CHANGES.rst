@@ -18,7 +18,7 @@ Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
 Common
-------
+~~~~~~
 
 - Fix a regression with ``get_driver()`` method not working if ``provider``
   argument value was a string (e.g. using ``get_driver('openstack')``
@@ -48,7 +48,7 @@ Common
   [Tomaz Muraus]
 
 Compute
--------
+~~~~~~~
 
 - [DigitalOcean] Fix ``attach_volume`` and ``detach_volume`` methods.
   Previously those two methods incorrectly passed volume id instead of
@@ -105,7 +105,7 @@ Compute
   [Tomaz Muraus]
 
 Storage
--------
+~~~~~~~
 
 - [AWS S3] Make sure ``host`` driver constructor argument has priority
   over ``region`` argument.
@@ -120,14 +120,14 @@ Changes in Apache Libcloud v2.7.0
 ---------------------------------
 
 General
--------
+~~~~~~~
 
 - Test code with Python 3.8 and advertise that we also support Python 3.8.
   (GITHUB-1371, GITHUB-1374)
   [Tomaz Muraus]
 
 Common
-------
+~~~~~~
 
 - [OpenStack] Fix OpenStack project scoped token authentication. The driver
   constructors now accept ``ex_tenant_domain_id`` argument which tells
@@ -136,7 +136,7 @@ Common
   [kshtsk]
 
 Compute
--------
+~~~~~~~
 
 - Introduce type annotations for the base compute API methods. This means you
   can now leverage mypy to type check (with some limitations) your code which
