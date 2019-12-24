@@ -69,10 +69,10 @@ matrix:
         - python3 ./contrib/trigger_rtd_build.py
 
 install:
-  - pip install --upgrade "pip==19.3.1"
-  - pip install --upgrade "setuptools==42.0.2"
-  - pip install "virtualenv==16.7.6"
-  - pip install "tox==3.14.2"
+  - pip3 install --upgrade "pip==19.3.1"
+  - pip3 install --upgrade "setuptools==42.0.2"
+  - pip3 install "virtualenv==16.7.6"
+  - pip3 install "tox==3.14.2"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:
