@@ -251,7 +251,7 @@ class BackblazeB2StorageDriver(StorageDriver):
         containers = self._to_containers(data=resp.object)
         return containers
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, ex_prefix=None):
         # TODO: Support pagination
         params = {'bucketId': container.extra['id']}
         resp = self.connection.request(action='b2_list_file_names',

@@ -219,12 +219,15 @@ class LocalStorageDriver(StorageDriver):
                 object_name = relpath(full_path, start=cpath)
                 yield self._make_object(container, object_name)
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, ex_prefix=None):
         """
         Returns a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
+
+        :param ex_prefix: Filter objects starting with a prefix.
+        :type  ex_prefix: ``str``
 
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
