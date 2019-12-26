@@ -102,14 +102,6 @@ class LXDContainerDriverTestCase(unittest.TestCase):
             container = driver.get_container(id='second_lxd_container')
             container.destroy()
 
-    def test_deploy_container_without_image(self):
-        with self.assertRaises(LXDAPIException) as exc:
-            for driver in self.drivers:
-                container = driver.deploy_container(name='first_lxd_container',
-                                                image='', parameters={})
-
-            self.assertEqual(str(exc), "'image' parameter must be a ContainerImage")
-
     def test_deploy_container(self):
         for driver in self.drivers:
             image = ContainerImage(id=None,
@@ -117,7 +109,10 @@ class LXDContainerDriverTestCase(unittest.TestCase):
                                    path=None, version=None, driver=driver)
             container = driver.deploy_container(name='first_lxd_container',
                                                 image=image,
-                                                parameters='{"source":{"type":"image", "fingerprint":"7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b"}}')
+
+                                                parameters='{"source":{"type":"image", '
+                                                           '"fingerprint":"7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b"}}')
+
             self.assertIsInstance(container, Container)
             self.assertEqual(container.name, 'first_lxd_container')
 
