@@ -16,10 +16,11 @@
 
 import os
 import sys
+import tempfile
 import logging
 
 try:
-    import paramiko
+    import paramiko  # NOQA
     have_paramiko = True
 except ImportError:
     have_paramiko = False
@@ -53,7 +54,8 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(paramiko_log_level, logging.INFO)
 
         # Enable debug mode
-        os.environ['LIBCLOUD_DEBUG'] = '/tmp/foobartest'
+        _, tmp_path = tempfile.mkstemp()
+        os.environ['LIBCLOUD_DEBUG'] = tmp_path
         _init_once()
 
         self.assertTrue(LoggingConnection.log is not None)
