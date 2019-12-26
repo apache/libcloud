@@ -23,6 +23,8 @@ try:
 except Exception:
     import json
 
+import collections
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
 
@@ -213,6 +215,10 @@ class LXDServerInfo(object):
             str(self.api_version) + str(self.auth) + str(self.config) + \
             str(self.environment) + \
             str(self.public)
+
+
+LXDContainerExecuteResult = collections.namedtuple(
+    'LXDContainerExecuteResult', ['exit_code', 'stdout', 'stderr'])
 
 
 class LXDResponse(JsonResponse):
@@ -636,6 +642,87 @@ class LXDContainerDriver(ContainerDriver):
                               extra=None)
 
         return container
+
+    def ex_execute_cmd_on_container(self, cont_id, command, timeout=default_time_out, **config):
+        """
+        Description: run a remote command
+        Operation: async
+
+        Return: background operation + optional
+        websocket information or standard error
+
+        :param cont_id: The container name to run the commands
+        ":type cont_id: ``str``
+
+        :param timeout: Timeout to wait for the operation
+        :type  timeout: ``int``
+
+        :param command: a list of strings indicating the commands
+        and their arguments e.g: ["/bin/bash"]
+        :type  command ``list``
+
+        :param config: Dict with extra arguments.
+        For example:
+
+        width:  Initial width of the terminal default 80
+
+        height: Initial height of the terminal default 25
+
+        user:   User to run the command as default 1000
+
+        group: Group to run the  command as default 1000
+
+        cwd: Current working directory default /tmp
+
+        wait-for-websocket: Whether to wait for a connection
+        before starting the process. Default False
+
+        record-output: Whether to store stdout and stderr
+        (only valid with wait-for-websocket=false)
+        (requires API extension container_exec_recording). Default False
+
+        interactive: Whether to allocate a pts device instead of PIPEs. Default true
+        :type config ``dict``
+
+        :return:
+        """
+
+        input = {"command": command}
+        input = LXDContainerDriver._ex_create_exec_configuration(input, **config)
+        data = json.dumps(input)
+        req = "/%s/containers/%s/exec" % (self.version, cont_id)
+
+        # Return: background operation +
+        # optional websocket information or standard error
+        response = self.connection.request(req, method="POST", data=data)
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=100)
+
+        # wait max timeout
+
+        try:
+
+            # wait untitl the timeout...but util getting here the operation
+            # may have finished already
+            id = response_dict['metadata']['id']
+            req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
+                                                         id,
+                                                         timeout)
+            response = self.connection.request(req)
+        except BaseHTTPError as e:
+
+            message_list = e.message.split(",")
+            message = message_list[0].split(":")[-1]
+
+            # if not found assume the operation completed
+            if message != '"not found"':
+                # something is wrong
+                raise LXDAPIException(message=e.message)
+
+        if input["interactive"] == True:
+            # return WebSocket
+            pass
 
     def list_containers(self, image=None, cluster=None, detailed=True):
         """
@@ -1284,6 +1371,54 @@ class LXDContainerDriver(ContainerDriver):
                     "cert_file": self.cert_file,
                     "certificate_validator": self.certificate_validator}
         return super(LXDContainerDriver, self)._ex_connection_class_kwargs()
+
+    @staticmethod
+    def _ex_create_exec_configuration(input, **config):
+
+        if "environment" in config.keys():
+            input["environment"] = config["environment"]
+
+        if "width" in config.keys():
+            input["width"] = config["width"]
+        else:
+            input["width"] = 80
+
+        if "height" in config.keys():
+            input["width"] = config["height"]
+        else:
+            input["height"] = 25
+
+        if "user" in config.keys():
+            input["user"] = config["user"]
+        else:
+            input["user"] = 1000
+
+        if "group" in config.keys():
+            input["group"] = config["group"]
+        else:
+            input["group"] = 1000
+
+        if "cwd" in config.keys():
+            input["cwd"] = config["cwd"]
+        else:
+            input["cwd"] = "/tmp"
+
+        if "wait-for-websocket" in config.keys():
+            input["wait-for-websocket"] = config["wait-for-websocket"]
+        else:
+            input["wait-for-websocket"] = False
+
+        if "record-output" in config.keys():
+            input["record-output"] = config["record-output"]
+        else:
+            input["record-output"] = False
+
+        if  "interactive" in config.keys():
+            input["interactive"] = config["interactive"]
+        else:
+            input["interactive"] = True
+
+        return input
 
     @staticmethod
     def _to_gb(size):
