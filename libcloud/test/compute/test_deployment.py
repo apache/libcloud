@@ -46,6 +46,8 @@ DEPLOY_NODE_KWARGS = ['deploy', 'ssh_username', 'ssh_alternate_usernames',
                       'ssh_port', 'ssh_timeout', 'ssh_key', 'timeout',
                       'max_tries', 'ssh_interface']
 
+FILE_PATH = '{0}home{0}ubuntu{0}relative.sh'.format(os.path.sep)
+
 
 class MockDeployment(Deployment):
 
@@ -137,60 +139,64 @@ class DeploymentTests(unittest.TestCase):
 
     def test_script_deployment_relative_path(self):
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
 
         sd = ScriptDeployment(script='echo "foo"', name='relative.sh')
         sd.run(self.node, client)
 
-        client.run.assert_called_once_with('/home/ubuntu/relative.sh')
+        client.run.assert_called_once_with(FILE_PATH)
 
     def test_script_deployment_absolute_path(self):
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
 
-        sd = ScriptDeployment(script='echo "foo"', name='/root/relative.sh')
+        file_path = '{0}root{0}relative.sh'.format(os.path.sep)
+
+        sd = ScriptDeployment(script='echo "foo"', name=file_path)
         sd.run(self.node, client)
 
-        client.run.assert_called_once_with('/root/relative.sh')
+        client.run.assert_called_once_with(file_path)
 
     def test_script_deployment_with_arguments(self):
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
+
+        file_path = '{0}root{0}relative.sh'.format(os.path.sep)
 
         args = ['arg1', 'arg2', '--option1=test']
         sd = ScriptDeployment(script='echo "foo"', args=args,
-                              name='/root/relative.sh')
+                              name=file_path)
         sd.run(self.node, client)
 
-        expected = '/root/relative.sh arg1 arg2 --option1=test'
+        expected = '%s arg1 arg2 --option1=test' % (file_path)
         client.run.assert_called_once_with(expected)
 
         client.reset_mock()
 
         args = []
         sd = ScriptDeployment(script='echo "foo"', args=args,
-                              name='/root/relative.sh')
+                              name=file_path)
         sd.run(self.node, client)
 
-        expected = '/root/relative.sh'
+        expected = file_path
         client.run.assert_called_once_with(expected)
 
     def test_script_file_deployment_with_arguments(self):
         file_path = os.path.abspath(__file__)
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
 
         args = ['arg1', 'arg2', '--option1=test', 'option2']
         sfd = ScriptFileDeployment(script_file=file_path, args=args,
-                                   name='/root/relative.sh')
+                                   name=file_path)
 
         sfd.run(self.node, client)
 
-        expected = '/root/relative.sh arg1 arg2 --option1=test option2'
+        expected = '%s arg1 arg2 --option1=test option2' % (file_path)
         client.run.assert_called_once_with(expected)
 
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
@@ -453,6 +459,7 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(call_count, 2)
 
         call_count = 0
+
         def create_node(name, image, size, ex_custom_arg_1, ex_custom_arg_2,
                         ex_foo=None, auth=None, **kwargs):
             global call_count
@@ -470,7 +477,6 @@ class DeploymentTests(unittest.TestCase):
                                        ex_custom_arg_2='b', **kwargs)
         self.assertEqual(self.node.id, node.id)
         self.assertEqual(call_count, 2)
-
 
     @patch('libcloud.compute.base.SSHClient')
     @patch('libcloud.compute.ssh')
