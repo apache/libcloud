@@ -322,7 +322,9 @@ class LXDContainerDriver(ContainerDriver):
     default_time_out = 30
 
     # default configuration when creating a container
-    default_architecture = 'x86_64'
+    # the assumed architecture if empty the underlying
+    # machine architecture is picked up
+    default_architecture = ''
     default_profiles = 'default'
     default_ephemeral = False
 
@@ -406,7 +408,7 @@ class LXDContainerDriver(ContainerDriver):
     def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True,
                          architecture=default_architecture,
-                         profiles=[default_profiles],
+                         profiles=None,
                          ephemeral=default_ephemeral,
                          config=None, devices=None,
                          instance_type=None):
@@ -459,9 +461,17 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
 
-        c_params = {"architecture": architecture, "profiles": profiles,
+        if profiles is None:
+            profiles = [LXDContainerDriver.default_profiles]
+
+        c_params = {"profiles": profiles,
                     "ephemeral": ephemeral, "config": config,
-                    "devices": devices, "instance_type": instance_type}
+                    "devices": devices,
+                    "instance_type": instance_type}
+
+        if architecture is not None\
+            or architecture != '':
+            c_params['architecture'] = architecture
 
         if parameters:
             parameters = json.loads(parameters)
