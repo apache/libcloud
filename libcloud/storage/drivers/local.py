@@ -201,7 +201,7 @@ class LocalStorageDriver(StorageDriver):
                 continue
             yield self._make_container(container_name)
 
-    def _get_objects(self, container):
+    def _get_objects(self, container, ex_prefix=None):
         """
         Recursively iterate through the file-system and return the object names
         """
@@ -217,7 +217,8 @@ class LocalStorageDriver(StorageDriver):
             for name in files:
                 full_path = os.path.join(folder, name)
                 object_name = relpath(full_path, start=cpath)
-                yield self._make_object(container, object_name)
+                if ex_prefix is None or object_name.startswith(ex_prefix):
+                    yield self._make_object(container, object_name)
 
     def iterate_container_objects(self, container, ex_prefix=None):
         """
@@ -233,7 +234,7 @@ class LocalStorageDriver(StorageDriver):
         :rtype: ``generator`` of :class:`Object`
         """
 
-        return self._get_objects(container)
+        return self._get_objects(container, ex_prefix)
 
     def get_container(self, container_name):
         """
