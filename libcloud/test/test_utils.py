@@ -80,7 +80,7 @@ class TestUtils(unittest.TestCase):
         WARNINGS_BUFFER = []
         warnings.showwarning = original_func
 
-    @unittest.skipIf(platform.platform().lower() == 'windows', 'Unsupported on Windows')
+    @unittest.skipIf(platform.system().lower() == 'windows', 'Unsupported on Windows')
     def test_guess_file_mime_type(self):
         file_path = os.path.abspath(__file__)
         mimetype, encoding = libcloud.utils.files.guess_file_mime_type(
