@@ -30,6 +30,14 @@ Compute
   (GITHUB-1377)
   [Tomaz Muraus]
 
+Storage
+-------
+
+- [Common, Local] Enable ``ex_prefix`` to be provided via all SDK methods and
+  respect the argument for the local storage provider.
+  (GITHUB-1397)
+  [Clemens Wolff - @c-w]
+
 Changes in Apache Libcloud in development
 -----------------------------------------
 
