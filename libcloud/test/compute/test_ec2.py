@@ -1174,11 +1174,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(resp)
 
         expected_msg = 'Unsupported attribute: invalid'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                self.driver.ex_modify_subnet_attribute,
-                                subnet,
-                                'invalid',
-                                True)
+        self.assertRaisesRegex(ValueError, expected_msg,
+                               self.driver.ex_modify_subnet_attribute,
+                               subnet,
+                               'invalid',
+                               True)
 
     def test_ex_delete_subnet(self):
         subnet = self.driver.ex_list_subnets()[0]
@@ -1319,7 +1319,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         }
 
         expected_msg = 'dictionary contains an attribute "not" which value'
-        self.assertRaisesRegexp(ValueError, expected_msg,
+        self.assertRaisesRegex(ValueError, expected_msg,
                                self.driver.connection.request, '/', params=params)
 
         params = {
@@ -1327,7 +1327,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         }
 
         expected_msg = 'dictionary contains an attribute "invalid" which value'
-        self.assertRaisesRegexp(ValueError, expected_msg,
+        self.assertRaisesRegex(ValueError, expected_msg,
                                self.driver.connection.request, '/', params=params)
 
 

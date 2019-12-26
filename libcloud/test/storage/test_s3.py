@@ -1068,8 +1068,8 @@ class S3Tests(unittest.TestCase):
 
         # Invalid region
         expected_msg = 'Invalid or unsupported region: foo'
-        self.assertRaisesRegexp(ValueError, expected_msg, S3StorageDriver,
-                                *self.driver_args, region='foo')
+        self.assertRaisesRegex(ValueError, expected_msg, S3StorageDriver,
+                               *self.driver_args, region='foo')
 
         # host argument still has precedence over reguin
         driver3  = S3StorageDriver(*self.driver_args, region='ap-south-1', host='host1.bar.com')

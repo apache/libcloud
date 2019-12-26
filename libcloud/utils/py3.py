@@ -232,11 +232,11 @@ else:
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')
 
-        return getattr(self, 'assertRaisesRegexp')(*args, **kwargs)
+        return getattr(self, 'assertRaisesRegex')(*args, **kwargs)
 
     def assertRegex(self, *args, **kwargs):
         if not isinstance(self, unittest.TestCase):
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')
 
-        return getattr(self, 'assertRegexpMatches')(*args, **kwargs)
+        return getattr(self, 'assertRegex')(*args, **kwargs)
