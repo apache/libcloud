@@ -15,6 +15,10 @@ General
   (GITHUB-1377)
   [Tomaz Muraus]
 
+- Make sure unit tests now also pass on Windows.
+  (GITHUB-1396)
+  [Tomaz Muraus]
+
 Compute
 -------
 
