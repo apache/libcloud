@@ -74,6 +74,7 @@ def work_with_containers():
     container = conn.restart_container(container=container)
     print("\tContainer: %s is: %s" % (container.name, container.state))
 
+    """
     if len(containers) == 2:
 
         # delete the second container
@@ -111,6 +112,7 @@ def work_with_containers():
             print("\tNumber of containers: %s" % len(containers))
             for container in containers:
                 print("\t\tContainer: %s is: %s" % (container.name, container.state))
+    """
 
 
 def work_with_images():
@@ -225,6 +227,6 @@ def work_with_storage_pools():
 
 if __name__ == '__main__':
 
-    #work_with_containers()
+    work_with_containers()
     #work_with_images()
-    work_with_storage_pools()
+    #work_with_storage_pools()
