@@ -518,8 +518,6 @@ class LXDContainerDriver(ContainerDriver):
             ip_result_dict = ip_response.parse_body()
             assert_response(response_dict=ip_result_dict, status_code=200)
 
-            networks = None
-
             if ip_result_dict["metadata"]["network"] is not None:
                 networks = ip_result_dict["metadata"]["network"]["eth0"]
 
@@ -1008,9 +1006,10 @@ class LXDContainerDriver(ContainerDriver):
 
                 metadata = {'config': {'size': None}, "name": name,
                             "type": type, "used_by": None}
-                volumes.append(self._to_storage_volume(metadata=metadata))
+                volumes.append(self._to_storage_volume(pool_id=pool_id,
+                                                       metadata=metadata))
             else:
-                volume = self.get_storage_pool_volume(pool_id=pool_id,
+                volume = self.ex_get_storage_pool_volume(pool_id=pool_id,
                                                       type=type, name=name)
                 volumes.append(volume)
 
@@ -1033,7 +1032,8 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-        return self._to_storage_volume(response_dict["metadata"])
+        return self._to_storage_volume(pool_id=pool_id,
+                                       metadata=response_dict["metadata"])
 
     def ex_create_storage_pool_volume(self, pool_id, definition):
 
@@ -1058,7 +1058,6 @@ class LXDContainerDriver(ContainerDriver):
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
-
 
         return self.ex_get_storage_pool_volume(pool_id=pool_id,
                                                type=definition["type"],
@@ -1335,7 +1334,7 @@ class LXDContainerDriver(ContainerDriver):
 
         return self.get_container(id=name)
 
-    def _to_storage_volume(self, metadata):
+    def _to_storage_volume(self, pool_id, metadata):
         """
         Returns StorageVolume object from metadata
         :param metadata: dict representing the volume
@@ -1346,7 +1345,8 @@ class LXDContainerDriver(ContainerDriver):
         if "size" in metadata['config'].keys():
             size = LXDContainerDriver._to_gb(metadata['config'].pop('size'))
 
-        extra = {"type": metadata["type"],
+        extra = {"pool_id":pool_id,
+                 "type": metadata["type"],
                  "used_by": metadata["used_by"],
                  "config": metadata['config']}
 
