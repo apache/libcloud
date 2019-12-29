@@ -187,10 +187,8 @@ class DummyStorageDriver(StorageDriver):
                           DeprecationWarning)
 
         container = self.get_container(container.name)
-
-        for obj in self._containers[container.name]['objects'].values():
-            if prefix is None or obj.name.startswith(prefix):
-                yield obj
+        objects = self._containers[container.name]['objects'].values()
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         """

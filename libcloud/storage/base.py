@@ -24,6 +24,7 @@ from typing import Type
 
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
+import warnings
 from os.path import join as pjoin
 
 from libcloud.utils.py3 import httplib
@@ -253,6 +254,16 @@ class StorageDriver(BaseDriver):
         return list(self.iterate_container_objects(container,
                                                    prefix=prefix,
                                                    ex_prefix=ex_prefix))
+
+    def _filter_listed_container_objects(self, objects, prefix):
+        if prefix is not None:
+            warnings.warn('Driver %s does not implement native object filtering; '
+                          'falling back to filtering the full object stream.'
+                          % self.__class__.__name__)
+
+        for obj in objects:
+            if prefix is None or obj.name.startswith(prefix):
+                yield obj
 
     def get_container(self, container_name):
         """

@@ -202,7 +202,7 @@ class LocalStorageDriver(StorageDriver):
                 continue
             yield self._make_container(container_name)
 
-    def _get_objects(self, container, prefix=None):
+    def _get_objects(self, container):
         """
         Recursively iterate through the file-system and return the object names
         """
@@ -218,8 +218,7 @@ class LocalStorageDriver(StorageDriver):
             for name in files:
                 full_path = os.path.join(folder, name)
                 object_name = relpath(full_path, start=cpath)
-                if prefix is None or object_name.startswith(prefix):
-                    yield self._make_object(container, object_name)
+                yield self._make_object(container, object_name)
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
@@ -243,7 +242,8 @@ class LocalStorageDriver(StorageDriver):
                           DeprecationWarning)
             prefix = ex_prefix
 
-        return self._get_objects(container, prefix)
+        objects = self._get_objects(container)
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         """

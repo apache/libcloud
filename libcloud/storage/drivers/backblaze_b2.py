@@ -19,6 +19,7 @@ Driver for Backblaze B2 service.
 
 import base64
 import hashlib
+import warnings
 
 try:
     import simplejson as json
@@ -252,13 +253,19 @@ class BackblazeB2StorageDriver(StorageDriver):
         return containers
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+        if ex_prefix:
+            warnings.warn('The ``ex_prefix`` argument is deprecated - '
+                          'please update code to use ``prefix``',
+                          DeprecationWarning)
+            prefix = ex_prefix
+
         # TODO: Support pagination
         params = {'bucketId': container.extra['id']}
         resp = self.connection.request(action='b2_list_file_names',
                                        method='GET',
                                        params=params)
         objects = self._to_objects(data=resp.object, container=container)
-        return objects
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         containers = self.iterate_containers()

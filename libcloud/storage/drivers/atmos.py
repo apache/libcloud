@@ -17,6 +17,7 @@ import base64
 import hashlib
 import hmac
 import time
+import warnings
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import b
@@ -451,11 +452,21 @@ class AtmosDriver(StorageDriver):
         meta = meta.split(', ')
         return dict([x.split('=', 1) for x in meta])
 
+    def _entries_to_objects(self, container, entries):
+        for entry in entries:
+            metadata = {'object_id': entry['id']}
+            yield Object(entry['name'], 0, '', {}, metadata, container, self)
+
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+        if ex_prefix:
+            warnings.warn('The ``ex_prefix`` argument is deprecated - '
+                          'please update code to use ``prefix``',
+                          DeprecationWarning)
+            prefix = ex_prefix
+
         headers = {'x-emc-include-meta': '1'}
         path = self._namespace_path(container.name) + '/'
         result = self.connection.request(path, headers=headers)
         entries = self._list_objects(result.object, object_type='regular')
-        for entry in entries:
-            metadata = {'object_id': entry['id']}
-            yield Object(entry['name'], 0, '', {}, metadata, container, self)
+        objects = self._entries_to_objects(container, entries)
+        return self._filter_listed_container_objects(objects, prefix)
