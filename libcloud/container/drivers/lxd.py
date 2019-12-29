@@ -530,7 +530,7 @@ class LXDContainerDriver(ContainerDriver):
         metadata.update({"ips": ips})
         return self._to_container(metadata=metadata)
 
-    def start_container(self, container, timeout=default_time_out):
+    def start_container(self, container, ex_timeout=default_time_out):
         """
         Start a container
 
@@ -543,10 +543,10 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container`
         """
         return self._do_container_action(container=container, action='start',
-                                         timeout=timeout,
+                                         timeout=ex_timeout,
                                          force=True, stateful=True)
 
-    def stop_container(self, container, timeout=default_time_out):
+    def stop_container(self, container, ex_timeout=default_time_out):
         """
         Stop the given container
 
@@ -558,10 +558,10 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container
         """
         return self._do_container_action(container=container, action='stop',
-                                         timeout=timeout,
+                                         timeout=ex_timeout,
                                          force=True, stateful=True)
 
-    def restart_container(self, container, timeout=default_time_out):
+    def restart_container(self, container, ex_timeout=default_time_out):
         """
         Restart a deployed container
 
@@ -574,7 +574,19 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`.Container`
         """
         return self._do_container_action(container=container, action='restart',
-                                         timeout=timeout,
+                                         timeout=ex_timeout,
+                                         force=True, stateful=True)
+
+    def ex_freeze_container(self, container, ex_timeout):
+
+        return self._do_container_action(container=container, action='freeze',
+                                         timeout=ex_timeout,
+                                         force=True, stateful=True)
+
+    def ex_unfreeze_container(self, container, ex_timeout):
+
+        return self._do_container_action(container=container, action='unfreeze',
+                                         timeout=ex_timeout,
                                          force=True, stateful=True)
 
     def destroy_container(self, container, timeout=default_time_out):
