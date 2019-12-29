@@ -286,7 +286,8 @@ class BaseS3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 

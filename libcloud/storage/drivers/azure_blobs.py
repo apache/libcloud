@@ -408,7 +408,8 @@ class AzureBlobsStorageDriver(StorageDriver):
             if not params['marker']:
                 break
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         @inherits: :class:`StorageDriver.iterate_container_objects`
         """

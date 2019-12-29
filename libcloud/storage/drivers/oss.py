@@ -279,7 +279,8 @@ class OSSStorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
@@ -289,7 +290,8 @@ class OSSStorageDriver(StorageDriver):
         :keyword prefix: Only return objects starting with prefix
         :type prefix: ``str``
 
-        :keyword ex_prefix: (Deprecated.) Only return objects starting with ex_prefix
+        :keyword ex_prefix: (Deprecated.) Only return objects starting with
+                            ex_prefix
         :type ex_prefix: ``str``
 
         :return: A generator of Object instances.

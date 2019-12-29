@@ -695,7 +695,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return obj
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
@@ -705,7 +706,8 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         :param prefix: Only get objects with names starting with prefix
         :type prefix: ``str``
 
-        :param ex_prefix: (Deprecated.) Only get objects with names starting with ex_prefix
+        :param ex_prefix: (Deprecated.) Only get objects with names starting
+                          with ex_prefix
         :type ex_prefix: ``str``
 
         :return: A generator of Object instances.

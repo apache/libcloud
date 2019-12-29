@@ -178,7 +178,8 @@ class DummyStorageDriver(StorageDriver):
         for container in list(self._containers.values()):
             yield container['container']
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         container = self.get_container(container.name)

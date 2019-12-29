@@ -219,7 +219,8 @@ class LocalStorageDriver(StorageDriver):
                 object_name = relpath(full_path, start=cpath)
                 yield self._make_object(container, object_name)
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Returns a generator of objects for the given container.
 

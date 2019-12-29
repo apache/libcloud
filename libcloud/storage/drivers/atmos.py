@@ -456,7 +456,8 @@ class AtmosDriver(StorageDriver):
             metadata = {'object_id': entry['id']}
             yield Object(entry['name'], 0, '', {}, metadata, container, self)
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 

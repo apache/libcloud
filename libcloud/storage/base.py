@@ -216,7 +216,8 @@ class StorageDriver(BaseDriver):
         """
         return list(self.iterate_containers())
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
@@ -266,9 +267,9 @@ class StorageDriver(BaseDriver):
 
     def _filter_listed_container_objects(self, objects, prefix):
         if prefix is not None:
-            warnings.warn('Driver %s does not implement native object filtering; '
-                          'falling back to filtering the full object stream.'
-                          % self.__class__.__name__)
+            warnings.warn('Driver %s does not implement native object '
+                          'filtering; falling back to filtering the full '
+                          'object stream.' % self.__class__.__name__)
 
         for obj in objects:
             if prefix is None or obj.name.startswith(prefix):

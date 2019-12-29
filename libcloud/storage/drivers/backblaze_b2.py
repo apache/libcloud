@@ -251,7 +251,8 @@ class BackblazeB2StorageDriver(StorageDriver):
         containers = self._to_containers(data=resp.object)
         return containers
 
-    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
