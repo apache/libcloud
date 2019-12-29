@@ -497,7 +497,7 @@ class S3Tests(unittest.TestCase):
         container = Container(name='test_container', extra={},
                               driver=self.driver)
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix')
+                                                     prefix='test_prefix')
         self.assertEqual(len(objects), 1)
 
         obj = [o for o in objects if o.name == '1.zip'][0]

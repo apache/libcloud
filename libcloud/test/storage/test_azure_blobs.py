@@ -467,7 +467,7 @@ class AzureBlobsTests(unittest.TestCase):
         container = Container(name='test_container', extra={},
                               driver=self.driver)
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix')
+                                                     prefix='test_prefix')
         self.assertEqual(len(objects), 4)
 
         obj = objects[1]

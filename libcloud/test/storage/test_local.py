@@ -110,7 +110,7 @@ class LocalTests(unittest.TestCase):
         objects = self.driver.list_container_objects(container=container)
         self.assertEqual(len(objects), 5)
 
-        objects = self.driver.list_container_objects(container=container, ex_prefix='path/to/')
+        objects = self.driver.list_container_objects(container=container, prefix='path/to/')
         self.assertEqual(len(objects), 2)
 
         for obj in objects:

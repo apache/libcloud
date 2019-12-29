@@ -367,7 +367,7 @@ class OSSStorageDriverTestCase(unittest.TestCase):
                               driver=self.driver)
         self.prefix = 'test_prefix'
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix=self.prefix)
+                                                     prefix=self.prefix)
         self.assertEqual(len(objects), 2)
 
     def test_get_container_doesnt_exist(self):
