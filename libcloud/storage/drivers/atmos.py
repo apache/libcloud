@@ -17,7 +17,6 @@ import base64
 import hashlib
 import hmac
 import time
-import warnings
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import b
@@ -458,11 +457,7 @@ class AtmosDriver(StorageDriver):
             yield Object(entry['name'], 0, '', {}, metadata, container, self)
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
-        if ex_prefix:
-            warnings.warn('The ``ex_prefix`` argument is deprecated - '
-                          'please update code to use ``prefix``',
-                          DeprecationWarning)
-            prefix = ex_prefix
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         headers = {'x-emc-include-meta': '1'}
         path = self._namespace_path(container.name) + '/'

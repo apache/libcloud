@@ -16,7 +16,6 @@
 import base64
 import hmac
 import time
-import warnings
 from hashlib import sha1
 
 import libcloud.utils.py3
@@ -303,11 +302,7 @@ class BaseS3StorageDriver(StorageDriver):
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
-        if ex_prefix:
-            warnings.warn('The ``ex_prefix`` argument is deprecated - '
-                          'please update code to use ``prefix``',
-                          DeprecationWarning)
-            prefix = ex_prefix
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         params = {}
 

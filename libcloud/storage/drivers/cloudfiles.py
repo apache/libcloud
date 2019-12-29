@@ -16,7 +16,6 @@
 import atexit
 import hmac
 import os
-import warnings
 from time import time
 from hashlib import sha1
 
@@ -712,11 +711,7 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
-        if ex_prefix:
-            warnings.warn('The ``ex_prefix`` argument is deprecated - '
-                          'please update code to use ``prefix``',
-                          DeprecationWarning)
-            prefix = ex_prefix
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         params = {}
 

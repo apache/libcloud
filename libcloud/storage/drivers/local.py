@@ -22,7 +22,6 @@ from __future__ import with_statement
 import errno
 import os
 import shutil
-import warnings
 
 try:
     import lockfile
@@ -236,11 +235,7 @@ class LocalStorageDriver(StorageDriver):
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
-        if ex_prefix:
-            warnings.warn('The ``ex_prefix`` argument is deprecated - '
-                          'please update code to use ``prefix``',
-                          DeprecationWarning)
-            prefix = ex_prefix
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         objects = self._get_objects(container)
         return self._filter_listed_container_objects(objects, prefix)

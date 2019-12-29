@@ -18,7 +18,6 @@ from __future__ import with_statement
 import base64
 import os
 import binascii
-import warnings
 from io import BytesIO
 
 from libcloud.utils.py3 import ET
@@ -413,11 +412,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         """
         @inherits: :class:`StorageDriver.iterate_container_objects`
         """
-        if ex_prefix:
-            warnings.warn('The ``ex_prefix`` argument is deprecated - '
-                          'please update code to use ``prefix``',
-                          DeprecationWarning)
-            prefix = ex_prefix
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         params = {'restype': 'container',
                   'comp': 'list',

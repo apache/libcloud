@@ -255,6 +255,15 @@ class StorageDriver(BaseDriver):
                                                    prefix=prefix,
                                                    ex_prefix=ex_prefix))
 
+    def _normalize_prefix_argument(self, prefix, ex_prefix):
+        if ex_prefix:
+            warnings.warn('The ``ex_prefix`` argument is deprecated - '
+                          'please update code to use ``prefix``',
+                          DeprecationWarning)
+            return ex_prefix
+
+        return prefix
+
     def _filter_listed_container_objects(self, objects, prefix):
         if prefix is not None:
             warnings.warn('Driver %s does not implement native object filtering; '
