@@ -33,8 +33,19 @@ Compute
 Storage
 -------
 
-- [Common, Local] Enable ``ex_prefix`` to be provided via all SDK methods and
-  respect the argument for the local storage provider.
+- [Common] Add ``prefix`` argument to ``iterate_container_objects`` and
+  ``list_container_objects`` to support object-list filtering in all
+  StorageDriver implementations.
+
+  A lot of the existing storage drivers already implemented the filtering
+  functionality via the ``ex_prefix`` extension argument so it was decided
+  to promote the argument to be part of the standard Libcloud storage API.
+  For any storage driver that doesn't natively implement filtering the results
+  list, a fall-back was implemented which filters the full object stream on
+  the client side.
+
+  For backward compatibility reasons, the ``ex_prefix`` argument will still
+  be respected until a next major release.
   (GITHUB-1397)
   [Clemens Wolff - @c-w]
 
