@@ -451,7 +451,7 @@ class AtmosDriver(StorageDriver):
         meta = meta.split(', ')
         return dict([x.split('=', 1) for x in meta])
 
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         headers = {'x-emc-include-meta': '1'}
         path = self._namespace_path(container.name) + '/'
         result = self.connection.request(path, headers=headers)

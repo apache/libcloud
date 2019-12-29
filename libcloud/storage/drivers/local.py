@@ -22,6 +22,7 @@ from __future__ import with_statement
 import errno
 import os
 import shutil
+import warnings
 
 try:
     import lockfile
@@ -201,7 +202,7 @@ class LocalStorageDriver(StorageDriver):
                 continue
             yield self._make_container(container_name)
 
-    def _get_objects(self, container, ex_prefix=None):
+    def _get_objects(self, container, prefix=None):
         """
         Recursively iterate through the file-system and return the object names
         """
@@ -217,24 +218,32 @@ class LocalStorageDriver(StorageDriver):
             for name in files:
                 full_path = os.path.join(folder, name)
                 object_name = relpath(full_path, start=cpath)
-                if ex_prefix is None or object_name.startswith(ex_prefix):
+                if prefix is None or object_name.startswith(prefix):
                     yield self._make_object(container, object_name)
 
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
         Returns a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
 
-        :param ex_prefix: Filter objects starting with a prefix.
+        :param prefix: Filter objects starting with a prefix.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
         :type  ex_prefix: ``str``
 
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
+        if ex_prefix:
+            warnings.warn('The ``ex_prefix`` argument is deprecated - '
+                          'please update code to use ``prefix``',
+                          DeprecationWarning)
+            prefix = ex_prefix
 
-        return self._get_objects(container, ex_prefix)
+        return self._get_objects(container, prefix)
 
     def get_container(self, container_name):
         """

@@ -133,12 +133,14 @@ class Container(object):
         self.extra = extra or {}
         self.driver = driver
 
-    def iterate_objects(self, ex_prefix=None):
+    def iterate_objects(self, prefix=None, ex_prefix=None):
         return self.driver.iterate_container_objects(container=self,
+                                                     prefix=prefix,
                                                      ex_prefix=ex_prefix)
 
-    def list_objects(self, ex_prefix=None):
+    def list_objects(self, prefix=None, ex_prefix=None):
         return self.driver.list_container_objects(container=self,
+                                                  prefix=prefix,
                                                   ex_prefix=ex_prefix)
 
     def get_cdn_url(self):
@@ -213,14 +215,17 @@ class StorageDriver(BaseDriver):
         """
         return list(self.iterate_containers())
 
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
 
-        :param ex_prefix: Filter objects starting with a prefix.
+        :param prefix: Filter objects starting with a prefix.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
         :type  ex_prefix: ``str``
 
         :return: A generator of Object instances.
@@ -229,20 +234,25 @@ class StorageDriver(BaseDriver):
         raise NotImplementedError(
             'iterate_container_objects not implemented for this driver')
 
-    def list_container_objects(self, container, ex_prefix=None):
+    def list_container_objects(self, container, prefix=None, ex_prefix=None):
         """
         Return a list of objects for the given container.
 
         :param container: Container instance.
         :type container: :class:`Container`
 
-        :param ex_prefix: Filter objects starting with a prefix.
+        :param prefix: Filter objects starting with a prefix.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
         :type  ex_prefix: ``str``
 
         :return: A list of Object instances.
         :rtype: ``list`` of :class:`Object`
         """
-        return list(self.iterate_container_objects(container, ex_prefix))
+        return list(self.iterate_container_objects(container,
+                                                   prefix=prefix,
+                                                   ex_prefix=ex_prefix))
 
     def get_container(self, container_name):
         """

@@ -16,6 +16,7 @@
 import os.path
 import random
 import hashlib
+import warnings
 
 from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import b
@@ -178,12 +179,18 @@ class DummyStorageDriver(StorageDriver):
         for container in list(self._containers.values()):
             yield container['container']
 
-    def list_container_objects(self, container, ex_prefix=None):
+    def list_container_objects(self, container, prefix=None, ex_prefix=None):
+        if ex_prefix:
+            prefix = ex_prefix
+            warnings.warn('The ``ex_prefix`` argument is deprecated - '
+                          'please update code to use ``prefix``',
+                          DeprecationWarning)
+
         container = self.get_container(container.name)
 
         objects = list(self._containers[container.name]['objects'].values())
-        if ex_prefix is not None:
-            objects = [o for o in objects if o.name.startswith(ex_prefix)]
+        if prefix is not None:
+            objects = [o for o in objects if o.name.startswith(prefix)]
         return objects
 
     def get_container(self, container_name):

@@ -16,6 +16,7 @@
 import base64
 import hmac
 import time
+import warnings
 from hashlib import sha1
 
 import libcloud.utils.py3
@@ -286,28 +287,35 @@ class BaseS3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def list_container_objects(self, container, ex_prefix=None):
+    def list_container_objects(self, container, prefix=None, ex_prefix=None):
         """
         Return a list of objects for the given container.
 
         :param container: Container instance.
         :type container: :class:`Container`
 
-        :param ex_prefix: Only return objects starting with ex_prefix
+        :param prefix: Only return objects starting with prefix
+        :type prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Only return objects starting with ex_prefix
         :type ex_prefix: ``str``
 
         :return: A list of Object instances.
         :rtype: ``list`` of :class:`Object`
         """
         return list(self.iterate_container_objects(container,
+                                                   prefix=prefix,
                                                    ex_prefix=ex_prefix))
 
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
+
+        :param prefix: Only return objects starting with prefix
+        :type prefix: ``str``
 
         :param ex_prefix: Only return objects starting with ex_prefix
         :type ex_prefix: ``str``
@@ -315,9 +323,16 @@ class BaseS3StorageDriver(StorageDriver):
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
-        params = {}
         if ex_prefix:
-            params['prefix'] = ex_prefix
+            warnings.warn('The ``ex_prefix`` argument is deprecated - '
+                          'please update code to use ``prefix``',
+                          DeprecationWarning)
+            prefix = ex_prefix
+
+        params = {}
+
+        if prefix:
+            params['prefix'] = prefix
 
         last_key = None
         exhausted = False
