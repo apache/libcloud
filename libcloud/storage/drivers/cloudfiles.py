@@ -696,26 +696,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
 
         return obj
 
-    def list_container_objects(self, container, prefix=None, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :param prefix: Only get objects with names starting with prefix
-        :type prefix: ``str``
-
-        :param ex_prefix: (Deprecated.) Only get objects with names starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                                                   prefix=prefix,
-                                                   ex_prefix=ex_prefix))
-
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         """
         Return a generator of objects for the given container.

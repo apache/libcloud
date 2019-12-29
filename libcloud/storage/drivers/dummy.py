@@ -179,7 +179,7 @@ class DummyStorageDriver(StorageDriver):
         for container in list(self._containers.values()):
             yield container['container']
 
-    def list_container_objects(self, container, prefix=None, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
         if ex_prefix:
             prefix = ex_prefix
             warnings.warn('The ``ex_prefix`` argument is deprecated - '
@@ -188,10 +188,9 @@ class DummyStorageDriver(StorageDriver):
 
         container = self.get_container(container.name)
 
-        objects = list(self._containers[container.name]['objects'].values())
-        if prefix is not None:
-            objects = [o for o in objects if o.name.startswith(prefix)]
-        return objects
+        for obj in self._containers[container.name]['objects'].values():
+            if prefix is None or obj.name.startswith(prefix):
+                yield obj
 
     def get_container(self, container_name):
         """

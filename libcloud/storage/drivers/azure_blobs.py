@@ -453,26 +453,6 @@ class AzureBlobsStorageDriver(StorageDriver):
             if not params['marker']:
                 break
 
-    def list_container_objects(self, container, prefix=None, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :param prefix: Only return objects starting with ex_prefix
-        :type prefix: ``str``
-
-        :param ex_prefix: (Deprecated.) Only return objects starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                                                   prefix=prefix,
-                                                   ex_prefix=ex_prefix))
-
     def get_container(self, container_name):
         """
         @inherits: :class:`StorageDriver.get_container`
