@@ -252,6 +252,23 @@ class BackblazeB2StorageDriver(StorageDriver):
         return containers
 
     def iterate_container_objects(self, container, prefix=None, ex_prefix=None):
+        """
+        Return a generator of objects for the given container.
+
+        :param container: Container instance
+        :type container: :class:`Container`
+
+        :param prefix: Filter objects starting with a prefix.
+                       Filtering is performed client-side.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
+                          Filtering is performed client-side.
+        :type  ex_prefix: ``str``
+
+        :return: A generator of Object instances.
+        :rtype: ``generator`` of :class:`Object`
+        """
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         # TODO: Support pagination
