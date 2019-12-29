@@ -224,8 +224,10 @@ class LXDServerInfo(object):
             str(self.public)
 
 
-LXDContainerExecuteResult = collections.namedtuple(
-    'LXDContainerExecuteResult', ['exit_code', 'stdout', 'stderr'])
+LXDContainerExecute = collections.namedtuple('LXDContainerExecute',
+                                                   ['uuid','secret_0', 'secret_1',
+                                                    'secret_2', 'control',
+                                                    'output', 'result'])
 
 
 class LXDResponse(JsonResponse):
@@ -732,30 +734,57 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=100)
 
-        # wait max timeout
+        fds = response_dict['metadata']['metadata']['fds']
+        uuid = response_dict['metadata']['id']
 
-        try:
+        if input["wait-for-websocket"] == True and\
+            input["interactive"] == False:
+            return LXDContainerExecute(uuid=uuid,
+                                       secret_0=fds["0"],
+                                       secret_1=fds["1"],
+                                       secret_2=fds["2"],
+                                       control=fds["control"],
+                                       output={}, result=None)
 
-            # wait untitl the timeout...but util getting here the operation
-            # may have finished already
-            id = response_dict['metadata']['id']
-            req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
-                                                         id,
-                                                         timeout)
-            response = self.connection.request(req)
-        except BaseHTTPError as e:
+        elif input["wait-for-websocket"] == True and\
+            input["interactive"] == True:
 
-            message_list = e.message.split(",")
-            message = message_list[0].split(":")[-1]
+            return LXDContainerExecute(uuid=uuid,
+                                       secret_0=fds["0"],
+                                       secret_1=None,
+                                       secret_2=None,
+                                       control=fds["control"],
+                                       output={}, result=None)
 
-            # if not found assume the operation completed
-            if message != '"not found"':
-                # something is wrong
-                raise LXDAPIException(message=e.message)
+        elif input["interactive"] == False and\
+            input["record-output"] == True:
 
-        if input["interactive"] == True:
-            # return WebSocket
-            pass
+            output = response_dict['metadata']['metadata']['output']
+            result = response_dict['metadata']['metadata']['result']
+            return LXDContainerExecute(uuid=uuid,
+                                       secret_0=None,
+                                       secret_1=None,
+                                       secret_2=None,
+                                       control=None,
+                                       output=output, result=result)
+
+        else:
+
+            result = response_dict['metadata']['metadata']['result']
+            return LXDContainerExecute(uuid=uuid,
+                                       secret_0=None,
+                                       secret_1=None,
+                                       secret_2=None,
+                                       control=None,
+                                       output={}, result=result)
+
+
+
+
+    def ex_get_websocket(self, uuid, secret):
+
+        req='/%s/operations/%s/websocket?secret=%s' % (self.version, uuid, secret)
+        response = self.connection.request(re)
 
     def list_containers(self, image=None, cluster=None, ex_detailed=True):
         """
