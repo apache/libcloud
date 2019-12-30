@@ -219,6 +219,12 @@ class LXDServerInfo(object):
             str(self.public)
 
 
+LXDContainerExecuteResult = collections.namedtuple('LXDContainerExecuteResult',
+                                                   ['uuid','secret_0', 'secret_1',
+                                                    'secret_2', 'control',
+                                                    'output', 'result'])
+
+
 class LXDResponse(JsonResponse):
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                             httplib.NO_CONTENT]
@@ -324,7 +330,6 @@ class LXDContainerDriver(ContainerDriver):
     default_time_out = 30
 
     # default configuration when creating a container
-
     # if the architecture is not specified
     # by the client code then the underlying
     # host architecture should be picked up by
@@ -648,6 +653,143 @@ class LXDContainerDriver(ContainerDriver):
                               image=None, ip_addresses=[],
                               extra=None)
         return container
+
+
+    def ex_execute_cmd_on_container(self, cont_id, command, **config):
+        """
+        Description: run a remote command
+        Operation: async
+
+        Return: Depends on the  the configuration
+
+        if wait-for-websocket=true and interactive=false
+        returns a LXDContainerExecuteResult with:
+            uuid=uuid,
+            secret_0=fds["0"],
+            secret_1=fds["1"],
+            secret_2=fds["2"],
+            control=fds["control"],
+            output={}, result=None
+
+        if wait-for-websocket=true and interactive=true
+        returns a LXDContainerExecuteResult with:
+            uuid=uuid,
+            secret_0=fds["0"],
+            secret_1=None,
+            secret_2=None,
+            control=fds["control"],
+            output={}, result=None
+
+        if interactive=false and record-output=true
+        returns a LXDContainerExecuteResult with:
+            uuid=uuid,
+            secret_0=None,
+            secret_1=None,
+            secret_2=None,
+            control=None,
+            output=output, result=result
+
+        if none of the above it assumes that the command has
+        been executed and returns LXDContainerExecuteResult with:
+            uuid=uuid,
+            secret_0=None,
+            secret_1=None,
+            secret_2=None,
+            control=None,
+            output=None, result=result
+
+
+        in all the above uuid is the operation id
+
+        :param cont_id: The container name to run the commands
+        ":type cont_id: ``str``
+
+        :param timeout: Timeout to wait for the operation
+        :type  timeout: ``int``
+
+        :param command: a list of strings indicating the commands
+        and their arguments e.g: ["/bin/bash ls -l"]
+        :type  command ``list``
+
+        :param config: Dict with extra arguments.
+
+            For example:
+
+            width:  Initial width of the terminal default 80
+            height: Initial height of the terminal default 25
+            user:   User to run the command as default 1000
+            group: Group to run the  command as default 1000
+            cwd: Current working directory default /tmp
+
+            wait-for-websocket: Whether to wait for a connection
+            before starting the process. Default False
+
+            record-output: Whether to store stdout and stderr
+            (only valid with wait-for-websocket=false)
+            (requires API extension container_exec_recording). Default False
+
+            interactive: Whether to allocate a pts device instead of PIPEs. Default true
+
+        :type config ``dict``
+
+        :rtype LXDContainerExecuteResult
+        """
+
+        input = {"command": command}
+        input = LXDContainerDriver._ex_create_exec_configuration(input, **config)
+        data = json.dumps(input)
+        req = "/%s/containers/%s/exec" % (self.version, cont_id)
+
+        # Return: background operation +
+        # optional websocket information or standard error
+        response = self.connection.request(req, method="POST", data=data)
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=100)
+
+        fds = response_dict['metadata']['metadata']['fds']
+        uuid = response_dict['metadata']['id']
+
+        if input["wait-for-websocket"] == True and\
+            input["interactive"] == False:
+            return LXDContainerExecuteResult(uuid=uuid,
+                                             secret_0=fds["0"],
+                                             secret_1=fds["1"],
+                                             secret_2=fds["2"],
+                                             control=fds["control"],
+                                             output={}, result=None)
+
+        elif input["wait-for-websocket"] == True and\
+            input["interactive"] == True:
+
+            return LXDContainerExecuteResult(uuid=uuid,
+                                             secret_0=fds["0"],
+                                             secret_1=None,
+                                             secret_2=None,
+                                             control=fds["control"],
+                                             output={}, result=None)
+
+        elif input["interactive"] == False and\
+            input["record-output"] == True:
+
+            output = response_dict['metadata']['metadata']['output']
+            result = response_dict['metadata']['metadata']['result']
+            return LXDContainerExecuteResult(uuid=uuid,
+                                             secret_0=None,
+                                             secret_1=None,
+                                             secret_2=None,
+                                             control=None,
+                                             output=output, result=result)
+
+        else:
+
+            result = response_dict['metadata']['metadata']['result']
+            return LXDContainerExecuteResult(uuid=uuid,
+                                             secret_0=None,
+                                             secret_1=None,
+                                             secret_2=None,
+                                             control=None,
+                                             output={}, result=result)
 
     def list_containers(self, image=None, cluster=None, ex_detailed=True):
         """
