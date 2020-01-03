@@ -584,7 +584,6 @@ class StorageDriver(BaseDriver):
     def _upload_object(self, object_name, content_type, request_path,
                        request_method='PUT',
                        headers=None, file_path=None, stream=None,
-                       upload_func=None, upload_func_kwargs=None,
                        chunked=False, multipart=False):
         """
         Helper function for setting common request headers and calling the
@@ -638,9 +637,6 @@ class StorageDriver(BaseDriver):
 
         if not response.success():
             response.parse_error()
-
-        if upload_func:
-            upload_func(**upload_func_kwargs)
 
         return {'response': response,
                 'bytes_transferred': stream_length,
