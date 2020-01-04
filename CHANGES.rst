@@ -43,6 +43,38 @@ Compute
   (GITHUB-1346)
   [Tomaz Muraus]
 
+Storage
+~~~~~~~
+
+- [Azure Blobs] Implement chunked upload in the Azure Storage driver.
+
+  Previously, the maximum object size that could be uploaded with the
+  Azure Storage driver was capped at 100 MB: the maximum size that could
+  be uploaded in a single request to Azure. Chunked upload removes this
+  limitation and now enables uploading objects up to Azure's maximum block
+  blob size (~5 TB). The size of the chunks uploaded by the driver can be
+  configured via the ``LIBCLOUD_AZURE_UPLOAD_CHUNK_SIZE_MB`` environment
+  variable and defaults to 4 MB per chunk. Increasing this number trades-off
+  higher memory usage for a lower number of http requests executed by the
+  driver.
+
+  Reported by @rvolykh.
+  (GITHUB-1399, GITHUB-1400)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Drop support for uploading PageBlob objects via the Azure
+  Storage driver.
+
+  Previously, both PageBlob and BlockBlob objects could be uploaded via the
+  ``upload_object`` and ``upload_object_via_stream`` methods by specifying the
+  ``ex_blob_type`` and ``ex_page_blob_size`` arguments. To simplify the API,
+  these options were removed and all uploaded objects are now of BlockBlob
+  type. Passing ``ex_blob_type`` or ``ex_page_blob_size`` will now raise a
+  ``ValueError``.
+
+  (GITHUB-1400)
+  [Clemens Wolff - @c-w]
+
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
