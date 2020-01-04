@@ -670,13 +670,15 @@ class AzureBlobsStorageDriver(StorageDriver):
             count += 1
 
         if verify_hash:
-            data_hash = data_hash.hexdigest()
+            data_hash = base64.b64encode(b(data_hash.digest()))
+            data_hash = data_hash.decode('utf-8')
 
         response = self._commit_blocks(object_path=object_path,
                                        chunks=chunks,
                                        lease=lease,
                                        meta_data=meta_data,
                                        content_type=content_type,
+                                       data_hash=data_hash,
                                        object_name=object_name,
                                        file_path=file_path)
 
@@ -694,7 +696,8 @@ class AzureBlobsStorageDriver(StorageDriver):
         }
 
     def _commit_blocks(self, object_path, chunks, lease,
-                       meta_data, content_type, object_name, file_path):
+                       meta_data, content_type, data_hash,
+                       object_name, file_path):
         """
         Makes a final commit of the data.
         """
@@ -714,6 +717,9 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         headers['x-ms-blob-content-type'] = self._determine_content_type(
             content_type, object_name, file_path)
+
+        if data_hash is not None:
+            headers['x-ms-blob-content-md5'] = data_hash
 
         self._update_metadata(headers, meta_data)
 
@@ -760,7 +766,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                                     stream=fobj)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 verify_hash=False, extra=None,
+                                 verify_hash=True, extra=None,
                                  ex_use_lease=False,
                                  **deprecated_kwargs):
         """
