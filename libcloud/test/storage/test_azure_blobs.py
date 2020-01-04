@@ -36,7 +36,7 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
-from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
+from libcloud.storage.drivers.azure_blobs import AZURE_UPLOAD_CHUNK_SIZE
 
 from libcloud.test import unittest
 from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
@@ -701,7 +701,7 @@ class AzureBlobsTests(unittest.TestCase):
 
     def test_upload_big_block_object_success(self):
         file_path = tempfile.mktemp(suffix='.jpg')
-        file_size = AZURE_BLOCK_MAX_SIZE + 1
+        file_size = AZURE_UPLOAD_CHUNK_SIZE + 1
 
         with open(file_path, 'w') as file_hdl:
             file_hdl.write('0' * file_size)
@@ -746,7 +746,7 @@ class AzureBlobsTests(unittest.TestCase):
     def test_upload_big_block_object_success_with_lease(self):
         self.mock_response_klass.use_param = 'comp'
         file_path = tempfile.mktemp(suffix='.jpg')
-        file_size = AZURE_BLOCK_MAX_SIZE * 2
+        file_size = AZURE_UPLOAD_CHUNK_SIZE * 2
 
         with open(file_path, 'w') as file_hdl:
             file_hdl.write('0' * file_size)

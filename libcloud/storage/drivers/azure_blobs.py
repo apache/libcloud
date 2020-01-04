@@ -41,9 +41,12 @@ from libcloud.storage.types import ObjectHashMismatchError
 # Desired number of items in each response inside a paginated request
 RESPONSES_PER_REQUEST = 100
 
-# As per the Azure documentation, if the upload file size is less than
-# 100MB, we can upload it in a single request.
-AZURE_BLOCK_MAX_SIZE = 100 * 1024 * 1024
+# According to the Azure Docs:
+# > The block must be less than or equal to 100 MB in size for version
+# > 2016-05-31 and later (4 MB for older versions).
+# However for performance reasons, using a lower upload chunk size
+# usually leads to fewer dropped requests and retries.
+AZURE_UPLOAD_CHUNK_SIZE = 4 * 1024 * 1024
 
 AZURE_DOWNLOAD_CHUNK_SIZE = 4 * 1024 * 1024
 
@@ -630,7 +633,8 @@ class AzureBlobsStorageDriver(StorageDriver):
         params = {'comp': 'block'}
 
         # Read the input data in chunk sizes suitable for Azure
-        for data in read_in_chunks(stream, AZURE_BLOCK_MAX_SIZE):
+        for data in read_in_chunks(stream, AZURE_UPLOAD_CHUNK_SIZE,
+                                   fill_size=True):
             data = b(data)
             content_length = len(data)
             bytes_transferred += content_length
@@ -830,7 +834,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         # Get a lease if required and do the operations
         with AzureBlobLease(self, object_path, use_lease) as lease:
-            if blob_size is not None and blob_size <= AZURE_BLOCK_MAX_SIZE:
+            if blob_size is not None and blob_size <= AZURE_UPLOAD_CHUNK_SIZE:
                 result_dict = self._upload_directly(stream=stream,
                                                     object_path=object_path,
                                                     lease=lease,
