@@ -599,23 +599,9 @@ class StorageDriver(BaseDriver):
             raise AttributeError('iterator object must implement next() ' +
                                  'method.')
 
-        if not content_type:
-            if file_path:
-                name = file_path
-            else:
-                name = object_name
-            content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
+        headers['Content-Type'] = self._determine_content_type(
+            content_type, object_name, file_path=file_path)
 
-            if not content_type:
-                if self.strict_mode:
-                    raise AttributeError('File content-type could not be '
-                                         'guessed and no content_type value '
-                                         'is provided')
-                else:
-                    # Fallback to a content-type
-                    content_type = DEFAULT_CONTENT_TYPE
-
-        headers['Content-Type'] = content_type
         if stream:
             response = self.connection.request(
                 request_path,
@@ -641,6 +627,26 @@ class StorageDriver(BaseDriver):
         return {'response': response,
                 'bytes_transferred': stream_length,
                 'data_hash': stream_hash}
+
+    def _determine_content_type(self, content_type, object_name,
+                                file_path=None):
+        if not content_type:
+            if file_path:
+                name = file_path
+            else:
+                name = object_name
+            content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
+
+            if not content_type:
+                if self.strict_mode:
+                    raise AttributeError('File content-type could not be '
+                                         'guessed and no content_type value '
+                                         'is provided')
+                else:
+                    # Fallback to a content-type
+                    content_type = DEFAULT_CONTENT_TYPE
+
+        return content_type
 
     def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
         total_len = 0
