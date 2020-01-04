@@ -46,16 +46,22 @@ RESPONSES_PER_REQUEST = 100
 # > 2016-05-31 and later (4 MB for older versions).
 # However for performance reasons, using a lower upload chunk size
 # usually leads to fewer dropped requests and retries.
-AZURE_UPLOAD_CHUNK_SIZE = 4 * 1024 * 1024
+AZURE_UPLOAD_CHUNK_SIZE = int(
+    os.getenv('LIBCLOUD_AZURE_UPLOAD_CHUNK_SIZE_MB', '4')
+) * 1024 * 1024
 
-AZURE_DOWNLOAD_CHUNK_SIZE = 4 * 1024 * 1024
+AZURE_DOWNLOAD_CHUNK_SIZE = int(
+    os.getenv('LIBCLOUD_AZURE_DOWNLOAD_CHUNK_SIZE_MB', '4')
+) * 1024 * 1024
 
 # The time period (in seconds) for which a lease must be obtained.
 # If set as -1, we get an infinite lease, but that is a bad idea. If
 # after getting an infinite lease, there was an issue in releasing the
 # lease, the object will remain 'locked' forever, unless the lease is
 # released using the lease_id (which is not exposed to the user)
-AZURE_LEASE_PERIOD = 60
+AZURE_LEASE_PERIOD = int(
+    os.getenv('LIBCLOUD_AZURE_LEASE_PERIOD_SECONDS', '60')
+)
 
 AZURE_STORAGE_HOST_SUFFIX = 'blob.core.windows.net'
 
