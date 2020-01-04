@@ -610,29 +610,14 @@ class AzureBlobsStorageDriver(StorageDriver):
                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
-    def _upload_in_chunks(self, iterator, object_path,
-                          lease, calculate_hash=True):
+    def _upload_in_chunks(self, stream, object_path, lease, meta_data,
+                          content_type, object_name, file_path, verify_hash):
         """
         Uploads data from an interator in fixed sized chunks to Azure Storage
-
-        :param iterator: The generator for fetching the upload data
-        :type iterator: ``generator``
-
-        :param object_path: The path of the object to which we are uploading
-        :type object_path: ``str``
-
-        :param lease: The lease object to be used for renewal
-        :type lease: :class:`AzureBlobLease`
-
-        :keyword calculate_hash: Indicates if we must calculate the data hash
-        :type calculate_hash: ``bool``
-
-        :return: A dict of (response, data_hash, bytes_transferred)
-        :rtype: ``dict``
         """
 
         data_hash = None
-        if calculate_hash:
+        if verify_hash:
             data_hash = self._get_hash_function()
 
         bytes_transferred = 0
@@ -645,12 +630,12 @@ class AzureBlobsStorageDriver(StorageDriver):
         params = {'comp': 'block'}
 
         # Read the input data in chunk sizes suitable for Azure
-        for data in read_in_chunks(iterator, AZURE_BLOCK_MAX_SIZE):
+        for data in read_in_chunks(stream, AZURE_BLOCK_MAX_SIZE):
             data = b(data)
             content_length = len(data)
             bytes_transferred += content_length
 
-            if calculate_hash:
+            if verify_hash:
                 data_hash.update(data)
 
             chunk_hash = self._get_hash_function()
@@ -684,10 +669,16 @@ class AzureBlobsStorageDriver(StorageDriver):
 
             count += 1
 
-        if calculate_hash:
+        if verify_hash:
             data_hash = data_hash.hexdigest()
 
-        response = self._commit_blocks(object_path, chunks, lease)
+        response = self._commit_blocks(object_path=object_path,
+                                       chunks=chunks,
+                                       lease=lease,
+                                       meta_data=meta_data,
+                                       content_type=content_type,
+                                       object_name=object_name,
+                                       file_path=file_path)
 
         # According to the Azure docs:
         # > This header refers to the content of the request, meaning, in this
@@ -702,18 +693,10 @@ class AzureBlobsStorageDriver(StorageDriver):
             'bytes_transferred': bytes_transferred,
         }
 
-    def _commit_blocks(self, object_path, chunks, lease):
+    def _commit_blocks(self, object_path, chunks, lease,
+                       meta_data, content_type, object_name, file_path):
         """
         Makes a final commit of the data.
-
-        :param object_path: Server side object path.
-        :type object_path: ``str``
-
-        :param chunks: A list of block ids to be committed.
-        :type chunks: ``list``
-
-        :param lease: The lease object to be used for renewal
-        :type lease: :class:`AzureBlobLease`
         """
 
         root = ET.Element('BlockList')
@@ -728,6 +711,11 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         lease.update_headers(headers)
         lease.renew()
+
+        headers['x-ms-blob-content-type'] = self._determine_content_type(
+            content_type, object_name, file_path)
+
+        self._update_metadata(headers, meta_data)
 
         data_hash = self._get_hash_function()
         data_hash.update(data.encode('utf-8'))
@@ -846,10 +834,14 @@ class AzureBlobsStorageDriver(StorageDriver):
                                                     object_name=object_name,
                                                     file_path=file_path)
             else:
-                result_dict = self._upload_in_chunks(stream,
-                                                     object_path,
-                                                     lease,
-                                                     verify_hash)
+                result_dict = self._upload_in_chunks(stream=stream,
+                                                     object_path=object_path,
+                                                     lease=lease,
+                                                     meta_data=meta_data,
+                                                     content_type=content_type,
+                                                     object_name=object_name,
+                                                     file_path=file_path,
+                                                     verify_hash=verify_hash)
 
             response = result_dict['response']
             bytes_transferred = result_dict['bytes_transferred']
