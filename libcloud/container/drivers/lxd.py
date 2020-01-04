@@ -17,6 +17,7 @@ import base64
 import re
 import os
 
+import collections
 
 try:
     import simplejson as json
@@ -220,9 +221,13 @@ class LXDServerInfo(object):
 
 
 LXDContainerExecuteResult = collections.namedtuple('LXDContainerExecuteResult',
-                                                   ['uuid','secret_0', 'secret_1',
-                                                    'secret_2', 'control',
-                                                    'output', 'result'])
+                                                   ['uuid',
+                                                    'secret_0',
+                                                    'secret_1',
+                                                    'secret_2',
+                                                    'control',
+                                                    'output',
+                                                    'result'])
 
 
 class LXDResponse(JsonResponse):
@@ -288,7 +293,7 @@ class LXDtlsConnection(KeyCertificateConnection):
     def __init__(self, key, secret, secure=True,
                  host='localhost', port=8443, ca_cert='',
                  key_file=None, cert_file=None,
-                 certificate_validator = None, **kwargs):
+                 certificate_validator=None, **kwargs):
 
         if certificate_validator is not None:
             certificate_validator(key_file=key_file, cert_file=cert_file)
@@ -472,12 +477,13 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        cont_params = LXDContainerDriver._prepare_container_params(architecture=ex_architecture,
-                                                                   profiles=ex_profiles,
-                                                                   ephemeral=ex_profiles,
-                                                                   config=ex_config,
-                                                                   devices=ex_devices,
-                                                                   instance_type=ex_instance_type)
+        cont_params = \
+            LXDContainerDriver._fix_cont_params(architecture=ex_architecture,
+                                                profiles=ex_profiles,
+                                                ephemeral=ex_profiles,
+                                                config=ex_config,
+                                                devices=ex_devices,
+                                                instance_type=ex_instance_type)
 
         if parameters:
             parameters = json.loads(parameters)
@@ -519,8 +525,6 @@ class LXDContainerDriver(ContainerDriver):
 
             ip_result_dict = ip_response.parse_body()
             assert_response(response_dict=ip_result_dict, status_code=200)
-
-            networks = None
 
             if ip_result_dict["metadata"]["network"] is not None:
                 networks = ip_result_dict["metadata"]["network"]["eth0"]
@@ -603,6 +607,44 @@ class LXDContainerDriver(ContainerDriver):
                                          timeout=ex_timeout,
                                          force=ex_force, stateful=ex_stateful)
 
+    def ex_freeze_container(self, container, ex_timeout=default_time_out):
+
+        """
+        Set the given container into a freeze state
+
+        :param container: The container to restart
+        :type  container: :class:`.Container`
+
+        :param ex_timeout: Time to wait for the operation to complete
+        :type  ex_timeout: ``int``
+
+        :rtype :class: `libcloud.container.base.Container
+        """
+
+        return self._do_container_action(container=container,
+                                         action='freeze',
+                                         timeout=ex_timeout,
+                                         force=True, stateful=True)
+
+    def ex_unfreeze_container(self, container, ex_timeout=default_time_out):
+
+        """
+        Set the given container into  unfreeze state
+
+        :param container: The container to restart
+        :type  container: :class:`.Container`
+
+        :param ex_timeout: Time to wait for the operation to complete
+        :type  ex_timeout: ``int``
+
+        :rtype :class: `libcloud.container.base.Container
+        """
+
+        return self._do_container_action(container=container,
+                                         action='unfreeze',
+                                         timeout=ex_timeout,
+                                         force=True, stateful=True)
+
     def destroy_container(self, container, ex_timeout=default_time_out):
         """
         Destroy a deployed container. Raises and exception
@@ -654,7 +696,6 @@ class LXDContainerDriver(ContainerDriver):
                               extra=None)
         return container
 
-
     def ex_execute_cmd_on_container(self, cont_id, command, **config):
         """
         Description: run a remote command
@@ -704,9 +745,6 @@ class LXDContainerDriver(ContainerDriver):
         :param cont_id: The container name to run the commands
         ":type cont_id: ``str``
 
-        :param timeout: Timeout to wait for the operation
-        :type  timeout: ``int``
-
         :param command: a list of strings indicating the commands
         and their arguments e.g: ["/bin/bash ls -l"]
         :type  command ``list``
@@ -728,7 +766,8 @@ class LXDContainerDriver(ContainerDriver):
             (only valid with wait-for-websocket=false)
             (requires API extension container_exec_recording). Default False
 
-            interactive: Whether to allocate a pts device instead of PIPEs. Default true
+            interactive: Whether to allocate a pts device
+            instead of PIPEs. Default true
 
         :type config ``dict``
 
@@ -736,7 +775,7 @@ class LXDContainerDriver(ContainerDriver):
         """
 
         input = {"command": command}
-        input = LXDContainerDriver._ex_create_exec_configuration(input, **config)
+        input = LXDContainerDriver._create_exec_configuration(input, **config)
         data = json.dumps(input)
         req = "/%s/containers/%s/exec" % (self.version, cont_id)
 
@@ -750,8 +789,8 @@ class LXDContainerDriver(ContainerDriver):
         fds = response_dict['metadata']['metadata']['fds']
         uuid = response_dict['metadata']['id']
 
-        if input["wait-for-websocket"] == True and\
-            input["interactive"] == False:
+        if input["wait-for-websocket"] is True and\
+                input["interactive"] is False:
             return LXDContainerExecuteResult(uuid=uuid,
                                              secret_0=fds["0"],
                                              secret_1=fds["1"],
@@ -759,8 +798,8 @@ class LXDContainerDriver(ContainerDriver):
                                              control=fds["control"],
                                              output={}, result=None)
 
-        elif input["wait-for-websocket"] == True and\
-            input["interactive"] == True:
+        elif input["wait-for-websocket"] is True and\
+                input["interactive"] is True:
 
             return LXDContainerExecuteResult(uuid=uuid,
                                              secret_0=fds["0"],
@@ -769,8 +808,8 @@ class LXDContainerDriver(ContainerDriver):
                                              control=fds["control"],
                                              output={}, result=None)
 
-        elif input["interactive"] == False and\
-            input["record-output"] == True:
+        elif input["interactive"] is False and\
+                input["record-output"] is True:
 
             output = response_dict['metadata']['metadata']['output']
             result = response_dict['metadata']['metadata']['result']
@@ -1093,7 +1132,7 @@ class LXDContainerDriver(ContainerDriver):
                 volumes.append(self._to_storage_volume(metadata=metadata))
             else:
                 volume = self.ex_get_storage_pool_volume(pool_id=pool_id,
-                                                      type=type, name=name)
+                                                         type=type, name=name)
                 volumes.append(volume)
 
         return volumes
@@ -1207,6 +1246,8 @@ class LXDContainerDriver(ContainerDriver):
 
         if state == 'Running':
             state = ContainerState.RUNNING
+        elif state == 'Frozen':
+            state = ContainerState.PAUSED
         else:
             state = ContainerState.STOPPED
 
@@ -1237,7 +1278,7 @@ class LXDContainerDriver(ContainerDriver):
         # cache the state of the container
         state = container.state
 
-        data = {"action": action, "timeout": timeout, "force": force}
+        data = {"action": action, "timeout": timeout}
         data = json.dumps(data)
 
         # checkout this for stateful:
@@ -1330,7 +1371,7 @@ class LXDContainerDriver(ContainerDriver):
         :param name: the name of the container
         :param image: .ContainerImage
 
-        :param parameters: string descriping the source attribute
+        :param parameters: string describing the source attribute
         :type  parameters ``str``
 
         :param cont_params: dictionary describing the container configuration
@@ -1432,9 +1473,54 @@ class LXDContainerDriver(ContainerDriver):
         return super(LXDContainerDriver, self)._ex_connection_class_kwargs()
 
     @staticmethod
-    def _prepare_container_params(architecture, profiles,
-                                  ephemeral, config,
-                                  devices, instance_type):
+    def _create_exec_configuration(input, **config):
+        """
+        Prepares the input parameters for executyion API call
+        """
+
+        if "environment" in config.keys():
+            input["environment"] = config["environment"]
+
+        if "width" in config.keys():
+            input["width"] = config["width"]
+        else:
+            input["width"] = 80
+
+        if "height" in config.keys():
+            input["width"] = config["height"]
+        else:
+            input["height"] = 25
+
+        if "user" in config.keys():
+            input["user"] = config["user"]
+
+        if "group" in config.keys():
+            input["group"] = config["group"]
+
+        if "cwd" in config.keys():
+            input["cwd"] = config["cwd"]
+
+        if "wait-for-websocket" in config.keys():
+            input["wait-for-websocket"] = config["wait-for-websocket"]
+        else:
+            input["wait-for-websocket"] = False
+
+        if "record-output" in config.keys():
+            input["record-output"] = config["record-output"]
+        else:
+            input["record-output"] = False
+
+        if "interactive" in config.keys():
+            input["interactive"] = config["interactive"]
+        else:
+            input["interactive"] = True
+
+        return input
+
+    @staticmethod
+    def _fix_cont_params(architecture, profiles,
+                         ephemeral, config,
+                         devices, instance_type):
         """
         Returns a dict with the container parameters
         """
@@ -1444,7 +1530,6 @@ class LXDContainerDriver(ContainerDriver):
         # add also the other container parameters
         if architecture is not None:
             cont_params['architecture'] = architecture
-
 
         if profiles is not None:
             cont_params["profiles"] = profiles
@@ -1462,7 +1547,7 @@ class LXDContainerDriver(ContainerDriver):
         if devices is not None:
             cont_params["devices"] = devices
 
-        if instance_type  is not None:
+        if instance_type is not None:
             cont_params["instance_type"] = instance_type
 
         return cont_params
