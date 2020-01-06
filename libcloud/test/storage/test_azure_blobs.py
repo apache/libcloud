@@ -247,13 +247,23 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.ACCEPTED])
 
     def _foo_bar_container_foo_test_upload(self, method, url, body, headers):
-        # test_upload_object_success
         self._assert_content_length_header_is_string(headers=headers)
 
-        body = ''
+        query_string = urlparse.urlsplit(url).query
+        query = parse_qs(query_string)
+        comp = query.get('comp', [])
+
         headers = {}
-        headers['etag'] = '0x8CFB877BB56A6FB'
-        headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
+        body = ''
+
+        if 'blocklist' in comp or not comp:
+            headers['etag'] = '"0x8CFB877BB56A6FB"'
+            headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
+        elif 'block' in comp:
+            headers['content-md5'] = 'lvcfx/bOJvndpRlrdKU1YQ=='
+        else:
+            raise NotImplementedError('Unknown request comp: {}'.format(comp))
+
         return (httplib.CREATED,
                 body,
                 headers,
@@ -264,17 +274,6 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
         # test_upload_object_success
         self._assert_content_length_header_is_string(headers=headers)
 
-        body = ''
-        headers = {}
-        headers['etag'] = '0x8CFB877BB56A6FB'
-        return (httplib.CREATED,
-                body,
-                headers,
-                httplib.responses[httplib.CREATED])
-
-    def _foo_bar_container_foo_test_upload_page(self, method, url,
-                                                body, headers):
-        # test_upload_object_success
         body = ''
         headers = {}
         headers['etag'] = '0x8CFB877BB56A6FB'
