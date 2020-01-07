@@ -1476,28 +1476,18 @@ class LXDContainerDriver(ContainerDriver):
 
         if "width" in config.keys():
             input["width"] = config["width"]
-        else:
-            input["width"] = 80
 
         if "height" in config.keys():
             input["width"] = config["height"]
-        else:
-            input["height"] = 25
 
         if "user" in config.keys():
             input["user"] = config["user"]
-        else:
-            input["user"] = 1000
 
         if "group" in config.keys():
             input["group"] = config["group"]
-        else:
-            input["group"] = 1000
 
         if "cwd" in config.keys():
             input["cwd"] = config["cwd"]
-        else:
-            input["cwd"] = "/tmp"
 
         if "wait-for-websocket" in config.keys():
             input["wait-for-websocket"] = config["wait-for-websocket"]
@@ -1506,8 +1496,6 @@ class LXDContainerDriver(ContainerDriver):
 
         if "record-output" in config.keys():
             input["record-output"] = config["record-output"]
-        else:
-            input["record-output"] = False
 
         if  "interactive" in config.keys():
             input["interactive"] = config["interactive"]
