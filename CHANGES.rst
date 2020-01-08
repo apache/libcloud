@@ -29,7 +29,12 @@ Compute
   it's out of date and not maintained (https://github.com/machalekj/pysphere/tree/2to3).
   (GITHUB-1377)
   [Tomaz Muraus]
-
+- [AWS EC2] Add support for creating spot instances by utilizing new ``ex_spot``
+  and optionally also ``ex_spot_max_price`` keyword argument in the
+  ``create_node`` method.
+  (GITHUB-1398)
+  [Peter Yu - @yukw777]
+  
 Storage
 -------
 
