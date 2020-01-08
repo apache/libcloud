@@ -871,6 +871,7 @@ class LXDContainerDriver(ContainerDriver):
             if not ex_detailed:
 
                 container = Container(driver=self, name=container_id,
+                                      state=ContainerState.UNKNOWN,
                                       id=container_id,
                                       image=image, ip_addresses=[],
                                       extra={})
