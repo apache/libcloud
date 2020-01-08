@@ -5,7 +5,7 @@ Changes in Apache Libcloud in development (3.0.0)
 -------------------------------------------------
 
 General
--------
+~~~~~~~
 
 - This release drops support for Python versions older than 3.5.0.
 
@@ -20,7 +20,7 @@ General
   [Tomaz Muraus]
 
 Compute
--------
+~~~~~~~
 
 - [VMware vSphere] vSphere driver relies on ``pysphere`` Python library which
   doesn't support Python 3 so it has been removed.
@@ -30,14 +30,26 @@ Compute
   (GITHUB-1377)
   [Tomaz Muraus]
 
+- [GCE] Fix ``ex_list_instancegroups`` method so it doesn't throw if ``zone``
+  attribute is not present in the response.
+
+  Reported by Kartik Subbarao (@kartiksubbarao)
+  (GITHUB-1346)
+  [Tomaz Muraus]
+
+
 - [AWS EC2] Add support for creating spot instances by utilizing new ``ex_spot``
   and optionally also ``ex_spot_max_price`` keyword argument in the
   ``create_node`` method.
   (GITHUB-1398)
   [Peter Yu - @yukw777]
 
-Changes in Apache Libcloud in development
------------------------------------------
+Container
+~~~~~~~~~
+
+- [LXD] Add new LXD driver.
+  (GITHUB-1395)
+  [Alexandros Giavaras - @pockerman]
 
 Compute
 ~~~~~~~
