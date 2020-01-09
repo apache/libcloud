@@ -17,6 +17,11 @@ Libcloud 3.0.0
 * This release removes VMware vSphere driver which relied on old and
   unmaintained ``pysphere`` library which doesn't support Python 3.
 
+* The ``ex_prefix`` keyword argument in the ``iterate_container_objects``
+  and ``list_container_objects`` methods in all storage drivers has been
+  renamed to ``prefix`` to indicate the promotion of the argument to the
+  standard storage driver API.
+
 Libcloud 2.8.0
 --------------
 
