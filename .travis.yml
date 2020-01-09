@@ -19,16 +19,16 @@ matrix:
     - name: Unit Tests, Installation Checks (Python 3.7)
       python: 3.7
       before_script: TOX_ENV=py3.7,py3.7-dist,py3.7-dist-wheel
-    - name: Unit Tests (Python 3.7 on Windows)
+    - name: Unit Tests (Python 3.8 on Windows)
       os: windows
-      python: 3.7
+      python: 3.8
       language: shell
       before_install:
-        - choco install python --version 3.7.5
-        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
+        - choco install python --version 3.8.1
+        - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
         - python -m pip install --upgrade pip
-      before_script: TOX_ENV=py3.7-windows
-      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      before_script: TOX_ENV=py3.8-windows
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
     - name: Unit Tests (Python 3.8)
       python: 3.8
     - name: Unit Tests (PyPy 3.5)
