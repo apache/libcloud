@@ -127,8 +127,8 @@ class BaseStorageTests(unittest.TestCase):
         # strict_mode is enabled, exception should be thrown
 
         self.driver1.strict_mode = True
-        expected_msg = ('File content-type could not be guessed and no'
-                        ' content_type value is provided')
+        expected_msg = ('File content-type could not be guessed for "test" '
+                        'and no content_type value is provided')
         assertRaisesRegex(self, AttributeError, expected_msg,
                           self.driver1._upload_object,
                           object_name='test',

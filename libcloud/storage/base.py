@@ -630,23 +630,18 @@ class StorageDriver(BaseDriver):
 
     def _determine_content_type(self, content_type, object_name,
                                 file_path=None):
-        if not content_type:
-            if file_path:
-                name = file_path
-            else:
-                name = object_name
-            content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
+        if content_type:
+            return content_type
 
-            if not content_type:
-                if self.strict_mode:
-                    raise AttributeError('File content-type could not be '
-                                         'guessed and no content_type value '
-                                         'is provided')
-                else:
-                    # Fallback to a content-type
-                    content_type = DEFAULT_CONTENT_TYPE
+        name = file_path or object_name
+        content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
 
-        return content_type
+        if self.strict_mode and not content_type:
+            raise AttributeError('File content-type could not be guessed for '
+                                 '"%s" and no content_type value is provided'
+                                 % name)
+
+        return content_type or DEFAULT_CONTENT_TYPE
 
     def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
         total_len = 0
