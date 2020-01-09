@@ -110,6 +110,11 @@ class LocalTests(unittest.TestCase):
         objects = self.driver.list_container_objects(container=container)
         self.assertEqual(len(objects), 5)
 
+        prefix = os.path.join('path', 'to')
+        objects = self.driver.list_container_objects(container=container,
+                                                     prefix=prefix)
+        self.assertEqual(len(objects), 2)
+
         for obj in objects:
             self.assertNotEqual(obj.hash, None)
             self.assertEqual(obj.size, 4096)

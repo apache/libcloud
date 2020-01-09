@@ -36,7 +36,7 @@ objects = c1.list_objects()
 count = len(objects)
 print('Has %d objects' % count)
 
-objects = oss.list_container_objects(c1, ex_prefix='en')
+objects = oss.list_container_objects(c1, prefix='en')
 print('Has %d objects with prefix "en"' % len(objects))
 for each in objects:
     print(each)

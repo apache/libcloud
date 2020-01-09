@@ -410,17 +410,20 @@ class AzureBlobsStorageDriver(StorageDriver):
             if not params['marker']:
                 break
 
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         @inherits: :class:`StorageDriver.iterate_container_objects`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         params = {'restype': 'container',
                   'comp': 'list',
                   'maxresults': RESPONSES_PER_REQUEST,
                   'include': 'metadata'}
 
-        if ex_prefix:
-            params['prefix'] = ex_prefix
+        if prefix:
+            params['prefix'] = prefix
 
         container_path = self._get_container_path(container)
 
@@ -447,22 +450,6 @@ class AzureBlobsStorageDriver(StorageDriver):
             params['marker'] = body.findtext('NextMarker')
             if not params['marker']:
                 break
-
-    def list_container_objects(self, container, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :param ex_prefix: Only return objects starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                                                   ex_prefix=ex_prefix))
 
     def get_container(self, container_name):
         """

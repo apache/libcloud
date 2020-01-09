@@ -286,28 +286,16 @@ class BaseS3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def list_container_objects(self, container, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :param ex_prefix: Only return objects starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                                                   ex_prefix=ex_prefix))
-
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
+
+        :param prefix: Only return objects starting with prefix
+        :type prefix: ``str``
 
         :param ex_prefix: Only return objects starting with ex_prefix
         :type ex_prefix: ``str``
@@ -315,9 +303,12 @@ class BaseS3StorageDriver(StorageDriver):
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         params = {}
-        if ex_prefix:
-            params['prefix'] = ex_prefix
+
+        if prefix:
+            params['prefix'] = prefix
 
         last_key = None
         exhausted = False

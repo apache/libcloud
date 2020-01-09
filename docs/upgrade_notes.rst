@@ -22,6 +22,11 @@ Libcloud 3.0.0
   have been removed from the ``upload_object`` and ``upload_object_via_stream``
   methods.
 
+* The ``ex_prefix`` keyword argument in the ``iterate_container_objects``
+  and ``list_container_objects`` methods in all storage drivers has been
+  renamed to ``prefix`` to indicate the promotion of the argument to the
+  standard storage driver API.
+
 Libcloud 2.8.0
 --------------
 

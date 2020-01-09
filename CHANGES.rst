@@ -37,7 +37,6 @@ Compute
   (GITHUB-1346)
   [Tomaz Muraus]
 
-
 - [AWS EC2] Add support for creating spot instances by utilizing new ``ex_spot``
   and optionally also ``ex_spot_max_price`` keyword argument in the
   ``create_node`` method.
@@ -50,16 +49,6 @@ Container
 - [LXD] Add new LXD driver.
   (GITHUB-1395)
   [Alexandros Giavaras - @pockerman]
-
-Compute
-~~~~~~~
-
-- [GCE] Fix ``ex_list_instancegroups`` method so it doesn't throw if ``zone``
-  attribute is not present in the response.
-
-  Reported by Kartik Subbarao (@kartiksubbarao)
-  (GITHUB-1346)
-  [Tomaz Muraus]
 
 Storage
 ~~~~~~~
@@ -91,6 +80,22 @@ Storage
   ``ValueError``.
 
   (GITHUB-1400)
+  [Clemens Wolff - @c-w]
+
+- [Common] Add ``prefix`` argument to ``iterate_container_objects`` and
+  ``list_container_objects`` to support object-list filtering in all
+  StorageDriver implementations.
+
+  A lot of the existing storage drivers already implemented the filtering
+  functionality via the ``ex_prefix`` extension argument so it was decided
+  to promote the argument to be part of the standard Libcloud storage API.
+  For any storage driver that doesn't natively implement filtering the results
+  list, a fall-back was implemented which filters the full object stream on
+  the client side.
+
+  For backward compatibility reasons, the ``ex_prefix`` argument will still
+  be respected until a next major release.
+  (GITHUB-1397)
   [Clemens Wolff - @c-w]
 
 Changes in Apache Libcloud v2.8.0
