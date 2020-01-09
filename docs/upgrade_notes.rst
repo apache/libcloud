@@ -17,6 +17,11 @@ Libcloud 3.0.0
 * This release removes VMware vSphere driver which relied on old and
   unmaintained ``pysphere`` library which doesn't support Python 3.
 
+* This release removes support for PageBlob objects from the Azure Blobs
+  storage driver. The ``ex_blob_type`` and ``ex_page_blob_size`` arguments
+  have been removed from the ``upload_object`` and ``upload_object_via_stream``
+  methods.
+
 * The ``ex_prefix`` keyword argument in the ``iterate_container_objects``
   and ``list_container_objects`` methods in all storage drivers has been
   renamed to ``prefix`` to indicate the promotion of the argument to the

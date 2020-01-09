@@ -65,11 +65,7 @@ class BaseStorageTests(unittest.TestCase):
         valid_iterators = [BytesIO(b('134')), StringIO('bar')]
         invalid_iterators = ['foobar', '', False, True, 1, object()]
 
-        def upload_func(*args, **kwargs):
-            return True, 'barfoo', 100
-
         kwargs = {'object_name': 'foo', 'content_type': 'foo/bar',
-                  'upload_func': upload_func, 'upload_func_kwargs': {},
                   'request_path': '/', 'headers': {}}
 
         for value in valid_iterators:
@@ -117,16 +113,11 @@ class BaseStorageTests(unittest.TestCase):
     def test_upload_no_content_type_supplied_or_detected(self):
         iterator = StringIO()
 
-        upload_func = Mock()
-        upload_func.return_value = True, '', 0
-
         # strict_mode is disabled, default content type should be used
         self.driver1.connection = Mock()
 
         self.driver1._upload_object(object_name='test',
                                     content_type=None,
-                                    upload_func=upload_func,
-                                    upload_func_kwargs={},
                                     request_path='/',
                                     stream=iterator)
 
@@ -136,14 +127,12 @@ class BaseStorageTests(unittest.TestCase):
         # strict_mode is enabled, exception should be thrown
 
         self.driver1.strict_mode = True
-        expected_msg = ('File content-type could not be guessed and no'
-                        ' content_type value is provided')
+        expected_msg = ('File content-type could not be guessed for "test" '
+                        'and no content_type value is provided')
         assertRaisesRegex(self, AttributeError, expected_msg,
                           self.driver1._upload_object,
                           object_name='test',
                           content_type=None,
-                          upload_func=upload_func,
-                          upload_func_kwargs={},
                           request_path='/',
                           stream=iterator)
 
@@ -164,16 +153,11 @@ class BaseStorageTests(unittest.TestCase):
         self.assertTrue(hasattr(iterator, '__next__'))
         self.assertTrue(hasattr(iterator, 'next'))
 
-        upload_func = Mock()
-        upload_func.return_value = True, '', size
-
         self.assertEqual(mock_read_in_chunks.call_count, 0)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
 
         result = self.driver1._upload_object(object_name='test1',
                                              content_type=None,
-                                             upload_func=upload_func,
-                                             upload_func_kwargs={},
                                              request_path='/',
                                              stream=iterator)
 
@@ -210,8 +194,6 @@ class BaseStorageTests(unittest.TestCase):
 
         result = self.driver1._upload_object(object_name='test2',
                                              content_type=None,
-                                             upload_func=upload_func,
-                                             upload_func_kwargs={},
                                              request_path='/',
                                              stream=iterator)
 

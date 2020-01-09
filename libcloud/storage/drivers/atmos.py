@@ -30,7 +30,7 @@ from libcloud.utils.py3 import urlunquote
 if PY3:
     from io import FileIO as file
 
-from libcloud.utils.files import read_in_chunks, guess_file_mime_type
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError
 
@@ -271,13 +271,8 @@ class AtmosDriver(StorageDriver):
             content_type = extra.get('content_type', None)
         else:
             content_type = None
-        if not content_type:
-            content_type, _ = guess_file_mime_type(object_name)
 
-            if not content_type:
-                raise AttributeError(
-                    'File content-type could not be guessed and' +
-                    ' no content_type value provided')
+        content_type = self._determine_content_type(content_type, object_name)
 
         try:
             self.connection.request(path + '?metadata/system')

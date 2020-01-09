@@ -891,12 +891,8 @@ class BaseS3StorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
         acl = extra.get('acl', None)
 
-        if not content_type:
-            content_type, _ = libcloud.utils.files.guess_file_mime_type(
-                object_name)
-
-        if content_type:
-            headers['Content-Type'] = content_type
+        headers['Content-Type'] = self._determine_content_type(
+            content_type, object_name)
 
         if meta_data:
             for key, value in list(meta_data.items()):
