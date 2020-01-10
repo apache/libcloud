@@ -98,6 +98,19 @@ Storage
   (GITHUB-1397)
   [Clemens Wolff - @c-w]
 
+- [Azure Blobs] Implement ``get_object_cdn_url`` for the Azure Storage driver.
+
+  Leveraging Azure storage service shared access signatures, the Azure Storage
+  driver can now be used to generate temporary URLs that grant clients read
+  access to objects. The URLs expire after a certain period of time, either
+  configured via the ``ex_expiry`` argument or the
+  ``LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS`` environment variable
+  (default: 24 hours).
+
+  Reported by @rvolykh.
+  (GITHUB-1403, GITHUB-1408)
+  [Clemens Wolff - @c-w]
+
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
