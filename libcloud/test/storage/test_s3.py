@@ -335,27 +335,6 @@ class S3MockHttp(MockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
-    def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url,
-                                                         body, headers):
-        body = ''
-        headers = {}
-        headers['etag'] = '"foobar"'
-        # test_upload_object_invalid_hash1
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_bar_container_foo_test_upload_INVALID_HASH2(self, method, url,
-                                                         body, headers):
-        # test_upload_object_invalid_hash2
-        body = ''
-        headers = {'etag': '"hash343hhash89h932439jsaa89"'}
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
     def _foo_bar_container_foo_test_upload(self, method, url, body, headers):
         # test_upload_object_success
         body = ''
@@ -772,11 +751,10 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200),
+            headers = {'etag': '"foobar"'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': 'hash343hhash89h932439jsaa89'}
-
-        self.mock_response_klass.type = 'INVALID_HASH1'
 
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -802,11 +780,10 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200, headers={'etag': 'woopwoopwoop'}),
+            headers = {'etag': '"hash343hhash89h932439jsaa89"'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
-
-        self.mock_response_klass.type = 'INVALID_HASH2'
 
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
