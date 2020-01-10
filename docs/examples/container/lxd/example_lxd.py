@@ -12,10 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# flake8: noqa
 
 from libcloud.container.types import Provider
 from libcloud.container.providers import get_driver
-from libcloud.container.base import Container, ContainerImage
 
 
 def work_with_containers():
@@ -39,7 +39,8 @@ def work_with_containers():
     # here we assume they are on the same directory change
     # accordingly
     conn = lxd_driver(key='', secret='', secure=False,
-                      host=host_lxd, port=port_id, key_file='lxd.key', cert_file='lxd.crt')
+                      host=host_lxd, port=port_id, key_file='lxd.key',
+                      cert_file='lxd.crt')
 
     # this API call does not require authentication
     api_end_points = conn.ex_get_api_endpoints()
@@ -226,7 +227,6 @@ def work_with_storage_pools():
 
 
 if __name__ == '__main__':
-
     work_with_containers()
-    #work_with_images()
-    #work_with_storage_pools()
+    # work_with_images()
+    # work_with_storage_pools()
