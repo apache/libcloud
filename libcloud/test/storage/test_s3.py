@@ -827,6 +827,31 @@ class S3Tests(unittest.TestCase):
         finally:
             self.driver_type._upload_object = old_func
 
+    def test_upload_object_invalid_hash_kms_encryption(self):
+        # Hash check should be skipped when AWS KMS server side encryption is
+        # used
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            headers = {'etag': 'blahblah', 'x-amz-server-side-encryption': 'aws:kms'}
+            return {'response': make_response(200, headers=headers),
+                    'bytes_transferred': 1000,
+                    'data_hash': 'hash343hhash89h932439jsaa81'}
+
+        old_func = self.driver_type._upload_object
+        self.driver_type._upload_object = upload_file
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_upload'
+        try:
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name,
+                                      verify_hash=True)
+        finally:
+            self.driver_type._upload_object = old_func
+
+
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
