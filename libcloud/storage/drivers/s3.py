@@ -847,7 +847,7 @@ class BaseS3StorageDriver(StorageDriver):
         response = response
         server_hash = headers.get('etag', '').replace('"', '')
         server_side_encryption = headers.get('x-amz-server-side-encryption',
-                                             True)
+                                             None)
 
         # NOTE: If AWS KMS server side encryption is enabled, ETag won't
         # contain object MD5 digest so we skip the checksum check
