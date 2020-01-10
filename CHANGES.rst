@@ -43,6 +43,21 @@ Compute
   (GITHUB-1398)
   [Peter Yu - @yukw777]
 
+Storage
+~~~~~~~
+
+- [AWS S3] Fix upload object code so uploaded data MD5 checksum check is not
+  performed at the end of the upload when AWS KMS server side encryption is
+  used.
+
+  If AWS KMS server side object encryption is used, ETag header value in the
+  response doesn't contain data MD5 digest so we can't perform a checksum
+  check.
+
+  Reported by Jonathan Harden - @jfharden.
+  (GITHUB-1401, GITHUB-1406)
+  [Tomaz Muraus - @Kami]
+
 Container
 ~~~~~~~~~
 
