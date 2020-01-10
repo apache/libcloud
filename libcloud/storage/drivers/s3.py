@@ -837,8 +837,17 @@ class BaseS3StorageDriver(StorageDriver):
         headers = response.headers
         response = response
         server_hash = headers.get('etag', '').replace('"', '')
+        server_side_encryption = headers.get('x-amz-server-side-encryption',
+                                             True)
 
-        if (verify_hash and result_dict['data_hash'] != server_hash):
+        # NOTE: If AWS KMS server side encryption is enabled, ETag won't
+        # contain object MD5 digest so we skip the checksum check
+        # See https://docs.aws.amazon.com/AmazonS3/latest/API
+        # /RESTCommonResponseHeaders.html
+        # and https://github.com/apache/libcloud/issues/1401
+        # for details
+        if server_side_encryption != 'aws:kms' and (verify_hash and
+                result_dict['data_hash'] != server_hash):
             raise ObjectHashMismatchError(
                 value='MD5 hash {0} checksum does not match {1}'.format(
                     server_hash, result_dict['data_hash']),
