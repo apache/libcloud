@@ -346,7 +346,7 @@ class LXDContainerDriver(ContainerDriver):
     default_profiles = 'default'
 
     # An ephemeral container means that it
-    # will be restroyed once it is stopped
+    # will be destroyed once it is stopped
     default_ephemeral = False
 
     def __init__(self, key='', secret='', secure=False,
@@ -1052,7 +1052,7 @@ class LXDContainerDriver(ContainerDriver):
                    }
 
         Note that **all** fields in the `definition` parameter are strings.
-        Note that size has to be at least 64M in order to create the pool
+        Note that size has to be at least 64MB in order to create the pool
 
         For further details on the storage pool types see:
         https://lxd.readthedocs.io/en/latest/storage/
@@ -1186,7 +1186,20 @@ class LXDContainerDriver(ContainerDriver):
             raise LXDAPIException("Cannot create a storage volume "
                                   "without a definition")
 
+        #import pdb
+        #pdb.set_trace()
+
+        if definition['config']['size_type'] == 'GB':
+            definition['config'].pop('size_type')
+            definition['config']['size'] = str(LXDContainerDriver._to_bytes(definition['config']['size']))
+        elif definition['config']['size_type'] == 'MB':
+            definition['config'].pop('size_type')
+            definition['config']['size'] = LXDContainerDriver._to_bytes(definition['config']['size'])
+        else:
+            raise LXDAPIException(message="Definition does not contain size units")
+
         data = json.dumps(definition)
+        #data['config']['size'] = str(data['config']['size'])
 
         # Return: standard return value or standard error
         req = "/%s/storage-pools/%s/volumes" % (self.version, pool_id)
@@ -1581,4 +1594,14 @@ class LXDContainerDriver(ContainerDriver):
         """
         size = int(size)
         return size // 10**9
+
+    @staticmethod
+    def _to_bytes(size):
+        """
+        convert the given size in GB to bytes
+        :param size: in GBs
+        :return: int representing bytes
+        """
+        size = int(size)
+        return size*10**9
 
