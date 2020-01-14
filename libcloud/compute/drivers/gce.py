@@ -2586,31 +2586,35 @@ class GCENodeDriver(NodeDriver):
         :return:  List of Node objects
         :rtype:   ``list`` of :class:`Node`
         """
-        list_nodes = []
         zone = self._set_zone(ex_zone)
         response = self.connection.request_aggregated_items('instances',
                                                             zone=zone)
 
-        if 'items' in response:
-            # The aggregated response returns a dict for each zone
-            # Create volume cache now for fast lookups of disk info.
-            self._ex_populate_volume_dict()
-            for v in response['items'].values():
-                for i in v.get('instances', []):
-                    try:
-                        list_nodes.append(
-                            self._to_node(i,
-                                          use_disk_cache=ex_use_disk_cache)
-                        )
-                    # If a GCE node has been deleted between
-                    #   - is was listed by `request('.../instances', 'GET')
-                    #   - it is converted by `self._to_node(i)`
-                    # `_to_node()` will raise a ResourceNotFoundError.
-                    #
-                    # Just ignore that node and return the list of the
-                    # other nodes.
-                    except ResourceNotFoundError:
-                        pass
+        if not response.get('items', []):
+            return []
+
+        list_nodes = []
+
+        # The aggregated response returns a dict for each zone
+        # Create volume cache now for fast lookups of disk info.
+        self._ex_populate_volume_dict()
+        for v in response['items'].values():
+            for i in v.get('instances', []):
+                try:
+                    list_nodes.append(
+                        self._to_node(i,
+                                      use_disk_cache=ex_use_disk_cache)
+                    )
+                # If a GCE node has been deleted between
+                #   - is was listed by `request('.../instances', 'GET')
+                #   - it is converted by `self._to_node(i)`
+                # `_to_node()` will raise a ResourceNotFoundError.
+                #
+                # Just ignore that node and return the list of the
+                # other nodes.
+                except ResourceNotFoundError:
+                    pass
+
         # Clear the volume cache as lookups are complete.
         self._ex_volume_dict = {}
         return list_nodes
