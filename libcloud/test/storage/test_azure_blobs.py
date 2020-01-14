@@ -502,6 +502,16 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue(container.extra['lease']['state'], 'available')
         self.assertTrue(container.extra['meta_data']['meta1'], 'value1')
 
+    def test_get_object_cdn_url(self):
+        obj = self.driver.get_object(container_name='test_container200',
+                                     object_name='test')
+
+        url = urlparse.urlparse(self.driver.get_object_cdn_url(obj))
+        query = urlparse.parse_qs(url.query)
+
+        self.assertEqual(len(query['sig']), 1)
+        self.assertGreater(len(query['sig'][0]), 0)
+
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
         # trickier

@@ -16,11 +16,15 @@
 from __future__ import with_statement
 
 import base64
+import hashlib
+import hmac
 import os
 import binascii
+from datetime import datetime, timedelta
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
 from libcloud.utils.py3 import b
@@ -64,6 +68,16 @@ AZURE_LEASE_PERIOD = int(
 )
 
 AZURE_STORAGE_HOST_SUFFIX = 'blob.core.windows.net'
+
+AZURE_STORAGE_CDN_URL_DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+AZURE_STORAGE_CDN_URL_START_MINUTES = float(
+    os.getenv('LIBCLOUD_AZURE_STORAGE_CDN_URL_START_MINUTES', '5')
+)
+
+AZURE_STORAGE_CDN_URL_EXPIRY_HOURS = float(
+    os.getenv('LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS', '24')
+)
 
 
 class AzureBlobLease(object):
@@ -180,7 +194,7 @@ class AzureBlobsConnection(AzureConnection):
 
         return action
 
-    API_VERSION = '2016-05-31'
+    API_VERSION = '2018-11-09'
 
 
 class AzureBlobsStorageDriver(StorageDriver):
@@ -488,6 +502,70 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         raise ObjectDoesNotExistError(value=None, driver=self,
                                       object_name=object_name)
+
+    def get_object_cdn_url(self, obj,
+                           ex_expiry=AZURE_STORAGE_CDN_URL_EXPIRY_HOURS):
+        """
+        Return a SAS URL that enables reading the given object.
+
+        :param obj: Object instance.
+        :type  obj: :class:`Object`
+
+        :param ex_expiry: The number of hours after which the URL expires.
+                          Defaults to 24 hours.
+        :type  ex_expiry: ``float``
+
+        :return: A SAS URL for the object.
+        :rtype: ``str``
+        """
+        object_path = self._get_object_path(obj.container, obj.name)
+
+        now = datetime.utcnow()
+        start = now - timedelta(minutes=AZURE_STORAGE_CDN_URL_START_MINUTES)
+        expiry = now + timedelta(hours=ex_expiry)
+
+        params = {
+            'st': start.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
+            'se': expiry.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
+            'sp': 'r',
+            'spr': 'https' if self.secure else 'http,https',
+            'sv': self.connectionCls.API_VERSION,
+            'sr': 'b',
+        }
+
+        string_to_sign = '\n'.join((
+            params['sp'],
+            params['st'],
+            params['se'],
+            '/blob/{}{}'.format(self.key, object_path),
+            '',  # signedIdentifier
+            '',  # signedIP
+            params['spr'],
+            params['sv'],
+            params['sr'],
+            '',  # snapshot
+            '',  # rscc
+            '',  # rscd
+            '',  # rsce
+            '',  # rscl
+            '',  # rsct
+        ))
+
+        params['sig'] = base64.b64encode(
+            hmac.new(
+                self.secret,
+                string_to_sign.encode('utf-8'),
+                hashlib.sha256
+            ).digest()
+        ).decode('utf-8')
+
+        return '{scheme}://{host}:{port}{action}?{sas_token}'.format(
+            scheme='https' if self.secure else 'http',
+            host=self.connection.host,
+            port=self.connection.port,
+            action=self.connection.morph_action_hook(object_path),
+            sas_token=urlencode(params),
+        )
 
     def _get_container_path(self, container):
         """
