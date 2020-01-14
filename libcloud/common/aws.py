@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from typing import Dict
+from typing import Optional
 from typing import Type
 
 import base64
@@ -368,7 +369,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
 
 class SignedAWSConnection(AWSTokenConnection):
-    version = None
+    version = None  # type: Optional[str]
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None, token=None,

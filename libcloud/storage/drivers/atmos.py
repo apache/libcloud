@@ -120,8 +120,8 @@ class AtmosConnection(ConnectionUserAndKey):
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection
 
-    host = None
-    path = None
+    host = None  # type: str
+    path = None  # type: str
     api_name = 'atmos'
     supports_chunked_encoding = True
     website = 'http://atmosonline.com/'
