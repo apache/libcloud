@@ -102,21 +102,26 @@ class Object(object):
         self.driver = driver
 
     def get_cdn_url(self):
+        # type: () -> str
         return self.driver.get_object_cdn_url(obj=self)
 
-    def enable_cdn(self, **kwargs):
-        return self.driver.enable_object_cdn(obj=self, **kwargs)
+    def enable_cdn(self):
+        # type: () -> bool
+        return self.driver.enable_object_cdn(obj=self)
 
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
+        # type: (str, bool, bool) -> bool
         return self.driver.download_object(self, destination_path,
                                            overwrite_existing,
                                            delete_on_failure)
 
     def as_stream(self, chunk_size=None):
+        # type: (Optional[int]) -> Iterator[bytes]
         return self.driver.download_object_as_stream(self, chunk_size)
 
     def delete(self):
+        # type: () -> bool
         return self.driver.delete_object(self)
 
     def __repr__(self):
@@ -150,47 +155,60 @@ class Container(object):
         self.driver = driver
 
     def iterate_objects(self, prefix=None, ex_prefix=None):
+        # type: (Optional[str], Optional[str]) -> Iterator[Object]
         return self.driver.iterate_container_objects(container=self,
                                                      prefix=prefix,
                                                      ex_prefix=ex_prefix)
 
     def list_objects(self, prefix=None, ex_prefix=None):
+        # type: (Optional[str], Optional[str]) -> List[Object]
         return self.driver.list_container_objects(container=self,
                                                   prefix=prefix,
                                                   ex_prefix=ex_prefix)
 
     def get_cdn_url(self):
+        # type: () -> str
         return self.driver.get_container_cdn_url(container=self)
 
-    def enable_cdn(self, **kwargs):
-        return self.driver.enable_container_cdn(container=self, **kwargs)
+    def enable_cdn(self):
+        # type: () -> bool
+        return self.driver.enable_container_cdn(container=self)
 
     def get_object(self, object_name):
+        # type: (str) -> Object
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, extra=None, **kwargs):
+    def upload_object(self, file_path, object_name, extra=None,
+                      verify_hash=True, headers=None):
+        # type: (str, str, Optional[dict], bool, Optional[Dict[str, str]]) -> Object  # noqa: E501
         return self.driver.upload_object(
-            file_path, self, object_name, extra=extra, **kwargs)
+            file_path, self, object_name, extra=extra,
+            verify_hash=verify_hash, headers=headers)
 
     def upload_object_via_stream(self, iterator, object_name, extra=None,
-                                 **kwargs):
+                                 headers=None):
+        # type: (Iterator[bytes], str, Optional[dict], Optional[Dict[str, str]]) -> Object  # noqa: E501
         return self.driver.upload_object_via_stream(
-            iterator, self, object_name, extra=extra, **kwargs)
+            iterator, self, object_name, extra=extra, headers=headers)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
+        # type: (Object, str, bool, bool) -> bool
         return self.driver.download_object(
             obj, destination_path, overwrite_existing=overwrite_existing,
             delete_on_failure=delete_on_failure)
 
     def download_object_as_stream(self, obj, chunk_size=None):
+        # type: (Object, Optional[int]) -> Iterator[bytes]
         return self.driver.download_object_as_stream(obj, chunk_size)
 
     def delete_object(self, obj):
+        # type: (Object) -> bool
         return self.driver.delete_object(obj)
 
     def delete(self):
+        # type: () -> bool
         return self.driver.delete_container(self)
 
     def __repr__(self):
@@ -381,7 +399,7 @@ class StorageDriver(BaseDriver):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
-        # type: (Object, str, Optional[bool], Optional[bool]) -> bool
+        # type: (Object, str, bool, bool) -> bool
         """
         Download an object to the specified destination path.
 
@@ -459,7 +477,7 @@ class StorageDriver(BaseDriver):
                                  object_name,
                                  extra=None,
                                  headers=None):
-        # type: (Iterator[bytes], Container, str, Optional[dict], Optional[dict]) -> Object  # noqa: E501
+        # type: (Iterator[bytes], Container, str, Optional[dict], Optional[Dict[str, str]]) -> Object  # noqa: E501
         """
         Upload an object using an iterator.
 
