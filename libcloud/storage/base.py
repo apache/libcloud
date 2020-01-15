@@ -20,6 +20,7 @@ Provides base classes for working with storage
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
+from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Optional
@@ -425,7 +426,7 @@ class StorageDriver(BaseDriver):
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
-        # type: (str, Container, str, Optional[dict], Optional[bool], Optional[dict]) -> Object  # noqa: E501
+        # type: (str, Container, str, Optional[dict], bool, Optional[Dict[str, str]]) -> Object  # noqa: E501
         """
         Upload an object currently located on a disk.
 
