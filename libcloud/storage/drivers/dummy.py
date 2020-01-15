@@ -398,7 +398,7 @@ class DummyStorageDriver(StorageDriver):
         return DummyFileObject()
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      file_hash=None):
+                      verify_hash=True, headers=None):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container_name = 'test container 1'
@@ -417,8 +417,6 @@ class DummyStorageDriver(StorageDriver):
         True
 
         @inherits: :class:`StorageDriver.upload_object`
-        :param file_hash: File hash
-        :type file_hash: ``str``
         """
 
         if not os.path.exists(file_path):
@@ -430,7 +428,7 @@ class DummyStorageDriver(StorageDriver):
                                 size=size, extra=extra)
 
     def upload_object_via_stream(self, iterator, container,
-                                 object_name, extra=None):
+                                 object_name, extra=None, headers=None):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container = driver.create_container(

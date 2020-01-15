@@ -685,7 +685,8 @@ class AzureBlobsStorageDriver(StorageDriver):
                                 success_status_code=httplib.OK)
 
     def _upload_in_chunks(self, stream, object_path, lease, meta_data,
-                          content_type, object_name, file_path, verify_hash):
+                          content_type, object_name, file_path, verify_hash,
+                          headers):
         """
         Uploads data from an interator in fixed sized chunks to Azure Storage
         """
@@ -697,7 +698,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         bytes_transferred = 0
         count = 1
         chunks = []
-        headers = {}
+        headers = headers or {}
 
         lease.update_headers(headers)
 
@@ -815,7 +816,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         return response
 
     def upload_object(self, file_path, container, object_name,
-                      verify_hash=True, extra=None,
+                      verify_hash=True, extra=None, headers=None,
                       ex_use_lease=False,
                       **deprecated_kwargs):
         """
@@ -836,12 +837,12 @@ class AzureBlobsStorageDriver(StorageDriver):
             return self._put_object(container=container,
                                     object_name=object_name,
                                     extra=extra, verify_hash=verify_hash,
-                                    use_lease=ex_use_lease,
+                                    use_lease=ex_use_lease, headers=headers,
                                     blob_size=blob_size, file_path=file_path,
                                     stream=fobj)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 verify_hash=True, extra=None,
+                                 verify_hash=True, extra=None, headers=None,
                                  ex_use_lease=False,
                                  **deprecated_kwargs):
         """
@@ -858,6 +859,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                                 object_name=object_name,
                                 extra=extra, verify_hash=verify_hash,
                                 use_lease=ex_use_lease,
+                                headers=headers,
                                 blob_size=None,
                                 stream=iterator)
 
@@ -891,7 +893,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             headers[key] = value
 
     def _put_object(self, container, object_name, stream,
-                    extra=None, verify_hash=True,
+                    extra=None, verify_hash=True, headers=None,
                     blob_size=None, file_path=None,
                     use_lease=False):
         """
@@ -911,6 +913,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                                                     lease=lease,
                                                     blob_size=blob_size,
                                                     meta_data=meta_data,
+                                                    headers=headers,
                                                     content_type=content_type,
                                                     object_name=object_name,
                                                     file_path=file_path)
@@ -919,6 +922,7 @@ class AzureBlobsStorageDriver(StorageDriver):
                                                      object_path=object_path,
                                                      lease=lease,
                                                      meta_data=meta_data,
+                                                     headers=headers,
                                                      content_type=content_type,
                                                      object_name=object_name,
                                                      file_path=file_path,
@@ -955,9 +959,10 @@ class AzureBlobsStorageDriver(StorageDriver):
                       driver=self)
 
     def _upload_directly(self, stream, object_path, lease, blob_size,
-                         meta_data, content_type, object_name, file_path):
+                         meta_data, content_type, object_name, file_path,
+                         headers):
 
-        headers = {}
+        headers = headers or {}
         lease.update_headers(headers)
 
         self._update_metadata(headers, meta_data)

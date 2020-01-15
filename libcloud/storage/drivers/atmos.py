@@ -206,7 +206,7 @@ class AtmosDriver(StorageDriver):
                       user_meta, container, self)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         method = 'PUT'
 
         extra = extra or {}
@@ -252,10 +252,11 @@ class AtmosDriver(StorageDriver):
                       extra, meta_data, container, self)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 extra=None):
+                                 extra=None, headers=None):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
+        extra_headers = headers or {}
         data_hash = hashlib.md5()
         generator = read_in_chunks(iterator, CHUNK_SIZE, True)
         bytes_transferred = 0
@@ -284,10 +285,12 @@ class AtmosDriver(StorageDriver):
         while True:
             end = bytes_transferred + len(chunk) - 1
             data_hash.update(b(chunk))
-            headers = {
+            headers = dict(extra_headers)
+
+            headers.update({
                 'x-emc-meta': 'md5=' + data_hash.hexdigest(),
                 'Content-Type': content_type,
-            }
+            })
 
             if len(chunk) > 0 and bytes_transferred > 0:
                 headers['Range'] = 'Bytes=%d-%d' % (bytes_transferred, end)
