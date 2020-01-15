@@ -21,6 +21,7 @@ from __future__ import with_statement
 
 import datetime
 import time
+import itertools
 import sys
 
 from libcloud.common.base import LazyObject
@@ -2598,13 +2599,16 @@ class GCENodeDriver(NodeDriver):
         # The aggregated response returns a dict for each zone
         # Create volume cache now for fast lookups of disk info.
         self._ex_populate_volume_dict()
-        for v in response['items'].values():
-            for i in v.get('instances', []):
-                try:
-                    list_nodes.append(
-                        self._to_node(i,
-                                      use_disk_cache=ex_use_disk_cache)
-                    )
+
+        items = response['items'].values()
+        instances = [item.get('instances', []) for item in items]
+        instances = itertools.chain(*instances)
+
+        for instance in instances:
+            try:
+                node = self._to_node(instance,
+                                     use_disk_cache=ex_use_disk_cache)
+            except ResourceNotFoundError:
                 # If a GCE node has been deleted between
                 #   - is was listed by `request('.../instances', 'GET')
                 #   - it is converted by `self._to_node(i)`
@@ -2612,8 +2616,9 @@ class GCENodeDriver(NodeDriver):
                 #
                 # Just ignore that node and return the list of the
                 # other nodes.
-                except ResourceNotFoundError:
-                    pass
+                continue
+
+            list_nodes.append(node)
 
         # Clear the volume cache as lookups are complete.
         self._ex_volume_dict = {}
