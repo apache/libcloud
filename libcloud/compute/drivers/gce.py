@@ -171,7 +171,6 @@ class GCEConnection(GoogleBaseConnection):
                     # Special case when we are handling pagination for a
                     # specific zone
                     items = response['items']
-                    response['items'] = {}
                     response['items'] = {
                         'zones/%s' % (zone): {
                             api_name: items
