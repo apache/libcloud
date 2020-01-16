@@ -1186,9 +1186,12 @@ class LXDContainerDriver(ContainerDriver):
 
         # currently not used
         size_type = definition['config'].pop('size_type')
-        definition['config']['size'] = \
-            str(LXDContainerDriver._to_bytes(definition['config']['size'],
-                                             size_type=size_type))
+        definition['config'].pop('size')
+        #definition['config'].pop()
+        definition['config'] = {}
+        #definition['config']['size'] = \
+        #    str(LXDContainerDriver._to_bytes(definition['config']['size'],
+        #                                     size_type=size_type))
 
         data = json.dumps(definition)
 
@@ -1202,6 +1205,61 @@ class LXDContainerDriver(ContainerDriver):
         return self.ex_get_storage_pool_volume(pool_id=pool_id,
                                                type=definition["type"],
                                                name=definition["name"])
+
+    def attach_volume(self, container_id, volume_id,
+                      pool_id, name, path, ex_timeout=default_time_out):
+        """
+        Attach the volume with id volume_id
+        to the container with id container_id
+        """
+        container = self.get_container(id=container_id)
+        config = container.extra
+
+        # expand the devices for the container
+        config['devices'] = {
+
+            name: {"path": path,
+                   "type": "disk",
+                   "source": volume_id,
+                   "pool": pool_id
+                   }
+        }
+
+        data = json.dumps(config)
+
+        req = "/%s/containers/%s" % (self.version, container_id)
+        response = self.connection.request(req,
+                                           method="PUT",
+                                           data=data)
+
+        response_dict = response.parse_body()
+
+        # a background operation is expected
+        # to be returned status_code = 100 --> Operation created
+        assert_response(response_dict=response_dict, status_code=100)
+
+        try:
+
+            # wait until the timeout...but util getting here the operation
+            # may have finished already
+            oid = response_dict['metadata']['id']
+            req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
+                                                         oid,
+                                                         ex_timeout)
+            response = self.connection.request(req)
+        except BaseHTTPError as e:
+
+            message_list = e.message.split(",")
+            message = message_list[0].split(":")[-1]
+
+            # if not found assume the operation completed
+            if message != '"not found"':
+                # something is wrong
+                raise LXDAPIException(message=e.message)
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return self.get_container(id=container_id, ex_get_ip_addr=True)
 
     def ex_replace_storage_volume_config(self, pool_id, type,
                                          name, definition):
@@ -1445,7 +1503,6 @@ class LXDContainerDriver(ContainerDriver):
         try:
             # wait untitl the timeout...but util getting here the operation
             # may have finished already
-
             id = response_dict['metadata']['id']
             req_str = '/%s/operations/%s/wait?timeout=%s' % (self.version,
                                                              id,
