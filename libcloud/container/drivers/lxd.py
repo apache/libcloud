@@ -259,8 +259,9 @@ class LXDResponse(JsonResponse):
                 error_msg = m.group(1)
                 raise Exception(error_msg)
             else:
-                raise Exception(
-                    'ConnectionError: Failed to parse JSON response')
+                msg = ('ConnectionError: Failed to parse JSON response '
+                       '(body=%s)' % (self.body))
+                raise Exception(msg)
         return body
 
     def parse_error(self):
@@ -872,6 +873,7 @@ class LXDContainerDriver(ContainerDriver):
             if not ex_detailed:
 
                 container = Container(driver=self, name=container_id,
+                                      state=ContainerState.UNKNOWN,
                                       id=container_id,
                                       image=image, ip_addresses=[],
                                       extra={})
