@@ -485,7 +485,7 @@ class LXDContainerDriver(ContainerDriver):
         cont_params = \
             LXDContainerDriver._fix_cont_params(architecture=ex_architecture,
                                                 profiles=ex_profiles,
-                                                ephemeral=ex_profiles,
+                                                ephemeral=ex_ephemeral,
                                                 config=ex_config,
                                                 devices=ex_devices,
                                                 instance_type=ex_instance_type)
@@ -703,6 +703,7 @@ class LXDContainerDriver(ContainerDriver):
                               state=ContainerState.TERMINATED,
                               image=None, ip_addresses=[],
                               extra=None)
+        return container
 
     def ex_execute_cmd_on_container(self, cont_id, command, **config):
         """
@@ -1173,7 +1174,6 @@ class LXDContainerDriver(ContainerDriver):
 
     def ex_create_storage_pool_volume(self, pool_id, definition):
 
-
         """
         Create a new storage volume on a given storage pool
 
@@ -1186,20 +1186,10 @@ class LXDContainerDriver(ContainerDriver):
             raise LXDAPIException("Cannot create a storage volume "
                                   "without a definition")
 
-        #import pdb
-        #pdb.set_trace()
-
-        if definition['config']['size_type'] == 'GB':
-            definition['config'].pop('size_type')
-            definition['config']['size'] = str(LXDContainerDriver._to_bytes(definition['config']['size']))
-        elif definition['config']['size_type'] == 'MB':
-            definition['config'].pop('size_type')
-            definition['config']['size'] = LXDContainerDriver._to_bytes(definition['config']['size'])
-        else:
-            raise LXDAPIException(message="Definition does not contain size units")
-
+        size_type = definition['config'].pop('size_type')
+        definition['config']['size'] = str(LXDContainerDriver._to_bytes(definition['config']['size'],
+                                                                        size_type=size_type))
         data = json.dumps(definition)
-        #data['config']['size'] = str(data['config']['size'])
 
         # Return: standard return value or standard error
         req = "/%s/storage-pools/%s/volumes" % (self.version, pool_id)
@@ -1596,12 +1586,15 @@ class LXDContainerDriver(ContainerDriver):
         return size // 10**9
 
     @staticmethod
-    def _to_bytes(size):
+    def _to_bytes(size, size_type='GB'):
         """
         convert the given size in GB to bytes
         :param size: in GBs
         :return: int representing bytes
         """
         size = int(size)
-        return size*10**9
+        if size_type == 'GB':
+            return size*10**9
+        elif size_type == 'MB':
+            return size * 10 ** 6
 
