@@ -698,7 +698,6 @@ class LXDContainerDriver(ContainerDriver):
         assert_response(response_dict=response_dict, status_code=200)
 
         # return a dummy container
-
         container = Container(driver=self, name=container.name,
                               id=container.name,
                               state=ContainerState.TERMINATED,
@@ -1170,17 +1169,14 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
 
-
         return self._to_storage_volume(pool_id=pool_id,
                                        metadata=response_dict["metadata"])
 
-    def ex_create_storage_pool_volume(self, pool_id, definition):
+    def create_volume(self, pool_id, definition, **kwargs):
 
         """
         Create a new storage volume on a given storage pool
-
         Operation: sync or async (when copying an existing volume)
-
         :return: A StorageVolume  representing a storage volume
         """
 
@@ -1188,9 +1184,12 @@ class LXDContainerDriver(ContainerDriver):
             raise LXDAPIException("Cannot create a storage volume "
                                   "without a definition")
 
+        # currently not used
         size_type = definition['config'].pop('size_type')
-        definition['config']['size'] = str(LXDContainerDriver._to_bytes(definition['config']['size'],
-                                                                        size_type=size_type))
+        definition['config']['size'] = \
+            str(LXDContainerDriver._to_bytes(definition['config']['size'],
+                                             size_type=size_type))
+
         data = json.dumps(definition)
 
         # Return: standard return value or standard error
@@ -1501,7 +1500,6 @@ class LXDContainerDriver(ContainerDriver):
         return super(LXDContainerDriver, self)._ex_connection_class_kwargs()
 
     @staticmethod
-
     def _create_exec_configuration(input, **config):
         """
         Prepares the input parameters for executyion API call
