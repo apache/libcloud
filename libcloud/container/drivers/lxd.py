@@ -395,6 +395,15 @@ class LXDContainerDriver(ContainerDriver):
         self.connection.port = port
         self.version = self._get_api_version()
 
+    def build_operation_websocket_url(self, uuid, w_secret):
+
+        uri = 'wss://%s:%s/%s/operations/%s/' \
+              'websocket?secret=%s' % (self.connection.host,
+                                       self.connection.port,
+                                       self.version,
+                                       uuid, w_secret)
+        return uri
+
     def ex_get_api_endpoints(self):
         """
         Description: List of supported APIs
