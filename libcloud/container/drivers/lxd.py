@@ -443,7 +443,8 @@ class LXDContainerDriver(ContainerDriver):
                          ex_profiles=None,
                          ex_ephemeral=default_ephemeral,
                          ex_config=None, ex_devices=None,
-                         ex_instance_type=None):
+                         ex_instance_type=None,
+                         ex_timeout=default_time_out):
 
         """
         Create a new container
@@ -489,6 +490,9 @@ class LXDContainerDriver(ContainerDriver):
         to use as basis for limits e.g. "c2.micro"
         :type  ex_instance_type: ``str``
 
+        :param ex_timeout: Timeoute
+        :type  ex_timeout: ``int``
+
         :rtype: :class:`libcloud.container.base.Container`
         """
 
@@ -505,7 +509,8 @@ class LXDContainerDriver(ContainerDriver):
 
         container = self._deploy_container_from_image(name=name, image=image,
                                                       parameters=parameters,
-                                                      cont_params=cont_params)
+                                                      cont_params=cont_params,
+                                                      timeout=ex_timeout)
 
         if start:
             container.start()
@@ -1527,6 +1532,7 @@ class LXDContainerDriver(ContainerDriver):
                 raise LXDAPIException(message=e.message)
 
         return self.get_container(id=name)
+
 
     def _to_storage_volume(self, pool_id, metadata):
         """
