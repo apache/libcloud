@@ -51,69 +51,92 @@ def work_with_containers():
 
     # get the list of the containers
     containers = conn.list_containers()
+    num_containers = len(containers)
 
-    if len(containers) == 0:
+    if num_containers == 0:
         print("\tNo containers have been created")
     else:
         print("\tNumber of containers: %s" % len(containers))
         for container in containers:
             print("\t\tContainer: %s is: %s" % (container.name, container.state))
 
-    # start the first container
-    print("\tStarting container: %s" % containers[0].name)
-    container = conn.start_container(container=containers[0])
-    print("\tContainer: %s is: %s" % (container.name, container.state))
+    if num_containers != 0:
+        container = containers[0]
 
-    # stop the container returned
-    print("\tStopping container: %s" % containers[0].name)
-    container = conn.stop_container(container=container)
-    print("\tContainer: %s is: %s" % (container.name, container.state))
+        # start the first container
+        print("\tStarting container: %s" % container.name)
+        container = conn.start_container(container=container)
+        print("\tContainer: %s is at state: %s" % (container.name, container.state))
 
-    # restart the container
-    print("\tRestarting container: %s" % container.name)
-    container = conn.restart_container(container=container)
-    print("\tContainer: %s is: %s" % (container.name, container.state))
+        # restart the container
+        print("\tRestarting container: %s" % container.name)
+        container = conn.restart_container(container=container)
+        print("\tContainer: %s is at state: %s" % (container.name, container.state))
 
-    """
-    if len(containers) == 2:
+        # freeze the container.
+        print("\tFreezing container: %s" % container.name)
+        container = conn.ex_freeze_container(container=container)
+        print("\tContainer: %s is at state: %s" % (container.name, container.state))
 
-        # delete the second container
-        print("\tDeleting container: %s" % containers[1].name)
-        response = conn.destroy_container(container=containers[1])
-        print("\tResponse from attempting to delete container %s " % (containers[1].name), " ", response)
+        # unfreeze the container. A frozen container cannot be started/restarted/stopped
+        # it has to be unfrozen first
+        print("\tUnfreezing container: %s" % container.name)
+        container = conn.ex_unfreeze_container(container=container)
+        print("\tContainer: %s is at state: %s" % (container.name, container.state))
 
-    # get the list of the containers
-    containers = conn.list_containers()
+        # stop the container returned
+        print("\tStopping container: %s" % container.name)
+        container = conn.stop_container(container=container)
+        print("\tContainer: %s is at state: %s" % (container.name, container.state))
 
-    # create a new container
-    name = 'third-lxd-container'
+    # let's try to create a new container
+    # we need an image for this let's see what is installed
+    images = conn.list_images()
 
-    if name not in [container.name for container in containers]:
+    print("Number of images: ", len(images))
 
-        print("\tCreating container: %s" % name)
+    for image in images:
+        print("Image: ", image.name)
+        print("\tPath ", image.path)
+        print("\tVersion ", image.version)
 
-        image = ContainerImage(id='ubuntu-xenial',  name='ubuntu-xenial',
-                               path=None, version=None, driver=lxd_driver)
+    # let's use the first found
+    if len(images) != 0:
 
-        # Input (container based on a local image identified by its fingerprint):
-        # change fingerprint accordingly
-        img_parameters = {"type": "image", "alias":image.name,
-                      "fingerprint": "7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b"}
-        container = conn.deploy_container(name=name, image=image, parameters=img_parameters,
-                                          architecture="x86_64", ephemeral=False, profiles=["default"])
-        print("\tResponse from attempting to create container: ", container)
+        img_parameters = '{"source": {"type": "image", "fingerprint":"7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b"}}' #% images[0].name
+        ex_devices = {"root": {"path": "/",
+                                 "type": "disk",
+                               'size': '7GB'
+                                },
+                      }
 
-        # get the list of the containers
+        container_name = "a-second-new-lxd-container"
+
+        container = conn.deploy_container(name=container_name,
+                                          image=None,
+                                          parameters=img_parameters,
+                                          ex_ephemeral=False,
+                                          ex_devices=None)
+
+        # make sure that we created a new container
         containers = conn.list_containers()
 
-        if len(containers) == 0:
-            print("\tNo containers have been created")
+        if num_containers == len(containers):
+            print("\tContainer %s has not been created " % container_name)
         else:
-            print("\tNumber of containers: %s" % len(containers))
-            for container in containers:
-                print("\t\tContainer: %s is: %s" % (container.name, container.state))
-    """
 
+            # ok let's destroy the container
+            # we first must stop it
+            container = conn.stop_container(container=container)
+            print("\tDeleting container: %s" % container.name)
+            container = conn.destroy_container(container=container)
+            print("\tContainer: %s is at state: %s" % (container.name, container.state))
+
+            # make sure that we created a new container
+            containers = conn.list_containers()
+
+            if num_containers != len(containers):
+                print("\tContainer %s could not be deleted. Is it running?" % container_name)
 
 def work_with_images():
 
@@ -192,41 +215,43 @@ def work_with_storage_pools():
     #conn.ex_create_storage_pool(definition=definition)
 
 
-    #conn.ex_delete_storage_pool_volume(storage_pool_id="Pool100", type="custom", name="vol1")
+    #conn.ex_delete_storage_pool_volume(pool_id="Pool100", type="custom", name="FirstUIVolume")
 
-    volumes = conn.ex_list_storage_pool_volumes(storage_pool_id="Pool100")
+    volumes = conn.ex_list_storage_pool_volumes(pool_id="Pool100")
 
     for volume in volumes:
         print(volume.name)
 
     definition={"config":
                     { "block.filesystem": "ext4",
-                            "block.mount_options": "discard",
-                            "size": "10737418240"
+                      "block.mount_options": "discard",
+                        "size": "10",
+                        "size_type":"GB"
                     },
 
-                "name": "vol1",
+                "name": "FirstUIVolume",
                 "type": "custom"}
-    volume = conn.ex_create_storage_pool_volume(storage_pool_id="Pool100", definition=definition)
+    #volume = conn.ex_create_storage_pool_volume(pool_id="Pool100", definition=definition)
 
     print("Volume name: ", volume.name)
     print("Volume size: ", volume.size)
 
-    definition = {"config":
-                      {"block.filesystem": "ext4",
-                       "block.mount_options": "discard",
-                       "size": "8737418240"
-                       }
-                  }
-    volume = conn.ex_replace_storage_volume_config(storage_pool_id="Pool100",
-                                                   type="custom", name="vol1", definition=definition)
+    definition = {"config": {"size": "8737418240"} }
+    #volume = conn.ex_replace_storage_volume_config(pool_id="Pool100",
+    #                                               type="custom", name="FirstUIVolume", definition=definition)
 
-    print("Volume name: ", volume.name)
-    print("Volume size: ", volume.size)
+    #print("Volume name: ", volume.name)
+    #print("Volume size: ", volume.size)
+    container = conn.get_container(id="second-lxd-container")
+    container = conn.stop_container(container=container)
+    print("\tContainer: %s is at state: %s" % (container.name, container.state))
+
+    conn.ex_attach_storage_volume_to_container(container_id="second-lxd-container", pool_id="Pool100",
+                                               volume_id="FirstUIVolume")
 
 
 if __name__ == '__main__':
 
-    work_with_containers()
+    #work_with_containers()
     #work_with_images()
-    #work_with_storage_pools()
+    work_with_storage_pools()
