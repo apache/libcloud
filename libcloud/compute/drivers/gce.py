@@ -9223,7 +9223,11 @@ class GCENodeDriver(NodeDriver):
         extra['namedPorts'] = instancegroup.get('namedPorts', [])
         extra['fingerprint'] = instancegroup.get('fingerprint', None)
 
-        zone = self.ex_get_zone(instancegroup['zone'])
+        zone = instancegroup.get('zone', None)
+        if zone:
+            # Apparently zone attribute is not always present, see
+            # https://github.com/apache/libcloud/issues/1346 for details
+            zone = self.ex_get_zone(zone)
 
         # Note: network/subnetwork will not be available if the Instance Group
         # does not contain instances.

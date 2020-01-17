@@ -76,7 +76,7 @@ class SSHCommandTimeoutError(Exception):
                 (self.cmd, self.timeout))
 
     def __str__(self):
-        return self.message
+        return self.message  # pylint: disable=no-member
 
 
 class BaseSSHClient(object):

@@ -21,7 +21,7 @@ except ContainerDoesNotExistError:
 pipe = subprocess.Popen(cmd, bufsize=0, shell=True, stdout=subprocess.PIPE)
 return_code = pipe.poll()
 
-print 'Uploading object...'
+print('Uploading object...')
 
 while return_code is None:
     # Compress data in our directory and stream it directly to CF
@@ -29,4 +29,4 @@ while return_code is None:
                                              object_name=object_name)
     return_code = pipe.poll()
 
-print 'Upload complete, transferred: %s KB' % ((obj.size / 1024))
+print('Upload complete, transferred: %s KB' % ((obj.size / 1024)))

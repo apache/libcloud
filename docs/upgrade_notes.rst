@@ -5,6 +5,28 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.0.0
+--------------
+
+* This release drops support for Python versions older than 3.5.0.
+
+  If you still need to use Libcloud with Python 2.7 or Python 3.4 you can do
+  that by using the latest release which still supported those Python versions
+  (Libcloud v2.8.0).
+
+* This release removes VMware vSphere driver which relied on old and
+  unmaintained ``pysphere`` library which doesn't support Python 3.
+
+* This release removes support for PageBlob objects from the Azure Blobs
+  storage driver. The ``ex_blob_type`` and ``ex_page_blob_size`` arguments
+  have been removed from the ``upload_object`` and ``upload_object_via_stream``
+  methods.
+
+* The ``ex_prefix`` keyword argument in the ``iterate_container_objects``
+  and ``list_container_objects`` methods in all storage drivers has been
+  renamed to ``prefix`` to indicate the promotion of the argument to the
+  standard storage driver API.
+
 Libcloud 2.8.0
 --------------
 

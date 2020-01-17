@@ -30,7 +30,7 @@ from libcloud.utils.py3 import urlunquote
 if PY3:
     from io import FileIO as file
 
-from libcloud.utils.files import read_in_chunks, guess_file_mime_type
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError
 
@@ -271,13 +271,8 @@ class AtmosDriver(StorageDriver):
             content_type = extra.get('content_type', None)
         else:
             content_type = None
-        if not content_type:
-            content_type, _ = guess_file_mime_type(object_name)
 
-            if not content_type:
-                raise AttributeError(
-                    'File content-type could not be guessed and' +
-                    ' no content_type value provided')
+        content_type = self._determine_content_type(content_type, object_name)
 
         try:
             self.connection.request(path + '?metadata/system')
@@ -451,11 +446,35 @@ class AtmosDriver(StorageDriver):
         meta = meta.split(', ')
         return dict([x.split('=', 1) for x in meta])
 
-    def iterate_container_objects(self, container):
+    def _entries_to_objects(self, container, entries):
+        for entry in entries:
+            metadata = {'object_id': entry['id']}
+            yield Object(entry['name'], 0, '', {}, metadata, container, self)
+
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
+        """
+        Return a generator of objects for the given container.
+
+        :param container: Container instance
+        :type container: :class:`Container`
+
+        :param prefix: Filter objects starting with a prefix.
+                       Filtering is performed client-side.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
+                          Filtering is performed client-side.
+        :type  ex_prefix: ``str``
+
+        :return: A generator of Object instances.
+        :rtype: ``generator`` of :class:`Object`
+        """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         headers = {'x-emc-include-meta': '1'}
         path = self._namespace_path(container.name) + '/'
         result = self.connection.request(path, headers=headers)
         entries = self._list_objects(result.object, object_type='regular')
-        for entry in entries:
-            metadata = {'object_id': entry['id']}
-            yield Object(entry['name'], 0, '', {}, metadata, container, self)
+        objects = self._entries_to_objects(container, entries)
+        return self._filter_listed_container_objects(objects, prefix)

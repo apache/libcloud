@@ -17,6 +17,7 @@ from __future__ import with_statement
 
 import os
 import sys
+import platform
 import shutil
 import unittest
 import tempfile
@@ -62,7 +63,13 @@ class LocalTests(unittest.TestCase):
         return tmppath
 
     def remove_tmp_file(self, tmppath):
-        os.unlink(tmppath)
+        try:
+            os.unlink(tmppath)
+        except Exception as e:
+            msg = str(e)
+            if 'being used by another process' in msg and platform.system().lower() == 'windows':
+                return
+            raise e
 
     def test_list_containers_empty(self):
         containers = self.driver.list_containers()
@@ -102,6 +109,11 @@ class LocalTests(unittest.TestCase):
 
         objects = self.driver.list_container_objects(container=container)
         self.assertEqual(len(objects), 5)
+
+        prefix = os.path.join('path', 'to')
+        objects = self.driver.list_container_objects(container=container,
+                                                     prefix=prefix)
+        self.assertEqual(len(objects), 2)
 
         for obj in objects:
             self.assertNotEqual(obj.hash, None)

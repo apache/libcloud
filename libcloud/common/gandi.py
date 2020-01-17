@@ -35,9 +35,11 @@ class GandiException(Exception):
     Exception class for Gandi driver
     """
     def __str__(self):
+        # pylint: disable=unsubscriptable-object
         return '(%u) %s' % (self.args[0], self.args[1])
 
     def __repr__(self):
+        # pylint: disable=unsubscriptable-object
         return '<GandiException code %u "%s">' % (self.args[0], self.args[1])
 
 

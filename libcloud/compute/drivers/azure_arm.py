@@ -2010,7 +2010,6 @@ class AzureNodeDriver(NodeDriver):
         were running.
         :type deallocate: ``bool``
         """
-
         if ex_deallocate:
             target = "%s/deallocate" % node.id
         else:

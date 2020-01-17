@@ -286,28 +286,16 @@ class BaseS3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def list_container_objects(self, container, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :param ex_prefix: Only return objects starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                                                   ex_prefix=ex_prefix))
-
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
+
+        :param prefix: Only return objects starting with prefix
+        :type prefix: ``str``
 
         :param ex_prefix: Only return objects starting with ex_prefix
         :type ex_prefix: ``str``
@@ -315,9 +303,12 @@ class BaseS3StorageDriver(StorageDriver):
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         params = {}
-        if ex_prefix:
-            params['prefix'] = ex_prefix
+
+        if prefix:
+            params['prefix'] = prefix
 
         last_key = None
         exhausted = False
@@ -846,8 +837,18 @@ class BaseS3StorageDriver(StorageDriver):
         headers = response.headers
         response = response
         server_hash = headers.get('etag', '').replace('"', '')
+        server_side_encryption = headers.get('x-amz-server-side-encryption',
+                                             None)
+        aws_kms_encryption = (server_side_encryption == 'aws:kms')
+        hash_matches = (result_dict['data_hash'] == server_hash)
 
-        if (verify_hash and result_dict['data_hash'] != server_hash):
+        # NOTE: If AWS KMS server side encryption is enabled, ETag won't
+        # contain object MD5 digest so we skip the checksum check
+        # See https://docs.aws.amazon.com/AmazonS3/latest/API
+        # /RESTCommonResponseHeaders.html
+        # and https://github.com/apache/libcloud/issues/1401
+        # for details
+        if verify_hash and not aws_kms_encryption and not hash_matches:
             raise ObjectHashMismatchError(
                 value='MD5 hash {0} checksum does not match {1}'.format(
                     server_hash, result_dict['data_hash']),
@@ -900,12 +901,8 @@ class BaseS3StorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
         acl = extra.get('acl', None)
 
-        if not content_type:
-            content_type, _ = libcloud.utils.files.guess_file_mime_type(
-                object_name)
-
-        if content_type:
-            headers['Content-Type'] = content_type
+        headers['Content-Type'] = self._determine_content_type(
+            content_type, object_name)
 
         if meta_data:
             for key, value in list(meta_data.items()):

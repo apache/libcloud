@@ -1825,7 +1825,8 @@ class BaseEC2NodeDriver(NodeDriver):
                     ex_clienttoken=None, ex_blockdevicemappings=None,
                     ex_iamprofile=None, ex_ebs_optimized=None,
                     ex_subnet=None, ex_placement_group=None,
-                    ex_assign_public_ip=False, ex_terminate_on_shutdown=False):
+                    ex_assign_public_ip=False, ex_terminate_on_shutdown=False,
+                    ex_spot=False, ex_spot_max_price=None):
         """
         Create a new EC2 node.
 
@@ -1891,6 +1892,15 @@ class BaseEC2NodeDriver(NodeDriver):
                                               the operating systems command
                                               for system shutdown.
         :type       ex_terminate_on_shutdown: ``bool``
+
+        :keyword    ex_spot: If true, ask for a Spot Instance instead of
+                             requesting On-Demand.
+        :type       ex_spot: ``bool``
+
+        :keyword    ex_spot_max_price: Maximum price to pay for the spot
+                                       instance. If not specified, the
+                                       on-demand price will be used.
+        :type       ex_spot_max_price: ``float``
         """
         params = {
             'Action': 'RunInstances',
@@ -1902,6 +1912,12 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if ex_terminate_on_shutdown:
             params["InstanceInitiatedShutdownBehavior"] = "terminate"
+
+        if ex_spot:
+            params["InstanceMarketOptions.MarketType"] = "spot"
+            if ex_spot_max_price is not None:
+                params["InstanceMarketOptions.SpotOptions.MaxPrice"] = \
+                    str(ex_spot_max_price)
 
         if ex_security_groups and ex_securitygroup:
             raise ValueError('You can only supply ex_security_groups or'

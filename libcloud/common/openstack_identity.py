@@ -1040,7 +1040,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
 
             try:
                 roles = self._to_roles(body['token']['roles'])
-            except Exception as e:
+            except Exception:
                 roles = []
 
             try:
@@ -1480,7 +1480,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
 
             try:
                 roles = self._to_roles(body['token']['roles'])
-            except Exception as e:
+            except Exception:
                 roles = []
 
             try:

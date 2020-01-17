@@ -18,7 +18,7 @@
 # clause BSD license
 # https://bitbucket.org/loewis/django-3k
 
-# pylint: disable=import-error,no-member
+# pylint: skip-file
 
 from __future__ import absolute_import
 
@@ -180,7 +180,7 @@ else:
 
     # Save the real value of unicode because urlquote needs it to tell the
     # difference between a unicode string and a byte string.
-    _real_unicode = unicode
+    _real_unicode = unicode  # NOQA
     basestring = unicode = str
 
     method_type = types.MethodType
@@ -232,11 +232,11 @@ else:
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')
 
-        return getattr(self, 'assertRaisesRegexp')(*args, **kwargs)
+        return getattr(self, 'assertRaisesRegex')(*args, **kwargs)
 
     def assertRegex(self, *args, **kwargs):
         if not isinstance(self, unittest.TestCase):
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')
 
-        return getattr(self, 'assertRegexpMatches')(*args, **kwargs)
+        return getattr(self, 'assertRegex')(*args, **kwargs)

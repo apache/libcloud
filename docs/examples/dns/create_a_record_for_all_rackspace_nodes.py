@@ -35,5 +35,5 @@ for node in nodes:
     record = zone.create_record(name=name, type=RecordType.A, data=ip)
     created.append(record)
 
-print 'Done, created %d records' % (len(created))
+print('Done, created %d records' % (len(created)))
 pprint(created)

@@ -1,11 +1,136 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud in development
------------------------------------------
+Changes in Apache Libcloud in development (3.0.0)
+-------------------------------------------------
+
+General
+~~~~~~~
+
+- This release drops support for Python versions older than 3.5.0.
+
+  If you still need to use Libcloud with Python 2.7 or Python 3.4 you can do
+  that by using the latest release which still supported those Python versions
+  (Libcloud v2.8.0).
+  (GITHUB-1377)
+  [Tomaz Muraus]
+
+- Make sure unit tests now also pass on Windows.
+  (GITHUB-1396)
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [VMware vSphere] vSphere driver relies on ``pysphere`` Python library which
+  doesn't support Python 3 so it has been removed.
+
+  There is an unofficial ``pysphere`` fork which adds Python 3 support, but
+  it's out of date and not maintained (https://github.com/machalekj/pysphere/tree/2to3).
+  (GITHUB-1377)
+  [Tomaz Muraus]
+
+- [GCE] Fix ``ex_list_instancegroups`` method so it doesn't throw if ``zone``
+  attribute is not present in the response.
+
+  Reported by Kartik Subbarao (@kartiksubbarao)
+  (GITHUB-1346)
+  [Tomaz Muraus]
+
+- [AWS EC2] Add support for creating spot instances by utilizing new ``ex_spot``
+  and optionally also ``ex_spot_max_price`` keyword argument in the
+  ``create_node`` method.
+  (GITHUB-1398)
+  [Peter Yu - @yukw777]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Fix upload object code so uploaded data MD5 checksum check is not
+  performed at the end of the upload when AWS KMS server side encryption is
+  used.
+
+  If AWS KMS server side object encryption is used, ETag header value in the
+  response doesn't contain data MD5 digest so we can't perform a checksum
+  check.
+
+  Reported by Jonathan Harden - @jfharden.
+  (GITHUB-1401, GITHUB-1406)
+  [Tomaz Muraus - @Kami]
+
+Container
+~~~~~~~~~
+
+- [LXD] Add new LXD driver.
+  (GITHUB-1395)
+  [Alexandros Giavaras - @pockerman]
+
+Storage
+~~~~~~~
+
+- [Azure Blobs] Implement chunked upload in the Azure Storage driver.
+
+  Previously, the maximum object size that could be uploaded with the
+  Azure Storage driver was capped at 100 MB: the maximum size that could
+  be uploaded in a single request to Azure. Chunked upload removes this
+  limitation and now enables uploading objects up to Azure's maximum block
+  blob size (~5 TB). The size of the chunks uploaded by the driver can be
+  configured via the ``LIBCLOUD_AZURE_UPLOAD_CHUNK_SIZE_MB`` environment
+  variable and defaults to 4 MB per chunk. Increasing this number trades-off
+  higher memory usage for a lower number of http requests executed by the
+  driver.
+
+  Reported by @rvolykh.
+  (GITHUB-1399, GITHUB-1400)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Drop support for uploading PageBlob objects via the Azure
+  Storage driver.
+
+  Previously, both PageBlob and BlockBlob objects could be uploaded via the
+  ``upload_object`` and ``upload_object_via_stream`` methods by specifying the
+  ``ex_blob_type`` and ``ex_page_blob_size`` arguments. To simplify the API,
+  these options were removed and all uploaded objects are now of BlockBlob
+  type. Passing ``ex_blob_type`` or ``ex_page_blob_size`` will now raise a
+  ``ValueError``.
+
+  (GITHUB-1400)
+  [Clemens Wolff - @c-w]
+
+- [Common] Add ``prefix`` argument to ``iterate_container_objects`` and
+  ``list_container_objects`` to support object-list filtering in all
+  StorageDriver implementations.
+
+  A lot of the existing storage drivers already implemented the filtering
+  functionality via the ``ex_prefix`` extension argument so it was decided
+  to promote the argument to be part of the standard Libcloud storage API.
+  For any storage driver that doesn't natively implement filtering the results
+  list, a fall-back was implemented which filters the full object stream on
+  the client side.
+
+  For backward compatibility reasons, the ``ex_prefix`` argument will still
+  be respected until a next major release.
+  (GITHUB-1397)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Implement ``get_object_cdn_url`` for the Azure Storage driver.
+
+  Leveraging Azure storage service shared access signatures, the Azure Storage
+  driver can now be used to generate temporary URLs that grant clients read
+  access to objects. The URLs expire after a certain period of time, either
+  configured via the ``ex_expiry`` argument or the
+  ``LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS`` environment variable
+  (default: 24 hours).
+
+  Reported by @rvolykh.
+  (GITHUB-1403, GITHUB-1408)
+  [Clemens Wolff - @c-w]
+
+Changes in Apache Libcloud v2.8.0
+---------------------------------
 
 Common
-------
+~~~~~~
 
 - Fix a regression with ``get_driver()`` method not working if ``provider``
   argument value was a string (e.g. using ``get_driver('openstack')``
@@ -35,7 +160,7 @@ Common
   [Tomaz Muraus]
 
 Compute
--------
+~~~~~~~
 
 - [DigitalOcean] Fix ``attach_volume`` and ``detach_volume`` methods.
   Previously those two methods incorrectly passed volume id instead of
@@ -92,7 +217,7 @@ Compute
   [Tomaz Muraus]
 
 Storage
--------
+~~~~~~~
 
 - [AWS S3] Make sure ``host`` driver constructor argument has priority
   over ``region`` argument.
@@ -107,14 +232,14 @@ Changes in Apache Libcloud v2.7.0
 ---------------------------------
 
 General
--------
+~~~~~~~
 
 - Test code with Python 3.8 and advertise that we also support Python 3.8.
   (GITHUB-1371, GITHUB-1374)
   [Tomaz Muraus]
 
 Common
-------
+~~~~~~
 
 - [OpenStack] Fix OpenStack project scoped token authentication. The driver
   constructors now accept ``ex_tenant_domain_id`` argument which tells
@@ -123,7 +248,7 @@ Common
   [kshtsk]
 
 Compute
--------
+~~~~~~~
 
 - Introduce type annotations for the base compute API methods. This means you
   can now leverage mypy to type check (with some limitations) your code which
