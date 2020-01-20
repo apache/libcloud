@@ -43,6 +43,13 @@ Compute
   (GITHUB-1398)
   [Peter Yu - @yukw777]
 
+Container
+~~~~~~~~~
+
+- [LXD] Add new LXD driver.
+  (GITHUB-1395)
+  [Alexandros Giavaras - @pockerman]
+
 Storage
 ~~~~~~~
 
@@ -57,16 +64,6 @@ Storage
   Reported by Jonathan Harden - @jfharden.
   (GITHUB-1401, GITHUB-1406)
   [Tomaz Muraus - @Kami]
-
-Container
-~~~~~~~~~
-
-- [LXD] Add new LXD driver.
-  (GITHUB-1395)
-  [Alexandros Giavaras - @pockerman]
-
-Storage
-~~~~~~~
 
 - [Azure Blobs] Implement chunked upload in the Azure Storage driver.
 
