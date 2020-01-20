@@ -460,7 +460,8 @@ class OSSStorageDriver(StorageDriver):
             pass
         return self._put_object(container=container, object_name=object_name,
                                 extra=extra, method=method, query_args=params,
-                                stream=iterator, verify_hash=False)
+                                stream=iterator, verify_hash=False,
+                                headers=headers)
 
     def delete_object(self, obj):
         object_path = self._get_object_path(obj.container, obj.name)
@@ -577,11 +578,11 @@ class OSSStorageDriver(StorageDriver):
 
     def _put_object(self, container, object_name, method='PUT',
                     query_args=None, extra=None, file_path=None,
-                    stream=None, verify_hash=False):
+                    stream=None, verify_hash=False, headers=None):
         """
         Create an object and upload data using the given function.
         """
-        headers = {}
+        headers = headers or {}
         extra = extra or {}
 
         content_type = extra.get('content_type', None)

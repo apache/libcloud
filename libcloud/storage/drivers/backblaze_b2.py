@@ -23,7 +23,7 @@ import hashlib
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
@@ -130,7 +130,7 @@ class BackblazeB2AuthConnection(ConnectionUserAndKey):
 
 
 class BackblazeB2Connection(ConnectionUserAndKey):
-    host = None  # Note: host is set after authentication
+    host = None  # type: ignore  # Note: host is set after authentication
     secure = True
     responseCls = BackblazeB2Response
     authCls = BackblazeB2AuthConnection

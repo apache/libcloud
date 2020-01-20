@@ -417,7 +417,7 @@ class LocalStorageDriver(StorageDriver):
                 yield data
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         """
         Upload an object currently located on a disk.
 
@@ -435,6 +435,9 @@ class LocalStorageDriver(StorageDriver):
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
+
+        :param headers: (optional) Headers (driver specific).
+        :type headers: ``dict``
 
         :rtype: ``object``
         """
@@ -454,7 +457,7 @@ class LocalStorageDriver(StorageDriver):
 
     def upload_object_via_stream(self, iterator, container,
                                  object_name,
-                                 extra=None):
+                                 extra=None, headers=None):
         """
         Upload an object using an iterator.
 
@@ -486,6 +489,9 @@ class LocalStorageDriver(StorageDriver):
         :param extra: (optional) Extra attributes (driver specific). Note:
             This dictionary must contain a 'content_type' key which represents
             a content type of the stored object.
+
+        :param headers: (optional) Headers (driver specific).
+        :type headers: ``dict``
 
         :rtype: ``object``
         """
