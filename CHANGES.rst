@@ -123,6 +123,15 @@ Storage
   (GITHUB-1403, GITHUB-1408)
   [Clemens Wolff - @c-w]
 
+- [Azure Blobs, Aliyun, Local, Ninefold, S3] Ensure upload headers are respected.
+
+  All storage drivers now pass the optional ``headers`` argument of
+  ``upload_object`` and ``upload_object_via_stream`` to the backend object storage
+  systems (previously the argument was silently ignored).
+
+  (GITHUB-1410)
+  [Clemens Wolff - @c-w]
+
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
