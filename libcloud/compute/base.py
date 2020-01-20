@@ -350,7 +350,7 @@ class NodeSize(UuidMixin):
                  disk,  # type: int
                  bandwidth,  # type: Optional[int]
                  price,  # type: float
-                 driver,  # type: Type[NodeDriver]
+                 driver,  # type: NodeDriver
                  extra=None  # type: Optional[dict]
                  ):
         """
@@ -421,7 +421,7 @@ class NodeImage(UuidMixin):
     def __init__(self,
                  id,  # type: str
                  name,  # type: str
-                 driver,  # type: Type[NodeDriver]
+                 driver,  # type: NodeDriver
                  extra=None  # type: Optional[dict]
                  ):
         """
@@ -467,7 +467,7 @@ class NodeImageMember(UuidMixin):
                  id,  # type: str
                  image_id,  # type: str
                  state,  # type: NodeImageMemberState
-                 driver,  # type: Type[NodeDriver]
+                 driver,  # type: NodeDriver
                  created=None,  # type: datetime.datetime
                  extra=None  # type: Optional[dict]
                  ):
@@ -522,7 +522,7 @@ class NodeLocation(object):
                  id,  # type: str
                  name,  # type: str
                  country,  # type: str
-                 driver,  # type: Type[NodeDriver]
+                 driver,  # type: NodeDriver
                  extra=None  # type: Optional[dict]
                  ):
         """
@@ -822,7 +822,7 @@ class NodeDriver(BaseDriver):
     name = None  # type: str
     api_name = None  # type: str
     website = None  # type: str
-    type = None  # type: Provider
+    type = None  # type: Union[Provider,str]
     port = None  # type: int
     features = {'create_node': []}  # type: Dict[str, List[str]]
 
