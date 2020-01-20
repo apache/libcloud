@@ -19,12 +19,6 @@ General
   (GITHUB-1396)
   [Tomaz Muraus]
 
-- Fix some incorrect type annotations in the base compute API.
-
-  Reported by @dpeschman.
-  (GITHUB-1413)
-  [Tomaz Muraus]
-
 Compute
 ~~~~~~~
 
@@ -48,6 +42,12 @@ Compute
   ``create_node`` method.
   (GITHUB-1398)
   [Peter Yu - @yukw777]
+
+- Fix some incorrect type annotations in the base compute API.
+
+  Reported by @dpeschman.
+  (GITHUB-1413, GITHUB-1414)
+  [Tomaz Muraus]
 
 Storage
 ~~~~~~~
