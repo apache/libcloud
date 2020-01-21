@@ -43,12 +43,11 @@ Compute
   (GITHUB-1398)
   [Peter Yu - @yukw777]
 
-Container
-~~~~~~~~~
+- Fix some incorrect type annotations in the base compute API.
 
-- [LXD] Add new LXD driver.
-  (GITHUB-1395)
-  [Alexandros Giavaras - @pockerman]
+  Reported by @dpeschman.
+  (GITHUB-1413, GITHUB-1414)
+  [Tomaz Muraus]
 
 Storage
 ~~~~~~~
@@ -131,6 +130,13 @@ Storage
 
   (GITHUB-1410)
   [Clemens Wolff - @c-w]
+  
+Container
+~~~~~~~~~
+
+- [LXD] Add new LXD driver.
+  (GITHUB-1395)
+  [Alexandros Giavaras - @pockerman]
 
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
