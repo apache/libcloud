@@ -1580,13 +1580,12 @@ class LXDContainerDriver(ContainerDriver):
             input["environment"] = config["environment"]
 
         if "width" in config.keys():
-            input["width"] = config["width"]
-
+            input["width"] = int(config["width"])
         else:
             input["width"] = 80
 
         if "height" in config.keys():
-            input["width"] = config["height"]
+            input["height"] = int(config["height"])
         else:
             input["height"] = 25
 
