@@ -470,7 +470,7 @@ class BaseS3StorageDriver(StorageDriver):
             success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True, ex_storage_class=None):
+                      verify_hash=True, headers=None, ex_storage_class=None):
         """
         @inherits: :class:`StorageDriver.upload_object`
 
@@ -480,6 +480,7 @@ class BaseS3StorageDriver(StorageDriver):
         return self._put_object(container=container, object_name=object_name,
                                 extra=extra, file_path=file_path,
                                 verify_hash=verify_hash,
+                                headers=headers,
                                 storage_class=ex_storage_class)
 
     def _initiate_multipart(self, container, object_name, headers=None):
@@ -662,7 +663,8 @@ class BaseS3StorageDriver(StorageDriver):
                                 (resp.status), driver=self)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 extra=None, ex_storage_class=None):
+                                 extra=None, headers=None,
+                                 ex_storage_class=None):
         """
         @inherits: :class:`StorageDriver.upload_object_via_stream`
 
@@ -682,10 +684,12 @@ class BaseS3StorageDriver(StorageDriver):
                                               extra=extra,
                                               stream=iterator,
                                               verify_hash=False,
+                                              headers=headers,
                                               storage_class=ex_storage_class)
         return self._put_object(container=container, object_name=object_name,
                                 extra=extra, method=method, query_args=params,
                                 stream=iterator, verify_hash=False,
+                                headers=headers,
                                 storage_class=ex_storage_class)
 
     def delete_object(self, obj):
@@ -804,8 +808,9 @@ class BaseS3StorageDriver(StorageDriver):
 
     def _put_object(self, container, object_name, method='PUT',
                     query_args=None, extra=None, file_path=None,
-                    stream=None, verify_hash=True, storage_class=None):
-        headers = {}
+                    stream=None, verify_hash=True, storage_class=None,
+                    headers=None):
+        headers = headers or {}
         extra = extra or {}
 
         headers.update(self._to_storage_class_headers(storage_class))
@@ -866,7 +871,7 @@ class BaseS3StorageDriver(StorageDriver):
                 driver=self)
 
     def _put_object_multipart(self, container, object_name, stream,
-                              extra=None, verify_hash=False,
+                              extra=None, verify_hash=False, headers=None,
                               storage_class=None):
         """
         Uploads an object using the S3 multipart algorithm.
@@ -886,13 +891,16 @@ class BaseS3StorageDriver(StorageDriver):
         :keyword extra: Additional options
         :type extra: ``dict``
 
+        :keyword headers: Additional headers
+        :type headers: ``dict``
+
         :keyword storage_class: The name of the S3 object's storage class
         :type extra: ``str``
 
         :return: The uploaded object
         :rtype: :class:`Object`
         """
-        headers = {}
+        headers = headers or {}
         extra = extra or {}
 
         headers.update(self._to_storage_class_headers(storage_class))

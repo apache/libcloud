@@ -64,16 +64,6 @@ Storage
   (GITHUB-1401, GITHUB-1406)
   [Tomaz Muraus - @Kami]
 
-Container
-~~~~~~~~~
-
-- [LXD] Add new LXD driver.
-  (GITHUB-1395)
-  [Alexandros Giavaras - @pockerman]
-
-Storage
-~~~~~~~
-
 - [Azure Blobs] Implement chunked upload in the Azure Storage driver.
 
   Previously, the maximum object size that could be uploaded with the
@@ -131,6 +121,22 @@ Storage
   Reported by @rvolykh.
   (GITHUB-1403, GITHUB-1408)
   [Clemens Wolff - @c-w]
+
+- [Azure Blobs, Aliyun, Local, Ninefold, S3] Ensure upload headers are respected.
+
+  All storage drivers now pass the optional ``headers`` argument of
+  ``upload_object`` and ``upload_object_via_stream`` to the backend object storage
+  systems (previously the argument was silently ignored).
+
+  (GITHUB-1410)
+  [Clemens Wolff - @c-w]
+  
+Container
+~~~~~~~~~
+
+- [LXD] Add new LXD driver.
+  (GITHUB-1395)
+  [Alexandros Giavaras - @pockerman]
 
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
