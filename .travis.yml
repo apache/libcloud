@@ -26,7 +26,6 @@ matrix:
       before_install:
         - choco install python --version 3.8.1
         - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
-        #- python -m pip install --user --upgrade pip
       before_script: TOX_ENV=py3.8-windows
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
     - name: Unit Tests (Python 3.8)
@@ -72,10 +71,10 @@ matrix:
         - python3 ./contrib/trigger_rtd_build.py
 
 install:
-  - pip install --upgrade "pip==19.3.1"
-  - pip install --upgrade "setuptools==42.0.2"
-  - pip install "virtualenv==16.7.6"
-  - pip install "tox==3.14.2"
+  - python3 -m pip install --user --upgrade "pip==19.3.1"
+  - python3 -m pip install --user --upgrade "setuptools==42.0.2"
+  - python3 -m pip install --user "virtualenv==16.7.6"
+  - python3 -m pip install --user "tox==3.14.2"
   - TOX_ENV=py$TRAVIS_PYTHON_VERSION
 
 script:
