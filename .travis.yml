@@ -26,7 +26,7 @@ matrix:
       before_install:
         - choco install python --version 3.8.1
         - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
-        - python3 -m pip install --user --upgrade "pip==20.0.1"
+        - python -m pip install --user --upgrade "pip==20.0.1"
       before_script: TOX_ENV=py3.8-windows
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
     - name: Unit Tests (Python 3.8)
@@ -72,6 +72,7 @@ matrix:
         - python3 ./contrib/trigger_rtd_build.py
 
 install:
+  # NOTE: This is a workaround since we need to use install --user on Windows
   - if [ "${TRAVIS_OS_NAME}" != "windows" ]; then python -m pip install --upgrade "pip==20.0.1"; fi
   - python -m pip install --upgrade "setuptools==42.0.2"
   - python -m pip install "virtualenv==16.7.6"
