@@ -174,6 +174,38 @@ class LXDStoragePool(object):
         self.managed = managed
 
 
+class LXDNetwork(object):
+    """
+    Utility class representing an LXD network
+    """
+
+    @classmethod
+    def build_from_response(cls, metadata):
+        lxd_network = LXDNetwork()
+        lxd_network.name = metadata.get("name", None)
+        lxd_network.id = metadata.get("name", None)
+        lxd_network.description = metadata.get("description", None)
+        lxd_network.type = metadata.get("type", None)
+        lxd_network.config = metadata.get("config", None)
+        lxd_network.status = metadata.get("status", None)
+        lxd_network.locations = metadata.get("locations", None)
+        lxd_network.managed = metadata.get("managed", None)
+        lxd_network.used_by = metadata.get("used_by", None)
+        return lxd_network
+
+    def __init__(self):
+        self.name = None
+        self.id = None
+        self.description = None
+        self.type = None
+        self.config = None
+        self.status = None
+        self.locations = None
+        self.managed = None
+        self.used_by = None
+        self.extra = {}
+
+
 class LXDServerInfo(object):
     """
     Wraps the response form /1.0
@@ -1341,6 +1373,72 @@ class LXDContainerDriver(ContainerDriver):
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
         return True
+
+    def ex_get_networks(self):
+        """
+        Returns a list of networks.
+        Implements GET /1.0/networks
+        Authentication: trusted
+        Operation: sync
+
+        :rtype: list of LXDNetwork objects
+        """
+
+        req = "/%s/networks" % (self.version)
+        response = self.connection.request(req)
+
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+
+        nets = response_dict["metadata"]
+        networks = []
+        for net in nets:
+            name = net.split('/')[-1]
+            networks.append(self.ex_get_network(name=name))
+        return networks
+
+    def ex_get_network(self, name):
+        """
+        Retunrs the LXD network with the given name.
+        Implements GET /1.0/networks/<name>
+
+        Authentication: trusted
+        Operation: sync
+
+        :param name: The name of the network to return
+        :type  name: str
+
+        :rtype: LXDNetwork
+        """
+        req = '/%s/networks/%s' % (self.version, name)
+        response = self.connection.request(req)
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+
+        return LXDNetwork.build_from_response(response_dict["metadata"])
+
+    def ex_create_network(self, **kwargs):
+        pass
+
+    def ex_delete_network(self, name):
+        """
+        Delete the network with the given name
+        Authentication: trusted
+        Operation: sync
+
+        :param name: The network name to delete
+        :type  name: str
+
+        :return: True is successfully deleted the network
+        """
+
+        req = '/%s/networks/%s' % (self.version, name)
+        response = self.connection.request(req, method='DELETE')
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+
+        return True
+
 
     def _to_container(self, metadata):
         """
