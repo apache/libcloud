@@ -995,6 +995,25 @@ class LXDContainerDriver(ContainerDriver):
             images.append(self.ex_get_image(fingerprint=fingerprint))
         return images
 
+    def ex_has_image(self, alias):
+        """
+        Helper function. Returns true is the image with the
+        given alias exits on the host
+
+        :param alias: the image alias
+        :type  alias: ``str``
+
+        :rtype: boolean
+        """
+
+        # get all the images existing on the host
+        images = self.list_images()
+
+        for img in images:
+            if alias == img.name:
+                return True
+        return False
+
     def ex_list_storage_pools(self, detailed=True):
         """
         Returns a list of storage pools defined currently defined on the host
@@ -1200,12 +1219,9 @@ class LXDContainerDriver(ContainerDriver):
 
         # currently not used
         size_type = definition['config'].pop('size_type')
-        definition['config'].pop('size')
-        #definition['config'].pop()
-        definition['config'] = {}
-        #definition['config']['size'] = \
-        #    str(LXDContainerDriver._to_bytes(definition['config']['size'],
-        #                                     size_type=size_type))
+        definition['config']['size'] = \
+            str(LXDContainerDriver._to_bytes(definition['config']['size'],
+                                             size_type=size_type))
 
         data = json.dumps(definition)
 
@@ -1533,7 +1549,6 @@ class LXDContainerDriver(ContainerDriver):
 
         return self.get_container(id=name)
 
-
     def _to_storage_volume(self, pool_id, metadata):
         """
         Returns StorageVolume object from metadata
@@ -1545,7 +1560,7 @@ class LXDContainerDriver(ContainerDriver):
         if "size" in metadata['config'].keys():
             size = LXDContainerDriver._to_gb(metadata['config'].pop('size'))
 
-        extra = {"pool_id":pool_id,
+        extra = {"pool_id": pool_id,
                  "type": metadata["type"],
                  "used_by": metadata["used_by"],
                  "config": metadata['config']}
@@ -1665,7 +1680,6 @@ class LXDContainerDriver(ContainerDriver):
         """
         size = int(size)
         if size_type == 'GB':
-            return size*10**9
+            return size * 10**9
         elif size_type == 'MB':
             return size * 10 ** 6
-
