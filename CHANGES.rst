@@ -49,6 +49,10 @@ Compute
   (GITHUB-1413, GITHUB-1414)
   [Tomaz Muraus]
 
+- [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
+  when region is not called ``nova``. (GITHUB-1411, GITHUB-1412)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
