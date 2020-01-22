@@ -20,10 +20,15 @@ Provides base classes for working with storage
 # Backward compatibility for Python 2.5
 from __future__ import with_statement
 
+from typing import Dict
+from typing import Iterator
+from typing import List
+from typing import Optional
 from typing import Type
 
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
+import warnings
 from os.path import join as pjoin
 
 from libcloud.utils.py3 import httplib
@@ -56,8 +61,15 @@ class Object(object):
     Represents an object (BLOB).
     """
 
-    def __init__(self, name, size, hash, extra, meta_data, container,
-                 driver):
+    def __init__(self,
+                 name,  # type: str
+                 size,  # type: int
+                 hash,  # type: str
+                 extra,  # type: dict
+                 meta_data,  # type: dict
+                 container,  # type: Container
+                 driver,  # type: StorageDriver
+                 ):
         """
         :param name: Object name (must be unique per container).
         :type  name: ``str``
@@ -69,7 +81,7 @@ class Object(object):
         :type  hash: ``str``
 
         :param container: Object container.
-        :type  container: :class:`Container`
+        :type  container: :class:`libcloud.storage.base.Container`
 
         :param extra: Extra attributes.
         :type  extra: ``dict``
@@ -78,7 +90,7 @@ class Object(object):
         :type  meta_data: ``dict``
 
         :param driver: StorageDriver instance.
-        :type  driver: :class:`StorageDriver`
+        :type  driver: :class:`libcloud.storage.base.StorageDriver`
         """
 
         self.name = name
@@ -90,21 +102,26 @@ class Object(object):
         self.driver = driver
 
     def get_cdn_url(self):
+        # type: () -> str
         return self.driver.get_object_cdn_url(obj=self)
 
-    def enable_cdn(self, **kwargs):
-        return self.driver.enable_object_cdn(obj=self, **kwargs)
+    def enable_cdn(self):
+        # type: () -> bool
+        return self.driver.enable_object_cdn(obj=self)
 
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
+        # type: (str, bool, bool) -> bool
         return self.driver.download_object(self, destination_path,
                                            overwrite_existing,
                                            delete_on_failure)
 
     def as_stream(self, chunk_size=None):
+        # type: (Optional[int]) -> Iterator[bytes]
         return self.driver.download_object_as_stream(self, chunk_size)
 
     def delete(self):
+        # type: () -> bool
         return self.driver.delete_object(self)
 
     def __repr__(self):
@@ -117,7 +134,11 @@ class Container(object):
     Represents a container (bucket) which can hold multiple objects.
     """
 
-    def __init__(self, name, extra, driver):
+    def __init__(self,
+                 name,  # type: str
+                 extra,  # type: dict
+                 driver,  # type: StorageDriver
+                 ):
         """
         :param name: Container name (must be unique).
         :type name: ``str``
@@ -126,51 +147,68 @@ class Container(object):
         :type extra: ``dict``
 
         :param driver: StorageDriver instance.
-        :type driver: :class:`StorageDriver`
+        :type driver: :class:`libcloud.storage.base.StorageDriver`
         """
 
         self.name = name
         self.extra = extra or {}
         self.driver = driver
 
-    def iterate_objects(self):
-        return self.driver.iterate_container_objects(container=self)
+    def iterate_objects(self, prefix=None, ex_prefix=None):
+        # type: (Optional[str], Optional[str]) -> Iterator[Object]
+        return self.driver.iterate_container_objects(container=self,
+                                                     prefix=prefix,
+                                                     ex_prefix=ex_prefix)
 
-    def list_objects(self):
-        return self.driver.list_container_objects(container=self)
+    def list_objects(self, prefix=None, ex_prefix=None):
+        # type: (Optional[str], Optional[str]) -> List[Object]
+        return self.driver.list_container_objects(container=self,
+                                                  prefix=prefix,
+                                                  ex_prefix=ex_prefix)
 
     def get_cdn_url(self):
+        # type: () -> str
         return self.driver.get_container_cdn_url(container=self)
 
-    def enable_cdn(self, **kwargs):
-        return self.driver.enable_container_cdn(container=self, **kwargs)
+    def enable_cdn(self):
+        # type: () -> bool
+        return self.driver.enable_container_cdn(container=self)
 
     def get_object(self, object_name):
+        # type: (str) -> Object
         return self.driver.get_object(container_name=self.name,
                                       object_name=object_name)
 
-    def upload_object(self, file_path, object_name, extra=None, **kwargs):
+    def upload_object(self, file_path, object_name, extra=None,
+                      verify_hash=True, headers=None):
+        # type: (str, str, Optional[dict], bool, Optional[Dict[str, str]]) -> Object  # noqa: E501
         return self.driver.upload_object(
-            file_path, self, object_name, extra=extra, **kwargs)
+            file_path, self, object_name, extra=extra,
+            verify_hash=verify_hash, headers=headers)
 
     def upload_object_via_stream(self, iterator, object_name, extra=None,
-                                 **kwargs):
+                                 headers=None):
+        # type: (Iterator[bytes], str, Optional[dict], Optional[Dict[str, str]]) -> Object  # noqa: E501
         return self.driver.upload_object_via_stream(
-            iterator, self, object_name, extra=extra, **kwargs)
+            iterator, self, object_name, extra=extra, headers=headers)
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
+        # type: (Object, str, bool, bool) -> bool
         return self.driver.download_object(
             obj, destination_path, overwrite_existing=overwrite_existing,
             delete_on_failure=delete_on_failure)
 
     def download_object_as_stream(self, obj, chunk_size=None):
+        # type: (Object, Optional[int]) -> Iterator[bytes]
         return self.driver.download_object_as_stream(obj, chunk_size)
 
     def delete_object(self, obj):
+        # type: (Object) -> bool
         return self.driver.delete_object(obj)
 
     def delete(self):
+        # type: () -> bool
         return self.driver.delete_container(self)
 
     def __repr__(self):
@@ -193,16 +231,18 @@ class StorageDriver(BaseDriver):
     strict_mode = False  # type: bool
 
     def iterate_containers(self):
+        # type: () -> Iterator[Container]
         """
-        Return a generator of containers for the given account
+        Return a iterator of containers for the given account
 
-        :return: A generator of Container instances.
-        :rtype: ``generator`` of :class:`Container`
+        :return: A iterator of Container instances.
+        :rtype: ``iterator`` of :class:`libcloud.storage.base.Container`
         """
         raise NotImplementedError(
             'iterate_containers not implemented for this driver')
 
     def list_containers(self):
+        # type: () -> List[Container]
         """
         Return a list of containers.
 
@@ -211,35 +251,69 @@ class StorageDriver(BaseDriver):
         """
         return list(self.iterate_containers())
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
+        # type: (Container, Optional[str], Optional[str]) -> Iterator[Object]
         """
-        Return a generator of objects for the given container.
+        Return a iterator of objects for the given container.
 
         :param container: Container instance
-        :type container: :class:`Container`
+        :type container: :class:`libcloud.storage.base.Container`
 
-        :return: A generator of Object instances.
-        :rtype: ``generator`` of :class:`Object`
+        :param prefix: Filter objects starting with a prefix.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
+        :type  ex_prefix: ``str``
+
+        :return: A iterator of Object instances.
+        :rtype: ``iterator`` of :class:`libcloud.storage.base.Object`
         """
         raise NotImplementedError(
             'iterate_container_objects not implemented for this driver')
 
-    def list_container_objects(self, container, ex_prefix=None):
+    def list_container_objects(self, container, prefix=None, ex_prefix=None):
+        # type: (Container, Optional[str], Optional[str]) -> List[Object]
         """
         Return a list of objects for the given container.
 
         :param container: Container instance.
-        :type container: :class:`Container`
+        :type container: :class:`libcloud.storage.base.Container`
 
-        :param ex_prefix: Filter objects starting with a prefix.
+        :param prefix: Filter objects starting with a prefix.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
         :type  ex_prefix: ``str``
 
         :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
+        :rtype: ``list`` of :class:`libcloud.storage.base.Object`
         """
-        return list(self.iterate_container_objects(container))
+        return list(self.iterate_container_objects(container,
+                                                   prefix=prefix,
+                                                   ex_prefix=ex_prefix))
+
+    def _normalize_prefix_argument(self, prefix, ex_prefix):
+        if ex_prefix:
+            warnings.warn('The ``ex_prefix`` argument is deprecated - '
+                          'please update code to use ``prefix``',
+                          DeprecationWarning)
+            return ex_prefix
+
+        return prefix
+
+    def _filter_listed_container_objects(self, objects, prefix):
+        if prefix is not None:
+            warnings.warn('Driver %s does not implement native object '
+                          'filtering; falling back to filtering the full '
+                          'object stream.' % self.__class__.__name__)
+
+        for obj in objects:
+            if prefix is None or obj.name.startswith(prefix):
+                yield obj
 
     def get_container(self, container_name):
+        # type: (str) -> Container
         """
         Return a container instance.
 
@@ -247,17 +321,18 @@ class StorageDriver(BaseDriver):
         :type container_name: ``str``
 
         :return: :class:`Container` instance.
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.storage.base.Container`
         """
         raise NotImplementedError(
             'get_object not implemented for this driver')
 
     def get_container_cdn_url(self, container):
+        # type: (Container) -> str
         """
         Return a container CDN URL.
 
         :param container: Container instance
-        :type  container: :class:`Container`
+        :type  container: :class:`libcloud.storage.base.Container`
 
         :return: A CDN URL for this container.
         :rtype: ``str``
@@ -266,6 +341,7 @@ class StorageDriver(BaseDriver):
             'get_container_cdn_url not implemented for this driver')
 
     def get_object(self, container_name, object_name):
+        # type: (str, str) -> Object
         """
         Return an object instance.
 
@@ -276,17 +352,18 @@ class StorageDriver(BaseDriver):
         :type  object_name: ``str``
 
         :return: :class:`Object` instance.
-        :rtype: :class:`Object`
+        :rtype: :class:`libcloud.storage.base.Object`
         """
         raise NotImplementedError(
             'get_object not implemented for this driver')
 
     def get_object_cdn_url(self, obj):
+        # type: (Object) -> str
         """
         Return an object CDN URL.
 
         :param obj: Object instance
-        :type  obj: :class:`Object`
+        :type  obj: :class:`libcloud.storage.base.Object`
 
         :return: A CDN URL for this object.
         :rtype: ``str``
@@ -295,11 +372,12 @@ class StorageDriver(BaseDriver):
             'get_object_cdn_url not implemented for this driver')
 
     def enable_container_cdn(self, container):
+        # type: (Container) -> bool
         """
         Enable container CDN.
 
         :param container: Container instance
-        :type  container: :class:`Container`
+        :type  container: :class:`libcloud.storage.base.Container`
 
         :rtype: ``bool``
         """
@@ -307,11 +385,12 @@ class StorageDriver(BaseDriver):
             'enable_container_cdn not implemented for this driver')
 
     def enable_object_cdn(self, obj):
+        # type: (Object) -> bool
         """
         Enable object CDN.
 
         :param obj: Object instance
-        :type  obj: :class:`Object`
+        :type  obj: :class:`libcloud.storage.base.Object`
 
         :rtype: ``bool``
         """
@@ -320,11 +399,12 @@ class StorageDriver(BaseDriver):
 
     def download_object(self, obj, destination_path, overwrite_existing=False,
                         delete_on_failure=True):
+        # type: (Object, str, bool, bool) -> bool
         """
         Download an object to the specified destination path.
 
         :param obj: Object instance.
-        :type obj: :class:`Object`
+        :type obj: :class:`libcloud.storage.base.Object`
 
         :param destination_path: Full path to a file or a directory where the
                                  incoming file will be saved.
@@ -347,20 +427,24 @@ class StorageDriver(BaseDriver):
             'download_object not implemented for this driver')
 
     def download_object_as_stream(self, obj, chunk_size=None):
+        # type: (Object, Optional[int]) -> Iterator[bytes]
         """
-        Return a generator which yields object data.
+        Return a iterator which yields object data.
 
         :param obj: Object instance
-        :type obj: :class:`Object`
+        :type obj: :class:`libcloud.storage.base.Object`
 
         :param chunk_size: Optional chunk size (in bytes).
         :type chunk_size: ``int``
+
+        :rtype: ``iterator`` of ``bytes``
         """
         raise NotImplementedError(
             'download_object_as_stream not implemented for this driver')
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
+        # type: (str, Container, str, Optional[dict], bool, Optional[Dict[str, str]]) -> Object  # noqa: E501
         """
         Upload an object currently located on a disk.
 
@@ -368,7 +452,7 @@ class StorageDriver(BaseDriver):
         :type file_path: ``str``
 
         :param container: Destination container.
-        :type container: :class:`Container`
+        :type container: :class:`libcloud.storage.base.Container`
 
         :param object_name: Object name.
         :type object_name: ``str``
@@ -384,7 +468,7 @@ class StorageDriver(BaseDriver):
             headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
         :type headers: ``dict``
 
-        :rtype: :class:`Object`
+        :rtype: :class:`libcloud.storage.base.Object`
         """
         raise NotImplementedError(
             'upload_object not implemented for this driver')
@@ -393,6 +477,7 @@ class StorageDriver(BaseDriver):
                                  object_name,
                                  extra=None,
                                  headers=None):
+        # type: (Iterator[bytes], Container, str, Optional[dict], Optional[Dict[str, str]]) -> Object  # noqa: E501
         """
         Upload an object using an iterator.
 
@@ -414,7 +499,7 @@ class StorageDriver(BaseDriver):
         :type iterator: :class:`object`
 
         :param container: Destination container.
-        :type container: :class:`Container`
+        :type container: :class:`libcloud.storage.base.Container`
 
         :param object_name: Object name.
         :type object_name: ``str``
@@ -429,17 +514,18 @@ class StorageDriver(BaseDriver):
             headers = {'Access-Control-Allow-Origin': 'http://mozilla.com'}
         :type headers: ``dict``
 
-        :rtype: ``object``
+        :rtype: ``libcloud.storage.base.Object``
         """
         raise NotImplementedError(
             'upload_object_via_stream not implemented for this driver')
 
     def delete_object(self, obj):
+        # type: (Object) -> bool
         """
         Delete an object.
 
         :param obj: Object instance.
-        :type obj: :class:`Object`
+        :type obj: :class:`libcloud.storage.base.Object`
 
         :return: ``bool`` True on success.
         :rtype: ``bool``
@@ -448,6 +534,7 @@ class StorageDriver(BaseDriver):
             'delete_object not implemented for this driver')
 
     def create_container(self, container_name):
+        # type: (str) -> Container
         """
         Create a new container.
 
@@ -455,17 +542,18 @@ class StorageDriver(BaseDriver):
         :type container_name: ``str``
 
         :return: Container instance on success.
-        :rtype: :class:`Container`
+        :rtype: :class:`libcloud.storage.base.Container`
         """
         raise NotImplementedError(
             'create_container not implemented for this driver')
 
     def delete_container(self, container):
+        # type: (Container) -> bool
         """
         Delete a container.
 
         :param container: Container instance
-        :type container: :class:`Container`
+        :type container: :class:`libcloud.storage.base.Container`
 
         :return: ``True`` on success, ``False`` otherwise.
         :rtype: ``bool``
@@ -584,7 +672,6 @@ class StorageDriver(BaseDriver):
     def _upload_object(self, object_name, content_type, request_path,
                        request_method='PUT',
                        headers=None, file_path=None, stream=None,
-                       upload_func=None, upload_func_kwargs=None,
                        chunked=False, multipart=False):
         """
         Helper function for setting common request headers and calling the
@@ -600,23 +687,9 @@ class StorageDriver(BaseDriver):
             raise AttributeError('iterator object must implement next() ' +
                                  'method.')
 
-        if not content_type:
-            if file_path:
-                name = file_path
-            else:
-                name = object_name
-            content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
+        headers['Content-Type'] = self._determine_content_type(
+            content_type, object_name, file_path=file_path)
 
-            if not content_type:
-                if self.strict_mode:
-                    raise AttributeError('File content-type could not be '
-                                         'guessed and no content_type value '
-                                         'is provided')
-                else:
-                    # Fallback to a content-type
-                    content_type = DEFAULT_CONTENT_TYPE
-
-        headers['Content-Type'] = content_type
         if stream:
             response = self.connection.request(
                 request_path,
@@ -639,12 +712,24 @@ class StorageDriver(BaseDriver):
         if not response.success():
             response.parse_error()
 
-        if upload_func:
-            upload_func(**upload_func_kwargs)
-
         return {'response': response,
                 'bytes_transferred': stream_length,
                 'data_hash': stream_hash}
+
+    def _determine_content_type(self, content_type, object_name,
+                                file_path=None):
+        if content_type:
+            return content_type
+
+        name = file_path or object_name
+        content_type, _ = libcloud.utils.files.guess_file_mime_type(name)
+
+        if self.strict_mode and not content_type:
+            raise AttributeError('File content-type could not be guessed for '
+                                 '"%s" and no content_type value is provided'
+                                 % name)
+
+        return content_type or DEFAULT_CONTENT_TYPE
 
     def _hash_buffered_stream(self, stream, hasher, blocksize=65536):
         total_len = 0

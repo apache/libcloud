@@ -1,0 +1,15 @@
+{"type": "sync", "status": "Success", "status_code": 200,"operation": "",
+  "error_code": 0,
+  "error": "",
+  "metadata": {
+        "name": "pool1",
+        "driver": "zfs",
+        "used_by": ["/1.0/containers/alp1",  "/1.0/containers/alp10",  "/1.0/images/62e850a334bb9d99cac00b2e618e0291e5e7bb7db56c4246ecaf8e46fa0631a6" ],
+        "config": {
+            "size": "61203283968",
+            "source": "/home/chb/mnt/l2/disks/default.img",
+            "volume.size": "0",
+            "zfs.pool_name": "default"
+        }
+    }
+}

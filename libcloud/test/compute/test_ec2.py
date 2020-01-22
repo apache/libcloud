@@ -464,6 +464,20 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(node2.extra['iam_profile'], iamProfile['id'])
         self.assertEqual(node3.extra['iam_profile'], iamProfile['id'])
 
+    def test_ex_create_node_with_ex_spot(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        EC2MockHttp.type = 'ex_spot'
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       ex_spot=True)
+        self.assertEqual(node.extra['instance_lifecycle'], 'spot')
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       ex_spot=True, ex_spot_max_price=1.5)
+        self.assertEqual(node.extra['instance_lifecycle'], 'spot')
+
     def test_list_images(self):
         images = self.driver.list_images()
 
@@ -1483,6 +1497,10 @@ class EC2MockHttp(MockHttp):
 
     def _ex_iam_profile_RunInstances(self, method, url, body, headers):
         body = self.fixtures.load('run_instances_iam_profile.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ex_spot_RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances_spot.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _TerminateInstances(self, method, url, body, headers):

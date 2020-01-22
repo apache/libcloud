@@ -181,12 +181,12 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(
             name='test_container', extra={}, driver=self.driver)
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix1')
+                                                     prefix='test_prefix1')
         self.assertEqual(len(objects), 0)
 
         CloudFilesMockHttp.type = None
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix2')
+                                                     prefix='test_prefix2')
         self.assertEqual(len(objects), 4)
 
         obj = [o for o in objects if o.name == 'foo test 1'][0]

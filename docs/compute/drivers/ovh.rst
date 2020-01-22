@@ -28,7 +28,7 @@ at https://eu.api.ovh.com/createApp/. Next step, create a consumer key with
 following command: ::
 
     curl -X POST \
-        -H 'X-Ra-Application: youApplicationKey' \
+        -H 'X-Ovh-Application: youApplicationKey' \
         -H 'Content-Type: application/json' \
         -d '{
             "accessRules":
@@ -36,7 +36,7 @@ following command: ::
                     {"method":"GET","path":"/*"},
                     {"method":"POST","path":"/*"},
                     {"method":"DELETE","path":"/*"},
-                    {"method":"PUT","path":"/*"},
+                    {"method":"PUT","path":"/*"}
                 ],
                 "redirection":"http://ovh.com"
             }' \

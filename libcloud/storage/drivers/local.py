@@ -219,18 +219,27 @@ class LocalStorageDriver(StorageDriver):
                 object_name = relpath(full_path, start=cpath)
                 yield self._make_object(container, object_name)
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Returns a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
 
+        :param prefix: Filter objects starting with a prefix.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
+        :type  ex_prefix: ``str``
+
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
-        return self._get_objects(container)
+        objects = self._get_objects(container)
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         """
@@ -408,7 +417,7 @@ class LocalStorageDriver(StorageDriver):
                 yield data
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         """
         Upload an object currently located on a disk.
 
@@ -426,6 +435,9 @@ class LocalStorageDriver(StorageDriver):
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
+
+        :param headers: (optional) Headers (driver specific).
+        :type headers: ``dict``
 
         :rtype: ``object``
         """
@@ -445,7 +457,7 @@ class LocalStorageDriver(StorageDriver):
 
     def upload_object_via_stream(self, iterator, container,
                                  object_name,
-                                 extra=None):
+                                 extra=None, headers=None):
         """
         Upload an object using an iterator.
 
@@ -477,6 +489,9 @@ class LocalStorageDriver(StorageDriver):
         :param extra: (optional) Extra attributes (driver specific). Note:
             This dictionary must contain a 'content_type' key which represents
             a content type of the stored object.
+
+        :param headers: (optional) Headers (driver specific).
+        :type headers: ``dict``
 
         :rtype: ``object``
         """

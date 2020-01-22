@@ -1,0 +1,46 @@
+{
+  "type": "sync",
+  "status": "Success",
+  "status_code": 200,
+  "metadata": {
+    "name": "first_lxd_container",
+    "status": "Running",
+    "architecture": "x86_64",
+    "ephemeral":"False",
+    "config":
+    {
+      "volatile.base_image": "7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b",
+      "image.version": "ubuntu",
+      "image.architecture": "amd64",
+      "image.description": "Ubuntu 16.04 LTS",
+      "image.os": "Linux",
+      "image.release": "16.04",
+      "image.serial": "7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b",
+      "image.type": "container"
+    },
+    "network":
+   {
+     "eth0":
+      {
+        "addresses":
+           [{"family": "inet", "address": "10.186.59.84", "netmask": "24", "scope": "global"},
+             {"family": "inet6", "address": "fd42:64ae:f6a0:898e:216:3eff:fe55:980f", "netmask": "64", "scope": "global"},
+             {"family": "inet6", "address": "fe80::216:3eff:fe55:980f", "netmask": "64", "scope": "link"}],
+        "counters": {"bytes_received": 3682174, "bytes_sent": 179726, "packets_received": 3170, "packets_sent": 2222},
+        "hwaddr": "00:16:3e:55:98:0f",
+        "host_name": "vethb8cb9e2e",
+        "mtu": 1500,
+        "state": "up", "type": "broadcast"
+      },
+     "lo":{"addresses":[{"family": "inet", "address": "127.0.0.1", "netmask": "8", "scope": "local"},
+                         {"family": "inet6", "address": "::1", "netmask": "128", "scope": "local"}],
+       "counters": {"bytes_received": 0, "bytes_sent": 0, "packets_received": 0, "packets_sent": 0},
+       "hwaddr":"",
+       "host_name":"",
+       "mtu": 65536,
+       "state":"up",
+       "type":"loopback"
+     }
+   }
+  }
+}

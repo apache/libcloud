@@ -143,7 +143,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     service_name = None
     service_region = None
     accept_format = None
-    _auth_version = None
+    _auth_version = None  # type: str
 
     def __init__(self, user_id, key, secure=True,
                  host=None, port=None, timeout=None, proxy_url=None,

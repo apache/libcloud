@@ -286,28 +286,16 @@ class BaseS3StorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def list_container_objects(self, container, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :param ex_prefix: Only return objects starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                                                   ex_prefix=ex_prefix))
-
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
+
+        :param prefix: Only return objects starting with prefix
+        :type prefix: ``str``
 
         :param ex_prefix: Only return objects starting with ex_prefix
         :type ex_prefix: ``str``
@@ -315,9 +303,12 @@ class BaseS3StorageDriver(StorageDriver):
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         params = {}
-        if ex_prefix:
-            params['prefix'] = ex_prefix
+
+        if prefix:
+            params['prefix'] = prefix
 
         last_key = None
         exhausted = False
@@ -479,7 +470,7 @@ class BaseS3StorageDriver(StorageDriver):
             success_status_code=httplib.OK)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True, ex_storage_class=None):
+                      verify_hash=True, headers=None, ex_storage_class=None):
         """
         @inherits: :class:`StorageDriver.upload_object`
 
@@ -489,6 +480,7 @@ class BaseS3StorageDriver(StorageDriver):
         return self._put_object(container=container, object_name=object_name,
                                 extra=extra, file_path=file_path,
                                 verify_hash=verify_hash,
+                                headers=headers,
                                 storage_class=ex_storage_class)
 
     def _initiate_multipart(self, container, object_name, headers=None):
@@ -671,7 +663,8 @@ class BaseS3StorageDriver(StorageDriver):
                                 (resp.status), driver=self)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 extra=None, ex_storage_class=None):
+                                 extra=None, headers=None,
+                                 ex_storage_class=None):
         """
         @inherits: :class:`StorageDriver.upload_object_via_stream`
 
@@ -691,10 +684,12 @@ class BaseS3StorageDriver(StorageDriver):
                                               extra=extra,
                                               stream=iterator,
                                               verify_hash=False,
+                                              headers=headers,
                                               storage_class=ex_storage_class)
         return self._put_object(container=container, object_name=object_name,
                                 extra=extra, method=method, query_args=params,
                                 stream=iterator, verify_hash=False,
+                                headers=headers,
                                 storage_class=ex_storage_class)
 
     def delete_object(self, obj):
@@ -813,8 +808,9 @@ class BaseS3StorageDriver(StorageDriver):
 
     def _put_object(self, container, object_name, method='PUT',
                     query_args=None, extra=None, file_path=None,
-                    stream=None, verify_hash=True, storage_class=None):
-        headers = {}
+                    stream=None, verify_hash=True, storage_class=None,
+                    headers=None):
+        headers = headers or {}
         extra = extra or {}
 
         headers.update(self._to_storage_class_headers(storage_class))
@@ -846,8 +842,18 @@ class BaseS3StorageDriver(StorageDriver):
         headers = response.headers
         response = response
         server_hash = headers.get('etag', '').replace('"', '')
+        server_side_encryption = headers.get('x-amz-server-side-encryption',
+                                             None)
+        aws_kms_encryption = (server_side_encryption == 'aws:kms')
+        hash_matches = (result_dict['data_hash'] == server_hash)
 
-        if (verify_hash and result_dict['data_hash'] != server_hash):
+        # NOTE: If AWS KMS server side encryption is enabled, ETag won't
+        # contain object MD5 digest so we skip the checksum check
+        # See https://docs.aws.amazon.com/AmazonS3/latest/API
+        # /RESTCommonResponseHeaders.html
+        # and https://github.com/apache/libcloud/issues/1401
+        # for details
+        if verify_hash and not aws_kms_encryption and not hash_matches:
             raise ObjectHashMismatchError(
                 value='MD5 hash {0} checksum does not match {1}'.format(
                     server_hash, result_dict['data_hash']),
@@ -865,7 +871,7 @@ class BaseS3StorageDriver(StorageDriver):
                 driver=self)
 
     def _put_object_multipart(self, container, object_name, stream,
-                              extra=None, verify_hash=False,
+                              extra=None, verify_hash=False, headers=None,
                               storage_class=None):
         """
         Uploads an object using the S3 multipart algorithm.
@@ -885,13 +891,16 @@ class BaseS3StorageDriver(StorageDriver):
         :keyword extra: Additional options
         :type extra: ``dict``
 
+        :keyword headers: Additional headers
+        :type headers: ``dict``
+
         :keyword storage_class: The name of the S3 object's storage class
         :type extra: ``str``
 
         :return: The uploaded object
         :rtype: :class:`Object`
         """
-        headers = {}
+        headers = headers or {}
         extra = extra or {}
 
         headers.update(self._to_storage_class_headers(storage_class))
@@ -900,12 +909,8 @@ class BaseS3StorageDriver(StorageDriver):
         meta_data = extra.get('meta_data', None)
         acl = extra.get('acl', None)
 
-        if not content_type:
-            content_type, _ = libcloud.utils.files.guess_file_mime_type(
-                object_name)
-
-        if content_type:
-            headers['Content-Type'] = content_type
+        headers['Content-Type'] = self._determine_content_type(
+            content_type, object_name)
 
         if meta_data:
             for key, value in list(meta_data.items()):
