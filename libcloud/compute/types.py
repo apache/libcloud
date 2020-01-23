@@ -125,6 +125,7 @@ class Provider(Type):
     :cvar IKOULA: Ikoula driver.
     :cvar JOYENT: Joyent driver
     :cvar KTUCLOUD: kt ucloud driver
+    :cvar KUBEVIRT: kubevirt driver
     :cvar LIBVIRT: Libvirt driver
     :cvar LINODE: Linode.com
     :cvar NEPHOSCALE: NephoScale driver
@@ -179,6 +180,7 @@ class Provider(Type):
     INTERNETSOLUTIONS = 'internetsolutions'
     JOYENT = 'joyent'
     KTUCLOUD = 'ktucloud'
+    KUBEVIRT = 'kubevirt'
     LIBVIRT = 'libvirt'
     LINODE = 'linode'
     MAXIHOST = 'maxihost'
