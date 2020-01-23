@@ -146,9 +146,11 @@ class GandiLiveResponse(JsonResponse):
             else:
                 return body
         elif self.status == httplib.NO_CONTENT:
-            # Parse error for empty body is acceptable, but a non-empty body is not.
+            # Parse error for empty body is acceptable, but a non-empty body
+            # is not.
             if len(body) > 0:
-                raise GandiLiveBaseError('"No Content" response contained content', self.status)
+                msg = '"No Content" response contained content'
+                raise GandiLiveBaseError(msg, self.status)
             else:
                 return {}
         elif self.status == httplib.NOT_FOUND:
