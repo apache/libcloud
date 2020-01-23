@@ -1417,8 +1417,27 @@ class LXDContainerDriver(ContainerDriver):
 
         return LXDNetwork.build_from_response(response_dict["metadata"])
 
-    def ex_create_network(self, **kwargs):
-        pass
+    def ex_create_network(self, name, **kwargs):
+        """
+        Create a new network with the given name and 
+        and the specified configuration
+
+        Authentication: trusted
+        Operation: sync
+        
+        :param name: The name of the new network
+        :type  name: str
+        
+        """
+
+        data = json.dumps(kwargs)
+        req = '/%s/networks' % self.version
+        # Return: standard return value or standard error
+        response = self.connection(req, methd="POST", data=data)
+        response_dict = response.parse_body()
+        assert_response(response_dict=response_dict, status_code=200)
+        return self.ex_get_network(name=name)
+
 
     def ex_delete_network(self, name):
         """
