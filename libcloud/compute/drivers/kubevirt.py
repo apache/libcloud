@@ -30,7 +30,7 @@ from libcloud.container.drivers.kubernetes import KubernetesConnection
 from libcloud.container.drivers.kubernetes import VALID_RESPONSE_CODES
 
 from libcloud.common.base import KeyCertificateConnection, ConnectionKey
-from libcloud.common.types import InvalidCredsError, ProviderError
+from libcloud.common.types import InvalidCredsError, LibcloudError
 
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node
@@ -463,7 +463,7 @@ class KubeVirtNodeDriver(NodeDriver):
             if disk_type == "persistentVolumeClaim":
                 if 'claim_name' in disk:
                     claimName = disk['claim_name']
-                    if claimName not in self.list_persistent_volume_claims(
+                    if claimName not in self.ex_list_persistent_volume_claims(
                         namespace=namespace
                     ):
                         if ('size' not in disk or "storage_class_name"
@@ -841,8 +841,9 @@ class KubeVirtNodeDriver(NodeDriver):
         if not volume.extra['is_bound']:
             volume = self._bind_volume(volume, node.extra['namespace'])
             if volume is None:
-                raise ProviderError("Selected Volume (PV) could not be bound "
-                                    "(to a PVC), please select another volume")
+                raise LibcloudError("Selected Volume (PV) could not be bound "
+                                    "(to a PVC), please select another volume",
+                                    driver=self)
 
         claimName = volume.extra['pvc']['name']
         if ex_name is None:
