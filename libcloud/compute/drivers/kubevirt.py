@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# NOTE: Re-enable once we add mypy annotations for the base container API
+# type: ignore
+
 """
 kubevirt driver with support for nodes (vms)
 """
