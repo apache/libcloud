@@ -68,7 +68,8 @@ class KubernetesTLSConnection(KeyCertificateConnection):
                 raise InvalidCredsError(
                     'You need an key PEM file to authenticate with '
                     'via tls. For more info please visit:'
-                    'https://kubernetes.io/docs/concepts/cluster-administration/certificates/')
+                    'https://kubernetes.io/docs/concepts/'
+                    'cluster-administration/certificates/')
             self.key_file = key_file
             certpath = os.path.expanduser(cert_file)
             is_file_path = os.path.exists(
@@ -77,7 +78,8 @@ class KubernetesTLSConnection(KeyCertificateConnection):
                 raise InvalidCredsError(
                     'You need an certificate PEM file to authenticate'
                     'via tls. For more info please visit:'
-                    'https://kubernetes.io/docs/concepts/cluster-administration/certificates/'
+                    'https://kubernetes.io/docs/concepts/'
+                    'cluster-administration/certificates/'
                 )
 
             self.cert_file = cert_file
@@ -235,7 +237,7 @@ class KubeVirtNodeDriver(NodeDriver):
 
             return result.status in VALID_RESPONSE_CODES
 
-        except Exception as exc:
+        except Exception:
             raise
 
     def stop_node(self, node):
@@ -255,7 +257,7 @@ class KubeVirtNodeDriver(NodeDriver):
 
             return result.status in VALID_RESPONSE_CODES
 
-        except Exception as exc:
+        except Exception:
             raise
 
     def reboot_node(self, node):
@@ -273,7 +275,7 @@ class KubeVirtNodeDriver(NodeDriver):
                                              method=method)
 
             return result.status in VALID_RESPONSE_CODES
-        except Exception as e:
+        except Exception:
             raise
         return
 
@@ -291,12 +293,13 @@ class KubeVirtNodeDriver(NodeDriver):
                                              '/virtualmachines/' + name,
                                              method='DELETE')
             return result.status in VALID_RESPONSE_CODES
-        except Exception as exc:
+        except Exception:
             raise
 
     # only has container disk support atm with no persistency
     def create_node(self, name, image, location=None, ex_memory=128, ex_cpu=1,
-                    ex_disks=None, ex_network=None, ex_termination_grace_period=0):
+                    ex_disks=None, ex_network=None,
+                    ex_termination_grace_period=0):
         """
         Creating a VM with a containerDisk.
         :param name: A name to give the VM. The VM will be identified by
@@ -341,7 +344,7 @@ class KubeVirtNodeDriver(NodeDriver):
                             created by providing the following:
                             required:
                             -size: the desired size (implied in GB)
-                            -storage_class_name: the name of the storage class to
+                            -storage_class_name: the name of the storage class to # NOQA
                                                be used for the creation of the
                                                Persistent Volume Claim.
                                                Make sure it allows for
@@ -369,7 +372,7 @@ class KubeVirtNodeDriver(NodeDriver):
                                accepted values.
                                The parameter must be a tupple or list with
                                (network_type, interface, name)
-        :type ex_network: `iterable` (tupple or list) [network_type, inteface, name]
+        :type ex_network: `iterable` (tupple or list) [network_type, inteface, name] # NOQA
                       network_type: `str` | only "pod" is accepted atm
                       interface: `str` | "masquerade" or "bridge"
                       name: `str`
@@ -417,7 +420,7 @@ class KubeVirtNodeDriver(NodeDriver):
                             },
                         },
                         "networks": [],
-                        "terminationGracePeriodSeconds": ex_termination_grace_period,
+                        "terminationGracePeriodSeconds": ex_termination_grace_period, # NOQA
                         "volumes": []
                     }
                 }
@@ -450,7 +453,7 @@ class KubeVirtNodeDriver(NodeDriver):
             if disk_type == "containerDisk":
                 try:
                     image = disk['image']
-                except KeyError as exc:
+                except KeyError:
                     raise KeyError('A container disk needs a '
                                    'containerized image')
 
@@ -463,7 +466,8 @@ class KubeVirtNodeDriver(NodeDriver):
                     if claimName not in self.list_persistent_volume_claims(
                         namespace=namespace
                     ):
-                        if 'size' not in disk or "storage_class_name" not in disk:
+                        if ('size' not in disk or "storage_class_name"
+                                not in disk):
                             msg = ("disk['size'] and "
                                    "disk['storage_class_name'] "
                                    "are both required to create "
@@ -533,7 +537,7 @@ class KubeVirtNodeDriver(NodeDriver):
 
             self.connection.request(req, method=method, data=data)
 
-        except Exception as exc:
+        except Exception:
             raise
         # check if new node is present
         nodes = self.list_nodes()
@@ -625,7 +629,7 @@ class KubeVirtNodeDriver(NodeDriver):
                             -glusterfs
                             -vsphereVolume
                             -quobyte Volumes
-                            -hostPath (Single node testing only – local storage is not supported in any way and WILL NOT WORK in a multi-node cluster)
+                            -hostPath (Single node testing only – local storage is not supported in any way and WILL NOT WORK in a multi-node cluster) # NOQA
                             -portworx Volumes
                             -scaleIO Volumes
                             -storageOS
@@ -651,11 +655,13 @@ class KubeVirtNodeDriver(NodeDriver):
             if location is None:
                 msg = "Please provide a namespace for the PVC."
                 raise ValueError(msg)
-            vol = self._create_volume_dynamic(size=size, name=name,
-                                              storage_class_name=ex_storage_class_name,
-                                              namespace=location.name,
-                                              volume_mode=ex_volume_mode,
-                                              access_mode=ex_access_mode)
+            vol = self._create_volume_dynamic(
+                size=size,
+                name=name,
+                storage_class_name=ex_storage_class_name,
+                namespace=location.name,
+                volume_mode=ex_volume_mode,
+                access_mode=ex_access_mode)
             return vol
         else:
             if ex_volume_type is None or ex_volume_params is None:
@@ -689,7 +695,7 @@ class KubeVirtNodeDriver(NodeDriver):
         try:
             self.connection.request(req, method=method, data=data)
 
-        except Exception as exc:
+        except Exception:
             raise
         # make sure that the volume was created
         volumes = self.list_volumes()
@@ -760,7 +766,7 @@ class KubeVirtNodeDriver(NodeDriver):
         data = json.dumps(pvc)
         try:
             result = self.connection.request(req, method=method, data=data)
-        except Exception as exc:
+        except Exception:
             raise
         if result.object['status']['phase'] != "Bound":
             for _ in range(3):
@@ -769,7 +775,7 @@ class KubeVirtNodeDriver(NodeDriver):
                     "/persistentvolumeclaims/" + name
                 try:
                     result = self.connection.request(req).object
-                except Exception as exc:
+                except Exception:
                     raise
                 if result['status']['phase'] == "Bound":
                     break
@@ -814,7 +820,7 @@ class KubeVirtNodeDriver(NodeDriver):
             try:
                 result = self.connection.request(req, method=method)
 
-            except Exception as exc:
+            except Exception:
                 raise
 
         pv = volume.name
@@ -823,7 +829,7 @@ class KubeVirtNodeDriver(NodeDriver):
         try:
             result = self.connection.request(req, method=method)
             return result.status
-        except Exception as exc:
+        except Exception:
             raise
 
     def attach_volume(self, node, volume, device='disk',
@@ -859,7 +865,7 @@ class KubeVirtNodeDriver(NodeDriver):
         # Get all the volumes of the vm
         try:
             result = self.connection.request(req).object
-        except Exception as exc:
+        except Exception:
             raise
         disks = result['spec']['template']['spec']['domain'][
             'devices']['disks']
@@ -889,7 +895,7 @@ class KubeVirtNodeDriver(NodeDriver):
             else:
                 node.extra['pvcs'] = [claimName]
             return result in VALID_RESPONSE_CODES
-        except Exception as exc:
+        except Exception:
             raise
 
     def detach_volume(self, volume, ex_node):
@@ -910,7 +916,7 @@ class KubeVirtNodeDriver(NodeDriver):
 
         try:
             result = self.connection.request(req).object
-        except Exception as exc:
+        except Exception:
             raise
         disks = result['spec']['template']['spec']['domain'][
             'devices']['disks']
@@ -949,7 +955,7 @@ class KubeVirtNodeDriver(NodeDriver):
                                              headers=headers)
             ex_node.extra['pvcs'].remove(claimName)
             return result in VALID_RESPONSE_CODES
-        except Exception as exc:
+        except Exception:
             raise
 
     def ex_list_persistent_volume_claims(self, namespace="default"):
@@ -958,7 +964,7 @@ class KubeVirtNodeDriver(NodeDriver):
             "/persistentvolumeclaims"
         try:
             result = self.connection.request(pvc_req).object
-        except Exception as exc:
+        except Exception:
             raise
         pvcs = [item['metadata']['name'] for item in result['items']]
         return pvcs
@@ -968,8 +974,8 @@ class KubeVirtNodeDriver(NodeDriver):
         # sc = storage class
         sc_req = "/apis/storage.k8s.io/v1/storageclasses"
         try:
-                result = self.connection.request(sc_req).object
-        except Exception as exc:
+            result = self.connection.request(sc_req).object
+        except Exception:
             raise
         scs = [item['metadata']['name'] for item in result['items']]
 
@@ -985,7 +991,7 @@ class KubeVirtNodeDriver(NodeDriver):
 
         try:
             result = self.connection.request(pv_rec).object
-        except Exception as exc:
+        except Exception:
             raise
 
         for item in result['items']:
