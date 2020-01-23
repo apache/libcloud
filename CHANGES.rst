@@ -134,6 +134,14 @@ Storage
 
   (GITHUB-1410)
   [Clemens Wolff - @c-w]
+
+DNS
+~~~
+
+- [Gandi Live] Update the driver and make sure it matches the latest service /
+  API updates.
+  (GITHUB-1416)
+  [Ryan Lee - @zepheiryan]
   
 Container
 ~~~~~~~~~
