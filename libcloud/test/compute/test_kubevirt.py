@@ -7,19 +7,20 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.test import unittest
 from libcloud.test import MockHttp
-from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class KubeVirtTest(unittest.TestCase, TestCaseMixin):
+class KubeVirtTest(unittest.TestCase):
 
     fixtures = ComputeFileFixtures('kubevirt')
 
     def setUp(self):
         KubeVirtNodeDriver.connectionCls.conn_class = KubeVirtMockHttp
-        self.driver = KubeVirtNodeDriver(key='user',secret='pass',
+        self.driver = KubeVirtNodeDriver(key='user',
+                                         secret='pass',
                                          secure=True,
-                                         host='foo',port=6443)
+                                         host='foo',
+                                         port=6443)
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
@@ -51,15 +52,14 @@ class KubeVirtTest(unittest.TestCase, TestCaseMixin):
         resp = self.driver.destroy_node(to_destroy)
         self.assertTrue(resp)
 
-
     def test_start_node(self):
         nodes = self.driver.list_nodes()
-        r1 = self.driver.ex_start_node(nodes[0])
+        r1 = self.driver.start_node(nodes[0])
         self.assertTrue(r1)
 
     def test_stop_node(self):
         nodes = self.driver.list_nodes()
-        r1 = self.driver.ex_stop_node(nodes[0])
+        r1 = self.driver.stop_node(nodes[0])
         self.assertTrue(r1)
 
     def test_reboot_node(self):
@@ -71,11 +71,9 @@ class KubeVirtTest(unittest.TestCase, TestCaseMixin):
         self.assertTrue(resp)
 
 
-
 class KubeVirtMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('kubevirt')
-
 
     def _api_v1_namespaces(self, method, url, body, headers):
         if method == "GET":
@@ -116,7 +114,7 @@ class KubeVirtMockHttp(MockHttp):
         else:
             AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _apis_kubevirt_io_v1alpha3_namespaces_kube_system_virtualmachines(self,
                                                      method, url, body, headers):
         if method == "GET":
@@ -136,7 +134,7 @@ class KubeVirtMockHttp(MockHttp):
         else:
             AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachines_testvm(self,
                                                     method, url, body, headers):
         header = "application/merge-patch+json"
