@@ -175,9 +175,6 @@ SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 # Reference: https://hynek.me/articles/conditional-python-dependencies/
 INSTALL_REQUIREMENTS = [
     'requests>=2.5.0',
-    'backports.ssl_match_hostname ; python_version<"2.7.9"',
-    'typing ; python_version<"3.4.0"',
-    'enum34 ; python_version<"3.4.0"',
 ]
 
 setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
@@ -201,7 +198,7 @@ if PY_pre_35:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
     print('Version ' + version + ' is not supported. Supported versions are: %s.'
           'Latest version which supports Python 2.7 and Python 3 < 3.5.0 is '
-          'Libcloud v2.7.0' % ', '.join(SUPPORTED_VERSIONS))
+          'Libcloud v2.8.0' % ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
 
@@ -300,7 +297,6 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
