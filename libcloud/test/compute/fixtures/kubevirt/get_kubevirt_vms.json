@@ -1,0 +1,10 @@
+{
+    "kind": "VirtualMachineList",
+    "items": [],
+    "metadata": {
+      "continue": "",
+      "selfLink": "/apis/kubevirt.io/v1alpha3/namespaces/kubevirt/virtualmachines",
+      "resourceVersion": "245647"
+    },
+    "apiVersion": "kubevirt.io/v1alpha3"
+  }

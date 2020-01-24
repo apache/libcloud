@@ -1,0 +1,99 @@
+{
+  "items": [
+    {
+      "spec": {
+        "template": {
+          "spec": {
+            "domain": {
+              "resources": {
+                "requests": {
+                  "memory": "64M"
+                }
+              },
+              "devices": {
+                "disks": [
+                  {
+                    "name": "containerdisk",
+                    "disk": {
+                      "bus": "virtio"
+                    }
+                  },
+                  {
+                    "name": "cloudinitdisk",
+                    "disk": {
+                      "bus": "virtio"
+                    }
+                  }
+                ],
+                "interfaces": [
+                  {
+                    "name": "default",
+                    "bridge": {}
+                  }
+                ]
+              },
+              "machine": {
+                "type": ""
+              }
+            },
+            "networks": [
+              {
+                "name": "default",
+                "pod": {}
+              }
+            ],
+            "volumes": [
+              {
+                "name": "containerdisk",
+                "containerDisk": {
+                  "image": "kubevirt/cirros-registry-disk-demo"
+                }
+              },
+              {
+                "cloudInitNoCloud": {
+                  "userDataBase64": "SGkuXG4="
+                },
+                "name": "cloudinitdisk"
+              }
+            ]
+          },
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "kubevirt.io/domain": "testvm",
+              "kubevirt.io/size": "small"
+            }
+          }
+        },
+        "running": true
+      },
+      "apiVersion": "kubevirt.io/v1alpha3",
+      "metadata": {
+        "annotations": {
+          "kubevirt.io/latest-observed-api-version": "v1alpha3",
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"kubevirt.io/v1alpha3\",\"kind\":\"VirtualMachine\",\"metadata\":{\"annotations\":{},\"name\":\"testvm\",\"namespace\":\"default\"},\"spec\":{\"running\":false,\"template\":{\"metadata\":{\"labels\":{\"kubevirt.io/domain\":\"testvm\",\"kubevirt.io/size\":\"small\"}},\"spec\":{\"domain\":{\"devices\":{\"disks\":[{\"disk\":{\"bus\":\"virtio\"},\"name\":\"containerdisk\"},{\"disk\":{\"bus\":\"virtio\"},\"name\":\"cloudinitdisk\"}],\"interfaces\":[{\"bridge\":{},\"name\":\"default\"}]},\"resources\":{\"requests\":{\"memory\":\"64M\"}}},\"networks\":[{\"name\":\"default\",\"pod\":{}}],\"volumes\":[{\"containerDisk\":{\"image\":\"kubevirt/cirros-registry-disk-demo\"},\"name\":\"containerdisk\"},{\"cloudInitNoCloud\":{\"userDataBase64\":\"SGkuXG4=\"},\"name\":\"cloudinitdisk\"}]}}}}\n",
+          "kubevirt.io/storage-observed-api-version": "v1alpha3"
+        },
+        "creationTimestamp": "2019-12-02T15:35:14Z",
+        "generation": 39,
+        "namespace": "default",
+        "name": "testvm",
+        "selfLink": "/apis/kubevirt.io/v1alpha3/namespaces/default/virtualmachines/testvm",
+        "resourceVersion": "284863",
+        "uid": "74fd7665-fbd6-4565-977c-96bd21fb785a"
+      },
+      "kind": "VirtualMachine",
+      "status": {
+        "ready": true,
+        "created": true
+      }
+    }
+  ],
+  "apiVersion": "kubevirt.io/v1alpha3",
+  "metadata": {
+    "continue": "",
+    "selfLink": "/apis/kubevirt.io/v1alpha3/namespaces/default/virtualmachines",
+    "resourceVersion": "285618"
+  },
+  "kind": "VirtualMachineList"
+}

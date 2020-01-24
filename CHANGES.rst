@@ -50,8 +50,14 @@ Compute
   [Tomaz Muraus]
 
 - [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
-  when region is not called ``nova``. (GITHUB-1411, GITHUB-1412)
+  when region is not called ``nova``.
+  (GITHUB-1411, GITHUB-1412)
   [Miguel Caballer - @micafer]
+
+- [KubeVirt] New KubeVirt driver with initial support for the k8s/KubeVirt
+  add-on.
+  (GITHUB-1394)
+  [Eis D. Zaster - @Eis-D-Z]
 
 Storage
 ~~~~~~~
