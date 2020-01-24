@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud in development (3.0.0)
--------------------------------------------------
+Changes in Apache Libcloud 3.0.0-rc1
+------------------------------------
 
 General
 ~~~~~~~
