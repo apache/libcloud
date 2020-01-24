@@ -33,6 +33,7 @@ Provider                              list volumes create volume destroy volume 
 `Joyent`_                             no           no            no             no            no            no             no             
 `Kili Public Cloud`_                  yes          yes           yes            yes           yes           yes            yes            
 `KTUCloud`_                           yes          yes           yes            yes           yes           no             yes            
+`kubevirt`_                           yes          yes           yes            yes           yes           no             no             
 `Libvirt`_                            no           no            no             no            no            no             no             
 `Linode`_                             no           no            yes            no            no            no             no             
 `Maxihost`_                           no           no            no             no            no            no             no             
@@ -96,6 +97,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`Joyent`: http://www.joyentcloud.com
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
+.. _`kubevirt`: https://www.kubevirt.io
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/
