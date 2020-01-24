@@ -1,6 +1,22 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development (3.0.0)
+-------------------------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] Fix ``list_nodes()`` method so it correctly handles pagination
+  and returns all the nodes if there are more than 500 nodes available
+  in total.
+
+  Previously, only first 500 nodes were returned.
+
+  Reported by @TheSushiChef.
+  (GITHUB-1409, GITHUB-1360)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud 3.0.0-rc1
 ------------------------------------
 
@@ -1138,11 +1154,12 @@ Compute
   (LIBCLOUD-952, GITHUB-1124)
   [Mika Lackman]
 
-- [UpCloud] Allow to define hostname and username
+- [UpCloud] Allow to define hostname and username.
   (LIBCLOUD-951, LIBCLOUD-953, GITHUB-1123, GITHUB-1125)
   [Mika Lackman]
 
-- [UpCloud] Add pricing information to list_sizes (LIBCLOUD-969, GITHUB-1152)
+- [UpCloud] Add pricing information to list_sizes.
+  (LIBCLOUD-969, GITHUB-1152)
   [Mika Lackman]
 
 Storage
