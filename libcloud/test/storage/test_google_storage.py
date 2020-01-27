@@ -235,10 +235,12 @@ class GoogleStorageConnectionTest(GoogleTestCase):
             'Date': TODAY,
             'x-goog-foo': 'X-GOOG: MAINTAIN UPPERCASE!',
             'x-Goog-bar': 'Header key should be lowered',
+            'Content-Type': 'application/mIXED casING MAINTAINED',
             'Other': 'LOWER THIS!'
         }
         modified_headers = {
             'date': TODAY,
+            'content-type': 'application/mIXED casING MAINTAINED',
             'x-goog-foo': 'X-GOOG: MAINTAIN UPPERCASE!',
             'x-goog-bar': 'Header key should be lowered',
             'other': 'lower this!'
