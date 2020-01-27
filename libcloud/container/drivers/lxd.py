@@ -1292,7 +1292,7 @@ class LXDContainerDriver(ContainerDriver):
                                   "without a definition")
 
         # currently not used
-        size_type = definition['config'].pop('size_type')
+        size_type = definition.pop('size_type')
         definition['config']['size'] = \
             str(LXDContainerDriver._to_bytes(definition['config']['size'],
                                              size_type=size_type))
