@@ -1471,10 +1471,11 @@ class LXDContainerDriver(ContainerDriver):
         :type  name: str
         """
 
+        kwargs['name'] = name
         data = json.dumps(kwargs)
         req = '/%s/networks' % self.version
         # Return: standard return value or standard error
-        response = self.connection(req, methd="POST", data=data)
+        response = self.connection.request(req, method="POST", data=data)
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
         return self.ex_get_network(name=name)
