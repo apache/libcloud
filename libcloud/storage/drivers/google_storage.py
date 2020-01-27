@@ -119,7 +119,9 @@ class GoogleStorageConnection(ConnectionUserAndKey):
         # Lowercase all headers except 'date' and Google header values
         for k, v in headers.items():
             k_lower = k.lower()
-            if (k_lower == 'date' or k_lower.startswith(
+            # NOTE: It's important that the value of Content-Type header is
+            # left as is and not lowercased
+            if (k_lower in ['date', 'content-type'] or k_lower.startswith(
                     GoogleStorageDriver.http_vendor_prefix) or
                     not isinstance(v, str)):
                 headers_copy[k_lower] = v
