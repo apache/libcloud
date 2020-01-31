@@ -1291,7 +1291,6 @@ class LXDContainerDriver(ContainerDriver):
             raise LXDAPIException("Cannot create a storage volume "
                                   "without a definition")
 
-        # currently not used
         size_type = definition.pop('size_type')
         definition['config']['size'] = \
             str(LXDContainerDriver._to_bytes(definition['config']['size'],
@@ -1407,16 +1406,28 @@ class LXDContainerDriver(ContainerDriver):
         :return:
         """
 
-        response = self.connection.request("/%s/storage-pools/%s/volumes/%s/%s"
-                                           % (self.version, pool_id,
-                                              type, name),
-                                           method="DELETE")
+        try:
 
-        response_dict = response.parse_body()
-        assert_response(response_dict=response_dict, status_code=200)
+            req = "/%s/storage-pools/%s/volumes/%s/%s" % (self.version,
+                                                          pool_id,
+                                                          type,
+                                                          name)
+            response = self.connection.request(req, method="DELETE")
+
+            response_dict = response.parse_body()
+            assert_response(response_dict=response_dict, status_code=200)
+        except BaseHTTPError as e:
+
+            message_list = e.message.split(",")
+            message = message_list[0].split(":")[-1]
+
+            if message == '"The storage volume is still in use"':
+                raise LXDAPIException(message="The storage "
+                                              "volume is still in use")
+            raise
         return True
 
-    def ex_get_networks(self):
+    def ex_list_networks(self):
         """
         Returns a list of networks.
         Implements GET /1.0/networks
