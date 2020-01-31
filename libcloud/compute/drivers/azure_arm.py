@@ -2235,7 +2235,7 @@ class AzureNodeDriver(NodeDriver):
             elif ps == "succeeded":
                 state = NodeState.RUNNING
 
-        node = Node(data["id"],
+        node = Node(data["id"].lower(),
                     data["name"],
                     state,
                     public_ips,
