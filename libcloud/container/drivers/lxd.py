@@ -741,10 +741,17 @@ class LXDContainerDriver(ContainerDriver):
 
         # Return: background operation or standard error
         req = '/%s/containers/%s' % (self.version, container.name)
-        response = self.connection.request(req, method='DELETE')
 
-        response_dict = response.parse_body()
-        assert_response(response_dict=response_dict, status_code=100)
+        try:
+            response = self.connection.request(req, method='DELETE')
+
+            response_dict = response.parse_body()
+            assert_response(response_dict=response_dict, status_code=100)
+        except BaseHTTPError as e:
+            # handle the case where the container is running
+            message_list = e.message.split(",")
+            message = message_list[0].split(":")[-1]
+            raise LXDAPIException(message=message)
 
         try:
 
@@ -764,6 +771,7 @@ class LXDContainerDriver(ContainerDriver):
             if message != '"not found"':
                 # something is wrong
                 raise LXDAPIException(message=e.message)
+
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
