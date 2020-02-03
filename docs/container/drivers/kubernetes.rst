@@ -25,11 +25,32 @@ Authentication currently supported with the following methods:
 
 Instantiating the driver
 ------------------------
-        
+
 .. literalinclude:: /examples/container/kubernetes/instantiate_driver.py
    :language: python
 
-Deploying a container from Docker Hub
+Instantiating the driver (minikube installation)
+------------------------------------------------
+
+Currently Kubernetes driver relies on basic auth authentication, which means you
+need to start the minikube with the command shown below:
+
+.. sourcecode:: bash
+
+    $ cat users.csv
+    pass123,user1,developers
+
+.. sourcecode:: python
+
+    # Mount a share with a local users file
+    minikube mount /home/libcloud/users.csv:/var/lib/docker/users.csv
+
+    # Start miniube
+    minikube --extra-config=apiserver.basic-auth-file=/var/lib/docker/users.csv start
+
+.. literalinclude:: /examples/container/kubernetes/instantiate_driver_minikube.py
+   :language: python
+
 -------------------------------------
 
 Docker Hub Client :class:`~libcloud.container.utils.docker.HubClient` is a shared utility class for interfacing to the public Docker Hub Service.
