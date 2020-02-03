@@ -48,7 +48,6 @@ LXD_API_IMAGE_SOURCE_TYPE = ["image", "migration", "copy", "none"]
 # the wording used by LXD to indicate that an error
 # occurred for a request
 LXD_ERROR_STATUS_RESP = 'error'
-
 DUMMY_POOL_NAME = "DummyPool"
 
 
@@ -384,6 +383,8 @@ class LXDContainerDriver(ContainerDriver):
     # will be destroyed once it is stopped
     default_ephemeral = False
 
+    INVALID_FINGER_PRINT = -1
+
     def __init__(self, key='', secret='', secure=False,
                  host='localhost', port=8443, key_file=None,
                  cert_file=None, ca_cert=None,
@@ -530,6 +531,31 @@ class LXDContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.Container`
         """
 
+        if parameters:
+            parameters = json.loads(parameters)
+
+            if "mode" in parameters["source"] and \
+                    parameters["source"]["mode"] == "pull":
+
+                try:
+                    # this means the image must be downloaded
+                    image = self.install_image(path=None,
+                                               ex_timeout=ex_timeout,
+                                               **parameters)
+                except Exception as e:
+                    raise LXDAPIException(message='Deploying '
+                                                  'container failed:  '
+                                                  'Image  could not '
+                                                  'be installed')
+
+                # if the image was installed then we need to change
+                # how parameters are structured
+                parameters = {"source": {"type": "image",
+                                         "fingerprint":
+                                             image.extra['fingerprint']}}
+
+                parameters = json.loads(parameters)
+
         cont_params = \
             LXDContainerDriver._fix_cont_params(architecture=ex_architecture,
                                                 profiles=ex_profiles,
@@ -537,9 +563,6 @@ class LXDContainerDriver(ContainerDriver):
                                                 config=ex_config,
                                                 devices=ex_devices,
                                                 instance_type=ex_instance_type)
-
-        if parameters:
-            parameters = json.loads(parameters)
 
         container = self._deploy_container_from_image(name=name, image=image,
                                                       parameters=parameters,
@@ -954,7 +977,7 @@ class LXDContainerDriver(ContainerDriver):
         """
         Install a container image from a remote path. Not that the
         path currently is not used. Image data should be provided
-        int the ex_img_data under the key 'image_data'. Creating
+        int the ex_img_data under the key 'ex_img_data'. Creating
         an image in LXD is an asynchronous operation
 
         :param path: Path to the container image
@@ -975,9 +998,24 @@ class LXDContainerDriver(ContainerDriver):
             raise LXDAPIException(message=msg)
 
         # Return: background operation or standard error
-        data = ex_img_data['image_data']
+        data = ex_img_data['source']
+
+        config = {
+            'public': data.get('public', True),
+            'auto_update': data.get('auto_update', False),
+            'aliases': [data.get('aliases', {})],
+            'source': {
+                'type': 'url',
+                'mode': 'pull',
+                'url': data['url']
+            }
+        }
+
+        config = json.dumps(config)
+
+        # background operation or standard error
         response = self.connection.request('/%s/images' % (self.version),
-                                           method='POST', json=data)
+                                           method='POST', data=config)
 
         response_dict = response.parse_body()
 
@@ -1004,9 +1042,21 @@ class LXDContainerDriver(ContainerDriver):
                 # something is wrong
                 raise LXDAPIException(message=e.message)
 
-        response_dict = response.parse_body()
-        assert_response(response_dict=response_dict, status_code=200)
-        return self._to_image(metadata=response_dict['metadata'])
+        config = json.loads(config)
+
+        # let's see if the image exists
+        if len(config['aliases']) != 0 and \
+                'name' in config['aliases'][0]:
+            image_alias = config['aliases'][0]['name']
+        else:
+            image_alias = config['source']['url'].split('/')[-1]
+
+        has, fingerprint = self.ex_has_image(alias=image_alias)
+        if not has:
+            raise LXDAPIException(message="Image %s was "
+                                          "not installed " % image_alias)
+
+        return self.ex_get_image(fingerprint=fingerprint)
 
     def list_images(self):
         """
@@ -1045,8 +1095,8 @@ class LXDContainerDriver(ContainerDriver):
 
         for img in images:
             if alias == img.name:
-                return True
-        return False
+                return True, img.extra['fingerprint']
+        return False, LXDContainerDriver.INVALID_FINGER_PRINT
 
     def ex_list_storage_pools(self, detailed=True):
         """
