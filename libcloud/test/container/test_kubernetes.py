@@ -13,18 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
-
-from libcloud.test import unittest
-
-from libcloud.container.base import ContainerImage
-
-from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
+import base64
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import b
+
+from libcloud.common.kubernetes import KubernetesBasicAuthConnection
+from libcloud.common.kubernetes import KubernetesTLSAuthConnection
+from libcloud.common.kubernetes import KubernetesTokenAuthConnection
+
+from libcloud.container.base import ContainerImage
+from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
+
 from libcloud.test.secrets import CONTAINER_PARAMS_KUBERNETES
 from libcloud.test.file_fixtures import ContainerFileFixtures
 from libcloud.test import MockHttp
+from libcloud.test import unittest
+
+KEY_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                           '../compute/fixtures/azure/libcloud.pem'))
+CERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                            '../loadbalancer/fixtures/nttcis/denis.crt'))
+CA_CERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                               '../loadbalancer/fixtures/nttcis/chain.crt'))
 
 
 class KubernetesContainerDriverTestCase(unittest.TestCase):
@@ -34,6 +47,64 @@ class KubernetesContainerDriverTestCase(unittest.TestCase):
         KubernetesMockHttp.type = None
         KubernetesMockHttp.use_param = 'a'
         self.driver = KubernetesContainerDriver(*CONTAINER_PARAMS_KUBERNETES)
+
+    def test_http_basic_auth(self):
+        # TODO: Move this into shared kubernetes driver tests file
+        driver = KubernetesContainerDriver(key='username', secret='password')
+        self.assertEqual(driver.connectionCls, KubernetesBasicAuthConnection)
+        self.assertEqual(driver.connection.key, 'username')
+        self.assertEqual(driver.connection.secret, 'password')
+
+        auth_string = base64.b64encode(b('%s:%s' % ('username', 'password'))).decode('utf-8')
+
+        headers = driver.connection.add_default_headers({})
+        self.assertEqual(headers['Content-Type'], 'application/json')
+        self.assertEqual(headers['Authorization'], 'Basic %s' % (auth_string))
+
+    def test_cert_auth(self):
+        # TODO: Move this into shared kubernetes driver tests file
+        # key_file provided, but not cert_file
+        expected_msg = 'Both key and certificate files are needed'
+        self.assertRaisesRegex(ValueError, expected_msg, KubernetesContainerDriver,
+                               key_file=KEY_FILE, ca_cert=CA_CERT_FILE)
+
+        # cert_file provided, but not key_file
+        expected_msg = 'Both key and certificate files are needed'
+        self.assertRaisesRegex(ValueError, expected_msg, KubernetesContainerDriver,
+                               cert_file=CERT_FILE, ca_cert=CA_CERT_FILE)
+
+        # ca_cert argument specified
+        driver = KubernetesContainerDriver(key_file=KEY_FILE, cert_file=CERT_FILE,
+                                           ca_cert=CA_CERT_FILE)
+        self.assertEqual(driver.connectionCls, KubernetesTLSAuthConnection)
+        self.assertEqual(driver.connection.key_file, KEY_FILE)
+        self.assertEqual(driver.connection.cert_file, CERT_FILE)
+        self.assertEqual(driver.connection.connection.ca_cert, CA_CERT_FILE)
+
+        headers = driver.connection.add_default_headers({})
+        self.assertEqual(headers['Content-Type'], 'application/json')
+
+        # ca_cert argument not specified
+        # TODO: Move this into shared kubernetes driver tests file
+        driver = KubernetesContainerDriver(key_file=KEY_FILE, cert_file=CERT_FILE,
+                                           ca_cert=None)
+        self.assertEqual(driver.connectionCls, KubernetesTLSAuthConnection)
+        self.assertEqual(driver.connection.key_file, KEY_FILE)
+        self.assertEqual(driver.connection.cert_file, CERT_FILE)
+        self.assertEqual(driver.connection.connection.ca_cert, False)
+
+        headers = driver.connection.add_default_headers({})
+        self.assertEqual(headers['Content-Type'], 'application/json')
+
+    def test_bearer_token_auth(self):
+        # TODO: Move this into shared kubernetes driver tests file
+        driver = KubernetesContainerDriver(ex_token_bearer_auth=True, key='foobar')
+        self.assertEqual(driver.connectionCls, KubernetesTokenAuthConnection)
+        self.assertEqual(driver.connection.key, 'foobar')
+
+        headers = driver.connection.add_default_headers({})
+        self.assertEqual(headers['Content-Type'], 'application/json')
+        self.assertEqual(headers['Authorization'], 'Bearer %s' % ('foobar'))
 
     def test_list_containers(self):
         containers = self.driver.list_containers()
@@ -122,6 +193,7 @@ class KubernetesMockHttp(MockHttp):
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
