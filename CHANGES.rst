@@ -17,6 +17,17 @@ Compute
   (GITHUB-1409, GITHUB-1360)
   [Tomaz Muraus]
 
+Storage
+~~~~~~~
+
+- [Google Storage] Fix a bug when uploading an object would fail and result
+  in 401 "invalid signature" error when object mime type contained mixed
+  casing and when S3 Interoperability authentication method was used.
+
+  Reported by Will Abson - wabson.
+  (GITHUB-1417, GITHUB-1418)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud 3.0.0-rc1
 ------------------------------------
 
