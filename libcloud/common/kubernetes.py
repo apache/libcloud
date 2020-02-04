@@ -246,7 +246,10 @@ class KubernetesDriverMixin(object):
             self.connection.connection.ca_cert = False
 
         self.connection.host = host
-        self.connection.port = port
+
+        if port is not None:
+            self.connection.port = port
+
         self.connection.secure = secure
 
         if self.connectionCls == KubernetesBasicAuthConnection:
