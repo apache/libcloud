@@ -14,13 +14,14 @@ it groups the containers which make up an application into logical units for eas
     :width: 300
     :target: http://kubernetes.io/
 
-
 Authentication
 --------------
 
 Authentication currently supported with the following methods:
 
-* Basic HTTP Authentication - http://kubernetes.io/v1.1/docs/admin/authentication.html
+* Client certificate auth (recommended) - https://kubernetes.io/docs/reference/access-authn-authz/authentication/#x509-client-certs
+* Bearer token auth - https://kubernetes.io/docs/reference/access-authn-authz/authentication/#static-token-file
+* Basic HTTP Authentication (deprecated) - https://kubernetes.io/docs/reference/access-authn-authz/authentication/#static-password-file
 * No authentication (testing only)
 
 Instantiating the driver
@@ -29,11 +30,22 @@ Instantiating the driver
 .. literalinclude:: /examples/container/kubernetes/instantiate_driver.py
    :language: python
 
-Instantiating the driver (minikube installation)
-------------------------------------------------
+Instantiating the driver (minikube installation - cert file auth)
+-----------------------------------------------------------------
 
-Currently Kubernetes driver relies on basic auth authentication, which means you
-need to start the minikube with the command shown below:
+This example shows how to connect to a local minikube Kubernetes cluster
+which utilizes certifcate based authentication.
+
+.. literalinclude:: /examples/container/kubernetes/instantiate_driver_minikube_cert_auth.py
+   :language: python
+
+Instantiating the driver (minikube installation - basic auth)
+-------------------------------------------------------------
+
+This example shows how to connect to a local minikube Kubernetes cluster
+which utilizes basic auth authentication.
+
+When using basic auth, you need to start the minikube as shown below.
 
 .. sourcecode:: bash
 
@@ -48,7 +60,7 @@ need to start the minikube with the command shown below:
     # Start miniube
     minikube --extra-config=apiserver.basic-auth-file=/var/lib/docker/users.csv start
 
-.. literalinclude:: /examples/container/kubernetes/instantiate_driver_minikube.py
+.. literalinclude:: /examples/container/kubernetes/instantiate_driver_minikube_basic_auth.py
    :language: python
 
 -------------------------------------

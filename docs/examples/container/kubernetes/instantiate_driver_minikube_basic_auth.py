@@ -3,7 +3,8 @@ from libcloud.container.providers import get_driver
 
 import libcloud.security
 
-# Disable cert vertification when running minikube locally using self signed cert
+# Disable cert vertification when running minikube locally using self signed
+# cert
 libcloud.security.VERIFY_SSL_CERT = False
 
 cls = get_driver(Provider.KUBERNETES)
