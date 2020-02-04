@@ -17,10 +17,11 @@
 Module which contains common Kubernetes related code.
 """
 
+from typing import Optional
+
 import os
 import base64
 import warnings
-
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
@@ -78,7 +79,7 @@ class KubernetesTLSAuthConnection(KeyCertificateConnection):
     timeout = 60
 
     def __init__(self, key, secure=True, host='localhost',
-                 port='6443', key_file=None, cert_file=None, ca_cert=None,
+                 port='6443', key_file=None, cert_file=None,
                  **kwargs):
 
         super(KubernetesTLSAuthConnection, self).__init__(
@@ -94,16 +95,20 @@ class KubernetesTLSAuthConnection(KeyCertificateConnection):
         if key_file:
             keypath = os.path.expanduser(key_file)
             is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
+
             if not is_file_path:
                 raise InvalidCredsError(
                     'You need an key PEM file to authenticate '
                     'via tls. For more info please visit:'
                     'https://kubernetes.io/docs/concepts/'
                     'cluster-administration/certificates/')
+
             self.key_file = key_file
+
             certpath = os.path.expanduser(cert_file)
             is_file_path = os.path.exists(
                 certpath) and os.path.isfile(certpath)
+
             if not is_file_path:
                 raise InvalidCredsError(
                     'You need an certificate PEM file to authenticate '
@@ -146,18 +151,12 @@ class KubernetesBasicAuthConnection(ConnectionUserAndKey):
         """
         if 'Content-Type' not in headers:
             headers['Content-Type'] = 'application/json'
-        if self.key and self.secret:
-            user_b64 = base64.b64encode(b('%s:%s' % (self.key, self.secret)))
+
+        if self.user_id and self.key:
+            auth_string = b('%s:%s' % (self.user_id, self.key))
+            user_b64 = base64.b64encode(auth_string)
             headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
         return headers
-
-    def _ex_connection_class_kwargs(self):
-        kwargs = {}
-        if hasattr(self, 'key_file'):
-            kwargs['key_file'] = self.key_file
-        if hasattr(self, 'cert_file'):
-            kwargs['cert_file'] = self.cert_file
-        return kwargs
 
 
 class KubernetesDriverMixin(object):
@@ -219,15 +218,10 @@ class KubernetesDriverMixin(object):
             self.cert_file = cert_file
             secure = True
 
-        if host is not None:
-            if host.startswith('https://'):
-                secure = True
+        if host and host.startswith('https://'):
+            secure = True
 
-            # strip the prefix
-            prefixes = ['http://', 'https://']
-            for prefix in prefixes:
-                if host.startswith(prefix):
-                    host = host.lstrip(prefix)
+        host = self._santize_host(host=host)
 
         super(KubernetesDriverMixin, self).__init__(key=key, secret=secret,
                                                     secure=secure,
@@ -245,17 +239,11 @@ class KubernetesDriverMixin(object):
                           "will be disabled for this session.")
             self.connection.connection.ca_cert = False
 
+        self.connection.secure = secure
         self.connection.host = host
 
         if port is not None:
             self.connection.port = port
-
-        self.connection.secure = secure
-
-        if self.connectionCls == KubernetesBasicAuthConnection:
-            self.connection.secret = secret
-
-        self.connection.key = key
 
     def _ex_connection_class_kwargs(self):
         kwargs = {}
@@ -264,3 +252,18 @@ class KubernetesDriverMixin(object):
         if hasattr(self, 'cert_file'):
             kwargs['cert_file'] = self.cert_file
         return kwargs
+
+    def _santize_host(self, host=None):
+        # type: (Optional[str]) -> Optional[str]
+        """
+        Sanitize "host" argument any remove any protocol prefix (if specified).
+        """
+        if not host:
+            return None
+
+        prefixes = ['http://', 'https://']
+        for prefix in prefixes:
+            if host.startswith(prefix):
+                host = host.lstrip(prefix)
+
+        return host

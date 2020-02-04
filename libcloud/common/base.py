@@ -886,7 +886,7 @@ class KeyCertificateConnection(CertificateConnection):
 
     def __init__(self, key_file, cert_file, secure=True, host=None, port=None,
                  url=None, proxy_url=None, timeout=None, backoff=None,
-                 retry_delay=None):
+                 retry_delay=None, ca_cert=None):
         """
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.

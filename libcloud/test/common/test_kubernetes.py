@@ -46,8 +46,8 @@ class KubernetesAuthTestCaseMixin(object):
     def test_http_basic_auth(self):
         driver = self.driver_cls(key='username', secret='password')
         self.assertEqual(driver.connectionCls, KubernetesBasicAuthConnection)
-        self.assertEqual(driver.connection.key, 'username')
-        self.assertEqual(driver.connection.secret, 'password')
+        self.assertEqual(driver.connection.user_id, 'username')
+        self.assertEqual(driver.connection.key, 'password')
 
         auth_string = base64.b64encode(b('%s:%s' % ('username', 'password'))).decode('utf-8')
 
@@ -96,3 +96,13 @@ class KubernetesAuthTestCaseMixin(object):
         headers = driver.connection.add_default_headers({})
         self.assertEqual(headers['Content-Type'], 'application/json')
         self.assertEqual(headers['Authorization'], 'Bearer %s' % ('foobar'))
+
+    def test_host_sanitization(self):
+        driver = self.driver_cls(host='example.com')
+        self.assertEqual(driver.connection.host, 'example.com')
+
+        driver = self.driver_cls(host='http://example.com')
+        self.assertEqual(driver.connection.host, 'example.com')
+
+        driver = self.driver_cls(host='https://example.com')
+        self.assertEqual(driver.connection.host, 'example.com')
