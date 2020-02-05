@@ -17,13 +17,16 @@ import logging
 import json
 import base64
 import warnings
+import time
 
 import libcloud.security
 
 from libcloud.utils.misc import lowercase_keys
 from libcloud.utils.py3 import httplib
-from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.common.types import InvalidCredsError, LibcloudError
+from libcloud.common.types import ProviderError
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.common.base import JsonResponse, ConnectionKey
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeSize
 from libcloud.compute.base import NodeImage, NodeLocation
@@ -33,12 +36,27 @@ from libcloud.compute.types import NodeState, Provider
 VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                         httplib.NO_CONTENT]
 
+class VSphereNetwork(object):
+    """
+    Represents information about a VPC (Virtual Private Cloud) network
+
+    Note: This class is VSphere specific.
+    """
+
+    def __init__(self, id, name, extra=None):
+        self.id = id
+        self.name = name
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return (('<VSphereNetwork: id=%s, name=%s')
+                % (self.id, self.name))
+
 class VSphereResponse(JsonResponse):
 
     def parse_error(self):
         if self.body:
-            message = json.loads(self.body)['value']['messages'][0][
-                'default_message']
+            message = self.body
             message += "-- code: {}".format(self.status)
             return message
         return self.body      
@@ -108,6 +126,9 @@ class VSphereNodeDriver(NodeDriver):
         self.connection.secret = secret
 
         # getting session token
+        self._get_session_token()
+
+    def _get_session_token(self):
         uri = "/rest/com/vmware/cis/session"
         try:
             result = self.connection.request(uri, method="POST")
@@ -141,10 +162,7 @@ class VSphereNodeDriver(NodeDriver):
             if value:
                 params[param]=value
         
-        try:
-            result = self.connection.request(req, params=params)
-        except Exception as exc:
-            raise
+        result = self._request(req, params=params)
 
         vm_ids = [item['vm'] for item in result.object['value']]
         vms = []
@@ -153,6 +171,7 @@ class VSphereNodeDriver(NodeDriver):
         return vms
     
     def list_locations(self):
+        #TODO add resource-pools as locations
         """
         Location in the general sense means any resource that allows for node
         creation. In vSphere's case that usually is a host but if a cluster
@@ -187,12 +206,8 @@ class VSphereNodeDriver(NodeDriver):
         method = 'POST'
         req = "/rest/vcenter/vm/{}/power/stop".format(node.id)
 
-        try:
-            result = self.connection.request(req,method=method)
-            return result.status in VALID_RESPONSE_CODES
-        except Exception as exc:
-            raise
-        
+        result = self._request(req,method=method)
+        return result.status in VALID_RESPONSE_CODES
 
     def start_node(self, node):
         if node.state is NodeState.RUNNING:
@@ -200,11 +215,8 @@ class VSphereNodeDriver(NodeDriver):
         
         method = 'POST'
         req = "/rest/vcenter/vm/{}/power/start".format(node.id)
-        try:
-            result = self.connection.request(req,method=method)
-            return result.status in VALID_RESPONSE_CODES
-        except Exception as exc:
-            raise
+        result = self._request(req,method=method)
+        return result.status in VALID_RESPONSE_CODES
         
     def reboot_node(self, node):
         if node.state is not NodeState.RUNNING:
@@ -212,34 +224,43 @@ class VSphereNodeDriver(NodeDriver):
 
         method = 'POST'
         req = "/rest/vcenter/vm/{}/power/reset".format(node.id)
-        try:
-            result = self.connection.request(req,method=method)
-            return result.status in VALID_RESPONSE_CODES
-        except Exception as exc:
-            raise
+        result = self._request(req, method=method)
+        return result.status in VALID_RESPONSE_CODES
     
+    def destroy_node(self, node):
+        # make sure the machine is stopped
+        if node.state is not NodeState.STOPPED:
+            self.stop_node(node)
+        # wait to make sure it stopped
+        # at one point this can be made asynchronously
+        for i in range(3):
+            if node.state is NodeState.STOPPED:
+                break
+            time.sleep(3)
+        if node.state is not NodeState.STOPPED:
+            raise ProviderError("Something went wrong, I could not stop the VM"
+                                " and it cannot be deleted while running.",
+                                503)
+        req = "/rest/vcenter/vm/{}".format(node.id)
+        resp = self._request(req, method="DELETE")
+        return resp.status in VALID_RESPONSE_CODES
+
     def ex_suspend_node(self, node):
         if node.state is not NodeState.RUNNING:
             return False
 
         method = 'POST'
         req = "/rest/vcenter/vm/{}/power/suspend".format(node.id)
-        try:
-            result = self.connection.request(req,method=method)
-            return result.status in VALID_RESPONSE_CODES
-        except Exception as exc:
-            raise
+        result = self._request(req,method=method)
+        return result.status in VALID_RESPONSE_CODES
 
     def _to_node(self, vm_id):
         '''
          id, name, state, public_ips, private_ips,
                  driver, size=None, image=None, extra=None, created_at=None)
         '''
-        try:
-            req = '/rest/vcenter/vm/' + vm_id
-            vm = self.connection.request(req).object['value']
-        except Exception as exc:
-            raise
+        req = '/rest/vcenter/vm/' + vm_id
+        vm = self._request(req).object['value']
         name = vm['name']
         state = self.NODE_STATE_MAP[vm['power_state'].lower()]
         public_ips = []  # api 6.7
@@ -286,11 +307,7 @@ class VSphereNodeDriver(NodeDriver):
             if value:
                 params[param]=value
         req = "/rest/vcenter/host"     
-        try:
-            result = self.connection.request(req, params=params).object['value']
-        except Exception as exc:
-            raise
-
+        result = self._request(req, params=params).object['value']
         return result
     
     def ex_list_clusters(self, ex_filter_folders=None, ex_filter_names=None,
@@ -304,11 +321,7 @@ class VSphereNodeDriver(NodeDriver):
             if value:
                 params[param]=value
         req = "/rest/vcenter/cluster"
-        try:
-            result = self.connection.request(req, params=params).object['value']
-        except Exception as exc:
-            raise
-
+        result = self._request(req, params=params).object['value']
         return result
 
     def ex_list_datacenters(self, ex_filter_folders=None, ex_filter_names=None,
@@ -321,45 +334,87 @@ class VSphereNodeDriver(NodeDriver):
         for param,value in kwargs.items():
             if value:
                 params[param]=value       
-        try:
-            result = self.connection.request(req, params=params)
-        except Exception as exc:
-            raise
-
+        result = self._request(req, params=params)
         to_return = [{'name': item['name'], 
                 'id': item['datacenter']} for item in result.object['value']]
         return to_return
     
     def ex_list_content_libraries(self):
         req = '/rest/com/vmware/content/library'
-
-        try:
-            result = self.connection.request(req).object
-        except Exception as exc:
-            raise
+        result = self._request(req).object
         return result['value']
     
     def ex_list_content_library_items(self, library_id):
-        
         req = "/rest/com/vmware/content/library/item"
         params = {'library_id': library_id}
-
-        try:
-            result = self.connection.request(req, params=params).object
-        except Exception as exc:
-            raise
-
+        result = self._request(req, params=params).object
         return result['value']
+
+    def ex_list_folders(self):
+        req = "/rest/vcenter/folder"
+        response = self._request(req).object
+        return response['value']
+
+    def ex_update_memory(self, node, ram):
+        pass
+
+    def ex_update_cpu(self, node, cores):
+        pass
+
+    def ex_update_capacity(self, node, capacity):
+        pass
+
+    def ex_add_nic(self, node, network):
+        """
+        Creates a network adapater that will connect to the specified network
+        for the given node. Returns a boolean indicating success or not.
+        """
+        spec = {}
+        spec['mac_type'] = "GENERATED"
+        spec['backing'] = {}
+        spec['backing']['type'] = "STANDARD_PORTGROUP"
+        spec['backing']['network'] = network.id
+        spec['start_connected'] = True
+
+        data = json.dumps({'spec': spec})
+        req = "/rest/vcenter/vm/{}/hardware/ethernet".format(node.id)
+        method = "POST"
+        resp = self._request(req, method=method, data=data)
+        return resp.status
 
     def _get_library_item(self, item_id):
         req = "/rest/com/vmware/content/library/item/id:{}".format(item_id)
+        result = self._request(req).object
+        return result['value']
 
+    def _get_resource_pool(self, host_id=None, cluster_id=None, name=None):
+        if host_id:
+            pms = {"filter.hosts": host_id}
+        if cluster_id:
+            pms = {"filter.clusters": cluster_id}
+        if name:
+            pms = {"filter.names": name}
+        rp_request = "/rest/vcenter/resource-pool"
+        resource_pool = self._request(rp_request,
+                                      params=pms).object
+        return resource_pool['value'][0]['resource_pool']
+
+    def _request(self, req, method="GET", params=None, data=None):
         try:
-            result = self.connection.request(req).object
+            result = self.connection.request(req, method=method,
+                                             params=params, data=data)
+        except BaseHTTPError as exc:
+            if exc.code == "401":
+                self.connection.session_token = None
+                self._get_session_token()
+                result = self.connection.request(req, method=method,
+                                                params=params, data=data)
+            else:
+                raise
         except Exception as exc:
             raise
-        return result['value']
-    
+        return result
+
     def list_images(self):
         libraries = self.ex_list_content_libraries()
         item_ids=[]
@@ -374,53 +429,195 @@ class VSphereNodeDriver(NodeDriver):
         if items:
             driver = self.connection.driver
             for item in items:
+                extra = {"type": item['type']}
                 images.append(NodeImage(id=item['id'],
                               name=item['name'],
-                              driver=driver))
+                              driver=driver, extra=extra))
         return images
-    def create_node(self, name, image, location=None, ex_memory=None,
-                    ex_cpu=None, ex_disk=None,
-                    ex_network=None):
+
+    def ex_list_networks(self):
+        #TODO VSphereNetwork
+        pass
+    def create_node(self, name, image, size=None, location=None,
+                    ex_datastore=None, ex_disks=None,
+                    ex_folder=None, ex_network=None, ex_turned_on=True):
         """
         Image can be either a vm template , a ovf template or just
         the guest OS.
 
-        ex_disk is datastore
+        ex_folder is necessary if the image is a vm-template, this method
+        will attempt to put the VM in a random folder and a warning about it
+        will be issued.
         """
+        # post creation checks
+        create_nic = False
+        update_memory = False
+        update_cpu = False
+        create_disk = False
+        update_capacity = False
+
         if image.extra['type'] == 'ovf':
-            #must later add the specs
-            pass
-        
-        elif image.extra['type'] == 'template':
+            ovf_request=('/rest/com/vmware/vcenter/ovf/library-item'
+                         '/id:{}?~action=filter'.format(image.id))
+            spec = {}
+            spec['target'] = {}
+            if location.extra.get('type') == "resource-pool":
+                spec['target']['resource_pool_id'] = location.id
+            elif location.extra.get('type') == "host":
+                resource_pool = self._get_resource_pool(host_id=location.id)
+                if not resource_pool:
+                    msg = ("Could not find resource-pool for given location "
+                           "(host). Please make sure the location is valid.")
+                    raise VSphereException(code="504", msg=msg)
+                spec['target']['resource_pool_id'] = resource_pool
+                spec['target']['host_id'] = location.id
+            elif location.extra.get('type') == 'cluster':
+                resource.pool = self._get_resource_pool(cluster=location.id)
+                if not resource_pool:
+                    msg = ("Could not find resource-pool for given location "
+                           "(cluster). Please make sure the location "
+                           "is valid.")
+                    raise VSphereException(code="504", msg=msg)
+                spec['target']['resource_pool_id'] = resource_pool
+            ovf = self._request(ovf_request,method="POST",
+                                              data=json.dumps(spec)).object[
+                                                  'value']
+            spec['deployment_spec'] = {}
+            spec['deployment_spec']['name'] = name
+            # assuming that since you want to make a vm you don't need reminder
+            spec['deployment_spec']['accept_all_EULA'] = True
+            # network
+            if ex_network and ovf['networks']:
+                spec['deployment_spec'][
+                    'network_mappings'] = [{ovf['networks'][0]: ex_network.id}]
+            elif not ovf['networks']:
+                create_nic=True
+            # storage
+            if ex_datastore:
+                spec['deployment_spec']['storage_mappings'] = []
+                store_map={"type": "DATASTORE","datastore_id": ex_datastore}
+                spec['deployment_spec']['storage_mappings'].append(store_map)
+            if size and size.ram:
+                update_memory = True
+            if size and size.extra and size.extra.get('cpu'):
+                update_cpu = True
+            if size and size.disk:
+                update_capacity = True
+            if ex_disks:
+                create_disk = True
+
+            create_request = ('/rest/com/vmware/vcenter/ovf/library-item'
+                         '/id:{}?~action=deploy'.format(image.id))
+            data = json.dumps({"target": spec['target'],
+                               'deployment_spec': spec['deployment_spec']})
+
+        elif image.extra['type'] == 'vm-template':
+            tp_request = "/rest/vcenter/vm-template/library-items/" + image.id
+            template = self._request(tp_request).object['value']
             spec = {}
             spec['name'] = name
 
             # storage
-            if ex_disk:
+            if ex_datastore:
                 spec['disk_storage']={}
-                spec['disk_storage']['datastore'] = ex_disk
+                spec['disk_storage']['datastore'] = ex_datastore
 
             # location :: folder,resource group, datacenter, host
             spec['placement'] = {}
+            if not ex_folder:
+                warn = ("The API(6.7) requires the folder to be given, I will"
+                        " place it into a random folder, after creation you "
+                        "might find it convenient to move it into a better "
+                        "folder.")
+                warnings.warn(warn)
+                folders = self.ex_list_folders()
+                vm_folder = None
+                for folder in folders:
+                    if folder['type'] == "VIRTUAL_MACHINE":
+                        vm_folder = folder['folder']
+                if vm_folder is None:
+                    msg = "No suitable folder vor VMs found, please create one"
+                    raise ProviderError(msg, 404)
+            spec['placement']['folder'] = vm_folder
+            if location.extra['type'] == 'host':
+                spec['placement']['host']= location.id
+            elif location.extra['type'] == 'cluster':
+                spec['placement']['cluster'] == location.id
+            # network changes the network to existing nics if there are no adapters
+            # in the template then we will make on in the vm after the creation finishes
+            # only one network atm??
+            spec['hardware_customization'] = {}
+            if ex_network:
+                nics = template['nics']
+                if len(nics) > 0:
+                    nic = nics[0].keys()[0]
+                    spec['hardware_customization']['nics'] = [{nic: ex_network.id}]
+                else:
+                    create_nic = True
+            # hardware
+            if size:
+                if size.ram:
+                    spec['hardware_customization']['memory_update'] = {
+                        'memory': int(size.ram) * 1024}
+                if size.extra.get('cpu'):
+                    spec['hardware_customization']['cpu_update'] = {
+                        'num_cpus': size.extra['cpu']}
+                if size.disk:
+                    if not len(template['disks']) > 0:
+                        create_disk = True
+                    else:
+                        capacity = size.disk * 1024 * 1024 * 1024
+                        dsk = template['disks'][0]['key']
+                        if template['disks'][0]['value']['capacity'] < capacity:
+                            update = {'capacity': capacity}
+                            spec['hardware_customization'][
+                                'disks_to_update'] = [{'key': dsk, 'value': update}]
+
+            create_request = ("/rest/vcenter/vm-template/library-items/"
+            "{}/?action=deploy".format(image.id))
+            data = json.dumps({'spec': spec})
+        # deploy the node
+        result = self._request(create_request,
+                               method="POST", data=data)
+        # wait until the node is up and then add extra config
+        node_id = result.object['value']
+        for i in range(3):
+            node_l = self.list_nodes(ex_filter_vms=node_id['resource_id']['id'])
+            if len(node_l) > 0:
+                break
+            time.sleep(3)
+        node = node_l[0]
+        if create_nic:
+            self.ex_add_nic(node, ex_network)
+        if update_memory:
+            self.ex_update_memory(node, size.ram)
+        if update_cpu:
+            self.ex_update_cpu(node, size.extra['cpu'])
+        if create_disk:
+            pass  # until volumes are added
+        if update_capacity:
+            self.ex_update_capacity(node, size.disk)
+        if ex_turned_on:
+            self.start_node(node)
+
+        return node
+
 
 if __name__ == "__main__":
     host = "192.168.1.11"
     port = "443"
     username = "administrator@vsphere.local"
     password = "Mistrul2!"
-    ca_cert = "/home/eis/Downloads/certs/lin/e65bea3e.0"
+    ca_cert = "/home/eis/work/certs/lin/e65bea3e.0"
     driver = VSphereNodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
     loc = driver.list_locations()
     print(loc)
     print(driver.ex_list_datacenters())
     nodes = driver.list_nodes()
-    print(nodes)
-    '''    
-    
-    clusters = driver.ex_list_clusters()
-    print(clusters)
-    
-    import ipdb; ipdb.set_trace()
-    driver.start_node(nodes[1])
-    print(driver.ex_list_hosts())
-    '''
+    images = driver.list_images()
+    sss = NodeSize(id="111", name="minimal",ram="256", extra={'cpu':"1"},disk=7,bandwidth=0,driver=driver,price=0)
+    res = driver.create_node("apiOvf", images[1], size=sss, location=loc[0],
+                         ex_datastore=None, ex_disks=None,
+                         ex_network=None, ex_turned_on=True)
+
+    print(res)
