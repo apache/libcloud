@@ -22,11 +22,13 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.test import unittest
 from libcloud.test import MockHttp
+from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
-class KubeVirtTest(unittest.TestCase):
+class KubeVirtTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):
 
+    driver_cls = KubeVirtNodeDriver
     fixtures = ComputeFileFixtures('kubevirt')
 
     def setUp(self):

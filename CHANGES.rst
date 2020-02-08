@@ -17,6 +17,11 @@ Compute
   (GITHUB-1409, GITHUB-1360)
   [Tomaz Muraus]
 
+- [KubeVirt] For compliance with the base API, rename ``token_bearer_auth``
+  driver constructor argument to ``ex_token_bearer_auth``.
+  (GITHUB-1421)
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 
@@ -26,6 +31,14 @@ Storage
 
   Reported by Will Abson - wabson.
   (GITHUB-1417, GITHUB-1418)
+  [Tomaz Muraus]
+
+Container
+~~~~~~~~~
+
+- [Kubernetes] Add support for the client certificate and static token based
+  authentication to the driver.
+  (GITHUB-1421)
   [Tomaz Muraus]
 
 Changes in Apache Libcloud 3.0.0-rc1
