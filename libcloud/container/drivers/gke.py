@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
+
 from libcloud.common.google import GoogleOAuth2Credential
 from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
@@ -98,6 +100,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
     supports_clusters = True
 
     AUTH_URL = "https://container.googleapis.com/auth/"
+    DEFAULT_SCOPES = [
+        'https://www.googleapis.com/auth/cloud-platform'
+    ]
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
                  auth_type=None, scopes=None, credential_file=None,
@@ -143,12 +148,16 @@ class GKEContainerDriver(KubernetesContainerDriver):
             host = GKEContainerDriver.website
         self.auth_type = auth_type
         self.project = project
-        self.scopes = scopes
+        self.scopes = scopes or self.DEFAULT_SCOPES
         self.zone = None
         if datacenter is not None:
             self.zone = datacenter
-        self.credential_file = credential_file or \
-            GoogleOAuth2Credential.default_credential_file + '.' + self.project
+
+        scopes_hash = hashlib.md5(str(scopes).encode('utf-8')).hexdigest()
+        default_credential_file = '.'.join([GoogleOAuth2Credential.default_credential_file,
+                                            user_id, self.project, scopes_hash])
+
+        self.credential_file = credential_file or default_credential_file
 
         super(GKEContainerDriver, self).__init__(user_id, key,
                                                  secure=True, host=None,

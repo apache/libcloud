@@ -80,6 +80,7 @@ import datetime
 import os
 import socket
 import sys
+import hashlib
 
 from libcloud.utils.connection import get_response_object
 from libcloud.utils.py3 import b, httplib, urlencode, urlparse, PY3
@@ -641,15 +642,19 @@ class GoogleOAuth2Credential(object):
         self.user_id = user_id
         self.key = key
 
-        default_credential_file = '.'.join([self.default_credential_file,
-                                            user_id])
-        self.credential_file = credential_file or default_credential_file
-        # Default scopes to read/write for compute, storage, and dns.
         self.scopes = scopes or [
             'https://www.googleapis.com/auth/compute',
             'https://www.googleapis.com/auth/devstorage.full_control',
             'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
         ]
+
+        # NOTE: It's important we include scopes in the credential file path otherwise it will
+        # try to use invalid credential file if scopes are updated / changes
+        # Default scopes to read/write for compute, storage, and dns.
+        scopes_hash = hashlib.md5(str(scopes).encode('utf-8')).hexdigest()
+        default_credential_file = '.'.join([self.default_credential_file,
+                                            user_id, scopes_hash])
+        self.credential_file = credential_file or default_credential_file
 
         self.token = self._get_token_from_file()
 
