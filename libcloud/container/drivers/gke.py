@@ -16,10 +16,12 @@
 import hashlib
 
 from libcloud.common.google import GoogleOAuth2Credential
+from libcloud.container.base import ContainerCluster
 from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
+
 API_VERSION = 'v1'
 
 
@@ -182,10 +184,11 @@ class GKEContainerDriver(KubernetesContainerDriver):
         """
         request = "/zones/%s/clusters" % (ex_zone)
         if ex_zone is None:
-            request = "/zones/clusters"
+            request = "/zones/-/clusters"
 
         response = self.connection.request(request, method='GET').object
-        return response
+        clusters = [self._to_cluster(item) for item in response.get('clusters', [])]
+        return clusters
 
     def get_server_config(self, ex_zone=None):
         """
@@ -201,3 +204,10 @@ class GKEContainerDriver(KubernetesContainerDriver):
 
         response = self.connection.request(request, method='GET').object
         return response
+
+    def _to_cluster(self, item):
+        return ContainerCluster(
+            id=item['name'],
+            name=item['name'],
+            driver=self.connection.driver,
+            extra=item)
