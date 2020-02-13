@@ -18,11 +18,16 @@ import json
 import base64
 import warnings
 import time
+import asyncio
+import ssl
+import functools
+import itertools
 
 import libcloud.security
 
+from libcloud.common.exceptions import exception_from_message
 from libcloud.utils.misc import lowercase_keys
-from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import httplib, urlparse
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.types import ProviderError
 from libcloud.common.exceptions import BaseHTTPError
@@ -79,7 +84,7 @@ class VSphereConnection(ConnectionKey):
             b64_user_pass = base64.b64encode(to_encode.encode())
             headers['Authorization'] = 'Basic {}'.format(b64_user_pass.decode())
         else:
-            headers['vmware-api-seesion-id'] = self.session_token
+            headers['vmware-api-session-id'] = self.session_token
         return headers
 
 
@@ -101,6 +106,7 @@ class VSphereNodeDriver(NodeDriver):
     website = 'http://www.vmware.com/products/vsphere/'
     type = Provider.VSPHERE
     connectionCls = VSphereConnection
+    session_token = None
 
     NODE_STATE_MAP = {
         'powered_on': NodeState.RUNNING,
@@ -117,14 +123,17 @@ class VSphereNodeDriver(NodeDriver):
         super(VSphereNodeDriver, self).__init__(key=key,
                                                 secure=secure, host=host,
                                                 port=port)
-
+        prefixes = ['http://', 'https://']
+        for prefix in prefixes:
+            if host.startswith(prefix):
+                host = host.lstrip(prefix)
         if ca_cert:
             self.connection.connection.ca_cert = ca_cert
         else:
             self.connection.connection.ca_cert = False
 
         self.connection.secret = secret
-
+        self.host = host
         # getting session token
         self._get_session_token()
 
@@ -134,12 +143,15 @@ class VSphereNodeDriver(NodeDriver):
             result = self.connection.request(uri, method="POST")
         except Exception as exc:
             raise
-        self.connection.session_token = result.object['value']
+        self.session_token = result.object['value']
+        self.connection.session_token = self.session_token
+        
 
     def list_nodes(self, ex_filter_power_states=None, ex_filter_folders=None,
                    ex_filter_names=None, ex_filter_hosts=None,
                    ex_filter_clusters=None, ex_filter_vms=None,
-                   ex_filter_datacenters=None, ex_filter_resource_pools=None):
+                   ex_filter_datacenters=None, ex_filter_resource_pools=None,
+                   async_=True):
         """
         The ex parameters are search options and must be an array of strings,
         even ex_filter_power_states which can have at most two items but makes
@@ -148,6 +160,7 @@ class VSphereNodeDriver(NodeDriver):
         network has more, do use the provided filters and call it multiple
         times.
         """
+        loop = asyncio.get_event_loop()
         req = "/rest/vcenter/vm"
         kwargs = {'filter.power_states': ex_filter_power_states,
                   'filter.folders': ex_filter_folders,
@@ -162,22 +175,60 @@ class VSphereNodeDriver(NodeDriver):
             if value:
                 params[param]=value
         
-        result = self._request(req, params=params)
-
-        vm_ids = [item['vm'] for item in result.object['value']]
+        result = self._request(req, params=params).object['value']
+        # check if we need to go the long way
+        if len(result) > 999:
+            result = loop.run_until_complete(self._get_all_vms())
+        vm_ids = [item['vm'] for item in result]
         vms = []
-        for vm_id in vm_ids:
-            vms.append(self._to_node(vm_id))
-        return vms
+        if async_ is False:
+            for vm_id in vm_ids:
+                vms.append(self._to_node(vm_id))
+            return vms
+        else:
+            return loop.run_until_complete(self._list_nodes_async(vm_ids))
     
+    async def _list_nodes_async(self, vm_ids):
+        loop = asyncio.get_event_loop()
+        vms = [ 
+            loop.run_in_executor(None, self._to_node, vm_ids[i])
+            for i in range(len(vm_ids))
+        ]
+
+        return await asyncio.gather(*vms)
+
+    async def _get_all_vms(self):
+        """
+        6.7 doesn't offer any pagination, if we get 1000 vms we will try
+        this roundabout  way: First get all the datacenters, for each
+        datacenter get the hosts and for each host the vms it has.
+        This assumes that datacenters, hosts per datacenter and vms per
+        host don't exceed 1000.
+        """
+        datacenters = self.ex_list_datacenters()
+        loop = asyncio.get_event_loop()
+        hosts_futures = [
+            loop.run_in_executor(None, functools.partial(self.ex_list_hosts,ex_filter_datacenters=datacenter['id']))
+            for datacenter in datacenters
+        ]
+        hosts = await asyncio.gather(*hosts_futures)
+        req = "/rest/vcenter/vm"
+        vm_resp_futures = [
+            loop.run_in_executor(None, functools.partial(self._request,req,params={'filter.hosts':host['host']}))
+            for host in itertools.chain(*hosts)
+        ]
+
+        vm_resp =  await asyncio.gather(*vm_resp_futures)
+        return [response.object['value'][0] for response in vm_resp]
+
+
     def list_locations(self):
-        #TODO add resource-pools as locations
+        #TODO add resource-pools as locations maybe?
         """
         Location in the general sense means any resource that allows for node
         creation. In vSphere's case that usually is a host but if a cluster
         has rds enabled, a cluster can be assigned to create the VM, thus the
-        clusters with rds enabled will be added to locations. Extra will hold
-        a 'type' key to distinguish each location.
+        clusters with rds enabled will be added to locations. 
         """
         hosts = self.ex_list_hosts()
         clusters = self.ex_list_clusters()
@@ -283,7 +334,9 @@ class VSphereNodeDriver(NodeDriver):
         ## image
         image_name = vm['guest_OS']
         image_id = image_name + "_id"
-        image = NodeImage(id=image_id, name=image_name, driver=driver)
+        image_extra = {"type": "guest_OS"}
+        image = NodeImage(id=image_id, name=image_name, driver=driver,
+                          extra=image_extra)
 
         return Node(id=vm_id, name=name, state=state, public_ips=public_ips,
                     private_ips=private_ips, driver=driver,
@@ -306,7 +359,7 @@ class VSphereNodeDriver(NodeDriver):
         for param,value in kwargs.items():
             if value:
                 params[param]=value
-        req = "/rest/vcenter/host"     
+        req = "/rest/vcenter/host"
         result = self._request(req, params=params).object['value']
         return result
     
@@ -455,8 +508,52 @@ class VSphereNodeDriver(NodeDriver):
         update_cpu = False
         create_disk = False
         update_capacity = False
+        if image.extra['type'] == "guest_OS":
+            spec={}
+            spec['guest_OS'] = image.name
+            spec['name'] = name
+            spec['placement'] = {}
+            if ex_folder is None:
+                warn = ("The API(6.7) requires the folder to be given, I will"
+                        " place it into a random folder, after creation you "
+                        "might find it convenient to move it into a better "
+                        "folder.")
+                warnings.warn(warn)
+                folders = self.ex_list_folders()
+                for folder in folders:
+                    if folder['type'] == "VIRTUAL_MACHINE":
+                        ex_folder = folder['folder']
+                if ex_folder is None:
+                    msg = "No suitable folder vor VMs found, please create one"
+                    raise ProviderError(msg, 404)
+            spec['placement']['folder'] = ex_folder
+            if location.extra['type'] == "host":
+                spec['placement']['host'] = location.id
+            elif location.extra['type'] == 'cluster':
+                spec['placement']['cluster'] = location.id
+            elif location.extra['type'] == 'resource_pool':
+                spec['placement']['resource_pool'] = location.id
+            spec['placement']['datastore'] = ex_datastore
+            cpu = size.extra.get('cpu',1)
+            spec['cpu'] = {'count': cpu}
+            spec['memory'] = {'size_MiB': size.ram}
+            if size.disk:
+                disk = {}
+                disk['new_vmdk'] = {}
+                disk['new_vmdk']['capacity'] = size.disk*1024*1024*1024
+                spec['disks'] = [disk]
+            if ex_network:
+                nic = {}
+                nic['mac_type'] = 'GENERATED'
+                nic['backing'] = {}
+                nic['backing']['type'] = "STANDARD_PORTGROUP"
+                nic['backing']['network'] = ex_network.id
+                nic['start_connected'] = True
+                spec['nics'] = [nic]
+            create_request = "/rest/vcenter/vm"
+            data = json.dumps({'spec': spec})
 
-        if image.extra['type'] == 'ovf':
+        elif image.extra['type'] == 'ovf':
             ovf_request=('/rest/com/vmware/vcenter/ovf/library-item'
                          '/id:{}?~action=filter'.format(image.id))
             spec = {}
@@ -531,14 +628,13 @@ class VSphereNodeDriver(NodeDriver):
                         "folder.")
                 warnings.warn(warn)
                 folders = self.ex_list_folders()
-                vm_folder = None
                 for folder in folders:
                     if folder['type'] == "VIRTUAL_MACHINE":
-                        vm_folder = folder['folder']
-                if vm_folder is None:
+                        ex_folder = folder['folder']
+                if ex_folder is None:
                     msg = "No suitable folder vor VMs found, please create one"
                     raise ProviderError(msg, 404)
-            spec['placement']['folder'] = vm_folder
+            spec['placement']['folder'] = ex_folder
             if location.extra['type'] == 'host':
                 spec['placement']['host']= location.id
             elif location.extra['type'] == 'cluster':
@@ -601,7 +697,9 @@ class VSphereNodeDriver(NodeDriver):
             self.start_node(node)
 
         return node
+    
 
+        
 
 if __name__ == "__main__":
     host = "192.168.1.11"
@@ -610,14 +708,5 @@ if __name__ == "__main__":
     password = "Mistrul2!"
     ca_cert = "/home/eis/work/certs/lin/e65bea3e.0"
     driver = VSphereNodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
-    loc = driver.list_locations()
-    print(loc)
-    print(driver.ex_list_datacenters())
-    nodes = driver.list_nodes()
-    images = driver.list_images()
-    sss = NodeSize(id="111", name="minimal",ram="256", extra={'cpu':"1"},disk=7,bandwidth=0,driver=driver,price=0)
-    res = driver.create_node("apiOvf", images[1], size=sss, location=loc[0],
-                         ex_datastore=None, ex_disks=None,
-                         ex_network=None, ex_turned_on=True)
-
-    print(res)
+    
+    print(driver.list_nodes(async_=True))
