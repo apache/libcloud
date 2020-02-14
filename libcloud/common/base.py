@@ -483,7 +483,7 @@ class Connection(object):
         self.ua.append(token)
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, stream=False):
+                method='GET', raw=False, stream=False, json=None):
         """
         Request a given `action`.
 

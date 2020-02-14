@@ -466,7 +466,8 @@ class VSphereNodeDriver(NodeDriver):
         if 'Microsoft' in str(operating_system):
             os_type = 'windows'
 
-        uuid = vm.get('summary.config.instanceUuid')
+        uuid = vm.get('summary.config.instanceUuid') or \
+            vm.get('obj').config.instanceUuid
         annotation = vm.get('summary.config.annotation')
         state = vm.get('summary.runtime.powerState')
         status = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)

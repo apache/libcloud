@@ -1,0 +1,12 @@
+{
+  "type": "sync",
+  "status": "Success",
+  "status_code": 200,
+  "metadata": {
+    "api_extensions": [],
+    "api_status": "stable",
+    "api_version": "linux_124",
+    "auth": "guest",
+    "public": false
+  }
+}
