@@ -1970,7 +1970,7 @@ class BaseEC2NodeDriver(NodeDriver):
             params['KeyName'] = ex_keyname
 
         if ex_userdata:
-            params['UserData'] = base64.b64encode(b('ex_userdata'))\
+            params['UserData'] = base64.b64encode(b(ex_userdata))\
                 .decode('utf-8')
 
         if ex_clienttoken:
