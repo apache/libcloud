@@ -22,6 +22,13 @@ Compute
   (GITHUB-1421)
   [Tomaz Muraus]
 
+- [EC2] Fix ``ex_userdata`` keyword argument in the ``create_node()`` method
+  being ignored / not working correctly.
+
+  NOTE: This regression has been inadvertently introduced in v2.8.0.
+  (GITHUB-1426)
+  [Dan Chaffelson - @Chaffelson]
+
 Storage
 ~~~~~~~
 
