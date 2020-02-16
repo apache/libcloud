@@ -40,6 +40,17 @@ Storage
   (GITHUB-1417, GITHUB-1418)
   [Tomaz Muraus]
 
+- Fix ``upload_object_via_stream`` method so "Illegal seek" errors which
+  can arise when calculating iterator content hash are ignored. Those errors
+  likely indicate that the underlying file handle / iterator is a pipe which
+  doesn't support seek and that the error is not fatal and we should still
+  proceed.
+
+  Reported by Per Buer - @perbu.
+
+  (GITHUB-1424, GITHUB-1427)
+  [Tomaz Muraus]
+
 Container
 ~~~~~~~~~
 
