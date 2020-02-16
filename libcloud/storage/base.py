@@ -659,13 +659,15 @@ class StorageDriver(BaseDriver):
                     stream.seek(0)
                 except OSError as e:
                     if e.errno != errno.ESPIPE:
-                        # This error number represents OSError: [Errno 29]
-                        # Illegal seek error.
-                        # This could either mean that the underlying handle
+                        # This represents "OSError: [Errno 29] Illegal seek"
+                        # error. This could either mean that the underlying handle
                         # doesn't support seek operation (e.g. pipe) or that
                         # the invalid seek position is provided. Sadly there is
-                        # no good robust way to distinghuish that so we simply ignore
-                        # all the "Illeal seek errors"
+                        # no good robust way to distinghuish that so we simply
+                        # ignore all the "Illeal seek errors" so this function
+                        # works correctly with pipes.
+                        # See https://github.com/apache/libcloud/pull/1427 for
+                        # details
                         raise e
 
             for chunk in libcloud.utils.files.read_in_chunks(iterator=stream):
