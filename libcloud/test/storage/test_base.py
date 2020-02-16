@@ -223,8 +223,6 @@ class BaseStorageTests(unittest.TestCase):
 
         iterator = BodyStream('a' * size)
         iterator.seek = mock.Mock(side_effect=seek_error)
-        self.assertTrue(hasattr(iterator, '__next__'))
-        self.assertTrue(hasattr(iterator, 'next'))
 
         result = self.driver1._upload_object(object_name='test1',
                                              content_type=None,
@@ -239,7 +237,6 @@ class BaseStorageTests(unittest.TestCase):
         self.assertEqual(result['bytes_transferred'], size)
 
         # But others shouldn't
-
         self.driver1.connection = Mock()
 
         seek_error = OSError('Other error')
