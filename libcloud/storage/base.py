@@ -744,12 +744,12 @@ class StorageDriver(BaseDriver):
                 except OSError as e:
                     if e.errno != errno.ESPIPE:
                         # This represents "OSError: [Errno 29] Illegal seek"
-                        # error. This could either mean that the underlying handle
-                        # doesn't support seek operation (e.g. pipe) or that
-                        # the invalid seek position is provided. Sadly there is
-                        # no good robust way to distinghuish that so we simply
-                        # ignore all the "Illeal seek errors" so this function
-                        # works correctly with pipes.
+                        # error. This could either mean that the underlying
+                        # handle doesn't support seek operation (e.g. pipe) or
+                        # that the invalid seek position is provided. Sadly
+                        # there is no good robust way to distinghuish that so
+                        # we simply ignore all the "Illeal seek" errors so
+                        # this function works correctly with pipes.
                         # See https://github.com/apache/libcloud/pull/1427 for
                         # details
                         raise e
