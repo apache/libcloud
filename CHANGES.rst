@@ -36,8 +36,20 @@ Storage
   in 401 "invalid signature" error when object mime type contained mixed
   casing and when S3 Interoperability authentication method was used.
 
-  Reported by Will Abson - wabson.
+  Reported by Will Abson - @wabson.
   (GITHUB-1417, GITHUB-1418)
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- [CloudFlare] Fix ``export_zone_to_bind_format`` method.
+
+  Previously it threw an exception, because ``record.extra`` dictionary
+  didn't contain ``priority`` key.
+
+  Reported by James Montgomery - @gh-jamesmontgomery.
+  (GITHUB-1428, GITHUB-1429)
   [Tomaz Muraus]
 
 Container

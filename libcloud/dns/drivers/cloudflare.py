@@ -74,6 +74,7 @@ RECORD_EXTRA_ATTRIBUTES = {
     'created_on',
     'modified_on',
     'data',
+    'priority'
 }
 
 RECORD_CREATE_ATTRIBUTES = {
