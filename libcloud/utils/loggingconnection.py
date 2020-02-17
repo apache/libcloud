@@ -74,7 +74,7 @@ class LoggingConnection(LibcloudConnection):
             except Exception:
                 # Invalid JSON or server is lying about content-type
                 pass
-        elif pretty_print and content_type == 'text/xml':
+        elif pretty_print and content_type in ['text/xml', 'application/xml']:
             try:
                 elem = parseString(body.decode('utf-8'))
                 body = elem.toprettyxml()
