@@ -137,6 +137,8 @@ class VSphereNodeDriver(NodeDriver):
         # getting session token
         self._get_session_token()
 
+    def _get_version(self):
+        pass
     def _get_session_token(self):
         uri = "/rest/com/vmware/cis/session"
         try:
@@ -146,6 +148,8 @@ class VSphereNodeDriver(NodeDriver):
         self.session_token = result.object['value']
         self.connection.session_token = self.session_token
         
+    def list_sizes(self):
+        return []
 
     def list_nodes(self, ex_filter_power_states=None, ex_filter_folders=None,
                    ex_filter_names=None, ex_filter_hosts=None,
@@ -312,6 +316,7 @@ class VSphereNodeDriver(NodeDriver):
         '''
         req = '/rest/vcenter/vm/' + vm_id
         vm = self._request(req).object['value']
+        import pdb;pdb.set_trace()
         name = vm['name']
         state = self.NODE_STATE_MAP[vm['power_state'].lower()]
         public_ips = []  # api 6.7
@@ -457,7 +462,7 @@ class VSphereNodeDriver(NodeDriver):
             result = self.connection.request(req, method=method,
                                              params=params, data=data)
         except BaseHTTPError as exc:
-            if exc.code == "401":
+            if exc.code == 401:
                 self.connection.session_token = None
                 self._get_session_token()
                 result = self.connection.request(req, method=method,
@@ -672,13 +677,15 @@ class VSphereNodeDriver(NodeDriver):
             create_request = ("/rest/vcenter/vm-template/library-items/"
             "{}/?action=deploy".format(image.id))
             data = json.dumps({'spec': spec})
-        # deploy the node
+        # deploy the node ['resource_id']['id']
         result = self._request(create_request,
                                method="POST", data=data)
         # wait until the node is up and then add extra config
         node_id = result.object['value']
+        if image.extra['type'] == 'vm_template':
+            node_id = node_id['resource_id']['id']
         for i in range(3):
-            node_l = self.list_nodes(ex_filter_vms=node_id['resource_id']['id'])
+            node_l = self.list_nodes(ex_filter_vms=node_id)
             if len(node_l) > 0:
                 break
             time.sleep(3)
@@ -697,9 +704,6 @@ class VSphereNodeDriver(NodeDriver):
             self.start_node(node)
 
         return node
-    
-
-        
 
 if __name__ == "__main__":
     host = "192.168.1.11"
@@ -709,4 +713,4 @@ if __name__ == "__main__":
     ca_cert = "/home/eis/work/certs/lin/e65bea3e.0"
     driver = VSphereNodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
     
-    print(driver.list_nodes(async_=True))
+    print(driver.list_nodes(async_=False))
