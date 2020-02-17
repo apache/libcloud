@@ -71,7 +71,7 @@ class LoggingConnection(LibcloudConnection):
             try:
                 body = json.loads(ensure_string(body))
                 body = json.dumps(body, sort_keys=True, indent=4)
-            except Exception as e:
+            except Exception:
                 # Invalid JSON or server is lying about content-type
                 pass
         elif pretty_print and content_type == 'text/xml':
