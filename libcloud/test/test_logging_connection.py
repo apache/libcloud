@@ -27,20 +27,34 @@ from libcloud.common.base import Connection
 from libcloud.http import LibcloudConnection
 from libcloud.utils.loggingconnection import LoggingConnection
 
-EXPECTED_DATA = """
+EXPECTED_DATA_JSON = """
 HTTP/1.1 200 OK
 Content-Type: application/json
 
 {"foo": "bar!"}
 """.strip()
 
-EXPECTED_DATA_PRETTY = """
+EXPECTED_DATA_JSON_PRETTY = """
 HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
     "foo": "bar!"
 }
+""".strip()
+
+EXPECTED_DATA_XML = """
+HTTP/1.1 200 OK
+Content-Type: text/xml
+
+<foo><bar /></foo>
+""".strip()
+
+EXPECTED_DATA_XML_PRETTY = """
+HTTP/1.1 200 OK
+Content-Type: application/xml
+
+<foo><bar /></foo>
 """.strip()
 
 
@@ -52,10 +66,6 @@ class TestLoggingConnection(unittest.TestCase):
     def tearDown(self):
         super(TestLoggingConnection, self).tearDown()
         Connection.conn_class = LibcloudConnection
-
-    def _reset_environ(self):
-        if 'LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE' in os.environ:
-            del os.environ['LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE']
 
     def test_debug_method_uses_log_class(self):
         with StringIO() as fh:
@@ -93,29 +103,49 @@ class TestLoggingConnection(unittest.TestCase):
         self.assertTrue(isinstance(conn.connection, LoggingConnection))
         self.assertIn('-i -X GET', log)
 
-    def test_log_response(self):
+    def test_log_response_json_content_type(self):
         conn = LoggingConnection(host='example.com', port=80)
 
-        header = mock.Mock()
-        header.title.return_value = 'Content-Type'
-        header.lower.return_value = 'content-type'
-
-        r = mock.Mock()
-        r.version = 11
-        r.status = '200'
-        r.reason = 'OK'
-        r.getheaders.return_value = [(header, 'application/json')]
-
-        # body type is unicode
-        r.read.return_value = '{"foo": "bar!"}'
+        r = self._get_mock_response('application/json', '{"foo": "bar!"}')
         result = conn._log_response(r).replace('\r', '')
-        self.assertTrue(EXPECTED_DATA in result)
+        self.assertTrue(EXPECTED_DATA_JSON in result)
 
-    def test_log_response_with_pretty_print(self):
+    def test_log_response_xml_content_type(self):
+        conn = LoggingConnection(host='example.com', port=80)
+
+        r = self._get_mock_response('text/xml', '<foo><bar /></foo>')
+        result = conn._log_response(r).replace('\r', '')
+        self.assertTrue(EXPECTED_DATA_XML in result)
+
+    def test_log_response_with_pretty_print_json_content_type(self):
         os.environ['LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE'] = '1'
 
         conn = LoggingConnection(host='example.com', port=80)
 
+        # body type is unicode
+        r = self._get_mock_response('application/json', '{"foo": "bar!"}')
+        result = conn._log_response(r).replace('\r', '')
+        self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
+
+        # body type is bytes
+        r = self._get_mock_response('application/json', bytes('{"foo": "bar!"}', 'utf-8'))
+        result = conn._log_response(r).replace('\r', '')
+        self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
+
+    def test_log_response_with_pretty_print_xml_content_type(self):
+        os.environ['LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE'] = '1'
+
+        conn = LoggingConnection(host='example.com', port=80)
+
+        r = self._get_mock_response('application/xml', '<foo><bar /></foo>')
+        result = conn._log_response(r).replace('\r', '')
+        self.assertTrue(EXPECTED_DATA_XML_PRETTY in result)
+
+    def _reset_environ(self):
+        if 'LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE' in os.environ:
+            del os.environ['LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE']
+
+    def _get_mock_response(self, content_type, body):
         header = mock.Mock()
         header.title.return_value = 'Content-Type'
         header.lower.return_value = 'content-type'
@@ -124,18 +154,10 @@ class TestLoggingConnection(unittest.TestCase):
         r.version = 11
         r.status = '200'
         r.reason = 'OK'
-        r.getheaders.return_value = [(header, 'application/json')]
+        r.getheaders.return_value = [(header, content_type)]
+        r.read.return_value = body
 
-        # body type is unicode
-        r.read.return_value = '{"foo": "bar!"}'
-        result = conn._log_response(r).replace('\r', '')
-        self.assertTrue(EXPECTED_DATA_PRETTY in result)
-
-        # body type is bytes
-        r.read.return_value = bytes('{"foo": "bar!"}', 'utf-8')
-        result = conn._log_response(r)
-        result = conn._log_response(r).replace('\r', '')
-        self.assertTrue(EXPECTED_DATA_PRETTY in result)
+        return r
 
 
 if __name__ == '__main__':
