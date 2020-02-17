@@ -4,6 +4,16 @@
 Changes in Apache Libcloud in development (3.0.0)
 -------------------------------------------------
 
+Common
+~~~~~~~
+
+- Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
+  works correctly under Python 3 when ``response.read()`` function returns
+  unicode and not bytes.
+
+  (GITHUB-1430)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
