@@ -76,13 +76,14 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
-        self.assertEqual(len(records), 9)
+        self.assertEqual(len(records), 10)
 
         record = records[0]
         self.assertEqual(record.id, '364797364')
         self.assertIsNone(record.name)
         self.assertEqual(record.type, 'A')
         self.assertEqual(record.data, '192.30.252.153')
+        self.assertEqual(record.extra['priority'], None)
 
         for attribute_name in RECORD_EXTRA_ATTRIBUTES:
             self.assertTrue(attribute_name in record.extra)
@@ -95,6 +96,13 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         for attribute_name in RECORD_EXTRA_ATTRIBUTES:
             self.assertTrue(attribute_name in record.extra)
+
+        record = [r for r in records if r.type == 'MX'][0]
+        self.assertEqual(record.id, '78526')
+        self.assertIsNone(record.name)
+        self.assertEqual(record.type, 'MX')
+        self.assertEqual(record.data, 'aspmx3.googlemail.com')
+        self.assertEqual(record.extra['priority'], 30)
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='1234')
