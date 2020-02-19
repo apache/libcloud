@@ -31,6 +31,7 @@ except ImportError:
                       'using pip: pip install lockfile')
 
 from libcloud.utils.files import read_in_chunks
+from libcloud.utils.files import exhaust_iterator
 from libcloud.utils.py3 import relpath
 from libcloud.utils.py3 import u
 from libcloud.common.base import Connection
@@ -415,6 +416,52 @@ class LocalStorageDriver(StorageDriver):
         with open(path, 'rb') as obj_file:
             for data in read_in_chunks(obj_file, chunk_size=chunk_size):
                 yield data
+
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        base_name = os.path.basename(destination_path)
+
+        if not base_name and not os.path.exists(destination_path):
+            raise LibcloudError(
+                value='Path %s does not exist' % (destination_path),
+                driver=self)
+
+        if not base_name:
+            file_path = os.path.join(destination_path, obj.name)
+        else:
+            file_path = destination_path
+
+        if os.path.exists(file_path) and not overwrite_existing:
+            raise LibcloudError(
+                value='File %s already exists, but ' % (file_path) +
+                'overwrite_existing=False',
+                driver=self)
+
+        iterator = self.download_object_range_as_stream(
+            obj=obj,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes)
+
+        with open(file_path, 'wb') as fp:
+            fp.write(exhaust_iterator(iterator))
+
+        return True
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        path = self.get_object_cdn_url(obj)
+        with open(path, 'rb') as obj_file:
+            file_size = len(obj_file.read())
+
+            if not end_bytes:
+                read_bytes = file_size
+            else:
+                read_bytes = (file_size - end_bytes - start_bytes) - 1
+
+            obj_file.seek(start_bytes)
+            data = obj_file.read(read_bytes)
+            yield data
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):

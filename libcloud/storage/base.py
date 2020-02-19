@@ -443,6 +443,68 @@ class StorageDriver(BaseDriver):
         raise NotImplementedError(
             'download_object_as_stream not implemented for this driver')
 
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        # type: (Object, str, int, Optional[int], bool, bool) -> bool
+        """
+        Download part of an object.
+
+        :param obj: Object instance.
+        :type obj: :class:`libcloud.storage.base.Object`
+
+        :param destination_path: Full path to a file or a directory where the
+                                 incoming file will be saved.
+        :type destination_path: ``str``
+
+        :param start_bytes: Start byte offset for the range download.
+        :type start_bytes: ``int``
+
+        :param end_bytes: End byte offset for the range download. If not
+                          provided, it will assume end of the file.
+        :type end_bytes: ``int``
+
+        :param overwrite_existing: True to overwrite an existing file,
+                                   defaults to False.
+        :type overwrite_existing: ``bool``
+
+        :param delete_on_failure: True to delete a partially downloaded file if
+                                   the download was not successful (hash
+                                   mismatch / file size).
+        :type delete_on_failure: ``bool``
+
+        :return: True if an object has been successfully downloaded, False
+                 otherwise.
+        :rtype: ``bool``
+
+        """
+        raise NotImplementedError(
+            'download_object_range not implemented for this driver')
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        # type: (Object, int, Optional[int], Optional[int]) -> Iterator[bytes]
+        """
+        Return a iterator which yields range / part of the object data.
+
+        :param obj: Object instance
+        :type obj: :class:`libcloud.storage.base.Object`
+
+        :param start_bytes: Start byte offset for the range download.
+        :type start_bytes: ``int``
+
+        :param end_bytes: End byte offset for the range download. If not
+                          provided, it will assume end of the file.
+        :type end_bytes: ``int``
+
+        :param chunk_size: Optional chunk size (in bytes).
+        :type chunk_size: ``int``
+
+        :rtype: ``iterator`` of ``bytes``
+        """
+        raise NotImplementedError(
+            'download_object_range_as_stream not implemented for this driver')
+
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
         # type: (str, Container, str, Optional[dict], bool, Optional[Dict[str, str]]) -> Object  # noqa: E501
@@ -602,7 +664,7 @@ class StorageDriver(BaseDriver):
 
     def _save_object(self, response, obj, destination_path,
                      overwrite_existing=False, delete_on_failure=True,
-                     chunk_size=None):
+                     chunk_size=None, partial_download=False):
         """
         Save object to the provided path.
 
@@ -626,6 +688,10 @@ class StorageDriver(BaseDriver):
         :param chunk_size: Optional chunk size
             (defaults to ``libcloud.storage.base.CHUNK_SIZE``, 8kb)
         :type chunk_size: ``int``
+
+        :param partial_download: True if this is a range (partial) save,
+                                 False otherwise.
+        :type partial_download: ``bool``
 
         :return: ``True`` on success, ``False`` otherwise.
         :rtype: ``bool``
@@ -658,8 +724,10 @@ class StorageDriver(BaseDriver):
                 file_handle.write(b(chunk))
                 bytes_transferred += len(chunk)
 
-        if int(obj.size) != int(bytes_transferred):
+        if not partial_download and int(obj.size) != int(bytes_transferred):
             # Transfer failed, support retry?
+            # NOTE: We only perform this check if this is a regular and not a
+            # partial / range download
             if delete_on_failure:
                 try:
                     os.unlink(file_path)
