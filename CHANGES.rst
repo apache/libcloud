@@ -39,6 +39,10 @@ Compute
   (GITHUB-1426)
   [Dan Chaffelson - @Chaffelson]
 
+- [EC2] Update ``create_volume`` method to automatically select first available
+  availability zone if one is not explicitly provided via ``location`` argument.
+  [Tomaz Muraus]
+
 Storage
 ~~~~~~~
 

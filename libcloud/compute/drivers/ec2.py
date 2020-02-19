@@ -2122,8 +2122,12 @@ class BaseEC2NodeDriver(NodeDriver):
         if snapshot:
             params['SnapshotId'] = snapshot.id
 
-        if location is not None:
-            params['AvailabilityZone'] = location.availability_zone.name
+        # AvailabilityZone argument is mandatory so if one is not provided,
+        # we select one
+        if not location:
+            location = self.list_locations()[0]
+
+        params['AvailabilityZone'] = location.availability_zone.name
 
         if ex_volume_type:
             params['VolumeType'] = ex_volume_type
