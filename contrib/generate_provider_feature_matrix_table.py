@@ -154,6 +154,8 @@ FRIENDLY_METHODS_NAMES = {
         'upload_object_via_stream': 'streaming object upload',
         'download_object': 'download object',
         'download_object_as_stream': 'streaming object download',
+        'download_object_range': 'download part of an object',
+        'download_object_range_as_stream': 'streaming partial object download',
         'delete_object': 'delete object'
     },
     'storage_cdn': {
