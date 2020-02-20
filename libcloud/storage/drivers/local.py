@@ -450,9 +450,15 @@ class LocalStorageDriver(StorageDriver):
 
     def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
                                         chunk_size=None):
+        if end_bytes and start_bytes > end_bytes:
+            raise ValueError('start_bytes must be smaller than end_bytes')
+
         path = self.get_object_cdn_url(obj)
         with open(path, 'rb') as obj_file:
             file_size = len(obj_file.read())
+
+            if end_bytes and end_bytes > file_size:
+                raise ValueError('end_bytes is larger than file size')
 
             if not end_bytes:
                 read_bytes = (file_size - start_bytes) + 1
