@@ -56,10 +56,12 @@ class LocalTests(unittest.TestCase):
         shutil.rmtree(self.key)
         self.key = None
 
-    def make_tmp_file(self):
+    def make_tmp_file(self, content=None):
+        if not content:
+            content = b'blah' * 1024
         _, tmppath = tempfile.mkstemp()
         with open(tmppath, 'wb') as fp:
-            fp.write(b'blah' * 1024)
+            fp.write(content)
         return tmppath
 
     def remove_tmp_file(self, tmppath):
@@ -317,6 +319,123 @@ class LocalTests(unittest.TestCase):
 
         data = b''.join(stream)
         self.assertTrue(len(data), 4096)
+
+        obj.delete()
+        container.delete()
+        self.remove_tmp_file(tmppath)
+
+    def test_download_object_range_success(self):
+        content = b'foo bar baz'
+        tmppath = self.make_tmp_file(content=content)
+        container = self.driver.create_container('test6')
+        obj = container.upload_object(tmppath, 'test')
+
+        destination_path = tmppath + '.temp'
+
+        # 1. Only start_bytes provided
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=5,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(destination_path, 'rb') as fp:
+            written_content = fp.read()
+
+        self.assertEqual(written_content, b'bar baz')
+        self.assertEqual(written_content, content[5 - 1:])
+
+        # 2. start_bytes and end_bytes is provided
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=5,
+                                             end_bytes=7,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(destination_path, 'rb') as fp:
+            written_content = fp.read()
+
+        self.assertEqual(written_content, b'bar')
+        self.assertEqual(written_content, content[5 - 1:7])
+
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=1,
+                                             end_bytes=1,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(destination_path, 'rb') as fp:
+            written_content = fp.read()
+
+        self.assertEqual(written_content, b'f')
+        self.assertEqual(written_content, content[1 - 1:1])
+
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=1,
+                                             end_bytes=3,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(destination_path, 'rb') as fp:
+            written_content = fp.read()
+
+        self.assertEqual(written_content, b'foo')
+        self.assertEqual(written_content, content[1 - 1:3])
+
+        obj.delete()
+        container.delete()
+        self.remove_tmp_file(tmppath)
+        os.unlink(destination_path)
+
+    def test_download_object_range_as_stream_success(self):
+        content = b'foo bar baz'
+        tmppath = self.make_tmp_file(content=content)
+        container = self.driver.create_container('test6')
+        obj = container.upload_object(tmppath, 'test')
+
+        # 1. Only start_bytes provided
+        stream = self.driver.download_object_range_as_stream(obj=obj,
+                                                             start_bytes=5,
+                                                             chunk_size=1024)
+        written_content = b''.join(stream)
+
+        self.assertEqual(written_content, b'bar baz')
+        self.assertEqual(written_content, content[5 - 1:])
+
+        # 2. start_bytes and end_bytes is provided
+        stream = self.driver.download_object_range_as_stream(obj=obj,
+                                                             start_bytes=5,
+                                                             end_bytes=7,
+                                                             chunk_size=1024)
+        written_content = b''.join(stream)
+
+        self.assertEqual(written_content, b'bar')
+        self.assertEqual(written_content, content[5 - 1:7])
+
+        stream = self.driver.download_object_range_as_stream(obj=obj,
+                                                             start_bytes=1,
+                                                             end_bytes=1,
+                                                             chunk_size=1024)
+        written_content = b''.join(stream)
+
+        self.assertEqual(written_content, b'f')
+        self.assertEqual(written_content, content[1 - 1:1])
+
+        stream = self.driver.download_object_range_as_stream(obj=obj,
+                                                             start_bytes=1,
+                                                             end_bytes=3,
+                                                             chunk_size=1024)
+        written_content = b''.join(stream)
+
+        self.assertEqual(written_content, b'foo')
+        self.assertEqual(written_content, content[1 - 1:3])
 
         obj.delete()
         container.delete()
