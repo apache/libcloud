@@ -1,0 +1,80 @@
+[
+  {
+    "id": "AS",
+    "name": "China",
+    "category": "Asia",
+    "subCategory": "Hong Kong"
+  },
+  {
+    "id": "CA-TR",
+    "name": "Canada",
+    "category": "North America",
+    "subCategory": "Toronto"
+  },
+  {
+    "id": "EU",
+    "name": "The Netherlands",
+    "category": "Europe",
+    "subCategory": "Amsterdam"
+  },
+  {
+    "id": "EU-FR",
+    "name": "Germany",
+    "category": "Europe",
+    "subCategory": "Frankfurt"
+  },
+  {
+    "id": "EU-LO",
+    "name": "United Kingdom",
+    "category": "Europe",
+    "subCategory": "London"
+  },
+  {
+    "id": "IL",
+    "name": "Israel",
+    "category": "Middle East",
+    "subCategory": "Rosh Haayin"
+  },
+  {
+    "id": "IL-JR",
+    "name": "Israel",
+    "category": "Middle East",
+    "subCategory": "Jerusalem"
+  },
+  {
+    "id": "IL-PT",
+    "name": "Israel",
+    "category": "Middle East",
+    "subCategory": "Petach Tikva"
+  },
+  {
+    "id": "IL-RH",
+    "name": "Israel",
+    "category": "Middle East",
+    "subCategory": "Rosh Haayin 2"
+  },
+  {
+    "id": "IL-TA",
+    "name": "Israel",
+    "category": "Middle East",
+    "subCategory": "Tel Aviv"
+  },
+  {
+    "id": "US-NY2",
+    "name": "United States",
+    "category": "North America",
+    "subCategory": "New York"
+  },
+  {
+    "id": "US-SC",
+    "name": "United States",
+    "category": "North America",
+    "subCategory": "Santa Clara"
+  },
+  {
+    "id": "US-TX",
+    "name": "United States",
+    "category": "North America",
+    "subCategory": "Texas"
+  }
+]

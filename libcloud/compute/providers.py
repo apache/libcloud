@@ -164,7 +164,9 @@ DRIVERS = {
     Provider.MAXIHOST:
     ('libcloud.compute.drivers.maxihost', 'MaxihostNodeDriver'),
     Provider.GRIDSCALE:
-    ('libcloud.compute.drivers.gridscale', 'GridscaleNodeDriver')
+    ('libcloud.compute.drivers.gridscale', 'GridscaleNodeDriver'),
+    Provider.KAMATERA:
+    ('libcloud.compute.drivers.kamatera', 'KamateraNodeDriver')
 }
 
 
