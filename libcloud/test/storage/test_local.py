@@ -26,6 +26,7 @@ import mock
 
 from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Container
+from libcloud.storage.base import Object
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ContainerIsNotEmptyError
@@ -459,6 +460,52 @@ class LocalTests(unittest.TestCase):
 
         self.assertEqual(written_content, b'0123456789123456789')
         self.assertEqual(written_content, content[0:len(content)])
+
+        obj.delete()
+        container.delete()
+        self.remove_tmp_file(tmppath)
+
+    def test_download_object_range_invalid_values(self):
+        obj = Object('a', 500, '', {}, {}, None, None)
+        tmppath = self.make_tmp_file(content='')
+
+        expected_msg = 'start_bytes must be greater than 0'
+        self.assertRaisesRegex(ValueError, expected_msg,
+            self.driver.download_object_range, obj=obj,
+            destination_path=tmppath,
+            start_bytes=-1)
+
+        expected_msg = 'start_bytes must be smaller than end_bytes'
+        self.assertRaisesRegex(ValueError, expected_msg,
+            self.driver.download_object_range, obj=obj,
+            destination_path=tmppath,
+            start_bytes=5,
+            end_bytes=4)
+
+    def test_download_object_range_as_stream_invalid_values(self):
+        content = b'0123456789123456789'
+        tmppath = self.make_tmp_file(content=content)
+        container = self.driver.create_container('test6')
+        obj = container.upload_object(tmppath, 'test')
+
+        expected_msg = 'start_bytes must be greater than 0'
+        self.assertRaisesRegex(ValueError, expected_msg,
+            self.driver.download_object_range_as_stream, obj=obj,
+            start_bytes=-1, end_bytes=None, chunk_size=1024)
+
+        expected_msg = 'start_bytes must be smaller than end_bytes'
+        self.assertRaisesRegex(ValueError, expected_msg,
+            self.driver.download_object_range_as_stream, obj=obj,
+            start_bytes=5,
+            end_bytes=4,
+            chunk_size=1024)
+
+        expected_msg = 'end_bytes is larger than file size'
+        self.assertRaisesRegex(ValueError, expected_msg,
+            self.driver.download_object_range_as_stream, obj=obj,
+            start_bytes=5,
+            end_bytes=len(content) + 100,
+            chunk_size=1024)
 
         obj.delete()
         container.delete()

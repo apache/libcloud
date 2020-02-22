@@ -367,25 +367,12 @@ class LocalStorageDriver(StorageDriver):
         otherwise.
         :rtype: ``bool``
         """
-
         obj_path = self.get_object_cdn_url(obj)
-        base_name = os.path.basename(destination_path)
 
-        if not base_name and not os.path.exists(destination_path):
-            raise LibcloudError(
-                value='Path %s does not exist' % (destination_path),
-                driver=self)
-
-        if not base_name:
-            file_path = os.path.join(destination_path, obj.name)
-        else:
-            file_path = destination_path
-
-        if os.path.exists(file_path) and not overwrite_existing:
-            raise LibcloudError(
-                value='File %s already exists, but ' % (file_path) +
-                'overwrite_existing=False',
-                driver=self)
+        file_path = self._get_obj_file_path(
+            obj=obj,
+            destination_path=destination_path,
+            overwrite_existing=overwrite_existing)
 
         try:
             shutil.copy(obj_path, file_path)
@@ -420,23 +407,13 @@ class LocalStorageDriver(StorageDriver):
     def download_object_range(self, obj, destination_path, start_bytes,
                               end_bytes=None, overwrite_existing=False,
                               delete_on_failure=True):
-        base_name = os.path.basename(destination_path)
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
 
-        if not base_name and not os.path.exists(destination_path):
-            raise LibcloudError(
-                value='Path %s does not exist' % (destination_path),
-                driver=self)
-
-        if not base_name:
-            file_path = os.path.join(destination_path, obj.name)
-        else:
-            file_path = destination_path
-
-        if os.path.exists(file_path) and not overwrite_existing:
-            raise LibcloudError(
-                value='File %s already exists, but ' % (file_path) +
-                'overwrite_existing=False',
-                driver=self)
+        file_path = self._get_obj_file_path(
+            obj=obj,
+            destination_path=destination_path,
+            overwrite_existing=overwrite_existing)
 
         iterator = self.download_object_range_as_stream(
             obj=obj,
@@ -450,8 +427,8 @@ class LocalStorageDriver(StorageDriver):
 
     def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
                                         chunk_size=None):
-        if end_bytes and start_bytes > end_bytes:
-            raise ValueError('start_bytes must be smaller than end_bytes')
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
 
         path = self.get_object_cdn_url(obj)
         with open(path, 'rb') as obj_file:
@@ -655,3 +632,26 @@ class LocalStorageDriver(StorageDriver):
                 return False
 
         return True
+
+    def _get_obj_file_path(self, obj, destination_path,
+                           overwrite_existing=False):
+        # type: (Object, str, bool) -> str
+        base_name = os.path.basename(destination_path)
+
+        if not base_name and not os.path.exists(destination_path):
+            raise LibcloudError(
+                value='Path %s does not exist' % (destination_path),
+                driver=self)
+
+        if not base_name:
+            file_path = os.path.join(destination_path, obj.name)
+        else:
+            file_path = destination_path
+
+        if os.path.exists(file_path) and not overwrite_existing:
+            raise LibcloudError(
+                value='File %s already exists, but ' % (file_path) +
+                'overwrite_existing=False',
+                driver=self)
+
+        return file_path
