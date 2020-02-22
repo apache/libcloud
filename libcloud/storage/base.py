@@ -457,11 +457,13 @@ class StorageDriver(BaseDriver):
                                  incoming file will be saved.
         :type destination_path: ``str``
 
-        :param start_bytes: Start byte offset for the range download.
+        :param start_bytes: Start byte offset (inclusive) for the range
+                            download. Offset is 0 index based so the first
+                            byte in file file is "0".
         :type start_bytes: ``int``
 
-        :param end_bytes: End byte offset for the range download. If not
-                          provided, it will assume end of the file.
+        :param end_bytes: End byte offset (non-inclusive) for the range download.
+                          If not provided, it will default to the end of the file.
         :type end_bytes: ``int``
 
         :param overwrite_existing: True to overwrite an existing file,
@@ -490,11 +492,13 @@ class StorageDriver(BaseDriver):
         :param obj: Object instance
         :type obj: :class:`libcloud.storage.base.Object`
 
-        :param start_bytes: Start byte offset for the range download.
+        :param start_bytes: Start byte offset (inclusive) for the range
+                            download. Offset is 0 index based so the first
+                            byte in file file is "0".
         :type start_bytes: ``int``
 
-        :param end_bytes: End byte offset for the range download. If not
-                          provided, it will assume end of the file.
+        :param end_bytes: End byte offset (non-inclusive) for the range download.
+                          If not provided, it will default to the end of the file.
         :type end_bytes: ``int``
 
         :param chunk_size: Optional chunk size (in bytes).
