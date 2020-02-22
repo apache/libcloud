@@ -54,7 +54,7 @@ from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-m
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
 
-class S3MockHttp(MockHttp):
+class S3MockHttp(MockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('s3')
     base_headers = {}
@@ -327,6 +327,34 @@ class S3MockHttp(MockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
+    def _foo_bar_container_foo_bar_object_range(self, method, url, body, headers):
+        # test_download_object_range_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=5-7')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
+    def _foo_bar_container_foo_bar_object_range_stream(self, method, url, body, headers):
+        # test_download_object_range_as_stream_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=4-7')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
     def _foo_bar_container_foo_bar_object_NO_BUFFER(self, method, url, body, headers):
         # test_download_object_data_is_not_buffered_in_memory
         body = generate_random_data(1000)
@@ -352,6 +380,19 @@ class S3MockHttp(MockHttp):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
+    def _get_start_and_end_bytes_from_range_str(self, range_str, body):
+        # type: (str, str) -> Tuple[int, int]
+        range_str = range_str.split('bytes=')[1]
+        range_str = range_str.split('-')
+        start_bytes = int(range_str[0])
+
+        if len(range_str) == 2:
+            end_bytes = int(range_str[1])
+        else:
+            end_bytes = len(body)
+
+        return start_bytes, end_bytes
 
 
 class S3Tests(unittest.TestCase):
@@ -610,6 +651,38 @@ class S3Tests(unittest.TestCase):
                                              overwrite_existing=True,
                                              delete_on_failure=True)
         self.assertTrue(result)
+
+    def test_download_object_range_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_range', size=19, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = self._file_path
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=5,
+                                             end_bytes=7,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(self._file_path, 'r') as fp:
+            content = fp.read()
+
+        self.assertEqual(content, '56')
+
+    def test_download_object_range_as_stream_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_range_stream', size=19, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        iterator = self.driver.download_object_range_as_stream(obj=obj,
+                                                               start_bytes=4,
+                                                               end_bytes=7)
+        content = exhaust_iterator(iterator)
+        self.assertEqual(content, b'456')
 
     def test_download_object_data_is_not_buffered_in_memory(self):
         # Test case which verifies that response.body attribute is not accessed

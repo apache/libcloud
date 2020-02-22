@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+
 import base64
 import hmac
 import time
@@ -474,13 +476,7 @@ class BaseS3StorageDriver(StorageDriver):
                               delete_on_failure=True):
         obj_path = self._get_object_path(obj.container, obj.name)
 
-        range_str = 'bytes=%s-' % (start_bytes)
-
-        if end_bytes:
-            range_str += str(end_bytes)
-
-        headers = {'Range': range_str}
-
+        headers = {'Range': self._get_range_str(start_bytes, end_bytes)}
         response = self.connection.request(obj_path, method='GET',
                                            headers=headers, raw=True)
 
@@ -499,13 +495,7 @@ class BaseS3StorageDriver(StorageDriver):
                                         chunk_size=None):
         obj_path = self._get_object_path(obj.container, obj.name)
 
-        range_str = 'bytes=%s-' % (start_bytes)
-
-        if end_bytes:
-            range_str += str(end_bytes)
-
-        headers = {'Range': range_str}
-
+        headers = {'Range': self._get_range_str(start_bytes, end_bytes)}
         response = self.connection.request(obj_path, method='GET',
                                            headers=headers,
                                            stream=True, raw=True)
@@ -849,6 +839,19 @@ class BaseS3StorageDriver(StorageDriver):
         for upload in self.ex_iterate_multipart_uploads(container, prefix,
                                                         delimiter=None):
             self._abort_multipart(container, upload.key, upload.id)
+
+    def _get_range_str(self, start_bytes, end_bytes=None):
+        # type: (int, Optional[int]) -> str
+        """
+        Return range string which is used as a Range header value for range
+        requests.
+        """
+        range_str = 'bytes=%s-' % (start_bytes)
+
+        if end_bytes:
+            range_str += str(end_bytes)
+
+        return range_str
 
     def _clean_object_name(self, name):
         name = urlquote(name)
