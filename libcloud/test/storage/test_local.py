@@ -31,6 +31,7 @@ from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
+from libcloud.utils.files import exhaust_iterator
 
 try:
     from libcloud.storage.drivers.local import LocalStorageDriver
@@ -483,29 +484,34 @@ class LocalTests(unittest.TestCase):
             end_bytes=4)
 
     def test_download_object_range_as_stream_invalid_values(self):
-        return
         content = b'0123456789123456789'
         tmppath = self.make_tmp_file(content=content)
         container = self.driver.create_container('test6')
         obj = container.upload_object(tmppath, 'test')
 
         expected_msg = 'start_bytes must be greater than 0'
-        self.assertRaisesRegex(ValueError, expected_msg,
-            self.driver.download_object_range_as_stream, obj=obj,
-            start_bytes=-1, end_bytes=None, chunk_size=1024)
+        stream = self.driver.download_object_range_as_stream(
+            obj=obj,
+            start_bytes=-1,
+            end_bytes=None,
+            chunk_size=1024)
+        self.assertRaisesRegex(ValueError, expected_msg, exhaust_iterator,
+                               stream)
 
         expected_msg = 'start_bytes must be smaller than end_bytes'
-        self.assertRaisesRegex(ValueError, expected_msg,
-            self.driver.download_object_range_as_stream, obj=obj,
+        stream = self.driver.download_object_range_as_stream(
+            obj=obj,
             start_bytes=5,
             end_bytes=4,
             chunk_size=1024)
+        self.assertRaisesRegex(ValueError, expected_msg, exhaust_iterator,
+                               stream)
 
         expected_msg = 'end_bytes is larger than file size'
-        self.assertRaisesRegex(ValueError, expected_msg,
-            self.driver.download_object_range_as_stream, obj=obj,
+        stream = self.driver.download_object_range_as_stream(
+            obj=obj,
             start_bytes=5,
-            end_bytes=len(content) + 100,
+            end_bytes=len(content) + 1,
             chunk_size=1024)
 
         obj.delete()
