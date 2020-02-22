@@ -113,13 +113,36 @@ class Object(object):
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
         # type: (str, bool, bool) -> bool
-        return self.driver.download_object(self, destination_path,
-                                           overwrite_existing,
-                                           delete_on_failure)
+        return self.driver.download_object(
+            obj=self,
+            destination_path=destination_path,
+            overwrite_existing=overwrite_existing,
+            delete_on_failure=delete_on_failure)
 
     def as_stream(self, chunk_size=None):
         # type: (Optional[int]) -> Iterator[bytes]
-        return self.driver.download_object_as_stream(self, chunk_size)
+        return self.driver.download_object_as_stream(obj=self,
+                                                     chunk_size=chunk_size)
+
+    def download_range(self, destination_path, start_bytes, end_bytes=None,
+                       overwrite_existing=False,
+                       delete_on_failure=True):
+        # type: (str, int, Optional[int], bool, bool) -> bool
+        return self.driver.download_object_range(
+            obj=self,
+            destination_path=destination_path,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            overwrite_existing=overwrite_existing,
+            delete_on_failure=delete_on_failure)
+
+    def range_as_stream(self, start_bytes, end_bytes=None, chunk_size=None):
+        # type: (int, Optional[int], Optional[int]) -> Iterator[bytes]
+        return self.driver.download_object_range_as_stream(
+            obj=self,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            chunk_size=chunk_size)
 
     def delete(self):
         # type: () -> bool
@@ -203,6 +226,27 @@ class Container(object):
     def download_object_as_stream(self, obj, chunk_size=None):
         # type: (Object, Optional[int]) -> Iterator[bytes]
         return self.driver.download_object_as_stream(obj, chunk_size)
+
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        # type: (Object, str, int, Optional[int], bool, bool) -> bool
+        return self.driver.download_object_range(
+            obj=obj,
+            destination_path=destination_path,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            overwrite_existing=overwrite_existing,
+            delete_on_failure=delete_on_failure)
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        # type: (Object, int, Optional[int], Optional[int]) -> Iterator[bytes]
+        return self.driver.download_object_range_as_stream(
+            obj=obj,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            chunk_size=chunk_size)
 
     def delete_object(self, obj):
         # type: (Object) -> bool
@@ -462,8 +506,9 @@ class StorageDriver(BaseDriver):
                             byte in file file is "0".
         :type start_bytes: ``int``
 
-        :param end_bytes: End byte offset (non-inclusive) for the range download.
-                          If not provided, it will default to the end of the file.
+        :param end_bytes: End byte offset (non-inclusive) for the range
+                          download. If not provided, it will default to the
+                          end of the file.
         :type end_bytes: ``int``
 
         :param overwrite_existing: True to overwrite an existing file,
@@ -497,8 +542,9 @@ class StorageDriver(BaseDriver):
                             byte in file file is "0".
         :type start_bytes: ``int``
 
-        :param end_bytes: End byte offset (non-inclusive) for the range download.
-                          If not provided, it will default to the end of the file.
+        :param end_bytes: End byte offset (non-inclusive) for the range
+                          download. If not provided, it will default to the
+                          end of the file.
         :type end_bytes: ``int``
 
         :param chunk_size: Optional chunk size (in bytes).
