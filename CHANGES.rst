@@ -65,6 +65,16 @@ Storage
   (GITHUB-1424, GITHUB-1427)
   [Tomaz Muraus]
 
+- Add new ``download_object_range`` and ``download_object_range_as_stream``
+  methods for downloading part of the object content (aka range downloads) to
+  the base storage API.
+
+  Currently those methods are implemented for the local storage, S3 and any
+  other provider driver which is based on the S3 one (such as Google
+  Storage).
+  (GITHUB-1431)
+  [Tomaz Muraus]
+
 DNS
 ~~~
 
