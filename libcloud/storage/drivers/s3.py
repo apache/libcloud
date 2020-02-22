@@ -474,6 +474,9 @@ class BaseS3StorageDriver(StorageDriver):
     def download_object_range(self, obj, destination_path, start_bytes,
                               end_bytes=None, overwrite_existing=False,
                               delete_on_failure=True):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
         obj_path = self._get_object_path(obj.container, obj.name)
 
         headers = {'Range': self._get_range_str(start_bytes, end_bytes)}
@@ -493,6 +496,9 @@ class BaseS3StorageDriver(StorageDriver):
 
     def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
                                         chunk_size=None):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
         obj_path = self._get_object_path(obj.container, obj.name)
 
         headers = {'Range': self._get_range_str(start_bytes, end_bytes)}
