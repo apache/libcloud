@@ -1033,6 +1033,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         """
         error, output = '', ''
+        original_cmd = cmd
 
         # Prepend `sudo` to `cmd`, if necessary.
         if su is True:
@@ -1074,6 +1075,8 @@ run %s
             except Exception as exc:
                 log.warn('Failed to run "%s" at %s: %r', cmd, self.host, exc)
 
+        if 'Permission denied' in error and not su:
+            return self._run_command(original_cmd, True)
         return {'output': output.decode(), 'error': error.decode()}
 
     def disconnect(self):
