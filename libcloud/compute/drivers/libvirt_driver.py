@@ -1152,7 +1152,7 @@ run %s
             except Exception as exc:
                 log.warn('Failed to run "%s" at %s: %r', cmd, self.host, exc)
 
-        if 'Permission denied' in error and not su:
+        if 'Permission denied' in error.decode() and not su:
             return self._run_command(original_cmd, True)
         return {'output': output.decode(), 'error': error.decode()}
 
