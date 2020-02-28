@@ -354,10 +354,10 @@ class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         # test_download_object_range_success
         body = '0123456789123456789'
 
-        self.assertTrue('Range' in headers)
-        self.assertEqual(headers['Range'], 'bytes=5-6')
+        self.assertTrue('x-ms-range' in headers)
+        self.assertEqual(headers['x-ms-range'], 'bytes=5-6')
 
-        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['x-ms-range'], body)
 
         return (httplib.PARTIAL_CONTENT,
                 body[start_bytes:end_bytes + 1],
@@ -368,10 +368,10 @@ class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         # test_download_object_range_as_stream_success
         body = '0123456789123456789'
 
-        self.assertTrue('Range' in headers)
-        self.assertEqual(headers['Range'], 'bytes=4-5')
+        self.assertTrue('x-ms-range' in headers)
+        self.assertEqual(headers['x-ms-range'], 'bytes=4-5')
 
-        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['x-ms-range'], body)
 
         return (httplib.PARTIAL_CONTENT,
                 body[start_bytes:end_bytes + 1],
