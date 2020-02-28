@@ -691,8 +691,8 @@ class AzureBlobsStorageDriver(StorageDriver):
                                            end_bytes=end_bytes)
 
         obj_path = self._get_object_path(obj.container, obj.name)
-        headers = {'Range': self._get_standard_range_str(start_bytes,
-                                                         end_bytes)}
+        headers = {'x-ms-range': self._get_standard_range_str(start_bytes,
+                                                              end_bytes)}
         response = self.connection.request(obj_path, headers=headers,
                                            raw=True, data=None)
 
@@ -720,8 +720,8 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         obj_path = self._get_object_path(obj.container, obj.name)
 
-        headers = {'Range': self._get_standard_range_str(start_bytes,
-                                                         end_bytes)}
+        headers = {'x-ms-range': self._get_standard_range_str(start_bytes,
+                                                              end_bytes)}
         response = self.connection.request(obj_path, method='GET',
                                            headers=headers,
                                            stream=True, raw=True)
