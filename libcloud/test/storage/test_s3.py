@@ -333,7 +333,7 @@ class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         body = '0123456789123456789'
 
         self.assertTrue('Range' in headers)
-        self.assertEqual(headers['Range'], 'bytes=5-7')
+        self.assertEqual(headers['Range'], 'bytes=5-6')
 
         start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
 
@@ -347,7 +347,7 @@ class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         body = '0123456789123456789'
 
         self.assertTrue('Range' in headers)
-        self.assertEqual(headers['Range'], 'bytes=4-7')
+        self.assertEqual(headers['Range'], 'bytes=4-6')
 
         start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
 
@@ -658,7 +658,7 @@ class S3Tests(unittest.TestCase):
         with open(self._file_path, 'r') as fp:
             content = fp.read()
 
-        self.assertEqual(content, '567')
+        self.assertEqual(content, '56')
 
     def test_download_object_range_as_stream_success(self):
         container = Container(name='foo_bar_container', extra={},
@@ -670,7 +670,7 @@ class S3Tests(unittest.TestCase):
                                                                start_bytes=4,
                                                                end_bytes=7)
         content = exhaust_iterator(iterator)
-        self.assertEqual(content, b'4567')
+        self.assertEqual(content, b'456')
 
     def test_download_object_data_is_not_buffered_in_memory(self):
         # Test case which verifies that response.body attribute is not accessed

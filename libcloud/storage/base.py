@@ -506,7 +506,7 @@ class StorageDriver(BaseDriver):
                             byte in file file is "0".
         :type start_bytes: ``int``
 
-        :param end_bytes: End byte offset (inclusive) for the range
+        :param end_bytes: End byte offset (non-inclusive) for the range
                           download. If not provided, it will default to the
                           end of the file.
         :type end_bytes: ``int``
@@ -915,13 +915,18 @@ class StorageDriver(BaseDriver):
         if start_bytes < 0:
             raise ValueError('start_bytes must be greater than 0')
 
-        if end_bytes and start_bytes > end_bytes:
-            raise ValueError('start_bytes must be smaller than end_bytes')
+        if end_bytes:
+            if start_bytes > end_bytes:
+                raise ValueError('start_bytes must be smaller than end_bytes')
+            elif start_bytes == end_bytes:
+                raise ValueError('start_bytes and end_bytes can\'t be the '
+                                 'same. end_bytes is non-inclusive')
 
         return True
 
-    def _get_standard_range_str(self, start_bytes, end_bytes=None):
-        # type: (int, Optional[int]) -> str
+    def _get_standard_range_str(self, start_bytes, end_bytes=None,
+                                end_bytes_inclusive=False):
+        # type: (int, Optional[int], bool) -> str
         """
         Return range string which is used as a Range header value for range
         requests for drivers which follow standard Range header notation
@@ -935,10 +940,17 @@ class StorageDriver(BaseDriver):
         bytes=0-2
         bytes=5-
         bytes=100-5000
+
+        :param end_bytes_inclusive: True if "end_bytes" offset should be
+        inclusive (aka opposite from the Python indexing behavior where the end
+        index is not inclusive).
         """
         range_str = 'bytes=%s-' % (start_bytes)
 
         if end_bytes is not None:
-            range_str += str(end_bytes)
+            if end_bytes_inclusive:
+                range_str += str(end_bytes)
+            else:
+                range_str += str(end_bytes - 1)
 
         return range_str

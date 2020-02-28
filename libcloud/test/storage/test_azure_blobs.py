@@ -355,7 +355,7 @@ class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
         body = '0123456789123456789'
 
         self.assertTrue('Range' in headers)
-        self.assertEqual(headers['Range'], 'bytes=5-8')
+        self.assertEqual(headers['Range'], 'bytes=5-6')
 
         start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
 
@@ -710,11 +710,16 @@ class AzureBlobsTests(unittest.TestCase):
         destination_path = os.path.abspath(__file__) + '.temp'
         result = self.driver.download_object_range(obj=obj,
                                                    start_bytes=5,
-                                                   end_bytes=8,
+                                                   end_bytes=7,
                                                    destination_path=destination_path,
                                                    overwrite_existing=False,
                                                    delete_on_failure=True)
         self.assertTrue(result)
+
+        with open(destination_path, 'r') as fp:
+            content = fp.read()
+
+        self.assertEqual(content, '56')
 
     def test_download_object_range_as_stream_success(self):
         container = Container(name='foo_bar_container', extra={},
@@ -726,7 +731,7 @@ class AzureBlobsTests(unittest.TestCase):
 
         stream = self.driver.download_object_range_as_stream(obj=obj,
                                                              start_bytes=4,
-                                                             end_bytes=5,
+                                                             end_bytes=6,
                                                              chunk_size=None)
 
         consumed_stream = ''.join(chunk.decode('utf-8') for chunk in stream)

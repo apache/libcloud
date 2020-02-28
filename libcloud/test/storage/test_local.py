@@ -352,7 +352,7 @@ class LocalTests(unittest.TestCase):
         result = self.driver.download_object_range(obj=obj,
                                              destination_path=destination_path,
                                              start_bytes=4,
-                                             end_bytes=5,
+                                             end_bytes=6,
                                              overwrite_existing=True,
                                              delete_on_failure=True)
         self.assertTrue(result)
@@ -361,21 +361,7 @@ class LocalTests(unittest.TestCase):
             written_content = fp.read()
 
         self.assertEqual(written_content, b'45')
-        self.assertEqual(written_content, content[4:5 + 1])
-
-        result = self.driver.download_object_range(obj=obj,
-                                             destination_path=destination_path,
-                                             start_bytes=0,
-                                             end_bytes=0,
-                                             overwrite_existing=True,
-                                             delete_on_failure=True)
-        self.assertTrue(result)
-
-        with open(destination_path, 'rb') as fp:
-            written_content = fp.read()
-
-        self.assertEqual(written_content, b'0')
-        self.assertEqual(written_content, content[0:0 + 1])
+        self.assertEqual(written_content, content[4:6])
 
         result = self.driver.download_object_range(obj=obj,
                                              destination_path=destination_path,
@@ -388,8 +374,22 @@ class LocalTests(unittest.TestCase):
         with open(destination_path, 'rb') as fp:
             written_content = fp.read()
 
+        self.assertEqual(written_content, b'0')
+        self.assertEqual(written_content, content[0:1])
+
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=0,
+                                             end_bytes=2,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(destination_path, 'rb') as fp:
+            written_content = fp.read()
+
         self.assertEqual(written_content, b'01')
-        self.assertEqual(written_content, content[0:1 + 1])
+        self.assertEqual(written_content, content[0:2])
 
         result = self.driver.download_object_range(obj=obj,
                                              destination_path=destination_path,
@@ -428,30 +428,30 @@ class LocalTests(unittest.TestCase):
         # 2. start_bytes and end_bytes is provided
         stream = self.driver.download_object_range_as_stream(obj=obj,
                                                              start_bytes=4,
-                                                             end_bytes=6,
+                                                             end_bytes=7,
                                                              chunk_size=1024)
         written_content = b''.join(stream)
 
         self.assertEqual(written_content, b'456')
-        self.assertEqual(written_content, content[4:6 + 1])
+        self.assertEqual(written_content, content[4:7])
 
         stream = self.driver.download_object_range_as_stream(obj=obj,
                                                              start_bytes=0,
-                                                             end_bytes=0,
+                                                             end_bytes=1,
                                                              chunk_size=1024)
         written_content = b''.join(stream)
 
         self.assertEqual(written_content, b'0')
-        self.assertEqual(written_content, content[0:0 + 1])
+        self.assertEqual(written_content, content[0:1])
 
         stream = self.driver.download_object_range_as_stream(obj=obj,
                                                              start_bytes=1,
-                                                             end_bytes=2,
+                                                             end_bytes=3,
                                                              chunk_size=1024)
         written_content = b''.join(stream)
 
         self.assertEqual(written_content, b'12')
-        self.assertEqual(written_content, content[1:2 + 1])
+        self.assertEqual(written_content, content[1:3])
 
         stream = self.driver.download_object_range_as_stream(obj=obj,
                                                              start_bytes=0,
@@ -483,6 +483,13 @@ class LocalTests(unittest.TestCase):
             start_bytes=5,
             end_bytes=4)
 
+        expected_msg = 'start_bytes and end_bytes can\'t be the same'
+        self.assertRaisesRegex(ValueError, expected_msg,
+            self.driver.download_object_range, obj=obj,
+            destination_path=tmppath,
+            start_bytes=5,
+            end_bytes=5)
+
     def test_download_object_range_as_stream_invalid_values(self):
         content = b'0123456789123456789'
         tmppath = self.make_tmp_file(content=content)
@@ -512,6 +519,13 @@ class LocalTests(unittest.TestCase):
             obj=obj,
             start_bytes=5,
             end_bytes=len(content) + 1,
+            chunk_size=1024)
+
+        expected_msg = 'start_bytes and end_bytes can\'t be the same'
+        stream = self.driver.download_object_range_as_stream(
+            obj=obj,
+            start_bytes=5,
+            end_bytes=5,
             chunk_size=1024)
 
         obj.delete()
