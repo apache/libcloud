@@ -919,3 +919,26 @@ class StorageDriver(BaseDriver):
             raise ValueError('start_bytes must be smaller than end_bytes')
 
         return True
+
+    def _get_standard_range_str(self, start_bytes, end_bytes=None):
+        # type: (int, Optional[int]) -> str
+        """
+        Return range string which is used as a Range header value for range
+        requests for drivers which follow standard Range header notation
+
+        This returns range string in the following format:
+        bytes=<start_bytes>-<end bytes>.
+
+        For example:
+
+        bytes=1-10
+        bytes=0-2
+        bytes=5-
+        bytes=100-5000
+        """
+        range_str = 'bytes=%s-' % (start_bytes)
+
+        if end_bytes is not None:
+            range_str += str(end_bytes)
+
+        return range_str

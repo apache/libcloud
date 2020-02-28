@@ -684,6 +684,50 @@ class AzureBlobsStorageDriver(StorageDriver):
                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        obj_path = self._get_object_path(obj.container, obj.name)
+        headers = {'Range': self._get_standard_range_str(start_bytes,
+                                                         end_bytes)}
+        response = self.connection.request(obj_path, headers=headers,
+                                           raw=True, data=None)
+
+        return self._get_object(obj=obj, callback=self._save_object,
+                                response=response,
+                                callback_kwargs={
+                                    'obj': obj,
+                                    'response': response.response,
+                                    'destination_path': destination_path,
+                                    'overwrite_existing': overwrite_existing,
+                                    'delete_on_failure': delete_on_failure,
+                                    'partial_download': True},
+                                success_status_code=httplib.PARTIAL_CONTENT)
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        obj_path = self._get_object_path(obj.container, obj.name)
+
+        headers = {'Range': self._get_standard_range_str(start_bytes,
+                                                         end_bytes)}
+        response = self.connection.request(obj_path, method='GET',
+                                           headers=headers,
+                                           stream=True, raw=True)
+        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+
+        return self._get_object(
+            obj=obj, callback=read_in_chunks,
+            response=response,
+            callback_kwargs={'iterator': iterator,
+                             'chunk_size': chunk_size},
+            success_status_code=httplib.PARTIAL_CONTENT)
+
     def _upload_in_chunks(self, stream, object_path, lease, meta_data,
                           content_type, object_name, file_path, verify_hash,
                           headers):
