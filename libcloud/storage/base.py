@@ -920,7 +920,7 @@ class StorageDriver(BaseDriver):
         if start_bytes < 0:
             raise ValueError('start_bytes must be greater than 0')
 
-        if end_bytes:
+        if end_bytes is not None:
             if start_bytes > end_bytes:
                 raise ValueError('start_bytes must be smaller than end_bytes')
             elif start_bytes == end_bytes:
