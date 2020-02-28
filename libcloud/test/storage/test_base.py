@@ -252,6 +252,25 @@ class BaseStorageTests(unittest.TestCase):
                                request_path='/',
                                stream=iterator)
 
+    def test_get_standard_range_str(self):
+        result = self.driver1._get_standard_range_str(0, 5)
+        self.assertEqual(result, 'bytes=0-5')
+
+        result = self.driver1._get_standard_range_str(0)
+        self.assertEqual(result, 'bytes=0-')
+        result = self.driver1._get_standard_range_str(0, 0)
+
+        self.assertEqual(result, 'bytes=0-0')
+
+        result = self.driver1._get_standard_range_str(200)
+        self.assertEqual(result, 'bytes=200-')
+
+        result = self.driver1._get_standard_range_str(10, 200)
+        self.assertEqual(result, 'bytes=10-200')
+
+        result = self.driver1._get_standard_range_str(10, 11)
+        self.assertEqual(result, 'bytes=10-11')
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
