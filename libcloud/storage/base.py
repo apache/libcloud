@@ -702,7 +702,12 @@ class StorageDriver(BaseDriver):
         """
         success_status_code = success_status_code or httplib.OK
 
-        if response.status == success_status_code:
+        if not isinstance(success_status_code, (list, tuple)):
+            success_status_codes = [success_status_code]
+        else:
+            success_status_codes = success_status_code
+
+        if response.status in success_status_codes:
             return callback(**callback_kwargs)
         elif response.status == httplib.NOT_FOUND:
             raise ObjectDoesNotExistError(object_name=obj.name,
