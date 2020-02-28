@@ -506,7 +506,7 @@ class StorageDriver(BaseDriver):
                             byte in file file is "0".
         :type start_bytes: ``int``
 
-        :param end_bytes: End byte offset (non-inclusive) for the range
+        :param end_bytes: End byte offset (inclusive) for the range
                           download. If not provided, it will default to the
                           end of the file.
         :type end_bytes: ``int``

@@ -440,7 +440,7 @@ class LocalStorageDriver(StorageDriver):
             if not end_bytes:
                 read_bytes = (file_size - start_bytes) + 1
             else:
-                read_bytes = (end_bytes - start_bytes)
+                read_bytes = (end_bytes - start_bytes) + 1
 
             obj_file.seek(start_bytes)
             data = obj_file.read(read_bytes)
