@@ -437,7 +437,7 @@ class LocalStorageDriver(StorageDriver):
             if end_bytes and end_bytes > file_size:
                 raise ValueError('end_bytes is larger than file size')
 
-            if not end_bytes:
+            if end_bytes is None:
                 read_bytes = (file_size - start_bytes) + 1
             else:
                 read_bytes = (end_bytes - start_bytes) + 1
