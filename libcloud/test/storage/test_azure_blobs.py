@@ -39,13 +39,14 @@ from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
 from libcloud.storage.drivers.azure_blobs import AZURE_UPLOAD_CHUNK_SIZE
 
 from libcloud.test import unittest
-from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
+from libcloud.test import generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
 from libcloud.test.secrets import STORAGE_AZURITE_BLOBS_PARAMS
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
-class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
+class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('azure_blobs')
     base_headers = {}
@@ -348,6 +349,34 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
+    def _foo_bar_container_foo_bar_object_range(self, method, url, body, headers):
+        # test_download_object_range_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=5-8')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
+    def _foo_bar_container_foo_bar_object_range_stream(self, method, url, body, headers):
+        # test_download_object_range_as_stream_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=4-5')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
 
     def _foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url,
                                                        body, headers):
@@ -670,6 +699,38 @@ class AzureBlobsTests(unittest.TestCase):
                                                        chunk_size=None)
 
         consumed_stream = ''.join(chunk.decode('utf-8') for chunk in stream)
+        self.assertEqual(len(consumed_stream), obj.size)
+
+    def test_download_object_range_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_range', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object_range(obj=obj,
+                                                   start_bytes=5,
+                                                   end_bytes=8,
+                                                   destination_path=destination_path,
+                                                   overwrite_existing=False,
+                                                   delete_on_failure=True)
+        self.assertTrue(result)
+
+    def test_download_object_range_as_stream_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+
+        obj = Object(name='foo_bar_object_range_stream', size=2, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+
+        stream = self.driver.download_object_range_as_stream(obj=obj,
+                                                             start_bytes=4,
+                                                             end_bytes=5,
+                                                             chunk_size=None)
+
+        consumed_stream = ''.join(chunk.decode('utf-8') for chunk in stream)
+        self.assertEqual(consumed_stream, '45')
         self.assertEqual(len(consumed_stream), obj.size)
 
     def test_upload_object_invalid_md5(self):

@@ -52,9 +52,10 @@ from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import unittest, make_response, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
-class S3MockHttp(MockHttp, unittest.TestCase):
+class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('s3')
     base_headers = {}
@@ -337,7 +338,7 @@ class S3MockHttp(MockHttp, unittest.TestCase):
         start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
 
         return (httplib.PARTIAL_CONTENT,
-                body[start_bytes:end_bytes],
+                body[start_bytes:end_bytes + 1],
                 headers,
                 httplib.responses[httplib.PARTIAL_CONTENT])
 
@@ -351,7 +352,7 @@ class S3MockHttp(MockHttp, unittest.TestCase):
         start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
 
         return (httplib.PARTIAL_CONTENT,
-                body[start_bytes:end_bytes],
+                body[start_bytes:end_bytes + 1],
                 headers,
                 httplib.responses[httplib.PARTIAL_CONTENT])
 
@@ -380,19 +381,6 @@ class S3MockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
-
-    def _get_start_and_end_bytes_from_range_str(self, range_str, body):
-        # type: (str, str) -> Tuple[int, int]
-        range_str = range_str.split('bytes=')[1]
-        range_str = range_str.split('-')
-        start_bytes = int(range_str[0])
-
-        if len(range_str) == 2:
-            end_bytes = int(range_str[1])
-        else:
-            end_bytes = len(body)
-
-        return start_bytes, end_bytes
 
 
 class S3Tests(unittest.TestCase):
@@ -670,7 +658,7 @@ class S3Tests(unittest.TestCase):
         with open(self._file_path, 'r') as fp:
             content = fp.read()
 
-        self.assertEqual(content, '56')
+        self.assertEqual(content, '567')
 
     def test_download_object_range_as_stream_success(self):
         container = Container(name='foo_bar_container', extra={},
@@ -682,7 +670,7 @@ class S3Tests(unittest.TestCase):
                                                                start_bytes=4,
                                                                end_bytes=7)
         content = exhaust_iterator(iterator)
-        self.assertEqual(content, b'456')
+        self.assertEqual(content, b'4567')
 
     def test_download_object_data_is_not_buffered_in_memory(self):
         # Test case which verifies that response.body attribute is not accessed
