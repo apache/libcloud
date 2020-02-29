@@ -34,6 +34,7 @@ from libcloud.storage.base import DEFAULT_CONTENT_TYPE
 from libcloud.test import unittest
 from libcloud.test import MockHttp
 from libcloud.test import BodyStream
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
 class BaseMockRawResponse(MockHttp):
@@ -47,7 +48,6 @@ class BaseMockRawResponse(MockHttp):
 
 
 class BaseStorageTests(unittest.TestCase):
-
     def setUp(self):
         self.send_called = 0
         StorageDriver.connectionCls.conn_class = BaseMockRawResponse
@@ -273,6 +273,24 @@ class BaseStorageTests(unittest.TestCase):
 
         result = self.driver1._get_standard_range_str(10, 11, True)
         self.assertEqual(result, 'bytes=10-11')
+
+
+class BaseRangeDownloadMockHttpTestCase(unittest.TestCase):
+    def test_get_start_and_end_bytes_from_range_str(self):
+        mock_http = BaseRangeDownloadMockHttp(None, None)
+        body = '0123456789'
+
+        range_str = 'bytes=1-'
+        result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
+        self.assertEqual(result, (1, len(body)))
+        range_str = 'bytes=1-5'
+
+        result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
+        self.assertEqual(result, (1, 5))
+
+        range_str = 'bytes=3-5'
+        result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
+        self.assertEqual(result, (3, 5))
 
 
 if __name__ == '__main__':

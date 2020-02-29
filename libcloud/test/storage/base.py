@@ -32,6 +32,7 @@ class BaseRangeDownloadMockHttp(MockHttp):
         # type: (str, str) -> Tuple[int, int]
         range_str = range_str.split('bytes=')[1]
         range_str = range_str.split('-')
+        range_str = [value for value in range_str if value.strip()]
         start_bytes = int(range_str[0])
 
         if len(range_str) == 2:
