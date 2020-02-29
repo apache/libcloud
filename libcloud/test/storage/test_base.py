@@ -263,12 +263,12 @@ class BaseStorageTests(unittest.TestCase):
         iterator = BodyStream('b' * size)
         iterator.seek = mock.Mock(side_effect=seek_error)
 
-        self.assertRaisesRegex(OSError, 'Other error',
-                               self.driver1._upload_object,
-                               object_name='test1',
-                               content_type=None,
-                               request_path='/',
-                               stream=iterator)
+        assertRaisesRegex(self, OSError, 'Other error',
+                          self.driver1._upload_object,
+                          object_name='test1',
+                          content_type=None,
+                          request_path='/',
+                          stream=iterator)
 
 
 if __name__ == '__main__':
