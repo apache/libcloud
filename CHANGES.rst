@@ -17,6 +17,27 @@ Common
 Compute
 ~~~~~~~
 
+- [GCE] Fix ``list_nodes()`` method so it correctly handles pagination
+  and returns all the nodes if there are more than 500 nodes available
+  in total.
+
+  Previously, only first 500 nodes were returned.
+
+  Reported by @TheSushiChef.
+  (GITHUB-1409, GITHUB-1360)
+  [Tomaz Muraus]
+
+- Fix some incorrect type annotations in the base compute API.
+
+  Reported by @dpeschman.
+  (GITHUB-1413)
+  [Tomaz Muraus]
+
+- [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
+  when region is not called ``nova``.
+  (GITHUB-1411, GITHUB-1412)
+  [Miguel Caballer - @micafer]
+
 - [EC2] Fix ``ex_userdata`` keyword argument in the ``create_node()`` method
   being ignored / not working correctly.
 
@@ -30,6 +51,18 @@ Compute
 
 Storage
 ~~~~~~~
+
+- [AWS S3] Fix upload object code so uploaded data MD5 checksum check is not
+  performed at the end of the upload when AWS KMS server side encryption is
+  used.
+
+  If AWS KMS server side object encryption is used, ETag header value in the
+  response doesn't contain data MD5 digest so we can't perform a checksum
+  check.
+
+  Reported by Jonathan Harden - @jfharden.
+  (GITHUB-1401, GITHUB-1406)
+  [Tomaz Muraus - @Kami]
 
 - [Google Storage] Fix a bug when uploading an object would fail and result
   in 401 "invalid signature" error when object mime type contained mixed
