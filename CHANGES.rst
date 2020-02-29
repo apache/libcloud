@@ -1,6 +1,67 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud v2.8.1
+---------------------------------
+
+Common
+~~~~~~~
+
+- Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
+  works correctly under Python 3 when ``response.read()`` function returns
+  unicode and not bytes.
+
+  (GITHUB-1430)
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [EC2] Fix ``ex_userdata`` keyword argument in the ``create_node()`` method
+  being ignored / not working correctly.
+
+  NOTE: This regression has been inadvertently introduced in v2.8.0.
+  (GITHUB-1426)
+  [Dan Chaffelson - @Chaffelson]
+
+- [EC2] Update ``create_volume`` method to automatically select first available
+  availability zone if one is not explicitly provided via ``location`` argument.
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- [Google Storage] Fix a bug when uploading an object would fail and result
+  in 401 "invalid signature" error when object mime type contained mixed
+  casing and when S3 Interoperability authentication method was used.
+
+  Reported by Will Abson - wabson.
+  (GITHUB-1417, GITHUB-1418)
+  [Tomaz Muraus]
+
+- Fix ``upload_object_via_stream`` method so "Illegal seek" errors which
+  can arise when calculating iterator content hash are ignored. Those errors
+  likely indicate that the underlying file handle / iterator is a pipe which
+  doesn't support seek and that the error is not fatal and we should still
+  proceed.
+
+  Reported by Per Buer - @perbu.
+
+  (GITHUB-1424, GITHUB-1427)
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- [CloudFlare] Fix ``export_zone_to_bind_format`` method.
+
+  Previously it threw an exception, because ``record.extra`` dictionary
+  didn't contain ``priority`` key.
+
+  Reported by James Montgomery - @gh-jamesmontgomery.
+  (GITHUB-1428, GITHUB-1429)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
