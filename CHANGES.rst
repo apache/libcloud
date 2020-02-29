@@ -86,6 +86,11 @@ Storage
 DNS
 ~~~
 
+- [Gandi Live] Update the driver and make sure it matches the latest service /
+  API updates.
+  (GITHUB-1416)
+  [Ryan Lee - @zepheiryan]
+
 - [CloudFlare] Fix ``export_zone_to_bind_format`` method.
 
   Previously it threw an exception, because ``record.extra`` dictionary
