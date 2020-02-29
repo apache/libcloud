@@ -22,6 +22,7 @@ import requests_mock
 import mock
 
 import libcloud
+from libcloud.utils.py3 import PY3
 from libcloud.test import unittest
 from libcloud.common.base import Connection
 from libcloud.http import LibcloudConnection
@@ -50,11 +51,21 @@ Content-Type: text/xml
 <foo><bar /></foo>
 """.strip()
 
-EXPECTED_DATA_XML_PRETTY = """
+EXPECTED_DATA_XML_PRETTY_1 = """
 HTTP/1.1 200 OK
 Content-Type: application/xml
 
 <foo><bar /></foo>
+""".strip()
+
+EXPECTED_DATA_XML_PRETTY_2 = """
+HTTP/1.1 200 OK
+Content-Type: application/xml
+
+<?xml version="1.0" ?>
+<foo>
+	<bar/>
+</foo>
 """.strip()
 
 
@@ -123,12 +134,16 @@ class TestLoggingConnection(unittest.TestCase):
         conn = LoggingConnection(host='example.com', port=80)
 
         # body type is unicode
-        r = self._get_mock_response('application/json', '{"foo": "bar!"}')
+        r = self._get_mock_response('application/json', u'{"foo": "bar!"}')
         result = conn._log_response(r).replace('\r', '')
         self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
 
         # body type is bytes
-        r = self._get_mock_response('application/json', bytes('{"foo": "bar!"}', 'utf-8'))
+        if PY3:
+            data = bytes('{"foo": "bar!"}', 'utf-8')
+        else:
+            data = bytes('{"foo": "bar!"}')
+        r = self._get_mock_response('application/json', data)
         result = conn._log_response(r).replace('\r', '')
         self.assertTrue(EXPECTED_DATA_JSON_PRETTY in result)
 
@@ -139,7 +154,8 @@ class TestLoggingConnection(unittest.TestCase):
 
         r = self._get_mock_response('application/xml', '<foo><bar /></foo>')
         result = conn._log_response(r).replace('\r', '')
-        self.assertTrue(EXPECTED_DATA_XML_PRETTY in result)
+        self.assertTrue(EXPECTED_DATA_XML_PRETTY_1 in result or
+                        EXPECTED_DATA_XML_PRETTY_2 in result)
 
     def _reset_environ(self):
         if 'LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE' in os.environ:

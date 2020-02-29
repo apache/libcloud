@@ -28,7 +28,7 @@ import os
 from libcloud.common.base import (LibcloudConnection,
                                   HttpLibResponseProxy)
 from libcloud.utils.py3 import _real_unicode as u
-from libcloud.utils.py3 import ensure_string
+from libcloud.utils.py3 import ensure_text
 
 from libcloud.utils.misc import lowercase_keys
 
@@ -69,7 +69,7 @@ class LoggingConnection(LibcloudConnection):
 
         if pretty_print and content_type == 'application/json':
             try:
-                body = json.loads(ensure_string(body))
+                body = json.loads(ensure_text(body))
                 body = json.dumps(body, sort_keys=True, indent=4)
             except Exception:
                 # Invalid JSON or server is lying about content-type
@@ -82,7 +82,7 @@ class LoggingConnection(LibcloudConnection):
                 # Invalid XML
                 pass
 
-        ht += ensure_string(body)
+        ht += ensure_text(body)
 
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"
