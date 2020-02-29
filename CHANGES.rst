@@ -69,9 +69,9 @@ Storage
   methods for downloading part of the object content (aka range downloads) to
   the base storage API.
 
-  Currently those methods are implemented for the local storage, S3 and any
-  other provider driver which is based on the S3 one (such as Google
-  Storage).
+  Currently those methods are implemented for the local storage Azure Blobs,
+  CloudFiles, S3 and any other provider driver which is based on the S3 one
+  (such as Google Storage and DigitalOcean Spaces).
   (GITHUB-1431)
   [Tomaz Muraus]
 
