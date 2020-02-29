@@ -24,7 +24,6 @@ from typing import Type
 
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
-import warnings
 import errno
 from os.path import join as pjoin
 
