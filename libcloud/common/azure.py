@@ -48,9 +48,11 @@ class AzureResponse(XmlResponse):
         httplib.NOT_FOUND,
         httplib.CONFLICT,
         httplib.BAD_REQUEST,
-        httplib.TEMPORARY_REDIRECT
         # added TEMPORARY_REDIRECT as this can sometimes be
         # sent by azure instead of a success or fail response
+        httplib.TEMPORARY_REDIRECT,
+        # Used by Azure Blobs range downloads
+        httplib.PARTIAL_CONTENT
     ]
 
     def success(self):

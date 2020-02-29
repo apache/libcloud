@@ -20,7 +20,7 @@ from libcloud.utils.py3 import httplib
 
 if False:
     # Work around for MYPY for cyclic import problem
-    from libcloud.compute.base import NodeDriver
+    from libcloud.compute.base import BaseDriver
 
 __all__ = [
     "LibcloudError",
@@ -36,7 +36,7 @@ class LibcloudError(Exception):
     """The base class for other libcloud exceptions"""
 
     def __init__(self, value, driver=None):
-        # type: (str, NodeDriver) -> None
+        # type: (str, BaseDriver) -> None
         super(LibcloudError, self).__init__(value)
         self.value = value
         self.driver = driver
@@ -57,7 +57,7 @@ class MalformedResponseError(LibcloudError):
     '<h3>something</h3>' due to some error on their side."""
 
     def __init__(self, value, body=None, driver=None):
-        # type: (str, Optional[str], Optional[NodeDriver]) -> None
+        # type: (str, Optional[str], Optional[BaseDriver]) -> None
         self.value = value
         self.driver = driver
         self.body = body
@@ -85,7 +85,7 @@ class ProviderError(LibcloudError):
     """
 
     def __init__(self, value, http_code, driver=None):
-        # type: (str, int, Optional[NodeDriver]) -> None
+        # type: (str, int, Optional[BaseDriver]) -> None
         super(ProviderError, self).__init__(value=value, driver=driver)
         self.http_code = http_code
 
@@ -101,7 +101,7 @@ class InvalidCredsError(ProviderError):
 
     def __init__(self, value='Invalid credentials with the provider',
                  driver=None):
-        # type: (str, Optional[NodeDriver]) -> None
+        # type: (str, Optional[BaseDriver]) -> None
         super(InvalidCredsError, self).__init__(value,
                                                 http_code=httplib.UNAUTHORIZED,
                                                 driver=driver)
@@ -115,7 +115,7 @@ class ServiceUnavailableError(ProviderError):
     """Exception used when a provider returns 503 Service Unavailable."""
 
     def __init__(self, value='Service unavailable at provider', driver=None):
-        # type: (str, Optional[NodeDriver]) -> None
+        # type: (str, Optional[BaseDriver]) -> None
         super(ServiceUnavailableError, self).__init__(
             value,
             http_code=httplib.SERVICE_UNAVAILABLE,

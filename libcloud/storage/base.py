@@ -113,13 +113,36 @@ class Object(object):
     def download(self, destination_path, overwrite_existing=False,
                  delete_on_failure=True):
         # type: (str, bool, bool) -> bool
-        return self.driver.download_object(self, destination_path,
-                                           overwrite_existing,
-                                           delete_on_failure)
+        return self.driver.download_object(
+            obj=self,
+            destination_path=destination_path,
+            overwrite_existing=overwrite_existing,
+            delete_on_failure=delete_on_failure)
 
     def as_stream(self, chunk_size=None):
         # type: (Optional[int]) -> Iterator[bytes]
-        return self.driver.download_object_as_stream(self, chunk_size)
+        return self.driver.download_object_as_stream(obj=self,
+                                                     chunk_size=chunk_size)
+
+    def download_range(self, destination_path, start_bytes, end_bytes=None,
+                       overwrite_existing=False,
+                       delete_on_failure=True):
+        # type: (str, int, Optional[int], bool, bool) -> bool
+        return self.driver.download_object_range(
+            obj=self,
+            destination_path=destination_path,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            overwrite_existing=overwrite_existing,
+            delete_on_failure=delete_on_failure)
+
+    def range_as_stream(self, start_bytes, end_bytes=None, chunk_size=None):
+        # type: (int, Optional[int], Optional[int]) -> Iterator[bytes]
+        return self.driver.download_object_range_as_stream(
+            obj=self,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            chunk_size=chunk_size)
 
     def delete(self):
         # type: () -> bool
@@ -203,6 +226,27 @@ class Container(object):
     def download_object_as_stream(self, obj, chunk_size=None):
         # type: (Object, Optional[int]) -> Iterator[bytes]
         return self.driver.download_object_as_stream(obj, chunk_size)
+
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        # type: (Object, str, int, Optional[int], bool, bool) -> bool
+        return self.driver.download_object_range(
+            obj=obj,
+            destination_path=destination_path,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            overwrite_existing=overwrite_existing,
+            delete_on_failure=delete_on_failure)
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        # type: (Object, int, Optional[int], Optional[int]) -> Iterator[bytes]
+        return self.driver.download_object_range_as_stream(
+            obj=obj,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes,
+            chunk_size=chunk_size)
 
     def delete_object(self, obj):
         # type: (Object) -> bool
@@ -443,6 +487,74 @@ class StorageDriver(BaseDriver):
         raise NotImplementedError(
             'download_object_as_stream not implemented for this driver')
 
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        # type: (Object, str, int, Optional[int], bool, bool) -> bool
+        """
+        Download part of an object.
+
+        :param obj: Object instance.
+        :type obj: :class:`libcloud.storage.base.Object`
+
+        :param destination_path: Full path to a file or a directory where the
+                                 incoming file will be saved.
+        :type destination_path: ``str``
+
+        :param start_bytes: Start byte offset (inclusive) for the range
+                            download. Offset is 0 index based so the first
+                            byte in file file is "0".
+        :type start_bytes: ``int``
+
+        :param end_bytes: End byte offset (non-inclusive) for the range
+                          download. If not provided, it will default to the
+                          end of the file.
+        :type end_bytes: ``int``
+
+        :param overwrite_existing: True to overwrite an existing file,
+                                   defaults to False.
+        :type overwrite_existing: ``bool``
+
+        :param delete_on_failure: True to delete a partially downloaded file if
+                                   the download was not successful (hash
+                                   mismatch / file size).
+        :type delete_on_failure: ``bool``
+
+        :return: True if an object has been successfully downloaded, False
+                 otherwise.
+        :rtype: ``bool``
+
+        """
+        raise NotImplementedError(
+            'download_object_range not implemented for this driver')
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        # type: (Object, int, Optional[int], Optional[int]) -> Iterator[bytes]
+        """
+        Return a iterator which yields range / part of the object data.
+
+        :param obj: Object instance
+        :type obj: :class:`libcloud.storage.base.Object`
+
+        :param start_bytes: Start byte offset (inclusive) for the range
+                            download. Offset is 0 index based so the first
+                            byte in file file is "0".
+        :type start_bytes: ``int``
+
+        :param end_bytes: End byte offset (non-inclusive) for the range
+                          download. If not provided, it will default to the
+                          end of the file.
+        :type end_bytes: ``int``
+
+        :param chunk_size: Optional chunk size (in bytes).
+        :type chunk_size: ``int``
+
+        :rtype: ``iterator`` of ``bytes``
+        """
+        raise NotImplementedError(
+            'download_object_range_as_stream not implemented for this driver')
+
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None):
         # type: (str, Container, str, Optional[dict], bool, Optional[Dict[str, str]]) -> Object  # noqa: E501
@@ -590,7 +702,12 @@ class StorageDriver(BaseDriver):
         """
         success_status_code = success_status_code or httplib.OK
 
-        if response.status == success_status_code:
+        if not isinstance(success_status_code, (list, tuple)):
+            success_status_codes = [success_status_code]
+        else:
+            success_status_codes = success_status_code
+
+        if response.status in success_status_codes:
             return callback(**callback_kwargs)
         elif response.status == httplib.NOT_FOUND:
             raise ObjectDoesNotExistError(object_name=obj.name,
@@ -602,7 +719,7 @@ class StorageDriver(BaseDriver):
 
     def _save_object(self, response, obj, destination_path,
                      overwrite_existing=False, delete_on_failure=True,
-                     chunk_size=None):
+                     chunk_size=None, partial_download=False):
         """
         Save object to the provided path.
 
@@ -626,6 +743,10 @@ class StorageDriver(BaseDriver):
         :param chunk_size: Optional chunk size
             (defaults to ``libcloud.storage.base.CHUNK_SIZE``, 8kb)
         :type chunk_size: ``int``
+
+        :param partial_download: True if this is a range (partial) save,
+                                 False otherwise.
+        :type partial_download: ``bool``
 
         :return: ``True`` on success, ``False`` otherwise.
         :rtype: ``bool``
@@ -658,8 +779,10 @@ class StorageDriver(BaseDriver):
                 file_handle.write(b(chunk))
                 bytes_transferred += len(chunk)
 
-        if int(obj.size) != int(bytes_transferred):
+        if not partial_download and int(obj.size) != int(bytes_transferred):
             # Transfer failed, support retry?
+            # NOTE: We only perform this check if this is a regular and not a
+            # partial / range download
             if delete_on_failure:
                 try:
                     os.unlink(file_path)
@@ -787,3 +910,52 @@ class StorageDriver(BaseDriver):
                                (self.hash_type))
 
         return func
+
+    def _validate_start_and_end_bytes(self, start_bytes, end_bytes=None):
+        # type: (int, Optional[int]) -> bool
+        """
+        Method which validates that start_bytes and end_bytes arguments contain
+        valid values.
+        """
+        if start_bytes < 0:
+            raise ValueError('start_bytes must be greater than 0')
+
+        if end_bytes is not None:
+            if start_bytes > end_bytes:
+                raise ValueError('start_bytes must be smaller than end_bytes')
+            elif start_bytes == end_bytes:
+                raise ValueError('start_bytes and end_bytes can\'t be the '
+                                 'same. end_bytes is non-inclusive')
+
+        return True
+
+    def _get_standard_range_str(self, start_bytes, end_bytes=None,
+                                end_bytes_inclusive=False):
+        # type: (int, Optional[int], bool) -> str
+        """
+        Return range string which is used as a Range header value for range
+        requests for drivers which follow standard Range header notation
+
+        This returns range string in the following format:
+        bytes=<start_bytes>-<end bytes>.
+
+        For example:
+
+        bytes=1-10
+        bytes=0-2
+        bytes=5-
+        bytes=100-5000
+
+        :param end_bytes_inclusive: True if "end_bytes" offset should be
+        inclusive (aka opposite from the Python indexing behavior where the end
+        index is not inclusive).
+        """
+        range_str = 'bytes=%s-' % (start_bytes)
+
+        if end_bytes is not None:
+            if end_bytes_inclusive:
+                range_str += str(end_bytes)
+            else:
+                range_str += str(end_bytes - 1)
+
+        return range_str

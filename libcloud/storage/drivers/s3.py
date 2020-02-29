@@ -112,7 +112,7 @@ RESPONSES_PER_REQUEST = 100
 class S3Response(AWSBaseResponse):
     namespace = None
     valid_response_codes = [httplib.NOT_FOUND, httplib.CONFLICT,
-                            httplib.BAD_REQUEST]
+                            httplib.BAD_REQUEST, httplib.PARTIAL_CONTENT]
 
     def success(self):
         i = int(self.status)
@@ -468,6 +468,50 @@ class BaseS3StorageDriver(StorageDriver):
             callback_kwargs={'iterator': response.iter_content(CHUNK_SIZE),
                              'chunk_size': chunk_size},
             success_status_code=httplib.OK)
+
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        obj_path = self._get_object_path(obj.container, obj.name)
+
+        headers = {'Range': self._get_standard_range_str(start_bytes,
+                                                         end_bytes)}
+        response = self.connection.request(obj_path, method='GET',
+                                           headers=headers, raw=True)
+
+        return self._get_object(obj=obj, callback=self._save_object,
+                                response=response,
+                                callback_kwargs={
+                                    'obj': obj,
+                                    'response': response.response,
+                                    'destination_path': destination_path,
+                                    'overwrite_existing': overwrite_existing,
+                                    'delete_on_failure': delete_on_failure,
+                                    'partial_download': True},
+                                success_status_code=httplib.PARTIAL_CONTENT)
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        obj_path = self._get_object_path(obj.container, obj.name)
+
+        headers = {'Range': self._get_standard_range_str(start_bytes,
+                                                         end_bytes)}
+        response = self.connection.request(obj_path, method='GET',
+                                           headers=headers,
+                                           stream=True, raw=True)
+
+        return self._get_object(
+            obj=obj, callback=read_in_chunks,
+            response=response,
+            callback_kwargs={'iterator': response.iter_content(CHUNK_SIZE),
+                             'chunk_size': chunk_size},
+            success_status_code=httplib.PARTIAL_CONTENT)
 
     def upload_object(self, file_path, container, object_name, extra=None,
                       verify_hash=True, headers=None, ex_storage_class=None):
