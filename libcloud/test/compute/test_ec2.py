@@ -1431,7 +1431,7 @@ class EC2MockHttp(MockHttp, unittest.TestCase):
 
     def _ex_user_data_RunInstances(self, method, url, body, headers):
         # test_create_node_with_ex_userdata
-        params = parse_qs(url)
+        params = parse_qs(url.replace('/?', ''))
 
         self.assertTrue('UserData' in params)
         user_data = base64.b64decode(b(params['UserData'][0])).decode('utf-8')
@@ -2029,6 +2029,7 @@ class OutscaleTests(EC2Tests):
 
         result = self.driver.create_node(name='foo', image=image, size=size,
                                          ex_userdata='foo\nbar\foo')
+        self.assertTrue(result)
 
 
 class FCUMockHttp(EC2MockHttp):
