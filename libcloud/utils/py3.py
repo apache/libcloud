@@ -112,6 +112,8 @@ if PY3:
         else:
             raise TypeError("Invalid argument %r for ensure_string()" % (s,))
 
+    ensure_text = ensure_string
+
     def byte(n):
         # assume n is a Latin-1 string of length 1
         return ord(n)
@@ -186,6 +188,14 @@ else:
     method_type = types.MethodType
 
     b = bytes = ensure_string = str
+
+    def ensure_text(s):
+        if isinstance(s, _real_unicode):
+            return s
+        elif isinstance(s, (str, bytes)):
+            return s.decode('utf-8')
+        else:
+            raise TypeError("Invalid argument %r for ensure_text()" % (s,))
 
     def byte(n):
         return n

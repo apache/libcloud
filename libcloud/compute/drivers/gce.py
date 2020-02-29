@@ -21,6 +21,7 @@ from __future__ import with_statement
 
 import datetime
 import time
+import itertools
 import sys
 
 from libcloud.common.base import LazyObject
@@ -133,7 +134,7 @@ class GCEConnection(GoogleBaseConnection):
 
         return response
 
-    def request_aggregated_items(self, api_name):
+    def request_aggregated_items(self, api_name, zone=None):
         """
         Perform request(s) to obtain all results from 'api_name'.
 
@@ -145,12 +146,19 @@ class GCEConnection(GoogleBaseConnection):
                   for valid names.
         :type     api_name: ``str``
 
+        :param   zone: Optional zone to use.
+        :type zone: :class:`GCEZone`
+
         :return:  dict in the format of the API response.
                   format: { 'items': {'key': {api_name: []}} }
                   ex: { 'items': {'zones/us-central1-a': {disks: []}} }
         :rtype:   ``dict``
         """
-        request_path = "/aggregated/%s" % api_name
+        if zone:
+            request_path = "/zones/%s/%s" % (zone.name, api_name)
+        else:
+            request_path = "/aggregated/%s" % (api_name)
+
         api_responses = []
 
         params = {'maxResults': 500}
@@ -159,6 +167,15 @@ class GCEConnection(GoogleBaseConnection):
             self.gce_params = params
             response = self.request(request_path, method='GET').object
             if 'items' in response:
+                if zone:
+                    # Special case when we are handling pagination for a
+                    # specific zone
+                    items = response['items']
+                    response['items'] = {
+                        'zones/%s' % (zone): {
+                            api_name: items
+                        }
+                    }
                 api_responses.append(response)
             more_results = 'pageToken' in params
         return self._merge_response_items(api_name, api_responses)
@@ -2569,50 +2586,39 @@ class GCENodeDriver(NodeDriver):
         :return:  List of Node objects
         :rtype:   ``list`` of :class:`Node`
         """
-        list_nodes = []
         zone = self._set_zone(ex_zone)
-        if zone is None:
-            request = '/aggregated/instances'
-        else:
-            request = '/zones/%s/instances' % (zone.name)
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request_aggregated_items('instances',
+                                                            zone=zone)
 
-        if 'items' in response:
-            # The aggregated response returns a dict for each zone
-            if zone is None:
-                # Create volume cache now for fast lookups of disk info.
-                self._ex_populate_volume_dict()
-                for v in response['items'].values():
-                    for i in v.get('instances', []):
-                        try:
-                            list_nodes.append(
-                                self._to_node(i,
-                                              use_disk_cache=ex_use_disk_cache)
-                            )
-                        # If a GCE node has been deleted between
-                        #   - is was listed by `request('.../instances', 'GET')
-                        #   - it is converted by `self._to_node(i)`
-                        # `_to_node()` will raise a ResourceNotFoundError.
-                        #
-                        # Just ignore that node and return the list of the
-                        # other nodes.
-                        except ResourceNotFoundError:
-                            pass
-            else:
-                for i in response['items']:
-                    try:
-                        list_nodes.append(
-                            self._to_node(i, use_disk_cache=ex_use_disk_cache)
-                        )
-                    # If a GCE node has been deleted between
-                    #   - is was listed by `request('.../instances', 'GET')
-                    #   - it is converted by `self._to_node(i)`
-                    # `_to_node()` will raise a ResourceNotFoundError.
-                    #
-                    # Just ignore that node and return the list of the
-                    # other nodes.
-                    except ResourceNotFoundError:
-                        pass
+        if not response.get('items', []):
+            return []
+
+        list_nodes = []
+
+        # The aggregated response returns a dict for each zone
+        # Create volume cache now for fast lookups of disk info.
+        self._ex_populate_volume_dict()
+
+        items = response['items'].values()
+        instances = [item.get('instances', []) for item in items]
+        instances = itertools.chain(*instances)
+
+        for instance in instances:
+            try:
+                node = self._to_node(instance,
+                                     use_disk_cache=ex_use_disk_cache)
+            except ResourceNotFoundError:
+                # If a GCE node has been deleted between
+                #   - is was listed by `request('.../instances', 'GET')
+                #   - it is converted by `self._to_node(i)`
+                # `_to_node()` will raise a ResourceNotFoundError.
+                #
+                # Just ignore that node and return the list of the
+                # other nodes.
+                continue
+
+            list_nodes.append(node)
+
         # Clear the volume cache as lookups are complete.
         self._ex_volume_dict = {}
         return list_nodes

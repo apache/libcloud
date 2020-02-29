@@ -635,9 +635,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         nodes_all = self.driver.list_nodes(ex_zone='all')
         nodes_uc1a = self.driver.list_nodes(ex_zone='us-central1-a')
+        nodes_uc1b = self.driver.list_nodes(ex_zone='us-central1-b')
         self.assertEqual(len(nodes), 1)
         self.assertEqual(len(nodes_all), 8)
         self.assertEqual(len(nodes_uc1a), 1)
+        self.assertEqual(len(nodes_uc1b), 0)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].extra['cpuPlatform'], 'Intel Skylake')
@@ -3500,6 +3502,11 @@ class GCEMockHttp(MockHttp):
                 'zones_europe-west1-a_instances_post.json')
         else:
             body = self.fixtures.load('zones_europe-west1-a_instances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_instances(self, method, url, body, headers):
+        if method == 'GET':
+            body = '{}'
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_europe_west1_a_diskTypes_pd_standard(self, method, url, body,

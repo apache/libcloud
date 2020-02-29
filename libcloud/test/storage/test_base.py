@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import sys
+import errno
 import hashlib
 
 from libcloud.utils.py3 import httplib
@@ -96,7 +97,6 @@ class BaseStorageTests(unittest.TestCase):
         response_streamed = mock_response.request.stream
         assert response_streamed is False
 
-
     def test__get_hash_function(self):
         self.driver1.hash_type = 'md5'
         func = self.driver1._get_hash_function()
@@ -152,7 +152,8 @@ class BaseStorageTests(unittest.TestCase):
     def test_upload_object_hash_calculation_is_efficient(self, mock_read_in_chunks,
                                                          mock_exhaust_iterator):
         # Verify that we don't buffer whole file in memory when calculating
-        # object has when iterator has __next__ method, but instead read and calculate hash in chunks
+        # object has when iterator has __next__ method, but instead read and
+        # calculate hash in chunks
         size = 100
 
         self.driver1.connection = Mock()
@@ -227,6 +228,47 @@ class BaseStorageTests(unittest.TestCase):
 
         self.assertEqual(mock_read_in_chunks.call_count, 2)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
+
+    def test_upload_object_via_stream_illegal_seek_errors_are_ignored(self):
+        # Illegal seek errors should be ignored
+        size = 100
+
+        self.driver1.connection = Mock()
+
+        seek_error = OSError('Illegal seek')
+        seek_error.errno = 29
+        assert errno.ESPIPE == 29
+
+        iterator = BodyStream('a' * size)
+        iterator.seek = mock.Mock(side_effect=seek_error)
+
+        result = self.driver1._upload_object(object_name='test1',
+                                             content_type=None,
+                                             request_path='/',
+                                             stream=iterator)
+
+        hasher = hashlib.md5()
+        hasher.update(b('a') * size)
+        expected_hash = hasher.hexdigest()
+
+        self.assertEqual(result['data_hash'], expected_hash)
+        self.assertEqual(result['bytes_transferred'], size)
+
+        # But others shouldn't
+        self.driver1.connection = Mock()
+
+        seek_error = OSError('Other error')
+        seek_error.errno = 21
+
+        iterator = BodyStream('b' * size)
+        iterator.seek = mock.Mock(side_effect=seek_error)
+
+        assertRaisesRegex(self, OSError, 'Other error',
+                          self.driver1._upload_object,
+                          object_name='test1',
+                          content_type=None,
+                          request_path='/',
+                          stream=iterator)
 
 
 if __name__ == '__main__':

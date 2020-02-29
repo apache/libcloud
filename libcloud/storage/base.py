@@ -24,6 +24,7 @@ from typing import Type
 
 import os.path                          # pylint: disable-msg=W0404
 import hashlib
+import errno
 from os.path import join as pjoin
 
 from libcloud.utils.py3 import httplib
@@ -653,7 +654,20 @@ class StorageDriver(BaseDriver):
             # Ensure we start from the begining of a stream in case stream is
             # not at the beginning
             if hasattr(stream, 'seek'):
-                stream.seek(0)
+                try:
+                    stream.seek(0)
+                except OSError as e:
+                    if e.errno != errno.ESPIPE:
+                        # This represents "OSError: [Errno 29] Illegal seek"
+                        # error. This could either mean that the underlying
+                        # handle doesn't support seek operation (e.g. pipe) or
+                        # that the invalid seek position is provided. Sadly
+                        # there is no good robust way to distinghuish that so
+                        # we simply ignore all the "Illeal seek" errors so
+                        # this function works correctly with pipes.
+                        # See https://github.com/apache/libcloud/pull/1427 for
+                        # details
+                        raise e
 
             for chunk in libcloud.utils.files.read_in_chunks(iterator=stream):
                 hasher.update(b(chunk))
