@@ -178,6 +178,12 @@ class Record(object):
         return self.driver.delete_record(record=self)
 
     def _get_numeric_id(self):
+        """
+        Return numeric ID for the provided record if the ID is a digit.
+
+        This method is used for sorting the values when exporting Zone to a
+        BIND format.
+        """
         # type: () -> Union[int, str]
         record_id = self.id
 
