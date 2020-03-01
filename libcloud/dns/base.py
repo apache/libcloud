@@ -559,9 +559,9 @@ class DNSDriver(BaseDriver):
 
         if record.type in [RecordType.MX, RecordType.SRV]:
             priority = str(record.extra['priority'])
-            parts = [name, ttl, 'IN', record.type, priority, data]
+            parts = [name, ttl, 'IN', str(record.type), priority, data]
         else:
-            parts = [name, ttl, 'IN', record.type, data]
+            parts = [name, ttl, 'IN', str(record.type), data]
 
         line = '\t'.join(parts)
         return line
