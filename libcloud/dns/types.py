@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.types import Type
 from libcloud.common.types import LibcloudError
 
 __all__ = [
@@ -77,7 +76,8 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
 }
 
 
-class RecordType(Type):
+class RecordType(object):
+    # TODO: Fix all the affected code and tests and use base Type class here
     """
     DNS record type.
     """
