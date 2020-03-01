@@ -15,7 +15,11 @@
 
 from __future__ import with_statement
 
+from typing import Optional
+from typing import List
+
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
+from libcloud.container.types import ContainerState
 
 
 __all__ = [
@@ -32,8 +36,15 @@ class Container(object):
     Container.
     """
 
-    def __init__(self, id, name, image, state,
-                 ip_addresses, driver, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 image,  # type: ContainerImage
+                 state,  # type: ContainerState
+                 ip_addresses,  # type: List[str]
+                 driver,  # type: ContainerDriver
+                 extra=None  # type: dict
+                 ):
         """
         :param id: Container id.
         :type id: ``str``
@@ -65,15 +76,19 @@ class Container(object):
         self.extra = extra or {}
 
     def start(self):
+        # type: () -> Container
         return self.driver.start_container(container=self)
 
     def stop(self):
+        # type: () -> Container
         return self.driver.stop_container(container=self)
 
     def restart(self):
+        # type: () -> Container
         return self.driver.restart_container(container=self)
 
     def destroy(self):
+        # type: () -> bool
         return self.driver.destroy_container(container=self)
 
     def __repr__(self):
@@ -88,7 +103,14 @@ class ContainerImage(object):
     Container Image.
     """
 
-    def __init__(self, id, name, path, version, driver, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 path,  # type: str
+                 version,  # type: str
+                 driver,  # type: ContainerDriver
+                 extra=None  # type: dict
+                 ):
         """
         :param id: Container Image id.
         :type id: ``str``
@@ -115,12 +137,13 @@ class ContainerImage(object):
         self.driver = driver
         self.extra = extra or {}
 
-    def deploy(self, name, parameters, *args, **kwargs):
+    def deploy(self, name, parameters, cluster=None, start=True):
+        # type: (str, str, Optional[ContainerCluster], bool) -> Container
         return self.driver.deploy_container(name=name,
                                             image=self,
                                             parameters=parameters,
-                                            *args,
-                                            **kwargs)
+                                            cluster=cluster,
+                                            start=start)
 
     def __repr__(self):
         return ('<ContainerImage: id=%s, name=%s, path=%s ...>' %
@@ -132,7 +155,12 @@ class ContainerCluster(object):
     A cluster group for containers
     """
 
-    def __init__(self, id, name, driver, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 driver,  # type: ContainerDriver
+                 extra=None  # type: dict
+                 ):
         """
         :param id: Container Image id.
         :type id: ``str``
@@ -152,9 +180,11 @@ class ContainerCluster(object):
         self.extra = extra or {}
 
     def list_containers(self):
+        # type: () -> List[Container]
         return self.driver.list_containers(cluster=self)
 
     def destroy(self):
+        # type: () -> bool
         return self.driver.destroy_cluster(cluster=self)
 
     def __repr__(self):
@@ -173,7 +203,12 @@ class ClusterLocation(object):
     'US'
     """
 
-    def __init__(self, id, name, country, driver):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 country,  # type: str
+                 driver  # type: ContainerDriver
+                 ):
         """
         :param id: Location ID.
         :type id: ``str``
@@ -237,6 +272,7 @@ class ContainerDriver(BaseDriver):
             host=host, port=port, **kwargs)
 
     def install_image(self, path):
+        # type: (str) -> ContainerImage
         """
         Install a container image from a remote path.
 
@@ -249,6 +285,7 @@ class ContainerDriver(BaseDriver):
             'install_image not implemented for this driver')
 
     def list_images(self):
+        # type: () -> List[ContainerImage]
         """
         List the installed container images
 
@@ -257,7 +294,11 @@ class ContainerDriver(BaseDriver):
         raise NotImplementedError(
             'list_images not implemented for this driver')
 
-    def list_containers(self, image=None, cluster=None):
+    def list_containers(self,
+                        image=None,  # type: Optional[ContainerImage]
+                        cluster=None  # type: Optional[ContainerCluster]
+                        ):
+        # type: (...) -> List[Container]
         """
         List the deployed container images
 
@@ -272,8 +313,14 @@ class ContainerDriver(BaseDriver):
         raise NotImplementedError(
             'list_containers not implemented for this driver')
 
-    def deploy_container(self, name, image, cluster=None,
-                         parameters=None, start=True):
+    def deploy_container(self,
+                         name,  # type: str
+                         image,  # type: ContainerImage
+                         cluster=None,  # type: Optional[ContainerCluster]
+                         parameters=None,  # type: Optional[str]
+                         start=True  # type: bool
+                         ):
+        # type: (...) -> Container
         """
         Deploy an installed container image
 
@@ -298,6 +345,7 @@ class ContainerDriver(BaseDriver):
             'deploy_container not implemented for this driver')
 
     def get_container(self, id):
+        # type: (str) -> Container
         """
         Get a container by ID
 
@@ -310,6 +358,7 @@ class ContainerDriver(BaseDriver):
             'get_container not implemented for this driver')
 
     def start_container(self, container):
+        # type: (Container) -> Container
         """
         Start a deployed container
 
@@ -322,6 +371,7 @@ class ContainerDriver(BaseDriver):
             'start_container not implemented for this driver')
 
     def stop_container(self, container):
+        # type: (Container) -> Container
         """
         Stop a deployed container
 
@@ -334,6 +384,7 @@ class ContainerDriver(BaseDriver):
             'stop_container not implemented for this driver')
 
     def restart_container(self, container):
+        # type: (Container) -> Container
         """
         Restart a deployed container
 
@@ -346,18 +397,20 @@ class ContainerDriver(BaseDriver):
             'restart_container not implemented for this driver')
 
     def destroy_container(self, container):
+        # type: (Container) -> bool
         """
         Destroy a deployed container
 
         :param container: The container to destroy
         :type  container: :class:`.Container`
 
-        :rtype: :class:`.Container`
+        :rtype: ``bool``
         """
         raise NotImplementedError(
             'destroy_container not implemented for this driver')
 
     def list_locations(self):
+        # type: () -> List[ClusterLocation]
         """
         Get a list of potential locations to deploy clusters into
 
@@ -367,6 +420,7 @@ class ContainerDriver(BaseDriver):
             'list_locations not implemented for this driver')
 
     def create_cluster(self, name, location=None):
+        # type: (str, Optional[ClusterLocation]) -> ContainerCluster
         """
         Create a container cluster
 
@@ -382,6 +436,7 @@ class ContainerDriver(BaseDriver):
             'create_cluster not implemented for this driver')
 
     def destroy_cluster(self, cluster):
+        # type: (ContainerCluster) -> bool
         """
         Delete a cluster
 
@@ -392,6 +447,7 @@ class ContainerDriver(BaseDriver):
             'destroy_cluster not implemented for this driver')
 
     def list_clusters(self, location=None):
+        # type: (Optional[ClusterLocation]) -> List[ContainerCluster]
         """
         Get a list of potential locations to deploy clusters into
 
@@ -404,6 +460,7 @@ class ContainerDriver(BaseDriver):
             'list_clusters not implemented for this driver')
 
     def get_cluster(self, id):
+        # type: (str) -> ContainerCluster
         """
         Get a cluster by ID
 
