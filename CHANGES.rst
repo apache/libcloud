@@ -75,6 +75,10 @@ Storage
   (GITHUB-1431)
   [Tomaz Muraus]
 
+- Add type annotations for the base storage API.
+  (GITHUB-1410)
+  [Clemens Wolff - @c-w]
+
 DNS
 ~~~
 
@@ -84,8 +88,12 @@ DNS
   didn't contain ``priority`` key.
 
   Reported by James Montgomery - @gh-jamesmontgomery.
-  
+
   (GITHUB-1428, GITHUB-1429)
+  [Tomaz Muraus]
+
+- Add type annotations for the base DNS API.
+  (GITHUB-1434)
   [Tomaz Muraus]
 
 Container

@@ -21,14 +21,8 @@ from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 
 from typing import Type, cast
 
-ec2_cls = get_driver(Provider.EC2)
-rackspace_cls = get_driver(Provider.RACKSPACE)
-
-# NOTE: If you are using driver methods which are not part of the standard API,
-# you need to explicitly cast the driver class reference to the correct class
-# for type checking to work correctly
-EC2 = cast(Type[EC2NodeDriver], ec2_cls)
-Rackspace = cast(Type[RackspaceNodeDriver], rackspace_cls)
+EC2 = get_driver(Provider.EC2)
+Rackspace = get_driver(Provider.RACKSPACE)
 
 drivers = [EC2('access key id', 'secret key', region='us-east-1'),
            Rackspace('username', 'api key', region='iad')]
