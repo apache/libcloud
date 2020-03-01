@@ -104,6 +104,10 @@ Container
   (GITHUB-1421)
   [Tomaz Muraus]
 
+- Add type annotations for the base container API.
+  (GITHUB-1435)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud 3.0.0-rc1
 ------------------------------------
 

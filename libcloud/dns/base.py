@@ -89,7 +89,7 @@ class Zone(object):
                domain=None,  # type: Optional[str]
                type=None,  # type: Optional[str]
                ttl=None,  # type: Optional[int]
-               extra=None  # tyoe: Optional[dict]
+               extra=None  # type: Optional[dict]
                ):
         # type: (...) -> Zone
         return self.driver.update_zone(zone=self, domain=domain, type=type,
@@ -187,7 +187,7 @@ class Record(object):
         """
         record_id = self.id
 
-        if not record_id:
+        if record_id is None:
             return ''
 
         if record_id.isdigit():
