@@ -975,37 +975,9 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         vm_obj = VmomiSupport.templateOf('VirtualMachine')(moid,self.connection._stub)
         return vm_obj
 
-    def ex_open_console_(self, vm_uuid, console_port = '9443'):
-        import OpenSSL
-        import ssl
-        content = self.connection.RetrieveContent()
-        server_guid = content.about.instanceUuid
-        search_index = content.searchIndex
-        vm = search_index.FindByUuid(None, vm_uuid, True, True)
-        vcenter_data = content.setting
-        vm_moid = vm._moId
-        vcenter_settings = vcenter_data.setting
-        vcenter_fqdn = self.host
+    def ex_list_folders(self):
+        return []
 
-        for item in vcenter_settings:
-            key = getattr(item, 'key')
-            if key == 'VirtualCenter.FQDN':
-                vcenter_fqdn = getattr(item, 'value')
-
-
-        session_manager = content.sessionManager
-        session = session_manager.AcquireCloneTicket()
-        vc_cert = ssl.get_server_certificate((vcenter_fqdn, 443))
-        vc_pem = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
-                                                 vc_cert)
-        vc_fingerprint = vc_pem.digest('sha1')
-        # version check 6.x no port and ui instead of vsphere-client
-        uri = "https://%s:%s/vsphere-client/webconsole.html?vmId=%s"\
-              "&vmName=%s&serverGuid=%s&host=%s:443&sessionTicket=%s"\
-              "&thumbprint=%s" % (vcenter_fqdn, console_port, str(vm_moid),
-                                  vm.name, server_guid, vcenter_fqdn, session,
-                                  vc_fingerprint)
-        return uri
     def ex_open_console(self, vm_uuid):
         vm = self.find_by_uuid(vm_uuid)
         ticket = vm.AcquireTicket(ticketType='webmks')
@@ -1394,7 +1366,10 @@ class VSphere_6_7_NodeDriver(NodeDriver):
     def ex_list_folders(self):
         req = "/rest/vcenter/folder"
         response = self._request(req).object
-        return response['value']
+        folders = response['value']
+        for folder in folders:
+            folder['id'] = folder['folder']
+        return folders
 
     def ex_update_memory(self, node, ram):
         pass
@@ -1479,8 +1454,16 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         return images
 
     def ex_list_networks(self):
-        #TODO VSphereNetwork
-        pass
+
+        request = "/rest/vcenter/network"
+        response = self._request(request).object['value']
+        networks = []
+        for network in response:
+            networks.append(VSphereNetwork(id=network['network'],
+                                           name=network['name'],
+                                           extra={'type': network['type']}))
+        return networks
+
     def create_node(self, name, image, size=None, location=None,
                     ex_datastore=None, ex_disks=None,
                     ex_folder=None, ex_network=None, ex_turned_on=True):
@@ -1735,6 +1718,6 @@ if __name__ == "__main__":
     driver = VSphere_6_7_NodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
     vms = driver.list_nodes()
     vm1 = vms[1]
-    s = driver.ex_open_console(vm1.id)
+    s = driver.ex_list_networks()
     
     print(s)
