@@ -38,7 +38,7 @@ __all__ = [
 ]
 
 
-class Type(Enum):
+class Type(str, Enum):
     @classmethod
     def tostring(cls, value):
         # type: (Union[Enum, str]) -> str
