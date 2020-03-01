@@ -734,6 +734,28 @@ class VSphere_6_5_NodeDriver(NodeDriver):
                 raise LibcloudError("Snapshot `%s` not found" % snapshot_name)
         return self.wait_for_task(snapshot.RevertToSnapshot_Task())
 
+    def _find_template_by_uuid(self, template_uuid):
+        # on version 5.5 and earlier search index won't return a VM
+        try:
+            template = self.find_by_uuid(template_uuid)
+        except LibcloudError:
+            content = self.connection.RetrieveContent()
+            vms = content.viewManager.CreateContainerView(
+                content.rootFolder,
+                [vim.VirtualMachine],
+                recursive=True
+            ).view
+
+            for vm in vms:
+                if vm.config.instanceUuid == template_uuid:
+                    template = vm
+        except Exception as exc:
+            raise LibcloudError("Error while searching for template, ", exc)
+        if not template:
+            raise LibcloudError("Unable to locate VirtualMachine.")
+
+        return template
+
     def find_by_uuid(self, node_uuid):
         """Searches VMs for a given uuid
         returns pyVmomi.VmomiSupport.vim.VirtualMachine
@@ -812,12 +834,12 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         size = kwargs['size']
         network = kwargs.get('ex_network')
 
-        template = self.find_by_uuid(image.id)
+        template = self._find_template_by_uuid(image.id)
 
         cluster_name = kwargs.get('cluster') or kwargs.get('location')
         cluster = self.get_obj([vim.ClusterComputeResource], cluster_name)
-        if not cluster:  # Get the first available cluster
-            cluster = self.get_obj([vim.ClusterComputeResource], '')
+        if not cluster:  # It is a host go with it
+            cluster = self.get_obj([vim.HostSystem], cluster_name)
 
         datacenter = None
         if not kwargs.get('datacenter'):  # Get datacenter from cluster
@@ -841,7 +863,10 @@ class VSphere_6_5_NodeDriver(NodeDriver):
             resource_pool = self.get_obj([vim.ResourcePool],
                                          kwargs.get('resource_pool'))
         else:
-            resource_pool = cluster.resourcePool
+            try:
+                resource_pool = cluster.resourcePool
+            except AttributeError:
+                resource_pool = cluster.parent.resourcePool
 
         devices = []
         vmconf = vim.vm.ConfigSpec(
@@ -936,7 +961,6 @@ class VSphere_6_5_NodeDriver(NodeDriver):
                 relospec.host = host
         clonespec.location = relospec
         clonespec.powerOn = True
-
         task = template.Clone(
             folder=folder,
             name=name,
