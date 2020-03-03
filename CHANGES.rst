@@ -5,7 +5,7 @@ Changes in Apache Libcloud in development (3.0.0)
 -------------------------------------------------
 
 Common
-~~~~~~~
+~~~~~~
 
 - Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
   works correctly under Python 3 when ``response.read()`` function returns
@@ -13,6 +13,13 @@ Common
 
   (GITHUB-1430)
   [Tomaz Muraus]
+
+- Make sure ``auth_user_info`` variable on the OpenStack identify connection
+  class is populated when using auth version ``3.x_password`` and
+  ``3.x_oidc_access_token``.
+
+  (GITHUB-1436)
+  [@lln-ijinus, Tomaz Muraus)
 
 Compute
 ~~~~~~~
