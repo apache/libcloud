@@ -1726,6 +1726,7 @@ def get_class_for_auth_version(auth_version):
     elif auth_version == '3.x_oidc_access_token':
         cls = OpenStackIdentity_3_0_Connection_OIDC_access_token
     else:
-        raise LibcloudError('Unsupported Auth Version requested')
+        raise LibcloudError('Unsupported Auth Version requested: %s' %
+                            (auth_version))
 
     return cls
