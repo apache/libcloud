@@ -431,7 +431,14 @@
       <Version>
         <name>3.0.0-rc1</name>
         <created>2020-01-29</created>
-        <revision>3.0.0-rc1</revision>
+        <revision>v3.0.0-rc1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>3.0.0-rc1</name>
+        <created>2020-03-03</created>
+        <revision>v2.8.1</revision>
       </Version>
   </release>
   <repository>
