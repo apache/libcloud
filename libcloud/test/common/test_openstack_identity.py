@@ -51,13 +51,13 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 
     def test_auth_url_is_correctly_assembled(self):
         tuples = [
-            ('1.0', OpenStackMockHttp),
-            ('1.1', OpenStackMockHttp),
-            ('2.0', OpenStack_2_0_MockHttp),
-            ('2.0_apikey', OpenStack_2_0_MockHttp),
-            ('2.0_password', OpenStack_2_0_MockHttp),
-            ('3.x_password', OpenStackIdentity_3_0_MockHttp),
-            ('3.x_oidc_access_token', OpenStackIdentity_3_0_MockHttp)
+            ('1.0', OpenStackMockHttp, {}),
+            ('1.1', OpenStackMockHttp, {}),
+            ('2.0', OpenStack_2_0_MockHttp, {}),
+            ('2.0_apikey', OpenStack_2_0_MockHttp, {}),
+            ('2.0_password', OpenStack_2_0_MockHttp, {}),
+            ('3.x_password', OpenStackIdentity_3_0_MockHttp, {'tenant_name': 'tenant-name'}),
+            ('3.x_oidc_access_token', OpenStackIdentity_3_0_MockHttp, {'tenant_name': 'tenant-name'})
         ]
 
         APPEND = 0
@@ -83,7 +83,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         user_id = OPENSTACK_PARAMS[0]
         key = OPENSTACK_PARAMS[1]
 
-        for (auth_version, mock_http_class) in tuples:
+        for (auth_version, mock_http_class, kwargs) in tuples:
             for (url, should_append_default_path, expected_path) in auth_urls:
                 connection = \
                     self._get_mock_connection(mock_http_class=mock_http_class,
@@ -94,8 +94,8 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
                 osa = cls(auth_url=auth_url,
                           user_id=user_id,
                           key=key,
-                          tenant_name='tenant-name',
-                          parent_conn=connection)
+                          parent_conn=connection,
+                          **kwargs)
 
                 try:
                     osa = osa.authenticate()
