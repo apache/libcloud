@@ -7,13 +7,6 @@ Changes in Apache Libcloud in development (3.0.0)
 Common
 ~~~~~~
 
-- Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
-  works correctly under Python 3 when ``response.read()`` function returns
-  unicode and not bytes.
-
-  (GITHUB-1430)
-  [Tomaz Muraus]
-
 - Make sure ``auth_user_info`` variable on the OpenStack identify connection
   class is populated when using auth version ``3.x_password`` and
   ``3.x_oidc_access_token``.
@@ -21,56 +14,8 @@ Common
   (GITHUB-1436)
   [@lln-ijinus, Tomaz Muraus)
 
-Compute
-~~~~~~~
-
-- [GCE] Fix ``list_nodes()`` method so it correctly handles pagination
-  and returns all the nodes if there are more than 500 nodes available
-  in total.
-
-  Previously, only first 500 nodes were returned.
-
-  Reported by @TheSushiChef.
-  (GITHUB-1409, GITHUB-1360)
-  [Tomaz Muraus]
-
-- [KubeVirt] For compliance with the base API, rename ``token_bearer_auth``
-  driver constructor argument to ``ex_token_bearer_auth``.
-  (GITHUB-1421)
-  [Tomaz Muraus]
-
-- [EC2] Fix ``ex_userdata`` keyword argument in the ``create_node()`` method
-  being ignored / not working correctly.
-
-  NOTE: This regression has been inadvertently introduced in v2.8.0.
-  (GITHUB-1426)
-  [Dan Chaffelson - @Chaffelson]
-
-- [EC2] Update ``create_volume`` method to automatically select first available
-  availability zone if one is not explicitly provided via ``location`` argument.
-  [Tomaz Muraus]
-
 Storage
 ~~~~~~~
-
-- [Google Storage] Fix a bug when uploading an object would fail and result
-  in 401 "invalid signature" error when object mime type contained mixed
-  casing and when S3 Interoperability authentication method was used.
-
-  Reported by Will Abson - @wabson.
-  (GITHUB-1417, GITHUB-1418)
-  [Tomaz Muraus]
-
-- Fix ``upload_object_via_stream`` method so "Illegal seek" errors which
-  can arise when calculating iterator content hash are ignored. Those errors
-  likely indicate that the underlying file handle / iterator is a pipe which
-  doesn't support seek and that the error is not fatal and we should still
-  proceed.
-
-  Reported by Per Buer - @perbu.
-
-  (GITHUB-1424, GITHUB-1427)
-  [Tomaz Muraus]
 
 - Add new ``download_object_range`` and ``download_object_range_as_stream``
   methods for downloading part of the object content (aka range downloads) to
@@ -89,16 +34,6 @@ Storage
 DNS
 ~~~
 
-- [CloudFlare] Fix ``export_zone_to_bind_format`` method.
-
-  Previously it threw an exception, because ``record.extra`` dictionary
-  didn't contain ``priority`` key.
-
-  Reported by James Montgomery - @gh-jamesmontgomery.
-
-  (GITHUB-1428, GITHUB-1429)
-  [Tomaz Muraus]
-
 - Add type annotations for the base DNS API.
   (GITHUB-1434)
   [Tomaz Muraus]
@@ -113,6 +48,105 @@ Container
 
 - Add type annotations for the base container API.
   (GITHUB-1435)
+  [Tomaz Muraus]
+
+Changes in Apache Libcloud v2.8.1
+---------------------------------
+
+Common
+~~~~~~
+
+- Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
+  works correctly under Python 3 when ``response.read()`` function returns
+  unicode and not bytes.
+
+  (GITHUB-1430)
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [GCE] Fix ``list_nodes()`` method so it correctly handles pagination
+  and returns all the nodes if there are more than 500 nodes available
+  in total.
+
+  Previously, only first 500 nodes were returned.
+
+  Reported by @TheSushiChef.
+  (GITHUB-1409, GITHUB-1360)
+  [Tomaz Muraus]
+
+- Fix some incorrect type annotations in the base compute API.
+
+  Reported by @dpeschman.
+  (GITHUB-1413)
+  [Tomaz Muraus]
+
+- [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
+  when region is not called ``nova``.
+  (GITHUB-1411, GITHUB-1412)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Fix ``ex_userdata`` keyword argument in the ``create_node()`` method
+  being ignored / not working correctly.
+
+  NOTE: This regression has been inadvertently introduced in v2.8.0.
+  (GITHUB-1426)
+  [Dan Chaffelson - @Chaffelson]
+
+- [EC2] Update ``create_volume`` method to automatically select first available
+  availability zone if one is not explicitly provided via ``location`` argument.
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Fix upload object code so uploaded data MD5 checksum check is not
+  performed at the end of the upload when AWS KMS server side encryption is
+  used.
+
+  If AWS KMS server side object encryption is used, ETag header value in the
+  response doesn't contain data MD5 digest so we can't perform a checksum
+  check.
+
+  Reported by Jonathan Harden - @jfharden.
+  (GITHUB-1401, GITHUB-1406)
+  [Tomaz Muraus - @Kami]
+
+- [Google Storage] Fix a bug when uploading an object would fail and result
+  in 401 "invalid signature" error when object mime type contained mixed
+  casing and when S3 Interoperability authentication method was used.
+
+  Reported by Will Abson - wabson.
+  (GITHUB-1417, GITHUB-1418)
+  [Tomaz Muraus]
+
+- Fix ``upload_object_via_stream`` method so "Illegal seek" errors which
+  can arise when calculating iterator content hash are ignored. Those errors
+  likely indicate that the underlying file handle / iterator is a pipe which
+  doesn't support seek and that the error is not fatal and we should still
+  proceed.
+
+  Reported by Per Buer - @perbu.
+
+  (GITHUB-1424, GITHUB-1427)
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- [Gandi Live] Update the driver and make sure it matches the latest service /
+  API updates.
+  (GITHUB-1416)
+  [Ryan Lee - @zepheiryan]
+
+- [CloudFlare] Fix ``export_zone_to_bind_format`` method.
+
+  Previously it threw an exception, because ``record.extra`` dictionary
+  didn't contain ``priority`` key.
+
+  Reported by James Montgomery - @gh-jamesmontgomery.
+  (GITHUB-1428, GITHUB-1429)
   [Tomaz Muraus]
 
 Changes in Apache Libcloud 3.0.0-rc1
