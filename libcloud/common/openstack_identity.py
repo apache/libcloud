@@ -1490,7 +1490,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 self.auth_token_expires = parse_date(expires)
                 # Note: catalog is not returned for unscoped tokens
                 self.urls = body['token'].get('catalog', None)
-                self.auth_user_info = None
+                self.auth_user_info = body['token'].get('user', None)
                 self.auth_user_roles = roles
             except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
