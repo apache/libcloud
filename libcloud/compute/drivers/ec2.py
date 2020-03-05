@@ -22,6 +22,7 @@ import base64
 import copy
 import warnings
 import time
+import random
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, basestring, ensure_string
@@ -34,6 +35,7 @@ from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
@@ -2270,7 +2272,13 @@ class BaseEC2NodeDriver(NodeDriver):
             'PublicKeyMaterial': base64key
         }
 
-        response = self.connection.request(self.path, params=params)
+        try:
+            response = self.connection.request(self.path, params=params)
+        except BaseHTTPError as e:
+            if 'InvalidKeyPair.Duplicate' in repr(e):
+                key_name = name + str(random.randrange(0, 1000))
+                params.update({'KeyName': key_name})
+                response = self.connection.request(self.path, params=params)
         elem = response.object
         key_pair = self._to_key_pair(elem=elem)
         return key_pair
