@@ -260,7 +260,8 @@ class VSphere_6_5_NodeDriver(NodeDriver):
             "memory_MB": memory,
             "cpus": cpus,
             "overallStatus": str(summary.overallStatus),
-            "metadata": {}
+            "metadata": {},
+            "type": "template_6_5"
         }
 
         boot_time = summary.runtime.bootTime
@@ -832,11 +833,13 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        network = kwargs.get('ex_network')
+        network = kwargs.get('ex_network').name
 
         template = self._find_template_by_uuid(image.id)
 
         cluster_name = kwargs.get('cluster') or kwargs.get('location')
+        if cluster_name:
+            cluster_name = cluster_name.name
         cluster = self.get_obj([vim.ClusterComputeResource], cluster_name)
         if not cluster:  # It is a host go with it
             cluster = self.get_obj([vim.HostSystem], cluster_name)
@@ -1017,7 +1020,7 @@ class VSphereNetwork(object):
     """
     Represents information about a VPC (Virtual Private Cloud) network
 
-    Note: This class is EC2 specific.
+    Note: This class is VSphere specific.
     """
 
     def __init__(self, id, name, extra=None):
@@ -1086,6 +1089,9 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         'powered_off': NodeState.STOPPED,
         'suspended': NodeState.SUSPENDED
     }
+
+    VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
+                        httplib.NO_CONTENT]
 
     def __init__(self, key, secret=None, secure=True, host=None, port=443,
                  ca_cert=None):
@@ -1165,17 +1171,19 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             result = loop.run_until_complete(self._get_all_vms())
         vm_ids = [item['vm'] for item in result]
         vms = []
+        interfaces = self._list_interfaces()
         if async_ is False:
             for vm_id in vm_ids:
-                vms.append(self._to_node(vm_id))
+                vms.append(self._to_node(vm_id, interfaces))
             return vms
         else:
-            return loop.run_until_complete(self._list_nodes_async(vm_ids))
+            return loop.run_until_complete(self._list_nodes_async(vm_ids,
+                                                                  interfaces))
     
-    async def _list_nodes_async(self, vm_ids):
+    async def _list_nodes_async(self, vm_ids, interfaces):
         loop = asyncio.get_event_loop()
         vms = [ 
-            loop.run_in_executor(None, self._to_node, vm_ids[i])
+            loop.run_in_executor(None, self._to_node, vm_ids[i], interfaces)
             for i in range(len(vm_ids))
         ]
 
@@ -1242,7 +1250,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         req = "/rest/vcenter/vm/{}/power/stop".format(node.id)
 
         result = self._request(req,method=method)
-        return result.status in VALID_RESPONSE_CODES
+        return result.status in self.VALID_RESPONSE_CODES
 
     def start_node(self, node):
         if node.state is NodeState.RUNNING:
@@ -1251,7 +1259,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         method = 'POST'
         req = "/rest/vcenter/vm/{}/power/start".format(node.id)
         result = self._request(req,method=method)
-        return result.status in VALID_RESPONSE_CODES
+        return result.status in self.VALID_RESPONSE_CODES
         
     def reboot_node(self, node):
         if node.state is not NodeState.RUNNING:
@@ -1260,7 +1268,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         method = 'POST'
         req = "/rest/vcenter/vm/{}/power/reset".format(node.id)
         result = self._request(req, method=method)
-        return result.status in VALID_RESPONSE_CODES
+        return result.status in self.VALID_RESPONSE_CODES
     
     def destroy_node(self, node):
         # make sure the machine is stopped
@@ -1278,7 +1286,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                                 503)
         req = "/rest/vcenter/vm/{}".format(node.id)
         resp = self._request(req, method="DELETE")
-        return resp.status in VALID_RESPONSE_CODES
+        return resp.status in self.VALID_RESPONSE_CODES
 
     def ex_suspend_node(self, node):
         if node.state is not NodeState.RUNNING:
@@ -1287,9 +1295,19 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         method = 'POST'
         req = "/rest/vcenter/vm/{}/power/suspend".format(node.id)
         result = self._request(req,method=method)
-        return result.status in VALID_RESPONSE_CODES
+        return result.status in self.VALID_RESPONSE_CODES
+    
+    def _list_interfaces(self):
+        request = "/rest/appliance/networking/interfaces"
+        response = self._request(request).object['value']
+        interfaces = [{'name': interface['name'],
+                       'mac': interface['mac'],
+                       'status': interface['status'],
+                       'ip': interface['ipv4']['address']
+                       } for interface in response]
+        return interfaces
 
-    def _to_node(self, vm_id):
+    def _to_node(self, vm_id, interfaces):
         '''
          id, name, state, public_ips, private_ips,
                  driver, size=None, image=None, extra=None, created_at=None)
@@ -1298,8 +1316,20 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         vm = self._request(req).object['value']
         name = vm['name']
         state = self.NODE_STATE_MAP[vm['power_state'].lower()]
-        public_ips = []  # api 6.7
-        private_ips = [] # api 6.7
+
+        ## IP's
+        private_ips = []
+        nic_macs= set()
+        for nic in vm['nics']:
+            nic_macs.add(nic['value']['mac_address'])
+        for interface in interfaces:
+            if interface['mac'] in nic_macs:
+                private_ips.append(interface['ip'])
+                nic_macs.remove(interface['mac'])
+                if len(nic_macs)==0:
+                    break
+        public_ips = [] # should default_getaway be the public?
+    
         driver = self.connection.driver
 
         ##  size
@@ -1396,12 +1426,37 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         return folders
 
     def ex_update_memory(self, node, ram):
-        pass
+        """
+        :param ram: The ammount of ram in MB.
+        :type ram: `str` or `int`
+        """
+        request = f"/rest/vcenter/vm/{node.id}/hardware/memory"
+        ram = int(ram)
+
+        body = {'spec':{
+            "size_MiB": ram
+        }}
+        response = self._request(request, method="PATCH",
+                                 data=json.dumps(body))
+        return response.status in self.VALID_RESPONSE_CODES
 
     def ex_update_cpu(self, node, cores):
-        pass
+        """
+        Assuming 1 Core per socket
+        :param cores: Integer or string indicating number of cores
+        :type cores: `int` or `str`
+        """
+        request = f"/rest/vcenter/vm/{node.id}/hardware/cpu"
+        cores = int(cores)
+        body = {"spec": {
+            "count": cores
+        }}
+        response = self._request(request, method="PATCH",
+                                 data=json.dumps(body))
+        return response.status in self.VALID_RESPONSE_CODES
 
     def ex_update_capacity(self, node, capacity):
+        # Should be added when REST API supports it
         pass
 
     def ex_add_nic(self, node, network):
@@ -1497,8 +1552,20 @@ class VSphere_6_7_NodeDriver(NodeDriver):
 
         ex_folder is necessary if the image is a vm-template, this method
         will attempt to put the VM in a random folder and a warning about it
-        will be issued.
+        will be issued in case the value remains `None`.
         """
+        # image is in the host then need the 6.5 driver
+        if image.extra['type'] == "template_6_5":
+            kwargs = {}
+            kwargs['name'] = name
+            kwargs['image'] = image
+            kwargs['size'] = size
+            kwargs['ex_network'] = ex_network
+            kwargs['location'] = location
+            kwargs['datastore'] = ex_datastore
+            result = self.driver6_5.create_node(**kwargs)
+            return result
+
         # post creation checks
         create_nic = False
         update_memory = False
@@ -1583,8 +1650,9 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             # network
             if ex_network and ovf['networks']:
                 spec['deployment_spec'][
-                    'network_mappings'] = [{ovf['networks'][0]: ex_network.id}]
-            elif not ovf['networks']:
+                    'network_mappings'] = [{'key': ovf['networks'][0],
+                                            'value': ex_network.id}]
+            elif not ovf['networks'] and ex_network:
                 create_nic=True
             # storage
             if ex_datastore:
@@ -1596,7 +1664,8 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             if size and size.extra and size.extra.get('cpu'):
                 update_cpu = True
             if size and size.disk:
-                update_capacity = True
+                # TODO Should update capacity but it is not possible with 6.7
+                pass
             if ex_disks:
                 create_disk = True
 
@@ -1641,12 +1710,18 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             # only one network atm??
             spec['hardware_customization'] = {}
             if ex_network:
+                #import pdb;pdb.set_trace()
                 nics = template['nics']
                 if len(nics) > 0:
-                    nic = nics[0].keys()[0]
-                    spec['hardware_customization']['nics'] = [{nic: ex_network.id}]
+                    nic = nics[0]
+                    spec['hardware_customization'][
+                        'nics'] = [{'key': nic['key'],
+                                    'value': {
+                                        'network': ex_network.id
+                                    }}]
                 else:
                     create_nic = True
+            spec['powered_on'] = ex_turned_on
             # hardware
             if size:
                 if size.ram:
@@ -1674,7 +1749,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                                method="POST", data=data)
         # wait until the node is up and then add extra config
         node_id = result.object['value']
-        if image.extra['type'] == 'vm_template':
+        if image.extra['type'] == "ovf":
             node_id = node_id['resource_id']['id']
         for i in range(3):
             node_l = self.list_nodes(ex_filter_vms=node_id)
@@ -1741,7 +1816,33 @@ if __name__ == "__main__":
     #driver = VSphere_6_5_NodeDriver(host=host, username=username, password=password)
     driver = VSphere_6_7_NodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
     vms = driver.list_nodes()
-    vm1 = vms[1]
-    s = driver.ex_list_networks()
-    
-    print(s)
+    one = None
+    for vm in vms:
+        if vm.id == "vm-53":
+            one = vm
+    print(driver.ex_update_memory(one, 256))
+
+    '''
+    name="libcloud-created2"
+    images = driver.list_images()
+    locations = driver.list_locations()
+    image=images[1]
+    #import pdb;pdb.set_trace()
+    location=locations[0]
+    folders=driver.ex_list_folders()
+    for folder in folders:
+        if folder['type'] == "VIRTUAL_MACHINE":
+            fol = folder['folder']
+            break
+    networks = driver.ex_list_networks()
+    network=None
+    if networks:
+        network = networks[0]
+    #no datastor this time try with next time
+    size = NodeSize(id="whatever", name="what", ram=512, disk=2,
+                        bandwidth=0, price=0, driver=driver, extra={'cpu':1})
+    ll =driver.create_node(name, image, size=size, location=location,
+                    ex_datastore=None, ex_disks=None,
+                    ex_folder=fol, ex_network=network, ex_turned_on=False)
+    print(ll)
+'''
