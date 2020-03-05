@@ -26,6 +26,7 @@ import paramiko
 import atexit
 import logging
 import netaddr
+import random
 
 from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
@@ -790,7 +791,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         return True
 
-    def ex_clone_vm(self, node, new_name=None, resume_node=False):
+    def ex_clone_node(self, node, new_name=None, resume_node=False):
         """Clone a domain
 
         The only required parameters are the `node` to clone and a `new_name`,
@@ -809,9 +810,9 @@ class LibvirtNodeDriver(NodeDriver):
         Finally, the original guest VM may be optionally resumed.
 
         """
+
         # Generate unique clone name, if not provided.
-        new_name = new_name or '%s-clone-%s' % (node.name,
-                                                os.urandom(4).encode('hex'))
+        new_name = new_name or '%s-clone-%s' % (node.name, random.randint(1,100))
 
         # Get the current domain.
         domain = self._get_domain_for_node(node)
@@ -865,7 +866,7 @@ class LibvirtNodeDriver(NodeDriver):
                             "%s to %s" % (old_disk_path, new_disk_path))
 
         # Define the new domain via the modified XML.
-        self.connection.defineXML(ET.tostring(et))
+        self.connection.defineXML(ET.tostring(et).decode())
 
         # Start the new domain.
         new_domain = self.connection.lookupByName(new_name)
