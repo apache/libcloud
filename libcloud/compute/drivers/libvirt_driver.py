@@ -993,6 +993,7 @@ do
 	if [ -d \"\${NIC_DIR}/\$i/device\" -a ! -L \"\${NIC_DIR}/\$i/device/physfn\" ]; then
 		declare -a VF_PCI_BDF
 		declare -a VF_INTERFACE
+		declare -a NUMA
 		k=0
 		for j in \$( ls \"\${NIC_DIR}/\$i/device\" ) ;
 		do
@@ -1027,11 +1028,13 @@ do
 				if [[ \$l -gt 0 ]]; then
 					printf \",\n\"
 				fi
-				printf \"\t\t\t{\\\"pci_bdf\\\": \\\"\${VF_PCI_BDF[\$l]}\\\", \\\"interface\\\": \\\"\${VF_INTERFACE[\$l]}\\\"}\"
+				NUMA=\$( cat \${NIC_DIR}/\${VF_INTERFACE[\$l]}/device/numa_node )
+				printf \"\t\t\t{\\\"pci_bdf\\\": \\\"\${VF_PCI_BDF[\$l]}\\\", \\\"interface\\\": \\\"\${VF_INTERFACE[\$l]}\\\", \\\"numa\\\\": \\\"\$NUMA\\\"}\"
 			done
 			printf "\n\t\t]\n\t}"
 			unset VF_PCI_BDF
 			unset VF_INTERFACE
+			unset NUMA
 		fi
 	fi
 done
@@ -1044,8 +1047,7 @@ EOF
         for d in devices:
             device = devices[d]
             for vf in device['vfs']:
-               vf['device'] = device['name'] + ' (%s)' % d
-               vf['vendor'] = device['vendor']
+               vf['device'] = {'vendor': device['vendor'], 'name': device['name'], 'interface': d}
                vnfs.append(vf)
         return vnfs
 
