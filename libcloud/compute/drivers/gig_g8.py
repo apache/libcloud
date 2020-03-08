@@ -125,20 +125,21 @@ class G8NodeDriver(NodeDriver):
     type = Provider.GIG_G8
     connectionCls = G8Connection
 
-    def __init__(self, apiurl, token, account_id):
+    def __init__(self, user_id, key, api_url):
+        # type (int, str, str) -> None
         """
-        :param  apiurl: G8 api url
-        :type   apiurl: ``str``
-        :param  token: Token to use for api (jwt)
-        :type   token: ``str``
-        :param  account_id: Id of the account to connect to
-        :type   account_id: ``int``
+        :param  key: Token to use for api (jwt)
+        :type   key: ``str``
+        :param  user_id: Id of the account to connect to (accountId)
+        :type   user_id: ``int``
+        :param  api_url: G8 api url
+        :type   api_url: ``str``
 
         :rtype: ``None``
         """
-        self._apiurl = apiurl.rstrip("/")
-        super(G8NodeDriver, self).__init__(key=token)
-        self._account_id = account_id
+        self._apiurl = api_url.rstrip("/")
+        super(G8NodeDriver, self).__init__(key=key)
+        self._account_id = user_id
         self._location_data = None
 
     def _ex_connection_class_kwargs(self):
@@ -155,8 +156,10 @@ class G8NodeDriver(NodeDriver):
             self._location_data = self._api_request("/locations/list")[0]
         return self._location_data
 
-    def create_node(self, name, size, image, network,
+    def create_node(self, name, size, image, ex_network,
                     description, auth=None, ex_create_attr=None):
+        # type (str, Size, Image, G8Network, str,
+        #       Optional[NodeAuthSSHKey], Optional[Dict]) -> Node
         """
         Create a node.
 
@@ -202,7 +205,7 @@ class G8NodeDriver(NodeDriver):
         """
         params = {"name": name,
                   "imageId": int(image.id),
-                  "cloudspaceId": int(network.id),
+                  "cloudspaceId": int(ex_network.id),
                   "description": description}
 
         ex_create_attr = ex_create_attr or {}
@@ -241,10 +244,11 @@ class G8NodeDriver(NodeDriver):
         machineId = self._api_request("/machines/create", params)
         machine = self._api_request("/machines/get",
                                     params={"machineId": machineId})
-        return self._to_node(machine)
+        return self._to_node(machine, ex_network)
 
     def ex_create_network(self, name, private_network="192.168.103.0/24",
                           type="vgw"):
+        # type (str, str, str) -> G8Network
         """
         Create network also known as cloudspace
 
@@ -269,12 +273,14 @@ class G8NodeDriver(NodeDriver):
                                     {"cloudspaceId": networkid})
         return self._to_network(network)
 
-    def ex_destroy_network(self, network):
+    def ex_destroy_network(self, ex_network):
+        # type (G8Network) -> bool
         self._api_request("/cloudspaces/delete",
-                          {"cloudspaceId": int(network.id)})
+                          {"cloudspaceId": int(ex_network.id)})
         return True
 
     def stop_node(self, node):
+        # type (Node) -> bool
         """
         Stop virtual machine
         """
@@ -283,26 +289,29 @@ class G8NodeDriver(NodeDriver):
         node.state = NodeState.STOPPED
         return True
 
-    def ex_list_portforwards(self, network):
+    def ex_list_portforwards(self, ex_network):
+        # type (G8Network) -> List[G8PortForward]
         data = self._api_request("/portforwarding/list",
-                                 {"cloudspaceId": int(network.id)})
+                                 {"cloudspaceId": int(ex_network.id)})
         forwards = []
         for forward in data:
-            forwards.append(self._to_port_forward(forward, network))
+            forwards.append(self._to_port_forward(forward, ex_network))
         return forwards
 
-    def ex_create_portforward(self, network, node, publicport,
+    def ex_create_portforward(self, ex_network, node, publicport,
                               privateport, protocol="tcp"):
-        params = {"cloudspaceId": int(network.id),
+        # type (G8Network, Node, int, int, str) -> G8PortForward
+        params = {"cloudspaceId": int(ex_network.id),
                   "machineId": int(node.id),
                   "localPort": privateport,
                   "publicPort": publicport,
-                  "publicIp": network.publicipaddress,
+                  "publicIp": ex_network.publicipaddress,
                   "protocol": protocol}
         self._api_request("/portforwarding/create", params)
-        return self._to_port_forward(params, network)
+        return self._to_port_forward(params, ex_network)
 
     def ex_delete_portforward(self, portforward):
+        # type (G8PortForward) -> bool
         params = {"cloudspaceId": int(portforward.network.id),
                   "publicIp": portforward.network.publicipaddress,
                   "publicPort": portforward.publicport,
@@ -311,6 +320,7 @@ class G8NodeDriver(NodeDriver):
         return True
 
     def start_node(self, node):
+        # type (Node) -> bool
         """
         Start virtual machine
         """
@@ -320,6 +330,7 @@ class G8NodeDriver(NodeDriver):
         return True
 
     def ex_list_networks(self):
+        # type () -> List[G8Network]
         """
         Return the list of networks.
 
@@ -333,6 +344,7 @@ class G8NodeDriver(NodeDriver):
         return networks
 
     def list_sizes(self):
+        # type () -> List[Size]
         """
         Returns a list of node sizes as a cloud provider might have
 
@@ -344,13 +356,14 @@ class G8NodeDriver(NodeDriver):
             sizes.extend(self._to_size(size))
         return sizes
 
-    def list_nodes(self, network=None):
+    def list_nodes(self, ex_network=None):
+        # type (Optional[G8Network]) -> List[Node]
         """
         List the nodes known to a particular driver;
         There are two default nodes created at the beginning
         """
-        if network:
-            networks = [network]
+        if ex_network:
+            networks = [ex_network]
         else:
             networks = self.ex_list_networks()
         nodes = []
@@ -358,10 +371,11 @@ class G8NodeDriver(NodeDriver):
             nodes_list = self._api_request("/machines/list",
                                            params={"cloudspaceId": network.id})
             for nodedata in nodes_list:
-                nodes.append(self._to_node(nodedata))
+                nodes.append(self._to_node(nodedata, network))
         return nodes
 
     def reboot_node(self, node):
+        # type (Node) -> bool
         """
         Reboot node
         returns True as if the reboot had been successful.
@@ -372,6 +386,7 @@ class G8NodeDriver(NodeDriver):
         return True
 
     def destroy_node(self, node):
+        # type (Node) -> bool
         """
         Destroy node
         """
@@ -379,6 +394,7 @@ class G8NodeDriver(NodeDriver):
         return True
 
     def list_images(self):
+        # type () -> List[Image]
         """
         Returns a list of images as a cloud provider might have
 
@@ -391,6 +407,7 @@ class G8NodeDriver(NodeDriver):
         return images
 
     def list_volumes(self):
+        # type () -> List[StorageVolume]
         volumes = []
         for disk in self._api_request("/disks/list",
                                       {"accountId": self._account_id}):
@@ -399,7 +416,8 @@ class G8NodeDriver(NodeDriver):
             volumes.append(self._to_volume(disk))
         return volumes
 
-    def create_volume(self, size, name, description, disk_type="D"):
+    def create_volume(self, size, name, ex_description, ex_disk_type="D"):
+        # type (int, str, str, Optional[str]) -> StorageVolume
         """
         Create volume
 
@@ -420,8 +438,8 @@ class G8NodeDriver(NodeDriver):
         """
         params = {"size": size,
                   "name": name,
-                  "type": disk_type,
-                  "description": description,
+                  "type": ex_disk_type,
+                  "description": ex_description,
                   "gid": self._location["gid"],
                   "accountId": self._account_id
                   }
@@ -430,27 +448,33 @@ class G8NodeDriver(NodeDriver):
         return self._to_volume(disk)
 
     def destroy_volume(self, volume):
+        # type (StorageVolume) -> bool
         self._api_request("/disks/delete", {"diskId": int(volume.id)})
         return True
 
     def attach_volume(self, node, volume):
+        # type (Node, StorageVolume) -> bool
         params = {"machineId": int(node.id),
                   "diskId": int(volume.id)}
         self._api_request("/machines/attachDisk", params)
         return True
 
     def detach_volume(self, node, volume):
+        # type (Node, StorageVolume) -> bool
         params = {"machineId": int(node.id),
                   "diskId": int(volume.id)}
         self._api_request("/machines/detachDisk", params)
         return True
 
     def _to_volume(self, data):
-        return StorageVolume(id=data["id"], size=data["sizeMax"],
+        # type (dict) -> StorageVolume
+        extra = {"type": data["type"], "node_id": data.get("machineId")}
+        return StorageVolume(id=str(data["id"]), size=data["sizeMax"],
                              name=data["name"], driver=self,
-                             extra={"type": data["type"]})
+                             extra=extra)
 
-    def _to_node(self, nodedata):
+    def _to_node(self, nodedata, ex_network):
+        # type (dict) -> Node
         state = self.NODE_STATE_MAP.get(nodedata["status"], NodeState.UNKNOWN)
         public_ips = []
         private_ips = []
@@ -462,20 +486,22 @@ class G8NodeDriver(NodeDriver):
                 public_ips.append(nic["ipAddress"].split("/")[0])
             else:
                 private_ips.append(nic["ipAddress"])
-        extra = {}
+        extra = {"network": ex_network}
         for account in nodedata.get("accounts", []):
             extra["password"] = account["password"]
             extra["username"] = account["login"]
 
-        return Node(id=nodedata['id'], name=nodedata['name'],
+        return Node(id=str(nodedata['id']), name=nodedata['name'],
                     driver=self, public_ips=public_ips,
                     private_ips=private_ips, state=state, extra=extra)
 
     def _to_network(self, network):
+        # type (dict) -> G8Network
         return G8Network(network["id"], network["name"], None,
                          network["externalnetworkip"], self)
 
     def _to_image(self, image):
+        # type (dict) -> Image
         extra = {"min_disk_size": image["bootDiskSize"],
                  "min_memory": image["memory"],
                  }
@@ -483,6 +509,7 @@ class G8NodeDriver(NodeDriver):
                          driver=self, extra=extra)
 
     def _to_size(self, size):
+        # type (dict) -> Size
         sizes = []
         for disk in size["disks"]:
             sizes.append(NodeSize(id=size["id"], name=size["name"],
@@ -491,8 +518,9 @@ class G8NodeDriver(NodeDriver):
                                   bandwidth=0, price=0))
         return sizes
 
-    def _to_port_forward(self, data, network):
-        return G8PortForward(network, data["machineId"], data["publicPort"],
+    def _to_port_forward(self, data, ex_network):
+        # type (dict, G8Network) -> G8PortForward
+        return G8PortForward(ex_network, data["machineId"], data["publicPort"],
                              data["localPort"], data["protocol"], self)
 
 

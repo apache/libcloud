@@ -28,7 +28,7 @@ class G8MockHttp(MockHttp):
 
     def __getattr__(self, key):
         def method(method, path, params, headers):
-            response = self.fixtures.load('{}.json'.format(key.lstrip("_")))
+            response = self.fixtures.load('{}_{}.json'.format(method, key.lstrip("_")))
             return (httplib.OK, response, {}, httplib.responses[httplib.OK])
 
         return method
@@ -37,7 +37,7 @@ class G8MockHttp(MockHttp):
 class G8Tests(unittest.TestCase):
     def setUp(self):
         G8NodeDriver.connectionCls.conn_class = G8MockHttp
-        self.driver = G8NodeDriver("https://myg8.example.com", "token", 1)
+        self.driver = G8NodeDriver(1, "token", "https://myg8.example.com")
 
     def test_list_networks(self):
         networks = self.driver.ex_list_networks()
