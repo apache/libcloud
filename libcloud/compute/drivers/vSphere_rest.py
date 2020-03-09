@@ -211,6 +211,7 @@ class VSphereNodeDriver(NodeDriver):
         """
         datacenters = self.ex_list_datacenters()
         loop = asyncio.get_event_loop()
+
         hosts_futures = [
             loop.run_in_executor(None, functools.partial(self.ex_list_hosts,ex_filter_datacenters=datacenter['id']))
             for datacenter in datacenters
@@ -492,13 +493,22 @@ class VSphereNodeDriver(NodeDriver):
                               name=item['name'],
                               driver=driver, extra=extra))
         return images
+    
+    def list_sizes(self):
+        return []
 
     def ex_list_networks(self):
         #TODO VSphereNetwork
-        pass
+        request = "/rest/vcenter/network"
+        response = self._request(request).object['value']
+        
+        return [VSphereNetwork(id=network['network'],
+                               name = network['name']) for network in response]
+
+        
     def create_node(self, name, image, size=None, location=None,
                     ex_datastore=None, ex_disks=None,
-                    ex_folder=None, ex_network=None, ex_turned_on=True):
+                    ex_folder=None, ex_network=None, ex_turned_on=False):
         """
         Image can be either a vm template , a ovf template or just
         the guest OS.
@@ -513,6 +523,7 @@ class VSphereNodeDriver(NodeDriver):
         update_cpu = False
         create_disk = False
         update_capacity = False
+        import pdb;pdb.set_trace()
         if image.extra['type'] == "guest_OS":
             spec={}
             spec['guest_OS'] = image.name
@@ -677,18 +688,34 @@ class VSphereNodeDriver(NodeDriver):
             create_request = ("/rest/vcenter/vm-template/library-items/"
             "{}/?action=deploy".format(image.id))
             data = json.dumps({'spec': spec})
+<<<<<<< Updated upstream
         # deploy the node ['resource_id']['id']
+=======
+
+        # deploy the node
+>>>>>>> Stashed changes
         result = self._request(create_request,
-                               method="POST", data=data)
+                               method="POST", data=data).object
         # wait until the node is up and then add extra config
+<<<<<<< Updated upstream
         node_id = result.object['value']
         if image.extra['type'] == 'vm_template':
             node_id = node_id['resource_id']['id']
         for i in range(3):
             node_l = self.list_nodes(ex_filter_vms=node_id)
+=======
+        if  result['value'].get('resource_id'):
+            node_id = result['value']['resource_id']['id']
+        else:  
+            node_id = result['value']
+        import pdb;pdb.set_trace()
+        for i in range(3):
+            node_l = self.list_nodes(ex_filter_vms=node_id,async_=False)
+>>>>>>> Stashed changes
             if len(node_l) > 0:
                 break
             time.sleep(3)
+        
         node = node_l[0]
         if create_nic:
             self.ex_add_nic(node, ex_network)
