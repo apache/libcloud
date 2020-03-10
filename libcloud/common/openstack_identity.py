@@ -1563,7 +1563,8 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                         if self.domain_name in [project['name'],
                                                 project['id']]:
                             return project['id']
-                    raise ValueError('Project %s not found' % (self.domain_name))
+                    raise ValueError('Project %s not found' %
+                                     (self.domain_name))
                 else:
                     return body['projects'][0]['id']
             except ValueError as e:
