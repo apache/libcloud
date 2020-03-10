@@ -617,10 +617,7 @@ class GoogleAuthType(object):
         """
         Checks S3 key format: alphanumeric chars starting with GOOG.
         """
-        return (
-            len(user_id) >= 20 and len(user_id) < 30 and user_id
-            .startswith('GOOG')
-        )
+        return user_id.startswith('GOOG')
 
     @staticmethod
     def _is_sa(user_id):
