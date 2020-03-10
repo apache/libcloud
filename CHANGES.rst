@@ -37,6 +37,8 @@ Storage
   There was a bug in the code where we used the user id length check to
   determine the account type and that code check didn't take service
   account HMAC credentials (which contain a longer string) into account.
+
+  Reported by Patrick Mézard - pmezard.
   (GITHUB-1437, GITHUB-1440)
   [Yoan Tournade - @MonsieurV]
 
