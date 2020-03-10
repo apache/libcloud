@@ -14,6 +14,15 @@ Common
   (GITHUB-1436)
   [@lln-ijinus, Tomaz Muraus)
 
+- [OpenStack] Update OpenStack identity driver so a custom project can be
+  selected using ``domain_name`` keyword argument containing a project id.
+
+  Previously this argument value could only contain a project name, now the
+  value will be checked against project name and id.
+
+  (GITHUB-1439)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
