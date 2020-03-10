@@ -31,6 +31,15 @@ Storage
   (GITHUB-1410)
   [Clemens Wolff - @c-w]
 
+- [Google Storage] Update the driver so it supports service account HMAC
+  credentials.
+
+  There was a bug in the code where we used the user id length check to
+  determine the account type and that code check didn't take service
+  account HMAC credentials (which contain a longer string) into account.
+  (GITHUB-1437, GITHUB-1440)
+  [Yoan Tournade - @MonsieurV]
+
 DNS
 ~~~
 
