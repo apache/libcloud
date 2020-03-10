@@ -1560,7 +1560,8 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 # as we have used tenant as the protocol
                 if self.domain_name and self.domain_name != 'Default':
                     for project in body['projects']:
-                        if project['name'] == self.domain_name:
+                        if self.domain_name in [project['name'],
+                                                project['id']]:
                             return project['id']
                     raise ValueError('Project %s not found' % self.domain_name)
                 else:
