@@ -543,7 +543,7 @@ class LibvirtNodeDriver(NodeDriver):
     def create_node(self, name, disk_size=4, ram=512,
                     cpu=1, image=None, disk_path=None, create_from_existing=None,
                     os_type='linux', networks=[], cloud_init=None, public_key=None,
-                    env_vars=None, interface_name='ens'):
+                    env_vars=None, interface_name='ens', vnfs=[]):
         """
         Creates a VM
 
@@ -775,7 +775,17 @@ class LibvirtNodeDriver(NodeDriver):
             for env_var in env_vars:
                 init_env += "<initenv name='%s'>%s</initenv>\n" % (env_var, env_vars[env_var])
 
-        conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, init_env, disk_path, image_conf, ''.join(xml_net_conf))
+        hostdev = ""
+        for vnf in vnfs:
+            domain, bus, slotf = vnf.split(':')
+            slot, function = slotf.split('.')
+            hostdev += """
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x%s' bus='0x%s' slot='0x%s' function='0x%s'/>
+      </source>
+    </hostdev>""" % (domain, bus, slot, function)
+        conf = XML_CONF_TEMPLATE % (emu, name, ram, cpu, init_env, disk_path, image_conf, ''.join(xml_net_conf), hostdev)
 
         self.connection.defineXML(conf)
 
@@ -971,6 +981,75 @@ class LibvirtNodeDriver(NodeDriver):
         except:
             pass  # Not supported by all hypervisors.
         return networks
+
+    def ex_list_vnfs(self):
+        import json
+        cmd = """cat <<EOF | /bin/bash
+NIC_DIR="/sys/class/net"
+printf "{\n"
+f=0
+for i in \$( ls \$NIC_DIR );
+do
+	if [ -d \"\${NIC_DIR}/\$i/device\" -a ! -L \"\${NIC_DIR}/\$i/device/physfn\" ]; then
+		declare -a VF_PCI_BDF
+		declare -a VF_INTERFACE
+		declare -a NUMA
+		k=0
+		for j in \$( ls \"\${NIC_DIR}/\$i/device\" ) ;
+		do
+			if [[ \"\$j\" == \"virtfn\"* ]]; then
+				VF_PCI=\$( readlink \"\${NIC_DIR}/\$i/device/\$j\" | cut -d '/' -f2 )
+				VF_PCI_BDF[\$k]=\$VF_PCI
+				#get the interface name for the VF at this PCI Address
+				for iface in \$( ls \$NIC_DIR );
+				do
+					link_dir=\$( readlink \${NIC_DIR}/\$iface )
+					if [[ \"\$link_dir\" == *\"\$VF_PCI\"* ]]; then
+						VF_INTERFACE[\$k]=\$iface
+					fi
+				done
+				((k++))
+			fi
+		done
+		NUM_VFs=\${#VF_PCI_BDF[@]}
+		if [[ \$NUM_VFs -gt 0 ]]; then
+			#get the PF Device Description
+			PF_PCI=\$( readlink \"\${NIC_DIR}/\$i/device\" | cut -d '/' -f4 )
+			PF_VENDOR=\$( lspci -vmmks \$PF_PCI | grep ^Vendor | cut -f2)
+			PF_NAME=\$( lspci -vmmks \$PF_PCI | grep ^Device | cut -f2).
+			if [[ \$f -gt 0 ]]; then
+				printf \",\n\"
+			else
+				f=1
+			fi
+			printf \"\t\\\"\$i\\\": {\n\t\t\\\"vendor\\\": \\\"\$PF_VENDOR\\\", \n\t\t\\\"name\\\": \\\"\$PF_NAME\\\", \n\t\t\\\"vfs\\\": [\n\"
+			for (( l = 0; l < \$NUM_VFs; l++ )) ;
+			do
+				if [[ \$l -gt 0 ]]; then
+					printf \",\n\"
+				fi
+				NUMA=\$( cat \${NIC_DIR}/\${VF_INTERFACE[\$l]}/device/numa_node )
+				printf \"\t\t\t{\\\"pci_bdf\\\": \\\"\${VF_PCI_BDF[\$l]}\\\", \\\"interface\\\": \\\"\${VF_INTERFACE[\$l]}\\\", \\\"numa\\\\": \\\"\$NUMA\\\"}\"
+			done
+			printf "\n\t\t]\n\t}"
+			unset VF_PCI_BDF
+			unset VF_INTERFACE
+			unset NUMA
+		fi
+	fi
+done
+printf "\n}\n"
+EOF
+        """
+        output = self._run_command(cmd).get('output')
+        devices = json.loads(output)
+        vnfs = []
+        for d in devices:
+            device = devices[d]
+            for vf in device['vfs']:
+               vf['device'] = {'vendor': device['vendor'], 'name': device['name'], 'interface': d}
+               vnfs.append(vf)
+        return vnfs
 
     def _parse_arp_table(self, arp_output):
         """
@@ -1189,6 +1268,7 @@ XML_CONF_TEMPLATE = '''
     <video>
       <model type='cirrus' vram='9216' heads='1'/>
     </video>
+    %s
   </devices>
 </domain>
 '''
