@@ -355,7 +355,7 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         """
         List nodes, excluding templates
         """
-        nodes = []
+
         vm_properties = [
             'config.template',
             'summary.config.name', 'summary.config.vmPathName',
@@ -385,8 +385,8 @@ class VSphere_6_5_NodeDriver(NodeDriver):
                     vm_dict[vm['obj']].update(vm)
 
         vm_list = [vm_dict[k] for k in vm_dict]
-
-        nodes.extend(self._to_nodes(vm_list))
+        loop = asyncio.get_event_loop()
+        nodes = loop.run_until_complete(self._to_nodes(vm_list))
         if enhance:
             nodes = self._enhance_metadata(nodes, content)
 
@@ -449,13 +449,18 @@ class VSphere_6_5_NodeDriver(NodeDriver):
 
         return nodes
 
-    def _to_nodes(self, vm_list):
-        nodes = []
+    async def _to_nodes(self, vm_list):
+        vms = []
         for vm in vm_list:
             if vm.get('config.template'):
                 continue  # Do not include templates in node list
-            nodes.append(self._to_node(vm))
-        return nodes
+            vms.append(vm)
+        loop = asyncio.get_event_loop()
+        vms = [
+            loop.run_in_executor(None, self._to_node, vms[i])
+            for i in range(len(vms))
+        ]
+        return await asyncio.gather(*vms)
 
     def _to_nodes_recursive(self, vm_list):
         nodes = []

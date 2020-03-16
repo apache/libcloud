@@ -113,7 +113,7 @@ DRIVERS = {
     Provider.OUTSCALE_INC:
     ('libcloud.compute.drivers.ec2', 'OutscaleINCNodeDriver'),
     Provider.VSPHERE:
-    ('libcloud.compute.drivers.vsphere', 'VSphereNodeDriver'),
+    ('libcloud.compute.drivers.vsphere_rest', 'VSphere_6_7_NodeDriver'),
     Provider.PROFIT_BRICKS:
     ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
     Provider.VULTR:
