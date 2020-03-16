@@ -851,7 +851,11 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         name = kwargs['name']
         image = kwargs['image']
         size = kwargs['size']
-        network = kwargs.get('ex_network').name
+        network = kwargs.get('ex_network')
+        if network:
+            network = network.name
+        else:
+            network = ""
 
         template = self._find_template_by_uuid(image.id)
 
