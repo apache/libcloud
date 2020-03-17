@@ -489,14 +489,13 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         memory = vm.get('summary.config.memorySizeMB')
         cpus = vm.get('summary.config.numCpu')
         disk = vm.get('summary.storage.committed', 0) / (1024 ** 3)
-        size = ''
-        if cpus:
-            size = '%dvCPU' % cpus
-            if memory:
-                size += ', %dMB RAM' % memory
-            if disk:
-                size += ', %dGB disk' % disk
-
+        moId = vm['obj']._moId
+        size_id = moId+"-size"
+        size_name = name+"-size"
+        size_extra = {'cpus': cpus}
+        driver = self
+        size = NodeSize(id=size_id, name=size_name, ram=memory, disk=disk,
+                        bandwidth=0, price=0, driver=driver, extra=size_extra)
         operating_system = vm.get('summary.config.guestFullName')
         host = vm.get('summary.runtime.host')
 
@@ -576,15 +575,13 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         path = summary.config.vmPathName
         memory = summary.config.memorySizeMB
         cpus = summary.config.numCpu
-        size = disk = ''
-        if cpus:
-            size = "%dvCPU" % cpus
-            if memory:
-                size += ", %dMB RAM" % memory
-            if summary.storage:
-                disk = summary.storage.committed / (1024 ** 3)
-                size += ", %dGB disk" % disk
-
+        moId = vm['obj']._moId
+        size_id = moId+"-size"
+        size_name = name+"-size"
+        size_extra = {'cpus': cpus}
+        driver = self
+        size = NodeSize(id=size_id, name=size_name, ram=memory, disk=disk,
+                        bandwidth=0, price=0, driver=driver, extra=size_extra)
         operating_system = summary.config.guestFullName
         host = summary.runtime.host
 
@@ -1224,12 +1221,10 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         for param, value in kwargs.items():
             if value:
                 params[param] = value
-
-        result = self._request(req, params=params).object['value']
-        # check if we need to go the long way
-        if len(result) > 999:
-            result = loop.run_until_complete(self._get_all_vms())
-        vm_ids = [item['vm'] for item in result]
+        # Initially I checked before going the long way but
+        # I decided to do so just so we can add host to vm
+        result = loop.run_until_complete(self._get_all_vms())
+        vm_ids = [(item['vm'], item['host']) for item in result]
         vms = []
         interfaces = self._list_interfaces()
         if async_ is False:
@@ -1268,12 +1263,22 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         req = "/rest/vcenter/vm"
         vm_resp_futures = [
             loop.run_in_executor(None, functools.partial(
-                self._request, req, params={'filter.hosts': host['host']}))
+                self._get_vms_with_host, host))
             for host in itertools.chain(*hosts)
         ]
 
         vm_resp = await asyncio.gather(*vm_resp_futures)
-        return [response.object['value'][0] for response in vm_resp]
+        # return a flat list
+        return [item for vm_list in vm_resp for item in vm_list]
+    
+    def _get_vms_with_host(self, host):
+        req = "/rest/vcenter/vm"
+        host_id = host['host']
+        response = self._request(req, params={'filter.hosts': host_id})
+        vms = response.object['value']
+        for vm in vms:
+            vm['host'] = host
+        return vms
 
     def list_locations(self, ex_show_hosts_in_drs=True):
         """
@@ -1383,11 +1388,12 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                        } for interface in response]
         return interfaces
 
-    def _to_node(self, vm_id, interfaces):
+    def _to_node(self, vm_id_host, interfaces):
         '''
          id, name, state, public_ips, private_ips,
                  driver, size=None, image=None, extra=None, created_at=None)
         '''
+        vm_id = vm_id_host[0]
         req = '/rest/vcenter/vm/' + vm_id
         vm = self._request(req).object['value']
         name = vm['name']
@@ -1428,6 +1434,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         image = NodeImage(id=image_id, name=image_name, driver=driver,
                           extra=image_extra)
         extra = {'snapshots': []}
+        extra['host'] = vm_id_host[1]['name']
         return Node(id=vm_id, name=name, state=state, public_ips=public_ips,
                     private_ips=private_ips, driver=driver,
                     size=size, image=image, extra=extra)
@@ -1915,3 +1922,13 @@ class VSphere_6_7_NodeDriver(NodeDriver):
 
     def ex_open_console(self, vm_id):
         return self.driver6_5.ex_open_console(vm_id)
+if __name__ == "__main__":
+    host = "192.168.1.11"
+    port = "443"
+    username = "administrator@vsphere.local"
+    password = "Mistrul2!"
+    ca_cert = "/home/eis/work/certs/lin/e65bea3e.0"
+    #driver = VSphere_6_5_NodeDriver(host=host, username=username, password=password)
+    driver = VSphere_6_7_NodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
+    images = driver.list_nodes()
+    hosts = driver.list_locations()   
