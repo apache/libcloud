@@ -1416,7 +1416,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
 
         # size
         total_size = 0
-        gb_converter = 1024 * 3
+        gb_converter = 1024 ** 3
         for disk in vm['disks']:
             total_size += int(int(disk['value']['capacity'] / gb_converter))
         ram = int(vm['memory']['size_MiB'])
@@ -1837,7 +1837,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             if size:
                 if size.ram:
                     spec['hardware_customization']['memory_update'] = {
-                        'memory': int(size.ram) * 1024}
+                        'memory': int(size.ram)}
                 if size.extra.get('cpu'):
                     spec['hardware_customization']['cpu_update'] = {
                         'num_cpus': size.extra['cpu']}
