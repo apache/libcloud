@@ -9,8 +9,6 @@ clients including start-ups, application developers, international enterprises, 
     :width: 300
     :target: https://www.kamatera.com/
 
-Kamatera operates globally from 13 data centers.
-
 Enabling API access
 -------------------
 
