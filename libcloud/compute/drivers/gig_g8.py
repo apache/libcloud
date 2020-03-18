@@ -22,6 +22,7 @@ from libcloud.compute.base import NodeDriver, UuidMixin
 from libcloud.compute.base import StorageVolume, NodeAuthSSHKey
 from libcloud.compute.types import Provider, NodeState
 from libcloud.common.gig_g8 import G8Connection
+from libcloud.common.exceptions import BaseHTTPError
 
 
 class G8PortForward(UuidMixin):
@@ -29,8 +30,8 @@ class G8PortForward(UuidMixin):
                  privateport, protocol, driver):
         self.node_id = node_id
         self.network = network
-        self.publicport = publicport
-        self.privateport = privateport
+        self.publicport = int(publicport)
+        self.privateport = int(privateport)
         self.protocol = protocol
         self.driver = driver
         UuidMixin.__init__(self)
@@ -156,10 +157,11 @@ class G8NodeDriver(NodeDriver):
             self._location_data = self._api_request("/locations/list")[0]
         return self._location_data
 
-    def create_node(self, name, size, image, ex_network,
-                    description, auth=None, ex_create_attr=None):
-        # type (str, Size, Image, G8Network, str,
-        #       Optional[NodeAuthSSHKey], Optional[Dict]) -> Node
+    def create_node(self, name, image, ex_network, ex_description,
+                    size=None, auth=None, ex_create_attr=None,
+                    ex_expose_ssh=False):
+        # type (str, Image, G8Network, str, Size,
+        #       Optional[NodeAuthSSHKey], Optional[Dict], bool) -> Node
         """
         Create a node.
 
@@ -190,7 +192,7 @@ class G8NodeDriver(NodeDriver):
         :param network: G8 Network to place vm in
         :type  size: :class:`G8Network`
 
-        :param description: Descripton of vm
+        :param ex_description: Descripton of vm
         :type  size: : ``str``
 
         :param auth: an SSH key
@@ -200,13 +202,16 @@ class G8NodeDriver(NodeDriver):
                                  vm creation
         :type  ex_create_attr: ``dict``
 
+        :param ex_expose_ssh: Create portforward for ssh port
+        :type  ex_expose_ssh: int
+
         :return: The newly created node.
         :rtype: :class:`Node`
         """
         params = {"name": name,
                   "imageId": int(image.id),
                   "cloudspaceId": int(ex_network.id),
-                  "description": description}
+                  "description": ex_description}
 
         ex_create_attr = ex_create_attr or {}
         if size:
@@ -244,7 +249,52 @@ class G8NodeDriver(NodeDriver):
         machineId = self._api_request("/machines/create", params)
         machine = self._api_request("/machines/get",
                                     params={"machineId": machineId})
-        return self._to_node(machine, ex_network)
+        node = self._to_node(machine, ex_network)
+        if ex_expose_ssh:
+            port = self.ex_expose_ssh_node(node)
+            node.extra["ssh_port"] = port
+            node.extra["ssh_ip"] = ex_network.publicipaddress
+        return node
+
+    def _find_ssh_ports(self, ex_network, node):
+        forwards = ex_network.list_portforwards()
+        usedports = []
+        result = {"node": None, "network": usedports}
+        for forward in forwards:
+            usedports.append(forward.publicport)
+            if forward.node_id == node.id and forward.privateport == 22:
+                result["node"] = forward.privateport
+        return result
+
+    def ex_expose_ssh_node(self, node):
+        """
+        Create portforward for ssh purposed
+
+        :param node: Node to expose ssh for
+        :type  node: ``Node``
+
+        :rtype: ``int``
+        """
+
+        network = node.extra["network"]
+        ports = self._find_ssh_ports(network, node)
+        if ports["node"]:
+            return ports["node"]
+        usedports = ports["network"]
+        sshport = 2200
+        while True:
+            while sshport in usedports:
+                sshport += 1
+            try:
+                network.create_portforward(node, sshport, 22)
+                node.extra["ssh_port"] = sshport
+                node.extra["ssh_ip"] = network.publicipaddress
+                break
+            except BaseHTTPError as e:
+                if e.code == 409:
+                    # port already used maybe raise let's try next
+                    usedports.append(sshport)
+        return sshport
 
     def ex_create_network(self, name, private_network="192.168.103.0/24",
                           type="vgw"):
@@ -362,6 +412,10 @@ class G8NodeDriver(NodeDriver):
         List the nodes known to a particular driver;
         There are two default nodes created at the beginning
         """
+        def _get_ssh_port(forwards, node):
+            for forward in forwards:
+                if forward.node_id == node.id and forward.privateport == 22:
+                    return forward
         if ex_network:
             networks = [ex_network]
         else:
@@ -370,8 +424,14 @@ class G8NodeDriver(NodeDriver):
         for network in networks:
             nodes_list = self._api_request("/machines/list",
                                            params={"cloudspaceId": network.id})
+            forwards = network.list_portforwards()
             for nodedata in nodes_list:
-                nodes.append(self._to_node(nodedata, network))
+                node = self._to_node(nodedata, network)
+                sshforward = _get_ssh_port(forwards, node)
+                if sshforward:
+                    node.extra["ssh_port"] = sshforward.publicport
+                    node.extra["ssh_ip"] = network.publicipaddress
+                nodes.append(node)
         return nodes
 
     def reboot_node(self, node):
@@ -497,7 +557,7 @@ class G8NodeDriver(NodeDriver):
 
     def _to_network(self, network):
         # type (dict) -> G8Network
-        return G8Network(network["id"], network["name"], None,
+        return G8Network(str(network["id"]), network["name"], None,
                          network["externalnetworkip"], self)
 
     def _to_image(self, image):
@@ -505,14 +565,14 @@ class G8NodeDriver(NodeDriver):
         extra = {"min_disk_size": image["bootDiskSize"],
                  "min_memory": image["memory"],
                  }
-        return NodeImage(id=image["id"], name=image["name"],
+        return NodeImage(id=str(image["id"]), name=image["name"],
                          driver=self, extra=extra)
 
     def _to_size(self, size):
         # type (dict) -> Size
         sizes = []
         for disk in size["disks"]:
-            sizes.append(NodeSize(id=size["id"], name=size["name"],
+            sizes.append(NodeSize(id=str(size["id"]), name=size["name"],
                                   ram=size["memory"], disk=disk,
                                   driver=self, extra={"vcpus": size["vcpus"]},
                                   bandwidth=0, price=0))
@@ -520,8 +580,9 @@ class G8NodeDriver(NodeDriver):
 
     def _to_port_forward(self, data, ex_network):
         # type (dict, G8Network) -> G8PortForward
-        return G8PortForward(ex_network, data["machineId"], data["publicPort"],
-                             data["localPort"], data["protocol"], self)
+        return G8PortForward(ex_network, str(data["machineId"]),
+                             data["publicPort"], data["localPort"],
+                             data["protocol"], self)
 
 
 if __name__ == "__main__":
