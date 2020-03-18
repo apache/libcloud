@@ -29,6 +29,7 @@ import asyncio
 import ssl
 import functools
 import itertools
+import hashlib
 
 try:
     from pyVim import connect
@@ -76,7 +77,7 @@ def format_snapshots(snapshot_list):
 
 
 # 6.5 and older, probably won't work on anything earlier than 4.x
-class VSphere_6_5_NodeDriver(NodeDriver):
+class VSphereNodeDriver(NodeDriver):
     name = 'VMware vSphere'
     website = 'http://www.vmware.com/products/vsphere/'
     type = Provider.VSPHERE
@@ -199,7 +200,7 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         except AttributeError as exc:
             logger.error('Cannot convert location %s: %r' % (data.name, exc))
             extra = {}
-        return NodeLocation(id=data._moId, name=data.name, country=None,
+        return NodeLocation(id=data.name, name=data.name, country=None,
                             extra=extra, driver=self)
 
     def ex_list_networks(self):
@@ -489,8 +490,8 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         memory = vm.get('summary.config.memorySizeMB')
         cpus = vm.get('summary.config.numCpu')
         disk = vm.get('summary.storage.committed', 0) / (1024 ** 3)
-        moId = vm['obj']._moId
-        size_id = moId + "-size"
+        id_to_hash = str(memory) + str(cpus) + str(disk)
+        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
         size_name = name + "-size"
         size_extra = {'cpus': cpus}
         driver = self
@@ -578,8 +579,8 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         disk = ''
         if summary.storage.committed:
             disk = summary.storage.committed / (1024 ** 3)
-        moId = virtual_machine._moId
-        size_id = moId + "-size"
+        id_to_hash = str(memory) + str(cpus) + str(disk)
+        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
         size_name = name + "-size"
         size_extra = {'cpus': cpus}
         driver = self
@@ -851,16 +852,14 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         image = kwargs['image']
         size = kwargs['size']
         network = kwargs.get('ex_network')
-        if network:
+        if not isinstance(network, str):
             network = network.name
-        else:
-            network = ""
 
         template = self._find_template_by_uuid(image.id)
-
-        cluster_name = kwargs.get('cluster') or kwargs.get('location')
-        if cluster_name:
-            cluster_name = cluster_name.name
+        if kwargs.get('cluster'):
+            cluster_name = kwargs.get('cluster')
+        else:
+            cluster_name = kwargs.get('location').name
         cluster = self.get_obj([vim.ClusterComputeResource], cluster_name)
         if not cluster:  # It is a host go with it
             cluster = self.get_obj([vim.HostSystem], cluster_name)
@@ -1179,10 +1178,10 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         self.driver6_5 = self._get_6_5_driver()
 
     def _get_6_5_driver(self):
-        return VSphere_6_5_NodeDriver(self.host, self.username,
-                                      self.connection.secret,
-                                      ca_cert=self.
-                                      connection.connection.ca_cert)
+        return VSphereNodeDriver(self.host, self.username,
+                                 self.connection.secret,
+                                 ca_cert=self.
+                                 connection.connection.ca_cert)
 
     def _get_session_token(self):
         uri = "/rest/com/vmware/cis/session"
@@ -1200,7 +1199,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                    ex_filter_names=None, ex_filter_hosts=None,
                    ex_filter_clusters=None, ex_filter_vms=None,
                    ex_filter_datacenters=None, ex_filter_resource_pools=None,
-                   async_=True):
+                   async_=True, max_properties=20):
         """
         The ex parameters are search options and must be an array of strings,
         even ex_filter_power_states which can have at most two items but makes
@@ -1340,11 +1339,14 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         return result.status in self.VALID_RESPONSE_CODES
 
     def start_node(self, node):
-        if node.state is NodeState.RUNNING:
-            return True
-
+        if isinstance(node, str):
+            node_id = node
+        else:
+            if node.state is NodeState.RUNNING:
+                return True
+            node_id = node.id
         method = 'POST'
-        req = "/rest/vcenter/vm/{}/power/start".format(node.id)
+        req = "/rest/vcenter/vm/{}/power/start".format(node_id)
         result = self._request(req, method=method)
         return result.status in self.VALID_RESPONSE_CODES
 
@@ -1362,15 +1364,11 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         if node.state is not NodeState.STOPPED:
             self.stop_node(node)
         # wait to make sure it stopped
-        # at one point this can be made asynchronously
-        for i in range(3):
-            if node.state is NodeState.STOPPED:
-                break
-            time.sleep(3)
-        if node.state is not NodeState.STOPPED:
-            raise ProviderError("Something went wrong, I could not stop the VM"
-                                " and it cannot be deleted while running.",
-                                503)
+        # in the future this can be made asynchronously
+        # for i in range(6):
+        #     if node.state is NodeState.STOPPED:
+        #         break
+        #     time.sleep(10)
         req = "/rest/vcenter/vm/{}".format(node.id)
         resp = self._request(req, method="DELETE")
         return resp.status in self.VALID_RESPONSE_CODES
@@ -1427,7 +1425,8 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             total_size += int(int(disk['value']['capacity'] / gb_converter))
         ram = int(vm['memory']['size_MiB'])
         cpus = int(vm['cpu']['count'])
-        size_id = vm_id + "-size"
+        id_to_hash = str(ram) + str(cpus) + str(total_size)
+        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
         size_name = name + "-size"
         size_extra = {'cpus': cpus}
         size = NodeSize(id=size_id, name=size_name, ram=ram, disk=total_size,
@@ -1548,7 +1547,11 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         :param ram: The ammount of ram in MB.
         :type ram: `str` or `int`
         """
-        request = "/rest/vcenter/vm/{}/hardware/memory".format(node.id)
+        if isinstance(node, str):
+            node_id = node
+        else:
+            node_id = node.id
+        request = "/rest/vcenter/vm/{}/hardware/memory".format(node_id)
         ram = int(ram)
 
         body = {'spec': {
@@ -1564,7 +1567,11 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         :param cores: Integer or string indicating number of cores
         :type cores: `int` or `str`
         """
-        request = "/rest/vcenter/vm/{}/hardware/cpu".format(node.id)
+        if isinstance(node, str):
+            node_id = node
+        else:
+            node_id = node.id
+        request = "/rest/vcenter/vm/{}/hardware/cpu".format(node_id)
         cores = int(cores)
         body = {"spec": {
             "count": cores
@@ -1582,6 +1589,10 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         Creates a network adapater that will connect to the specified network
         for the given node. Returns a boolean indicating success or not.
         """
+        if isinstance(node, str):
+            node_id = node
+        else:
+            node_id = node.id
         spec = {}
         spec['mac_type'] = "GENERATED"
         spec['backing'] = {}
@@ -1590,7 +1601,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         spec['start_connected'] = True
 
         data = json.dumps({'spec': spec})
-        req = "/rest/vcenter/vm/{}/hardware/ethernet".format(node.id)
+        req = "/rest/vcenter/vm/{}/hardware/ethernet".format(node_id)
         method = "POST"
         resp = self._request(req, method=method, data=data)
         return resp.status
@@ -1880,26 +1891,20 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         node_id = result.object['value']
         if image.extra['type'] == "ovf":
             node_id = node_id['resource_id']['id']
-        for i in range(3):
-            node_l = self.list_nodes(ex_filter_vms=node_id)
-            if len(node_l) > 0:
-                break
-            time.sleep(3)
-        node = node_l[0]
         if create_nic:
-            self.ex_add_nic(node, ex_network)
+            self.ex_add_nic(node_id, ex_network)
         if update_memory:
-            self.ex_update_memory(node, size.ram)
+            self.ex_update_memory(node_id, size.ram)
         if update_cpu:
-            self.ex_update_cpu(node, size.extra['cpu'])
+            self.ex_update_cpu(node_id, size.extra['cpu'])
         if create_disk:
             pass  # until volumes are added
         if update_capacity:
             pass  # until API method is added
         if ex_turned_on:
-            self.start_node(node)
+            self.start_node(node_id)
 
-        return node
+        return node_id
 
     # TODO As soon as snapshot support gets added to the REST api
     # these methods should be rewritten with REST api calls
