@@ -32,11 +32,13 @@ Compute
   ``location`` argument to the method).
 
   Reported by Kevin K. - @kbknapp.
+  (GITHUB-1443)
   [Tomaz Muraus]
 
 - [GCE] Update ``ex_get_disktype`` method so it works if ``zone`` argument is
   not set.
   [Tomaz Muraus]
+  (GITHUB-1443)
 
 Storage
 ~~~~~~~
