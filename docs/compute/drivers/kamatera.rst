@@ -28,8 +28,14 @@ Instantiating a driver
 .. literalinclude:: /examples/compute/kamatera/instantiate_driver.py
    :language: python
 
-Selecting location, size and disk image
+Create Node
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: /examples/compute/kamatera/selecting_location_size_image.py
+.. literalinclude:: /examples/compute/kamatera/create_node.py
+   :language: python
+
+Run node operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: /examples/compute/kamatera/node_operations.py
    :language: python
