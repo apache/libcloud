@@ -1499,14 +1499,23 @@ class VSphere_6_7_NodeDriver(NodeDriver):
 
     def ex_list_content_libraries(self):
         req = '/rest/com/vmware/content/library'
-        result = self._request(req).object
-        return result['value']
+        try:
+            result = self._request(req).object
+            return result['value']
+        except BaseHTTPError as exc:
+            return []
 
     def ex_list_content_library_items(self, library_id):
         req = "/rest/com/vmware/content/library/item"
         params = {'library_id': library_id}
-        result = self._request(req, params=params).object
-        return result['value']
+        try:
+            result = self._request(req, params=params).object
+            return result['value']
+        except BaseHTTPError as exc:
+            logger.error('Library was cannot be accesed, '
+                         ' most probably the VCenter service '
+                         'is stopped')
+            return []
 
     def ex_list_folders(self):
         req = "/rest/vcenter/folder"
