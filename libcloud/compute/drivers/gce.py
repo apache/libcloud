@@ -7138,9 +7138,9 @@ class GCENodeDriver(NodeDriver):
         response = self.connection.request(request_path, method='GET')
 
         if 'items' in response.object:
+            # Aggregated response, zone not provided
             data = None
 
-            # Aggregated response, zone not provided
             for zone_item in response.object['items'].values():
                 for item in zone_item['diskTypes']:
                     if item['name'] == name:
@@ -7150,7 +7150,7 @@ class GCENodeDriver(NodeDriver):
             data = response.object
 
         if not data:
-            raise ValueError('Disk type with name %s not found' % (name))
+            raise ValueError('Disk type with name "%s" not found' % (name))
 
         return self._to_disktype(data)
 
