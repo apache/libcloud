@@ -1,9 +1,13 @@
-import json, time
+import json
+import time
+import os
 import requests
 
 
 PRICES_URL = "https://azure.microsoft.com/api/v3/pricing/virtual-machines/calculator/"
-
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+PRICING_FILE_PATH = os.path.join(BASE_PATH, '../libcloud/data/pricing.json')
+PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 
 def get_azure_prices():
     prices_raw = requests.get(PRICES_URL).json()
@@ -31,9 +35,28 @@ def get_azure_prices():
             prices[region] = price['value']
         x+=1
         result[size_raw[0]][size] = prices
-    print(f"x is {x}")
+
     return result
-if __name__=="__main__":
+
+def write_azure_prices(file_path, prices):
+    with open(file_path, 'r') as f:
+        content = f.read()
+
+    data = json.loads(content)
+    data['updated'] = int(time.time())
+    data['compute']['azure_linux'] = prices['linux']
+    data['compute']['azure_windows'] = prices['windows']
+
+    content = json.dumps(data, indent=4)
+    lines = content.splitlines()
+    lines = [line.rstrip() for line in lines]
+    content = '\n'.join(lines)
+
+    with open(file_path, 'w') as fp:
+        fp.write(content)
+def main():
     res = get_azure_prices()
-    import pdb;pdb.set_trace()
-    print("Yo")
+    write_azure_prices(PRICING_FILE_PATH, res)    
+
+if __name__=="__main__":
+    main()
