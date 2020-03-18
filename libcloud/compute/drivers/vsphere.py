@@ -1223,7 +1223,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             if value:
                 params[param] = value
         if params:
-            result = self._request(req, params=params)
+            result = self._request(req, params=params).object['value']
             vm_ids = [item['vm'] for item in result]
         else:
             # Initially I checked before going the long way but
@@ -1234,7 +1234,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         interfaces = self._list_interfaces()
         if async_ is False:
             for vm_id in vm_ids:
-                vms.append(self._to_node(vm_id, interfaces))
+                vms.append(self._to_node([vm_id], interfaces))
             return vms
         else:
             return loop.run_until_complete(self._list_nodes_async(vm_ids,
@@ -1811,6 +1811,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                                'deployment_spec': spec['deployment_spec']})
 
         elif image.extra['type'] == 'vm-template':
+
             tp_request = "/rest/vcenter/vm-template/library-items/" + image.id
             template = self._request(tp_request).object['value']
             spec = {}
@@ -1891,20 +1892,21 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         node_id = result.object['value']
         if image.extra['type'] == "ovf":
             node_id = node_id['resource_id']['id']
+
+        node = self.list_nodes(ex_filter_vms=node_id, async_=False)[0]
         if create_nic:
-            self.ex_add_nic(node_id, ex_network)
+            self.ex_add_nic(node, ex_network)
         if update_memory:
-            self.ex_update_memory(node_id, size.ram)
+            self.ex_update_memory(node, size.ram)
         if update_cpu:
-            self.ex_update_cpu(node_id, size.extra['cpu'])
+            self.ex_update_cpu(node, size.extra['cpu'])
         if create_disk:
             pass  # until volumes are added
         if update_capacity:
             pass  # until API method is added
         if ex_turned_on:
-            self.start_node(node_id)
-
-        return node_id
+            self.start_node(node)
+        return node
 
     # TODO As soon as snapshot support gets added to the REST api
     # these methods should be rewritten with REST api calls
