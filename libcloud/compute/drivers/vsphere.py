@@ -490,8 +490,8 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         cpus = vm.get('summary.config.numCpu')
         disk = vm.get('summary.storage.committed', 0) / (1024 ** 3)
         moId = vm['obj']._moId
-        size_id = moId+"-size"
-        size_name = name+"-size"
+        size_id = moId + "-size"
+        size_name = name + "-size"
         size_extra = {'cpus': cpus}
         driver = self
         size = NodeSize(id=size_id, name=size_name, ram=memory, disk=disk,
@@ -575,9 +575,12 @@ class VSphere_6_5_NodeDriver(NodeDriver):
         path = summary.config.vmPathName
         memory = summary.config.memorySizeMB
         cpus = summary.config.numCpu
-        moId = vm['obj']._moId
-        size_id = moId+"-size"
-        size_name = name+"-size"
+        disk = ''
+        if summary.storage.committed:
+            disk = summary.storage.committed / (1024 ** 3)
+        moId = virtual_machine._moId
+        size_id = moId + "-size"
+        size_name = name + "-size"
         size_extra = {'cpus': cpus}
         driver = self
         size = NodeSize(id=size_id, name=size_name, ram=memory, disk=disk,
@@ -624,7 +627,6 @@ class VSphere_6_5_NodeDriver(NodeDriver):
                     extra['cluster'] = parent.name
                     break
                 parent = parent.parent
-
         if boot_time:
             extra['boot_time'] = boot_time.isoformat()
         if annotation:
@@ -1221,10 +1223,14 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         for param, value in kwargs.items():
             if value:
                 params[param] = value
-        # Initially I checked before going the long way but
-        # I decided to do so just so we can add host to vm
-        result = loop.run_until_complete(self._get_all_vms())
-        vm_ids = [(item['vm'], item['host']) for item in result]
+        if params:
+            result = self._request(req, params=params)
+            vm_ids = [item['vm'] for item in result]
+        else:
+            # Initially I checked before going the long way but
+            # I decided to do so just so we can add host to vm
+            result = loop.run_until_complete(self._get_all_vms())
+            vm_ids = [(item['vm'], item['host']) for item in result]
         vms = []
         interfaces = self._list_interfaces()
         if async_ is False:
@@ -1260,7 +1266,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             for datacenter in datacenters
         ]
         hosts = await asyncio.gather(*hosts_futures)
-        req = "/rest/vcenter/vm"
+
         vm_resp_futures = [
             loop.run_in_executor(None, functools.partial(
                 self._get_vms_with_host, host))
@@ -1270,7 +1276,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         vm_resp = await asyncio.gather(*vm_resp_futures)
         # return a flat list
         return [item for vm_list in vm_resp for item in vm_list]
-    
+
     def _get_vms_with_host(self, host):
         req = "/rest/vcenter/vm"
         host_id = host['host']
@@ -1434,7 +1440,8 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         image = NodeImage(id=image_id, name=image_name, driver=driver,
                           extra=image_extra)
         extra = {'snapshots': []}
-        extra['host'] = vm_id_host[1]['name']
+        if len(vm_id_host) > 1:
+            extra['host'] = vm_id_host[1].get('name', '')
         return Node(id=vm_id, name=name, state=state, public_ips=public_ips,
                     private_ips=private_ips, driver=driver,
                     size=size, image=image, extra=extra)
@@ -1532,7 +1539,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         :param ram: The ammount of ram in MB.
         :type ram: `str` or `int`
         """
-        request = f"/rest/vcenter/vm/{node.id}/hardware/memory"
+        request = "/rest/vcenter/vm/{}/hardware/memory".format(node.id)
         ram = int(ram)
 
         body = {'spec': {
@@ -1548,7 +1555,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         :param cores: Integer or string indicating number of cores
         :type cores: `int` or `str`
         """
-        request = f"/rest/vcenter/vm/{node.id}/hardware/cpu"
+        request = "/rest/vcenter/vm/{}/hardware/cpu".format(node.id)
         cores = int(cores)
         body = {"spec": {
             "count": cores
@@ -1879,7 +1886,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         if create_disk:
             pass  # until volumes are added
         if update_capacity:
-            self.ex_update_capacity(node, size.disk)
+            pass  # until API method is added
         if ex_turned_on:
             self.start_node(node)
 
@@ -1922,13 +1929,3 @@ class VSphere_6_7_NodeDriver(NodeDriver):
 
     def ex_open_console(self, vm_id):
         return self.driver6_5.ex_open_console(vm_id)
-if __name__ == "__main__":
-    host = "192.168.1.11"
-    port = "443"
-    username = "administrator@vsphere.local"
-    password = "Mistrul2!"
-    ca_cert = "/home/eis/work/certs/lin/e65bea3e.0"
-    #driver = VSphere_6_5_NodeDriver(host=host, username=username, password=password)
-    driver = VSphere_6_7_NodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
-    images = driver.list_nodes()
-    hosts = driver.list_locations()   
