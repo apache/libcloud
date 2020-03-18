@@ -4165,7 +4165,7 @@ class GCENodeDriver(NodeDriver):
                              "'ex_disks_gce_struct'.")
 
         location = location or self.zone
-        if not hasattr(location, 'name'):
+        if location and not hasattr(location, 'name'):
             location = self.ex_get_zone(location)
         if not hasattr(size, 'name'):
             size = self.ex_get_size(size, location)
@@ -4180,7 +4180,7 @@ class GCENodeDriver(NodeDriver):
             image = self.ex_get_image_from_family(ex_image_family)
         if image and not hasattr(image, 'name'):
             image = self.ex_get_image(image)
-        if not hasattr(ex_disk_type, 'name'):
+        if ex_disk_type and not hasattr(ex_disk_type, 'name'):
             ex_disk_type = self.ex_get_disktype(ex_disk_type, zone=location)
         if ex_boot_disk and not hasattr(ex_boot_disk, 'name'):
             ex_boot_disk = self.ex_get_volume(ex_boot_disk, zone=location)
@@ -4207,6 +4207,16 @@ class GCENodeDriver(NodeDriver):
                     'sourceImage': image.extra['selfLink']
                 }
             }]
+
+        if not location and size.extra.get('zone', None):
+            # If location is not provided (either via datacenter driver
+            # constructor argument or via location argument in this method)
+            # we simply default to size location. Not ideal, but it works
+            # for the default experience.
+            location = size.extra['zone']
+
+        # Verify that the location is provided if we can't infer one
+        self._verify_zone_is_set(zone=location)
 
         request, node_data = self._create_node_req(
             name, size, image, location,
@@ -7119,9 +7129,30 @@ class GCENodeDriver(NodeDriver):
         :rtype:   :class:`GCEDiskType`
         """
         zone = self._set_zone(zone)
-        request = '/zones/%s/diskTypes/%s' % (zone.name, name)
-        response = self.connection.request(request, method='GET').object
-        return self._to_disktype(response)
+
+        if zone:
+            request_path = "/zones/%s/diskTypes/%s" % (zone.name, name)
+        else:
+            request_path = "/aggregated/diskTypes"
+
+        response = self.connection.request(request_path, method='GET')
+
+        if 'items' in response.object:
+            data = None
+
+            # Aggregated response, zone not provided
+            for zone_item in response.object['items'].values():
+                for item in zone_item['diskTypes']:
+                    if item['name'] == name:
+                        data = item
+                        break
+        else:
+            data = response.object
+
+        if not data:
+            raise ValueError('Disk type with name %s not found' % (name))
+
+        return self._to_disktype(data)
 
     def ex_get_accelerator_type(self, name, zone=None):
         """
@@ -9566,3 +9597,25 @@ class GCENodeDriver(NodeDriver):
         'compute#urlMap': _to_urlmap,
         'compute#zone': _to_zone,
     }
+
+    def _verify_zone_is_set(self, zone=None):
+        """
+        Verify that the zone / location is set for a particular operation -
+        either via "datacenter" driver constructor argument or via
+        "location" / "zone" keyword argument passed to the specific method
+        call.
+
+        This check is mandatory for methods which rely on the location being
+        set - e.g. create_node.
+        """
+        if self.zone:
+            return True
+
+        if not zone:
+            msg = ('Zone not provided. Zone needs to be specified for this'
+                   'operation. This can be done by passing "datacenter" '
+                   'argument to the driver constructor or by passing location '
+                   '/ zone argument to this method.')
+            raise ValueError(msg)
+
+        return True
