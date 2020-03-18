@@ -83,7 +83,8 @@ BASE_API_METHODS = {
                      'iterate_containers', 'iterate_container_objects',
                      'create_container', 'delete_container', 'upload_object',
                      'upload_object_via_stream', 'download_object',
-                     'download_object_as_stream', 'delete_object'],
+                     'download_object_range', 'download_object_as_stream',
+                     'download_object_range_as_stream', 'delete_object'],
     'storage_cdn': ['enable_container_cdn', 'enable_object_cdn',
                     'get_container_cdn_url', 'get_object_cdn_url'],
     'dns': ['list_zones', 'list_records', 'iterate_zones', 'iterate_records',
@@ -153,6 +154,8 @@ FRIENDLY_METHODS_NAMES = {
         'upload_object_via_stream': 'streaming object upload',
         'download_object': 'download object',
         'download_object_as_stream': 'streaming object download',
+        'download_object_range': 'download part of an object',
+        'download_object_range_as_stream': 'streaming partial object download',
         'delete_object': 'delete object'
     },
     'storage_cdn': {

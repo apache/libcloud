@@ -166,7 +166,9 @@ DRIVERS = {
     Provider.GRIDSCALE:
     ('libcloud.compute.drivers.gridscale', 'GridscaleNodeDriver'),
     Provider.KAMATERA:
-    ('libcloud.compute.drivers.kamatera', 'KamateraNodeDriver')
+    ('libcloud.compute.drivers.kamatera', 'KamateraNodeDriver'),
+    Provider.KUBEVIRT:
+    ('libcloud.compute.drivers.kubevirt', 'KubeVirtNodeDriver')
 }
 
 

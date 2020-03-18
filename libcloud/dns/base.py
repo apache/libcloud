@@ -15,9 +15,18 @@
 
 from __future__ import with_statement
 
+from typing import Dict
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Union
+from typing import Type
+from typing import Any
+
 import datetime
 
 from libcloud import __version__
+from libcloud.common.base import Connection
 from libcloud.common.base import ConnectionUserAndKey, BaseDriver
 from libcloud.dns.types import RecordType
 
@@ -33,7 +42,14 @@ class Zone(object):
     DNS zone.
     """
 
-    def __init__(self, id, domain, type, ttl, driver, extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 domain,  # type: str
+                 type,  # type: str
+                 ttl,  # type: int
+                 driver,  # type: DNSDriver
+                 extra=None  # type: dict
+                 ):
         """
         :param id: Zone id.
         :type id: ``str``
@@ -61,27 +77,39 @@ class Zone(object):
         self.extra = extra or {}
 
     def list_records(self):
+        # type: () -> List[Record]
         return self.driver.list_records(zone=self)
 
     def create_record(self, name, type, data, extra=None):
+        # type: (str, RecordType, str, Optional[dict]) -> Record
         return self.driver.create_record(name=name, zone=self, type=type,
                                          data=data, extra=extra)
 
-    def update(self, domain=None, type=None, ttl=None, extra=None):
+    def update(self,
+               domain=None,  # type: Optional[str]
+               type=None,  # type: Optional[str]
+               ttl=None,  # type: Optional[int]
+               extra=None  # type: Optional[dict]
+               ):
+        # type: (...) -> Zone
         return self.driver.update_zone(zone=self, domain=domain, type=type,
                                        ttl=ttl, extra=extra)
 
     def delete(self):
+        # type: () -> bool
         return self.driver.delete_zone(zone=self)
 
     def export_to_bind_format(self):
+        # type: () -> str
         return self.driver.export_zone_to_bind_format(zone=self)
 
     def export_to_bind_zone_file(self, file_path):
+        # type: (str) -> None
         self.driver.export_zone_to_bind_zone_file(zone=self,
                                                   file_path=file_path)
 
     def __repr__(self):
+        # type: () -> str
         return ('<Zone: domain=%s, ttl=%s, provider=%s ...>' %
                 (self.domain, self.ttl, self.driver.name))
 
@@ -91,8 +119,16 @@ class Record(object):
     Zone record / resource.
     """
 
-    def __init__(self, id, name, type, data, zone, driver, ttl=None,
-                 extra=None):
+    def __init__(self,
+                 id,  # type: str
+                 name,  # type: str
+                 type,  # type: RecordType
+                 data,  # type: str
+                 zone,  # type: Zone
+                 driver,  # type: DNSDriver
+                 ttl=None,  # type: int
+                 extra=None  # type: dict
+                 ):
         """
         :param id: Record id
         :type id: ``str``
@@ -127,22 +163,41 @@ class Record(object):
         self.ttl = ttl
         self.extra = extra or {}
 
-    def update(self, name=None, type=None, data=None, extra=None):
+    def update(self,
+               name=None,  # type: Optional[str]
+               type=None,  # type: Optional[RecordType]
+               data=None,  # type: Optional[str]
+               extra=None  # type: Optional[dict]
+               ):
+        # type: (...) -> Record
         return self.driver.update_record(record=self, name=name, type=type,
                                          data=data, extra=extra)
 
     def delete(self):
+        # type: () -> bool
         return self.driver.delete_record(record=self)
 
     def _get_numeric_id(self):
+        # type: () -> Union[int, str]
+        """
+        Return numeric ID for the provided record if the ID is a digit.
+
+        This method is used for sorting the values when exporting Zone to a
+        BIND format.
+        """
         record_id = self.id
 
+        if record_id is None:
+            return ''
+
         if record_id.isdigit():
-            record_id = int(record_id)
+            record_id_int = int(record_id)
+            return record_id_int
 
         return record_id
 
     def __repr__(self):
+        # type: () -> str
         zone = self.zone.domain if self.zone.domain else self.zone.id
         return ('<Record: zone=%s, name=%s, type=%s, data=%s, provider=%s, '
                 'ttl=%s ...>' %
@@ -156,15 +211,22 @@ class DNSDriver(BaseDriver):
 
     This class is always subclassed by a specific driver.
     """
-    connectionCls = ConnectionUserAndKey
-    name = None
-    website = None
+    connectionCls = ConnectionUserAndKey  # type: Type[Connection]
+    name = None  # type: str
+    website = None  # type: str
 
     # Map libcloud record type enum to provider record type name
-    RECORD_TYPE_MAP = {}
+    RECORD_TYPE_MAP = {}  # type: Dict[RecordType, str]
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 **kwargs):
+    def __init__(self,
+                 key,  # type: str
+                 secret=None,  # type: Optional[str]
+                 secure=True,  # type: bool
+                 host=None,  # type: Optional[str]
+                 port=None,  # type: Optional[int]
+                 **kwargs  # type: Optional[Any]
+                 ):
+        # type: (...) -> None
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -188,6 +250,7 @@ class DNSDriver(BaseDriver):
                                         host=host, port=port, **kwargs)
 
     def list_record_types(self):
+        # type: () -> List[RecordType]
         """
         Return a list of RecordType objects supported by the provider.
 
@@ -196,6 +259,7 @@ class DNSDriver(BaseDriver):
         return list(self.RECORD_TYPE_MAP.keys())
 
     def iterate_zones(self):
+        # type: () -> Iterator[Zone]
         """
         Return a generator to iterate over available zones.
 
@@ -205,6 +269,7 @@ class DNSDriver(BaseDriver):
             'iterate_zones not implemented for this driver')
 
     def list_zones(self):
+        # type: () -> List[Zone]
         """
         Return a list of zones.
 
@@ -213,6 +278,7 @@ class DNSDriver(BaseDriver):
         return list(self.iterate_zones())
 
     def iterate_records(self, zone):
+        # type: (Zone) -> Iterator[Record]
         """
         Return a generator to iterate over records for the provided zone.
 
@@ -225,6 +291,7 @@ class DNSDriver(BaseDriver):
             'iterate_records not implemented for this driver')
 
     def list_records(self, zone):
+        # type: (Zone) -> List[Record]
         """
         Return a list of records for the provided zone.
 
@@ -236,6 +303,7 @@ class DNSDriver(BaseDriver):
         return list(self.iterate_records(zone))
 
     def get_zone(self, zone_id):
+        # type: (str) -> Zone
         """
         Return a Zone instance.
 
@@ -248,6 +316,7 @@ class DNSDriver(BaseDriver):
             'get_zone not implemented for this driver')
 
     def get_record(self, zone_id, record_id):
+        # type: (str, str) -> Record
         """
         Return a Record instance.
 
@@ -263,6 +332,7 @@ class DNSDriver(BaseDriver):
             'get_record not implemented for this driver')
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
+        # type: (str, str, Optional[int], Optional[dict]) -> Zone
         """
         Create a new zone.
 
@@ -283,7 +353,14 @@ class DNSDriver(BaseDriver):
         raise NotImplementedError(
             'create_zone not implemented for this driver')
 
-    def update_zone(self, zone, domain, type='master', ttl=None, extra=None):
+    def update_zone(self,
+                    zone,  # type: Zone
+                    domain,  # type: Optional[str]
+                    type='master',  # type: Optional[str]
+                    ttl=None,  # type: Optional[int]
+                    extra=None  # type: Optional[dict]
+                    ):
+        # type: (...) -> Zone
         """
         Update an existing zone.
 
@@ -308,6 +385,7 @@ class DNSDriver(BaseDriver):
             'update_zone not implemented for this driver')
 
     def create_record(self, name, zone, type, data, extra=None):
+        # type: (str, Zone, RecordType, str, Optional[dict]) -> Record
         """
         Create a new record.
 
@@ -334,7 +412,13 @@ class DNSDriver(BaseDriver):
         raise NotImplementedError(
             'create_record not implemented for this driver')
 
-    def update_record(self, record, name, type, data, extra=None):
+    def update_record(self,
+                      record,  # type: Record
+                      name,  # type: Optional[str]
+                      type,  # type: Optional[RecordType]
+                      data,  # type: Optional[str]
+                      extra=None  # type: Optional[dict]
+                      ):
         """
         Update an existing record.
 
@@ -362,6 +446,7 @@ class DNSDriver(BaseDriver):
             'update_record not implemented for this driver')
 
     def delete_zone(self, zone):
+        # type: (Zone) -> bool
         """
         Delete a zone.
 
@@ -376,6 +461,7 @@ class DNSDriver(BaseDriver):
             'delete_zone not implemented for this driver')
 
     def delete_record(self, record):
+        # type: (Record) -> bool
         """
         Delete a record.
 
@@ -388,6 +474,7 @@ class DNSDriver(BaseDriver):
             'delete_record not implemented for this driver')
 
     def export_zone_to_bind_format(self, zone):
+        # type: (Zone) -> str
         """
         Export Zone object to the BIND compatible format.
 
@@ -422,6 +509,7 @@ class DNSDriver(BaseDriver):
         return output
 
     def export_zone_to_bind_zone_file(self, zone, file_path):
+        # type: (Zone, str) -> None
         """
         Export Zone object to the BIND compatible format and write result to a
         file.
@@ -438,6 +526,7 @@ class DNSDriver(BaseDriver):
             fp.write(result)
 
     def _get_bind_record_line(self, record):
+        # type: (Record) -> str
         """
         Generate BIND record line for the provided record.
 
@@ -447,7 +536,7 @@ class DNSDriver(BaseDriver):
         :return: Bind compatible record line.
         :rtype: ``str``
         """
-        parts = []
+        parts = []  # type: List[Any]
 
         if record.name:
             name = '%(name)s.%(domain)s' % {'name': record.name,
@@ -476,14 +565,15 @@ class DNSDriver(BaseDriver):
 
         if record.type in [RecordType.MX, RecordType.SRV]:
             priority = str(record.extra['priority'])
-            parts = [name, ttl, 'IN', record.type, priority, data]
+            parts = [name, ttl, 'IN', str(record.type), priority, data]
         else:
-            parts = [name, ttl, 'IN', record.type, data]
+            parts = [name, ttl, 'IN', str(record.type), data]
 
         line = '\t'.join(parts)
         return line
 
     def _string_to_record_type(self, string):
+        # type: (str) -> RecordType
         """
         Return a string representation of a DNS record type to a
         libcloud RecordType ENUM.

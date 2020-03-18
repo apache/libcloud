@@ -50,6 +50,7 @@ from libcloud.storage.drivers.cloudfiles import CloudFilesStorageDriver
 from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import unittest, generate_random_data, make_response
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
 class CloudFilesTests(unittest.TestCase):
@@ -181,12 +182,12 @@ class CloudFilesTests(unittest.TestCase):
         container = Container(
             name='test_container', extra={}, driver=self.driver)
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix1')
+                                                     prefix='test_prefix1')
         self.assertEqual(len(objects), 0)
 
         CloudFilesMockHttp.type = None
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix2')
+                                                     prefix='test_prefix2')
         self.assertEqual(len(objects), 4)
 
         obj = [o for o in objects if o.name == 'foo test 1'][0]
@@ -357,6 +358,25 @@ class CloudFilesTests(unittest.TestCase):
         else:
             self.fail('Object does not exist but an exception was not thrown')
 
+    def test_download_object_range_success(self):
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object_range', size=10, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=CloudFilesStorageDriver)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=5,
+                                             end_bytes=7,
+                                             overwrite_existing=False,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(destination_path, 'r') as fp:
+            content = fp.read()
+
+        self.assertEqual(content, '56')
+
     def test_download_object_as_stream(self):
         container = Container(name='foo_bar_container', extra={}, driver=self)
         obj = Object(name='foo_bar_object', size=1000, hash=None, extra={},
@@ -399,6 +419,19 @@ class CloudFilesTests(unittest.TestCase):
             result = result.decode('utf-8')
 
         self.assertEqual(result, 'a' * 1000)
+
+    def test_download_object_range_as_stream_success(self):
+        container = Container(name='foo_bar_container', extra={}, driver=self)
+        obj = Object(name='foo_bar_object_range', size=2, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=CloudFilesStorageDriver)
+
+        stream = self.driver.download_object_range_as_stream(
+            start_bytes=5, end_bytes=7, obj=obj, chunk_size=None)
+        self.assertTrue(hasattr(stream, '__iter__'))
+        consumed_stream = ''.join(chunk.decode('utf-8') for chunk in stream)
+        self.assertEqual(consumed_stream, '56')
+        self.assertEqual(len(consumed_stream), obj.size)
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
@@ -916,7 +949,7 @@ class CloudFilesDeprecatedUKTests(CloudFilesTests):
     region = 'lon'
 
 
-class CloudFilesMockHttp(MockHttp, unittest.TestCase):
+class CloudFilesMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('cloudfiles')
     base_headers = {'content-type': 'application/json; charset=UTF-8'}
@@ -1170,6 +1203,22 @@ class CloudFilesMockHttp(MockHttp, unittest.TestCase):
                     body,
                     self.base_headers,
                     httplib.responses[httplib.OK])
+
+    def _v1_MossoCloudFS_foo_bar_container_foo_bar_object_range(
+            self, method, url, body, headers):
+        if method == 'GET':
+            # test_download_object_range_success
+            body = '0123456789123456789'
+
+            self.assertTrue('Range' in headers)
+            self.assertEqual(headers['Range'], 'bytes=5-6')
+
+            start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+            return (httplib.PARTIAL_CONTENT,
+                    body[start_bytes:end_bytes + 1],
+                    self.base_headers,
+                    httplib.responses[httplib.PARTIAL_CONTENT])
 
     def _v1_MossoCloudFS_py3_img_or_vid(self, method, url, body, headers):
         headers = {'etag': 'e2378cace8712661ce7beec3d9362ef6'}

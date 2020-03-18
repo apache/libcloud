@@ -15,19 +15,21 @@
 
 import sys
 
-from libcloud.test import unittest
+from libcloud.utils.py3 import httplib
 
 from libcloud.container.base import ContainerImage
-
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 
-from libcloud.utils.py3 import httplib
 from libcloud.test.secrets import CONTAINER_PARAMS_KUBERNETES
+from libcloud.test.common.test_kubernetes import KubernetesAuthTestCaseMixin
 from libcloud.test.file_fixtures import ContainerFileFixtures
 from libcloud.test import MockHttp
+from libcloud.test import unittest
 
 
-class KubernetesContainerDriverTestCase(unittest.TestCase):
+class KubernetesContainerDriverTestCase(unittest.TestCase,
+                                        KubernetesAuthTestCaseMixin):
+    driver_cls = KubernetesContainerDriver
 
     def setUp(self):
         KubernetesContainerDriver.connectionCls.conn_class = KubernetesMockHttp
@@ -122,6 +124,7 @@ class KubernetesMockHttp(MockHttp):
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

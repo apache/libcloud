@@ -4,6 +4,174 @@
 Changes in Apache Libcloud in development (3.0.0)
 -------------------------------------------------
 
+Common
+~~~~~~
+
+- Make sure ``auth_user_info`` variable on the OpenStack identify connection
+  class is populated when using auth version ``3.x_password`` and
+  ``3.x_oidc_access_token``.
+
+  (GITHUB-1436)
+  [@lln-ijinus, Tomaz Muraus)
+
+- [OpenStack] Update OpenStack identity driver so a custom project can be
+  selected using ``domain_name`` keyword argument containing a project id.
+
+  Previously this argument value could only contain a project name, now the
+  value will be checked against project name and id.
+
+  (GITHUB-1439)
+  [Miguel Caballer - @micafer]
+
+Storage
+~~~~~~~
+
+- Add new ``download_object_range`` and ``download_object_range_as_stream``
+  methods for downloading part of the object content (aka range downloads) to
+  the base storage API.
+
+  Currently those methods are implemented for the local storage Azure Blobs,
+  CloudFiles, S3 and any other provider driver which is based on the S3 one
+  (such as Google Storage and DigitalOcean Spaces).
+  (GITHUB-1431)
+  [Tomaz Muraus]
+
+- Add type annotations for the base storage API.
+  (GITHUB-1410)
+  [Clemens Wolff - @c-w]
+
+- [Google Storage] Update the driver so it supports service account HMAC
+  credentials.
+
+  There was a bug in the code where we used the user id length check to
+  determine the account type and that code check didn't take service
+  account HMAC credentials (which contain a longer string) into account.
+
+  Reported by Patrick Mézard - pmezard.
+  (GITHUB-1437, GITHUB-1440)
+  [Yoan Tournade - @MonsieurV]
+
+DNS
+~~~
+
+- Add type annotations for the base DNS API.
+  (GITHUB-1434)
+  [Tomaz Muraus]
+
+Container
+~~~~~~~~~
+
+- [Kubernetes] Add support for the client certificate and static token based
+  authentication to the driver.
+  (GITHUB-1421)
+  [Tomaz Muraus]
+
+- Add type annotations for the base container API.
+  (GITHUB-1435)
+  [Tomaz Muraus]
+
+Changes in Apache Libcloud v2.8.1
+---------------------------------
+
+Common
+~~~~~~
+
+- Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
+  works correctly under Python 3 when ``response.read()`` function returns
+  unicode and not bytes.
+
+  (GITHUB-1430)
+  [Tomaz Muraus]
+
+Compute
+~~~~~~~
+
+- [GCE] Fix ``list_nodes()`` method so it correctly handles pagination
+  and returns all the nodes if there are more than 500 nodes available
+  in total.
+
+  Previously, only first 500 nodes were returned.
+
+  Reported by @TheSushiChef.
+  (GITHUB-1409, GITHUB-1360)
+  [Tomaz Muraus]
+
+- Fix some incorrect type annotations in the base compute API.
+
+  Reported by @dpeschman.
+  (GITHUB-1413)
+  [Tomaz Muraus]
+
+- [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
+  when region is not called ``nova``.
+  (GITHUB-1411, GITHUB-1412)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Fix ``ex_userdata`` keyword argument in the ``create_node()`` method
+  being ignored / not working correctly.
+
+  NOTE: This regression has been inadvertently introduced in v2.8.0.
+  (GITHUB-1426)
+  [Dan Chaffelson - @Chaffelson]
+
+- [EC2] Update ``create_volume`` method to automatically select first available
+  availability zone if one is not explicitly provided via ``location`` argument.
+  [Tomaz Muraus]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Fix upload object code so uploaded data MD5 checksum check is not
+  performed at the end of the upload when AWS KMS server side encryption is
+  used.
+
+  If AWS KMS server side object encryption is used, ETag header value in the
+  response doesn't contain data MD5 digest so we can't perform a checksum
+  check.
+
+  Reported by Jonathan Harden - @jfharden.
+  (GITHUB-1401, GITHUB-1406)
+  [Tomaz Muraus - @Kami]
+
+- [Google Storage] Fix a bug when uploading an object would fail and result
+  in 401 "invalid signature" error when object mime type contained mixed
+  casing and when S3 Interoperability authentication method was used.
+
+  Reported by Will Abson - wabson.
+  (GITHUB-1417, GITHUB-1418)
+  [Tomaz Muraus]
+
+- Fix ``upload_object_via_stream`` method so "Illegal seek" errors which
+  can arise when calculating iterator content hash are ignored. Those errors
+  likely indicate that the underlying file handle / iterator is a pipe which
+  doesn't support seek and that the error is not fatal and we should still
+  proceed.
+
+  Reported by Per Buer - @perbu.
+
+  (GITHUB-1424, GITHUB-1427)
+  [Tomaz Muraus]
+
+DNS
+~~~
+
+- [Gandi Live] Update the driver and make sure it matches the latest service /
+  API updates.
+  (GITHUB-1416)
+  [Ryan Lee - @zepheiryan]
+
+- [CloudFlare] Fix ``export_zone_to_bind_format`` method.
+
+  Previously it threw an exception, because ``record.extra`` dictionary
+  didn't contain ``priority`` key.
+
+  Reported by James Montgomery - @gh-jamesmontgomery.
+  (GITHUB-1428, GITHUB-1429)
+  [Tomaz Muraus]
+
+Changes in Apache Libcloud 3.0.0-rc1
+------------------------------------
+
 General
 ~~~~~~~
 
@@ -37,12 +205,118 @@ Compute
   (GITHUB-1346)
   [Tomaz Muraus]
 
-
 - [AWS EC2] Add support for creating spot instances by utilizing new ``ex_spot``
   and optionally also ``ex_spot_max_price`` keyword argument in the
   ``create_node`` method.
   (GITHUB-1398)
   [Peter Yu - @yukw777]
+
+- Fix some incorrect type annotations in the base compute API.
+
+  Reported by @dpeschman.
+  (GITHUB-1413, GITHUB-1414)
+  [Tomaz Muraus]
+
+- [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
+  when region is not called ``nova``.
+  (GITHUB-1411, GITHUB-1412)
+  [Miguel Caballer - @micafer]
+
+- [KubeVirt] New KubeVirt driver with initial support for the k8s/KubeVirt
+  add-on.
+  (GITHUB-1394)
+  [Eis D. Zaster - @Eis-D-Z]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Fix upload object code so uploaded data MD5 checksum check is not
+  performed at the end of the upload when AWS KMS server side encryption is
+  used.
+
+  If AWS KMS server side object encryption is used, ETag header value in the
+  response doesn't contain data MD5 digest so we can't perform a checksum
+  check.
+
+  Reported by Jonathan Harden - @jfharden.
+  (GITHUB-1401, GITHUB-1406)
+  [Tomaz Muraus - @Kami]
+
+- [Azure Blobs] Implement chunked upload in the Azure Storage driver.
+
+  Previously, the maximum object size that could be uploaded with the
+  Azure Storage driver was capped at 100 MB: the maximum size that could
+  be uploaded in a single request to Azure. Chunked upload removes this
+  limitation and now enables uploading objects up to Azure's maximum block
+  blob size (~5 TB). The size of the chunks uploaded by the driver can be
+  configured via the ``LIBCLOUD_AZURE_UPLOAD_CHUNK_SIZE_MB`` environment
+  variable and defaults to 4 MB per chunk. Increasing this number trades-off
+  higher memory usage for a lower number of http requests executed by the
+  driver.
+
+  Reported by @rvolykh.
+  (GITHUB-1399, GITHUB-1400)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Drop support for uploading PageBlob objects via the Azure
+  Storage driver.
+
+  Previously, both PageBlob and BlockBlob objects could be uploaded via the
+  ``upload_object`` and ``upload_object_via_stream`` methods by specifying the
+  ``ex_blob_type`` and ``ex_page_blob_size`` arguments. To simplify the API,
+  these options were removed and all uploaded objects are now of BlockBlob
+  type. Passing ``ex_blob_type`` or ``ex_page_blob_size`` will now raise a
+  ``ValueError``.
+
+  (GITHUB-1400)
+  [Clemens Wolff - @c-w]
+
+- [Common] Add ``prefix`` argument to ``iterate_container_objects`` and
+  ``list_container_objects`` to support object-list filtering in all
+  StorageDriver implementations.
+
+  A lot of the existing storage drivers already implemented the filtering
+  functionality via the ``ex_prefix`` extension argument so it was decided
+  to promote the argument to be part of the standard Libcloud storage API.
+  For any storage driver that doesn't natively implement filtering the results
+  list, a fall-back was implemented which filters the full object stream on
+  the client side.
+
+  For backward compatibility reasons, the ``ex_prefix`` argument will still
+  be respected until a next major release.
+  (GITHUB-1397)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs] Implement ``get_object_cdn_url`` for the Azure Storage driver.
+
+  Leveraging Azure storage service shared access signatures, the Azure Storage
+  driver can now be used to generate temporary URLs that grant clients read
+  access to objects. The URLs expire after a certain period of time, either
+  configured via the ``ex_expiry`` argument or the
+  ``LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS`` environment variable
+  (default: 24 hours).
+
+  Reported by @rvolykh.
+  (GITHUB-1403, GITHUB-1408)
+  [Clemens Wolff - @c-w]
+
+- [Azure Blobs, Aliyun, Local, Ninefold, S3] Ensure upload headers are
+  respected.
+
+  All storage drivers now pass the optional ``headers`` argument of
+  ``upload_object`` and ``upload_object_via_stream`` to the backend object
+  storage systems (previously the argument was silently ignored).
+
+  (GITHUB-1410)
+  [Clemens Wolff - @c-w]
+
+DNS
+~~~
+
+- [Gandi Live] Update the driver and make sure it matches the latest service /
+  API updates.
+  (GITHUB-1416)
+  [Ryan Lee - @zepheiryan]
 
 Container
 ~~~~~~~~~
@@ -50,16 +324,6 @@ Container
 - [LXD] Add new LXD driver.
   (GITHUB-1395)
   [Alexandros Giavaras - @pockerman]
-
-Compute
-~~~~~~~
-
-- [GCE] Fix ``ex_list_instancegroups`` method so it doesn't throw if ``zone``
-  attribute is not present in the response.
-
-  Reported by Kartik Subbarao (@kartiksubbarao)
-  (GITHUB-1346)
-  [Tomaz Muraus]
 
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
@@ -1042,11 +1306,12 @@ Compute
   (LIBCLOUD-952, GITHUB-1124)
   [Mika Lackman]
 
-- [UpCloud] Allow to define hostname and username
+- [UpCloud] Allow to define hostname and username.
   (LIBCLOUD-951, LIBCLOUD-953, GITHUB-1123, GITHUB-1125)
   [Mika Lackman]
 
-- [UpCloud] Add pricing information to list_sizes (LIBCLOUD-969, GITHUB-1152)
+- [UpCloud] Add pricing information to list_sizes.
+  (LIBCLOUD-969, GITHUB-1152)
   [Mika Lackman]
 
 Storage

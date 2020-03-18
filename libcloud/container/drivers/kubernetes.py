@@ -13,76 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import datetime
-
-try:
-    import simplejson as json
-except Exception:
-    import json
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.types import InvalidCredsError
+import json
 
 from libcloud.container.base import (Container, ContainerDriver,
                                      ContainerImage, ContainerCluster)
 
+from libcloud.common.kubernetes import KubernetesException
+from libcloud.common.kubernetes import KubernetesBasicAuthConnection
+from libcloud.common.kubernetes import KubernetesDriverMixin
+
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
+__all__ = [
+    'KubernetesContainerDriver'
+]
 
-VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                        httplib.NO_CONTENT]
 
 ROOT_URL = '/api/'
-
-
-class KubernetesResponse(JsonResponse):
-
-    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                            httplib.NO_CONTENT]
-
-    def parse_error(self):
-        if self.status == 401:
-            raise InvalidCredsError('Invalid credentials')
-        return self.body
-
-    def success(self):
-        return self.status in self.valid_response_codes
-
-
-class KubernetesException(Exception):
-
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
-        self.args = (code, message)
-
-    def __str__(self):
-        return "%s %s" % (self.code, self.message)
-
-    def __repr__(self):
-        return "KubernetesException %s %s" % (self.code, self.message)
-
-
-class KubernetesConnection(ConnectionUserAndKey):
-    responseCls = KubernetesResponse
-    timeout = 60
-
-    def add_default_headers(self, headers):
-        """
-        Add parameters that are necessary for every request
-        If user and password are specified, include a base http auth
-        header
-        """
-        headers['Content-Type'] = 'application/json'
-        if self.key and self.secret:
-            user_b64 = base64.b64encode(b('%s:%s' % (self.key, self.secret)))
-            headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
-        return headers
 
 
 class KubernetesPod(object):
@@ -95,55 +44,12 @@ class KubernetesPod(object):
         self.namespace = namespace
 
 
-class KubernetesContainerDriver(ContainerDriver):
+class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     type = Provider.KUBERNETES
     name = 'Kubernetes'
     website = 'http://kubernetes.io'
-    connectionCls = KubernetesConnection
+    connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
-
-    def __init__(self, key=None, secret=None, secure=False, host='localhost',
-                 port=4243):
-        """
-        :param    key: API key or username to used (required)
-        :type     key: ``str``
-
-        :param    secret: Secret password to be used (required)
-        :type     secret: ``str``
-
-        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
-                only support HTTPS, and it is on by default.
-        :type     secure: ``bool``
-
-        :param    host: Override hostname used for connections.
-        :type     host: ``str``
-
-        :param    port: Override port used for connections.
-        :type     port: ``int``
-
-        :return: ``None``
-        """
-        super(KubernetesContainerDriver, self).__init__(key=key, secret=secret,
-                                                        secure=secure,
-                                                        host=host,
-                                                        port=port)
-
-        if host is not None:
-            if host.startswith('https://'):
-                secure = True
-
-            # strip the prefix
-            prefixes = ['http://', 'https://']
-            for prefix in prefixes:
-                if host.startswith(prefix):
-                    host = host.strip(prefix)
-
-            self.connection.host = host
-            self.connection.port = port
-
-        self.connection.secure = secure
-        self.connection.key = key
-        self.connection.secret = secret
 
     def list_containers(self, image=None, all=True):
         """

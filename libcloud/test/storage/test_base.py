@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import sys
+import errno
 import hashlib
 
 from libcloud.utils.py3 import httplib
@@ -33,6 +34,7 @@ from libcloud.storage.base import DEFAULT_CONTENT_TYPE
 from libcloud.test import unittest
 from libcloud.test import MockHttp
 from libcloud.test import BodyStream
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
 class BaseMockRawResponse(MockHttp):
@@ -46,7 +48,6 @@ class BaseMockRawResponse(MockHttp):
 
 
 class BaseStorageTests(unittest.TestCase):
-
     def setUp(self):
         self.send_called = 0
         StorageDriver.connectionCls.conn_class = BaseMockRawResponse
@@ -65,11 +66,7 @@ class BaseStorageTests(unittest.TestCase):
         valid_iterators = [BytesIO(b('134')), StringIO('bar')]
         invalid_iterators = ['foobar', '', False, True, 1, object()]
 
-        def upload_func(*args, **kwargs):
-            return True, 'barfoo', 100
-
         kwargs = {'object_name': 'foo', 'content_type': 'foo/bar',
-                  'upload_func': upload_func, 'upload_func_kwargs': {},
                   'request_path': '/', 'headers': {}}
 
         for value in valid_iterators:
@@ -96,7 +93,6 @@ class BaseStorageTests(unittest.TestCase):
         response_streamed = mock_response.request.stream
         assert response_streamed is False
 
-
     def test__get_hash_function(self):
         self.driver1.hash_type = 'md5'
         func = self.driver1._get_hash_function()
@@ -117,16 +113,11 @@ class BaseStorageTests(unittest.TestCase):
     def test_upload_no_content_type_supplied_or_detected(self):
         iterator = StringIO()
 
-        upload_func = Mock()
-        upload_func.return_value = True, '', 0
-
         # strict_mode is disabled, default content type should be used
         self.driver1.connection = Mock()
 
         self.driver1._upload_object(object_name='test',
                                     content_type=None,
-                                    upload_func=upload_func,
-                                    upload_func_kwargs={},
                                     request_path='/',
                                     stream=iterator)
 
@@ -136,14 +127,12 @@ class BaseStorageTests(unittest.TestCase):
         # strict_mode is enabled, exception should be thrown
 
         self.driver1.strict_mode = True
-        expected_msg = ('File content-type could not be guessed and no'
-                        ' content_type value is provided')
+        expected_msg = ('File content-type could not be guessed for "test" '
+                        'and no content_type value is provided')
         assertRaisesRegex(self, AttributeError, expected_msg,
                           self.driver1._upload_object,
                           object_name='test',
                           content_type=None,
-                          upload_func=upload_func,
-                          upload_func_kwargs={},
                           request_path='/',
                           stream=iterator)
 
@@ -152,7 +141,8 @@ class BaseStorageTests(unittest.TestCase):
     def test_upload_object_hash_calculation_is_efficient(self, mock_read_in_chunks,
                                                          mock_exhaust_iterator):
         # Verify that we don't buffer whole file in memory when calculating
-        # object has when iterator has __next__ method, but instead read and calculate hash in chunks
+        # object has when iterator has __next__ method, but instead read and
+        # calculate hash in chunks
         size = 100
 
         self.driver1.connection = Mock()
@@ -164,16 +154,11 @@ class BaseStorageTests(unittest.TestCase):
         self.assertTrue(hasattr(iterator, '__next__'))
         self.assertTrue(hasattr(iterator, 'next'))
 
-        upload_func = Mock()
-        upload_func.return_value = True, '', size
-
         self.assertEqual(mock_read_in_chunks.call_count, 0)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
 
         result = self.driver1._upload_object(object_name='test1',
                                              content_type=None,
-                                             upload_func=upload_func,
-                                             upload_func_kwargs={},
                                              request_path='/',
                                              stream=iterator)
 
@@ -210,8 +195,6 @@ class BaseStorageTests(unittest.TestCase):
 
         result = self.driver1._upload_object(object_name='test2',
                                              content_type=None,
-                                             upload_func=upload_func,
-                                             upload_func_kwargs={},
                                              request_path='/',
                                              stream=iterator)
 
@@ -227,6 +210,87 @@ class BaseStorageTests(unittest.TestCase):
 
         self.assertEqual(mock_read_in_chunks.call_count, 2)
         self.assertEqual(mock_exhaust_iterator.call_count, 0)
+
+    def test_upload_object_via_stream_illegal_seek_errors_are_ignored(self):
+        # Illegal seek errors should be ignored
+        size = 100
+
+        self.driver1.connection = Mock()
+
+        seek_error = OSError('Illegal seek')
+        seek_error.errno = 29
+        assert errno.ESPIPE == 29
+
+        iterator = BodyStream('a' * size)
+        iterator.seek = mock.Mock(side_effect=seek_error)
+
+        result = self.driver1._upload_object(object_name='test1',
+                                             content_type=None,
+                                             request_path='/',
+                                             stream=iterator)
+
+        hasher = hashlib.md5()
+        hasher.update(b('a') * size)
+        expected_hash = hasher.hexdigest()
+
+        self.assertEqual(result['data_hash'], expected_hash)
+        self.assertEqual(result['bytes_transferred'], size)
+
+        # But others shouldn't
+        self.driver1.connection = Mock()
+
+        seek_error = OSError('Other error')
+        seek_error.errno = 21
+
+        iterator = BodyStream('b' * size)
+        iterator.seek = mock.Mock(side_effect=seek_error)
+
+        self.assertRaisesRegex(OSError, 'Other error',
+                               self.driver1._upload_object,
+                               object_name='test1',
+                               content_type=None,
+                               request_path='/',
+                               stream=iterator)
+
+    def test_get_standard_range_str(self):
+        result = self.driver1._get_standard_range_str(0, 5)
+        self.assertEqual(result, 'bytes=0-4')
+
+        result = self.driver1._get_standard_range_str(0)
+        self.assertEqual(result, 'bytes=0-')
+        result = self.driver1._get_standard_range_str(0, 1)
+
+        self.assertEqual(result, 'bytes=0-0')
+
+        result = self.driver1._get_standard_range_str(200)
+        self.assertEqual(result, 'bytes=200-')
+
+        result = self.driver1._get_standard_range_str(10, 200)
+        self.assertEqual(result, 'bytes=10-199')
+
+        result = self.driver1._get_standard_range_str(10, 11)
+        self.assertEqual(result, 'bytes=10-10')
+
+        result = self.driver1._get_standard_range_str(10, 11, True)
+        self.assertEqual(result, 'bytes=10-11')
+
+
+class BaseRangeDownloadMockHttpTestCase(unittest.TestCase):
+    def test_get_start_and_end_bytes_from_range_str(self):
+        mock_http = BaseRangeDownloadMockHttp(None, None)
+        body = '0123456789'
+
+        range_str = 'bytes=1-'
+        result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
+        self.assertEqual(result, (1, len(body)))
+        range_str = 'bytes=1-5'
+
+        result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
+        self.assertEqual(result, (1, 5))
+
+        range_str = 'bytes=3-5'
+        result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
+        self.assertEqual(result, (3, 5))
 
 
 if __name__ == '__main__':

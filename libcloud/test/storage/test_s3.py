@@ -52,9 +52,10 @@ from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import unittest, make_response, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
-class S3MockHttp(MockHttp):
+class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('s3')
     base_headers = {}
@@ -327,30 +328,37 @@ class S3MockHttp(MockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
+    def _foo_bar_container_foo_bar_object_range(self, method, url, body, headers):
+        # test_download_object_range_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=5-6')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
+    def _foo_bar_container_foo_bar_object_range_stream(self, method, url, body, headers):
+        # test_download_object_range_as_stream_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=4-6')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
     def _foo_bar_container_foo_bar_object_NO_BUFFER(self, method, url, body, headers):
         # test_download_object_data_is_not_buffered_in_memory
         body = generate_random_data(1000)
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url,
-                                                         body, headers):
-        body = ''
-        headers = {}
-        headers['etag'] = '"foobar"'
-        # test_upload_object_invalid_hash1
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_bar_container_foo_test_upload_INVALID_HASH2(self, method, url,
-                                                         body, headers):
-        # test_upload_object_invalid_hash2
-        body = ''
-        headers = {'etag': '"hash343hhash89h932439jsaa89"'}
         return (httplib.OK,
                 body,
                 headers,
@@ -497,7 +505,7 @@ class S3Tests(unittest.TestCase):
         container = Container(name='test_container', extra={},
                               driver=self.driver)
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix')
+                                                     prefix='test_prefix')
         self.assertEqual(len(objects), 1)
 
         obj = [o for o in objects if o.name == '1.zip'][0]
@@ -631,6 +639,38 @@ class S3Tests(unittest.TestCase):
                                              overwrite_existing=True,
                                              delete_on_failure=True)
         self.assertTrue(result)
+
+    def test_download_object_range_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_range', size=19, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = self._file_path
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=5,
+                                             end_bytes=7,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(self._file_path, 'r') as fp:
+            content = fp.read()
+
+        self.assertEqual(content, '56')
+
+    def test_download_object_range_as_stream_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_range_stream', size=19, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        iterator = self.driver.download_object_range_as_stream(obj=obj,
+                                                               start_bytes=4,
+                                                               end_bytes=7)
+        content = exhaust_iterator(iterator)
+        self.assertEqual(content, b'456')
 
     def test_download_object_data_is_not_buffered_in_memory(self):
         # Test case which verifies that response.body attribute is not accessed
@@ -772,11 +812,10 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200),
+            headers = {'etag': '"foobar"'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': 'hash343hhash89h932439jsaa89'}
-
-        self.mock_response_klass.type = 'INVALID_HASH1'
 
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -802,11 +841,10 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200, headers={'etag': 'woopwoopwoop'}),
+            headers = {'etag': '"hash343hhash89h932439jsaa89"'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
-
-        self.mock_response_klass.type = 'INVALID_HASH2'
 
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -826,6 +864,31 @@ class S3Tests(unittest.TestCase):
                 'Invalid hash was returned but an exception was not thrown')
         finally:
             self.driver_type._upload_object = old_func
+
+    def test_upload_object_invalid_hash_kms_encryption(self):
+        # Hash check should be skipped when AWS KMS server side encryption is
+        # used
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            headers = {'etag': 'blahblah', 'x-amz-server-side-encryption': 'aws:kms'}
+            return {'response': make_response(200, headers=headers),
+                    'bytes_transferred': 1000,
+                    'data_hash': 'hash343hhash89h932439jsaa81'}
+
+        old_func = self.driver_type._upload_object
+        self.driver_type._upload_object = upload_file
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_upload'
+        try:
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name,
+                                      verify_hash=True)
+        finally:
+            self.driver_type._upload_object = old_func
+
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,

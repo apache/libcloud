@@ -34,6 +34,7 @@ Provider                              list images get image create image delete 
 `Kamatera`_                           yes         no        no           no           no        
 `Kili Public Cloud`_                  yes         yes       yes          yes          no        
 `KTUCloud`_                           yes         no        no           no           no        
+`kubevirt`_                           yes         no        no           no           no        
 `Libvirt`_                            no          no        no           no           no        
 `Linode`_                             yes         no        no           no           no        
 `Maxihost`_                           yes         no        no           no           no        
@@ -98,6 +99,7 @@ Provider                              list images get image create image delete 
 .. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
+.. _`kubevirt`: https://www.kubevirt.io
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/

@@ -5,7 +5,7 @@ Provider                      enable container cdn enable object cdn get contain
 ============================= ==================== ================= ===================== ==================
 `Aliyun OSS`_                 no                   no                no                    no                
 `PCextreme AuroraObjects`_    yes                  yes               yes                   yes               
-`Microsoft Azure (blobs)`_    no                   no                no                    no                
+`Microsoft Azure (blobs)`_    no                   no                no                    yes               
 `Backblaze B2`_               no                   no                no                    no                
 `CloudFiles`_                 yes                  no                yes                   yes               
 `DigitalOcean Spaces`_        no                   no                no                    no                

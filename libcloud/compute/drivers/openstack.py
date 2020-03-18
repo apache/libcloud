@@ -3927,8 +3927,8 @@ class OpenStack_2_FloatingIpPool(object):
                                            port.extra["mac_address"]}
 
         if 'port_details' in obj and obj['port_details']:
-            if obj['port_details']['device_owner'] in ['compute:nova',
-                                                       'compute:None']:
+            dev_owner = obj['port_details']['device_owner']
+            if dev_owner and dev_owner.startswith("compute:"):
                 instance_id = obj['port_details']['device_id']
 
         ip_address = obj['floating_ip_address']

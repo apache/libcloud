@@ -23,7 +23,7 @@ import hashlib
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import httplib
@@ -130,7 +130,7 @@ class BackblazeB2AuthConnection(ConnectionUserAndKey):
 
 
 class BackblazeB2Connection(ConnectionUserAndKey):
-    host = None  # Note: host is set after authentication
+    host = None  # type: ignore  # Note: host is set after authentication
     secure = True
     responseCls = BackblazeB2Response
     authCls = BackblazeB2AuthConnection
@@ -251,14 +251,34 @@ class BackblazeB2StorageDriver(StorageDriver):
         containers = self._to_containers(data=resp.object)
         return containers
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
+        """
+        Return a generator of objects for the given container.
+
+        :param container: Container instance
+        :type container: :class:`Container`
+
+        :param prefix: Filter objects starting with a prefix.
+                       Filtering is performed client-side.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
+                          Filtering is performed client-side.
+        :type  ex_prefix: ``str``
+
+        :return: A generator of Object instances.
+        :rtype: ``generator`` of :class:`Object`
+        """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         # TODO: Support pagination
         params = {'bucketId': container.extra['id']}
         resp = self.connection.request(action='b2_list_file_names',
                                        method='GET',
                                        params=params)
         objects = self._to_objects(data=resp.object, container=container)
-        return objects
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         containers = self.iterate_containers()

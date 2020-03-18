@@ -19,10 +19,13 @@ from collections import OrderedDict
 
 import os
 import sys
+import base64
 from datetime import datetime
 from libcloud.utils.iso8601 import UTC
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import parse_qs
+from libcloud.utils.py3 import b
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
 from libcloud.compute.drivers.ec2 import EC2PlacementGroup
@@ -1373,7 +1376,7 @@ class EC2SAEastTests(EC2Tests):
     region = 'sa-east-1'
 
 
-class EC2MockHttp(MockHttp):
+class EC2MockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('ec2')
 
     def _DescribeInstances(self, method, url, body, headers):
@@ -1437,6 +1440,17 @@ class EC2MockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ex_user_data_RunInstances(self, method, url, body, headers):
+        # test_create_node_with_ex_userdata
+        params = parse_qs(url)
+
+        self.assertTrue('UserData' in params)
+        user_data = base64.b64decode(b(params['UserData'][0])).decode('utf-8')
+        self.assertEqual(user_data, 'foo\nbar\foo')
+
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
@@ -2021,6 +2035,18 @@ class OutscaleTests(EC2Tests):
                           name='foo',
                           image=image, size=size,
                           ex_iamprofile='foo')
+
+    def test_create_node_with_ex_userdata(self):
+        EC2MockHttp.type = 'ex_user_data'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        result = self.driver.create_node(name='foo', image=image, size=size,
+                                         ex_userdata='foo\nbar\foo')
 
 
 class FCUMockHttp(EC2MockHttp):

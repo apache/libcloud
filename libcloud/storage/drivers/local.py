@@ -31,6 +31,7 @@ except ImportError:
                       'using pip: pip install lockfile')
 
 from libcloud.utils.files import read_in_chunks
+from libcloud.utils.files import exhaust_iterator
 from libcloud.utils.py3 import relpath
 from libcloud.utils.py3 import u
 from libcloud.common.base import Connection
@@ -219,18 +220,27 @@ class LocalStorageDriver(StorageDriver):
                 object_name = relpath(full_path, start=cpath)
                 yield self._make_object(container, object_name)
 
-    def iterate_container_objects(self, container):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Returns a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
 
+        :param prefix: Filter objects starting with a prefix.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
+        :type  ex_prefix: ``str``
+
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
-        return self._get_objects(container)
+        objects = self._get_objects(container)
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         """
@@ -357,25 +367,12 @@ class LocalStorageDriver(StorageDriver):
         otherwise.
         :rtype: ``bool``
         """
-
         obj_path = self.get_object_cdn_url(obj)
-        base_name = os.path.basename(destination_path)
 
-        if not base_name and not os.path.exists(destination_path):
-            raise LibcloudError(
-                value='Path %s does not exist' % (destination_path),
-                driver=self)
-
-        if not base_name:
-            file_path = os.path.join(destination_path, obj.name)
-        else:
-            file_path = destination_path
-
-        if os.path.exists(file_path) and not overwrite_existing:
-            raise LibcloudError(
-                value='File %s already exists, but ' % (file_path) +
-                'overwrite_existing=False',
-                driver=self)
+        file_path = self._get_obj_file_path(
+            obj=obj,
+            destination_path=destination_path,
+            overwrite_existing=overwrite_existing)
 
         try:
             shutil.copy(obj_path, file_path)
@@ -407,8 +404,50 @@ class LocalStorageDriver(StorageDriver):
             for data in read_in_chunks(obj_file, chunk_size=chunk_size):
                 yield data
 
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        file_path = self._get_obj_file_path(
+            obj=obj,
+            destination_path=destination_path,
+            overwrite_existing=overwrite_existing)
+
+        iterator = self.download_object_range_as_stream(
+            obj=obj,
+            start_bytes=start_bytes,
+            end_bytes=end_bytes)
+
+        with open(file_path, 'wb') as fp:
+            fp.write(exhaust_iterator(iterator))
+
+        return True
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        path = self.get_object_cdn_url(obj)
+        with open(path, 'rb') as obj_file:
+            file_size = len(obj_file.read())
+
+            if end_bytes and end_bytes > file_size:
+                raise ValueError('end_bytes is larger than file size')
+
+            if end_bytes is None:
+                read_bytes = (file_size - start_bytes) + 1
+            else:
+                read_bytes = (end_bytes - start_bytes)
+
+            obj_file.seek(start_bytes)
+            data = obj_file.read(read_bytes)
+            yield data
+
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         """
         Upload an object currently located on a disk.
 
@@ -426,6 +465,9 @@ class LocalStorageDriver(StorageDriver):
 
         :param extra: (optional) Extra attributes (driver specific).
         :type extra: ``dict``
+
+        :param headers: (optional) Headers (driver specific).
+        :type headers: ``dict``
 
         :rtype: ``object``
         """
@@ -445,7 +487,7 @@ class LocalStorageDriver(StorageDriver):
 
     def upload_object_via_stream(self, iterator, container,
                                  object_name,
-                                 extra=None):
+                                 extra=None, headers=None):
         """
         Upload an object using an iterator.
 
@@ -477,6 +519,9 @@ class LocalStorageDriver(StorageDriver):
         :param extra: (optional) Extra attributes (driver specific). Note:
             This dictionary must contain a 'content_type' key which represents
             a content type of the stored object.
+
+        :param headers: (optional) Headers (driver specific).
+        :type headers: ``dict``
 
         :rtype: ``object``
         """
@@ -587,3 +632,26 @@ class LocalStorageDriver(StorageDriver):
                 return False
 
         return True
+
+    def _get_obj_file_path(self, obj, destination_path,
+                           overwrite_existing=False):
+        # type: (Object, str, bool) -> str
+        base_name = os.path.basename(destination_path)
+
+        if not base_name and not os.path.exists(destination_path):
+            raise LibcloudError(
+                value='Path %s does not exist' % (destination_path),
+                driver=self)
+
+        if not base_name:
+            file_path = os.path.join(destination_path, obj.name)
+        else:
+            file_path = destination_path
+
+        if os.path.exists(file_path) and not overwrite_existing:
+            raise LibcloudError(
+                value='File %s already exists, but ' % (file_path) +
+                'overwrite_existing=False',
+                driver=self)
+
+        return file_path

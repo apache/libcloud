@@ -34,6 +34,7 @@ Provider                              list nodes create node reboot node destroy
 `Kamatera`_                           yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Kili Public Cloud`_                  yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `KTUCloud`_                           yes        yes         yes         yes          no         no        yes         yes        yes        
+`kubevirt`_                           yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Libvirt`_                            yes        no          yes         yes          yes        yes       no          no         no         
 `Linode`_                             yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Maxihost`_                           yes        yes         yes         yes          yes        yes       yes         yes        no         
@@ -98,6 +99,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
+.. _`kubevirt`: https://www.kubevirt.io
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/

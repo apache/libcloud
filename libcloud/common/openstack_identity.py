@@ -1050,7 +1050,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 self.auth_token_expires = parse_date(expires)
                 # Note: catalog is not returned for unscoped tokens
                 self.urls = body['token'].get('catalog', None)
-                self.auth_user_info = None
+                self.auth_user_info = body['token'].get('user', None)
                 self.auth_user_roles = roles
             except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
@@ -1490,7 +1490,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 self.auth_token_expires = parse_date(expires)
                 # Note: catalog is not returned for unscoped tokens
                 self.urls = body['token'].get('catalog', None)
-                self.auth_user_info = None
+                self.auth_user_info = body['token'].get('user', None)
                 self.auth_user_roles = roles
             except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
@@ -1560,11 +1560,15 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
                 # as we have used tenant as the protocol
                 if self.domain_name and self.domain_name != 'Default':
                     for project in body['projects']:
-                        if project['name'] == self.domain_name:
+                        if self.domain_name in [project['name'],
+                                                project['id']]:
                             return project['id']
-                    raise ValueError('Project %s not found' % self.domain_name)
+                    raise ValueError('Project %s not found' %
+                                     (self.domain_name))
                 else:
                     return body['projects'][0]['id']
+            except ValueError as e:
+                raise e
             except Exception as e:
                 raise MalformedResponseError('Failed to parse JSON', e)
         else:
@@ -1726,6 +1730,7 @@ def get_class_for_auth_version(auth_version):
     elif auth_version == '3.x_oidc_access_token':
         cls = OpenStackIdentity_3_0_Connection_OIDC_access_token
     else:
-        raise LibcloudError('Unsupported Auth Version requested')
+        raise LibcloudError('Unsupported Auth Version requested: %s' %
+                            (auth_version))
 
     return cls

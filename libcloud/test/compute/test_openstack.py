@@ -1442,6 +1442,11 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[2].ip_address, '10.3.1.2')
         self.assertEqual(
             ret[2].node_id, 'cb4fba64-19e2-40fd-8497-f29da1b21143')
+        self.assertEqual(ret[3].id, '123c5336a-0629-4694-ba30-04b0bdfa88a4')
+        self.assertEqual(ret[3].pool, pool)
+        self.assertEqual(ret[3].ip_address, '10.3.1.3')
+        self.assertEqual(
+            ret[3].node_id, 'cb4fba64-19e2-40fd-8497-f29da1b21143')
 
     def test_OpenStack_2_FloatingIpPool_get_floating_ip(self):
         pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)

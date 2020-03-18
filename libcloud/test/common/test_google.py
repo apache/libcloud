@@ -60,10 +60,20 @@ GCE_PARAMS_JSON_KEY = ('email@developer.gserviceaccount.com', JSON_KEY)
 GCE_PARAMS_KEY = ('email@developer.gserviceaccount.com', KEY_STR)
 GCE_PARAMS_IA = ('client_id', 'client_secret')
 GCE_PARAMS_GCE = ('foo', 'bar')
-GCS_S3_PARAMS_20 = ('GOOG0123456789ABCXYZ',  # GOOG + 16 alphanumeric chars
-                 '0102030405060708091011121314151617181920')  # 40 base64 chars
-GCS_S3_PARAMS_24 = ('GOOGDF5OVRRGU4APFNSTVCXI',  # GOOG + 20 alphanumeric chars
-                 '0102030405060708091011121314151617181920')  # 40 base64 chars
+# GOOG + 16 alphanumeric chars
+GCS_S3_PARAMS_20 = ('GOOG0123456789ABCXYZ',
+                    # 40 base64 chars
+                    '0102030405060708091011121314151617181920')
+# GOOG + 20 alphanumeric chars
+GCS_S3_PARAMS_24 = ('GOOGDF5OVRRGU4APFNSTVCXI',
+                    # 40 base64 chars
+                    '0102030405060708091011121314151617181920')
+# GOOG + 57 alphanumeric chars
+GCS_S3_PARAMS_61 = (
+    'GOOGDF5OVRRGU4APFNSTVCXIRRGU4AP56789ABCX56789ABCXRRGU4APFNSTV',
+    # 40 base64 chars
+    '0102030405060708091011121314151617181920'
+)
 
 STUB_UTCNOW = _utcnow()
 
@@ -236,6 +246,9 @@ class GoogleAuthTypeTest(GoogleTestCase):
                 GoogleAuthType.GCS_S3)
             self.assertEqual(
                 GoogleAuthType.guess_type(GCS_S3_PARAMS_24[0]),
+                GoogleAuthType.GCS_S3)
+            self.assertEqual(
+                GoogleAuthType.guess_type(GCS_S3_PARAMS_61[0]),
                 GoogleAuthType.GCS_S3)
             self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS_GCE[0]),
                              GoogleAuthType.GCE)

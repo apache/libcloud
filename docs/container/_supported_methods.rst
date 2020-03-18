@@ -8,6 +8,7 @@ Provider                            install image list images deploy container g
 `Google Container Engine`_          no            no          yes              yes           no              no             no                yes               yes             no             yes            yes             yes          
 `Joyent Triton`_                    yes           yes         yes              yes           yes             yes            yes               yes               yes             no             no             no              no           
 `Kubernetes`_                       no            no          yes              yes           no              no             no                yes               yes             no             yes            yes             yes          
+`LXD`_                              yes           yes         yes              yes           yes             yes            yes               yes               yes             no             no             no              no           
 `Rancher`_                          no            no          yes              yes           yes             yes            no                yes               yes             no             no             no              no           
 =================================== ============= =========== ================ ============= =============== ============== ================= ================= =============== ============== ============== =============== =============
 
@@ -16,4 +17,5 @@ Provider                            install image list images deploy container g
 .. _`Google Container Engine`: https://container.googleapis.com
 .. _`Joyent Triton`: http://joyent.com
 .. _`Kubernetes`: http://kubernetes.io
+.. _`LXD`: https://linuxcontainers.org/
 .. _`Rancher`: http://rancher.com
