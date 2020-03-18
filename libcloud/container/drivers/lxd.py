@@ -545,16 +545,14 @@ class LXDContainerDriver(ContainerDriver):
                 except Exception as e:
                     raise LXDAPIException(message='Deploying '
                                                   'container failed:  '
-                                                  'Image  could not '
-                                                  'be installed')
+                                                  'Image could not '
+                                                  'be installed. %r' % e)
 
                 # if the image was installed then we need to change
                 # how parameters are structured
                 parameters = {"source": {"type": "image",
                                          "fingerprint":
                                              image.extra['fingerprint']}}
-
-                parameters = json.loads(parameters)
 
         cont_params = \
             LXDContainerDriver._fix_cont_params(architecture=ex_architecture,
@@ -771,7 +769,6 @@ class LXDContainerDriver(ContainerDriver):
             if message != '"not found"':
                 # something is wrong
                 raise LXDAPIException(message=e.message)
-
 
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
@@ -1675,17 +1672,19 @@ class LXDContainerDriver(ContainerDriver):
 
         :rtype: :class:`.ContainerImage`
         """
+        fingerprint = metadata.get('fingerprint')
         aliases = metadata.get('aliases', [])
 
         if aliases:
             name = metadata.get('aliases')[0].get('name')
         else:
-            name = metadata.get('fingerprint')
+            name = metadata.get('properties', {}).get('description') \
+                or fingerprint
 
-        version = metadata.get('update_source').get('alias')
+        version = metadata.get('update_source', {}).get('alias')
         extra = metadata
 
-        return ContainerImage(id=name, name=name, path=None,
+        return ContainerImage(id=fingerprint, name=name, path=None,
                               version=version, driver=self, extra=extra)
 
     def _to_storage_pool(self, data):
@@ -1709,8 +1708,8 @@ class LXDContainerDriver(ContainerDriver):
         :param name: the name of the container
         :param image: .ContainerImage
 
-        :param parameters: string describing the source attribute
-        :type  parameters ``str``
+        :param parameters: dictionary describing the source attribute
+        :type  parameters ``dict``
 
         :param cont_params: dictionary describing the container configuration
         :type  cont_params: dict
