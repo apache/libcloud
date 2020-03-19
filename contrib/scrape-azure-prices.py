@@ -26,8 +26,7 @@ def get_azure_prices():
             continue
         if size_raw[0] not in {'linux', 'windows'}:
             continue
-        size = size_raw[2][0].upper() + size_raw[2][1:] + "_" +\
-            size_raw[1][0].upper() + size_raw[1][1:]
+        size = size_raw[2]+size_raw[1]
         prices = {}
         if not value['prices'].get('perhour'):
             continue
