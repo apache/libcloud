@@ -1113,6 +1113,34 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(node_data['networkInterfaces'][0][
             'network'].startswith('https://'))
 
+    def test_create_node_location_not_provided(self):
+        # location is not specified neither via datacenter constructor argument
+        # nor via location method argument
+        node_name = 'node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        del size.extra['zone']
+        image = self.driver.ex_get_image('debian-7')
+        self.driver.zone = None
+
+        expected_msg = 'Zone not provided'
+        self.assertRaisesRegex(ValueError, expected_msg,
+                               self.driver.create_node,
+                               node_name, size, image)
+
+    def test_create_node_location_not_provided_inferred_from_size(self):
+        # test a scenario where node location is inferred from NodeSize zone attribute
+        node_name = 'node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        image = self.driver.ex_get_image('debian-7')
+        zone = self.driver.ex_list_zones()[0]
+        zone = self.driver.ex_get_zone('us-central1-a')
+
+        self.driver.zone = None
+        size.extra['zone'] = zone
+
+        node = self.driver.create_node(node_name, size, image)
+        self.assertTrue(node)
+
     def test_create_node_network_opts(self):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
@@ -2230,6 +2258,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(disktype.extra['description'], 'SSD Persistent Disk')
         self.assertEqual(disktype.extra['valid_disk_size'], '10GB-10240GB')
         self.assertEqual(disktype.extra['default_disk_size_gb'], '100')
+
+        # zone not set
+        disktype_name = 'pd-ssd'
+        disktype = self.driver.ex_get_disktype(disktype_name)
+        self.assertEqual(disktype.name, disktype_name)
 
     def test_ex_get_zone(self):
         zone_name = 'us-central1-b'

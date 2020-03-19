@@ -23,6 +23,23 @@ Common
   (GITHUB-1439)
   [Miguel Caballer - @micafer]
 
+Compute
+~~~~~~~
+
+- [GCE] Update ``create_node()`` method so it throws an exception if node
+  location can't be inferred and location is not specified by the user (
+  either by passing ``datacenter`` constructor argument or by passing
+  ``location`` argument to the method).
+
+  Reported by Kevin K. - @kbknapp.
+  (GITHUB-1443)
+  [Tomaz Muraus]
+
+- [GCE] Update ``ex_get_disktype`` method so it works if ``zone`` argument is
+  not set.
+  [Tomaz Muraus]
+  (GITHUB-1443)
+
 Storage
 ~~~~~~~
 
