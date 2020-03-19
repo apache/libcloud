@@ -111,6 +111,7 @@ class Provider(Type):
     EXOSCALE = 'exoscale'
     GANDI = 'gandi'
     GCE = 'gce'
+    GIG_G8 = 'gig_g8'
     GOGRID = 'gogrid'
     GRIDSCALE = 'gridscale'
     GRIDSPOT = 'gridspot'
