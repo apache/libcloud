@@ -37,8 +37,12 @@ Compute
 
 - [GCE] Update ``ex_get_disktype`` method so it works if ``zone`` argument is
   not set.
-  [Tomaz Muraus]
   (GITHUB-1443)
+  [Tomaz Muraus]
+
+- [GiG G8] Add new driver for GiG G8 provider (https://gig.tech/).
+  (GITHUB-1437)
+  [Jo De Boeck - @grimpy]
 
 Storage
 ~~~~~~~
