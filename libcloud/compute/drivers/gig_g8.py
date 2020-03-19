@@ -230,7 +230,7 @@ class G8NodeDriver(NodeDriver):
         else:
             params["disksize"] = image.extra["min_disk_size"]
         if auth and isinstance(auth, NodeAuthSSHKey):
-            userdata = params.get("userdata", {})
+            userdata = params.setdefault("userdata", {})
             users = userdata.setdefault("users", [])
             root = None
             for user in users:
@@ -323,10 +323,10 @@ class G8NodeDriver(NodeDriver):
                                     {"cloudspaceId": networkid})
         return self._to_network(network)
 
-    def ex_destroy_network(self, ex_network):
+    def ex_destroy_network(self, network):
         # type (G8Network) -> bool
         self._api_request("/cloudspaces/delete",
-                          {"cloudspaceId": int(ex_network.id)})
+                          {"cloudspaceId": int(network.id)})
         return True
 
     def stop_node(self, node):
@@ -339,26 +339,26 @@ class G8NodeDriver(NodeDriver):
         node.state = NodeState.STOPPED
         return True
 
-    def ex_list_portforwards(self, ex_network):
+    def ex_list_portforwards(self, network):
         # type (G8Network) -> List[G8PortForward]
         data = self._api_request("/portforwarding/list",
-                                 {"cloudspaceId": int(ex_network.id)})
+                                 {"cloudspaceId": int(network.id)})
         forwards = []
         for forward in data:
-            forwards.append(self._to_port_forward(forward, ex_network))
+            forwards.append(self._to_port_forward(forward, network))
         return forwards
 
-    def ex_create_portforward(self, ex_network, node, publicport,
+    def ex_create_portforward(self, network, node, publicport,
                               privateport, protocol="tcp"):
         # type (G8Network, Node, int, int, str) -> G8PortForward
-        params = {"cloudspaceId": int(ex_network.id),
+        params = {"cloudspaceId": int(network.id),
                   "machineId": int(node.id),
                   "localPort": privateport,
                   "publicPort": publicport,
-                  "publicIp": ex_network.publicipaddress,
+                  "publicIp": network.publicipaddress,
                   "protocol": protocol}
         self._api_request("/portforwarding/create", params)
-        return self._to_port_forward(params, ex_network)
+        return self._to_port_forward(params, network)
 
     def ex_delete_portforward(self, portforward):
         # type (G8PortForward) -> bool
