@@ -288,13 +288,14 @@ class KamateraNodeDriver(NodeDriver):
                 self.ex_get_node(), server) for server in response.object]
         else:
             response = self.connection.request('/service/servers')
-            return [self.ex_get_node(
-                id=server['id'], name=server['name'],
-                state=(
-                    NodeState.RUNNING if server['power'] == 'on'
-                    else NodeState.STOPPED),
-                location=self.ex_get_location(server['datacenter']))
-                    for server in response.object]
+            return [
+                self.ex_get_node(
+                    id=server['id'], name=server['name'],
+                    state=(
+                        NodeState.RUNNING if server['power'] == 'on'
+                        else NodeState.STOPPED),
+                    location=self.ex_get_location(server['datacenter'])
+                ) for server in response.object]
 
     def reboot_node(self, node, ex_wait=True):
         """
@@ -500,9 +501,10 @@ class KamateraNodeDriver(NodeDriver):
             max_time = start_time + datetime.timedelta(
                 seconds=timeout_seconds)
             if max_time < datetime.datetime.now():
-                raise TimeoutError('Timeout waiting for command '
-                                   '(timeout_seconds=%s, command_id=%s)' % (
-                    str(timeout_seconds), str(command_id)))
+                raise TimeoutError(
+                    'Timeout waiting for command '
+                    '(timeout_seconds=%s, command_id=%s)' % (
+                        str(timeout_seconds), str(command_id)))
             time.sleep(poll_interval_seconds)
             command = self.ex_get_command_status(command_id)
             status = command.get('status')
