@@ -18,13 +18,15 @@ print(node)
 nodes = driver.list_nodes(ex_name_regex='test_libcloud.*')
 print(nodes[0])
 
-# <Node: uuid=9566552b254b42063e87ba644a982d330602b06c, name=test_libcloud_server, state=RUNNING,
-#        public_ips=['138.128.241.118'], private_ips=[], provider=Kamatera ...>
+# <Node: uuid=9566552b254b42063e87ba644a982d330602b06c,
+#        name=test_libcloud_server, state=RUNNING,
+#        public_ips=['138.128.241.118'], private_ips=[], provider=Kamatera
 
 print(nodes[0].extra)
 
-# {'billingcycle': 'monthly', 'priceOn': '25', 'priceOff': '25', 'location': <NodeLocation: id=US-NY2>,
-#  'dailybackup': False, 'managed': False}
+# {'billingcycle': 'monthly', 'priceOn': '25', 'priceOff': '25',
+#  'location': <NodeLocation: id=US-NY2>, 'dailybackup': False,
+#  'managed': False}
 
 # list all nodes with full details (slower operation)
 

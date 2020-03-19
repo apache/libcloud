@@ -15,14 +15,12 @@
 
 from __future__ import with_statement
 import sys
-import re
 import json
-import base64
 
-from libcloud.utils.py3 import httplib, ensure_string
-from libcloud.compute.drivers.kamatera import KamateraNodeDriver, KamateraResponse
+from libcloud.utils.py3 import httplib
+from libcloud.compute.drivers.kamatera import KamateraNodeDriver
 from libcloud.compute.types import NodeState, Provider
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, NodeAuthSSHKey, Node
+from libcloud.compute.base import NodeImage, NodeLocation, NodeAuthSSHKey
 from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute import providers
 from libcloud.test import LibcloudTestCase, unittest, MockHttp
@@ -65,13 +63,14 @@ class KamateraNodeDriverTests(LibcloudTestCase):
                    'code': '8.0 64bit_minimal',
                    'osDiskSizeGB': 5,
                    "ramMBMin": {"A": 256, "B": 256, "T": 256, "D": 256}})
-        self.small_node_size = self.driver.ex_get_size(ramMB=4096,
-                                                       diskSizeGB=30,
-                                                       cpuType='B',
-                                                       cpuCores=2,
-                                                       monthlyTrafficPackage='t5000',
-                                                       id='small',
-                                                       name='small')
+        self.small_node_size = self.driver.ex_get_size(
+            ramMB=4096,
+            diskSizeGB=30,
+            cpuType='B',
+            cpuCores=2,
+            monthlyTrafficPackage='t5000',
+            id='small',
+            name='small')
 
     def test_creating_driver(self):
         cls = providers.get_driver(Provider.KAMATERA)
@@ -100,15 +99,18 @@ class KamateraNodeDriverTests(LibcloudTestCase):
 
     def test_ex_list_capabilities(self):
         capabilities = self.driver.ex_list_capabilities(self.eu_node_location)
-        self.assertEqual(set(['cpuTypes', 'defaultMonthlyTrafficPackage', 'diskSizeGB',
-                             'monthlyTrafficPackage']), set(capabilities.keys()))
+        self.assertEqual(
+            set(['cpuTypes', 'defaultMonthlyTrafficPackage', 'diskSizeGB',
+                 'monthlyTrafficPackage']), set(capabilities.keys()))
         self.assertTrue(len(capabilities['cpuTypes']), 4)
-        self.assertEqual(set(['id', 'description', 'name', 'ramMB', 'cpuCores']),
-                         set(capabilities['cpuTypes'][0]))
+        self.assertEqual(
+            set(['id', 'description', 'name', 'ramMB', 'cpuCores']),
+            set(capabilities['cpuTypes'][0]))
 
     def test_create_node(self):
-        node = self.driver.create_node(name='test_server', size=self.small_node_size,
-                                       image=self.centos_8_EU_node_image, location=self.eu_node_location)
+        node = self.driver.create_node(
+            name='test_server', size=self.small_node_size,
+            image=self.centos_8_EU_node_image, location=self.eu_node_location)
 
         self.assertTrue(len(node.id) > 8)
         self.assertEqual(node.name, 'my-server')
@@ -119,9 +121,10 @@ class KamateraNodeDriverTests(LibcloudTestCase):
         self.assertTrue(len(node.extra['generated_password']) > 0)
 
     def test_create_node_with_ssh_keys(self):
-        node = self.driver.create_node(name='test_server_pubkey', size=self.small_node_size,
-                                       image=self.centos_8_EU_node_image, location=self.eu_node_location,
-                                       auth=NodeAuthSSHKey('publickey'))
+        node = self.driver.create_node(
+            name='test_server_pubkey', size=self.small_node_size,
+            image=self.centos_8_EU_node_image, location=self.eu_node_location,
+            auth=NodeAuthSSHKey('publickey'))
 
         self.assertTrue(len(node.id) > 8)
         self.assertEqual(node.name, 'my-server')
@@ -155,8 +158,11 @@ class KamateraNodeDriverTests(LibcloudTestCase):
         self.assertTrue(success)
 
     def assert_object(self, expected_object, objects):
-        same_data = any([self.objects_equals(expected_object, obj) for obj in objects])
-        self.assertTrue(same_data, "Objects does not match (%s, %s)" % (expected_object, objects[:2]))
+        same_data = any([self.objects_equals(
+            expected_object, obj) for obj in objects])
+        self.assertTrue(
+            same_data, "Objects does not match (%s, %s)" % (
+                expected_object, objects[:2]))
 
     def objects_equals(self, expected_obj, obj):
         for name in vars(expected_obj):
@@ -191,6 +197,7 @@ class KamateraTestDriver(KamateraNodeDriver):
         kwargs['poll_interval_seconds'] = 0
         return KamateraNodeDriver.ex_wait_command(self, *args, **kwargs)
 
+
 class KamateraMockHttp(MockHttp):
 
     fixtures = ComputeFileFixtures('kamatera')
@@ -206,9 +213,12 @@ class KamateraMockHttp(MockHttp):
             else:
                 body = self.fixtures.load({
                     '/service/server?datacenter=1': 'datacenters.json',
-                    '/service/server?sizes=1&datacenter=EU': 'sizes_datacenter_EU.json',
-                    '/service/server?images=1&datacenter=EU': 'images_datacenter_EU.json',
-                    '/service/server?capabilities=1&datacenter=EU': 'capabilities_datacenter_EU.json',
+                    '/service/server?sizes=1&datacenter=EU':
+                        'sizes_datacenter_EU.json',
+                    '/service/server?images=1&datacenter=EU':
+                        'images_datacenter_EU.json',
+                    '/service/server?capabilities=1&datacenter=EU':
+                        'capabilities_datacenter_EU.json',
                     '/service/server': 'create_server.json'
                 }[url])
             status = httplib.OK
@@ -219,7 +229,8 @@ class KamateraMockHttp(MockHttp):
             self._service_queue_call_count = 0
         self._service_queue_call_count += 1
         body = self.fixtures.load({
-            '/service/queue?id=12345': 'queue_12345-%s.json' % self._service_queue_call_count
+            '/service/queue?id=12345':
+                'queue_12345-%s.json' % self._service_queue_call_count
         }[url])
         status = httplib.OK
         return status, body, {}, httplib.responses[status]
