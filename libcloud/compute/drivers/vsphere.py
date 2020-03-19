@@ -852,7 +852,7 @@ class VSphereNodeDriver(NodeDriver):
         image = kwargs['image']
         size = kwargs['size']
         network = kwargs.get('ex_network')
-        if not isinstance(network, str):
+        if network and not isinstance(network, str):
             network = network.name
 
         template = self._find_template_by_uuid(image.id)
@@ -1208,7 +1208,8 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         network has more, do use the provided filters and call it multiple
         times.
         """
-        loop = asyncio.get_event_loop()
+        if async_:
+            loop = asyncio.get_event_loop()
         req = "/rest/vcenter/vm"
         kwargs = {'filter.power_states': ex_filter_power_states,
                   'filter.folders': ex_filter_folders,
@@ -1222,9 +1223,9 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         for param, value in kwargs.items():
             if value:
                 params[param] = value
-        if params:
+        if params or not async_:
             result = self._request(req, params=params).object['value']
-            vm_ids = [item['vm'] for item in result]
+            vm_ids = [[item['vm']] for item in result]
         else:
             # Initially I checked before going the long way but
             # I decided to do so just so we can add host to vm
@@ -1234,7 +1235,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         interfaces = self._list_interfaces()
         if async_ is False:
             for vm_id in vm_ids:
-                vms.append(self._to_node([vm_id], interfaces))
+                vms.append(self._to_node(vm_id, interfaces))
             return vms
         else:
             return loop.run_until_complete(self._list_nodes_async(vm_ids,
