@@ -297,7 +297,7 @@ class G8NodeDriver(NodeDriver):
         return sshport
 
     def ex_create_network(self, name, private_network="192.168.103.0/24",
-                          type="vgw"):
+                          network_type="vgw"):
         # type (str, str, str) -> G8Network
         """
         Create network also known as cloudspace
@@ -317,7 +317,7 @@ class G8NodeDriver(NodeDriver):
                   "access": userinfo["name"],
                   "name": name,
                   "location": self._location["locationCode"],
-                  "type": type}
+                  "type": network_type}
         networkid = self._api_request("/cloudspaces/create", params)
         network = self._api_request("/cloudspaces/get",
                                     {"cloudspaceId": networkid})
