@@ -31,7 +31,8 @@ def get_azure_prices():
         prices = {}
         if not value['prices'].get('perhour'):
             continue
-        for region, price in value['prices']['perhour'].items():
+        for reg, price in value['prices']['perhour'].items():
+            region = "".join(reg.lower().split("-"))
             prices[region] = price['value']
         result[size_raw[0]][size] = prices
 
