@@ -294,6 +294,7 @@ class G8NodeDriver(NodeDriver):
                 if e.code == 409:
                     # port already used maybe raise let's try next
                     usedports.append(sshport)
+                raise
         return sshport
 
     def ex_create_network(self, name, private_network="192.168.103.0/24",
