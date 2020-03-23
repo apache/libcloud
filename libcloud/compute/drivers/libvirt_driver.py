@@ -27,6 +27,7 @@ import atexit
 import logging
 import netaddr
 import random
+import hashlib
 
 from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
@@ -224,6 +225,13 @@ class LibvirtNodeDriver(NodeDriver):
         state, max_mem, memory, vcpu_count, used_cpu_time = domain.info()
         state = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)
 
+        size_extra = {'cpus': vcpu_count}
+        id_to_hash = str(memory) + str(vcpu_count)
+        size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
+        size_name = domain.name() + "-size"
+        size = NodeSize(id=size_id, name=size_name, ram=memory, disk=0,
+                        bandwidth=0, price=0, driver=self, extra=size_extra)
+
         public_ips, private_ips = [], []
 
         ip_addresses = self._get_ip_addresses_for_domain(domain)
@@ -257,7 +265,7 @@ class LibvirtNodeDriver(NodeDriver):
                  'memory': '%s MB' % str(memory / 1024), 'processors': vcpu_count,
                  'used_cpu_time': used_cpu_time, 'xml_description': xml_description}
         node = Node(id=domain.UUIDString(), name=domain.name(), state=state,
-                    public_ips=public_ips, private_ips=private_ips,
+                    public_ips=public_ips, private_ips=private_ips, size=size,
                     driver=self, extra=extra)
         node._uuid = domain.UUIDString()  # we want to use a custom UUID
         return node
