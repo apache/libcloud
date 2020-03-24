@@ -15,6 +15,8 @@
 
 import json
 import re
+import hashlib
+import json
 
 from libcloud.compute.base import Node, NodeDriver, NodeLocation
 from libcloud.compute.base import NodeSize, NodeImage
@@ -25,10 +27,6 @@ from libcloud.compute.types import Provider, NodeState
 from  libcloud.common.exceptions import BaseHTTPError
 
 from libcloud.utils.py3 import httplib
-
-
-import json
-
 
 __all__ = [
     "MaxihostNodeDriver"
@@ -162,11 +160,13 @@ class MaxihostNodeDriver(NodeDriver):
         for key in data:
             extra[key] = data[key]
 
-        node = Node(id=data['service_id'], name=data['description'], state=state,
+        name = data['description']
+        _id = data['service_id'] or hashlib.sha1(name.encode()).hexdigest()
+        node = Node(id=_id, name=name, state=state,
                     private_ips=private_ips, public_ips=public_ips,
                     driver=self, extra=extra)
         return node
-        
+
     def list_locations(self, available=True):
         """
         List locations

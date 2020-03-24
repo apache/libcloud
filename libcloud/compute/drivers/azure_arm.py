@@ -41,32 +41,6 @@ from libcloud.utils.py3 import basestring
 from libcloud.utils import iso8601
 from libcloud.pricing import get_size_price
 
-locations_mapping = {
-    "eastus": "us-east",
-    "eastus2": "us-east2",
-    "ukwest": "united-kingdom-west",
-    "uksouth": "united-kingdom-south",
-    "westcentralus": "us-west-central",
-    "westus2": "us-west-2",
-    "westus": "us-west",
-    "canadaeast": "canada-east",
-    "canadacenstral": "canada-central",
-    "brazilsouth": "brazil-south",
-    "australiasoutheast": "australia-southeast",
-    "australiaeast": "australia-east",
-    "japanwest": "japan-west",
-    "japaneast": "japan-east",
-    "southeastasia": "asia-pacific-southeast",
-    "eastasia": "asia-pacific-east",
-    "westeurope": "europe-west",
-    "northeurope": "europe-north",
-    "southcentralus": "us-south-central",
-    "northcentralus": "us-north-central",
-    "centralus": "us-central",
-}
-
-
-
 RESOURCE_API_VERSION = '2016-04-30-preview'
 
 
@@ -2485,12 +2459,12 @@ class AzureNodeDriver(NodeDriver):
 
         extra['id'] = data["id"]
         os_type = extra['os_type']
+        price_size = "".join(extra['size'].lower().split("_"))
         price = get_size_price(driver_type='compute', driver_name='azure_%s' % os_type,
-                               size_id=extra['size'])
+                               size_id=price_size)
         cost_per_hour = None
         if price:
             location = extra.get('location', 'eastus')
-            location = locations_mapping.get(location, 'eastus')
             cost_per_hour = price.get(location)
         extra['cost_per_hour'] = cost_per_hour
         node = Node(data['properties']['vmId'],
