@@ -1,0 +1,83 @@
+{
+    "metadata": {
+      "creationTimestamp": "2019-12-23T13:33:14Z",
+      "namespace": "default",
+      "resourceVersion": "911058",
+      "generation": 1,
+      "name": "libcloud-created",
+      "labels": {
+        "kubevirt.io/vm": "libcloud-created"
+      },
+      "uid": "e553010d-e904-436f-a92a-396be0f8bd4c",
+      "selfLink": "/apis/kubevirt.io/v1alpha3/namespaces/default/virtualmachines/libcloud-created"
+    },
+    "spec": {
+      "running": false,
+      "template": {
+        "metadata": {
+          "labels": {
+            "kubevirt.io/vm": "libcloud-created"
+          }
+        },
+        "spec": {
+          "volumes": [
+            {
+              "persistentVolumeClaim": {
+                "claimName": "mypvc2"
+              },
+              "name": "anpvc"
+            },
+            {
+              "name": "boot-disk",
+              "containerDisk": {
+                "image": "kubevirt/cirros-registry-disk-demo"
+              }
+            }
+          ],
+          "networks": [
+            {
+              "name": "netw1",
+              "pod": {}
+            }
+          ],
+          "terminationGracePeriodSeconds": 0,
+          "domain": {
+            "resources": {
+              "requests": {
+                "memory": "128M"
+              }
+            },
+            "cpu": {},
+            "devices": {
+              "interfaces": [
+                {
+                  "name": "netw1",
+                  "masquerade": {}
+                }
+              ],
+              "disks": [
+                {
+                  "name": "anpvc",
+                  "disk": {
+                    "bus": "virtio"
+                  }
+                },
+                {
+                  "name": "boot-disk",
+                  "disk": {
+                    "bus": "virtio"
+                  }
+                }
+              ],
+              "networkInterfaceMultiqueue": false
+            },
+            "machine": {
+              "type": ""
+            }
+          }
+        }
+      }
+    },
+    "kind": "VirtualMachine",
+    "apiVersion": "kubevirt.io/v1alpha3"
+  }
