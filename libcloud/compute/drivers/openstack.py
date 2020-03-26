@@ -321,6 +321,8 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
     def attach_volume(self, node, volume, device="auto"):
         # when "auto" or None is provided for device, openstack will let
         # the guest OS pick the next available device (fi. /dev/vdb)
+        if device == "auto":
+            device = None
         return self.connection.request(
             '/servers/%s/os-volume_attachments' % node.id,
             method='POST',
