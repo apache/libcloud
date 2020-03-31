@@ -281,7 +281,9 @@ class ParamikoSSHClient(BaseSSHClient):
             conninfo['key_filename'] = self.key_files
 
         if self.key_material:
-            conninfo['pkey'] = self._get_pkey_object(key=self.key_material)
+            conninfo['pkey'] = self._get_pkey_object(
+                key=self.key_material,
+                passpharse=self.key_password)
 
         if not self.password and not (self.key_files or self.key_material):
             conninfo['allow_agent'] = True
@@ -300,7 +302,10 @@ class ParamikoSSHClient(BaseSSHClient):
                 key_material = fp.read()
 
             try:
-                pkey = self._get_pkey_object(key=key_material)
+                pkey = self._get_pkey_object(key=key_material,
+                                             passpharse=self.key_password)
+            except paramiko.ssh_exception.PasswordRequiredException as e:
+                raise e
             except Exception:
                 pass
             else:
