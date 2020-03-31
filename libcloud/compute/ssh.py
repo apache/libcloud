@@ -237,7 +237,6 @@ class ParamikoSSHClient(BaseSSHClient):
                  key=None,  # type: Optional[str]
                  key_files=None,  # type: Optional[Union[str, List[str]]]
                  key_material=None,  # type: Optional[str]
-                 key_password=None,  # type: Optional[str]
                  timeout=None  # type: Optional[float]
                  ):
         """
@@ -263,7 +262,6 @@ class ParamikoSSHClient(BaseSSHClient):
                                                 timeout=timeout)
 
         self.key_material = key_material
-        self.key_password = key_password
 
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -285,7 +283,7 @@ class ParamikoSSHClient(BaseSSHClient):
         if self.key_material:
             conninfo['pkey'] = self._get_pkey_object(
                 key=self.key_material,
-                passpharse=self.key_password)
+                passpharse=self.password)
 
         if not self.password and not (self.key_files or self.key_material):
             conninfo['allow_agent'] = True
@@ -305,7 +303,7 @@ class ParamikoSSHClient(BaseSSHClient):
 
             try:
                 pkey = self._get_pkey_object(key=key_material,
-                                             passpharse=self.key_password)
+                                             passpharse=self.password)
             except paramiko.ssh_exception.PasswordRequiredException as e:
                 raise e
             except Exception:

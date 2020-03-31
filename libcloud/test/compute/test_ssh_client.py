@@ -210,7 +210,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         conn_params = {'hostname': 'dummy.host.org',
                        'username': 'ubuntu',
                        'key_material': private_key,
-                       'key_password': 'foobar'}
+                       'password': 'foobar'}
 
         mock = ParamikoSSHClient(**conn_params)
         self.assertTrue(mock.connect())
@@ -218,7 +218,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         conn_params = {'hostname': 'dummy.host.org',
                        'username': 'ubuntu',
                        'key_files': path,
-                       'key_password': 'foobar'}
+                       'password': 'foobar'}
 
         mock = ParamikoSSHClient(**conn_params)
         self.assertTrue(mock.connect())
