@@ -183,6 +183,59 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         assertRaisesRegex(self, paramiko.ssh_exception.PasswordRequiredException,
                           expected_msg, mock.connect)
 
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_files': path}
+
+        mock = ParamikoSSHClient(**conn_params)
+
+        expected_msg = 'private key file is encrypted'
+        assertRaisesRegex(self, paramiko.ssh_exception.PasswordRequiredException,
+                          expected_msg, mock.connect)
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_password_protected_key_valid_password_provided(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa_2048b_pass_foobar.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key,
+                       'key_password': 'foobar'}
+
+        mock = ParamikoSSHClient(**conn_params)
+        self.assertTrue(mock.connect())
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_files': path,
+                       'key_password': 'foobar'}
+
+        mock = ParamikoSSHClient(**conn_params)
+        self.assertTrue(mock.connect())
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_ed25519_key_type(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_ed25519.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key}
+
+        mock = ParamikoSSHClient(**conn_params)
+        self.assertTrue(mock.connect())
+
     def test_key_material_valid_pem_keys_invalid_header_auto_conversion(self):
         # Test a scenario where valid PEM keys with invalid headers which is
         # not recognized by paramiko are automatically converted in a format
