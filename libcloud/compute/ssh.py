@@ -555,7 +555,13 @@ class ParamikoSSHClient(BaseSSHClient):
                 key = cls.from_private_key(StringIO(key_value), passpharse)
             except paramiko.ssh_exception.PasswordRequiredException as e:
                 raise e
-            except (paramiko.ssh_exception.SSHException, AssertionError):
+            except (paramiko.ssh_exception.SSHException, AssertionError) as e:
+                if 'private key file checkints do not match' in str(e).lower():
+                    msg = ('Invalid passpharse provided for encrypted key. '
+                           'Original error: %s' % (str(e)))
+                    # Indicates invalid password for password protected keys
+                    raise paramiko.ssh_exception.SSHException(msg)
+
                 # Invalid key, try other key type
                 pass
             else:

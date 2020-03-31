@@ -1739,7 +1739,8 @@ class NodeDriver(BaseDriver):
                     'not a valid ',
                     'invalid or unsupported key type',
                     'private file is encrypted',
-                    'private key file is encrypted'
+                    'private key file is encrypted',
+                    'private key file checkints do not match'
                 ]
 
                 # Propagate (key) file doesn't exist errors

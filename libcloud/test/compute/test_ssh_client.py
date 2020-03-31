@@ -198,6 +198,27 @@ class ParamikoSSHClientTests(LibcloudTestCase):
                           expected_msg, mock.connect)
 
     @patch('paramiko.SSHClient', Mock)
+    def test_password_protected_key_no_password_provided(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa_2048b_pass_foobar.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key,
+                       'password': 'invalid'}
+
+        mock = ParamikoSSHClient(**conn_params)
+
+        expected_msg = 'OpenSSH private key file checkints do not match'
+        assertRaisesRegex(self, paramiko.ssh_exception.SSHException,
+                          expected_msg, mock.connect)
+
+    @patch('paramiko.SSHClient', Mock)
     def test_password_protected_key_valid_password_provided(self):
         path = os.path.join(os.path.dirname(__file__),
                             'fixtures', 'misc',

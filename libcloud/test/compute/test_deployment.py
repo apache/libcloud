@@ -377,7 +377,8 @@ class DeploymentTests(unittest.TestCase):
 
         mock_exceptions = [
             SSHException('Invalid or unsupported key type'),
-            PasswordRequiredException('private key file is encrypted')
+            PasswordRequiredException('private key file is encrypted'),
+            SSHException('OpenSSH private key file checkints do not match')
         ]
 
         for mock_exception in mock_exceptions:
