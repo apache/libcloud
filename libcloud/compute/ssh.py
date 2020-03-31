@@ -538,6 +538,8 @@ class ParamikoSSHClient(BaseSSHClient):
 
             try:
                 key = cls.from_private_key(StringIO(key_value), passpharse)
+            except paramiko.ssh_exception.PasswordRequiredException as e:
+                raise e
             except (paramiko.ssh_exception.SSHException, AssertionError):
                 # Invalid key, try other key type
                 pass
