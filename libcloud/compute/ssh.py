@@ -522,10 +522,20 @@ class ParamikoSSHClient(BaseSSHClient):
 
         # NOTE: Paramiko only supports key in PKCS#1 PEM format.
         """
+        key_types = [
+            (paramiko.RSAKey, 'RSA'),
+            (paramiko.DSSKey, 'DSA'),
+            (paramiko.ECDSAKey, 'EC')
+        ]
 
-        for cls, key_type in [(paramiko.RSAKey, 'RSA'),
-                              (paramiko.DSSKey, 'DSA'),
-                              (paramiko.ECDSAKey, 'EC')]:
+        paramiko_version = getattr(paramiko, '__version__', '0.0.0')
+        paramiko_version = tuple([int(c) for c in paramiko_version.split('.')])
+
+        if paramiko_version >= (2, 2, 0):
+            # Ed25519 is only supported in paramiko >= 2.2.0
+            key_types.append((paramiko.ed25519key.Ed25519Key, 'Ed25519'))
+
+        for cls, key_type in key_types:
             # Work around for paramiko not recognizing keys which start with
             # "----BEGIN PRIVATE KEY-----"
             # Since key is already in PEM format, we just try changing the
@@ -551,7 +561,8 @@ class ParamikoSSHClient(BaseSSHClient):
             else:
                 return key
 
-        msg = ('Invalid or unsupported key type (only RSA, DSS and ECDSA keys'
+        msg = ('Invalid or unsupported key type (only RSA, DSS, ECDSA and'
+               ' Ed25519 keys'
                ' in PEM format are supported). For more information on '
                ' supported key file types, see %s' % (SUPPORTED_KEY_TYPES_URL))
         raise paramiko.ssh_exception.SSHException(msg)
