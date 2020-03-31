@@ -1726,13 +1726,14 @@ class NodeDriver(BaseDriver):
                 ssh_client.connect()
             except SSH_TIMEOUT_EXCEPTION_CLASSES as e:
                 # Errors which represent fatal invalid key files which should
-                # be propagated to the user
+                # be propagated to the user without us retrying
                 message = str(e).lower()
                 invalid_key_msgs = [
                     'no such file or directory',
                     'invalid key',
                     'not a valid ',
                     'invalid or unsupported key type',
+                    'private file is encrypted',
                     'private key file is encrypted'
                 ]
 

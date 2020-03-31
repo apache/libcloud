@@ -24,6 +24,7 @@ import unittest
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
@@ -32,6 +33,7 @@ from libcloud.compute.base import Node
 from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
+from libcloud.compute.ssh import have_paramiko
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
 
 from libcloud.test import MockHttp, XML_HEADERS
@@ -361,6 +363,30 @@ class DeploymentTests(unittest.TestCase):
             self.assertTrue(e.value.find('Giving up') != -1)
         else:
             self.fail('Exception was not thrown')
+
+    @unittest.skipIf(not have_paramiko, 'Skipping because paramiko is not available')
+    def test_ssh_client_connect_immediately_throws_on_fatal_execption(self):
+        # Verify that fatal exceptions are immediately propagated and ensure
+        # we don't try to retry on them
+        from paramiko.ssh_exception import SSHException
+        from paramiko.ssh_exception import PasswordRequiredException
+
+        mock_ssh_client = Mock()
+        mock_ssh_client.connect = Mock()
+        mock_ssh_client.connect.side_effect = IOError('bam')
+
+        mock_exceptions = [
+            SSHException('Invalid or unsupported key type'),
+            PasswordRequiredException('private key file is encrypted')
+        ]
+
+        for mock_exception in mock_exceptions:
+            mock_ssh_client.connect = Mock(side_effect=mock_exception)
+            assertRaisesRegex(self, mock_exception.__class__, str(mock_exception),
+                              self.driver._ssh_client_connect,
+                              ssh_client=mock_ssh_client,
+                              wait_period=0.1,
+                              timeout=0.2)
 
     def test_run_deployment_script_success(self):
         task = Mock()
