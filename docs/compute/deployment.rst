@@ -32,6 +32,9 @@ Supported private SSH key types
 `paramiko`_ Python library we use for deployment only supports RSA, DSS and
 ECDSA private keys in PEM format.
 
+Since Libcloud v3.0.0, ``Ed25519`` private keys are also supported when using
+paramiko 2.2.0 or higher
+
 If you try to use key in an other format such as newer OpenSSH and PKCS#8
 format an exception will be thrown and deployment will fail.
 
