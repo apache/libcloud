@@ -44,20 +44,34 @@ Compute
   (GITHUB-1437)
   [Jo De Boeck - @grimpy]
 
-- Add support for Ed25519 private key types for ``deploy_node()`` functionality
+- Add support for Ed25519 private keys for ``deploy_node()`` functionality
   when using paramiko >= 2.2.0.
+  (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
 - Fix ``deploy_node()`` so it correctly propagates an exception is a private key
   which is used is password protected, but no password is specified.
 
-  Previously it incorrectly tried to retry on such exception.
+  Previously it incorrectly tried to retry on such exception. This means the
+  exception would only bubble up after all the retry attempts have been
+  exhausted.
+  (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
 - Allow user to specify password for encrypted keys by passing
   ``ssh_key_password`` argument to the ``deploy_node()`` method.
 
   Previously they
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Fix ``deploy_node()`` so it correctly propagates an exception if invalid
+  or unsupported private key is used.
+
+  Previously it incorrectly tried to retry on such exception. This means the
+  exception would only bubble up after all the retry attempts have been
+  exhausted.
+  (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
 Storage
