@@ -991,6 +991,7 @@ class NodeDriver(BaseDriver):
                     ssh_port=22,  # type: int
                     ssh_timeout=10,  # type: int
                     ssh_key=None,  # type: Optional[T_Ssh_key]
+                    ssh_key_password=None,  # type: Optional[str]
                     auth=None,  # type: T_Auth
                     timeout=SSH_CONNECT_TIMEOUT,  # type: int
                     max_tries=3,  # type: int
@@ -1069,6 +1070,9 @@ class NodeDriver(BaseDriver):
         :param ssh_key: A path (or paths) to an SSH private key with which
                              to attempt to authenticate. (optional)
         :type ssh_key: ``str`` or ``list`` of ``str``
+
+        :param ssh_key_password: Optional password used for encrypted keys.
+        :type ssh_key_password: ``str``
 
         :param timeout: How many seconds to wait before timing out.
                              (default is 600)
@@ -1172,7 +1176,8 @@ class NodeDriver(BaseDriver):
                     task=deploy, node=node,
                     ssh_hostname=ip_addresses[0], ssh_port=ssh_port,
                     ssh_username=username, ssh_password=password,
-                    ssh_key_file=ssh_key, ssh_timeout=ssh_timeout,
+                    ssh_key_file=ssh_key, ssh_key_password=ssh_key_password,
+                    ssh_timeout=ssh_timeout,
                     timeout=deploy_timeout, max_tries=max_tries)
             except Exception as e:
                 # Try alternate username
@@ -1770,7 +1775,8 @@ class NodeDriver(BaseDriver):
         ssh_port,  # type: int
         ssh_username,  # type: str
         ssh_password,  # type: Optional[str]
-        ssh_key_file,  # type:Optional[T_Ssh_key]
+        ssh_key_file,  # type: Optional[T_Ssh_key]
+        ssh_key_password,  # type: Optional[str]
         ssh_timeout,  # type: int
         timeout,  # type: int
         max_tries  # type: int
@@ -1784,7 +1790,7 @@ class NodeDriver(BaseDriver):
         """
         ssh_client = SSHClient(hostname=ssh_hostname,
                                port=ssh_port, username=ssh_username,
-                               password=ssh_password,
+                               password=ssh_key_password or ssh_password,
                                key_files=ssh_key_file,
                                timeout=ssh_timeout)
 
