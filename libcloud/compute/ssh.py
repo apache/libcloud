@@ -283,7 +283,7 @@ class ParamikoSSHClient(BaseSSHClient):
         if self.key_material:
             conninfo['pkey'] = self._get_pkey_object(
                 key=self.key_material,
-                passpharse=self.key_password)
+                password=self.password)
 
         if not self.password and not (self.key_files or self.key_material):
             conninfo['allow_agent'] = True
@@ -303,7 +303,7 @@ class ParamikoSSHClient(BaseSSHClient):
 
             try:
                 pkey = self._get_pkey_object(key=key_material,
-                                             passpharse=self.key_password)
+                                             password=self.password)
             except paramiko.ssh_exception.PasswordRequiredException as e:
                 raise e
             except Exception:
@@ -516,7 +516,7 @@ class ParamikoSSHClient(BaseSSHClient):
         result.write(result_bytes.decode('utf-8'))
         return result
 
-    def _get_pkey_object(self, key, passpharse=None):
+    def _get_pkey_object(self, key, password=None):
         """
         Try to detect private key type and return paramiko.PKey object.
 
@@ -552,12 +552,12 @@ class ParamikoSSHClient(BaseSSHClient):
                 key_value = key
 
             try:
-                key = cls.from_private_key(StringIO(key_value), passpharse)
+                key = cls.from_private_key(StringIO(key_value), password)
             except paramiko.ssh_exception.PasswordRequiredException as e:
                 raise e
             except (paramiko.ssh_exception.SSHException, AssertionError) as e:
                 if 'private key file checkints do not match' in str(e).lower():
-                    msg = ('Invalid passpharse provided for encrypted key. '
+                    msg = ('Invalid password provided for encrypted key. '
                            'Original error: %s' % (str(e)))
                     # Indicates invalid password for password protected keys
                     raise paramiko.ssh_exception.SSHException(msg)
