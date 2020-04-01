@@ -80,6 +80,23 @@ NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
 # script.
 SSH_CONNECT_TIMEOUT = 5 * 60
 
+# Error message which should be considered fatal for deploy_node() method and
+# on which we should abort retrying and immediately propagate the error
+SSH_FATAL_ERROR_MSGS = [
+    # Propagate (key) file doesn't exist errors
+    # NOTE: Paramiko only supports PEM private key format
+    # See https://github.com/paramiko/paramiko/issues/1313
+    # for details
+    'no such file or directory',
+    'invalid key',
+    'not a valid ',
+    'invalid or unsupported key type',
+    'private file is encrypted',
+    'private key file is encrypted',
+    'private key file checkints do not match',
+    'invalid password provided'
+]
+
 __all__ = [
     'Node',
     'NodeState',
@@ -1729,22 +1746,9 @@ class NodeDriver(BaseDriver):
                 # Errors which represent fatal invalid key files which should
                 # be propagated to the user without us retrying
                 message = str(e).lower()
-                invalid_key_msgs = [
-                    'no such file or directory',
-                    'invalid key',
-                    'not a valid ',
-                    'invalid or unsupported key type',
-                    'private file is encrypted',
-                    'private key file is encrypted',
-                    'private key file checkints do not match'
-                ]
 
-                # Propagate (key) file doesn't exist errors
-                # NOTE: Paramiko only supports PEM private key format
-                # See https://github.com/paramiko/paramiko/issues/1313
-                # for details
-                for invalid_key_msg in invalid_key_msgs:
-                    if invalid_key_msg in message:
+                for fatal_msg in SSH_FATAL_ERROR_MSGS:
+                    if fatal_msg in message:
                         raise e
 
                 # Retry if a connection is refused, timeout occurred,
