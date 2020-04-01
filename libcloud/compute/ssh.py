@@ -178,8 +178,8 @@ class BaseSSHClient(object):
         raise NotImplementedError(
             'delete not implemented for this ssh client')
 
-    def run(self, cmd):
-        # type: (str) -> Tuple[str, str, int]
+    def run(self, cmd, timeout=None):
+        # type: (str, Optional[float]) -> Tuple[str, str, int]
         """
         Run a command on a remote node.
 
@@ -616,7 +616,7 @@ class ShellOutSSHClient(BaseSSHClient):
         """
         return True
 
-    def run(self, cmd):
+    def run(self, cmd, timeout=None):
         return self._run_remote_shell_command([cmd])
 
     def put(self, path, contents=None, chmod=None, mode='w'):
