@@ -83,6 +83,12 @@ Compute
   (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
+- Fix ``deploy_node()`` method so we don't retry on fatal
+  ``SSHCommandTimeoutError`` exception (exception which is thrown when a
+  command which is running on remote host times out).
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 
