@@ -464,6 +464,64 @@ class DeploymentTests(unittest.TestCase):
         node = self.driver.deploy_node(deploy=deploy)
         self.assertEqual(self.node.id, node.id)
 
+    @patch('libcloud.compute.base.atexit')
+    @patch('libcloud.compute.base.SSHClient')
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_at_exit_func_functionality(self, mock_ssh_module, _, mock_at_exit):
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+        mock_ssh_module.have_paramiko = True
+
+        deploy = Mock()
+
+        def mock_at_exit_func(driver, node):
+            pass
+
+        # On success, at exit handler should be unregistered
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
+        node = self.driver.deploy_node(deploy=deploy, at_exit_func=mock_at_exit_func)
+        self.assertEqual(mock_at_exit.register.call_count, 1)
+        self.assertEqual(mock_at_exit.unregister.call_count, 1)
+        self.assertEqual(self.node.id, node.id)
+
+        # On deploy failure, at exit handler should also be unregistered
+        mock_at_exit.reset_mock()
+
+        deploy.run.side_effect = Exception('foo')
+
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
+        try:
+            self.driver.deploy_node(deploy=deploy, at_exit_func=mock_at_exit_func)
+        except DeploymentError as e:
+            self.assertTrue(e.node.id, self.node.id)
+        else:
+            self.fail('Exception was not thrown')
+
+        self.assertEqual(mock_at_exit.register.call_count, 1)
+        self.assertEqual(mock_at_exit.unregister.call_count, 1)
+
+        # But it should not be registered on create_node exception
+        mock_at_exit.reset_mock()
+
+        self.driver.create_node = Mock(side_effect=Exception('Failure'))
+
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
+        try:
+            self.driver.deploy_node(deploy=deploy, at_exit_func=mock_at_exit_func)
+        except Exception as e:
+            self.assertTrue('Failure' in str(e))
+        else:
+            self.fail('Exception was not thrown')
+
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
     @patch('libcloud.compute.base.SSHClient')
     @patch('libcloud.compute.ssh')
     def test_deploy_node_deploy_node_kwargs_except_auth_are_not_propagated_on(self, mock_ssh_module, _):
