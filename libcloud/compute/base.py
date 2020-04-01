@@ -54,6 +54,7 @@ from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
 from libcloud.common.types import LibcloudError
 from libcloud.compute.ssh import have_paramiko
+from libcloud.compute.ssh import SSHCommandTimeoutError
 
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.networking import is_valid_ip_address
@@ -1819,6 +1820,9 @@ class NodeDriver(BaseDriver):
         while tries < max_tries:
             try:
                 node = task.run(node, ssh_client)
+            except SSHCommandTimeoutError as e:
+                # Command timeout exception is fatal so we don't retry it.
+                raise e
             except Exception as e:
                 tries += 1
 
