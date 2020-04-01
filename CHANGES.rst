@@ -74,6 +74,15 @@ Compute
   (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
+- Add new ``at_exit_func`` argument to ``deploy_node()`` method. With this
+  argument user can specify which function will be called before exiting
+  with the created node in question if the deploy process has been canceled
+  after the node has been created, but before the method has fully finished.
+
+  This comes handy since it simplifies various cleanup scenarios.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 

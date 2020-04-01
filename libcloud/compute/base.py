@@ -26,6 +26,7 @@ from typing import Type
 from typing import Optional
 from typing import Any
 from typing import Union
+from typing import Callable
 from typing import TYPE_CHECKING
 
 import time
@@ -36,6 +37,7 @@ import socket
 import random
 import binascii
 import datetime
+import atexit
 
 from libcloud.utils.py3 import b
 
@@ -978,6 +980,7 @@ class NodeDriver(BaseDriver):
                     timeout=SSH_CONNECT_TIMEOUT,  # type: int
                     max_tries=3,  # type: int
                     ssh_interface='public_ips',  # type: str
+                    at_exit_func=None,  # type: Callable
                     **create_node_kwargs):
         # type: (...) -> Node
         """
@@ -1067,6 +1070,24 @@ class NodeDriver(BaseDriver):
         :param ssh_interface: The interface to wait for. Default is
                                    'public_ips', other option is 'private_ips'.
         :type ssh_interface: ``str``
+
+        :param at_exit_func: Optional atexit handler function which will be
+                             registered and called with created node if user
+                             cancels the deploy process (e.g. CTRL+C), after
+                             the node has been created, but before the deploy
+                             process has finished.
+
+                             This method gets passed in two keyword arguments:
+
+                             - driver -> node driver in question
+                             - node -> created Node object
+
+                             Keep in mind that this function will only be called
+                             in such scenario. In case the method finishes (
+                             this includes throwing an exception), at exit
+                             handler function won't be called.
+                              finished.
+        :type at_exit_func: ``func``
         """
         if not libcloud.compute.ssh.have_paramiko:
             raise RuntimeError('paramiko is not installed. You can install ' +
@@ -1128,6 +1149,9 @@ class NodeDriver(BaseDriver):
             else:
                 raise e
 
+        if at_exit_func:
+            atexit.register(at_exit_func, driver=self, node=node)
+
         password = None
         if auth:
             if isinstance(auth, NodeAuthPassword):
@@ -1145,6 +1169,9 @@ class NodeDriver(BaseDriver):
                 timeout=wait_timeout,
                 ssh_interface=ssh_interface)[0]
         except Exception as e:
+            if at_exit_func:
+                atexit.unregister(at_exit_func)
+
             raise DeploymentError(node=node, original_exception=e, driver=self)
 
         ssh_alternate_usernames = ssh_alternate_usernames or []
@@ -1172,8 +1199,14 @@ class NodeDriver(BaseDriver):
                 break
 
         if deploy_error is not None:
+            if at_exit_func:
+                atexit.unregister(at_exit_func)
+
             raise DeploymentError(node=node, original_exception=deploy_error,
                                   driver=self)
+
+        if at_exit_func:
+            atexit.unregister(at_exit_func)
 
         return node
 
