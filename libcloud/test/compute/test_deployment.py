@@ -34,6 +34,7 @@ from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
 from libcloud.compute.ssh import have_paramiko
+from libcloud.compute.ssh import SSHCommandTimeoutError
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
 
 from libcloud.test import MockHttp, XML_HEADERS
@@ -406,6 +407,23 @@ class DeploymentTests(unittest.TestCase):
                                                max_tries=2)
         except LibcloudError as e:
             self.assertTrue(e.value.find('Failed after 2 tries') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_run_deployment_script_ssh_command_timeout_fatal_exception(self):
+        # We shouldn't retry on SSHCommandTimeoutError error since it's fatal
+        task = Mock()
+        task.run = Mock()
+        task.run.side_effect = SSHCommandTimeoutError('ls -la', 10)
+        ssh_client = Mock()
+
+        try:
+            self.driver._run_deployment_script(task=task,
+                                               node=self.node,
+                                               ssh_client=ssh_client,
+                                               max_tries=5)
+        except SSHCommandTimeoutError as e:
+            self.assertTrue(e.message.find('Command didn\'t finish') != -1)
         else:
             self.fail('Exception was not thrown')
 
