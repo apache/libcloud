@@ -58,15 +58,19 @@ class MockDeployment(Deployment):
 
 class MockClient(BaseSSHClient):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, throw_on_timeout=False, *args, **kwargs):
         self.stdout = ''
         self.stderr = ''
         self.exit_status = 0
+        self.throw_on_timeout = throw_on_timeout
 
     def put(self, path, contents, chmod=755, mode='w'):
         return contents
 
-    def run(self, name):
+    def run(self, cmd, timeout=None):
+        if self.throw_on_timeout and timeout is not None:
+            raise ValueError("timeout")
+
         return self.stdout, self.stderr, self.exit_status
 
     def delete(self, name):
@@ -118,14 +122,25 @@ class DeploymentTests(unittest.TestCase):
         sd2 = ScriptDeployment(script='foobar', delete=False)
         sd3 = ScriptDeployment(
             script='foobar', delete=False, name='foobarname')
+        sd4 = ScriptDeployment(
+            script='foobar', delete=False, name='foobarname', timeout=10)
 
         self.assertTrue(sd1.name.find('deployment') != '1')
         self.assertEqual(sd3.name, 'foobarname')
+        self.assertEqual(sd3.timeout, None)
+        self.assertEqual(sd4.timeout, 10)
 
         self.assertEqual(self.node, sd1.run(node=self.node,
                                             client=MockClient(hostname='localhost')))
         self.assertEqual(self.node, sd2.run(node=self.node,
                                             client=MockClient(hostname='localhost')))
+        self.assertEqual(self.node, sd3.run(node=self.node,
+                                            client=MockClient(hostname='localhost')))
+
+        assertRaisesRegex(self, ValueError, 'timeout', sd4.run,
+                          node=self.node,
+                          client=MockClient(hostname='localhost',
+                                            throw_on_timeout=True))
 
     def test_script_file_deployment(self):
         file_path = os.path.abspath(__file__)
@@ -137,6 +152,10 @@ class DeploymentTests(unittest.TestCase):
 
         sfd1 = ScriptFileDeployment(script_file=file_path)
         self.assertEqual(sfd1.script, content)
+        self.assertEqual(sfd1.timeout, None)
+
+        sfd2 = ScriptFileDeployment(script_file=file_path, timeout=20)
+        self.assertEqual(sfd2.timeout, 20)
 
     def test_script_deployment_relative_path(self):
         client = Mock()
@@ -146,7 +165,7 @@ class DeploymentTests(unittest.TestCase):
         sd = ScriptDeployment(script='echo "foo"', name='relative.sh')
         sd.run(self.node, client)
 
-        client.run.assert_called_once_with('/home/ubuntu/relative.sh')
+        client.run.assert_called_once_with('/home/ubuntu/relative.sh', timeout=None)
 
     def test_script_deployment_absolute_path(self):
         client = Mock()
@@ -156,7 +175,7 @@ class DeploymentTests(unittest.TestCase):
         sd = ScriptDeployment(script='echo "foo"', name='/root/relative.sh')
         sd.run(self.node, client)
 
-        client.run.assert_called_once_with('/root/relative.sh')
+        client.run.assert_called_once_with('/root/relative.sh', timeout=None)
 
     def test_script_deployment_with_arguments(self):
         client = Mock()
@@ -169,7 +188,7 @@ class DeploymentTests(unittest.TestCase):
         sd.run(self.node, client)
 
         expected = '/root/relative.sh arg1 arg2 --option1=test'
-        client.run.assert_called_once_with(expected)
+        client.run.assert_called_once_with(expected, timeout=None)
 
         client.reset_mock()
 
@@ -179,7 +198,7 @@ class DeploymentTests(unittest.TestCase):
         sd.run(self.node, client)
 
         expected = '/root/relative.sh'
-        client.run.assert_called_once_with(expected)
+        client.run.assert_called_once_with(expected, timeout=None)
 
     def test_script_file_deployment_with_arguments(self):
         file_path = os.path.abspath(__file__)
@@ -194,7 +213,7 @@ class DeploymentTests(unittest.TestCase):
         sfd.run(self.node, client)
 
         expected = '/root/relative.sh arg1 arg2 --option1=test option2'
-        client.run.assert_called_once_with(expected)
+        client.run.assert_called_once_with(expected, timeout=None)
 
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):
@@ -479,6 +498,7 @@ class DeploymentTests(unittest.TestCase):
         # the arguments
         global call_count
         call_count = 0
+
         def create_node(name, image, size, ex_custom_arg_1, ex_custom_arg_2,
                         ex_foo=None, auth=None, **kwargs):
             global call_count
