@@ -89,6 +89,14 @@ Compute
   (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
+- Add new ``timeout`` argument to ``ScriptDeployment`` and
+  ``ScriptFileDeployment`` class constructor.
+
+  With this argument, user can specify an optional run timeout for that
+  deployment step run.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 
