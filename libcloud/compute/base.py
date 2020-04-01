@@ -1083,11 +1083,10 @@ class NodeDriver(BaseDriver):
                              - driver -> node driver in question
                              - node -> created Node object
 
-                             Keep in mind that this function will only be called
-                             in such scenario. In case the method finishes (
-                             this includes throwing an exception), at exit
-                             handler function won't be called.
-                              finished.
+                             Keep in mind that this function will only be
+                             called in such scenario. In case the method
+                             finishes (this includes throwing an exception),
+                             at exit handler function won't be called.
         :type at_exit_func: ``func``
         """
         if not libcloud.compute.ssh.have_paramiko:
