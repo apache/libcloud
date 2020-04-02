@@ -394,6 +394,7 @@ class DeploymentError(LibcloudError):
     def __init__(self, node, original_exception=None, driver=None):
         self.node = node
         self.value = original_exception
+        self.original_error = original_exception
         self.driver = driver
 
     def __str__(self):
