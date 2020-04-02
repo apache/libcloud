@@ -64,10 +64,13 @@ class SSHCommandTimeoutError(Exception):
     """
     Exception which is raised when an SSH command times out.
     """
-    def __init__(self, cmd, timeout):
-        # type: (str, float) -> None
+    def __init__(self, cmd, timeout, stdout=None, stderr=None):
+        # type: (str, float, Optional[str], Optional[str]) -> None
         self.cmd = cmd
         self.timeout = timeout
+        self.stdout = stdout
+        self.stderr = stderr
+
         self.message = 'Command didn\'t finish in %s seconds' % (timeout)
         super(SSHCommandTimeoutError, self).__init__(self.message)
 
@@ -433,7 +436,11 @@ class ParamikoSSHClient(BaseSSHClient):
                 # TODO: Is this the right way to clean up?
                 chan.close()
 
-                raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout)
+                stdout_str = stdout.getvalue()  # type: str
+                stderr_str = stderr.getvalue()  # type: str
+                raise SSHCommandTimeoutError(cmd=cmd, timeout=timeout,
+                                             stdout=stdout_str,
+                                             stderr=stderr_str)
 
             stdout.write(self._consume_stdout(chan).getvalue())
             stderr.write(self._consume_stderr(chan).getvalue())
@@ -451,8 +458,8 @@ class ParamikoSSHClient(BaseSSHClient):
         # Receive the exit status code of the command we ran.
         status = chan.recv_exit_status()  # type: int
 
-        stdout_str = stdout.getvalue()  # type: str
-        stderr_str = stderr.getvalue()  # type: str
+        stdout_str = stdout.getvalue()
+        stderr_str = stderr.getvalue()
 
         extra2 = {'_status': status, '_stdout': stdout_str,
                   '_stderr': stderr_str}

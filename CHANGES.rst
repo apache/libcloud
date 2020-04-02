@@ -97,6 +97,13 @@ Compute
   (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
+- Add new ``stdout`` and ``stderr`` attribute to ``SSHCommandTimeoutError``
+  class.
+
+  Those attributes contain value of stdout and stderr produced so far.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 
