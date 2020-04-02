@@ -68,15 +68,15 @@ class SSHCommandTimeoutError(Exception):
         # type: (str, float) -> None
         self.cmd = cmd
         self.timeout = timeout
-        message = 'Command didn\'t finish in %s seconds' % (timeout)
-        super(SSHCommandTimeoutError, self).__init__(message)
+        self.message = 'Command didn\'t finish in %s seconds' % (timeout)
+        super(SSHCommandTimeoutError, self).__init__(self.message)
 
     def __repr__(self):
         return ('<SSHCommandTimeoutError: cmd="%s",timeout=%s)>' %
                 (self.cmd, self.timeout))
 
     def __str__(self):
-        return self.message  # pylint: disable=no-member
+        return self.__repr__()
 
 
 class BaseSSHClient(object):
@@ -178,8 +178,8 @@ class BaseSSHClient(object):
         raise NotImplementedError(
             'delete not implemented for this ssh client')
 
-    def run(self, cmd):
-        # type: (str) -> Tuple[str, str, int]
+    def run(self, cmd, timeout=None):
+        # type: (str, Optional[float]) -> Tuple[str, str, int]
         """
         Run a command on a remote node.
 
@@ -281,7 +281,9 @@ class ParamikoSSHClient(BaseSSHClient):
             conninfo['key_filename'] = self.key_files
 
         if self.key_material:
-            conninfo['pkey'] = self._get_pkey_object(key=self.key_material)
+            conninfo['pkey'] = self._get_pkey_object(
+                key=self.key_material,
+                password=self.password)
 
         if not self.password and not (self.key_files or self.key_material):
             conninfo['allow_agent'] = True
@@ -300,7 +302,10 @@ class ParamikoSSHClient(BaseSSHClient):
                 key_material = fp.read()
 
             try:
-                pkey = self._get_pkey_object(key=key_material)
+                pkey = self._get_pkey_object(key=key_material,
+                                             password=self.password)
+            except paramiko.ssh_exception.PasswordRequiredException as e:
+                raise e
             except Exception:
                 pass
             else:
@@ -511,16 +516,26 @@ class ParamikoSSHClient(BaseSSHClient):
         result.write(result_bytes.decode('utf-8'))
         return result
 
-    def _get_pkey_object(self, key, passpharse=None):
+    def _get_pkey_object(self, key, password=None):
         """
         Try to detect private key type and return paramiko.PKey object.
 
         # NOTE: Paramiko only supports key in PKCS#1 PEM format.
         """
+        key_types = [
+            (paramiko.RSAKey, 'RSA'),
+            (paramiko.DSSKey, 'DSA'),
+            (paramiko.ECDSAKey, 'EC')
+        ]
 
-        for cls, key_type in [(paramiko.RSAKey, 'RSA'),
-                              (paramiko.DSSKey, 'DSA'),
-                              (paramiko.ECDSAKey, 'EC')]:
+        paramiko_version = getattr(paramiko, '__version__', '0.0.0')
+        paramiko_version = tuple([int(c) for c in paramiko_version.split('.')])
+
+        if paramiko_version >= (2, 2, 0):
+            # Ed25519 is only supported in paramiko >= 2.2.0
+            key_types.append((paramiko.ed25519key.Ed25519Key, 'Ed25519'))
+
+        for cls, key_type in key_types:
             # Work around for paramiko not recognizing keys which start with
             # "----BEGIN PRIVATE KEY-----"
             # Since key is already in PEM format, we just try changing the
@@ -537,14 +552,23 @@ class ParamikoSSHClient(BaseSSHClient):
                 key_value = key
 
             try:
-                key = cls.from_private_key(StringIO(key_value), passpharse)
-            except (paramiko.ssh_exception.SSHException, AssertionError):
+                key = cls.from_private_key(StringIO(key_value), password)
+            except paramiko.ssh_exception.PasswordRequiredException as e:
+                raise e
+            except (paramiko.ssh_exception.SSHException, AssertionError) as e:
+                if 'private key file checkints do not match' in str(e).lower():
+                    msg = ('Invalid password provided for encrypted key. '
+                           'Original error: %s' % (str(e)))
+                    # Indicates invalid password for password protected keys
+                    raise paramiko.ssh_exception.SSHException(msg)
+
                 # Invalid key, try other key type
                 pass
             else:
                 return key
 
-        msg = ('Invalid or unsupported key type (only RSA, DSS and ECDSA keys'
+        msg = ('Invalid or unsupported key type (only RSA, DSS, ECDSA and'
+               ' Ed25519 keys'
                ' in PEM format are supported). For more information on '
                ' supported key file types, see %s' % (SUPPORTED_KEY_TYPES_URL))
         raise paramiko.ssh_exception.SSHException(msg)
@@ -592,7 +616,7 @@ class ShellOutSSHClient(BaseSSHClient):
         """
         return True
 
-    def run(self, cmd):
+    def run(self, cmd, timeout=None):
         return self._run_remote_shell_command([cmd])
 
     def put(self, path, contents=None, chmod=None, mode='w'):

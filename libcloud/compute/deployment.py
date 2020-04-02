@@ -138,8 +138,14 @@ class ScriptDeployment(Deployment):
     you are running a plan shell script.
     """
 
-    def __init__(self, script, args=None, name=None, delete=False):
-        # type: (str, Optional[List[str]], Optional[str], bool) -> None
+    def __init__(self,
+                 script,  # type: str
+                 args=None,  # type: Optional[List[str]]
+                 name=None,  # type: Optional[str]
+                 delete=False,  # type bool
+                 timeout=None  # type: Optional[float]
+                 ):
+        # type: (...) -> None
         """
         :type script: ``str``
         :keyword script: Contents of the script to run.
@@ -154,6 +160,9 @@ class ScriptDeployment(Deployment):
 
         :type delete: ``bool``
         :keyword delete: Whether to delete the script on completion.
+
+        :param timeout: Optional run timeout for this command.
+        :type timeout: ``float``
         """
         script = self._get_string_value(argument_name='script',
                                         argument_value=script)
@@ -164,6 +173,7 @@ class ScriptDeployment(Deployment):
         self.stderr = None  # type: Optional[str]
         self.exit_status = None  # type: Optional[int]
         self.delete = delete
+        self.timeout = timeout
         self.name = name  # type: Optional[str]
 
         if self.name is None:
@@ -202,7 +212,8 @@ class ScriptDeployment(Deployment):
         else:
             cmd = name
 
-        self.stdout, self.stderr, self.exit_status = client.run(cmd)
+        self.stdout, self.stderr, self.exit_status = \
+            client.run(cmd, timeout=self.timeout)
 
         if self.delete:
             client.delete(self.name)
@@ -234,8 +245,14 @@ class ScriptFileDeployment(ScriptDeployment):
     the script content.
     """
 
-    def __init__(self, script_file, args=None, name=None, delete=False):
-        # type: (str, Optional[List[str]], Optional[str], bool) -> None
+    def __init__(self,
+                 script_file,  # type: str
+                 args=None,  # type: Optional[List[str]]
+                 name=None,  # type: Optional[str]
+                 delete=False,  # type bool
+                 timeout=None  # type: Optional[float]
+                 ):
+        # type: (...) -> None
         """
         :type script_file: ``str``
         :keyword script_file: Path to a file containing the script to run.
@@ -251,6 +268,9 @@ class ScriptFileDeployment(ScriptDeployment):
 
         :type delete: ``bool``
         :keyword delete: Whether to delete the script on completion.
+
+        :param timeout: Optional run timeout for this command.
+        :type timeout: ``float``
         """
         with open(script_file, 'rb') as fp:
             content = fp.read()  # type: Union[bytes, str]
@@ -262,7 +282,8 @@ class ScriptFileDeployment(ScriptDeployment):
         super(ScriptFileDeployment, self).__init__(script=content,
                                                    args=args,
                                                    name=name,
-                                                   delete=delete)
+                                                   delete=delete,
+                                                   timeout=timeout)
 
 
 class MultiStepDeployment(Deployment):

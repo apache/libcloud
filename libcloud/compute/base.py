@@ -26,6 +26,7 @@ from typing import Type
 from typing import Optional
 from typing import Any
 from typing import Union
+from typing import Callable
 from typing import TYPE_CHECKING
 
 import time
@@ -36,6 +37,7 @@ import socket
 import random
 import binascii
 import datetime
+import atexit
 
 from libcloud.utils.py3 import b
 
@@ -54,6 +56,7 @@ from libcloud.common.base import ConnectionKey
 from libcloud.common.base import BaseDriver
 from libcloud.common.types import LibcloudError
 from libcloud.compute.ssh import have_paramiko
+from libcloud.compute.ssh import SSHCommandTimeoutError
 
 from libcloud.utils.networking import is_private_subnet
 from libcloud.utils.networking import is_valid_ip_address
@@ -78,6 +81,23 @@ NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
 # How long to try connecting to a remote SSH server when running a deployment
 # script.
 SSH_CONNECT_TIMEOUT = 5 * 60
+
+# Error message which should be considered fatal for deploy_node() method and
+# on which we should abort retrying and immediately propagate the error
+SSH_FATAL_ERROR_MSGS = [
+    # Propagate (key) file doesn't exist errors
+    # NOTE: Paramiko only supports PEM private key format
+    # See https://github.com/paramiko/paramiko/issues/1313
+    # for details
+    'no such file or directory',
+    'invalid key',
+    'not a valid ',
+    'invalid or unsupported key type',
+    'private file is encrypted',
+    'private key file is encrypted',
+    'private key file checkints do not match',
+    'invalid password provided'
+]
 
 __all__ = [
     'Node',
@@ -973,10 +993,12 @@ class NodeDriver(BaseDriver):
                     ssh_port=22,  # type: int
                     ssh_timeout=10,  # type: int
                     ssh_key=None,  # type: Optional[T_Ssh_key]
+                    ssh_key_password=None,  # type: Optional[str]
                     auth=None,  # type: T_Auth
                     timeout=SSH_CONNECT_TIMEOUT,  # type: int
                     max_tries=3,  # type: int
                     ssh_interface='public_ips',  # type: str
+                    at_exit_func=None,  # type: Callable
                     **create_node_kwargs):
         # type: (...) -> Node
         """
@@ -1052,6 +1074,9 @@ class NodeDriver(BaseDriver):
                              to attempt to authenticate. (optional)
         :type ssh_key: ``str`` or ``list`` of ``str``
 
+        :param ssh_key_password: Optional password used for encrypted keys.
+        :type ssh_key_password: ``str``
+
         :param timeout: How many seconds to wait before timing out.
                              (default is 600)
         :type timeout: ``int``
@@ -1063,6 +1088,23 @@ class NodeDriver(BaseDriver):
         :param ssh_interface: The interface to wait for. Default is
                                    'public_ips', other option is 'private_ips'.
         :type ssh_interface: ``str``
+
+        :param at_exit_func: Optional atexit handler function which will be
+                             registered and called with created node if user
+                             cancels the deploy process (e.g. CTRL+C), after
+                             the node has been created, but before the deploy
+                             process has finished.
+
+                             This method gets passed in two keyword arguments:
+
+                             - driver -> node driver in question
+                             - node -> created Node object
+
+                             Keep in mind that this function will only be
+                             called in such scenario. In case the method
+                             finishes (this includes throwing an exception),
+                             at exit handler function won't be called.
+        :type at_exit_func: ``func``
         """
         if not libcloud.compute.ssh.have_paramiko:
             raise RuntimeError('paramiko is not installed. You can install ' +
@@ -1124,6 +1166,9 @@ class NodeDriver(BaseDriver):
             else:
                 raise e
 
+        if at_exit_func:
+            atexit.register(at_exit_func, driver=self, node=node)
+
         password = None
         if auth:
             if isinstance(auth, NodeAuthPassword):
@@ -1141,6 +1186,9 @@ class NodeDriver(BaseDriver):
                 timeout=wait_timeout,
                 ssh_interface=ssh_interface)[0]
         except Exception as e:
+            if at_exit_func:
+                atexit.unregister(at_exit_func)
+
             raise DeploymentError(node=node, original_exception=e, driver=self)
 
         ssh_alternate_usernames = ssh_alternate_usernames or []
@@ -1154,7 +1202,8 @@ class NodeDriver(BaseDriver):
                     task=deploy, node=node,
                     ssh_hostname=ip_addresses[0], ssh_port=ssh_port,
                     ssh_username=username, ssh_password=password,
-                    ssh_key_file=ssh_key, ssh_timeout=ssh_timeout,
+                    ssh_key_file=ssh_key, ssh_key_password=ssh_key_password,
+                    ssh_timeout=ssh_timeout,
                     timeout=deploy_timeout, max_tries=max_tries)
             except Exception as e:
                 # Try alternate username
@@ -1167,8 +1216,14 @@ class NodeDriver(BaseDriver):
                 break
 
         if deploy_error is not None:
+            if at_exit_func:
+                atexit.unregister(at_exit_func)
+
             raise DeploymentError(node=node, original_exception=deploy_error,
                                   driver=self)
+
+        if at_exit_func:
+            atexit.unregister(at_exit_func)
 
         return node
 
@@ -1726,20 +1781,11 @@ class NodeDriver(BaseDriver):
                 ssh_client.connect()
             except SSH_TIMEOUT_EXCEPTION_CLASSES as e:
                 # Errors which represent fatal invalid key files which should
-                # be propagated to the user
+                # be propagated to the user without us retrying
                 message = str(e).lower()
-                invalid_key_msgs = [
-                    'no such file or directory',
-                    'invalid key',
-                    'not a valid ',
-                ]
 
-                # Propagate (key) file doesn't exist errors
-                # NOTE: Paramiko only supports PEM private key format
-                # See https://github.com/paramiko/paramiko/issues/1313
-                # for details
-                for invalid_key_msg in invalid_key_msgs:
-                    if invalid_key_msg in message:
+                for fatal_msg in SSH_FATAL_ERROR_MSGS:
+                    if fatal_msg in message:
                         raise e
 
                 # Retry if a connection is refused, timeout occurred,
@@ -1761,7 +1807,8 @@ class NodeDriver(BaseDriver):
         ssh_port,  # type: int
         ssh_username,  # type: str
         ssh_password,  # type: Optional[str]
-        ssh_key_file,  # type:Optional[T_Ssh_key]
+        ssh_key_file,  # type: Optional[T_Ssh_key]
+        ssh_key_password,  # type: Optional[str]
         ssh_timeout,  # type: int
         timeout,  # type: int
         max_tries  # type: int
@@ -1775,7 +1822,7 @@ class NodeDriver(BaseDriver):
         """
         ssh_client = SSHClient(hostname=ssh_hostname,
                                port=ssh_port, username=ssh_username,
-                               password=ssh_password,
+                               password=ssh_key_password or ssh_password,
                                key_files=ssh_key_file,
                                timeout=ssh_timeout)
 
@@ -1815,6 +1862,9 @@ class NodeDriver(BaseDriver):
         while tries < max_tries:
             try:
                 node = task.run(node, ssh_client)
+            except SSHCommandTimeoutError as e:
+                # Command timeout exception is fatal so we don't retry it.
+                raise e
             except Exception as e:
                 tries += 1
 
