@@ -1,11 +1,73 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud v2.8.2 - in development
+--------------------------------------------------
+
+Compute
+~~~~~~~
+
+- Add support for Ed25519 private keys for ``deploy_node()`` functionality
+  when using paramiko >= 2.2.0.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Fix ``deploy_node()`` so it correctly propagates an exception is a private key
+  which is used is password protected, but no password is specified.
+
+  Previously it incorrectly tried to retry on such exception. This means the
+  exception would only bubble up after all the retry attempts have been
+  exhausted.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Allow user to specify password for encrypted keys by passing
+  ``ssh_key_password`` argument to the ``deploy_node()`` method.
+
+  Previously they
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Fix ``deploy_node()`` so it correctly propagates an exception if invalid
+  or unsupported private key is used.
+
+  Previously it incorrectly tried to retry on such exception. This means the
+  exception would only bubble up after all the retry attempts have been
+  exhausted.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Fix ``deploy_node()`` method so we don't retry on fatal
+  ``SSHCommandTimeoutError`` exception (exception which is thrown when a
+  command which is running on remote host times out).
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``timeout`` argument to ``ScriptDeployment`` and
+  ``ScriptFileDeployment`` class constructor.
+
+  With this argument, user can specify an optional run timeout for that
+  deployment step run.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``stdout`` and ``stderr`` attribute to ``SSHCommandTimeoutError``
+  class.
+
+  Those attributes contain value of stdout and stderr produced so far.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
+- [OpenStack] Fix auto assignment of volume device when using device name
+  ``auto`` in the ``attach_volume`` method.
+  (GITHUB-1444)
+  [Joshua Hesketh - @jhesketh]
+
 Changes in Apache Libcloud v2.8.1
 ---------------------------------
 
 Common
-~~~~~~~
+~~~~~~
 
 - Fix ``LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE`` functionality and make sure it
   works correctly under Python 3 when ``response.read()`` function returns
