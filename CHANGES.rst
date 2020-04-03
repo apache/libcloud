@@ -104,6 +104,11 @@ Compute
   (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
+- [OpenStack] Fix auto assignment of volume device when using device name
+  ``auto`` in the ``attach_volume`` method.
+  (GITHUB-1444)
+  [Joshua Hesketh - @jhesketh]
+
 Storage
 ~~~~~~~
 
