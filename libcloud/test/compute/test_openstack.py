@@ -1048,6 +1048,17 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(
             self.driver.attach_volume(node, volume, '/dev/sdb'), True)
 
+    def test_attach_volume_device_auto(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume(
+            'cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+
+        OpenStack_1_1_MockHttp.type = 'DEVICE_AUTO'
+        OpenStack_2_0_MockHttp.type = 'DEVICE_AUTO'
+
+        self.assertEqual(
+            self.driver.attach_volume(node, volume, 'auto'), True)
+
     def test_detach_volume(self):
         node = self.driver.list_nodes()[0]
         volume = self.driver.ex_get_volume(
@@ -2331,6 +2342,15 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
+    def _v2_1337_servers_12065_os_volume_attachments_DEVICE_AUTO(self, method, url, body, headers):
+        # test_attach_volume_device_auto
+        if method == "POST":
+            body = json.loads(body)
+            self.assertEqual(body['volumeAttachment']['device'], None)
+            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+        else:
+            raise NotImplementedError()
+
     def _v2_1337_servers_1c01300f_ef97_4937_8f03_ac676d6234be_os_interface_126da55e_cfcb_41c8_ae39_a26cb8a7e723(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
@@ -2441,6 +2461,8 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
     def _v1_1_slug_servers_12065_os_volume_attachments(self, method, url, body, headers):
         if method == "POST":
+            body = json.loads(body)
+            self.assertEqual(body['volumeAttachment']['device'], '/dev/sdb')
             body = self.fixtures.load(
                 '_servers_12065_os_volume_attachments.json')
         else:
@@ -2687,7 +2709,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__floatingips.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-    
+
     def _v2_1337_v2_0_floatingips_foo_bar_id(self, method, url, body, headers):
         if method == 'DELETE':
             body = ''
