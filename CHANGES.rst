@@ -109,6 +109,10 @@ Compute
   (GITHUB-1444)
   [Joshua Hesketh - @jhesketh]
 
+- [Kamatera] Add new driver for Kamatera provider (https://www.kamatera.com).
+  (GITHUB-1442)
+  [Ori Hoch - @OriHoch]
+
 Storage
 ~~~~~~~
 
