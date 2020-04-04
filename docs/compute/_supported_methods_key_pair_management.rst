@@ -32,6 +32,7 @@ Provider                              list key pairs get key pair create key pai
 `Indosat`_                            no             no           no              no                            no                          no             
 `InternetSolutions`_                  no             no           no              no                            no                          no             
 `Joyent`_                             no             no           no              no                            no                          no             
+`Kamatera`_                           no             no           no              no                            no                          no             
 `Kili Public Cloud`_                  yes            yes          yes             yes                           no                          yes            
 `KTUCloud`_                           yes            yes          yes             yes                           no                          yes            
 `kubevirt`_                           no             no           no              no                            no                          no             
@@ -97,6 +98,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`kubevirt`: https://www.kubevirt.io

@@ -32,6 +32,7 @@ Provider                              list volumes create volume destroy volume 
 `Indosat`_                            no           no            no             no            no            no             no             
 `InternetSolutions`_                  no           no            no             no            no            no             no             
 `Joyent`_                             no           no            no             no            no            no             no             
+`Kamatera`_                           no           no            no             no            no            no             no             
 `Kili Public Cloud`_                  yes          yes           yes            yes           yes           yes            yes            
 `KTUCloud`_                           yes          yes           yes            yes           yes           no             yes            
 `kubevirt`_                           yes          yes           yes            yes           yes           no             no             
@@ -97,6 +98,7 @@ Provider                              list volumes create volume destroy volume 
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
 .. _`kubevirt`: https://www.kubevirt.io

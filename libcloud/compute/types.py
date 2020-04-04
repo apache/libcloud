@@ -65,6 +65,7 @@ class Provider(Type):
     :cvar IBM: IBM Developer Cloud
     :cvar IKOULA: Ikoula driver.
     :cvar JOYENT: Joyent driver
+    :cvar KAMATERA: Kamatera driver
     :cvar KTUCLOUD: kt ucloud driver
     :cvar KUBEVIRT: kubevirt driver
     :cvar LIBVIRT: Libvirt driver
@@ -121,6 +122,7 @@ class Provider(Type):
     INDOSAT = 'indosat'
     INTERNETSOLUTIONS = 'internetsolutions'
     JOYENT = 'joyent'
+    KAMATERA = 'kamatera'
     KTUCLOUD = 'ktucloud'
     KUBEVIRT = 'kubevirt'
     LIBVIRT = 'libvirt'
