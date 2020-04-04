@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud v2.8.2 - in development
---------------------------------------------------
+Changes in Apache Libcloud v2.8.2
+---------------------------------
 
 Compute
 ~~~~~~~
