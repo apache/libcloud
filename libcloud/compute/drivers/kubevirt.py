@@ -20,6 +20,7 @@ import os
 import json
 import time
 import warnings
+import hashlib
 from datetime import datetime
 
 import libcloud.security
@@ -414,6 +415,7 @@ class KubeVirtNodeDriver(NodeDriver):
                             },
                             "resources": {
                                 "requests": {},
+                                "limits": {}
                             },
                         },
                         "networks": [],
@@ -423,17 +425,23 @@ class KubeVirtNodeDriver(NodeDriver):
                 }
             }
         }
-        memory = str(ex_memory) + "M"
+        memory = str(ex_memory) + "Mi"
         vm['spec']['template']['spec']['domain']['resources'][
             'requests']['memory'] = memory
+        vm['spec']['template']['spec']['domain']['resources'][
+        'limits']['memory'] = memory
         if ex_cpu < 10:
             cpu = int(ex_cpu)
             vm['spec']['template']['spec']['domain'][
-                'cpu'] = {'cores': cpu}
+                'resources']['requests']['cpu'] = cpu
+            vm['spec']['template']['spec']['domain'][
+                'resources']['limits']['cpu'] = cpu
         else:
             cpu = str(ex_cpu) + "m"
             vm['spec']['template']['spec']['domain']['resources'][
                 'requests']['cpu'] = cpu
+            vm['spec']['template']['spec']['domain']['resources'][
+                'limits']['cpu'] = cpu
         i = 0
         for disk in ex_disks:
             disk_type = disk.get('disk_type')
@@ -1032,27 +1040,51 @@ class KubeVirtNodeDriver(NodeDriver):
         driver = self.connection.driver
         extra = {'namespace': vm['metadata']['namespace']}
         extra['pvcs'] = []
+        memory = 0
         if 'limits' in vm['spec']['template']['spec'][
                 'domain']['resources']:
             if 'memory' in vm['spec']['template']['spec'][
                     'domain']['resources']['limits']:
                 memory = vm['spec']['template']['spec'][
                     'domain']['resources']['limits']['memory']
-                memory = int(memory.rstrip('M'))
-        else:
-            memory = 0
-        if 'limits' in vm['spec']['template']['spec'][
-                'domain']['resources']:
-            if 'cpu' in vm['spec']['template']['spec'][
-                    'domain']['resources']['limits']:
+        elif vm['spec']['template']['spec'][
+            'domain']['resources'].get('requests',None):
+            if vm['spec']['template']['spec'][
+                'domain']['resources']['requests'].get('memory',None):
+                memory = vm['spec']['template']['spec'][
+                    'domain']['resources']['requests']['memory']
+        if not isinstance(memory, int):
+            if 'M' in memory or 'Mi' in memory:
+                memory = memory.rstrip('M')
+                memory = memory.rstrip('Mi')
+                memory = int(memory)
+            elif 'G' in memory: 
+                memory = memory.rstrip('G')
+                memory = int(memory) // 1000
+            elif 'Gi' in memory:
+                memory = memory.rstrip('Gi')
+                memory = int(memory) // 1024
+        cpu = 1 
+        if vm['spec']['template']['spec'][
+            'domain']['resources'].get('limits',None):
+            if vm['spec']['template']['spec'][
+                'domain']['resources']['limits'].get('cpu',None):
                 cpu = vm['spec']['template']['spec'][
-                    'domain']['resources']['requests']['cpu']
-                cpu = int(cpu.rstrip('m'))
-
-        else:
-            cpu = 0
+                    'domain']['resources']['limits']['cpu']                
+        elif vm['spec']['template']['spec'][
+            'domain']['resources'].get('requests',None) and vm[
+                'spec']['template']['spec'][
+                'domain']['resources']['requests'].get('cpu',None):
+            cpu = vm['spec']['template']['spec'][
+                'domain']['resources']['requests']['cpu']
+        elif vm['spec']['template']['spec']['domain'].get('cpu', None):
+            cpu = vm['spec']['template']['spec']['domain']['cpu'].get('cores', 1)
+        if not isinstance(cpu, int):
+            cpu = int(cpu.rstrip('m'))
         extra_size = {'cpus': cpu}
-        size = NodeSize(id=ID, name=name, ram=memory,
+        size_name = "{} vCPUs, {}MB Ram".format(str(cpu), str(memory))
+        size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
+        size = NodeSize(id=size_id, name=size_name, ram=memory,
                         disk=0, bandwidth=0, price=0,
                         driver=driver, extra=extra_size)
         extra['memory'] = memory
@@ -1064,7 +1096,7 @@ class KubeVirtNodeDriver(NodeDriver):
                 if type(v) is dict:
                     if 'image' in v:
                         image_name = v['image']
-        image = NodeImage(ID, image_name, driver)
+        image = NodeImage(image_name, image_name, driver)
         if 'volumes' in vm['spec']['template']['spec']:
             for volume in vm['spec']['template']['spec']['volumes']:
                 if 'persistentVolumeClaim' in volume:
@@ -1105,7 +1137,7 @@ class KubeVirtNodeDriver(NodeDriver):
                                   driver)
                 state = NodeState.RUNNING if "running" in cont_status[
                     'state'] else NodeState.PENDING
-
+        '''
         # getting size data
         for container in pod['spec']['containers']:
             if container['name'] != "compute":
@@ -1125,6 +1157,7 @@ class KubeVirtNodeDriver(NodeDriver):
                 size = NodeSize(id=ID, name=name, ram=memory,
                                 disk=0, bandwidth=0, price=0,
                                 driver=driver, extra=extra_size)
+        '''
 
         public_ips = None
         created_at = datetime.strptime(vm['metadata']['creationTimestamp'],
