@@ -1058,19 +1058,19 @@ class KubeVirtNodeDriver(NodeDriver):
                 memory = memory.rstrip('M')
                 memory = memory.rstrip('Mi')
                 memory = int(memory)
-            elif 'G' in memory: 
+            elif 'G' in memory:
                 memory = memory.rstrip('G')
                 memory = int(memory) // 1000
             elif 'Gi' in memory:
                 memory = memory.rstrip('Gi')
                 memory = int(memory) // 1024
-        cpu = 1 
+        cpu = 1
         if vm['spec']['template']['spec'][
             'domain']['resources'].get('limits',None):
             if vm['spec']['template']['spec'][
                 'domain']['resources']['limits'].get('cpu',None):
                 cpu = vm['spec']['template']['spec'][
-                    'domain']['resources']['limits']['cpu']                
+                    'domain']['resources']['limits']['cpu']
         elif vm['spec']['template']['spec'][
             'domain']['resources'].get('requests',None) and vm[
                 'spec']['template']['spec'][
