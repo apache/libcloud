@@ -429,7 +429,7 @@ class KubeVirtNodeDriver(NodeDriver):
         vm['spec']['template']['spec']['domain']['resources'][
             'requests']['memory'] = memory
         vm['spec']['template']['spec']['domain']['resources'][
-        'limits']['memory'] = memory
+            'limits']['memory'] = memory
         if ex_cpu < 10:
             cpu = int(ex_cpu)
             vm['spec']['template']['spec']['domain'][
@@ -637,10 +637,13 @@ class KubeVirtNodeDriver(NodeDriver):
                             -portworx Volumes
                             -scaleIO Volumes
                             -storageOS
-                            This parameter is a dict in the form {type: {key1:value1, key2:value2,...}},
-                            where type is one of the above and key1, key2... are type specific keys and
-                            their corresponding values. eg: {nsf: {server: "172.0.0.0", path: "/tmp"}}
-                                            {awsElasticBlockStore: {fsType: 'ext4', volumeID: "1234"}}
+                            This parameter is a dict in the form
+                            {type: {key1:value1, key2:value2,...}},
+                            where type is one of the above and key1, key2...
+                            are type specific keys and their corresponding
+                            values.
+                            eg: {nsf: {server: "172.0.0.0", path: "/tmp"}}
+                            {awsElasticBlockStore: {fsType: 'ext4', volumeID: "1234"}}
         :type volume_type: `str`
 
         :param volume_params: A dict with the key:value that the
@@ -1047,10 +1050,10 @@ class KubeVirtNodeDriver(NodeDriver):
                     'domain']['resources']['limits']:
                 memory = vm['spec']['template']['spec'][
                     'domain']['resources']['limits']['memory']
-        elif vm['spec']['template']['spec'][
-            'domain']['resources'].get('requests',None):
+        elif vm['spec']['template']['spec']['domain']['resources'].get(
+             'requests', None):
             if vm['spec']['template']['spec'][
-                'domain']['resources']['requests'].get('memory',None):
+               'domain']['resources']['requests'].get('memory', None):
                 memory = vm['spec']['template']['spec'][
                     'domain']['resources']['requests']['memory']
         if not isinstance(memory, int):
@@ -1066,19 +1069,20 @@ class KubeVirtNodeDriver(NodeDriver):
                 memory = int(memory) // 1024
         cpu = 1
         if vm['spec']['template']['spec'][
-            'domain']['resources'].get('limits',None):
-            if vm['spec']['template']['spec'][
-                'domain']['resources']['limits'].get('cpu',None):
+                'domain']['resources'].get('limits', None):
+            if vm['spec']['template']['spec']['domain']['resources'][
+               'limits'].get('cpu', None):
                 cpu = vm['spec']['template']['spec'][
                     'domain']['resources']['limits']['cpu']
         elif vm['spec']['template']['spec'][
-            'domain']['resources'].get('requests',None) and vm[
+            'domain']['resources'].get('requests', None) and vm[
                 'spec']['template']['spec'][
-                'domain']['resources']['requests'].get('cpu',None):
+                'domain']['resources']['requests'].get('cpu', None):
             cpu = vm['spec']['template']['spec'][
                 'domain']['resources']['requests']['cpu']
         elif vm['spec']['template']['spec']['domain'].get('cpu', None):
-            cpu = vm['spec']['template']['spec']['domain']['cpu'].get('cores', 1)
+            cpu = vm['spec']['template']['spec']['domain'][
+                'cpu'].get('cores', 1)
         if not isinstance(cpu, int):
             cpu = int(cpu.rstrip('m'))
         extra_size = {'cpus': cpu}
