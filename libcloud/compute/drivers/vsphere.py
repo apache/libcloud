@@ -783,7 +783,7 @@ class VSphereNodeDriver(NodeDriver):
                                                             True, True)
         if not vm:
             # perhaps it is a moid
-            vm = self._get_vm_by_moid(node_uuid)
+            vm = self._get_item_by_moid('VirtualMachine', node_uuid)
             if not vm:
                 raise LibcloudError("Unable to locate VirtualMachine.")
         return vm
@@ -819,7 +819,6 @@ class VSphereNodeDriver(NodeDriver):
             else:
                 obj = c
                 break
-
         return obj
 
     def wait_for_task(self, task, timeout=1800, interval=10):
@@ -854,7 +853,6 @@ class VSphereNodeDriver(NodeDriver):
         network = kwargs.get('ex_network')
         if network and not isinstance(network, str):
             network = network.name
-
         template = self._find_template_by_uuid(image.id)
         if kwargs.get('cluster'):
             cluster_name = kwargs.get('cluster')
@@ -879,6 +877,9 @@ class VSphereNodeDriver(NodeDriver):
 
         if kwargs.get('ex_folder'):
             folder = self.get_obj([vim.Folder], kwargs.get('ex_folder'))
+            if folder is None:
+                folder = self._get_item_by_moid('Folder',
+                                                kwargs.get('ex_folder'))
         else:
             folder = datacenter.vmFolder
 
@@ -890,14 +891,12 @@ class VSphereNodeDriver(NodeDriver):
                 resource_pool = cluster.resourcePool
             except AttributeError:
                 resource_pool = cluster.parent.resourcePool
-
         devices = []
         vmconf = vim.vm.ConfigSpec(
             numCPUs=int(size.extra.get('cpu', 1)),
             memoryMB=int(size.ram),
             deviceChange=devices
         )
-
         datastore = None
         pod = None
         podsel = vim.storageDrs.PodSelectionSpec()
@@ -930,12 +929,15 @@ class VSphereNodeDriver(NodeDriver):
 
         datastore = self.get_obj([vim.Datastore], real_datastore_name)
 
-        if kwargs.get('datastore'):
-            datastore = self.get_obj([vim.Datastore], kwargs.get('datastore'))
+        if kwargs.get('ex_datastore'):
+            datastore = self.get_obj([vim.Datastore],
+                                     kwargs.get('ex_datastore'))
+            if datastore is None:
+                datastore = self._get_item_by_moid('Datastore',
+                                                   kwargs.get('ex_datastore'))
         elif not datastore:
             datastore = self.get_obj([vim.Datastore],
                                      template.datastore[0].info.name)
-
         if network:
             nicspec = vim.vm.device.VirtualDeviceSpec()
             nicspec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
@@ -1028,9 +1030,9 @@ class VSphereNodeDriver(NodeDriver):
         output = vm.ReconfigVM_Task(spec=spec)
         print(output.info)
 
-    def _get_vm_by_moid(self, moid):
+    def _get_item_by_moid(self, type_, moid):
         vm_obj = VmomiSupport.templateOf(
-            'VirtualMachine')(moid, self.connection._stub)
+            type_)(moid, self.connection._stub)
         return vm_obj
 
     def ex_list_folders(self):
@@ -1699,7 +1701,10 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             kwargs['size'] = size
             kwargs['ex_network'] = ex_network
             kwargs['location'] = location
-            kwargs['datastore'] = ex_datastore
+            for dstore in self.ex_list_datastores():
+                if dstore['id'] == ex_datastore:
+                    kwargs['ex_datastore'] = dstore['name']
+                    break
             kwargs['folder'] = ex_folder
             result = self.driver6_5.create_node(**kwargs)
             return result

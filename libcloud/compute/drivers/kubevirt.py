@@ -1141,28 +1141,6 @@ class KubeVirtNodeDriver(NodeDriver):
                                   driver)
                 state = NodeState.RUNNING if "running" in cont_status[
                     'state'] else NodeState.PENDING
-        '''
-        # getting size data
-        for container in pod['spec']['containers']:
-            if container['name'] != "compute":
-                if 'memory' in container['resources']['limits']:
-                    memory = container['resources']['limits']['memory']
-                    memory = int(memory.rstrip('M'))
-                else:
-                    memory = 0
-                if 'cpu' in container['resources']['limits']:
-                    cpu = container['resources']['limits']['cpu']
-                    cpu = int(cpu.rstrip('m'))
-                else:
-                    cpu = 0
-                extra['memory'] = memory
-                extra['cpu'] = cpu
-                extra_size = {'cpus': cpu}
-                size = NodeSize(id=ID, name=name, ram=memory,
-                                disk=0, bandwidth=0, price=0,
-                                driver=driver, extra=extra_size)
-        '''
-
         public_ips = None
         created_at = datetime.strptime(vm['metadata']['creationTimestamp'],
                                        '%Y-%m-%dT%H:%M:%SZ')
