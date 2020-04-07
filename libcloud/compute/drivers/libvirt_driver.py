@@ -179,7 +179,6 @@ class LibvirtNodeDriver(NodeDriver):
             atexit.register(self.disconnect)
 
     def list_nodes(self, show_hypervisor=True):
-
         # active domains
         domain_ids = self.connection.listDomainsID()
         domains = [self.connection.lookupByID(id) for id in domain_ids]
@@ -200,24 +199,6 @@ class LibvirtNodeDriver(NodeDriver):
         self.arp_table = self._parse_arp_table(self._run_command(cmd).get('output'))
 
         nodes = [self._to_node(domain) for domain in domains]
-
-        if show_hypervisor:
-            public_ips, private_ips = [], []
-            # append hypervisor as well
-            name = self.connection.getHostname()
-            try:
-                if is_public_subnet(socket.gethostbyname(self.hypervisor)):
-                    public_ips.append(self.hypervisor)
-                else:
-                    private_ips.append(self.hypervisor)
-            except:
-                public_ips.append(self.hypervisor)
-
-            extra = {'tags': {'type': 'hypervisor'}}
-            node = Node(id=self.hypervisor.replace('.', '-'), name=name, state=NodeState.RUNNING,
-                        public_ips=public_ips, private_ips=private_ips,
-                        driver=self, extra=extra)
-            nodes.append(node)
 
         return nodes
 
@@ -261,7 +242,7 @@ class LibvirtNodeDriver(NodeDriver):
         extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
                  'types': self.connection.getType(),
                  'active': bool(domain.isActive()),
-                 'hypervisor_name': self.connection.getHostname(),
+                 'hypervisor': self.host,
                  'memory': '%s MB' % str(memory / 1024), 'processors': vcpu_count,
                  'used_cpu_time': used_cpu_time, 'xml_description': xml_description}
         node = Node(id=domain.UUIDString(), name=domain.name(), state=state,
@@ -391,7 +372,7 @@ class LibvirtNodeDriver(NodeDriver):
         if output:
             for image in output.strip().split('\n'):
                 name = image.replace(IMAGES_LOCATION + '/', '')
-                nodeimage = NodeImage(id=image, name=name, driver=self, extra={'host': self.connection.getHostname()})
+                nodeimage = NodeImage(id=image, name=name, driver=self, extra={'host': self.host})
                 images.append(nodeimage)
 
         return images
