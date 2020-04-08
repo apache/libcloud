@@ -877,6 +877,10 @@ class LibvirtNodeDriver(NodeDriver):
 
         return True
 
+    def ex_rename_node(self, node, name):
+        domain = self._get_domain_for_node(node=node)
+        return domain.rename(name) == 0
+
     def ex_name_validator(self, name):
         """
         Makes sure name is not in use, and checks
