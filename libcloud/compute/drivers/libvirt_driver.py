@@ -952,7 +952,11 @@ class LibvirtNodeDriver(NodeDriver):
         networks = []
         try:
             for net in self.connection.listAllNetworks():
-                extra = {'bridge': net.bridgeName(), 'xml': net.XMLDesc(), 'host': self.host}
+                extra = {
+                    'bridge': net.bridgeName(),
+                    'xml': net.XMLDesc(),
+                    'host': self.host
+                }
                 networks.append(Network(net.UUIDString(), net.name(), extra))
         except:
             pass  # Not supported by all hypervisors.
@@ -969,10 +973,16 @@ class LibvirtNodeDriver(NodeDriver):
             for net in self.connection.listAllInterfaces():
                 if net.name() == 'lo':  # Skip loopback.
                     continue
-                extra = {'mac': net.MACString(), 'xml': net.XMLDesc()}
+                extra = {
+                    'mac': net.MACString(),
+                    'xml': net.XMLDesc(),
+                    'host': self.host
+                }
                 networks.append(Network(net.name(), net.name(), extra))
-        except:
-            pass  # Not supported by all hypervisors.
+        except Exception as exc:
+            # Not supported by all hypervisors.
+            log.error(exc)
+
         return networks
 
     def ex_list_vnfs(self):
