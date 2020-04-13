@@ -203,12 +203,6 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
 
         return self._to_node(data=data)
 
-    def ex_start_node(self, node):
-        params = {"type": "power_on"}
-        res = self.connection.request('/v2/droplets/%s/actions/' % node.id,
-                                      params=params, method='POST')
-        return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
-
     def destroy_node(self, node):
         res = self.connection.request('/v2/droplets/%s' % (node.id),
                                       method='DELETE')
