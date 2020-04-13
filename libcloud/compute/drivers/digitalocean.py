@@ -333,7 +333,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :return True if the operation began successfully
         :rtype ``bool``
         """
-        attr = {'type': 'resize', 'size': size.name}
+        attr = {'type': 'resize', 'size': size.id}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED
