@@ -32,7 +32,8 @@ LINUX_PRICING_URLS = [
     # Previous generation instances (JavaScript file)
     'https://a0.awsstatic.com/pricing/1/ec2/previous-generation/linux-od.min.js',
     # New generation instances (JavaScript file)
-    'https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js'
+    # Using other endpoint atm
+    # 'https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js'
 ]
 
 EC2_REGIONS = [
@@ -160,37 +161,67 @@ PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 
 def scrape_ec2_pricing():
     result = defaultdict(OrderedDict)
-
+    os_map = {'linux': 'ec2_linux', 'windows-std': 'ec2_windows'}
+    for item in os_map.values():
+        result[item] = {}
     for url in LINUX_PRICING_URLS:
         response = requests.get(url)
 
         if re.match(r'.*?\.json$', url):
             data = response.json()
         elif re.match(r'.*?\.js$', url):
-            data = response.content
+            data = response.content.decode()
             match = re.match(r'^.*callback\((.*?)\);?$', data,
                              re.MULTILINE | re.DOTALL)
             data = match.group(1)
             # demjson supports non-strict mode and can parse unquoted objects
             data = demjson.decode(data)
-
         regions = data['config']['regions']
 
         for region_data in regions:
             region_name = region_data['region']
-            libcloud_region_name = REGION_NAME_MAP[region_name]
             instance_types = region_data['instanceTypes']
 
             for instance_type in instance_types:
                 sizes = instance_type['sizes']
-
                 for size in sizes:
+                    if not result['ec2_linux'].get(size['size'], False):
+                        result['ec2_linux'][size['size']] = {}
                     price = size['valueColumns'][0]['prices']['USD']
                     if str(price).lower() == 'n/a':
                         # Price not available
                         continue
 
-                    result[libcloud_region_name][size['size']] = float(price)
+                    result['ec2_linux'][size['size']][
+                        region_name] = float(price)
+
+    res = defaultdict(OrderedDict)
+    url = ('https://calculator.aws/pricing/1.0/'
+           'ec2/region/{}/ondemand/{}/index.json')
+    instances = set()
+    for OS in ['linux', 'windows-std']:
+        res[os_map[OS]] = {}
+        for region in EC2_REGIONS:
+            res[os_map[OS]][region] = {}
+            response = requests.get(url.format(region, OS))
+            if response.status_code != 200:
+                continue
+            data = response.json()
+
+            for entry in data['prices']:
+                instance_type = entry['attributes'].get(
+                    'aws:ec2:instanceType', "")
+                instances.add(instance_type)
+                price = entry['price'].get('USD', 0)
+                res[os_map[OS]][region][instance_type] = price
+    for item in os_map.values():
+        for instance in instances:
+            if not result[item].get(instance, False):
+                result[item][instance] = {}
+            for region in EC2_REGIONS:
+                if res[item][region].get(instance, False):
+                    result[item][instance][region] = float(res[
+                        item][region][instance])
 
     return result
 
