@@ -429,7 +429,7 @@ class G8NodeDriver(NodeDriver):
                                            params={"cloudspaceId": network.id})
             forwards = network.list_portforwards()
             for nodedata in nodes_list:
-                node = self._to_node(nodedata, network)
+                node = self._to_node(nodedata, network, forwards)
                 sshforward = _get_ssh_port(forwards, node)
                 if sshforward:
                     node.extra["ssh_port"] = sshforward.publicport
@@ -536,7 +536,7 @@ class G8NodeDriver(NodeDriver):
                              name=data["name"], driver=self,
                              extra=extra)
 
-    def _to_node(self, nodedata, ex_network):
+    def _to_node(self, nodedata, ex_network, forwards=[]):
         # type (dict) -> Node
         state = self.NODE_STATE_MAP.get(nodedata["status"], NodeState.UNKNOWN)
         name = nodedata['name']
@@ -565,9 +565,20 @@ class G8NodeDriver(NodeDriver):
         public_ips.append(ex_network.publicipaddress)
         created_at = nodedata.get('creationTime')
         imageId = str(nodedata.get('imageId'))
+        port_forwards = []
+        for forward in forwards:
+            if str(forward.node_id) == str(nodedata['id']):
+                port_forward = {
+                    "local_port": forward.privateport,
+                    "public_port": forward.publicport,
+                    "protocol": forward.protocol
+                }
+                port_forwards.append(port_forward)
+
         extra = {"network_id": str(ex_network.id),
                  "created_at": created_at,
-                 "imageId": imageId}
+                 "imageId": imageId,
+                 "port_forwards": port_forwards}
 
         return Node(id=str(nodedata['id']), name=name, size=size,
                     driver=self, public_ips=public_ips,
