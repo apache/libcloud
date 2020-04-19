@@ -13,9 +13,11 @@ PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 
 def get_azure_prices():
     prices_raw = requests.get(PRICES_URL).json()
+    region_map = {}
     regions = []
     for region in prices_raw['regions']:
         regions.append(region['slug'])
+        region_map[region['slug']] = region['displayName']
 
     result = {"windows": {}, "linux": {}}
     parsed_sizes = {"lowpriority", "basic", "standard"}
@@ -32,7 +34,9 @@ def get_azure_prices():
         if not value['prices'].get('perhour'):
             continue
         for reg, price in value['prices']['perhour'].items():
-            region = "".join(reg.lower().split("-"))
+            region = region_map[reg].lower().replace(" ", "")
+            region = region.replace("(public)", "") # for germany
+            region = region.replace("(sovereign)", "") # for germany
             prices[region] = price['value']
         result[size_raw[0]][size] = prices
 
