@@ -405,7 +405,7 @@ class AzureNodeDriver(NodeDriver):
                     image,
                     auth,
                     ex_resource_group,
-                    ex_storage_account,
+                    ex_storage_account=None,
                     ex_blob_container="vhds",
                     location=None,
                     ex_user_name="azureuser",
@@ -524,7 +524,9 @@ class AzureNodeDriver(NodeDriver):
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
-
+        if not ex_use_managed_disks:
+            if ex_storage_account is None:
+                raise ValueError("ex_use_managed_disks is False, must provide ex_storage_account")
         if location is None:
             location = self.default_location
         if ex_nic is None:
