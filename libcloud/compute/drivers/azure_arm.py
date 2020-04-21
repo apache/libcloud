@@ -526,7 +526,8 @@ class AzureNodeDriver(NodeDriver):
         """
         if not ex_use_managed_disks:
             if ex_storage_account is None:
-                raise ValueError("ex_use_managed_disks is False, must provide ex_storage_account")
+                raise ValueError("ex_use_managed_disks is False, "
+                                 "must provide ex_storage_account")
         if location is None:
             location = self.default_location
         if ex_nic is None:
