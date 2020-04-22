@@ -1695,7 +1695,11 @@ class BaseEC2NodeDriver(NodeDriver):
                 price = get_size_price(driver_type='compute',
                                        driver_name='ec2_linux',
                                        size_id=instance_type)
-                attributes['price'] = price[self.region_name]
+                if price is None:
+                    # it is a weird bare metal instance
+                    attributes['price'] = None
+                else:
+                    attributes['price'] = price[self.region_name]
             except KeyError:
                 attributes['price'] = None  # pricing not available
             sizes.append(NodeSize(driver=self, **attributes))
@@ -6158,6 +6162,10 @@ class OutscaleNodeDriver(BaseEC2NodeDriver):
             price = get_size_price(driver_type='compute',
                                    driver_name='ec2_linux',
                                    size_id=instance_type)
+            if price is None:
+                attributes['price'] = None
+            else:
+                attributes['price'] = price[self.region_name]
             attributes.update({'price': price})
             sizes.append(NodeSize(driver=self, **attributes))
         return sizes
