@@ -162,7 +162,7 @@ INSTANCE_TYPES = {
         "ram": 8192
     },
     "c1.medium": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 350,
         "extra": {
             "currentGeneration": "No",
@@ -189,7 +189,7 @@ INSTANCE_TYPES = {
         "ram": 1740
     },
     "c1.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 1680,
         "extra": {
             "currentGeneration": "No",
@@ -216,7 +216,7 @@ INSTANCE_TYPES = {
         "ram": 7168
     },
     "c3.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 160,
         "extra": {
             "clockSpeed": "2.8 GHz",
@@ -246,7 +246,7 @@ INSTANCE_TYPES = {
         "ram": 15360
     },
     "c3.4xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 320,
         "extra": {
             "clockSpeed": "2.8 GHz",
@@ -306,7 +306,7 @@ INSTANCE_TYPES = {
         "ram": 61440
     },
     "c3.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 32,
         "extra": {
             "clockSpeed": "2.8 GHz",
@@ -335,7 +335,7 @@ INSTANCE_TYPES = {
         "ram": 3840
     },
     "c3.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 80,
         "extra": {
             "clockSpeed": "2.8 GHz",
@@ -364,7 +364,7 @@ INSTANCE_TYPES = {
         "ram": 7680
     },
     "c4.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.9 GHz",
@@ -394,7 +394,7 @@ INSTANCE_TYPES = {
         "ram": 15360
     },
     "c4.4xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.9 GHz",
@@ -456,7 +456,7 @@ INSTANCE_TYPES = {
         "ram": 61440
     },
     "c4.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.9 GHz",
@@ -487,7 +487,7 @@ INSTANCE_TYPES = {
         "ram": 3840
     },
     "c4.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.9 GHz",
@@ -1237,7 +1237,7 @@ INSTANCE_TYPES = {
         "ram": 249856
     },
     "d2.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 12000,
         "extra": {
             "clockSpeed": "2.4 GHz",
@@ -1267,7 +1267,7 @@ INSTANCE_TYPES = {
         "ram": 62464
     },
     "d2.4xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 24000,
         "extra": {
             "clockSpeed": "2.4 GHz",
@@ -1328,7 +1328,7 @@ INSTANCE_TYPES = {
         "ram": 249856
     },
     "d2.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 6000,
         "extra": {
             "clockSpeed": "2.4 GHz",
@@ -1450,7 +1450,7 @@ INSTANCE_TYPES = {
         "ram": 249856
     },
     "g2.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 60,
         "extra": {
             "clockSpeed": "2.6 GHz",
@@ -1480,7 +1480,7 @@ INSTANCE_TYPES = {
         "ram": 15360
     },
     "g2.8xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 240,
         "extra": {
             "clockSpeed": "2.6 GHz",
@@ -1972,7 +1972,7 @@ INSTANCE_TYPES = {
         "ram": 119808
     },
     "i2.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 1600,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -2003,7 +2003,7 @@ INSTANCE_TYPES = {
         "ram": 62464
     },
     "i2.4xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 3200,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -2063,7 +2063,7 @@ INSTANCE_TYPES = {
         "ram": 249856
     },
     "i2.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 800,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -2605,7 +2605,7 @@ INSTANCE_TYPES = {
         "ram": 8192
     },
     "m1.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 840,
         "extra": {
             "currentGeneration": "No",
@@ -2632,7 +2632,7 @@ INSTANCE_TYPES = {
         "ram": 7680
     },
     "m1.medium": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 410,
         "extra": {
             "currentGeneration": "No",
@@ -2659,7 +2659,7 @@ INSTANCE_TYPES = {
         "ram": 3840
     },
     "m1.small": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 160,
         "extra": {
             "currentGeneration": "No",
@@ -2686,7 +2686,7 @@ INSTANCE_TYPES = {
         "ram": 1740
     },
     "m1.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 1680,
         "extra": {
             "currentGeneration": "No",
@@ -2713,7 +2713,7 @@ INSTANCE_TYPES = {
         "ram": 15360
     },
     "m2.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 850,
         "extra": {
             "currentGeneration": "No",
@@ -2740,7 +2740,7 @@ INSTANCE_TYPES = {
         "ram": 35020
     },
     "m2.4xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 1680,
         "extra": {
             "currentGeneration": "No",
@@ -2767,7 +2767,7 @@ INSTANCE_TYPES = {
         "ram": 70041
     },
     "m2.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 420,
         "extra": {
             "currentGeneration": "No",
@@ -2794,7 +2794,7 @@ INSTANCE_TYPES = {
         "ram": 17510
     },
     "m3.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 160,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -2824,7 +2824,7 @@ INSTANCE_TYPES = {
         "ram": 30720
     },
     "m3.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 32,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -2853,7 +2853,7 @@ INSTANCE_TYPES = {
         "ram": 7680
     },
     "m3.medium": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 4,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -2882,7 +2882,7 @@ INSTANCE_TYPES = {
         "ram": 3840
     },
     "m3.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 80,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -2974,7 +2974,7 @@ INSTANCE_TYPES = {
         "ram": 262144
     },
     "m4.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.4 GHz",
@@ -3005,7 +3005,7 @@ INSTANCE_TYPES = {
         "ram": 32768
     },
     "m4.4xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.4 GHz",
@@ -3036,7 +3036,7 @@ INSTANCE_TYPES = {
         "ram": 65536
     },
     "m4.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.4 GHz",
@@ -3067,7 +3067,7 @@ INSTANCE_TYPES = {
         "ram": 8192
     },
     "m4.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.4 GHz",
@@ -4841,7 +4841,7 @@ INSTANCE_TYPES = {
         "ram": 499712
     },
     "p2.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.3 GHz",
@@ -4997,7 +4997,7 @@ INSTANCE_TYPES = {
         "ram": 786432
     },
     "r3.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 160,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -5026,7 +5026,7 @@ INSTANCE_TYPES = {
         "ram": 62464
     },
     "r3.4xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 320,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -5085,7 +5085,7 @@ INSTANCE_TYPES = {
         "ram": 249856
     },
     "r3.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 32,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -5115,7 +5115,7 @@ INSTANCE_TYPES = {
         "ram": 15616
     },
     "r3.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 80,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -6781,7 +6781,7 @@ INSTANCE_TYPES = {
         "ram": 32768
     },
     "t1.micro": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "currentGeneration": "No",
@@ -6808,7 +6808,7 @@ INSTANCE_TYPES = {
         "ram": 627
     },
     "t2.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "Up to 3.3 GHz",
@@ -6838,7 +6838,7 @@ INSTANCE_TYPES = {
         "ram": 32768
     },
     "t2.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "Up to 3.3 GHz",
@@ -6868,7 +6868,7 @@ INSTANCE_TYPES = {
         "ram": 8192
     },
     "t2.medium": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "Up to 3.3 GHz",
@@ -6898,7 +6898,7 @@ INSTANCE_TYPES = {
         "ram": 4096
     },
     "t2.micro": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "Up to 3.3 GHz",
@@ -6927,7 +6927,7 @@ INSTANCE_TYPES = {
         "ram": 1024
     },
     "t2.nano": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "Up to 3.3 GHz",
@@ -6956,7 +6956,7 @@ INSTANCE_TYPES = {
         "ram": 512
     },
     "t2.small": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "Up to 3.3 GHz",
@@ -6985,7 +6985,7 @@ INSTANCE_TYPES = {
         "ram": 2048
     },
     "t2.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "Up to 3.3 GHz",
@@ -7014,7 +7014,7 @@ INSTANCE_TYPES = {
         "ram": 16384
     },
     "t3.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7044,7 +7044,7 @@ INSTANCE_TYPES = {
         "ram": 32768
     },
     "t3.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7074,7 +7074,7 @@ INSTANCE_TYPES = {
         "ram": 8192
     },
     "t3.medium": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7104,7 +7104,7 @@ INSTANCE_TYPES = {
         "ram": 4096
     },
     "t3.micro": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7134,7 +7134,7 @@ INSTANCE_TYPES = {
         "ram": 1024
     },
     "t3.nano": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7164,7 +7164,7 @@ INSTANCE_TYPES = {
         "ram": 512
     },
     "t3.small": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7194,7 +7194,7 @@ INSTANCE_TYPES = {
         "ram": 2048
     },
     "t3.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7224,7 +7224,7 @@ INSTANCE_TYPES = {
         "ram": 16384
     },
     "t3a.2xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7255,7 +7255,7 @@ INSTANCE_TYPES = {
         "ram": 32768
     },
     "t3a.large": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7286,7 +7286,7 @@ INSTANCE_TYPES = {
         "ram": 8192
     },
     "t3a.medium": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7317,7 +7317,7 @@ INSTANCE_TYPES = {
         "ram": 4096
     },
     "t3a.micro": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7347,7 +7347,7 @@ INSTANCE_TYPES = {
         "ram": 1024
     },
     "t3a.nano": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7377,7 +7377,7 @@ INSTANCE_TYPES = {
         "ram": 512
     },
     "t3a.small": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7408,7 +7408,7 @@ INSTANCE_TYPES = {
         "ram": 2048
     },
     "t3a.xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 0,
         "extra": {
             "clockSpeed": "2.5 GHz",
@@ -7439,7 +7439,7 @@ INSTANCE_TYPES = {
         "ram": 16384
     },
     "x1.16xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 1920,
         "extra": {
             "clockSpeed": "2.3 GHz",
@@ -7469,7 +7469,7 @@ INSTANCE_TYPES = {
         "ram": 999424
     },
     "x1.32xlarge": {
-        "bandwidth": null,
+        "bandwidth": None,
         "disk": 3840,
         "extra": {
             "clockSpeed": "2.3 GHz",
