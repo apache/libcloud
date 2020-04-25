@@ -1,6 +1,17 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] Add latest Ubuntu image families (Ubuntu 20.04) to the driver.
+
+  (GITHUB-1449)
+  [Christopher Lambert - @XN137]
+
 Changes in Apache Libcloud 3.0.0
 --------------------------------
 
