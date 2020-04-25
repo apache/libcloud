@@ -1800,6 +1800,7 @@ class GCENodeDriver(NodeDriver):
         "userinfo-email": "userinfo.email"
     }
 
+    # data taken from https://cloud.google.com/compute/docs/images
     IMAGE_PROJECTS = {
         "centos-cloud": [
             "centos-6",
@@ -1846,6 +1847,10 @@ class GCENodeDriver(NodeDriver):
             "ubuntu-minimal-1810",
             "ubuntu-1904",
             "ubuntu-minimal-1904",
+            "ubuntu-1910",
+            "ubuntu-minimal-1910",
+            "ubuntu-2004-lts",
+            "ubuntu-minimal-2004-lts",
         ],
         "windows-cloud": [
             "windows-1709-core-for-containers", "windows-1709-core",
