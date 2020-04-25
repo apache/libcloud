@@ -18,13 +18,11 @@ You can retrieve this information in the Azure Management Portal by going to
     :align: center
     :width: 900
 
-Note that libcloud only supports general purpose storage accounts so make sure
-to select the "Storage (general purpose v1)" account kind when creating your
-storage account as shown on the screenshot below.
+The following types of storage accounts are supported in libcloud:
 
-.. figure:: /_static/images/misc/azure_blobs_account_kind.png
-    :align: center
-    :width: 900
+- `General-purpose v2 accounts`_
+- `General-purpose v1 accounts`_
+- `BlockBlobStorage accounts`_
 
 Instantiating a driver
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -48,5 +46,8 @@ instantiate the driver as shown below.
 This instantiation strategy can also be adapted to connect to other self-hosted
 Azure Storage implementations such as `Azure Blob Storage on IoT Edge`_.
 
+.. _`General-purpose v2 accounts`: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#general-purpose-v2-accounts
+.. _`General-purpose v1 accounts`: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#general-purpose-v1-accounts
+.. _`BlockBlobStorage accounts`: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#blockblobstorage-accounts
 .. _`Azurite storage emulator`: https://github.com/Azure/Azurite
 .. _`Azure Blob Storage on IoT Edge`: https://docs.microsoft.com/en-us/azure/iot-edge/how-to-store-data-blob
