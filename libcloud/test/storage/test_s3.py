@@ -43,7 +43,7 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.s3 import BaseS3Connection
+from libcloud.storage.drivers.s3 import BaseS3Connection, S3SignatureV4Connection
 from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
 from libcloud.utils.py3 import b
@@ -533,12 +533,18 @@ class S3Tests(unittest.TestCase):
         obj = self.driver.get_object(container_name='test2',
                                      object_name='test')
 
-        url = urlparse.urlparse(self.driver.get_object_cdn_url(obj, ex_expiry=12))
-        query = urlparse.parse_qs(url.query)
+        # cdn urls can only be generated using a V4 connection
+        if issubclass(self.driver.connectionCls, S3SignatureV4Connection):
+            cdn_url = self.driver.get_object_cdn_url(obj, ex_expiry=12)
+            url = urlparse.urlparse(cdn_url)
+            query = urlparse.parse_qs(url.query)
 
-        self.assertEqual(len(query['X-Amz-Signature']), 1)
-        self.assertGreater(len(query['X-Amz-Signature'][0]), 0)
-        self.assertEqual(query['X-Amz-Expires'], ['43200'])
+            self.assertEqual(len(query['X-Amz-Signature']), 1)
+            self.assertGreater(len(query['X-Amz-Signature'][0]), 0)
+            self.assertEqual(query['X-Amz-Expires'], ['43200'])
+        else:
+            with self.assertRaises(NotImplementedError):
+                self.driver.get_object_cdn_url(obj)
 
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
