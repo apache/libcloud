@@ -422,6 +422,18 @@ Storage
   (GITHUB-1410)
   [Clemens Wolff - @c-w]
 
+- [AWS S3] Implement ``get_object_cdn_url`` for the AWS storage driver.
+
+  The AWS storage driver can now be used to generate temporary URLs that
+  grant clients read access to objects. The URLs expire after a certain
+  period of time, either configured via the ``ex_expiry`` argument or the
+  ``LIBCLOUD_S3_STORAGE_CDN_URL_EXPIRY_HOURS`` environment variable
+  (default: 24 hours).
+
+  Reported by @rvolykh.
+  (GITHUB-1403)
+  [Aaron Virshup - @avirshup]
+
 DNS
 ~~~
 

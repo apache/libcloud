@@ -528,6 +528,18 @@ class S3Tests(unittest.TestCase):
         container = self.driver.get_container(container_name='test1')
         self.assertTrue(container.name, 'test1')
 
+    def test_get_object_cdn_url(self):
+        self.mock_response_klass.type = 'get_object'
+        obj = self.driver.get_object(container_name='test2',
+                                     object_name='test')
+
+        url = urlparse.urlparse(self.driver.get_object_cdn_url(obj, ex_expiry=12))
+        query = urlparse.parse_qs(url.query)
+
+        self.assertEqual(len(query['X-Amz-Signature']), 1)
+        self.assertGreater(len(query['X-Amz-Signature'][0]), 0)
+        self.assertEqual(query['X-Amz-Expires'], ['43200'])
+
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
         # trickier
