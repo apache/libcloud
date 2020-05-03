@@ -90,6 +90,11 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         self.assertEqual(size.name, '512mb')
         self.assertTrue(location.id in size.extra['regions'])
 
+        location = self.driver.list_locations()[1]
+        location.id = 'doesntexist'
+        sizes = self.driver.list_sizes(location=location)
+        self.assertEqual(len(sizes), 0)
+
     def test_list_locations_success(self):
         locations = self.driver.list_locations()
         self.assertTrue(len(locations) == 2)
