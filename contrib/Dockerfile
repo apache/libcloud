@@ -20,16 +20,16 @@ RUN set -e && \
       python3.7-dev \
       python3.8-dev \
       pypy3 \
-      python-pip
+      python-pip \
+      libvirt-dev \
+      # Needed by libvirt driver
+      pkg-config
 
 # Workaround for zipp import error issue - https://github.com/pypa/virtualenv/issues/1630
 RUN pip install --upgrade pip
 
 RUN set -e && \
-    pip install --no-cache-dir tox \
-      mock \
-      lockfile \
-      coverage
+    pip install --no-cache-dir "tox==3.14.2"
 
 COPY . /libcloud
 
