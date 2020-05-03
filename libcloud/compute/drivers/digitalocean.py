@@ -137,7 +137,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = self._paginated_request('/v2/sizes', 'sizes')
         sizes = list(map(self._to_size, data))
         if location:
-            sizes = [x for x in sizes if location.id in x.extra['regions']]
+            sizes = [size for size in sizes if location.id in
+                     size.extra.get('regions', [])]
         return sizes
 
     def list_volumes(self):
