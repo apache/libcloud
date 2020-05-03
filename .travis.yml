@@ -53,6 +53,13 @@ matrix:
       env: ENV=coverage
       python: 3.7
       before_script: TOX_ENV=coverage-travis
+      before_script: TOX_ENV=mypy
+    - name: Docker Test Run
+      python: 3.6
+      services:
+        - docker
+      install:
+      script: ./contrib/run_tests.sh
     - name: Documentation
       env:
         - ENV=docs
