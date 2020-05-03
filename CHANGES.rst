@@ -18,6 +18,17 @@ Compute
   (GITHUB-1455, GITHUB-1456)
   [RobertH1993]
 
+Storage
+~~~~~~~
+
+- [AWS S3] Make sure driver works correctly for objects with ``~`` in the name.
+
+  Now when sanitizing the object name, we don't url encode ``~`` character.
+
+  Reported by Michael Militzer - @mmilitzer.
+  (GITHUB-1452, GITHUB-1457)
+  [Tomaz Muraus]
+
 Other
 ~~~~~
 
