@@ -12,6 +12,12 @@ Compute
   (GITHUB-1449)
   [Christopher Lambert - @XN137]
 
+- [DigitalOcean] Add ``location`` argument to the ``list_sizes()`` method.
+
+  NOTE: Location filtering is performed on the client.
+  (GITHUB-1455, GITHUB-1456)
+  [RobertH1993]
+
 Other
 ~~~~~
 
