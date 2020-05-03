@@ -30,12 +30,12 @@ RUN set -e && \
       python3.5 \
       python3.6 \
       python3.7 \
-      python3.8 \
+      #python3.8 \
       python-dev \
       python3.5-dev \
       python3.6-dev \
       python3.7-dev \
-      python3.8-dev \
+      #python3.8-dev \
       pypy3 \
       python-pip \
       libvirt-dev \
@@ -52,4 +52,4 @@ COPY . /libcloud
 
 WORKDIR /libcloud
 
-CMD ["tox", "-e", "lint,py3.5,py3.6,py3.7,py3.8,pypy3"]
+CMD ["tox", "-e", "lint,py3.5,py3.6,py3.7,pypy3"]
