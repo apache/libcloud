@@ -340,6 +340,8 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                           for k, v in sorted(headers.items())]) + '\n'
 
     def _get_payload_hash(self, method, data=None):
+        if data is UnsignedPayloadSentinel:
+            return UNSIGNED_PAYLOAD
         if method in ('POST', 'PUT'):
             if data:
                 if hasattr(data, 'next') or hasattr(data, '__next__'):
@@ -366,6 +368,10 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
             self._get_signed_headers(headers),
             self._get_payload_hash(method, data)
         ])
+
+
+class UnsignedPayloadSentinel:
+    pass
 
 
 class SignedAWSConnection(AWSTokenConnection):

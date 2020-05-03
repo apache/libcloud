@@ -17,6 +17,8 @@ import base64
 import hmac
 import time
 from hashlib import sha1
+import os
+from datetime import datetime
 
 import libcloud.utils.py3
 
@@ -32,13 +34,14 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import b
 from libcloud.utils.py3 import tostring
+from libcloud.utils.py3 import urlencode
 
 from libcloud.utils.xml import fixxpath, findtext
 from libcloud.utils.files import read_in_chunks
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.aws import AWSBaseResponse, AWSDriver, \
-    AWSTokenConnection, SignedAWSConnection
+    AWSTokenConnection, SignedAWSConnection, UnsignedPayloadSentinel
 
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
@@ -107,6 +110,12 @@ CHUNK_SIZE = 5 * 1024 * 1024
 # Desired number of items in each response inside a paginated request in
 # ex_iterate_multipart_uploads.
 RESPONSES_PER_REQUEST = 100
+
+S3_CDN_URL_DATETIME_FORMAT = '%Y%m%dT%H%M%SZ'
+S3_CDN_URL_DATE_FORMAT = '%Y%m%d'
+S3_CDN_URL_EXPIRY_HOURS = float(
+    os.getenv('LIBCLOUD_S3_CDN_URL_EXPIRY_HOURS', '24')
+)
 
 
 class S3Response(AWSBaseResponse):
@@ -1111,6 +1120,67 @@ class S3StorageDriver(AWSDriver, BaseS3StorageDriver):
     @classmethod
     def list_regions(self):
         return REGION_TO_HOST_MAP.keys()
+
+    def get_object_cdn_url(self, obj,
+                           ex_expiry=S3_CDN_URL_EXPIRY_HOURS):
+        """
+        Return a "presigned URL" for read-only access to object
+
+        AWS only - requires AWS signature V4 authenticaiton.
+
+        :param obj: Object instance.
+        :type  obj: :class:`Object`
+
+        :param ex_expiry: The number of hours after which the URL expires.
+                          Defaults to 24 hours or the value of the environment
+                          variable "LIBCLOUD_S3_STORAGE_CDN_URL_EXPIRY_HOURS",
+                          if set.
+        :type  ex_expiry: ``float``
+
+        :return: Presigned URL for the object.
+        :rtype: ``str``
+        """
+
+        # assemble data for the request we want to pre-sign
+        # see: https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html # noqa
+        object_path = self._get_object_path(obj.container, obj.name)
+        now = datetime.utcnow()
+        duration_seconds = int(ex_expiry * 3600)
+        credparts = (
+            self.key,
+            now.strftime(S3_CDN_URL_DATE_FORMAT),
+            self.region,
+            's3',
+            'aws4_request')
+        params_to_sign = {
+            'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+            'X-Amz-Credential': '/'.join(credparts),
+            'X-Amz-Date': now.strftime(S3_CDN_URL_DATETIME_FORMAT),
+            'X-Amz-Expires': duration_seconds,
+            'X-Amz-SignedHeaders': 'host'}
+        headers_to_sign = {'host': self.connection.host}
+
+        # generate signature for the pre-signed request
+        signature = self.connection.signer._get_signature(
+            params=params_to_sign,
+            headers=headers_to_sign,
+            dt=now,
+            method='GET',
+            path=object_path,
+            data=UnsignedPayloadSentinel
+        )
+
+        # Create final params for pre-signed URL
+        params = params_to_sign.copy()
+        params['X-Amz-Signature'] = signature
+
+        return '{scheme}://{host}:{port}{path}?{params}'.format(
+            scheme='https' if self.secure else 'http',
+            host=self.connection.host,
+            port=self.connection.port,
+            path=object_path,
+            params=urlencode(params),
+        )
 
 
 class S3USEast2Connection(S3SignatureV4Connection):
