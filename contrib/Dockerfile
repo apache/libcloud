@@ -37,10 +37,13 @@ RUN set -e && \
       python3.7-dev \
       python3.8-dev \
       pypy3 \
+      pypy3-dev \
       python3-pip \
       libvirt-dev \
       # Needed by libvirt driver
-      pkg-config
+      pkg-config \
+      # Needed by cryptography library for pypy
+      libssl-dev
 
 # Workaround for zipp import error issue - https://github.com/pypa/virtualenv/issues/1630
 RUN python3 -m pip install --upgrade pip
@@ -52,4 +55,4 @@ COPY . /libcloud
 
 WORKDIR /libcloud
 
-CMD ["tox", "-e", "lint,py3.5,py3.6,py3.7,py3.8,pypypy3.5"]
+CMD ["tox", "-e", "lint,py3.5,py3.6,py3.7,py3.8,pypypy3"]
