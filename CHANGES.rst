@@ -18,6 +18,9 @@ Other
 - Update ``contrib/Dockerfile`` which can be used for running tests so
   it only run tests with Python versions we support. This means dropping
   support for Python < 3.5 and adding support for Python 2.8 and 3.8.
+
+  Also update it to use a more recent Ubuntu version (18.04) and Python 3
+  for running tox target.
   (GITHUB-1451)
   [Tomaz Muraus - @Kami, HuiFeng Tang - @99Kies]
 

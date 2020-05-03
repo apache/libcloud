@@ -15,7 +15,7 @@
 
 # Docker image used for running tests the under all the supported Python
 # versions
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN set -e && \
     apt-get update && \
@@ -37,16 +37,16 @@ RUN set -e && \
       python3.7-dev \
       #python3.8-dev \
       pypy3 \
-      python-pip \
+      python3-pip \
       libvirt-dev \
       # Needed by libvirt driver
       pkg-config
 
 # Workaround for zipp import error issue - https://github.com/pypa/virtualenv/issues/1630
-RUN pip install --upgrade pip
+RUN python3 -m pip install --upgrade pip
 
 RUN set -e && \
-    pip install --no-cache-dir "tox==3.14.2"
+    python3 -m pip install --no-cache-dir "tox==3.14.2"
 
 COPY . /libcloud
 
