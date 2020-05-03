@@ -35,4 +35,4 @@ COPY . /libcloud
 
 WORKDIR /libcloud
 
-CMD ["tox", "-e", "py3.5", "py3.6", "py3.7", "py3.8", "pypypy3", "lint"]
+CMD ["tox", "-e", "lint,py3.5,py3.6,py3.7,py3.8,pypy3"]
