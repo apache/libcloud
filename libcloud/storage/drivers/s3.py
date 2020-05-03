@@ -856,7 +856,7 @@ class BaseS3StorageDriver(StorageDriver):
             self._abort_multipart(container, upload.key, upload.id)
 
     def _clean_object_name(self, name):
-        name = urlquote(name)
+        name = urlquote(name, safe='/~')
         return name
 
     def _put_object(self, container, object_name, method='PUT',
