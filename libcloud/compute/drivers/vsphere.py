@@ -1041,7 +1041,7 @@ class VSphereNodeDriver(NodeDriver):
             content.rootFolder, [vim.Folder], True).view
         folders = []
         for folder in folders_raw:
-            to_add = {'type': folder.childType[1]}
+            to_add = {'type': list(folder.childType)}
             to_add['name'] = folder.name
             to_add['id'] = folder._moId
             folders.append(to_add)
