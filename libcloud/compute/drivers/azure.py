@@ -673,7 +673,7 @@ class AzureNodeDriver(NodeDriver):
                 return True
             else:
                 return False
-        except Exception, e:
+        except Exception:
             return False
 
     def ex_start_node(self, node=None, ex_cloud_service_name=None,
