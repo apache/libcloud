@@ -520,7 +520,7 @@ class ParamikoSSHClient(BaseSSHClient):
         # We only decode data at the end because a single chunk could contain
         # a part of multi byte UTF-8 character (whole multi bytes character
         # could be split over two chunks)
-        result.write(result_bytes.decode('utf-8'))
+        result.write(result_bytes.decode('utf-8', errors='ignore'))
         return result
 
     def _get_pkey_object(self, key, password=None):
