@@ -210,7 +210,7 @@ class LibvirtNodeDriver(NodeDriver):
         id_to_hash = str(memory) + str(vcpu_count)
         size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
         size_name = domain.name() + "-size"
-        size = NodeSize(id=size_id, name=size_name, ram=memory, disk=0,
+        size = NodeSize(id=size_id, name=size_name, ram=memory / 1000, disk=0,
                         bandwidth=0, price=0, driver=self, extra=size_extra)
 
         public_ips, private_ips = [], []
