@@ -2553,6 +2553,7 @@ class GCENodeDriver(NodeDriver):
             request = '/zones/%s/instances' % (zone.name)
         response = self.connection.request(request, method='GET').object
 
+        sizes = {}
         if 'items' in response:
             # The aggregated response returns a dict for each zone
             if zone is None:
@@ -2561,6 +2562,14 @@ class GCENodeDriver(NodeDriver):
                 for v in response['items'].values():
                     for i in v.get('instances', []):
                         try:
+                            if sizes.get(i['machineType']):
+                                i['size'] = sizes[i['machineType']]
+                            else:
+                                i['size'] = self.connection.request(
+                                    i['machineType'], method='GET').object[
+                                        'id']
+                                sizes[i['machineType']] = i['size']
+
                             list_nodes.append(
                                 self._to_node(i,
                                               use_disk_cache=ex_use_disk_cache)
@@ -2577,6 +2586,13 @@ class GCENodeDriver(NodeDriver):
             else:
                 for i in response['items']:
                     try:
+                        if sizes.get(i['machineType']):
+                            i['size'] = sizes[i['machineType']]
+                        else:
+                            i['size'] = self.connection.request(
+                                i['machineType'], method='GET').object['id']
+                            sizes[i['machineType']] = i['size']
+
                         list_nodes.append(
                             self._to_node(i, use_disk_cache=ex_use_disk_cache)
                         )
@@ -8938,15 +8954,12 @@ class GCENodeDriver(NodeDriver):
                 src_image = extra['boot_disk'].extra['sourceImage']
                 image = self._get_components_from_path(src_image)['name']
             extra['image'] = image
-        size = self.connection.request(node['machineType'],
-                                       method='GET').object['id']
-
         state = self.NODE_STATE_MAP.get(node['status'], NodeState.UNKNOWN)
 
         return Node(id=node['id'], name=node['name'],
                     state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self, size=size, image=image, extra=extra)
+                    driver=self, size=node['size'], image=image, extra=extra)
 
     def _to_node_size(self, machine_type):
         """
