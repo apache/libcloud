@@ -409,6 +409,18 @@ class S3Tests(unittest.TestCase):
         except OSError:
             pass
 
+    def test_clean_object_name(self):
+        # Ensure ~ is not URL encoded
+        # See https://github.com/apache/libcloud/issues/1452 for details
+        cleaned = self.driver._clean_object_name(name='valid')
+        self.assertEqual(cleaned, 'valid')
+
+        cleaned = self.driver._clean_object_name(name='valid/~')
+        self.assertEqual(cleaned, 'valid/~')
+
+        cleaned = self.driver._clean_object_name(name='valid/~%foo ')
+        self.assertEqual(cleaned, 'valid/~%25foo%20')
+
     def test_invalid_credentials(self):
         self.mock_response_klass.type = 'UNAUTHORIZED'
         try:
