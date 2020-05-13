@@ -1867,7 +1867,7 @@ class ECSDriver(NodeDriver):
 
     def _to_size(self, element):
         _id = findtext(element, 'InstanceTypeId', namespace=self.namespace)
-        ram = float(findtext(element, 'MemorySize', namespace=self.namespace))
+        ram = float(findtext(element, 'MemorySize', namespace=self.namespace)) * 1024
         extra = {}
         extra['cpu_core_count'] = int(findtext(element, 'CpuCoreCount',
                                                namespace=self.namespace))
