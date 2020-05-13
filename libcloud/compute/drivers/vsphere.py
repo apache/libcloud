@@ -489,7 +489,7 @@ class VSphereNodeDriver(NodeDriver):
         path = vm.get('summary.config.vmPathName')
         memory = vm.get('summary.config.memorySizeMB')
         cpus = vm.get('summary.config.numCpu')
-        disk = vm.get('summary.storage.committed', 0) / (1024 ** 3)
+        disk = vm.get('summary.storage.committed', 0) // (1024 ** 3)
         id_to_hash = str(memory) + str(cpus) + str(disk)
         size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
         size_name = name + "-size"
