@@ -246,7 +246,7 @@ class VSphereNodeDriver(NodeDriver):
         ).view
 
         for vm in vms:
-            if vm.config.template:
+            if vm.config and vm.config.template:
                 images.append(self._to_image(vm))
 
         return images
