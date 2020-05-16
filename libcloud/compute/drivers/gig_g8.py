@@ -24,6 +24,8 @@ from libcloud.compute.types import Provider, NodeState
 from libcloud.common.gig_g8 import G8Connection
 from libcloud.common.exceptions import BaseHTTPError
 
+class G8ProvisionError(Exception):
+    pass
 
 class G8PortForward(UuidMixin):
     def __init__(self, network, node_id, publicport,
@@ -282,7 +284,8 @@ class G8NodeDriver(NodeDriver):
             return ports["node"]
         usedports = ports["network"]
         sshport = 2200
-        while True:
+        endport = 3000
+        while sshport < endport:
             while sshport in usedports:
                 sshport += 1
             try:
@@ -295,6 +298,8 @@ class G8NodeDriver(NodeDriver):
                     # port already used maybe raise let's try next
                     usedports.append(sshport)
                 raise
+        else:
+            raise G8ProvisionError("Failed to create portforward")
         return sshport
 
     def ex_create_network(self, name, private_network="192.168.103.0/24",

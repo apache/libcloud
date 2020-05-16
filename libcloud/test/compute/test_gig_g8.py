@@ -37,7 +37,7 @@ class G8MockHttp(MockHttp):
 class G8Tests(unittest.TestCase):
     def setUp(self):
         G8NodeDriver.connectionCls.conn_class = G8MockHttp
-        self.driver = G8NodeDriver(1, "token", "https://myg8.example.com")
+        self.driver = G8NodeDriver(1, "header.eyJhenAiOiJkZndlcmdyZWdyZSIsImV4cCI6MTU5MDUyMzEwNSwiaXNzIjoiaXRzeW91b25saW5lIiwicmVmcmVzaF90b2tlbiI6Inh4eHh4eHgiLCJzY29wZSI6WyJ1c2VyOmFkbWluIl0sInVzZXJuYW1lIjoiZXhhbXBsZSJ9.signature", "https://myg8.example.com")
 
     def test_list_networks(self):
         networks = self.driver.ex_list_networks()
