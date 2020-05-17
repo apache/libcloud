@@ -184,7 +184,7 @@ class MaxihostNodeDriver(NodeDriver):
         return locations
     
     def _to_location(self, data):
-        name = data.get('location').get('city', '')
+        name = data.get('name')
         country = data.get('location').get('country', '')
         return NodeLocation(id=data['slug'], name=name, country=None,
                             driver=self)
