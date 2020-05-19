@@ -7519,6 +7519,8 @@ class GCENodeDriver(NodeDriver):
             name, 'instances', res_name='Node')
         request = '/zones/%s/instances/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
+        response['size'] = self.connection.request(
+            response['machineType'], method='GET').object['id']
         return self._to_node(response)
 
     def ex_get_project(self):
