@@ -585,7 +585,7 @@ class LibvirtNodeDriver(NodeDriver):
             else:
                 network_names.append(n.get('network_name'))
 
-        network_names = network_names or ['default']
+        network_names = network_names or []
 
         network_interfaces_init = ''
 
