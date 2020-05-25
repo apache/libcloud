@@ -24,8 +24,10 @@ from libcloud.compute.types import Provider, NodeState
 from libcloud.common.gig_g8 import G8Connection
 from libcloud.common.exceptions import BaseHTTPError
 
+
 class G8ProvisionError(Exception):
     pass
+
 
 class G8PortForward(UuidMixin):
     def __init__(self, network, node_id, publicport,
