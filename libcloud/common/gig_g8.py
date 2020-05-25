@@ -74,7 +74,7 @@ def is_jwt_expired(jwt):
         claimsdata = claimsdata.decode('utf-8')
     data = json.loads(claimsdata)
     # check if it's about to expire in the next minute
-    return data['exp'] < time.time() - 60
+    return data['exp'] < time.time() + 60
 
 
 def maybe_update_jwt(jwt):
