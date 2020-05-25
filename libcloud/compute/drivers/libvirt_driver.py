@@ -239,6 +239,23 @@ class LibvirtNodeDriver(NodeDriver):
         except:
             xml_description = ''
 
+        from xml.dom import minidom
+        xml = minidom.parseString(xml_description)
+        diskTypes = xml.getElementsByTagName('disk')
+        diskSizes = []
+        for diskType in diskTypes:
+            diskNodes = diskType.childNodes
+            for diskNode in diskNodes:
+                if diskNode.attributes and diskNode.getAttribute('file'):
+                    try:
+                        diskSizes.append(
+                            domain.blockInfo(diskNode.getAttribute('file'))[0]
+                        )
+                    except Exception as exc:
+                        log.error('Failed to fetch size for %s: %r' % (
+                            diskNode.getAttribute('file'), exc))
+                        continue
+        size.disk = sum(diskSizes) / (1024 * 1024 * 1024)
         extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
                  'types': self.connection.getType(),
                  'active': bool(domain.isActive()),
@@ -365,15 +382,18 @@ class LibvirtNodeDriver(NodeDriver):
         Returns iso images as NodeImages
         Searches inside IMAGES_LOCATION, unless other location is specified
         """
-        images = []
-        cmd = "find %s -name '*.iso' -o -name '*.img' -o -name '*.raw' -o -name '*.qcow' -o -name '*.qcow2'" % location
+        cmd = f"find {location} -name '*.iso' -o -name '*.img' -o -name '*.raw' -o -name '*.qcow' -o -name '*.qcow2' -type f | xargs stat -c '%n %s'"
         output = self._run_command(cmd).get('output')
+        if not output:
+            return []
+        images = []
 
-        if output:
-            for image in output.strip().split('\n'):
-                name = image.replace(IMAGES_LOCATION + '/', '')
-                nodeimage = NodeImage(id=image, name=name, driver=self, extra={'host': self.host})
-                images.append(nodeimage)
+        for image in output.strip().split('\n'):
+            name, size = image.split(' ')
+            name = name.replace(IMAGES_LOCATION + '/', '')
+            size = int(size)
+            nodeimage = NodeImage(id=image, name=name, driver=self, extra={'host': self.host, 'size': size})
+            images.append(nodeimage)
 
         return images
 
