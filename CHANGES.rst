@@ -18,6 +18,27 @@ Compute
   (GITHUB-1455, GITHUB-1456)
   [RobertH1993]
 
+- Fix ``deploy_node()`` so an exception is not thrown if any of the output
+  (stdout / stderr) produced by the deployment script contains a non-valid utf-8
+  character.
+
+  Previously, user would see an error similar to "Failed after 3 tries: 'utf-8'
+  codec can't decode byte 0xc0 in position 37: invalid start byte".
+
+  And now we simply ignore byte sequences which we can't decode and include
+  rest of the output which can be decoded.
+
+  (GITHUB-1459)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``timeout`` argument to ``ScriptDeployment`` and
+  ``ScriptFileDeployment`` class constructor.
+
+  With this argument, user can specify an optional run timeout for that
+  deployment step run.
+  (GITHUB-1445)
+  [Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 

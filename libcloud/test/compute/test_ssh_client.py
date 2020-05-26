@@ -548,6 +548,34 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         self.assertEqual('ð\x90\x8d\x88', stderr)
         self.assertEqual(len(stderr), 4)
 
+    def test_consume_stdout_chunk_contains_non_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, True, False]
+        chan.recv.side_effect = ['🤦'.encode('utf-32'), 'a', 'b']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual('\x00\x00&\x01\x00ab', stdout)
+        self.assertEqual(len(stdout), 7)
+
+    def test_consume_stderr_chunk_contains_non_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, True, False]
+        chan.recv_stderr.side_effect = ['🤦'.encode('utf-32'), 'a', 'b']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual('\x00\x00&\x01\x00ab', stderr)
+        self.assertEqual(len(stderr), 7)
+
 
 class ShellOutSSHClientTests(LibcloudTestCase):
 
