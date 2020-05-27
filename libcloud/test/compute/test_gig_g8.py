@@ -14,11 +14,15 @@
 # limitations under the License.
 import sys
 import unittest
+import base64
+import json
+import time
 
 from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
 from libcloud.compute.base import NodeImage, NodeSize, Node, StorageVolume
 from libcloud.compute.drivers.gig_g8 import G8NodeDriver, G8Network, G8PortForward
+from libcloud.common import gig_g8
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
@@ -37,7 +41,7 @@ class G8MockHttp(MockHttp):
 class G8Tests(unittest.TestCase):
     def setUp(self):
         G8NodeDriver.connectionCls.conn_class = G8MockHttp
-        self.driver = G8NodeDriver(1, "token", "https://myg8.example.com")
+        self.driver = G8NodeDriver(1, "header.eyJhenAiOiJkZndlcmdyZWdyZSIsImV4cCI6MTU5MDUyMzEwNSwiaXNzIjoiaXRzeW91b25saW5lIiwicmVmcmVzaF90b2tlbiI6Inh4eHh4eHgiLCJzY29wZSI6WyJ1c2VyOmFkbWluIl0sInVzZXJuYW1lIjoiZXhhbXBsZSJ9.signature", "https://myg8.example.com")
 
     def test_list_networks(self):
         networks = self.driver.ex_list_networks()
@@ -144,6 +148,24 @@ class G8Tests(unittest.TestCase):
         node = self.driver.list_nodes()[0]
         res = self.driver.detach_volume(node, volume)
         self.assertTrue(res)
+
+    def test_is_jwt_expired(self):
+        data = {"azp": "example",
+                "exp": int(time.time()),
+                "iss": "itsyouonline",
+                "refresh_token": "xxxxxxx",
+                "scope": ["user:admin"],
+                "username": "example"}
+
+        def contruct_jwt(data):
+            jsondata = json.dumps(data).encode()
+            return "header.{}.signature".format(base64.encodebytes(jsondata).decode())
+
+        self.assertTrue(gig_g8.is_jwt_expired(contruct_jwt(data)))
+        data["exp"] = int(time.time()) + 300  # expire in 5min
+        self.assertFalse(gig_g8.is_jwt_expired(contruct_jwt(data)))
+
+
 
 
 
