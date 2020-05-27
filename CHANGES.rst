@@ -39,6 +39,13 @@ Compute
   (GITHUB-1445)
   [Tomaz Muraus - @Kami]
 
+
+- [GiG G8] Fix retry functionality when creating port forwards and add support
+  for automatically refresing the JWT auth token inside the connection class if
+  it's about to expire in 60 seconds or less.
+  (GITHUB-1465)
+  [Jo De Boeck - @grimpy]
+
 Storage
 ~~~~~~~
 
