@@ -18,12 +18,22 @@ import base64
 import json
 import time
 
+import mock
+
 from libcloud.utils.py3 import httplib
 from libcloud.test import MockHttp
 from libcloud.compute.base import NodeImage, NodeSize, Node, StorageVolume
 from libcloud.compute.drivers.gig_g8 import G8NodeDriver, G8Network, G8PortForward
-from libcloud.common import gig_g8
+import libcloud.common.gig_g8
+
 from libcloud.test.file_fixtures import ComputeFileFixtures
+
+# For tests we don't want to actually verify a token since we use an expired on
+original_is_jwt_expired = libcloud.common.gig_g8.is_jwt_expired
+
+
+def mock_is_jwt_expired(jwt):
+    return False
 
 
 class G8MockHttp(MockHttp):
@@ -38,6 +48,7 @@ class G8MockHttp(MockHttp):
         return method
 
 
+@mock.patch('libcloud.common.gig_g8.is_jwt_expired', mock_is_jwt_expired)
 class G8Tests(unittest.TestCase):
     def setUp(self):
         G8NodeDriver.connectionCls.conn_class = G8MockHttp
@@ -161,12 +172,11 @@ class G8Tests(unittest.TestCase):
             jsondata = json.dumps(data).encode()
             return "header.{}.signature".format(base64.encodebytes(jsondata).decode())
 
-        self.assertTrue(gig_g8.is_jwt_expired(contruct_jwt(data)))
+        libcloud.common.gig_g8.is_jwt_expired = original_is_jwt_expired
+
+        self.assertTrue(libcloud.common.gig_g8.is_jwt_expired(contruct_jwt(data)))
         data["exp"] = int(time.time()) + 300  # expire in 5min
-        self.assertFalse(gig_g8.is_jwt_expired(contruct_jwt(data)))
-
-
-
+        self.assertFalse(libcloud.common.gig_g8.is_jwt_expired(contruct_jwt(data)))
 
 
 if __name__ == '__main__':

@@ -15,27 +15,27 @@ Provider                      enable container cdn enable object cdn get contain
 `Nimbus.io`_                  no                   no                no                    no                
 `Ninefold`_                   no                   yes               no                    yes               
 `OpenStack Swift`_            yes                  no                yes                   yes               
-`Amazon S3`_                  no                   no                no                    no                
-`Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
-`Amazon S3 (ap-northeast-1)`_ no                   no                no                    no                
-`Amazon S3 (ap-northeast-2)`_ no                   no                no                    no                
-`Amazon S3 (ap-south-1)`_     no                   no                no                    no                
-`Amazon S3 (ap-southeast-1)`_ no                   no                no                    no                
-`Amazon S3 (ap-southeast-2)`_ no                   no                no                    no                
-`Amazon S3 (ca-central-1)`_   no                   no                no                    no                
-`Amazon S3 (cn-north-1)`_     no                   no                no                    no                
-`Amazon S3 (cn-northwest-1)`_ no                   no                no                    no                
-`Amazon S3 (eu-central-1)`_   no                   no                no                    no                
-`Amazon S3 (eu-north-1)`_     no                   no                no                    no                
-`Amazon S3 (eu-west-1)`_      no                   no                no                    no                
-`Amazon S3 (eu-west-2)`_      no                   no                no                    no                
+`Amazon S3`_                  no                   no                no                    yes               
+`Amazon S3 (ap-northeast-1)`_ no                   no                no                    yes               
+`Amazon S3 (ap-northeast-1)`_ no                   no                no                    yes               
+`Amazon S3 (ap-northeast-2)`_ no                   no                no                    yes               
+`Amazon S3 (ap-south-1)`_     no                   no                no                    yes               
+`Amazon S3 (ap-southeast-1)`_ no                   no                no                    yes               
+`Amazon S3 (ap-southeast-2)`_ no                   no                no                    yes               
+`Amazon S3 (ca-central-1)`_   no                   no                no                    yes               
+`Amazon S3 (cn-north-1)`_     no                   no                no                    yes               
+`Amazon S3 (cn-northwest-1)`_ no                   no                no                    yes               
+`Amazon S3 (eu-central-1)`_   no                   no                no                    yes               
+`Amazon S3 (eu-north-1)`_     no                   no                no                    yes               
+`Amazon S3 (eu-west-1)`_      no                   no                no                    yes               
+`Amazon S3 (eu-west-2)`_      no                   no                no                    yes               
 `Ceph RGW`_                   no                   no                no                    no                
 `RGW Outscale`_               no                   no                no                    no                
-`Amazon S3 (sa-east-1)`_      no                   no                no                    no                
-`Amazon S3 (us-east-2)`_      no                   no                no                    no                
-`Amazon S3 (us-gov-west-1)`_  no                   no                no                    no                
-`Amazon S3 (us-west-1)`_      no                   no                no                    no                
-`Amazon S3 (us-west-2)`_      no                   no                no                    no                
+`Amazon S3 (sa-east-1)`_      no                   no                no                    yes               
+`Amazon S3 (us-east-2)`_      no                   no                no                    yes               
+`Amazon S3 (us-gov-west-1)`_  no                   no                no                    yes               
+`Amazon S3 (us-west-1)`_      no                   no                no                    yes               
+`Amazon S3 (us-west-2)`_      no                   no                no                    yes               
 ============================= ==================== ================= ===================== ==================
 
 .. _`Aliyun OSS`: http://www.aliyun.com/product/oss
