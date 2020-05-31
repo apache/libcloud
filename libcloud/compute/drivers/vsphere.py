@@ -232,18 +232,26 @@ class VSphereNodeDriver(NodeDriver):
         """
         return []
 
-    def list_images(self, location=None):
+    def list_images(self, location=None, folder_ids=[]):
         """
-        Lists VM templates as images
+        Lists VM templates as images.
+        If folder is given then it will list images contained
+        in that folder only.
         """
 
         images = []
-        content = self.connection.RetrieveContent()
-        vms = content.viewManager.CreateContainerView(
-            content.rootFolder,
-            [vim.VirtualMachine],
-            recursive=True
-        ).view
+        if folder_ids:
+            vms = []
+            for folder_id in folder_ids:
+                folder_object = self._get_item_by_moid('Folder', folder_id)
+                vms.extend(folder_object.childEntity)
+        else:
+            content = self.connection.RetrieveContent()
+            vms = content.viewManager.CreateContainerView(
+                content.rootFolder,
+                [vim.VirtualMachine],
+                recursive=True
+            ).view
 
         for vm in vms:
             if vm.config and vm.config.template:
@@ -505,7 +513,7 @@ class VSphereNodeDriver(NodeDriver):
             os_type = 'windows'
         uuid = vm.get('summary.config.instanceUuid') or \
             (vm.get('obj').config and vm.get('obj').config.instanceUuid)
-        if not uuid:                                                
+        if not uuid:
             logger.error('No uuid for vm:', vm)
         annotation = vm.get('summary.config.annotation')
         state = vm.get('summary.runtime.powerState')
@@ -1644,7 +1652,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             raise
         return result
 
-    def list_images(self):
+    def list_images(self, **kwargs):
         libraries = self.ex_list_content_libraries()
         item_ids = []
         if libraries:
