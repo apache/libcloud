@@ -111,13 +111,23 @@ class CloudFlareDNSResponse(JsonResponse):
         errors = body.get('errors', [])
 
         for error in errors:
+            error_chain = error.get('error_chain', [])
+
+            error_chain_errors = []
+            for chain_error in error_chain:
+                error_chain_errors.append('%s: %s' % (
+                    chain_error.get('code', 'unknown'),
+                    chain_error.get('message', '')))
+
             try:
                 exception_class, context = self.exceptions[error['code']]
             except KeyError:
                 exception_class, context = LibcloudError, []
 
             kwargs = {
-                'value': '{}: {}'.format(error['code'], error['message']),
+                'value': '{}: {} (error chain: {})'.format(error['code'],
+                                                           error['message'],
+                                                           ', '.join(error_chain_errors)),
                 'driver': self.connection.driver,
             }
 
