@@ -60,8 +60,8 @@ Storage
 DNS
 ~~~
 
-- [CloudFlare] Update driver to include whole error chain the thrown exception
-  message string.
+- [CloudFlare] Update driver to include the whole error chain the thrown
+  exception message field.
 
   This makes various issues easier to debug since the whole error context is
   included.
@@ -79,12 +79,13 @@ DNS
   - ``0 issue caa.example.com``
   - ``0 issuewild caa.example.com``
   - ``0 iodef https://example.com/reports``
-  (GITHUB-1464)
+
+  (GITHUB-1463, GITHUB-1464)
   [Tomaz Muraus]
 
 - [Gandi Live] Don't throw if ``extra['rrset_ttl']`` argument is not passed
   to the ``create_record`` method.
-  (GITHUB-1463, GITHUB-1464)
+  (GITHUB-1463)
   [Tomaz Muraus]
 
 Other

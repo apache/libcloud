@@ -125,9 +125,10 @@ class CloudFlareDNSResponse(JsonResponse):
                 exception_class, context = LibcloudError, []
 
             kwargs = {
-                'value': '{}: {} (error chain: {})'.format(error['code'],
-                                                           error['message'],
-                                                           ', '.join(error_chain_errors)),
+                'value': '{}: {} (error chain: {})'.format(
+                    error['code'],
+                    error['message'],
+                    ', '.join(error_chain_errors)),
                 'driver': self.connection.driver,
             }
 
@@ -312,9 +313,10 @@ class CloudFlareDNSDriver(DNSDriver):
         non-settable properties are ignored.
 
         NOTE: For CAA RecordType, data needs to be in the following format:
-            <flags> <tag> <ca domain name> where the tag can be issue, issuewild or iodef.
+        <flags> <tag> <ca domain name> where the tag can be issue, issuewild
+        or iodef.
 
-            For example: 0 issue test.caa.com
+        For example: 0 issue test.caa.com
         """
         url = '{}/zones/{}/dns_records'.format(API_BASE, zone.id)
 
@@ -441,20 +443,23 @@ class CloudFlareDNSDriver(DNSDriver):
             return data
 
         if type == RecordType.CAA:
-            # Replace whitespace with \t character which CloudFlare API expects.
+            # Replace whitespace with \t character which CloudFlare API
+            # expects
             data = data.replace(' ', '\t')
 
         return data
 
     def _normalize_record_data_from_api(self, type, data):
         """
-        Normalize record data for special records so it's consistent with the Libcloud API.
+        Normalize record data for special records so it's consistent with
+        the Libcloud API.
         """
         if not data:
             return data
 
         if type == RecordType.CAA:
-            # Replace whitespace with \t character which CloudFlare API expects.
+            # CloudFlare uses \t but we normalize it to whitespace so it's
+            # consistent across all the drivers.
             data = data.replace('\t', ' ')
 
         return data
