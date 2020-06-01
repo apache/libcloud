@@ -31,6 +31,21 @@ example shows how to do that.
 .. literalinclude:: /examples/dns/create_record_with_priority.py
    :language: python
 
+Create a CAA record
+-------------------
+
+.. note::
+
+    Support for CAA record type has been introduced in Libcloud v3.1.0. At this
+    point it has only been implemented and tested with CloudFlare and Gandii
+    Live DNS drivers.
+
+When creating a CAA record, data fields needs to be in the following format:
+``<flags> <tag> <domain name / url>`` as shown below.
+
+.. literalinclude:: /examples/dns/create_record_caa_record_type.py
+   :language: python
+
 Export Libcloud Zone to BIND zone format
 ----------------------------------------
 
