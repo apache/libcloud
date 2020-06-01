@@ -310,8 +310,17 @@ class CloudFlareDNSDriver(DNSDriver):
         Note that for ``extra`` record properties, only the ones specified in
         ``RECORD_CREATE_ATTRIBUTES`` can be set at creation time. Any
         non-settable properties are ignored.
+
+        NOTE: For CAA RecordType, data needs to be in the following format:
+            <flags> <tag> <ca domain name> where the tag can be issue, issuewild or iodef.
+
+            For example: 0 issue test.caa.com
         """
         url = '{}/zones/{}/dns_records'.format(API_BASE, zone.id)
+
+        if type == RecordType.CAA:
+            # Replace whitespace with \t character which CloudFlare API expects.
+            data = data.replace(' ', '\t')
 
         body = {
             'type': type,
