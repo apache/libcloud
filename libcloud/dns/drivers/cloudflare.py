@@ -318,10 +318,7 @@ class CloudFlareDNSDriver(DNSDriver):
         """
         url = '{}/zones/{}/dns_records'.format(API_BASE, zone.id)
 
-        if type == RecordType.CAA:
-            # Replace whitespace with \t character which CloudFlare API expects.
-            data = data.replace(' ', '\t')
-
+        data = self._normalize_record_data_for_api(type=type, data=data,)
         body = {
             'type': type,
             'name': name,
@@ -350,6 +347,7 @@ class CloudFlareDNSDriver(DNSDriver):
         url = '{}/zones/{}/dns_records/{}'.format(API_BASE, record.zone.id,
                                                   record.id)
 
+        data = self._normalize_record_data_for_api(type=type, data=data,)
         body = {
             'type': record.type if type is None else type,
             'name': record.name if name is None else name,
@@ -434,6 +432,33 @@ class CloudFlareDNSDriver(DNSDriver):
     def ex_disable_ipv6_support(self, zone):
         raise NotImplementedError('not yet implemented in v4 driver')
 
+    def _normalize_record_data_for_api(self, type, data):
+        """
+        Normalize record data for "special" records such as CAA so it can be
+        used with the CloudFlare API.
+        """
+        if not data:
+            return data
+
+        if type == RecordType.CAA:
+            # Replace whitespace with \t character which CloudFlare API expects.
+            data = data.replace(' ', '\t')
+
+        return data
+
+    def _normalize_record_data_from_api(self, type, data):
+        """
+        Normalize record data for special records so it's consistent with the Libcloud API.
+        """
+        if not data:
+            return data
+
+        if type == RecordType.CAA:
+            # Replace whitespace with \t character which CloudFlare API expects.
+            data = data.replace('\t', ' ')
+
+        return data
+
     def _to_zone(self, item):
         return Zone(
             id=item['id'],
@@ -454,11 +479,14 @@ class CloudFlareDNSDriver(DNSDriver):
         if ttl is not None:
             ttl = int(ttl)
 
+        data = self._normalize_record_data_from_api(item['type'],
+                                                    item['content'])
+
         return Record(
             id=item['id'],
             name=name,
             type=item['type'],
-            data=item['content'],
+            data=data,
             zone=zone,
             driver=self,
             ttl=ttl,

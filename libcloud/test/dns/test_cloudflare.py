@@ -76,7 +76,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
-        self.assertEqual(len(records), 10)
+        self.assertEqual(len(records), 11)
 
         record = records[0]
         self.assertEqual(record.id, '364797364')
@@ -103,6 +103,12 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertEqual(record.type, 'MX')
         self.assertEqual(record.data, 'aspmx3.googlemail.com')
         self.assertEqual(record.extra['priority'], 30)
+
+        record = records[-1]
+        self.assertEqual(record.id, 'r8')
+        self.assertEqual(record.name, 'test1')
+        self.assertEqual(record.type, 'CAA')
+        self.assertEqual(record.data, '0 issue test.example.com')
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='1234')
@@ -240,6 +246,14 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
             zone, domain='', extra={'paused': True, 'plan': None})
 
         self.assertEqual(zone, updated_zone)
+
+    def test_normalize_record_data_for_api(self):
+        result = self.driver._normalize_record_data_for_api(RecordType.CAA, '0 issue foo.bar')
+        self.assertEqual(result, '0\tissue\tfoo.bar')
+
+    def test_normalize_record_data_from_apu(self):
+        result = self.driver._normalize_record_data_from_api(RecordType.CAA, '0\tissue\tfoo.bar')
+        self.assertEqual(result, '0 issue foo.bar')
 
 
 class CloudFlareMockHttp(MockHttp):
