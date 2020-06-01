@@ -15,6 +15,8 @@
 
 import sys
 
+import json
+
 from libcloud.common.types import LibcloudError
 from libcloud.test import unittest
 
@@ -130,6 +132,18 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
                                            type=RecordType.A,
                                            data='127.0.0.3',
                                            extra={'proxied': True})
+        self.assertEqual(record.id, '412561327')
+        self.assertEqual(record.name, 'test5')
+        self.assertEqual(record.type, 'A')
+        self.assertEqual(record.data, '127.0.0.3')
+
+    def test_create_record_CAA_record_type(self):
+        zone = self.driver.list_zones()[0]
+
+        CloudFlareMockHttp.type = 'caa_record_type'
+        record = self.driver.create_record(name='test5', zone=zone,
+                                           type=RecordType.CAA,
+                                           data='0 issue caa.example.com')
         self.assertEqual(record.id, '412561327')
         self.assertEqual(record.name, 'test5')
         self.assertEqual(record.type, 'A')
@@ -256,7 +270,7 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertEqual(result, '0 issue foo.bar')
 
 
-class CloudFlareMockHttp(MockHttp):
+class CloudFlareMockHttp(MockHttp, unittest.TestCase):
     fixtures = DNSFileFixtures('cloudflare')
 
     def _client_v4_memberships(self, method, url, body, headers):
@@ -310,6 +324,19 @@ class CloudFlareMockHttp(MockHttp):
             body = self.fixtures.load('records_{}_{}.json'.format(method, page))
         else:
             body = self.fixtures.load('records_{}.json'.format(method))
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _client_v4_zones_1234_dns_records_caa_record_type(self, method, url, body, headers):
+        if method not in ['POST']:
+            raise AssertionError('Unsupported method: %s' % (method))
+
+        url = urlparse.urlparse(url)
+        # Verify record data has been correctly normalized
+        body = json.loads(body)
+        self.assertEqual(body['content'], '0\tissue\tcaa.example.com')
+
+        body = self.fixtures.load('records_{}.json'.format(method))
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
