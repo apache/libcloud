@@ -129,6 +129,19 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertEqual(record.type, 'A')
         self.assertEqual(record.data, '127.0.0.3')
 
+    def test_create_record_error_with_error_chain(self):
+        zone = self.driver.list_zones()[0]
+
+        CloudFlareMockHttp.type = 'error_chain_error'
+
+        expected_msg = r'.*1004: DNS Validation Error \(error chain: 9011: Length of content is invalid\)'
+
+        self.assertRaisesRegex(LibcloudError, expected_msg,
+            self.driver.create_record,
+            name='test5', zone=zone,
+            type=RecordType.CAA,
+            data='caa.foo.com')
+
     def test_create_record_with_property_that_cant_be_set(self):
         zone = self.driver.list_zones()[0]
 
@@ -246,7 +259,7 @@ class CloudFlareMockHttp(MockHttp):
 
         body = self.fixtures.load('zones_{}.json'.format(method))
 
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
 
     def _client_v4_zones_1234(self, method, url, body, headers):
         if method not in {'GET', 'PATCH', 'DELETE'}:
@@ -283,6 +296,14 @@ class CloudFlareMockHttp(MockHttp):
             body = self.fixtures.load('records_{}_{}.json'.format(method, page))
         else:
             body = self.fixtures.load('records_{}.json'.format(method))
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _client_v4_zones_1234_dns_records_error_chain_error(self, method, url, body, headers):
+        if method not in ['POST']:
+            raise AssertionError('Unsupported method: %s' % (method))
+
+        body = self.fixtures.load('error_with_error_chain.json')
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
