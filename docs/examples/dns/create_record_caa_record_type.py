@@ -13,9 +13,9 @@ print(zone.create_record(name='www', type=RecordType.CAA,
                          data='0 issue caa.domain.com'))
 
 # 2. issuewild tag
-record = zone.create_record(name='www', type=RecordType.CAA
-                            data='0 issuewild caa.domain.com')
+print(zone.create_record(name='www', type=RecordType.CAA,
+                         data='0 issuewild caa.domain.com'))
 
 # 3. iodef tag
-record = zone.create_record(name='www', type=RecordType.CAA,
-                            data='0 iodef caa.domain.com/report')
+print(zone.create_record(name='www', type=RecordType.CAA,
+                         data='0 iodef caa.domain.com/report'))
