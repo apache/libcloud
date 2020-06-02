@@ -61,6 +61,7 @@ class GoogleDNSDriver(DNSDriver):
         RecordType.SPF: 'SPF',
         RecordType.SRV: 'SRV',
         RecordType.TXT: 'TXT',
+        RecordType.CAA: 'CAA',
     }
 
     def __init__(self, user_id, key, project=None, auth_type=None, scopes=None,

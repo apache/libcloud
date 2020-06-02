@@ -67,7 +67,7 @@ DNS
   included.
   [Tomaz Muraus]
 
-- [Gandi Live, CloudFlare] Add support for managing ``CAA`` record types.
+- [Gandi Live, CloudFlare, GCE] Add support for managing ``CAA`` record types.
 
   When creating a ``CAA`` record, data field needs to be in the following
   format:
