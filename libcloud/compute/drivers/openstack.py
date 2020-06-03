@@ -1944,12 +1944,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
 
     @_neutron_endpoint
-    def ex_delete_network(self, network_id):
+    def ex_delete_network(self, network):
         """
         Delete neutron network
         """
         response = self.connection.request(self._networks_url_prefix +
-                                           "/%s" % network_id, method='DELETE').object
+                                           "/%s" % network.id, method='DELETE').object
 
         return response
 
