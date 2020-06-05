@@ -394,7 +394,8 @@ class VSphereNodeDriver(NodeDriver):
                     vm_dict[vm['obj']].update(vm)
 
         vm_list = [vm_dict[k] for k in vm_dict]
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         nodes = loop.run_until_complete(self._to_nodes(vm_list))
         if enhance:
             nodes = self._enhance_metadata(nodes, content)
@@ -861,8 +862,6 @@ class VSphereNodeDriver(NodeDriver):
         image = kwargs['image']
         size = kwargs['size']
         network = kwargs.get('ex_network')
-        if network and not isinstance(network, str):
-            network = network.name
         template = self._find_template_by_uuid(image.id)
         if kwargs.get('cluster'):
             cluster_name = kwargs.get('cluster')
@@ -1221,7 +1220,8 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         times.
         """
         if async_:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
         req = "/rest/vcenter/vm"
         kwargs = {'filter.power_states': ex_filter_power_states,
                   'filter.folders': ex_filter_folders,
@@ -1610,7 +1610,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         spec['mac_type'] = "GENERATED"
         spec['backing'] = {}
         spec['backing']['type'] = "STANDARD_PORTGROUP"
-        spec['backing']['network'] = network.id
+        spec['backing']['network'] = network
         spec['start_connected'] = True
 
         data = json.dumps({'spec': spec})
@@ -1764,7 +1764,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                 nic['mac_type'] = 'GENERATED'
                 nic['backing'] = {}
                 nic['backing']['type'] = "STANDARD_PORTGROUP"
-                nic['backing']['network'] = ex_network.id
+                nic['backing']['network'] = ex_network
                 nic['start_connected'] = True
                 spec['nics'] = [nic]
             create_request = "/rest/vcenter/vm"
@@ -1803,7 +1803,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             if ex_network and ovf['networks']:
                 spec['deployment_spec'][
                     'network_mappings'] = [{'key': ovf['networks'][0],
-                                            'value': ex_network.id}]
+                                            'value': ex_network}]
             elif not ovf['networks'] and ex_network:
                 create_nic = True
             # storage
@@ -1868,12 +1868,10 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                 nics = template['nics']
                 if len(nics) > 0:
                     nic = nics[0]
-                    spec['hardware_customization'][
-                        'nics'] = [{'key': nic['key'],
-                                    'value': {
-                                        'network': ex_network.id}
-                                    }
-                                   ]
+                    spec['hardware_customization']['nics'] = [{
+                        'key': nic['key'],
+                        'value': {'network': ex_network}
+                    }]
                 else:
                     create_nic = True
             spec['powered_on'] = False
@@ -1881,10 +1879,12 @@ class VSphere_6_7_NodeDriver(NodeDriver):
             if size:
                 if size.ram:
                     spec['hardware_customization']['memory_update'] = {
-                        'memory': int(size.ram)}
+                        'memory': int(size.ram)
+                    }
                 if size.extra.get('cpu'):
                     spec['hardware_customization']['cpu_update'] = {
-                        'num_cpus': size.extra['cpu']}
+                        'num_cpus': size.extra['cpu']
+                    }
                 if size.disk:
                     if not len(template['disks']) > 0:
                         create_disk = True
