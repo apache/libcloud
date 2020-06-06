@@ -196,9 +196,9 @@ TEST_REQUIREMENTS = [
 
 if PY_pre_35:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
-    print('Version ' + version + ' is not supported. Supported versions are: %s.'
+    print('Version ' + version + ' is not supported. Supported versions are: %s. '
           'Latest version which supports Python 2.7 and Python 3 < 3.5.0 is '
-          'Libcloud v2.8.0' % ', '.join(SUPPORTED_VERSIONS))
+          'Libcloud v2.8.2' % ', '.join(SUPPORTED_VERSIONS))
     sys.exit(1)
 
 
