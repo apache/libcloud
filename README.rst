@@ -1,10 +1,10 @@
 Apache Libcloud - a unified interface for the cloud
 ====================================================
 
-
 Apache Libcloud is a Python library which hides differences between different
 cloud provider APIs and allows you to manage different cloud resources
 through a unified and easy to use API.
+
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat
     :target: https://libcloud.readthedocs.org
@@ -36,6 +36,15 @@ through a unified and easy to use API.
 :Issues:        https://issues.apache.org/jira/projects/LIBCLOUD/issues
 :Website:       https://libcloud.apache.org/
 :Documentation: https://libcloud.readthedocs.io
+
+.. note::
+
+   Libcloud v3.0.0 dropped support for Python 2.7 and Python 3.4 and now only
+   supports Python >= 3.5.
+
+   If you still need to us Libcloud with one of the now unsupported versions,
+   you can do that by using the latest release of Libcloud which still supports
+   those versions (Libcloud v2.8).
 
 Resources you can manage with Libcloud are divided into the following categories:
 
