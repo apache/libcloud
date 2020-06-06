@@ -111,6 +111,7 @@ class RecordType(object):
     TXT = 'TXT'
     URL = 'URL'
     WKS = 'WKS'
+    CAA = 'CAA'
 
 
 class ZoneError(LibcloudError):

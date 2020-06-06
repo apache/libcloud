@@ -57,6 +57,37 @@ Storage
   (GITHUB-1452, GITHUB-1457)
   [Tomaz Muraus]
 
+DNS
+~~~
+
+- [CloudFlare] Update driver to include the whole error chain the thrown
+  exception message field.
+
+  This makes various issues easier to debug since the whole error context is
+  included.
+  [Tomaz Muraus]
+
+- [Gandi Live, CloudFlare, GCE] Add support for managing ``CAA`` record types.
+
+  When creating a ``CAA`` record, data field needs to be in the following
+  format:
+
+  ``<flags> <tag> <domain name>``
+
+  For example:
+
+  - ``0 issue caa.example.com``
+  - ``0 issuewild caa.example.com``
+  - ``0 iodef https://example.com/reports``
+
+  (GITHUB-1463, GITHUB-1464)
+  [Tomaz Muraus]
+
+- [Gandi Live] Don't throw if ``extra['rrset_ttl']`` argument is not passed
+  to the ``create_record`` method.
+  (GITHUB-1463)
+  [Tomaz Muraus]
+
 Other
 ~~~~~
 
