@@ -59,7 +59,7 @@ Documentation
 Documentation can be found at <https://libcloud.readthedocs.org>.
 
 Note on Python Version Compatibility
-===================================
+====================================
 
 Libcloud v3.0.0 dropped support for Python 2.7 and Python 3.4 and now only
 supports Python >= 3.5.
