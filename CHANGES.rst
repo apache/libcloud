@@ -1,6 +1,36 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud v2.8.3
+---------------------------------
+
+Compute
+~~~~~~~
+
+- Fix ``deploy_node()`` so an exception is not thrown if any of the output
+  (stdout / stderr) produced by the deployment script contains a non-valid utf-8
+  character.
+
+  Previously, user would see an error similar to "Failed after 3 tries: 'utf-8'
+  codec can't decode byte 0xc0 in position 37: invalid start byte".
+
+  And now we simply ignore byte sequences which we can't decode and include
+  rest of the output which can be decoded.
+
+  (GITHUB-1459)
+  [Tomaz Muraus - @Kami]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Make sure driver works correctly for objects with ``~`` in the name.
+
+  Now when sanitizing the object name, we don't url encode ``~`` character.
+
+  Reported by Michael Militzer - @mmilitzer.
+  (GITHUB-1452, GITHUB-1457)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud v2.8.2
 ---------------------------------
 
