@@ -524,8 +524,7 @@ class AzureNodeDriver(NodeDriver):
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
-        if not ex_use_managed_disks:
-            if ex_storage_account is None:
+        if not ex_use_managed_disks and ex_storage_account is None:
                 raise ValueError("ex_use_managed_disks is False, "
                                  "must provide ex_storage_account")
         if location is None:
