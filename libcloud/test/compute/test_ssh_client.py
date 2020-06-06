@@ -552,7 +552,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         chan = Mock()
         chan.recv_ready.side_effect = [True, True, True, False]
-        chan.recv.side_effect = ['🤦'.encode('utf-32'), 'a', 'b']
+        chan.recv.side_effect = [u'🤦'.encode('utf-32'), 'a', 'b']
 
         stdout = client._consume_stdout(chan).getvalue()
         self.assertEqual('\x00\x00&\x01\x00ab', stdout)
@@ -566,7 +566,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
 
         chan = Mock()
         chan.recv_stderr_ready.side_effect = [True, True, True, False]
-        chan.recv_stderr.side_effect = ['🤦'.encode('utf-32'), 'a', 'b']
+        chan.recv_stderr.side_effect = [u'🤦'.encode('utf-32'), 'a', 'b']
 
         stderr = client._consume_stderr(chan).getvalue()
         self.assertEqual('\x00\x00&\x01\x00ab', stderr)
