@@ -28,6 +28,7 @@ from libcloud.compute.ssh import ParamikoSSHClient
 from libcloud.compute.ssh import ShellOutSSHClient
 from libcloud.compute.ssh import have_paramiko
 
+from libcloud.utils.py3 import PY3
 from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import assertRaisesRegex
@@ -527,8 +528,12 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
 
         stdout = client._consume_stdout(chan).getvalue()
-        self.assertEqual('\xf0\x90\x8d\x88', stdout.encode('utf-8'))
-        self.assertTrue(len(stdout) in [1, 2])
+        if PY3:
+            self.assertEqual('ð\x90\x8d\x88', stdout)
+            self.assertEqual(len(stdout), 4)
+        else:
+            self.assertEqual('\xf0\x90\x8d\x88', stdout.encode('utf-8'))
+            self.assertTrue(len(stdout) in [1, 2])
 
     def test_consume_stderr_chunk_contains_part_of_multi_byte_utf8_character(self):
         conn_params = {'hostname': 'dummy.host.org',
@@ -541,8 +546,13 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv_stderr.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
 
         stderr = client._consume_stderr(chan).getvalue()
-        self.assertEqual('\xf0\x90\x8d\x88', stderr.encode('utf-8'))
-        self.assertTrue(len(stderr) in [1, 2])
+
+        if PY3:
+            self.assertEqual('ð\x90\x8d\x88', stderr)
+            self.assertEqual(len(stderr), 4)
+        else:
+            self.assertEqual('\xf0\x90\x8d\x88', stderr.encode('utf-8'))
+            self.assertTrue(len(stderr) in [1, 2])
 
     def test_consume_stdout_chunk_contains_non_utf8_character(self):
         conn_params = {'hostname': 'dummy.host.org',
