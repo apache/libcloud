@@ -36,17 +36,17 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
 from libcloud.storage.drivers.azure_blobs import AzureBlobsStorageDriver
-from libcloud.storage.drivers.azure_blobs import AZURE_BLOCK_MAX_SIZE
-from libcloud.storage.drivers.azure_blobs import AZURE_PAGE_CHUNK_SIZE
+from libcloud.storage.drivers.azure_blobs import AZURE_UPLOAD_CHUNK_SIZE
 
 from libcloud.test import unittest
-from libcloud.test import MockHttp, generate_random_data  # pylint: disable-msg=E0611
+from libcloud.test import generate_random_data  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_AZURE_BLOBS_PARAMS
 from libcloud.test.secrets import STORAGE_AZURITE_BLOBS_PARAMS
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
-class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
+class AzureBlobsMockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('azure_blobs')
     base_headers = {}
@@ -248,13 +248,23 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.ACCEPTED])
 
     def _foo_bar_container_foo_test_upload(self, method, url, body, headers):
-        # test_upload_object_success
         self._assert_content_length_header_is_string(headers=headers)
 
-        body = ''
+        query_string = urlparse.urlsplit(url).query
+        query = parse_qs(query_string)
+        comp = query.get('comp', [])
+
         headers = {}
-        headers['etag'] = '0x8CFB877BB56A6FB'
-        headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
+        body = ''
+
+        if 'blocklist' in comp or not comp:
+            headers['etag'] = '"0x8CFB877BB56A6FB"'
+            headers['content-md5'] = 'd4fe4c9829f7ca1cc89db7ad670d2bbd'
+        elif 'block' in comp:
+            headers['content-md5'] = 'lvcfx/bOJvndpRlrdKU1YQ=='
+        else:
+            raise NotImplementedError('Unknown request comp: {}'.format(comp))
+
         return (httplib.CREATED,
                 body,
                 headers,
@@ -265,17 +275,6 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
         # test_upload_object_success
         self._assert_content_length_header_is_string(headers=headers)
 
-        body = ''
-        headers = {}
-        headers['etag'] = '0x8CFB877BB56A6FB'
-        return (httplib.CREATED,
-                body,
-                headers,
-                httplib.responses[httplib.CREATED])
-
-    def _foo_bar_container_foo_test_upload_page(self, method, url,
-                                                body, headers):
-        # test_upload_object_success
         body = ''
         headers = {}
         headers['etag'] = '0x8CFB877BB56A6FB'
@@ -350,6 +349,34 @@ class AzureBlobsMockHttp(MockHttp, unittest.TestCase):
                 body,
                 headers,
                 httplib.responses[httplib.OK])
+
+    def _foo_bar_container_foo_bar_object_range(self, method, url, body, headers):
+        # test_download_object_range_success
+        body = '0123456789123456789'
+
+        self.assertTrue('x-ms-range' in headers)
+        self.assertEqual(headers['x-ms-range'], 'bytes=5-6')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['x-ms-range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
+    def _foo_bar_container_foo_bar_object_range_stream(self, method, url, body, headers):
+        # test_download_object_range_as_stream_success
+        body = '0123456789123456789'
+
+        self.assertTrue('x-ms-range' in headers)
+        self.assertEqual(headers['x-ms-range'], 'bytes=4-5')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['x-ms-range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
 
     def _foo_bar_container_foo_bar_object_INVALID_SIZE(self, method, url,
                                                        body, headers):
@@ -467,7 +494,7 @@ class AzureBlobsTests(unittest.TestCase):
         container = Container(name='test_container', extra={},
                               driver=self.driver)
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix')
+                                                     prefix='test_prefix')
         self.assertEqual(len(objects), 4)
 
         obj = objects[1]
@@ -503,6 +530,16 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue(container.extra['lease']['status'], 'unlocked')
         self.assertTrue(container.extra['lease']['state'], 'available')
         self.assertTrue(container.extra['meta_data']['meta1'], 'value1')
+
+    def test_get_object_cdn_url(self):
+        obj = self.driver.get_object(container_name='test_container200',
+                                     object_name='test')
+
+        url = urlparse.urlparse(self.driver.get_object_cdn_url(obj))
+        query = urlparse.parse_qs(url.query)
+
+        self.assertEqual(len(query['sig']), 1)
+        self.assertGreater(len(query['sig'][0]), 0)
 
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
@@ -664,22 +701,42 @@ class AzureBlobsTests(unittest.TestCase):
         consumed_stream = ''.join(chunk.decode('utf-8') for chunk in stream)
         self.assertEqual(len(consumed_stream), obj.size)
 
-    def test_upload_object_invalid_ex_blob_type(self):
-        # Invalid hash is detected on the amazon side and BAD_REQUEST is
-        # returned
-        file_path = os.path.abspath(__file__)
+    def test_download_object_range_success(self):
         container = Container(name='foo_bar_container', extra={},
                               driver=self.driver)
-        object_name = 'foo_test_upload'
-        try:
-            self.driver.upload_object(file_path=file_path, container=container,
-                                      object_name=object_name,
-                                      verify_hash=True,
-                                      ex_blob_type='invalid-blob')
-        except LibcloudError as e:
-            self.assertTrue(str(e).lower().find('invalid blob type') != -1)
-        else:
-            self.fail('Exception was not thrown')
+        obj = Object(name='foo_bar_object_range', size=1000, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = os.path.abspath(__file__) + '.temp'
+        result = self.driver.download_object_range(obj=obj,
+                                                   start_bytes=5,
+                                                   end_bytes=7,
+                                                   destination_path=destination_path,
+                                                   overwrite_existing=False,
+                                                   delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(destination_path, 'r') as fp:
+            content = fp.read()
+
+        self.assertEqual(content, '56')
+
+    def test_download_object_range_as_stream_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+
+        obj = Object(name='foo_bar_object_range_stream', size=2, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+
+        stream = self.driver.download_object_range_as_stream(obj=obj,
+                                                             start_bytes=4,
+                                                             end_bytes=6,
+                                                             chunk_size=None)
+
+        consumed_stream = ''.join(chunk.decode('utf-8') for chunk in stream)
+        self.assertEqual(consumed_stream, '45')
+        self.assertEqual(len(consumed_stream), obj.size)
 
     def test_upload_object_invalid_md5(self):
         # Invalid md5 is returned by azure
@@ -711,8 +768,7 @@ class AzureBlobsTests(unittest.TestCase):
                                         container=container,
                                         object_name=object_name,
                                         extra=extra,
-                                        verify_hash=False,
-                                        ex_blob_type='BlockBlob')
+                                        verify_hash=False)
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
@@ -720,7 +776,7 @@ class AzureBlobsTests(unittest.TestCase):
 
     def test_upload_big_block_object_success(self):
         file_path = tempfile.mktemp(suffix='.jpg')
-        file_size = AZURE_BLOCK_MAX_SIZE + 1
+        file_size = AZURE_UPLOAD_CHUNK_SIZE + 1
 
         with open(file_path, 'w') as file_hdl:
             file_hdl.write('0' * file_size)
@@ -733,61 +789,11 @@ class AzureBlobsTests(unittest.TestCase):
                                         container=container,
                                         object_name=object_name,
                                         extra=extra,
-                                        verify_hash=False,
-                                        ex_blob_type='BlockBlob')
+                                        verify_hash=False)
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
         self.assertTrue('some-value' in obj.meta_data)
-
-        os.remove(file_path)
-
-    def test_upload_page_object_success(self):
-        self.mock_response_klass.use_param = None
-        file_path = tempfile.mktemp(suffix='.jpg')
-        file_size = AZURE_PAGE_CHUNK_SIZE * 4
-
-        with open(file_path, 'w') as file_hdl:
-            file_hdl.write('0' * file_size)
-
-        container = Container(name='foo_bar_container', extra={},
-                              driver=self.driver)
-        object_name = 'foo_test_upload'
-        extra = {'meta_data': {'some-value': 'foobar'}}
-        obj = self.driver.upload_object(file_path=file_path,
-                                        container=container,
-                                        object_name=object_name,
-                                        extra=extra,
-                                        verify_hash=False,
-                                        ex_blob_type='PageBlob')
-
-        self.assertEqual(obj.name, 'foo_test_upload')
-        self.assertEqual(obj.size, file_size)
-        self.assertTrue('some-value' in obj.meta_data)
-
-        os.remove(file_path)
-
-    def test_upload_page_object_failure(self):
-        file_path = tempfile.mktemp(suffix='.jpg')
-        file_size = AZURE_PAGE_CHUNK_SIZE * 2 + 1
-
-        with open(file_path, 'w') as file_hdl:
-            file_hdl.write('0' * file_size)
-
-        container = Container(name='foo_bar_container', extra={},
-                              driver=self.driver)
-        object_name = 'foo_test_upload'
-        extra = {'meta_data': {'some-value': 'foobar'}}
-
-        try:
-            self.driver.upload_object(file_path=file_path,
-                                      container=container,
-                                      object_name=object_name,
-                                      extra=extra,
-                                      verify_hash=False,
-                                      ex_blob_type='PageBlob')
-        except LibcloudError as e:
-            self.assertTrue(str(e).lower().find('not aligned') != -1)
 
         os.remove(file_path)
 
@@ -805,7 +811,6 @@ class AzureBlobsTests(unittest.TestCase):
                                         object_name=object_name,
                                         extra=extra,
                                         verify_hash=False,
-                                        ex_blob_type='BlockBlob',
                                         ex_use_lease=True)
 
         self.assertEqual(obj.name, 'foo_test_upload')
@@ -816,7 +821,7 @@ class AzureBlobsTests(unittest.TestCase):
     def test_upload_big_block_object_success_with_lease(self):
         self.mock_response_klass.use_param = 'comp'
         file_path = tempfile.mktemp(suffix='.jpg')
-        file_size = AZURE_BLOCK_MAX_SIZE * 2
+        file_size = AZURE_UPLOAD_CHUNK_SIZE * 2
 
         with open(file_path, 'w') as file_hdl:
             file_hdl.write('0' * file_size)
@@ -830,35 +835,7 @@ class AzureBlobsTests(unittest.TestCase):
                                         object_name=object_name,
                                         extra=extra,
                                         verify_hash=False,
-                                        ex_blob_type='BlockBlob',
                                         ex_use_lease=False)
-
-        self.assertEqual(obj.name, 'foo_test_upload')
-        self.assertEqual(obj.size, file_size)
-        self.assertTrue('some-value' in obj.meta_data)
-
-        os.remove(file_path)
-        self.mock_response_klass.use_param = None
-
-    def test_upload_page_object_success_with_lease(self):
-        self.mock_response_klass.use_param = 'comp'
-        file_path = tempfile.mktemp(suffix='.jpg')
-        file_size = AZURE_PAGE_CHUNK_SIZE * 4
-
-        with open(file_path, 'w') as file_hdl:
-            file_hdl.write('0' * file_size)
-
-        container = Container(name='foo_bar_container', extra={},
-                              driver=self.driver)
-        object_name = 'foo_test_upload'
-        extra = {'meta_data': {'some-value': 'foobar'}}
-        obj = self.driver.upload_object(file_path=file_path,
-                                        container=container,
-                                        object_name=object_name,
-                                        extra=extra,
-                                        verify_hash=False,
-                                        ex_blob_type='PageBlob',
-                                        ex_use_lease=True)
 
         self.assertEqual(obj.name, 'foo_test_upload')
         self.assertEqual(obj.size, file_size)
@@ -878,8 +855,7 @@ class AzureBlobsTests(unittest.TestCase):
         obj = self.driver.upload_object_via_stream(container=container,
                                                    object_name=object_name,
                                                    iterator=iterator,
-                                                   extra=extra,
-                                                   ex_blob_type='BlockBlob')
+                                                   extra=extra)
 
         self.assertEqual(obj.name, object_name)
         self.assertEqual(obj.size, 3)
@@ -896,8 +872,7 @@ class AzureBlobsTests(unittest.TestCase):
         obj = self.driver.upload_object_via_stream(container=container,
                                                    object_name=object_name,
                                                    iterator=iterator,
-                                                   extra=extra,
-                                                   ex_blob_type='BlockBlob')
+                                                   extra=extra)
 
         self.assertEqual(obj.name, object_name)
         self.assertEqual(obj.size, 3)
@@ -915,52 +890,11 @@ class AzureBlobsTests(unittest.TestCase):
                                                    object_name=object_name,
                                                    iterator=iterator,
                                                    extra=extra,
-                                                   ex_blob_type='BlockBlob',
                                                    ex_use_lease=True)
 
         self.assertEqual(obj.name, object_name)
         self.assertEqual(obj.size, 3)
         self.mock_response_klass.use_param = None
-
-    def test_upload_page_object_via_stream(self):
-        self.mock_response_klass.use_param = 'comp'
-        container = Container(name='foo_bar_container', extra={},
-                              driver=self.driver)
-
-        object_name = 'foo_test_upload'
-        blob_size = AZURE_PAGE_CHUNK_SIZE
-        iterator = BytesIO(b('1' * blob_size))
-        extra = {'content_type': 'text/plain'}
-        obj = self.driver.upload_object_via_stream(container=container,
-                                                   object_name=object_name,
-                                                   iterator=iterator,
-                                                   extra=extra,
-                                                   ex_blob_type='PageBlob',
-                                                   ex_page_blob_size=blob_size)
-
-        self.assertEqual(obj.name, object_name)
-        self.assertEqual(obj.size, blob_size)
-        self.mock_response_klass.use_param = None
-
-    def test_upload_page_object_via_stream_with_lease(self):
-        self.mock_response_klass.use_param = 'comp'
-        container = Container(name='foo_bar_container', extra={},
-                              driver=self.driver)
-
-        object_name = 'foo_test_upload'
-        blob_size = AZURE_PAGE_CHUNK_SIZE
-        iterator = BytesIO(b('1' * blob_size))
-        extra = {'content_type': 'text/plain'}
-        obj = self.driver.upload_object_via_stream(container=container,
-                                                   object_name=object_name,
-                                                   iterator=iterator,
-                                                   extra=extra,
-                                                   ex_blob_type='PageBlob',
-                                                   ex_page_blob_size=blob_size,
-                                                   ex_use_lease=True)
-
-        self.assertEqual(obj.name, object_name)
-        self.assertEqual(obj.size, blob_size)
 
     def test_delete_object_not_found(self):
         self.mock_response_klass.type = 'NOT_FOUND'

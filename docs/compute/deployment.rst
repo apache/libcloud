@@ -24,8 +24,16 @@ management software.
 Supported private SSH key types
 -------------------------------
 
+.. note::
+
+  paramiko v2.7.0 introduced support for OpenSSH 6.5 style private key files
+  so this section is only relevant for users using older versions of paramiko.
+
 `paramiko`_ Python library we use for deployment only supports RSA, DSS and
 ECDSA private keys in PEM format.
+
+Since Libcloud v3.0.0, ``Ed25519`` private keys are also supported when using
+paramiko 2.2.0 or higher
 
 If you try to use key in an other format such as newer OpenSSH and PKCS#8
 format an exception will be thrown and deployment will fail.
@@ -112,9 +120,27 @@ method and a couple of additional arguments. The most important ones are
   authenticate. Key needs to be in a format which is supported by paramiko
   (see section on supported key types above).
 * ``ssh_username`` - SSH username used to login. If not provided, it defaults
-  to ``root``
+  to ``root``.
 * ``ssh_port`` - Port of the SSH server. If not provided, it defaults to
   ``22``.
+
+To view the output (stdout, stderr) and exit code of a specific deployment
+step, you can access ``stdout``, ``stderr`` and ``exit_status`` instance
+variables on the deployment class instance (``ScriptDeployment``,
+``ScriptFileDeployment``) in question.
+
+For example:
+
+.. sourcecode:: python
+
+    ...
+    step = ScriptDeployment("echo whoami ; date ; ls -la")
+
+    node = driver.deploy_node(...)
+
+    print('stdout: %s' % (step.stdout))
+    print('stderr: %s' % (step.stderr))
+    print('exit_code: %s' % (step.exit_status))
 
 Some examples which demonstrate how this method can be used are displayed
 below.

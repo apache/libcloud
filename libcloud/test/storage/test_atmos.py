@@ -384,8 +384,8 @@ class AtmosTests(unittest.TestCase):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.storage.drivers.atmos.guess_file_mime_type
-        libcloud.storage.drivers.atmos.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
 
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftsdn'
@@ -395,14 +395,14 @@ class AtmosTests(unittest.TestCase):
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
-            libcloud.storage.drivers.atmos.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_upload_object_via_stream_existing_object(self):
         def dummy_content_type(name):
             return 'application/zip', None
 
-        old_func = libcloud.storage.drivers.atmos.guess_file_mime_type
-        libcloud.storage.drivers.atmos.guess_file_mime_type = dummy_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = dummy_content_type
 
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftsde'
@@ -412,14 +412,14 @@ class AtmosTests(unittest.TestCase):
                                                  object_name=object_name,
                                                  iterator=iterator)
         finally:
-            libcloud.storage.drivers.atmos.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_upload_object_via_stream_no_content_type(self):
         def no_content_type(name):
             return None, None
 
-        old_func = libcloud.storage.drivers.atmos.guess_file_mime_type
-        libcloud.storage.drivers.atmos.guess_file_mime_type = no_content_type
+        old_func = libcloud.utils.files.guess_file_mime_type
+        libcloud.utils.files.guess_file_mime_type = no_content_type
 
         container = Container(name='fbc', extra={}, driver=self)
         object_name = 'ftsdct'
@@ -435,7 +435,7 @@ class AtmosTests(unittest.TestCase):
                 'File content type not provided'
                 ' but an exception was not thrown')
         finally:
-            libcloud.storage.drivers.atmos.guess_file_mime_type = old_func
+            libcloud.utils.files.guess_file_mime_type = old_func
 
     def test_signature_algorithm(self):
         test_uid = 'fredsmagicuid'

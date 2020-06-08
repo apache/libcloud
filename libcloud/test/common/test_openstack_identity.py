@@ -51,11 +51,13 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 
     def test_auth_url_is_correctly_assembled(self):
         tuples = [
-            ('1.0', OpenStackMockHttp),
-            ('1.1', OpenStackMockHttp),
-            ('2.0', OpenStack_2_0_MockHttp),
-            ('2.0_apikey', OpenStack_2_0_MockHttp),
-            ('2.0_password', OpenStack_2_0_MockHttp)
+            ('1.0', OpenStackMockHttp, {}),
+            ('1.1', OpenStackMockHttp, {}),
+            ('2.0', OpenStack_2_0_MockHttp, {}),
+            ('2.0_apikey', OpenStack_2_0_MockHttp, {}),
+            ('2.0_password', OpenStack_2_0_MockHttp, {}),
+            ('3.x_password', OpenStackIdentity_3_0_MockHttp, {'tenant_name': 'tenant-name'}),
+            ('3.x_oidc_access_token', OpenStackIdentity_3_0_MockHttp, {'tenant_name': 'tenant-name'})
         ]
 
         APPEND = 0
@@ -73,13 +75,15 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             '1.1': '/v1.1/auth',
             '2.0': '/v2.0/tokens',
             '2.0_apikey': '/v2.0/tokens',
-            '2.0_password': '/v2.0/tokens'
+            '2.0_password': '/v2.0/tokens',
+            '3.x_password': '/v3/auth/tokens',
+            '3.x_oidc_access_token': '/v3/OS-FEDERATION/identity_providers/user_name/protocols/tenant-name/auth',
         }
 
         user_id = OPENSTACK_PARAMS[0]
         key = OPENSTACK_PARAMS[1]
 
-        for (auth_version, mock_http_class) in tuples:
+        for (auth_version, mock_http_class, kwargs) in tuples:
             for (url, should_append_default_path, expected_path) in auth_urls:
                 connection = \
                     self._get_mock_connection(mock_http_class=mock_http_class,
@@ -90,7 +94,8 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
                 osa = cls(auth_url=auth_url,
                           user_id=user_id,
                           key=key,
-                          parent_conn=connection)
+                          parent_conn=connection,
+                          **kwargs)
 
                 try:
                     osa = osa.authenticate()
@@ -104,24 +109,35 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 
     def test_basic_authentication(self):
         tuples = [
-            ('1.0', OpenStackMockHttp),
-            ('1.1', OpenStackMockHttp),
-            ('2.0', OpenStack_2_0_MockHttp),
-            ('2.0_apikey', OpenStack_2_0_MockHttp),
-            ('2.0_password', OpenStack_2_0_MockHttp)
+            ('1.0', OpenStackMockHttp, {}),
+            ('1.1', OpenStackMockHttp, {}),
+            ('2.0', OpenStack_2_0_MockHttp, {}),
+            ('2.0_apikey', OpenStack_2_0_MockHttp, {}),
+            ('2.0_password', OpenStack_2_0_MockHttp, {}),
+            ('3.x_password', OpenStackIdentity_3_0_MockHttp, {'user_id': 'test_user_id', 'key': 'test_key',
+                                                              'token_scope': 'project', 'tenant_name': 'test_tenant',
+                                                              'tenant_domain_id': 'test_tenant_domain_id',
+                                                              'domain_name': 'test_domain'}),
+            ('3.x_oidc_access_token', OpenStackIdentity_3_0_MockHttp, {'user_id': 'test_user_id', 'key': 'test_key',
+                                                              'token_scope': 'domain', 'tenant_name': 'test_tenant',
+                                                              'tenant_domain_id': 'test_tenant_domain_id',
+                                                              'domain_name': 'test_domain'})
         ]
 
         user_id = OPENSTACK_PARAMS[0]
         key = OPENSTACK_PARAMS[1]
 
-        for (auth_version, mock_http_class) in tuples:
+        for (auth_version, mock_http_class, kwargs) in tuples:
             connection = \
                 self._get_mock_connection(mock_http_class=mock_http_class)
             auth_url = connection.auth_url
 
+            if not kwargs:
+                kwargs['user_id'] = user_id
+                kwargs['key'] = key
+
             cls = get_class_for_auth_version(auth_version=auth_version)
-            osa = cls(auth_url=auth_url, user_id=user_id, key=key,
-                      parent_conn=connection)
+            osa = cls(auth_url=auth_url, parent_conn=connection, **kwargs)
 
             self.assertEqual(osa.urls, {})
             self.assertIsNone(osa.auth_token)
@@ -131,10 +147,12 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             self.assertTrue(len(osa.urls) >= 1)
             self.assertTrue(osa.auth_token is not None)
 
-            if auth_version in ['1.1', '2.0', '2.0_apikey', '2.0_password']:
+            if auth_version in ['1.1', '2.0', '2.0_apikey', '2.0_password',
+                                '3.x_password', '3.x_oidc_access_token']:
                 self.assertTrue(osa.auth_token_expires is not None)
 
-            if auth_version in ['2.0', '2.0_apikey', '2.0_password']:
+            if auth_version in ['2.0', '2.0_apikey', '2.0_password',
+                                '3.x_password', '3.x_oidc_access_token']:
                 self.assertTrue(osa.auth_user_info is not None)
 
     def test_token_expiration_and_force_reauthentication(self):
@@ -312,6 +330,7 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                                 key='test_key',
                                                 token_scope='project',
                                                 tenant_name="test_tenant",
+                                                tenant_domain_id="test_tenant_domain_id",
                                                 domain_name='test_domain',
                                                 proxy_url='http://proxy:8080',
                                                 timeout=10)
@@ -503,6 +522,41 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_tokenTests(
         auth.authenticate()
 
 
+class OpenStackIdentity_3_0_Connection_OIDC_access_token_project_idTests(
+        unittest.TestCase):
+    def setUp(self):
+        mock_cls = OpenStackIdentity_3_0_MockHttp
+        mock_cls.type = None
+        OpenStackIdentity_3_0_Connection_OIDC_access_token.conn_class = mock_cls
+
+        self.auth_instance = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
+                                                                                user_id='idp',
+                                                                                key='token',
+                                                                                tenant_name='oidc',
+                                                                                domain_name='project_id2')
+        self.auth_instance.auth_token = 'mock'
+
+    def test_authenticate_valid_project_id(self):
+        auth = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
+                                                                  user_id='idp',
+                                                                  key='token',
+                                                                  token_scope='project',
+                                                                  tenant_name="oidc",
+                                                                  domain_name='project_id2')
+        auth.authenticate()
+
+    def test_authenticate_invalid_project_id(self):
+        auth = OpenStackIdentity_3_0_Connection_OIDC_access_token(auth_url='http://none',
+                                                                  user_id='idp',
+                                                                  key='token',
+                                                                  token_scope='project',
+                                                                  tenant_name="oidc",
+                                                                  domain_name='project_id100')
+
+        expected_msg = 'Project project_id100 not found'
+        self.assertRaisesRegex(ValueError, expected_msg, auth.authenticate)
+
+
 class OpenStackIdentity_2_0_Connection_VOMSTests(unittest.TestCase):
     def setUp(self):
         mock_cls = OpenStackIdentity_2_0_Connection_VOMSMockHttp
@@ -686,13 +740,29 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
+    def _v3_OS_FEDERATION_identity_providers_test_user_id_protocols_test_tenant_auth(self, method, url, body, headers):
+        if method == 'GET':
+            if 'Authorization' not in headers:
+                return (httplib.UNAUTHORIZED, '', headers, httplib.responses[httplib.OK])
+
+            if headers['Authorization'] == 'Bearer test_key':
+                response_body = ComputeFileFixtures('openstack').load('_v3__auth.json')
+                response_headers = {
+                    'Content-Type': 'application/json',
+                    'x-subject-token': 'foo-bar'
+                }
+                return (httplib.OK, response_body, response_headers, httplib.responses[httplib.OK])
+
+            return (httplib.UNAUTHORIZED, '{}', headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
     def _v3_auth_tokens(self, method, url, body, headers):
         if method == 'POST':
             status = httplib.OK
             data = json.loads(body)
             if 'password' in data['auth']['identity']:
                 if data['auth']['identity']['password']['user']['domain']['name'] != 'test_domain' or \
-                        data['auth']['scope']['project']['domain']['name'] != 'test_domain':
+                        data['auth']['scope']['project']['domain']['id'] != 'test_tenant_domain_id':
                     status = httplib.UNAUTHORIZED
 
             body = ComputeFileFixtures('openstack').load('_v3__auth.json')

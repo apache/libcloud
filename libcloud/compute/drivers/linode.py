@@ -118,7 +118,7 @@ class LinodeNodeDriver(NodeDriver):
         data = self.connection.request(API_ROOT, params=params).objects[0]
         return self._to_nodes(data)
 
-    def ex_start_node(self, node):
+    def start_node(self, node):
         """
         Boot the given Linode
 
@@ -127,7 +127,7 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(API_ROOT, params=params)
         return True
 
-    def ex_stop_node(self, node):
+    def stop_node(self, node):
         """
         Shutdown the given Linode
 
@@ -173,7 +173,10 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(API_ROOT, params=params)
         return True
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, image, size, auth, location=None, ex_swap=None,
+                    ex_rsize=None, ex_kernel=None, ex_payment=None,
+                    ex_comment=None, ex_private=False, lconfig=None,
+                    lroot=None, lswap=None):
         """Create a new Linode, deploy a Linux distribution, and boot
 
         This call abstracts much of the functionality of provisioning a Linode
@@ -228,14 +231,11 @@ class LinodeNodeDriver(NodeDriver):
         :return: Node representing the newly-created Linode
         :rtype: :class:`Node`
         """
-        name = kwargs["name"]
-        image = kwargs["image"]
-        size = kwargs["size"]
-        auth = self._get_and_check_auth(kwargs["auth"])
+        auth = self._get_and_check_auth(auth)
 
         # Pick a location (resolves LIBCLOUD-41 in JIRA)
-        if "location" in kwargs:
-            chosen = kwargs["location"].id
+        if location:
+            chosen = location.id
         elif self.datacenter:
             chosen = self.datacenter
         else:
@@ -251,8 +251,7 @@ class LinodeNodeDriver(NodeDriver):
             raise LinodeException(0xFB, "Invalid plan ID -- avail.plans")
 
         # Payment schedule
-        payment = "1" if "ex_payment" not in kwargs else \
-            str(kwargs["ex_payment"])
+        payment = "1" if not ex_payment else str(ex_payment)
         if payment not in ["1", "12", "24"]:
             raise LinodeException(0xFB, "Invalid subscription (1, 12, 24)")
 
@@ -271,13 +270,13 @@ class LinodeNodeDriver(NodeDriver):
 
         # Swap size
         try:
-            swap = 128 if "ex_swap" not in kwargs else int(kwargs["ex_swap"])
+            swap = 128 if not ex_swap else int(ex_swap)
         except Exception:
             raise LinodeException(0xFB, "Need an integer swap size")
 
         # Root partition size
-        imagesize = (size.disk - swap) if "ex_rsize" not in kwargs else\
-            int(kwargs["ex_rsize"])
+        imagesize = (size.disk - swap) if not ex_rsize else\
+            int(ex_rsize)
         if (imagesize + swap) > size.disk:
             raise LinodeException(0xFB, "Total disk images are too big")
 
@@ -288,8 +287,8 @@ class LinodeNodeDriver(NodeDriver):
                                   "Invalid distro -- avail.distributions")
 
         # Kernel
-        if "ex_kernel" in kwargs:
-            kernel = kwargs["ex_kernel"]
+        if ex_kernel:
+            kernel = ex_kernel
         else:
             if image.extra['64bit']:
                 # For a list of available kernel ids, see
@@ -303,8 +302,8 @@ class LinodeNodeDriver(NodeDriver):
             raise LinodeException(0xFB, "Invalid kernel -- avail.kernels")
 
         # Comments
-        comments = "Created by Apache libcloud <http://www.libcloud.org>" if\
-            "ex_comment" not in kwargs else kwargs["ex_comment"]
+        comments = "Created by Apache libcloud <https://www.libcloud.org>" if\
+            not ex_comment else ex_comment
 
         # Step 1: linode.create
         params = {
@@ -325,7 +324,7 @@ class LinodeNodeDriver(NodeDriver):
         self.connection.request(API_ROOT, params=params)
 
         # Step 1c. linode.ip.addprivate if it was requested
-        if "ex_private" in kwargs and kwargs["ex_private"]:
+        if ex_private:
             params = {
                 "api_action": "linode.ip.addprivate",
                 "LinodeID": linode["id"]
@@ -340,9 +339,15 @@ class LinodeNodeDriver(NodeDriver):
             "lroot": "[%s] %s Disk Image" % (linode["id"], image.name),
             "lswap": "[%s] Swap Space" % linode["id"]
         }
-        for what in ["lconfig", "lroot", "lswap"]:
-            if what in kwargs:
-                label[what] = kwargs[what]
+
+        if lconfig:
+            label['lconfig'] = lconfig
+
+        if lroot:
+            label['lroot'] = lroot
+
+        if lswap:
+            label['lswap'] = lswap
 
         # Step 2: linode.disk.createfromdistribution
         if not root:
@@ -382,7 +387,7 @@ class LinodeNodeDriver(NodeDriver):
             "Comments": comments,
             "DiskList": disks
         }
-        if "ex_private" in kwargs and kwargs["ex_private"]:
+        if ex_private:
             params['helper_network'] = True
             params['helper_distro'] = True
 
@@ -424,6 +429,18 @@ class LinodeNodeDriver(NodeDriver):
                   "PlanID": size}
         self.connection.request(API_ROOT, params=params)
         return True
+
+    def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
+
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_rename_node(self, node, name):
         """Renames a node"""
@@ -726,7 +743,7 @@ def _izip_longest(*args, **kwds):
     fillers = itertools.repeat(fillvalue)
     iters = [itertools.chain(it, sentinel(), fillers) for it in args]
     try:
-        for tup in itertools.izip(*iters):
+        for tup in itertools.izip(*iters):  # pylint: disable=no-member
             yield tup
     except IndexError:
         pass

@@ -30,7 +30,7 @@ from libcloud.utils.py3 import urlunquote
 if PY3:
     from io import FileIO as file
 
-from libcloud.utils.files import read_in_chunks, guess_file_mime_type
+from libcloud.utils.files import read_in_chunks
 from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.types import LibcloudError
 
@@ -120,8 +120,8 @@ class AtmosConnection(ConnectionUserAndKey):
 class AtmosDriver(StorageDriver):
     connectionCls = AtmosConnection
 
-    host = None
-    path = None
+    host = None  # type: str
+    path = None  # type: str
     api_name = 'atmos'
     supports_chunked_encoding = True
     website = 'http://atmosonline.com/'
@@ -206,7 +206,7 @@ class AtmosDriver(StorageDriver):
                       user_meta, container, self)
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True):
+                      verify_hash=True, headers=None):
         method = 'PUT'
 
         extra = extra or {}
@@ -252,10 +252,11 @@ class AtmosDriver(StorageDriver):
                       extra, meta_data, container, self)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 extra=None):
+                                 extra=None, headers=None):
         if isinstance(iterator, file):
             iterator = iter(iterator)
 
+        extra_headers = headers or {}
         data_hash = hashlib.md5()
         generator = read_in_chunks(iterator, CHUNK_SIZE, True)
         bytes_transferred = 0
@@ -271,13 +272,8 @@ class AtmosDriver(StorageDriver):
             content_type = extra.get('content_type', None)
         else:
             content_type = None
-        if not content_type:
-            content_type, _ = guess_file_mime_type(object_name)
 
-            if not content_type:
-                raise AttributeError(
-                    'File content-type could not be guessed and' +
-                    ' no content_type value provided')
+        content_type = self._determine_content_type(content_type, object_name)
 
         try:
             self.connection.request(path + '?metadata/system')
@@ -289,10 +285,12 @@ class AtmosDriver(StorageDriver):
         while True:
             end = bytes_transferred + len(chunk) - 1
             data_hash.update(b(chunk))
-            headers = {
+            headers = dict(extra_headers)
+
+            headers.update({
                 'x-emc-meta': 'md5=' + data_hash.hexdigest(),
                 'Content-Type': content_type,
-            }
+            })
 
             if len(chunk) > 0 and bytes_transferred > 0:
                 headers['Range'] = 'Bytes=%d-%d' % (bytes_transferred, end)
@@ -451,11 +449,35 @@ class AtmosDriver(StorageDriver):
         meta = meta.split(', ')
         return dict([x.split('=', 1) for x in meta])
 
-    def iterate_container_objects(self, container):
+    def _entries_to_objects(self, container, entries):
+        for entry in entries:
+            metadata = {'object_id': entry['id']}
+            yield Object(entry['name'], 0, '', {}, metadata, container, self)
+
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
+        """
+        Return a generator of objects for the given container.
+
+        :param container: Container instance
+        :type container: :class:`Container`
+
+        :param prefix: Filter objects starting with a prefix.
+                       Filtering is performed client-side.
+        :type  prefix: ``str``
+
+        :param ex_prefix: (Deprecated.) Filter objects starting with a prefix.
+                          Filtering is performed client-side.
+        :type  ex_prefix: ``str``
+
+        :return: A generator of Object instances.
+        :rtype: ``generator`` of :class:`Object`
+        """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         headers = {'x-emc-include-meta': '1'}
         path = self._namespace_path(container.name) + '/'
         result = self.connection.request(path, headers=headers)
         entries = self._list_objects(result.object, object_type='regular')
-        for entry in entries:
-            metadata = {'object_id': entry['id']}
-            yield Object(entry['name'], 0, '', {}, metadata, container, self)
+        objects = self._entries_to_objects(container, entries)
+        return self._filter_listed_container_objects(objects, prefix)

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
+from typing import Dict
+
 import re
 from xml.etree import ElementTree as ET   # noqa
 
@@ -126,8 +129,8 @@ class DurableDNSException(Exception):
 
 class DurableResponse(XmlResponse):
 
-    errors = []
-    objects = []
+    errors = []  # type: List[Dict]
+    objects = []  # type: List[Dict]
 
     def __init__(self, response, connection):
         super(DurableResponse, self).__init__(response=response,

@@ -178,13 +178,13 @@ class DummyStorageDriver(StorageDriver):
         for container in list(self._containers.values()):
             yield container['container']
 
-    def list_container_objects(self, container, ex_prefix=None):
-        container = self.get_container(container.name)
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
-        objects = list(self._containers[container.name]['objects'].values())
-        if ex_prefix is not None:
-            objects = [o for o in objects if o.name.startswith(ex_prefix)]
-        return objects
+        container = self.get_container(container.name)
+        objects = self._containers[container.name]['objects'].values()
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         """
@@ -398,7 +398,7 @@ class DummyStorageDriver(StorageDriver):
         return DummyFileObject()
 
     def upload_object(self, file_path, container, object_name, extra=None,
-                      file_hash=None):
+                      verify_hash=True, headers=None):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container_name = 'test container 1'
@@ -417,8 +417,6 @@ class DummyStorageDriver(StorageDriver):
         True
 
         @inherits: :class:`StorageDriver.upload_object`
-        :param file_hash: File hash
-        :type file_hash: ``str``
         """
 
         if not os.path.exists(file_path):
@@ -430,7 +428,7 @@ class DummyStorageDriver(StorageDriver):
                                 size=size, extra=extra)
 
     def upload_object_via_stream(self, iterator, container,
-                                 object_name, extra=None):
+                                 object_name, extra=None, headers=None):
         """
         >>> driver = DummyStorageDriver('key', 'secret')
         >>> container = driver.create_container(

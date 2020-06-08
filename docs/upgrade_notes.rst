@@ -5,6 +5,96 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.0.0
+--------------
+
+* This release drops support for Python versions older than 3.5.0.
+
+  If you still need to use Libcloud with Python 2.7 or Python 3.4 you can do
+  that by using the latest release which still supported those Python versions
+  (Libcloud v2.8.0).
+
+* This release removes VMware vSphere driver which relied on old and
+  unmaintained ``pysphere`` library which doesn't support Python 3.
+
+* This release removes support for PageBlob objects from the Azure Blobs
+  storage driver. The ``ex_blob_type`` and ``ex_page_blob_size`` arguments
+  have been removed from the ``upload_object`` and ``upload_object_via_stream``
+  methods.
+
+* The ``ex_prefix`` keyword argument in the ``iterate_container_objects``
+  and ``list_container_objects`` methods in all storage drivers has been
+  renamed to ``prefix`` to indicate the promotion of the argument to the
+  standard storage driver API.
+
+Libcloud 2.8.0
+--------------
+
+* ``deploy_node()`` method in the GCE driver has been updated so it complies
+  with the base compute API.
+
+  This means that the method now takes the same argument as the base
+  ``deploy_node()`` method (``deployment``, ``ssh_username``, ``ssh_port``,
+  etc.) plus all the keyword arguments which are supported by the
+  ``create_node()`` method.
+
+* ``group_name`` keyword argument in the ``create_node()`` method in the
+  Abiquo driver has been renamed to ``ex_group_name`` to comply with the
+  convention for naming non-standard arguments (arguments which are not
+  part of the standard compute API).
+
+Libcloud 2.7.0
+--------------
+
+* AWS S3 driver has moved from "driver class per region" model to "single driver
+  class with ``region`` constructor argument" model. This means this driver now
+  follows the same approach as other multi region drivers.
+
+  Before:
+
+  .. sourcecode:: python
+
+      from libcloud.storage.types import Provider
+      from libcloud.storage.providers import get_driver
+
+      S3_EU_CENTRAL = get_driver(Provider.S3_EU_CENTRAL)
+      S3_EU_WEST_1 = get_driver(Provider.S3_EU_WEST)
+
+      driver_eu_central = S3_EU_CENTRAL('api key', 'api secret')
+      driver_eu_west_1 = S3_EU_WEST_1('api key', 'api secret')
+
+  After:
+
+  .. sourcecode:: python
+
+      from libcloud.storage.types import Provider
+      from libcloud.storage.providers import get_driver
+
+      S3 = get_driver(Provider.S3)
+
+      driver_eu_central = S3('api key', 'api secret', region='eu-central-1')
+      driver_eu_west_1 = S3('api key', 'api secret', region='eu-west-1')
+
+  For now, old approach will still work, but it will be deprecated and fully
+  removed in a future release. Deprecation and removal will be announced well in
+  advance.
+
+- New ``start_node`` and ``stop_node`` methods have been added to the base
+  Libcloud compute API NodeDriver class.
+
+  A lot of the existing compute drivers already implemented that functionality
+  via extension methods (``ex_start_node``, ``ex_stop_node``) so it was decided
+  to promote those methods to be part of the standard Libcloud compute API and
+  update all the affected drivers.
+
+  For backward compatibility reasons, existing ``ex_start`` and ``ex_stop_node``
+  methods will still work until a next major release.
+
+  If you are relying on code which uses ``ex_start`` and ``ex_stop_node``
+  methods, you are encouraged to update it to utilize new ``start_node`` and
+  ``stop_node`` methods since those ``ex_`` methods are now deprecated and will
+  be removed in a future major release.
+
 Libcloud 1.0.0
 --------------
 

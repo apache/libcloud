@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+
 from libcloud.common.base import ConnectionKey, JsonResponse
 
 
@@ -30,7 +32,7 @@ API_HOST = 'api.vultr.com'
 class VultrResponse(JsonResponse):
 
     objects = None
-    error_dict = {}
+    error_dict = {}  # type: Dict[str, str]
     errors = None
     ERROR_CODE_MAP = {
 

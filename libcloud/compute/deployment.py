@@ -19,10 +19,18 @@ Provides generic deployment steps for machines post boot.
 
 from __future__ import with_statement
 
+from typing import Union
+from typing import Optional
+from typing import List
+from typing import IO
+from typing import cast
+
 import os
 import binascii
 
 from libcloud.utils.py3 import basestring, PY3
+from libcloud.compute.base import Node
+from libcloud.compute.ssh import BaseSSHClient
 
 
 class Deployment(object):
@@ -31,6 +39,7 @@ class Deployment(object):
     """
 
     def run(self, node, client):
+        # type: (Node, BaseSSHClient) -> Node
         """
         Runs this deployment task on node using the client provided.
 
@@ -63,6 +72,7 @@ class SSHKeyDeployment(Deployment):
     """
 
     def __init__(self, key):
+        # type: (Union[str, IO]) -> None
         """
         :type key: ``str`` or :class:`File` object
         :keyword key: Contents of the public key write or a file object which
@@ -72,6 +82,7 @@ class SSHKeyDeployment(Deployment):
                                           argument_value=key)
 
     def run(self, node, client):
+        # type: (Node, BaseSSHClient) -> Node
         """
         Installs SSH key into ``.ssh/authorized_keys``
 
@@ -87,6 +98,7 @@ class FileDeployment(Deployment):
     """
 
     def __init__(self, source, target):
+        # type: (str, str) -> None
         """
         :type source: ``str``
         :keyword source: Local path of file to be installed
@@ -98,6 +110,7 @@ class FileDeployment(Deployment):
         self.target = target
 
     def run(self, node, client):
+        # type: (Node, BaseSSHClient) -> Node
         """
         Upload the file, retaining permissions.
 
@@ -125,7 +138,14 @@ class ScriptDeployment(Deployment):
     you are running a plan shell script.
     """
 
-    def __init__(self, script, args=None, name=None, delete=False):
+    def __init__(self,
+                 script,  # type: str
+                 args=None,  # type: Optional[List[str]]
+                 name=None,  # type: Optional[str]
+                 delete=False,  # type bool
+                 timeout=None  # type: Optional[float]
+                 ):
+        # type: (...) -> None
         """
         :type script: ``str``
         :keyword script: Contents of the script to run.
@@ -140,39 +160,48 @@ class ScriptDeployment(Deployment):
 
         :type delete: ``bool``
         :keyword delete: Whether to delete the script on completion.
+
+        :param timeout: Optional run timeout for this command.
+        :type timeout: ``float``
         """
         script = self._get_string_value(argument_name='script',
                                         argument_value=script)
 
         self.script = script
         self.args = args or []
-        self.stdout = None
-        self.stderr = None
-        self.exit_status = None
+        self.stdout = None  # type: Optional[str]
+        self.stderr = None  # type: Optional[str]
+        self.exit_status = None  # type: Optional[int]
         self.delete = delete
-        self.name = name
+        self.timeout = timeout
+        self.name = name  # type: Optional[str]
 
         if self.name is None:
             # File is put under user's home directory
             # (~/libcloud_deployment_<random_string>.sh)
+            random_string = ''  # type: Union[str, bytes]
             random_string = binascii.hexlify(os.urandom(4))
+            random_string = cast(bytes, random_string)
             random_string = random_string.decode('ascii')
             self.name = 'libcloud_deployment_%s.sh' % (random_string)
 
     def run(self, node, client):
+        # type: (Node, BaseSSHClient) -> Node
         """
         Uploads the shell script and then executes it.
 
         See also :class:`Deployment.run`
         """
+        self.name = cast(str, self.name)
         file_path = client.put(path=self.name, chmod=int('755', 8),
                                contents=self.script)
 
         # Pre-pend cwd if user specified a relative path
-        if self.name[0] != '/':
+        if self.name and self.name[0] != '/':
             base_path = os.path.dirname(file_path)
             name = os.path.join(base_path, self.name)
         else:
+            self.name = cast(str, self.name)
             name = self.name
 
         cmd = name
@@ -183,12 +212,30 @@ class ScriptDeployment(Deployment):
         else:
             cmd = name
 
-        self.stdout, self.stderr, self.exit_status = client.run(cmd)
+        self.stdout, self.stderr, self.exit_status = \
+            client.run(cmd, timeout=self.timeout)
 
         if self.delete:
             client.delete(self.name)
 
         return node
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        script = self.script[:15] + '...'
+        exit_status = self.exit_status
+
+        if exit_status is not None:
+            stdout = self.stdout[:30] + '...'
+            stderr = self.stderr[:30] + '...'
+        else:
+            exit_status = 'script didn\'t run yet'
+            stdout = None
+            stderr = None
+        return ("<ScriptDeployment script=%s, exit_status=%s, stdout=%s, "
+                "stderr=%s>" % (script, exit_status, stdout, stderr))
 
 
 class ScriptFileDeployment(ScriptDeployment):
@@ -198,7 +245,14 @@ class ScriptFileDeployment(ScriptDeployment):
     the script content.
     """
 
-    def __init__(self, script_file, args=None, name=None, delete=False):
+    def __init__(self,
+                 script_file,  # type: str
+                 args=None,  # type: Optional[List[str]]
+                 name=None,  # type: Optional[str]
+                 delete=False,  # type bool
+                 timeout=None  # type: Optional[float]
+                 ):
+        # type: (...) -> None
         """
         :type script_file: ``str``
         :keyword script_file: Path to a file containing the script to run.
@@ -214,17 +268,22 @@ class ScriptFileDeployment(ScriptDeployment):
 
         :type delete: ``bool``
         :keyword delete: Whether to delete the script on completion.
+
+        :param timeout: Optional run timeout for this command.
+        :type timeout: ``float``
         """
         with open(script_file, 'rb') as fp:
-            content = fp.read()
+            content = fp.read()  # type: Union[bytes, str]
 
         if PY3:
+            content = cast(bytes, content)
             content = content.decode('utf-8')
 
         super(ScriptFileDeployment, self).__init__(script=content,
                                                    args=args,
                                                    name=name,
-                                                   delete=delete)
+                                                   delete=delete,
+                                                   timeout=timeout)
 
 
 class MultiStepDeployment(Deployment):
@@ -232,14 +291,18 @@ class MultiStepDeployment(Deployment):
     Runs a chain of Deployment steps.
     """
     def __init__(self, add=None):
+        # type: (Optional[Union[Deployment, List[Deployment]]]) -> None
         """
         :type add: ``list``
         :keyword add: Deployment steps to add.
         """
-        self.steps = []
-        self.add(add)
+        self.steps = []  # type: list
+
+        if add:
+            self.add(add)
 
     def add(self, add):
+        # type: (Union[Deployment, List[Deployment]]) -> None
         """
         Add a deployment to this chain.
 
@@ -253,6 +316,7 @@ class MultiStepDeployment(Deployment):
             self.steps.extend(add)
 
     def run(self, node, client):
+        # type: (Node, BaseSSHClient) -> Node
         """
         Run each deployment that has been added.
 

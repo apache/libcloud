@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
+from typing import List
+from typing import Dict
 
+import base64
 
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.utils.py3 import b
@@ -31,8 +33,8 @@ API_HOST = 'api.luadns.com'
 
 
 class LuadnsResponse(JsonResponse):
-    errors = []
-    objects = []
+    errors = []  # type: List[Dict]
+    objects = []  # type: List[Dict]
 
     def __init__(self, response, connection):
         super(LuadnsResponse, self).__init__(response=response,

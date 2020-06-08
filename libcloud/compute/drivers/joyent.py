@@ -167,18 +167,28 @@ class JoyentNodeDriver(NodeDriver):
                                          method='DELETE')
         return result.status == httplib.NO_CONTENT
 
-    def create_node(self, **kwargs):
-        name = kwargs['name']
-        size = kwargs['size']
-        image = kwargs['image']
-
+    def create_node(self, name, size, image):
         data = json.dumps({'name': name, 'package': size.id,
                            'dataset': image.id})
         result = self.connection.request('/my/machines', data=data,
                                          method='POST')
         return self._to_node(result.object)
 
-    def ex_stop_node(self, node):
+    def start_node(self, node):
+        """
+        Start node
+
+        :param  node: The node to be stopped
+        :type   node: :class:`Node`
+
+        :rtype: ``bool``
+        """
+        data = json.dumps({'action': 'start'})
+        result = self.connection.request('/my/machines/%s' % (node.id),
+                                         data=data, method='POST')
+        return result.status == httplib.ACCEPTED
+
+    def stop_node(self, node):
         """
         Stop node
 
@@ -193,18 +203,16 @@ class JoyentNodeDriver(NodeDriver):
         return result.status == httplib.ACCEPTED
 
     def ex_start_node(self, node):
-        """
-        Start node
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
 
-        :param  node: The node to be stopped
-        :type   node: :class:`Node`
-
-        :rtype: ``bool``
-        """
-        data = json.dumps({'action': 'start'})
-        result = self.connection.request('/my/machines/%s' % (node.id),
-                                         data=data, method='POST')
-        return result.status == httplib.ACCEPTED
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)
 
     def ex_get_node(self, node_id):
         """

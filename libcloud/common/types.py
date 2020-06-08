@@ -13,9 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+from typing import Callable
+from typing import Union
+from typing import cast
+
+from enum import Enum
+
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import _real_unicode
+
+if False:
+    # Work around for MYPY for cyclic import problem
+    from libcloud.compute.base import BaseDriver
 
 __all__ = [
+    "Type",
     "LibcloudError",
     "MalformedResponseError",
     "ProviderError",
@@ -25,10 +38,65 @@ __all__ = [
 ]
 
 
+class Type(str, Enum):
+    @classmethod
+    def tostring(cls, value):
+        # type: (Union[Enum, str]) -> str
+        """Return the string representation of the state object attribute
+        :param str value: the state object to turn into string
+        :return: the uppercase string that represents the state object
+        :rtype: str
+        """
+        value = cast(Enum, value)
+        return str(value._value_).upper()
+
+    @classmethod
+    def fromstring(cls, value):
+        # type: (str) -> str
+        """Return the state object attribute that matches the string
+        :param str value: the string to look up
+        :return: the state object attribute that matches the string
+        :rtype: str
+        """
+        return getattr(cls, value.upper(), None)
+
+    """
+    NOTE: These methods are here for backward compatibility reasons where
+    Type values were simple strings and Type didn't inherit from Enum.
+    """
+
+    def __eq__(self, other):
+        if isinstance(other, Type):
+            return other.value == self.value
+        elif isinstance(other, (str, _real_unicode)):
+            return self.value == other
+
+        return super(Type, self).__eq__(other)
+
+    def upper(self):
+        return self.value.upper()  # pylint: disable=no-member
+
+    def lower(self):
+        return self.value.lower()  # pylint: disable=no-member
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return self.value
+
+    def __hash__(self):
+        return id(self)
+
+
 class LibcloudError(Exception):
     """The base class for other libcloud exceptions"""
 
     def __init__(self, value, driver=None):
+        # type: (str, BaseDriver) -> None
         super(LibcloudError, self).__init__(value)
         self.value = value
         self.driver = driver
@@ -49,6 +117,7 @@ class MalformedResponseError(LibcloudError):
     '<h3>something</h3>' due to some error on their side."""
 
     def __init__(self, value, body=None, driver=None):
+        # type: (str, Optional[str], Optional[BaseDriver]) -> None
         self.value = value
         self.driver = driver
         self.body = body
@@ -76,6 +145,7 @@ class ProviderError(LibcloudError):
     """
 
     def __init__(self, value, http_code, driver=None):
+        # type: (str, int, Optional[BaseDriver]) -> None
         super(ProviderError, self).__init__(value=value, driver=driver)
         self.http_code = http_code
 
@@ -91,6 +161,7 @@ class InvalidCredsError(ProviderError):
 
     def __init__(self, value='Invalid credentials with the provider',
                  driver=None):
+        # type: (str, Optional[BaseDriver]) -> None
         super(InvalidCredsError, self).__init__(value,
                                                 http_code=httplib.UNAUTHORIZED,
                                                 driver=driver)
@@ -104,6 +175,7 @@ class ServiceUnavailableError(ProviderError):
     """Exception used when a provider returns 503 Service Unavailable."""
 
     def __init__(self, value='Service unavailable at provider', driver=None):
+        # type: (str, Optional[BaseDriver]) -> None
         super(ServiceUnavailableError, self).__init__(
             value,
             http_code=httplib.SERVICE_UNAVAILABLE,
@@ -114,7 +186,8 @@ class ServiceUnavailableError(ProviderError):
 class LazyList(object):
 
     def __init__(self, get_more, value_dict=None):
-        self._data = []
+        # type: (Callable, Optional[dict]) -> None
+        self._data = []  # type: list
         self._last_key = None
         self._exhausted = False
         self._all_loaded = False

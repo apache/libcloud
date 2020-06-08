@@ -159,7 +159,9 @@ class VoxelNodeDriver(NodeDriver):
         result = self.connection.request('/', params=params).object
         return self._to_images(result)
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location, ex_privateip=None,
+                    ex_publicip=None, ex_rootpass=None, ex_consolepass=None,
+                    ex_sshuser=None, ex_sshpass=None, ex_voxel_access=None):
         """Create Voxel Node
 
         :keyword name: the name to assign the node (mandatory)
@@ -206,28 +208,27 @@ class VoxelNodeDriver(NodeDriver):
         """
 
         # assert that disk > 0
-        if not kwargs["size"].disk:
+        if not size.disk:
             raise ValueError("size.disk must be non-zero")
 
         # convert voxel_access to string boolean if needed
-        voxel_access = kwargs.get("ex_voxel_access", None)
-        if voxel_access is not None:
-            voxel_access = "true" if voxel_access else "false"
+        if ex_voxel_access is not None:
+            ex_voxel_access = "true" if ex_voxel_access else "false"
 
         params = {
             'method': 'voxel.voxcloud.create',
-            'hostname': kwargs["name"],
-            'disk_size': int(kwargs["size"].disk),
-            'facility': kwargs["location"].id,
-            'image_id': kwargs["image"].id,
-            'processing_cores': kwargs["size"].ram / RAM_PER_CPU,
-            'backend_ip': kwargs.get("ex_privateip", None),
-            'frontend_ip': kwargs.get("ex_publicip", None),
-            'admin_password': kwargs.get("ex_rootpass", None),
-            'console_password': kwargs.get("ex_consolepass", None),
-            'ssh_username': kwargs.get("ex_sshuser", None),
-            'ssh_password': kwargs.get("ex_sshpass", None),
-            'voxel_access': voxel_access,
+            'hostname': name,
+            'disk_size': int(size.disk),
+            'facility': location.id,
+            'image_id': image.id,
+            'processing_cores': size.ram / RAM_PER_CPU,
+            'backend_ip': ex_privateip,
+            'frontend_ip': ex_publicip,
+            'admin_password': ex_rootpass,
+            'console_password': ex_consolepass,
+            'ssh_username': ex_sshuser,
+            'ssh_password': ex_sshpass,
+            'voxel_access': ex_voxel_access,
         }
 
         object = self.connection.request('/', params=params).object
@@ -235,10 +236,10 @@ class VoxelNodeDriver(NodeDriver):
         if self._getstatus(object):
             return Node(
                 id=object.findtext("device/id"),
-                name=kwargs["name"],
+                name=name,
                 state=NODE_STATE_MAP[object.findtext("device/status")],
-                public_ips=kwargs.get("publicip", None),
-                private_ips=kwargs.get("privateip", None),
+                public_ips=ex_publicip,
+                private_ips=ex_privateip,
                 driver=self.connection.driver
             )
         else:

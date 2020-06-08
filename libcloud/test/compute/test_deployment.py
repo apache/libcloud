@@ -24,13 +24,17 @@ import unittest
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import PY3
+from libcloud.utils.py3 import assertRaisesRegex
 
 from libcloud.compute.deployment import MultiStepDeployment, Deployment
 from libcloud.compute.deployment import SSHKeyDeployment, ScriptDeployment
 from libcloud.compute.deployment import ScriptFileDeployment, FileDeployment
 from libcloud.compute.base import Node
+from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import NodeState, DeploymentError, LibcloudError
 from libcloud.compute.ssh import BaseSSHClient
+from libcloud.compute.ssh import have_paramiko
+from libcloud.compute.ssh import SSHCommandTimeoutError
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver as Rackspace
 
 from libcloud.test import MockHttp, XML_HEADERS
@@ -38,6 +42,14 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 from mock import Mock, patch
 
 from libcloud.test.secrets import RACKSPACE_PARAMS
+
+# Keyword arguments which are specific to deploy_node() method, but not
+# create_node()
+DEPLOY_NODE_KWARGS = ['deploy', 'ssh_username', 'ssh_alternate_usernames',
+                      'ssh_port', 'ssh_timeout', 'ssh_key', 'timeout',
+                      'max_tries', 'ssh_interface']
+
+FILE_PATH = '{0}home{0}ubuntu{0}relative.sh'.format(os.path.sep)
 
 
 class MockDeployment(Deployment):
@@ -48,15 +60,19 @@ class MockDeployment(Deployment):
 
 class MockClient(BaseSSHClient):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, throw_on_timeout=False, *args, **kwargs):
         self.stdout = ''
         self.stderr = ''
         self.exit_status = 0
+        self.throw_on_timeout = throw_on_timeout
 
     def put(self, path, contents, chmod=755, mode='w'):
         return contents
 
-    def run(self, name):
+    def run(self, cmd, timeout=None):
+        if self.throw_on_timeout and timeout is not None:
+            raise ValueError("timeout")
+
         return self.stdout, self.stderr, self.exit_status
 
     def delete(self, name):
@@ -108,14 +124,25 @@ class DeploymentTests(unittest.TestCase):
         sd2 = ScriptDeployment(script='foobar', delete=False)
         sd3 = ScriptDeployment(
             script='foobar', delete=False, name='foobarname')
+        sd4 = ScriptDeployment(
+            script='foobar', delete=False, name='foobarname', timeout=10)
 
         self.assertTrue(sd1.name.find('deployment') != '1')
         self.assertEqual(sd3.name, 'foobarname')
+        self.assertEqual(sd3.timeout, None)
+        self.assertEqual(sd4.timeout, 10)
 
         self.assertEqual(self.node, sd1.run(node=self.node,
                                             client=MockClient(hostname='localhost')))
         self.assertEqual(self.node, sd2.run(node=self.node,
                                             client=MockClient(hostname='localhost')))
+        self.assertEqual(self.node, sd3.run(node=self.node,
+                                            client=MockClient(hostname='localhost')))
+
+        assertRaisesRegex(self, ValueError, 'timeout', sd4.run,
+                          node=self.node,
+                          client=MockClient(hostname='localhost',
+                                            throw_on_timeout=True))
 
     def test_script_file_deployment(self):
         file_path = os.path.abspath(__file__)
@@ -127,64 +154,72 @@ class DeploymentTests(unittest.TestCase):
 
         sfd1 = ScriptFileDeployment(script_file=file_path)
         self.assertEqual(sfd1.script, content)
+        self.assertEqual(sfd1.timeout, None)
+
+        sfd2 = ScriptFileDeployment(script_file=file_path, timeout=20)
+        self.assertEqual(sfd2.timeout, 20)
 
     def test_script_deployment_relative_path(self):
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
 
         sd = ScriptDeployment(script='echo "foo"', name='relative.sh')
         sd.run(self.node, client)
 
-        client.run.assert_called_once_with('/home/ubuntu/relative.sh')
+        client.run.assert_called_once_with(FILE_PATH, timeout=None)
 
     def test_script_deployment_absolute_path(self):
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
 
-        sd = ScriptDeployment(script='echo "foo"', name='/root/relative.sh')
+        file_path = '{0}root{0}relative.sh'.format(os.path.sep)
+
+        sd = ScriptDeployment(script='echo "foo"', name=file_path)
         sd.run(self.node, client)
 
-        client.run.assert_called_once_with('/root/relative.sh')
+        client.run.assert_called_once_with(file_path, timeout=None)
 
     def test_script_deployment_with_arguments(self):
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
+
+        file_path = '{0}root{0}relative.sh'.format(os.path.sep)
 
         args = ['arg1', 'arg2', '--option1=test']
         sd = ScriptDeployment(script='echo "foo"', args=args,
-                              name='/root/relative.sh')
+                              name=file_path)
         sd.run(self.node, client)
 
-        expected = '/root/relative.sh arg1 arg2 --option1=test'
-        client.run.assert_called_once_with(expected)
+        expected = '%s arg1 arg2 --option1=test' % (file_path)
+        client.run.assert_called_once_with(expected, timeout=None)
 
         client.reset_mock()
 
         args = []
         sd = ScriptDeployment(script='echo "foo"', args=args,
-                              name='/root/relative.sh')
+                              name=file_path)
         sd.run(self.node, client)
 
-        expected = '/root/relative.sh'
-        client.run.assert_called_once_with(expected)
+        expected = file_path
+        client.run.assert_called_once_with(expected, timeout=None)
 
     def test_script_file_deployment_with_arguments(self):
         file_path = os.path.abspath(__file__)
         client = Mock()
-        client.put.return_value = '/home/ubuntu/relative.sh'
+        client.put.return_value = FILE_PATH
         client.run.return_value = ('', '', 0)
 
         args = ['arg1', 'arg2', '--option1=test', 'option2']
         sfd = ScriptFileDeployment(script_file=file_path, args=args,
-                                   name='/root/relative.sh')
+                                   name=file_path)
 
         sfd.run(self.node, client)
 
-        expected = '/root/relative.sh arg1 arg2 --option1=test option2'
-        client.run.assert_called_once_with(expected)
+        expected = '%s arg1 arg2 --option1=test option2' % (file_path)
+        client.run.assert_called_once_with(expected, timeout=None)
 
     def test_script_deployment_and_sshkey_deployment_argument_types(self):
         class FileObject(object):
@@ -349,6 +384,31 @@ class DeploymentTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
+    @unittest.skipIf(not have_paramiko, 'Skipping because paramiko is not available')
+    def test_ssh_client_connect_immediately_throws_on_fatal_execption(self):
+        # Verify that fatal exceptions are immediately propagated and ensure
+        # we don't try to retry on them
+        from paramiko.ssh_exception import SSHException
+        from paramiko.ssh_exception import PasswordRequiredException
+
+        mock_ssh_client = Mock()
+        mock_ssh_client.connect = Mock()
+        mock_ssh_client.connect.side_effect = IOError('bam')
+
+        mock_exceptions = [
+            SSHException('Invalid or unsupported key type'),
+            PasswordRequiredException('private key file is encrypted'),
+            SSHException('OpenSSH private key file checkints do not match')
+        ]
+
+        for mock_exception in mock_exceptions:
+            mock_ssh_client.connect = Mock(side_effect=mock_exception)
+            assertRaisesRegex(self, mock_exception.__class__, str(mock_exception),
+                              self.driver._ssh_client_connect,
+                              ssh_client=mock_ssh_client,
+                              wait_period=0.1,
+                              timeout=0.2)
+
     def test_run_deployment_script_success(self):
         task = Mock()
         ssh_client = Mock()
@@ -375,6 +435,23 @@ class DeploymentTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
+    def test_run_deployment_script_ssh_command_timeout_fatal_exception(self):
+        # We shouldn't retry on SSHCommandTimeoutError error since it's fatal
+        task = Mock()
+        task.run = Mock()
+        task.run.side_effect = SSHCommandTimeoutError('ls -la', 10)
+        ssh_client = Mock()
+
+        try:
+            self.driver._run_deployment_script(task=task,
+                                               node=self.node,
+                                               ssh_client=ssh_client,
+                                               max_tries=5)
+        except SSHCommandTimeoutError as e:
+            self.assertTrue(e.message.find('Command didn\'t finish') != -1)
+        else:
+            self.fail('Exception was not thrown')
+
     @patch('libcloud.compute.base.SSHClient')
     @patch('libcloud.compute.ssh')
     def test_deploy_node_success(self, mock_ssh_module, _):
@@ -386,6 +463,143 @@ class DeploymentTests(unittest.TestCase):
 
         node = self.driver.deploy_node(deploy=deploy)
         self.assertEqual(self.node.id, node.id)
+
+    @patch('libcloud.compute.base.atexit')
+    @patch('libcloud.compute.base.SSHClient')
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_at_exit_func_functionality(self, mock_ssh_module, _, mock_at_exit):
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+        mock_ssh_module.have_paramiko = True
+
+        deploy = Mock()
+
+        def mock_at_exit_func(driver, node):
+            pass
+
+        # On success, at exit handler should be unregistered
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
+        node = self.driver.deploy_node(deploy=deploy, at_exit_func=mock_at_exit_func)
+        self.assertEqual(mock_at_exit.register.call_count, 1)
+        self.assertEqual(mock_at_exit.unregister.call_count, 1)
+        self.assertEqual(self.node.id, node.id)
+
+        # On deploy failure, at exit handler should also be unregistered
+        mock_at_exit.reset_mock()
+
+        deploy.run.side_effect = Exception('foo')
+
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
+        try:
+            self.driver.deploy_node(deploy=deploy, at_exit_func=mock_at_exit_func)
+        except DeploymentError as e:
+            self.assertTrue(e.node.id, self.node.id)
+        else:
+            self.fail('Exception was not thrown')
+
+        self.assertEqual(mock_at_exit.register.call_count, 1)
+        self.assertEqual(mock_at_exit.unregister.call_count, 1)
+
+        # But it should not be registered on create_node exception
+        mock_at_exit.reset_mock()
+
+        self.driver.create_node = Mock(side_effect=Exception('Failure'))
+
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
+        try:
+            self.driver.deploy_node(deploy=deploy, at_exit_func=mock_at_exit_func)
+        except Exception as e:
+            self.assertTrue('Failure' in str(e))
+        else:
+            self.fail('Exception was not thrown')
+
+        self.assertEqual(mock_at_exit.register.call_count, 0)
+        self.assertEqual(mock_at_exit.unregister.call_count, 0)
+
+    @patch('libcloud.compute.base.SSHClient')
+    @patch('libcloud.compute.ssh')
+    def test_deploy_node_deploy_node_kwargs_except_auth_are_not_propagated_on(self, mock_ssh_module, _):
+        # Verify that keyword arguments which are specific to deploy_node()
+        # are not propagated to create_node()
+        mock_ssh_module.have_paramiko = True
+        self.driver.create_node = Mock()
+        self.driver.create_node.return_value = self.node
+        self.driver._connect_and_run_deployment_script = Mock()
+        self.driver._wait_until_running = Mock()
+
+        kwargs = {}
+        for key in DEPLOY_NODE_KWARGS:
+            kwargs[key] = key
+
+        kwargs['ssh_interface'] = 'public_ips'
+        kwargs['ssh_alternate_usernames'] = ['foo', 'bar']
+        kwargs['timeout'] = 10
+
+        auth = NodeAuthPassword('P@$$w0rd')
+
+        node = self.driver.deploy_node(name='name', image='image', size='size',
+                                       auth=auth, ex_foo='ex_foo', **kwargs)
+        self.assertEqual(self.node.id, node.id)
+        self.assertEqual(self.driver.create_node.call_count, 1)
+
+        call_kwargs = self.driver.create_node.call_args_list[0][1]
+        expected_call_kwargs = {
+            'name': 'name',
+            'image': 'image',
+            'size': 'size',
+            'auth': auth,
+            'ex_foo': 'ex_foo'
+        }
+        self.assertEqual(expected_call_kwargs, call_kwargs)
+
+        # If driver throws an exception it should fall back to passing in all
+        # the arguments
+        global call_count
+        call_count = 0
+
+        def create_node(name, image, size, ex_custom_arg_1, ex_custom_arg_2,
+                        ex_foo=None, auth=None, **kwargs):
+            global call_count
+
+            call_count += 1
+            if call_count == 1:
+                msg = 'create_node() takes at least 5 arguments (7 given)'
+                raise TypeError(msg)
+            return self.node
+
+        self.driver.create_node = create_node
+
+        node = self.driver.deploy_node(name='name', image='image', size='size',
+                                       auth=auth, ex_foo='ex_foo', ex_custom_arg_1='a',
+                                       ex_custom_arg_2='b', **kwargs)
+        self.assertEqual(self.node.id, node.id)
+        self.assertEqual(call_count, 2)
+
+        call_count = 0
+
+        def create_node(name, image, size, ex_custom_arg_1, ex_custom_arg_2,
+                        ex_foo=None, auth=None, **kwargs):
+            global call_count
+
+            call_count += 1
+            if call_count == 1:
+                msg = 'create_node() missing 3 required positional arguments'
+                raise TypeError(msg)
+            return self.node
+
+        self.driver.create_node = create_node
+
+        node = self.driver.deploy_node(name='name', image='image', size='size',
+                                       auth=auth, ex_foo='ex_foo', ex_custom_arg_1='a',
+                                       ex_custom_arg_2='b', **kwargs)
+        self.assertEqual(self.node.id, node.id)
+        self.assertEqual(call_count, 2)
 
     @patch('libcloud.compute.base.SSHClient')
     @patch('libcloud.compute.ssh')

@@ -77,6 +77,7 @@ OLD_CONSTANT_TO_NEW_MAPPING = {
 
 
 class RecordType(object):
+    # TODO: Fix all the affected code and tests and use base Type class here
     """
     DNS record type.
     """
@@ -110,6 +111,7 @@ class RecordType(object):
     TXT = 'TXT'
     URL = 'URL'
     WKS = 'WKS'
+    CAA = 'CAA'
 
 
 class ZoneError(LibcloudError):

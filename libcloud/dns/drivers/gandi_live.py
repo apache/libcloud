@@ -84,6 +84,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         RecordType.TLSA: 'TLSA',
         RecordType.TXT: 'TXT',
         RecordType.WKS: 'WKS',
+        RecordType.CAA: 'CAA',
     }
 
     def list_zones(self):
@@ -412,9 +413,10 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
         return records
 
     def _to_record_sub(self, data, zone, value):
-        extra = {
-            'ttl': int(data['rrset_ttl']),
-        }
+        extra = {}
+        ttl = data.get('rrset_ttl', None)
+        if ttl is not None:
+            extra['ttl'] = int(ttl)
         if data['rrset_type'] == 'MX':
             priority, value = value.split()
             extra['priority'] = priority
@@ -425,7 +427,7 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
             data=value,
             zone=zone,
             driver=self,
-            ttl=data['rrset_ttl'],
+            ttl=ttl,
             extra=extra)
 
     def _to_records(self, data, zone):

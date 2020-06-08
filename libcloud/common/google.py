@@ -70,7 +70,7 @@ from __future__ import with_statement
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 import logging
 import base64
@@ -85,6 +85,7 @@ from libcloud.utils.connection import get_response_object
 from libcloud.utils.py3 import b, httplib, urlencode, urlparse, PY3
 from libcloud.common.base import (ConnectionUserAndKey, JsonResponse,
                                   PollingConnection)
+from libcloud.common.base import BaseDriver
 from libcloud.common.types import (ProviderError,
                                    LibcloudError)
 
@@ -293,7 +294,7 @@ class GoogleResponse(JsonResponse):
             raise GoogleBaseError(message, self.status, code)
 
 
-class GoogleBaseDriver(object):
+class GoogleBaseDriver(BaseDriver):
     name = "Google API"
 
 
@@ -420,7 +421,7 @@ class GoogleInstalledAppAuthConnection(GoogleBaseAuthConnection):
         if PY3:
             code = input('Enter Code: ')
         else:
-            code = raw_input('Enter Code: ')
+            code = raw_input('Enter Code: ')  # NOQA pylint: disable=undefined-variable
         return code
 
     def get_new_token(self):
@@ -616,10 +617,7 @@ class GoogleAuthType(object):
         """
         Checks S3 key format: alphanumeric chars starting with GOOG.
         """
-        return (
-            len(user_id) >= 20 and len(user_id) < 30 and user_id
-            .startswith('GOOG')
-        )
+        return user_id.startswith('GOOG')
 
     @staticmethod
     def _is_sa(user_id):
@@ -730,6 +728,7 @@ class GoogleOAuth2Credential(object):
 
 class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
     """Base connection class for interacting with Google APIs."""
+
     driver = GoogleBaseDriver
     responseCls = GoogleResponse
     host = 'www.googleapis.com'

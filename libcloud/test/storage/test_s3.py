@@ -43,12 +43,8 @@ from libcloud.storage.types import ContainerIsNotEmptyError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ObjectDoesNotExistError
 from libcloud.storage.types import ObjectHashMismatchError
-from libcloud.storage.drivers.s3 import BaseS3Connection
-from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver,\
-    S3CNNorthWestStorageDriver
-from libcloud.storage.drivers.s3 import S3EUWestStorageDriver
-from libcloud.storage.drivers.s3 import S3APSEStorageDriver
-from libcloud.storage.drivers.s3 import S3APNEStorageDriver
+from libcloud.storage.drivers.s3 import BaseS3Connection, S3SignatureV4Connection
+from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
 from libcloud.utils.py3 import b
 
@@ -56,9 +52,10 @@ from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test import unittest, make_response, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS
+from libcloud.test.storage.base import BaseRangeDownloadMockHttp
 
 
-class S3MockHttp(MockHttp):
+class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
 
     fixtures = StorageFileFixtures('s3')
     base_headers = {}
@@ -331,30 +328,37 @@ class S3MockHttp(MockHttp):
                 headers,
                 httplib.responses[httplib.OK])
 
+    def _foo_bar_container_foo_bar_object_range(self, method, url, body, headers):
+        # test_download_object_range_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=5-6')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
+    def _foo_bar_container_foo_bar_object_range_stream(self, method, url, body, headers):
+        # test_download_object_range_as_stream_success
+        body = '0123456789123456789'
+
+        self.assertTrue('Range' in headers)
+        self.assertEqual(headers['Range'], 'bytes=4-6')
+
+        start_bytes, end_bytes = self._get_start_and_end_bytes_from_range_str(headers['Range'], body)
+
+        return (httplib.PARTIAL_CONTENT,
+                body[start_bytes:end_bytes + 1],
+                headers,
+                httplib.responses[httplib.PARTIAL_CONTENT])
+
     def _foo_bar_container_foo_bar_object_NO_BUFFER(self, method, url, body, headers):
         # test_download_object_data_is_not_buffered_in_memory
         body = generate_random_data(1000)
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_bar_container_foo_test_upload_INVALID_HASH1(self, method, url,
-                                                         body, headers):
-        body = ''
-        headers = {}
-        headers['etag'] = '"foobar"'
-        # test_upload_object_invalid_hash1
-        return (httplib.OK,
-                body,
-                headers,
-                httplib.responses[httplib.OK])
-
-    def _foo_bar_container_foo_test_upload_INVALID_HASH2(self, method, url,
-                                                         body, headers):
-        # test_upload_object_invalid_hash2
-        body = ''
-        headers = {'etag': '"hash343hhash89h932439jsaa89"'}
         return (httplib.OK,
                 body,
                 headers,
@@ -404,6 +408,18 @@ class S3Tests(unittest.TestCase):
             os.unlink(self._file_path)
         except OSError:
             pass
+
+    def test_clean_object_name(self):
+        # Ensure ~ is not URL encoded
+        # See https://github.com/apache/libcloud/issues/1452 for details
+        cleaned = self.driver._clean_object_name(name='valid')
+        self.assertEqual(cleaned, 'valid')
+
+        cleaned = self.driver._clean_object_name(name='valid/~')
+        self.assertEqual(cleaned, 'valid/~')
+
+        cleaned = self.driver._clean_object_name(name='valid/~%foo ')
+        self.assertEqual(cleaned, 'valid/~%25foo%20')
 
     def test_invalid_credentials(self):
         self.mock_response_klass.type = 'UNAUTHORIZED'
@@ -501,7 +517,7 @@ class S3Tests(unittest.TestCase):
         container = Container(name='test_container', extra={},
                               driver=self.driver)
         objects = self.driver.list_container_objects(container=container,
-                                                     ex_prefix='test_prefix')
+                                                     prefix='test_prefix')
         self.assertEqual(len(objects), 1)
 
         obj = [o for o in objects if o.name == '1.zip'][0]
@@ -523,6 +539,24 @@ class S3Tests(unittest.TestCase):
         self.mock_response_klass.type = 'get_container'
         container = self.driver.get_container(container_name='test1')
         self.assertTrue(container.name, 'test1')
+
+    def test_get_object_cdn_url(self):
+        self.mock_response_klass.type = 'get_object'
+        obj = self.driver.get_object(container_name='test2',
+                                     object_name='test')
+
+        # cdn urls can only be generated using a V4 connection
+        if issubclass(self.driver.connectionCls, S3SignatureV4Connection):
+            cdn_url = self.driver.get_object_cdn_url(obj, ex_expiry=12)
+            url = urlparse.urlparse(cdn_url)
+            query = urlparse.parse_qs(url.query)
+
+            self.assertEqual(len(query['X-Amz-Signature']), 1)
+            self.assertGreater(len(query['X-Amz-Signature'][0]), 0)
+            self.assertEqual(query['X-Amz-Expires'], ['43200'])
+        else:
+            with self.assertRaises(NotImplementedError):
+                self.driver.get_object_cdn_url(obj)
 
     def test_get_object_container_doesnt_exist(self):
         # This method makes two requests which makes mocking the response a bit
@@ -636,6 +670,38 @@ class S3Tests(unittest.TestCase):
                                              delete_on_failure=True)
         self.assertTrue(result)
 
+    def test_download_object_range_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_range', size=19, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        destination_path = self._file_path
+        result = self.driver.download_object_range(obj=obj,
+                                             destination_path=destination_path,
+                                             start_bytes=5,
+                                             end_bytes=7,
+                                             overwrite_existing=True,
+                                             delete_on_failure=True)
+        self.assertTrue(result)
+
+        with open(self._file_path, 'r') as fp:
+            content = fp.read()
+
+        self.assertEqual(content, '56')
+
+    def test_download_object_range_as_stream_success(self):
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        obj = Object(name='foo_bar_object_range_stream', size=19, hash=None, extra={},
+                     container=container, meta_data=None,
+                     driver=self.driver_type)
+        iterator = self.driver.download_object_range_as_stream(obj=obj,
+                                                               start_bytes=4,
+                                                               end_bytes=7)
+        content = exhaust_iterator(iterator)
+        self.assertEqual(content, b'456')
+
     def test_download_object_data_is_not_buffered_in_memory(self):
         # Test case which verifies that response.body attribute is not accessed
         # and as such, whole body response is not buffered into RAM
@@ -691,7 +757,6 @@ class S3Tests(unittest.TestCase):
         obj = Object(name='foo_bar_object_NO_BUFFER', size=1000, hash=None, extra={},
                      container=container, meta_data=None,
                      driver=self.driver_type)
-        destination_path = self._file_path
         result = self.driver.download_object_as_stream(obj=obj)
         result = exhaust_iterator(result)
 
@@ -777,11 +842,10 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200),
+            headers = {'etag': '"foobar"'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': 'hash343hhash89h932439jsaa89'}
-
-        self.mock_response_klass.type = 'INVALID_HASH1'
 
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -807,11 +871,10 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200, headers={'etag': 'woopwoopwoop'}),
+            headers = {'etag': '"hash343hhash89h932439jsaa89"'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
-
-        self.mock_response_klass.type = 'INVALID_HASH2'
 
         old_func = self.driver_type._upload_object
         self.driver_type._upload_object = upload_file
@@ -831,6 +894,31 @@ class S3Tests(unittest.TestCase):
                 'Invalid hash was returned but an exception was not thrown')
         finally:
             self.driver_type._upload_object = old_func
+
+    def test_upload_object_invalid_hash_kms_encryption(self):
+        # Hash check should be skipped when AWS KMS server side encryption is
+        # used
+        def upload_file(self, object_name=None, content_type=None,
+                        request_path=None, request_method=None,
+                        headers=None, file_path=None, stream=None):
+            headers = {'etag': 'blahblah', 'x-amz-server-side-encryption': 'aws:kms'}
+            return {'response': make_response(200, headers=headers),
+                    'bytes_transferred': 1000,
+                    'data_hash': 'hash343hhash89h932439jsaa81'}
+
+        old_func = self.driver_type._upload_object
+        self.driver_type._upload_object = upload_file
+        file_path = os.path.abspath(__file__)
+        container = Container(name='foo_bar_container', extra={},
+                              driver=self.driver)
+        object_name = 'foo_test_upload'
+        try:
+            self.driver.upload_object(file_path=file_path, container=container,
+                                      object_name=object_name,
+                                      verify_hash=True)
+        finally:
+            self.driver_type._upload_object = old_func
+
 
     def test_upload_object_success(self):
         def upload_file(self, object_name=None, content_type=None,
@@ -862,7 +950,8 @@ class S3Tests(unittest.TestCase):
         def upload_file(self, object_name=None, content_type=None,
                         request_path=None, request_method=None,
                         headers=None, file_path=None, stream=None):
-            return {'response': make_response(200, headers={'etag': '0cc175b9c0f1b6a831c399e269772661'}),
+            headers = {'etag': '0cc175b9c0f1b6a831c399e269772661'}
+            return {'response': make_response(200, headers=headers),
                     'bytes_transferred': 1000,
                     'data_hash': '0cc175b9c0f1b6a831c399e269772661'}
 
@@ -1042,25 +1131,50 @@ class S3Tests(unittest.TestCase):
         result = self.driver.delete_object(obj=obj)
         self.assertTrue(result)
 
+    def test_region_keyword_argument(self):
+        # Default region
+        driver  = S3StorageDriver(*self.driver_args)
+        self.assertEqual(driver.region, 'us-east-1')
+        self.assertEqual(driver.connection.host, 's3.amazonaws.com')
 
-class S3USWestTests(S3Tests):
-    driver_type = S3USWestStorageDriver
+        # Custom region
+        driver  = S3StorageDriver(*self.driver_args, region='us-west-2')
+        self.assertEqual(driver.region, 'us-west-2')
+        self.assertEqual(driver.connection.host, 's3-us-west-2.amazonaws.com')
 
+        # Verify class instance and class variables don't get mixed up
+        driver1  = S3StorageDriver(*self.driver_args, region='us-west-2')
+        self.assertEqual(driver1.region, 'us-west-2')
+        self.assertEqual(driver1.connection.host, 's3-us-west-2.amazonaws.com')
 
-class S3CNNorthWestTests(S3Tests):
-    driver_type = S3CNNorthWestStorageDriver
+        driver2  = S3StorageDriver(*self.driver_args, region='ap-south-1')
+        self.assertEqual(driver2.region, 'ap-south-1')
+        self.assertEqual(driver2.connection.host, 's3-ap-south-1.amazonaws.com')
 
+        self.assertEqual(driver1.region, 'us-west-2')
+        self.assertEqual(driver1.connection.host, 's3-us-west-2.amazonaws.com')
 
-class S3EUWestTests(S3Tests):
-    driver_type = S3EUWestStorageDriver
+        # Test all supported regions
+        for region in S3StorageDriver.list_regions():
+            driver = S3StorageDriver(*self.driver_args, region=region)
+            self.assertEqual(driver.region, region)
 
+        # Invalid region
+        expected_msg = 'Invalid or unsupported region: foo'
+        self.assertRaisesRegex(ValueError, expected_msg, S3StorageDriver,
+                               *self.driver_args, region='foo')
 
-class S3APSETests(S3Tests):
-    driver_type = S3APSEStorageDriver
+        # host argument still has precedence over reguin
+        driver3  = S3StorageDriver(*self.driver_args, region='ap-south-1', host='host1.bar.com')
+        self.assertEqual(driver3.region, 'ap-south-1')
+        self.assertEqual(driver3.connection.host, 'host1.bar.com')
 
+        driver4  = S3StorageDriver(*self.driver_args, host='host2.bar.com')
+        self.assertEqual(driver4.connection.host, 'host2.bar.com')
 
-class S3APNETests(S3Tests):
-    driver_type = S3APNEStorageDriver
+    def test_deprecated_driver_class_per_region(self):
+        driver = S3USWestStorageDriver(*self.driver_args)
+        self.assertEqual(driver.region, 'us-west-1')
 
 
 if __name__ == '__main__':

@@ -406,6 +406,55 @@
         <revision>v2.6.0</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>2.6.1</name>
+        <created>2019-11-18</created>
+        <revision>v2.6.1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>2.7.0</name>
+        <created>2019-12-09</created>
+        <revision>v2.7.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>2.8.0</name>
+        <created>2020-01-02</created>
+        <revision>v2.8.0</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>3.0.0-rc1</name>
+        <created>2020-01-29</created>
+        <revision>v3.0.0-rc1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>3.0.0-rc1</name>
+        <created>2020-03-03</created>
+        <revision>v3.0.0-rc1</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>2.8.2</name>
+        <created>2020-04-15</created>
+        <revision>v2.8.2</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>3.0.0</name>
+        <created>2020-04-15</created>
+        <revision>v3.0.0</revision>
+      </Version>
+  </release>
   <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>

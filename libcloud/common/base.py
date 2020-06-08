@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Union
+from typing import Type
+from typing import Optional
+
 import json
 import os
 import ssl
@@ -22,8 +26,6 @@ import binascii
 import time
 
 from libcloud.utils.py3 import ET
-
-import requests
 
 import libcloud
 
@@ -115,10 +117,16 @@ class Response(object):
     A base Response class to derive from.
     """
 
-    status = httplib.OK  # Response status code
-    headers = {}  # Response headers
-    body = None  # Raw response body
-    object = None  # Parsed response body
+    # Response status code
+    status = httplib.OK  # type: int
+    # Response headers
+    headers = {}  # type: dict
+
+    # Raw response body
+    body = None
+
+    # Parsed response body
+    object = None
 
     error = None  # Reason returned by the server.
     connection = None  # Parent connection class
@@ -186,6 +194,7 @@ class Response(object):
         :return: ``True`` or ``False``
         """
         # pylint: disable=E1101
+        import requests
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -264,6 +273,7 @@ class RawResponse(Response):
         :return: ``True`` or ``False``
         """
         # pylint: disable=E1101
+        import requests
         return self.status in [requests.codes.ok, requests.codes.created,
                                httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
@@ -298,11 +308,11 @@ class Connection(object):
     responseCls = Response
     rawResponseCls = RawResponse
     connection = None
-    host = '127.0.0.1'
+    host = '127.0.0.1'  # type: str
     port = 443
-    timeout = None
+    timeout = None  # type: Optional[Union[int, float]]
     secure = 1
-    driver = None
+    driver = None  # type:  Type[BaseDriver]
     action = None
     cache_busting = False
     backoff = None
@@ -880,7 +890,7 @@ class KeyCertificateConnection(CertificateConnection):
 
     def __init__(self, key_file, cert_file, secure=True, host=None, port=None,
                  url=None, proxy_url=None, timeout=None, backoff=None,
-                 retry_delay=None):
+                 retry_delay=None, ca_cert=None):
         """
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.
@@ -902,7 +912,7 @@ class ConnectionUserAndKey(ConnectionKey):
     Base connection class which accepts a ``user_id`` and ``key`` argument.
     """
 
-    user_id = None
+    user_id = None  # type: int
 
     def __init__(self, user_id, key, secure=True, host=None, port=None,
                  url=None, timeout=None, proxy_url=None,
@@ -921,7 +931,7 @@ class BaseDriver(object):
     Base driver class from which other classes can inherit from.
     """
 
-    connectionCls = ConnectionKey
+    connectionCls = ConnectionKey  # type: Type[Connection]
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  api_version=None, region=None, **kwargs):

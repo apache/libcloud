@@ -16,9 +16,9 @@
 from __future__ import absolute_import
 
 try:
-    import simplejson as json
+    import simplejson as json  # type: ignore
 except Exception:
-    import json
+    import json  # type: ignore
 
 from pipes import quote as pquote
 from xml.dom.minidom import parseString
@@ -28,6 +28,7 @@ import os
 from libcloud.common.base import (LibcloudConnection,
                                   HttpLibResponseProxy)
 from libcloud.utils.py3 import _real_unicode as u
+from libcloud.utils.py3 import ensure_string
 
 from libcloud.utils.misc import lowercase_keys
 
@@ -68,12 +69,12 @@ class LoggingConnection(LibcloudConnection):
 
         if pretty_print and content_type == 'application/json':
             try:
-                body = json.loads(body.decode('utf-8'))
+                body = json.loads(ensure_string(body))
                 body = json.dumps(body, sort_keys=True, indent=4)
             except Exception:
                 # Invalid JSON or server is lying about content-type
                 pass
-        elif pretty_print and content_type == 'text/xml':
+        elif pretty_print and content_type in ['text/xml', 'application/xml']:
             try:
                 elem = parseString(body.decode('utf-8'))
                 body = elem.toprettyxml()
@@ -81,7 +82,7 @@ class LoggingConnection(LibcloudConnection):
                 # Invalid XML
                 pass
 
-        ht += u(body)
+        ht += ensure_string(body)
 
         rv += ht
         rv += ("\n# -------- end %d:%d response ----------\n"

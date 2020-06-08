@@ -901,7 +901,7 @@ class ECSDriver(NodeDriver):
         resp = self.connection.request(self.path, params)
         return resp.success()
 
-    def ex_start_node(self, node):
+    def start_node(self, node):
         """
         Start node to running state.
 
@@ -917,7 +917,7 @@ class ECSDriver(NodeDriver):
         return resp.success() and \
             self._wait_until_state([node], NodeState.RUNNING)
 
-    def ex_stop_node(self, node, ex_force_stop=False):
+    def stop_node(self, node, ex_force_stop=False):
         """
         Stop a running node.
 

@@ -1,3 +1,18 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import sys
 
 from libcloud.test import unittest
@@ -111,7 +126,6 @@ class LXDContainerDriverTestCase(unittest.TestCase):
                                                 image=image,
                                                 parameters='{"source":{"type":"image", '
                                                            '"fingerprint":"7ed08b435c92cd8a8a884c88e8722f2e7546a51e891982a90ea9c15619d7df9b"}}')
-
             self.assertIsInstance(container, Container)
             self.assertEqual(container.name, 'first_lxd_container')
 
@@ -252,6 +266,43 @@ class LXDMockHttp(MockHttp):
         if method == 'GET':
             json = self.fixtures.load('linux_124/no_meta_pool.json')
             return (httplib.OK, json, {}, httplib.responses[httplib.OK])
+
+
+    """
+    def _vlinux_124_containers_create(
+        self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('linux_124/create_container.json'), {}, httplib.responses[httplib.OK])
+
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303(
+        self, method, url, body, headers):
+        return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
+
+    
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
+        self, method, url, body, headers):
+        return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
+
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_restart(
+        self, method, url, body, headers):
+        return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
+
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_rename(
+        self, method, url, body, headers):
+        return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
+
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_stop(
+        self, method, url, body, headers):
+        return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
+
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_json(
+        self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('linux_124/container_a68.json'), {}, httplib.responses[httplib.OK])
+
+    def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_logs(
+        self, method, url, body, headers):
+        return (httplib.OK, self.fixtures.load('linux_124/logs.txt'), {'content-type': 'text/plain'},
+                httplib.responses[httplib.OK])
+    """
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

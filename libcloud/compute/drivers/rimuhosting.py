@@ -36,9 +36,11 @@ class RimuHostingException(Exception):
     """
 
     def __str__(self):
+        # pylint: disable=unsubscriptable-object
         return self.args[0]
 
     def __repr__(self):
+        # pylint: disable=unsubscriptable-object
         return "<RimuHostingException '%s'>" % (self.args[0])
 
 
@@ -222,7 +224,11 @@ class RimuHostingNodeDriver(NodeDriver):
         # XXX check that the response was actually successful
         return True
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, auth=None, ex_billing_oid=None,
+                    ex_host_server_oid=None, ex_vps_order_oid_to_clone=None,
+                    ex_num_ips=1, ex_extra_ip_reason=None, ex_memory_mb=None,
+                    ex_disk_space_mb=None, ex_disk_space_2_mb=None,
+                    ex_control_panel=None):
         """Creates a RimuHosting instance
 
         @inherits: :class:`NodeDriver.create_node`
@@ -263,10 +269,6 @@ class RimuHostingNodeDriver(NodeDriver):
         """
         # Note we don't do much error checking in this because we
         # expect the API to error out if there is a problem.
-        name = kwargs['name']
-        image = kwargs['image']
-        size = kwargs['size']
-
         data = {
             'instantiation_options': {
                 'domain_name': name,
@@ -276,45 +278,41 @@ class RimuHostingNodeDriver(NodeDriver):
             'vps_parameters': {}
         }
 
-        if 'ex_control_panel' in kwargs:
+        if ex_control_panel:
             data['instantiation_options']['control_panel'] = \
-                kwargs['ex_control_panel']
+                ex_control_panel
 
-        auth = self._get_and_check_auth(kwargs.get('auth'))
+        auth = self._get_and_check_auth(auth)
         data['instantiation_options']['password'] = auth.password
 
-        if 'ex_billing_oid' in kwargs:
+        if ex_billing_oid:
             # TODO check for valid oid.
-            data['billing_oid'] = kwargs['ex_billing_oid']
+            data['billing_oid'] = ex_billing_oid
 
-        if 'ex_host_server_oid' in kwargs:
-            data['host_server_oid'] = kwargs['ex_host_server_oid']
+        if ex_host_server_oid:
+            data['host_server_oid'] = ex_host_server_oid
 
-        if 'ex_vps_order_oid_to_clone' in kwargs:
-            data['vps_order_oid_to_clone'] = \
-                kwargs['ex_vps_order_oid_to_clone']
+        if ex_vps_order_oid_to_clone:
+            data['vps_order_oid_to_clone'] = ex_vps_order_oid_to_clone
 
-        if 'ex_num_ips' in kwargs and int(kwargs['ex_num_ips']) > 1:
-            if 'ex_extra_ip_reason' not in kwargs:
+        if ex_num_ips and int(ex_num_ips) > 1:
+            if not ex_extra_ip_reason:
                 raise RimuHostingException(
                     'Need an reason for having an extra IP')
             else:
                 if 'ip_request' not in data:
                     data['ip_request'] = {}
-                data['ip_request']['num_ips'] = int(kwargs['ex_num_ips'])
-                data['ip_request']['extra_ip_reason'] = \
-                    kwargs['ex_extra_ip_reason']
+                data['ip_request']['num_ips'] = int('ex_num_ips')
+                data['ip_request']['extra_ip_reason'] = ex_extra_ip_reason
 
-        if 'ex_memory_mb' in kwargs:
-            data['vps_parameters']['memory_mb'] = kwargs['ex_memory_mb']
+        if ex_memory_mb:
+            data['vps_parameters']['memory_mb'] = ex_memory_mb
 
-        if 'ex_disk_space_mb' in kwargs:
-            data['vps_parameters']['disk_space_mb'] = \
-                kwargs['ex_disk_space_mb']
+        if ex_disk_space_mb:
+            data['vps_parameters']['disk_space_mb'] = ex_disk_space_mb
 
-        if 'ex_disk_space_2_mb' in kwargs:
-            data['vps_parameters']['disk_space_2_mb'] =\
-                kwargs['ex_disk_space_2_mb']
+        if ex_disk_space_2_mb:
+            data['vps_parameters']['disk_space_2_mb'] = ex_disk_space_2_mb
 
         # Don't send empty 'vps_parameters' attribute
         if not data['vps_parameters']:

@@ -15,6 +15,9 @@
 """
 NTTCIS Common Components
 """
+
+from typing import Dict
+
 import xml.etree.ElementTree as etree
 import re
 from functools import wraps
@@ -297,14 +300,12 @@ def get_params(func):
     @wraps(func)
     def paramed(*args, **kwargs):
         if kwargs:
+            params = {}
             for k, v in kwargs.items():
-                old_key = k
                 matches = re.findall(r'_(\w)', k)
                 for match in matches:
                     k = k.replace('_' + match, match.upper())
-                del kwargs[old_key]
-                kwargs[k] = v
-            params = kwargs
+                params[k] = v
             result = func(args[0], params)
         else:
             result = func(args[0])
@@ -1011,7 +1012,7 @@ class NttCisFirewallAddress(object):
                  port_begin=None, port_end=None, address_list_id=None,
                  port_list_id=None):
         """
-        param any_ip: used to set ip address to "ANY"
+        :param any_ip: used to set ip address to "ANY"
         :param ip_address: Optional, an ip address of either IPv4 decimal
                            notation or an IPv6 address
         :type ``str``
@@ -1478,7 +1479,8 @@ class NttCisBackupClient(object):
                  schedule_policy, storage_policy, download_url,
                  alert=None, running_job=None):
         """
-        Initialize an instance of :class:`NttCisBackupClient`
+        Initialize an instance of this class.
+
         :param id: Unique ID for the client
         :type  id: ``str``
         :param type: The type of client that this client is
@@ -1958,7 +1960,7 @@ class ClassFactory(object):
     pass
 
 
-attrs = {}
+attrs = {}  # type: Dict[str, str]
 
 
 def processor(mapping, name=None):

@@ -48,10 +48,10 @@ from libcloud.compute.drivers.azure_arm import locations_mapping
 from libcloud.common.types import InvalidCredsError
 
 if sys.version_info < (3,):
-    _unicode_type = unicode
+    _unicode_type = unicode  # NOQA  pylint: disable=undefined-variable
 
     def _str(value):
-        if isinstance(value, unicode):
+        if isinstance(value, unicode):  # NOQA  pylint: disable=undefined-variable
             return value.encode('utf-8')
 
         return str(value)
@@ -1131,6 +1131,93 @@ class AzureNodeDriver(NodeDriver):
         response = self._perform_cloud_service_create(
             self._get_hosted_service_path(),
             AzureXmlSerializer.create_hosted_service_to_xml(
+                name,
+                self._encode_base64(name),
+                description,
+                location,
+                None,
+                extended_properties
+            )
+        )
+
+        self.raise_for_response(response, 201)
+
+        return True
+
+    def ex_destroy_cloud_service(self, name):
+        """
+        Delete an azure cloud service.
+
+        :param      name: Name of the cloud service to destroy.
+        :type       name: ``str``
+
+        :rtype: ``bool``
+        """
+        response = self._perform_cloud_service_delete(
+            self._get_hosted_service_path(name)
+        )
+
+        self.raise_for_response(response, 200)
+
+        return True
+
+    def ex_add_instance_endpoints(self, node, endpoints,
+                                  ex_deployment_slot="Production"):
+        all_endpoints = [
+            {
+                "name": endpoint.name,
+                "protocol": endpoint.protocol,
+                "port": endpoint.public_port,
+                "local_port": endpoint.local_port,
+
+            }
+            for endpoint in node.extra['instance_endpoints']
+        ]
+
+        all_endpoints.extend(endpoints)
+        # pylint: disable=assignment-from-no-return
+        result = self.ex_set_instance_endpoints(node, all_endpoints,
+                                                ex_deployment_slot)
+        return result
+
+    def ex_set_instance_endpoints(self, node, endpoints,
+                                  ex_deployment_slot="Production"):
+
+        """
+        For example::
+
+            endpoint = ConfigurationSetInputEndpoint(
+                name='SSH',
+                protocol='tcp',
+                port=port,
+                local_port='22',
+                load_balanced_endpoint_set_name=None,
+                enable_direct_server_return=False
+            )
+            {
+                'name': 'SSH',
+                'protocol': 'tcp',
+                'port': port,
+                'local_port': '22'
+            }
+        """
+        ex_cloud_service_name = node.extra['ex_cloud_service_name']
+        vm_role_name = node.name
+
+        network_config = ConfigurationSet()
+        network_config.configuration_set_type = 'NetworkConfiguration'
+
+        for endpoint in endpoints:
+            new_endpoint = ConfigurationSetInputEndpoint(**endpoint)
+            network_config.input_endpoints.items.append(new_endpoint)
+
+        _deployment_name = self._get_deployment(
+            service_name=ex_cloud_service_name,
+            deployment_slot=ex_deployment_slot
+        ).name
+
+        response = self._perform_put(
+            self._get_role_path(
                 ex_cloud_service_name,
                 self._encode_base64(ex_cloud_service_name),
                 description, location, None, extended_properties))

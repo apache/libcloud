@@ -13,29 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import datetime
-
-try:
-    import simplejson as json
-except Exception:
-    import json
-
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import b
-
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
-from libcloud.common.types import InvalidCredsError
+import json
 
 from libcloud.container.base import (Container, ContainerDriver,
                                      ContainerImage, ContainerCluster)
 
+from libcloud.common.kubernetes import KubernetesException
+from libcloud.common.kubernetes import KubernetesBasicAuthConnection
+from libcloud.common.kubernetes import KubernetesDriverMixin
+
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
+__all__ = [
+    'KubernetesContainerDriver'
+]
 
-VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                        httplib.NO_CONTENT]
 
 ROOT_URL = '/api/'
 
@@ -96,11 +90,11 @@ class KubernetesPod(object):
         self.namespace = namespace
 
 
-class KubernetesContainerDriver(ContainerDriver):
+class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     type = Provider.KUBERNETES
     name = 'Kubernetes'
     website = 'http://kubernetes.io'
-    connectionCls = KubernetesConnection
+    connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
 
     def __init__(self, key=None, secret=None, secure=False, host='localhost',

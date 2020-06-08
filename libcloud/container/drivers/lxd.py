@@ -17,12 +17,12 @@ import base64
 import re
 import os
 
+import collections
+
 try:
     import simplejson as json
 except Exception:
     import json
-
-import collections
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import b
@@ -48,7 +48,6 @@ LXD_API_IMAGE_SOURCE_TYPE = ["image", "migration", "copy", "none"]
 # the wording used by LXD to indicate that an error
 # occurred for a request
 LXD_ERROR_STATUS_RESP = 'error'
-DUMMY_POOL_NAME = "DummyPool"
 
 
 # helpers
@@ -82,7 +81,6 @@ def check_certificates(key_file, cert_file, **kwargs):
         key_file_suffix = key_file.split('.')
 
         if key_file_suffix[-1] not in kwargs['key_files_allowed']:
-
             raise InvalidCredsError("Valid key files are: " +
                                     str(kwargs['key_files_allowed']) +
                                     "you provided: " + key_file_suffix[-1])
@@ -92,7 +90,6 @@ def check_certificates(key_file, cert_file, **kwargs):
         cert_file_suffix = cert_file.split('.')
 
         if cert_file_suffix[-1] not in kwargs['cert_files_allowed']:
-
             raise InvalidCredsError("Valid certification files are: " +
                                     str(kwargs['cert_files_allowed']) +
                                     "you provided: " + cert_file_suffix[-1])
@@ -127,7 +124,6 @@ def assert_response(response_dict, status_code):
     # anything else apart from the status_code given should be treated as error
     if response_dict['status_code'] != status_code:
         # we have an unknown error
-
         msg = "Status code should be {0}\
          but is {1}".format(status_code, response_dict['status_code'])
         raise LXDAPIException(message=msg,
@@ -380,10 +376,8 @@ class LXDContainerDriver(ContainerDriver):
     default_profiles = 'default'
 
     # An ephemeral container means that it
-    # will be destroyed once it is stopped
+    # will be restroyed once it is stopped
     default_ephemeral = False
-
-    INVALID_FINGER_PRINT = -1
 
     def __init__(self, key='', secret='', secure=False,
                  host='localhost', port=8443, key_file=None,
@@ -468,7 +462,6 @@ class LXDContainerDriver(ContainerDriver):
         response = self.connection.request("/%s" % (self.version))
         response_dict = response.parse_body()
         assert_response(response_dict=response_dict, status_code=200)
-
         meta = response_dict["metadata"]
         return LXDServerInfo.build_from_response(metadata=meta)
 
@@ -615,7 +608,6 @@ class LXDContainerDriver(ContainerDriver):
 
     def start_container(self, container, ex_timeout=default_time_out,
                         ex_force=True, ex_stateful=True):
-
         """
         Start a container
 
@@ -639,7 +631,6 @@ class LXDContainerDriver(ContainerDriver):
 
     def stop_container(self, container, ex_timeout=default_time_out,
                        ex_force=True, ex_stateful=True):
-
         """
         Stop the given container
 
@@ -944,9 +935,7 @@ class LXDContainerDriver(ContainerDriver):
         containers = []
         for item in meta:
             container_id = item.split('/')[-1]
-
             if not ex_detailed:
-
                 container = Container(driver=self, name=container_id,
                                       state=ContainerState.UNKNOWN,
                                       id=container_id,
@@ -982,8 +971,8 @@ class LXDContainerDriver(ContainerDriver):
         """
         Install a container image from a remote path. Not that the
         path currently is not used. Image data should be provided
-        int the ex_img_data under the key 'ex_img_data'. Creating
-        an image in LXD is an asynchronous operation
+        under the key 'ex_img_data'. Creating an image in LXD is an
+        asynchronous operation
 
         :param path: Path to the container image
         :type  path: ``str``
@@ -1101,7 +1090,7 @@ class LXDContainerDriver(ContainerDriver):
         for img in images:
             if alias == img.name:
                 return True, img.extra['fingerprint']
-        return False, LXDContainerDriver.INVALID_FINGER_PRINT
+        return False, -1
 
     def ex_list_storage_pools(self, detailed=True):
         """
@@ -1242,7 +1231,6 @@ class LXDContainerDriver(ContainerDriver):
 
         Authentication: trusted
         Operation: sync
-
         Return: list of storage volumes that
         currently exist on a given storage pool
 
@@ -1283,7 +1271,6 @@ class LXDContainerDriver(ContainerDriver):
         Operation: sync
         Return: A StorageVolume  representing a storage volume
         """
-
         req = "/%s/storage-pools/%s/volumes/%s/%s" % (self.version,
                                                       pool_id,
                                                       type, name)
@@ -1427,7 +1414,6 @@ class LXDContainerDriver(ContainerDriver):
         :param type:
         :param name:
         :param definition
-
         """
 
         if not definition:
@@ -1651,7 +1637,6 @@ class LXDContainerDriver(ContainerDriver):
 
         # if the container is ephemeral and the action is to stop
         # then the container is removed so return sth dummy
-
         if state == ContainerState.RUNNING and\
                 container.extra['ephemeral'] and action == 'stop':
             # return a dummy container otherwise we get 404 error
@@ -1763,7 +1748,6 @@ class LXDContainerDriver(ContainerDriver):
                                                              id,
                                                              timeout)
             response = self.connection.request(req_str)
-
         except BaseHTTPError as e:
 
             message_list = e.message.split(",")

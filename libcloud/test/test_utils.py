@@ -20,6 +20,7 @@ import socket
 import codecs
 import unittest
 import warnings
+import platform
 import os.path
 import requests_mock
 from itertools import chain
@@ -39,6 +40,7 @@ from libcloud.utils.py3 import hexadigits
 from libcloud.utils.py3 import urlquote
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import DRIVERS
+from libcloud.compute.drivers.dummy import DummyNodeDriver
 from libcloud.utils.misc import get_secure_random_string
 from libcloud.utils.networking import is_public_subnet
 from libcloud.utils.networking import is_private_subnet
@@ -64,6 +66,7 @@ if PY3:
 def show_warning(msg, cat, fname, lno, file=None, line=None):
     WARNINGS_BUFFER.append((msg, cat, fname, lno))
 
+
 original_func = warnings.showwarning
 
 
@@ -77,6 +80,7 @@ class TestUtils(unittest.TestCase):
         WARNINGS_BUFFER = []
         warnings.showwarning = original_func
 
+    @unittest.skipIf(platform.system().lower() == 'windows', 'Unsupported on Windows')
     def test_guess_file_mime_type(self):
         file_path = os.path.abspath(__file__)
         mimetype, encoding = libcloud.utils.files.guess_file_mime_type(
@@ -94,6 +98,16 @@ class TestUtils(unittest.TestCase):
             pass
         else:
             self.fail('Invalid provider, but an exception was not thrown')
+
+    def test_get_driver_string_and_enum_notation(self):
+        driver = get_driver(drivers=DRIVERS, provider=Provider.DUMMY)
+        self.assertEqual(driver, DummyNodeDriver)
+
+        driver = get_driver(drivers=DRIVERS, provider='dummy')
+        self.assertEqual(driver, DummyNodeDriver)
+
+        driver = get_driver(drivers=DRIVERS, provider='DUMMY')
+        self.assertEqual(driver, DummyNodeDriver)
 
     def test_set_driver(self):
         # Set an existing driver
@@ -199,32 +213,32 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(result, b('aaaaaaaaaa'))
 
     def test_read_in_chunks_filelike(self):
-            class FakeFile(file):
-                def __init__(self):
-                    self.remaining = 500
+        class FakeFile(file):
+            def __init__(self):
+                self.remaining = 500
 
-                def read(self, size):
-                    self.remaining -= 1
-                    if self.remaining == 0:
-                        return ''
-                    return 'b' * (size + 1)
+            def read(self, size):
+                self.remaining -= 1
+                if self.remaining == 0:
+                    return ''
+                return 'b' * (size + 1)
 
-            for index, result in enumerate(libcloud.utils.files.read_in_chunks(
-                                           FakeFile(), chunk_size=10,
-                                           fill_size=False)):
-                self.assertEqual(result, b('b' * 11))
+        for index, result in enumerate(libcloud.utils.files.read_in_chunks(
+                                       FakeFile(), chunk_size=10,
+                                       fill_size=False)):
+            self.assertEqual(result, b('b' * 11))
 
-            self.assertEqual(index, 498)
+        self.assertEqual(index, 498)
 
-            for index, result in enumerate(libcloud.utils.files.read_in_chunks(
-                                           FakeFile(), chunk_size=10,
-                                           fill_size=True)):
-                if index != 548:
-                    self.assertEqual(result, b('b' * 10))
-                else:
-                    self.assertEqual(result, b('b' * 9))
+        for index, result in enumerate(libcloud.utils.files.read_in_chunks(
+                                       FakeFile(), chunk_size=10,
+                                       fill_size=True)):
+            if index != 548:
+                self.assertEqual(result, b('b' * 10))
+            else:
+                self.assertEqual(result, b('b' * 9))
 
-            self.assertEqual(index, 548)
+        self.assertEqual(index, 548)
 
     def test_exhaust_iterator(self):
         def iterator_func():
@@ -424,6 +438,7 @@ def test_get_response_object():
         m.get('http://test.com/test', text='data')
         response = get_response_object('http://test.com/test')
         assert response.body == 'data'
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

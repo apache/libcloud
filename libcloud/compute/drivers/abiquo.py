@@ -81,7 +81,8 @@ class AbiquoNodeDriver(NodeDriver):
                                                port=None, **kwargs)
         self.ex_populate_cache()
 
-    def create_node(self, **kwargs):
+    def create_node(self, image, name=None, size=None, location=None,
+                    ex_group_name=None):
         """
         Create a new node instance in Abiquo
 
@@ -113,13 +114,13 @@ class AbiquoNodeDriver(NodeDriver):
                               undefined behavior will be selected. (optional)
         :type       location: :class:`NodeLocation`
 
-        :keyword   group_name:  Which group this node belongs to. If empty,
-                                 it will be created into 'libcloud' group. If
-                                 it does not found any group in the target
-                                 location (random location if you have not set
-                                 the parameter), then it will create a new
-                                 group with this name.
-        :type     group_name:  c{str}
+        :keyword   ex_group_name:  Which group this node belongs to. If empty,
+                                   it will be created into 'libcloud' group. If
+                                   it does not found any group in the target
+                                   location (random location if you have not
+                                   set the parameter), then it will create a
+                                   new group with this name.
+        :type     ex_group_name:  c{str}
 
         :return:               The newly created node.
         :rtype:                :class:`Node`
@@ -128,13 +129,15 @@ class AbiquoNodeDriver(NodeDriver):
         # To be clear:
         #     'xml_loc' is the xml element we navigate into (we need links)
         #     'loc' is the :class:`NodeLocation` entity
-        xml_loc, loc = self._define_create_node_location(**kwargs)
+        xml_loc, loc = self._define_create_node_location(image=image,
+                                                         location=location)
 
         # Define the Group
-        group = self._define_create_node_group(xml_loc, loc, **kwargs)
+        group = self._define_create_node_group(xml_loc, loc, ex_group_name)
 
         # Register the Node
-        vm = self._define_create_node_node(group, **kwargs)
+        vm = self._define_create_node_node(group, name=name, size=size,
+                                           image=image)
 
         # Execute the 'create' in hypervisor action
         self._deploy_remote(vm)
@@ -655,7 +658,7 @@ class AbiquoNodeDriver(NodeDriver):
         """
         return self.connection.cache['enterprise'].findtext('id')
 
-    def _define_create_node_location(self, **kwargs):
+    def _define_create_node_location(self, image, location):
         """
         Search for a location where to create the node.
 
@@ -663,16 +666,12 @@ class AbiquoNodeDriver(NodeDriver):
         location will be created.
         """
         # First, get image location
-        if 'image' not in kwargs:
+        if not image:
             error = "'image' parameter is mandatory"
             raise LibcloudError(error, self)
 
-        image = kwargs['image']
-
         # Get the location argument
-        location = None
-        if 'location' in kwargs:
-            location = kwargs['location']
+        if location:
             if location not in self.list_locations():
                 raise LibcloudError('Location does not exist')
 
@@ -696,16 +695,14 @@ class AbiquoNodeDriver(NodeDriver):
 
         return loc, target_loc
 
-    def _define_create_node_group(self, xml_loc, loc, **kwargs):
+    def _define_create_node_group(self, xml_loc, loc, group_name=None):
         """
         Search for a group where to create the node.
 
         If we can not find any group, create it into argument 'location'
         """
-        if 'group_name' not in kwargs:
+        if not group_name:
             group_name = NodeGroup.DEFAULT_GROUP_NAME
-        else:
-            group_name = kwargs['group_name']
 
         # We search if the group is already defined into the location
         groups_link = get_href(xml_loc, 'virtualappliances')
@@ -724,7 +721,8 @@ class AbiquoNodeDriver(NodeDriver):
         if target_group is None:
             return self.ex_create_group(group_name, loc)
 
-    def _define_create_node_node(self, group, **kwargs):
+    def _define_create_node_node(self, group, name=None, size=None,
+                                 image=None):
         """
         Defines the node before to create.
 
@@ -732,20 +730,20 @@ class AbiquoNodeDriver(NodeDriver):
         the API before to create it into the target hypervisor.
         """
         vm = ET.Element('virtualMachine')
-        if 'name' in kwargs:
+        if name:
             vmname = ET.SubElement(vm, 'label')
-            vmname.text = kwargs['name']
+            vmname.text = name
         attrib = {'type': self.VMTPL_MIME_TYPE,
                   'rel': 'virtualmachinetemplate',
-                  'href': kwargs['image'].extra['url']}
+                  'href': image.extra['url']}
         ET.SubElement(vm, 'link', attrib=attrib)
         headers = {'Accept': self.NODE_MIME_TYPE,
                    'Content-type': self.NODE_MIME_TYPE}
 
-        if 'size' in kwargs:
+        if size:
             # Override the 'NodeSize' data
             ram = ET.SubElement(vm, 'ram')
-            ram.text = str(kwargs['size'].ram)
+            ram.text = str(size.ram)
 
         # Create the virtual machine
         nodes_link = group.uri + '/virtualmachines'

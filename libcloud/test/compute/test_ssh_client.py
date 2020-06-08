@@ -36,8 +36,10 @@ from mock import patch, Mock, MagicMock
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA
+    paramiko_version = '0.0.0'
 else:
     import paramiko
+    paramiko_version = paramiko.__version__
 
 
 @unittest.skipIf(not have_paramiko, 'Skipping because paramiko is not available')
@@ -57,6 +59,10 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         os.environ['LIBCLOUD_DEBUG'] = self.tmp_file
         _init_once()
         self.ssh_cli = ParamikoSSHClient(**conn_params)
+
+    def tearDown(self):
+        if 'LIBCLOUD_DEBUG' in os.environ:
+            del os.environ['LIBCLOUD_DEBUG']
 
     @patch('paramiko.SSHClient', Mock)
     def test_create_with_password(self):
@@ -140,6 +146,8 @@ class ParamikoSSHClientTests(LibcloudTestCase):
                           expected_msg, mock.connect)
 
     @patch('paramiko.SSHClient', Mock)
+    @unittest.skipIf(paramiko_version >= '2.7.0',
+                     'New versions of paramiko support OPENSSH key format')
     def test_key_file_non_pem_format_error(self):
         path = os.path.join(os.path.dirname(__file__),
                             'fixtures', 'misc',
@@ -158,6 +166,100 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         expected_msg = 'Invalid or unsupported key type'
         assertRaisesRegex(self, paramiko.ssh_exception.SSHException,
                           expected_msg, mock.connect)
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_password_protected_key_no_password_provided(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa_2048b_pass_foobar.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key}
+
+        mock = ParamikoSSHClient(**conn_params)
+
+        expected_msg = 'private key file is encrypted'
+        assertRaisesRegex(self, paramiko.ssh_exception.PasswordRequiredException,
+                          expected_msg, mock.connect)
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_files': path}
+
+        mock = ParamikoSSHClient(**conn_params)
+
+        expected_msg = 'private key file is encrypted'
+        assertRaisesRegex(self, paramiko.ssh_exception.PasswordRequiredException,
+                          expected_msg, mock.connect)
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_password_protected_key_no_password_provided(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa_2048b_pass_foobar.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key,
+                       'password': 'invalid'}
+
+        mock = ParamikoSSHClient(**conn_params)
+
+        expected_msg = 'OpenSSH private key file checkints do not match'
+        assertRaisesRegex(self, paramiko.ssh_exception.SSHException,
+                          expected_msg, mock.connect)
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_password_protected_key_valid_password_provided(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_rsa_2048b_pass_foobar.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key,
+                       'password': 'foobar'}
+
+        mock = ParamikoSSHClient(**conn_params)
+        self.assertTrue(mock.connect())
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_files': path,
+                       'password': 'foobar'}
+
+        mock = ParamikoSSHClient(**conn_params)
+        self.assertTrue(mock.connect())
+
+    @patch('paramiko.SSHClient', Mock)
+    def test_ed25519_key_type(self):
+        path = os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'misc',
+                            'test_ed25519.key')
+
+        # Supplied as key_material
+        with open(path, 'r') as fp:
+            private_key = fp.read()
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'key_material': private_key}
+
+        mock = ParamikoSSHClient(**conn_params)
+        self.assertTrue(mock.connect())
 
     def test_key_material_valid_pem_keys_invalid_header_auto_conversion(self):
         # Test a scenario where valid PEM keys with invalid headers which is
@@ -429,8 +531,8 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
 
         stdout = client._consume_stdout(chan).getvalue()
-        self.assertEqual('\xf0\x90\x8d\x88', stdout.encode('utf-8'))
-        self.assertTrue(len(stdout) in [1, 2])
+        self.assertEqual('ð\x90\x8d\x88', stdout)
+        self.assertEqual(len(stdout), 4)
 
     def test_consume_stderr_chunk_contains_part_of_multi_byte_utf8_character(self):
         conn_params = {'hostname': 'dummy.host.org',
@@ -443,8 +545,36 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         chan.recv_stderr.side_effect = ['\xF0', '\x90', '\x8D', '\x88']
 
         stderr = client._consume_stderr(chan).getvalue()
-        self.assertEqual('\xf0\x90\x8d\x88', stderr.encode('utf-8'))
-        self.assertTrue(len(stderr) in [1, 2])
+        self.assertEqual('ð\x90\x8d\x88', stderr)
+        self.assertEqual(len(stderr), 4)
+
+    def test_consume_stdout_chunk_contains_non_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_ready.side_effect = [True, True, True, False]
+        chan.recv.side_effect = ['🤦'.encode('utf-32'), 'a', 'b']
+
+        stdout = client._consume_stdout(chan).getvalue()
+        self.assertEqual('\x00\x00&\x01\x00ab', stdout)
+        self.assertEqual(len(stdout), 7)
+
+    def test_consume_stderr_chunk_contains_non_utf8_character(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+        client.CHUNK_SIZE = 1
+
+        chan = Mock()
+        chan.recv_stderr_ready.side_effect = [True, True, True, False]
+        chan.recv_stderr.side_effect = ['🤦'.encode('utf-32'), 'a', 'b']
+
+        stderr = client._consume_stderr(chan).getvalue()
+        self.assertEqual('\x00\x00&\x01\x00ab', stderr)
+        self.assertEqual(len(stderr), 7)
 
 
 class ShellOutSSHClientTests(LibcloudTestCase):

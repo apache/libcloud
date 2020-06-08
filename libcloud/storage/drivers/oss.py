@@ -279,38 +279,30 @@ class OSSStorageDriver(StorageDriver):
         raise LibcloudError('Unexpected status code: %s' % (response.status),
                             driver=self)
 
-    def list_container_objects(self, container, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :keyword ex_prefix: Only return objects starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                    ex_prefix=ex_prefix))
-
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         Return a generator of objects for the given container.
 
         :param container: Container instance
         :type container: :class:`Container`
 
-        :keyword ex_prefix: Only return objects starting with ex_prefix
+        :keyword prefix: Only return objects starting with prefix
+        :type prefix: ``str``
+
+        :keyword ex_prefix: (Deprecated.) Only return objects starting with
+                            ex_prefix
         :type ex_prefix: ``str``
 
         :return: A generator of Object instances.
         :rtype: ``generator`` of :class:`Object`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         params = {}
-        if ex_prefix:
-            params['prefix'] = ex_prefix
+
+        if prefix:
+            params['prefix'] = prefix
 
         last_key = None
         exhausted = False
@@ -468,7 +460,8 @@ class OSSStorageDriver(StorageDriver):
             pass
         return self._put_object(container=container, object_name=object_name,
                                 extra=extra, method=method, query_args=params,
-                                stream=iterator, verify_hash=False)
+                                stream=iterator, verify_hash=False,
+                                headers=headers)
 
     def delete_object(self, obj):
         object_path = self._get_object_path(obj.container, obj.name)
@@ -585,11 +578,11 @@ class OSSStorageDriver(StorageDriver):
 
     def _put_object(self, container, object_name, method='PUT',
                     query_args=None, extra=None, file_path=None,
-                    stream=None, verify_hash=False):
+                    stream=None, verify_hash=False, headers=None):
         """
         Create an object and upload data using the given function.
         """
-        headers = {}
+        headers = headers or {}
         extra = extra or {}
 
         content_type = extra.get('content_type', None)

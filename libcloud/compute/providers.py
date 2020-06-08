@@ -16,11 +16,23 @@
 Provider related utilities
 """
 
+from __future__ import absolute_import
+
+from typing import Type
+from typing import Union
+from types import ModuleType
+from typing import TYPE_CHECKING
+
 from libcloud.compute.types import Provider
 from libcloud.common.providers import get_driver as _get_provider_driver
 from libcloud.common.providers import set_driver as _set_provider_driver
 from libcloud.compute.types import OLD_CONSTANT_TO_NEW_MAPPING
 from libcloud.compute.deprecated import DEPRECATED_DRIVERS
+
+
+if TYPE_CHECKING:
+    # NOTE: This is needed to avoid having setup.py depend on requests
+    from libcloud.compute.base import NodeDriver
 
 __all__ = [
     "Provider",
@@ -112,8 +124,6 @@ DRIVERS = {
     ('libcloud.compute.drivers.ec2', 'OutscaleSASNodeDriver'),
     Provider.OUTSCALE_INC:
     ('libcloud.compute.drivers.ec2', 'OutscaleINCNodeDriver'),
-    Provider.VSPHERE:
-    ('libcloud.compute.drivers.vsphere', 'VSphereNodeDriver'),
     Provider.PROFIT_BRICKS:
     ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
     Provider.VULTR:
@@ -161,6 +171,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.maxihost', 'MaxihostNodeDriver'),
     Provider.GRIDSCALE:
     ('libcloud.compute.drivers.gridscale', 'GridscaleNodeDriver'),
+    Provider.KAMATERA:
+    ('libcloud.compute.drivers.kamatera', 'KamateraNodeDriver'),
     Provider.KUBEVIRT:
     ('libcloud.compute.drivers.kubevirt', 'KubeVirtNodeDriver'),
     Provider.GIG_G8:
@@ -169,6 +181,7 @@ DRIVERS = {
 
 
 def get_driver(provider):
+    # type: (Union[Provider, str]) -> Type[NodeDriver]
     deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
     return _get_provider_driver(drivers=DRIVERS, provider=provider,
                                 deprecated_providers=DEPRECATED_DRIVERS,
@@ -176,5 +189,6 @@ def get_driver(provider):
 
 
 def set_driver(provider, module, klass):
+    # type: (Union[Provider, str], ModuleType, type) -> Type[NodeDriver]
     return _set_provider_driver(drivers=DRIVERS, provider=provider,
                                 module=module, klass=klass)

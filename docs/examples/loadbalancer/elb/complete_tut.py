@@ -26,34 +26,34 @@ def main():
     print(new_balancer)
 
     # create load balancer policy
-    print driver.ex_create_balancer_policy(
+    print(driver.ex_create_balancer_policy(
         name='MyLB',
         policy_name='EnableProxyProtocol',
         policy_type='ProxyProtocolPolicyType',
-        policy_attributes={'ProxyProtocol': 'true'})
+        policy_attributes={'ProxyProtocol': 'true'}))
 
     # delete load balancer policy
-    print driver.ex_delete_balancer_policy(
+    print(driver.ex_delete_balancer_policy(
         name='MyLB',
-        policy_name='EnableProxyProtocol')
+        policy_name='EnableProxyProtocol'))
 
     # set load balancer policies for backend server
-    print driver.ex_set_balancer_policies_backend_server(
+    print(driver.ex_set_balancer_policies_backend_server(
         name='MyLB',
         port=80,
-        policies=['MyDurationStickyPolicy'])
+        policies=['MyDurationStickyPolicy']))
 
     # create the listeners for the balancers
-    print driver.ex_create_balancer_listeners(
+    uid = 'arn:aws:iam::123456789012:server-certificate/servercert'
+    print(driver.ex_create_balancer_listeners(
         name='MyLB',
-        listeners=[[1024, 65533, 'HTTPS',
-                   'arn:aws:iam::123456789012:server-certificate/servercert']])
+        listeners=[[1024, 65533, 'HTTPS', uid]]))
 
     # set the listeners policies for the balancers
-    print driver.ex_set_balancer_policies_listener(
+    print(driver.ex_set_balancer_policies_listener(
         name='MyLB',
         port=80,
-        policies=['MyDurationStickyPolicy'])
+        policies=['MyDurationStickyPolicy']))
 
 
 if __name__ == '__main__':

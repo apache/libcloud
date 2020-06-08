@@ -16,13 +16,20 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
+from libcloud.compute.drivers.ec2 import EC2NodeDriver
+from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
+
+from typing import Type, cast
+
 EC2 = get_driver(Provider.EC2)
 Rackspace = get_driver(Provider.RACKSPACE)
 
 drivers = [EC2('access key id', 'secret key', region='us-east-1'),
            Rackspace('username', 'api key', region='iad')]
 
-nodes = [driver.list_nodes() for driver in drivers]
+nodes = []
+for driver in drivers:
+    nodes.extend(driver.list_nodes())
 
 print(nodes)
 # [ <Node: provider=Amazon, status=RUNNING, name=bob, ip=1.2.3.4.5>,

@@ -209,7 +209,6 @@ class LibcloudConnection(LibcloudBaseConnection):
 
         if proxy_url:
             self.set_http_proxy(proxy_url=proxy_url)
-        
 
     @property
     def verification(self):

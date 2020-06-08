@@ -141,7 +141,8 @@ class BrightboxNodeDriver(NodeDriver):
         return self.connection.request(path, data=data, headers=headers,
                                        method='PUT')
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image, location=None, ex_userdata=None,
+                    ex_servergroup=None):
         """Create a new Brightbox node
 
         Reference: https://api.gb1.brightbox.com/1.0/#server_create_server
@@ -156,22 +157,22 @@ class BrightboxNodeDriver(NodeDriver):
         :type       ex_servergroup: ``str`` or ``list`` of ``str``
         """
         data = {
-            'name': kwargs['name'],
-            'server_type': kwargs['size'].id,
-            'image': kwargs['image'].id,
+            'name': name,
+            'server_type': size.id,
+            'image': image.id,
         }
 
-        if 'ex_userdata' in kwargs:
-            data['user_data'] = base64.b64encode(b(kwargs['ex_userdata'])) \
+        if ex_userdata:
+            data['user_data'] = base64.b64encode(b(ex_userdata)) \
                                       .decode('ascii')
 
-        if 'location' in kwargs:
-            data['zone'] = kwargs['location'].id
+        if location:
+            data['zone'] = location.id
 
-        if 'ex_servergroup' in kwargs:
-            if not isinstance(kwargs['ex_servergroup'], list):
-                kwargs['ex_servergroup'] = [kwargs['ex_servergroup']]
-            data['server_groups'] = kwargs['ex_servergroup']
+        if ex_servergroup:
+            if not isinstance(ex_servergroup, list):
+                ex_servergroup = [ex_servergroup]
+            data['server_groups'] = ex_servergroup
 
         data = self._post('/%s/servers' % self.api_version, data).object
         return self._to_node(data)

@@ -62,8 +62,8 @@ HEADER = ('.. NOTE: This file has been generated automatically using '
 
 BASE_API_METHODS = {
     'compute_main': ['list_nodes', 'create_node', 'reboot_node',
-                     'destroy_node', 'list_images', 'list_sizes',
-                     'deploy_node'],
+                     'destroy_node', 'start_node', 'stop_node',
+                     'list_images', 'list_sizes', 'deploy_node'],
     'compute_image_management': ['list_images', 'get_image',
                                  'create_image', 'delete_image', 'copy_image'],
     'compute_block_storage': ['list_volumes', 'create_volume',
@@ -83,7 +83,8 @@ BASE_API_METHODS = {
                      'iterate_containers', 'iterate_container_objects',
                      'create_container', 'delete_container', 'upload_object',
                      'upload_object_via_stream', 'download_object',
-                     'download_object_as_stream', 'delete_object'],
+                     'download_object_range', 'download_object_as_stream',
+                     'download_object_range_as_stream', 'delete_object'],
     'storage_cdn': ['enable_container_cdn', 'enable_object_cdn',
                     'get_container_cdn_url', 'get_object_cdn_url'],
     'dns': ['list_zones', 'list_records', 'iterate_zones', 'iterate_records',
@@ -105,6 +106,8 @@ FRIENDLY_METHODS_NAMES = {
         'list_nodes': 'list nodes',
         'create_node': 'create node',
         'reboot_node': 'reboot node',
+        'start_node': 'start node',
+        'stop_node': 'stop node',
         'destroy_node': 'destroy node',
         'list_images': 'list images',
         'list_sizes': 'list sizes',
@@ -151,6 +154,8 @@ FRIENDLY_METHODS_NAMES = {
         'upload_object_via_stream': 'streaming object upload',
         'download_object': 'download object',
         'download_object_as_stream': 'streaming object download',
+        'download_object_range': 'download part of an object',
+        'download_object_range_as_stream': 'streaming partial object download',
         'delete_object': 'delete object'
     },
     'storage_cdn': {
@@ -316,7 +321,9 @@ def generate_providers_table(api):
                     is_implemented = False
                 else:
                     driver_method = driver_methods[method_name]
-                    is_implemented = (id(driver_method) != id(base_method))
+                    # NOTE: id() is not safe
+                    # is_implemented = (id(driver_method) != id(base_method))
+                    is_implemented = (driver_method != base_method)
 
             result[name]['methods'][method_name] = is_implemented
 
@@ -395,6 +402,10 @@ def generate_supported_providers_table(api, provider_matrix):
         name_str = '`%s`_' % (values['name'])
         module_str = ':mod:`%s`' % (values['module'])
         class_str = ':class:`%s`' % (values['class'])
+
+        # Ignore old deprecated driver class per region S3 drivers
+        if 'Amazon S3 (' in values['name']:
+            continue
 
         params = {'api': api, 'provider': provider.lower()}
         driver_docs_path = pjoin(this_dir,

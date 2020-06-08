@@ -133,9 +133,13 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         data = self._paginated_request('/v2/droplets', 'droplets')
         return list(map(self._to_node, data))
 
-    def list_sizes(self):
+    def list_sizes(self, location=None):
         data = self._paginated_request('/v2/sizes', 'sizes')
-        return list(map(self._to_size, data))
+        sizes = list(map(self._to_size, data))
+        if location:
+            sizes = [size for size in sizes if location.id in
+                     size.extra.get('regions', [])]
+        return sizes
 
     def list_volumes(self):
         data = self._paginated_request('/v2/volumes', 'volumes')
@@ -442,7 +446,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         :rytpe: ``bool``
         """
         attr = {'type': 'attach', 'droplet_id': node.id,
-                'volume_name': volume.name, 'region': volume.extra['region_slug']}
+                'volume_name': volume.name,
+                'region': volume.extra['region_slug']}
 
         res = self.connection.request('/v2/volumes/actions',
                                       data=json.dumps(attr), method='POST')

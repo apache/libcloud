@@ -291,7 +291,7 @@ class DummyNodeDriver(NodeDriver):
                          driver=self),
         ]
 
-    def create_node(self, **kwargs):
+    def create_node(self, name, size, image):
         """
         Creates a dummy node; the node id is equal to the number of
         nodes in the node list

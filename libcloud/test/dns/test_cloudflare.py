@@ -15,6 +15,8 @@
 
 import sys
 
+import json
+
 from libcloud.common.types import LibcloudError
 from libcloud.test import unittest
 
@@ -76,13 +78,14 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
     def test_list_records(self):
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
-        self.assertEqual(len(records), 9)
+        self.assertEqual(len(records), 11)
 
         record = records[0]
         self.assertEqual(record.id, '364797364')
         self.assertIsNone(record.name)
         self.assertEqual(record.type, 'A')
         self.assertEqual(record.data, '192.30.252.153')
+        self.assertEqual(record.extra['priority'], None)
 
         for attribute_name in RECORD_EXTRA_ATTRIBUTES:
             self.assertTrue(attribute_name in record.extra)
@@ -95,6 +98,19 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         for attribute_name in RECORD_EXTRA_ATTRIBUTES:
             self.assertTrue(attribute_name in record.extra)
+
+        record = [r for r in records if r.type == 'MX'][0]
+        self.assertEqual(record.id, '78526')
+        self.assertIsNone(record.name)
+        self.assertEqual(record.type, 'MX')
+        self.assertEqual(record.data, 'aspmx3.googlemail.com')
+        self.assertEqual(record.extra['priority'], 30)
+
+        record = records[-1]
+        self.assertEqual(record.id, 'r8')
+        self.assertEqual(record.name, 'test1')
+        self.assertEqual(record.type, 'CAA')
+        self.assertEqual(record.data, '0 issue test.example.com')
 
     def test_get_zone(self):
         zone = self.driver.get_zone(zone_id='1234')
@@ -120,6 +136,31 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertEqual(record.name, 'test5')
         self.assertEqual(record.type, 'A')
         self.assertEqual(record.data, '127.0.0.3')
+
+    def test_create_record_CAA_record_type(self):
+        zone = self.driver.list_zones()[0]
+
+        CloudFlareMockHttp.type = 'caa_record_type'
+        record = self.driver.create_record(name='test5', zone=zone,
+                                           type=RecordType.CAA,
+                                           data='0 issue caa.example.com')
+        self.assertEqual(record.id, '412561327')
+        self.assertEqual(record.name, 'test5')
+        self.assertEqual(record.type, 'A')
+        self.assertEqual(record.data, '127.0.0.3')
+
+    def test_create_record_error_with_error_chain(self):
+        zone = self.driver.list_zones()[0]
+
+        CloudFlareMockHttp.type = 'error_chain_error'
+
+        expected_msg = r'.*1004: DNS Validation Error \(error chain: 9011: Length of content is invalid\)'
+
+        self.assertRaisesRegex(LibcloudError, expected_msg,
+            self.driver.create_record,
+            name='test5', zone=zone,
+            type=RecordType.CAA,
+            data='caa.foo.com')
 
     def test_create_record_with_property_that_cant_be_set(self):
         zone = self.driver.list_zones()[0]
@@ -220,8 +261,16 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         self.assertEqual(zone, updated_zone)
 
+    def test_normalize_record_data_for_api(self):
+        result = self.driver._normalize_record_data_for_api(RecordType.CAA, '0 issue foo.bar')
+        self.assertEqual(result, '0\tissue\tfoo.bar')
 
-class CloudFlareMockHttp(MockHttp):
+    def test_normalize_record_data_from_apu(self):
+        result = self.driver._normalize_record_data_from_api(RecordType.CAA, '0\tissue\tfoo.bar')
+        self.assertEqual(result, '0 issue foo.bar')
+
+
+class CloudFlareMockHttp(MockHttp, unittest.TestCase):
     fixtures = DNSFileFixtures('cloudflare')
 
     def _client_v4_memberships(self, method, url, body, headers):
@@ -238,7 +287,7 @@ class CloudFlareMockHttp(MockHttp):
 
         body = self.fixtures.load('zones_{}.json'.format(method))
 
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.BAD_REQUEST, body, {}, httplib.responses[httplib.BAD_REQUEST])
 
     def _client_v4_zones_1234(self, method, url, body, headers):
         if method not in {'GET', 'PATCH', 'DELETE'}:
@@ -275,6 +324,27 @@ class CloudFlareMockHttp(MockHttp):
             body = self.fixtures.load('records_{}_{}.json'.format(method, page))
         else:
             body = self.fixtures.load('records_{}.json'.format(method))
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _client_v4_zones_1234_dns_records_caa_record_type(self, method, url, body, headers):
+        if method not in ['POST']:
+            raise AssertionError('Unsupported method: %s' % (method))
+
+        url = urlparse.urlparse(url)
+        # Verify record data has been correctly normalized
+        body = json.loads(body)
+        self.assertEqual(body['content'], '0\tissue\tcaa.example.com')
+
+        body = self.fixtures.load('records_{}.json'.format(method))
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _client_v4_zones_1234_dns_records_error_chain_error(self, method, url, body, headers):
+        if method not in ['POST']:
+            raise AssertionError('Unsupported method: %s' % (method))
+
+        body = self.fixtures.load('error_with_error_chain.json')
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 

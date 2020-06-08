@@ -139,13 +139,20 @@ class GandiLiveResponse(JsonResponse):
         valid_http_codes = [
             httplib.OK,
             httplib.CREATED,
-            httplib.NO_CONTENT
         ]
         if self.status in valid_http_codes:
             if json_error:
                 raise JsonParseError(body, self.status)
             else:
                 return body
+        elif self.status == httplib.NO_CONTENT:
+            # Parse error for empty body is acceptable, but a non-empty body
+            # is not.
+            if len(body) > 0:
+                msg = '"No Content" response contained content'
+                raise GandiLiveBaseError(msg, self.status)
+            else:
+                return {}
         elif self.status == httplib.NOT_FOUND:
             message = self._get_error(body, json_error)
             raise ResourceNotFoundError(message, self.status)

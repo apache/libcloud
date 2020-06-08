@@ -119,6 +119,14 @@ class GandiLiveTests(unittest.TestCase):
         self.assertEqual(record.type, RecordType.AAAA)
         self.assertEqual(record.data, '::1')
 
+    def test_create_record_doesnt_throw_if_ttl_is_not_provided(self):
+        record = self.driver.create_record('alice', self.test_zone, 'AAAA',
+                                           '::1')
+        self.assertEqual(record.id, 'AAAA:alice')
+        self.assertEqual(record.name, 'alice')
+        self.assertEqual(record.type, RecordType.AAAA)
+        self.assertEqual(record.data, '::1')
+
     def test_bad_record_validation(self):
         with self.assertRaises(RecordError) as ctx:
             self.driver.create_record('alice', self.test_zone, 'AAAA',
@@ -269,8 +277,7 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_zones_111111_delete(self, method, url, body, headers):
-        body = self.fixtures.load('delete_gandi_zone.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
     def _json_api_v5_domains_example_org_patch(self, method, url, body,
                                                headers):
@@ -347,8 +354,7 @@ class GandiLiveMockHttp(BaseGandiLiveMockHttp):
     def _json_api_v5_domains_example_com_records_bob_A_delete(self, method,
                                                               url, body,
                                                               headers):
-        body = self.fixtures.load('delete_record.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

@@ -95,6 +95,12 @@ preparing a release.
 3. Creating release artifacts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+
+  It's important that you have the latest versions of ``setuptools``, ``wheel``
+  and ``pip`` installed to ensure the generated wheel files contain correct
+  metadata.
+
 We have a script that runs the required setup.py commands and then hashes
 and signs the files. You will need the latest version of ``pip`` and the ``wheel``
 package. To run it:
@@ -210,7 +216,7 @@ Add information about the new release to the ``doap_libcloud.rdf`` file in the
 root of the main code repository.
 
 Update ``__version__`` attribute in ``libcloud/__init.py__`` file and indicate
-we are now working on a new release by incrementing a number and adding ``dev``
+we are now working on a new release by incrementing a number and adding ``-dev``
 suffix. For example, if version ``2.2.1`` has been released you would change
 it from:
 
@@ -222,7 +228,7 @@ To:
 
 .. sourcecode:: python
 
-    __version__ = '2.2.2dev'
+    __version__ = '2.2.2-dev'
 
 10. Updating website
 ~~~~~~~~~~~~~~~~~~~~

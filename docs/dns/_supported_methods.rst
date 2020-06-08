@@ -10,6 +10,7 @@ Provider            list zones list records create zone update zone create recor
 `DNSimple`_         yes        yes          yes         no          yes           yes           yes         yes          
 `DurableDNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
 `Gandi DNS`_        yes        yes          yes         yes         yes           yes           yes         yes          
+`Gandi LiveDNS`_    yes        yes          yes         no          yes           yes           no          yes          
 `GoDaddy DNS`_      yes        yes          no          no          yes           yes           yes         no           
 `Google DNS`_       yes        yes          yes         no          yes           no            yes         yes          
 `Host Virtual DNS`_ yes        yes          yes         yes         yes           yes           yes         yes          
@@ -38,6 +39,7 @@ Provider            list zones list records create zone update zone create recor
 .. _`DNSimple`: https://dnsimple.com/
 .. _`DurableDNS`: https://durabledns.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
+.. _`Gandi LiveDNS`: http://www.gandi.net/domain
 .. _`GoDaddy DNS`: https://www.godaddy.com/
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/

@@ -132,6 +132,44 @@ class AzureNodeDriverTests(LibcloudTestCase):
             'version': image.version
         })
 
+    def test_create_node_storage_account_not_provided_and_not_ex_use_managed_disks(self):
+        location = NodeLocation('any_location', '', '', self.driver)
+        size = NodeSize('any_size', '', 0, 0, 0, 0, driver=self.driver)
+        image = AzureImage('1', '1', 'ubuntu', 'pub', location.id, self.driver)
+        auth = NodeAuthPassword('any_password')
+
+        # ex_storage_account=None and ex_use_managed_disks=False should throw
+        expected_msg = "ex_use_managed_disks is False, must provide ex_storage_account"
+        self.assertRaisesRegex(ValueError, expected_msg, self.driver.create_node,
+            'test-node-1',
+            size,
+            image,
+            auth,
+            location=location,
+            ex_resource_group='000000',
+            ex_storage_account=None,
+            ex_user_name='any_user',
+            ex_network='000000',
+            ex_subnet='000000',
+            ex_use_managed_disks=False
+        )
+
+        # ex_storage_account=None and ex_use_managed_disks=True, should not throw
+        node = self.driver.create_node(
+            'test-node-1',
+            size,
+            image,
+            auth,
+            location=location,
+            ex_resource_group='000000',
+            ex_storage_account=None,
+            ex_user_name='any_user',
+            ex_network='000000',
+            ex_subnet='000000',
+            ex_use_managed_disks=True
+        )
+        self.assertTrue(node)
+
     def test_create_node_ex_disk_size(self):
         location = NodeLocation('any_location', '', '', self.driver)
         size = NodeSize('any_size', '', 0, 0, 0, 0, driver=self.driver)
@@ -431,6 +469,15 @@ class AzureNodeDriverTests(LibcloudTestCase):
         luns = [disk['lun'] for disk in data_disks]
         self.assertTrue(len(data_disks), len(volumes))
         self.assertTrue(set(luns), {0, 1, 15})
+
+        volumes = self.driver.list_volumes()
+        node = self.driver.list_nodes()[0]
+        for count in range(64):
+            self.driver.attach_volume(node, volumes[0])
+        data_disks = node.extra['properties']['storageProfile']['dataDisks']
+        luns = [disk['lun'] for disk in data_disks]
+        self.assertTrue(len(data_disks), 64)
+        self.assertTrue(set(luns), set(range(64)))
 
     def test_resize_volume(self):
         volume = self.driver.list_volumes()[0]

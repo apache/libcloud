@@ -1,3 +1,4 @@
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -97,14 +98,19 @@ class MaxihostNodeDriver(NodeDriver):
         return node
 
 
-    def ex_start_node(self, node):
+    def start_node(self, node):
+        """
+        Start a node.
+        """
         params = {"type": "power_on"}
         res = self.connection.request('/devices/%s/actions' % node.id, params=params, method='PUT')
 
         return res.status in [httplib.OK, httplib.CREATED, httplib.ACCEPTED]
 
-
-    def ex_stop_node(self, node):
+    def stop_node(self, node):
+        """
+        Stop a node.
+        """
         params = {"type": "power_off"}
         res = self.connection.request('/devices/%s/actions' % node.id, params=params, method='PUT')
 
@@ -269,3 +275,15 @@ class MaxihostNodeDriver(NodeDriver):
                        private_key=None,
                        driver=self,
                        extra=extra)
+
+    def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.start_node(node=node)
+
+    def ex_stop_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
+        return self.stop_node(node=node)

@@ -396,6 +396,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(actual[0].name, 'myname')
         self.assertEqual(actual[1].name, 'myname2')
 
+    def test_ex_list_instancegroups_zone_attribute_not_present_in_response(self):
+        GCEMockHttp.type = 'zone_attribute_not_present'
+        loc = 'us-central1-a'
+        actual = self.driver.ex_list_instancegroups(loc)
+        self.assertTrue(len(actual) == 2)
+        self.assertEqual(actual[0].name, 'myname')
+        self.assertEqual(actual[1].name, 'myname2')
+
     def test_ex_instancegroup_list_instances(self):
         name = 'myname'
         loc = 'us-central1-a'
@@ -635,9 +643,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         nodes = self.driver.list_nodes()
         nodes_all = self.driver.list_nodes(ex_zone='all')
         nodes_uc1a = self.driver.list_nodes(ex_zone='us-central1-a')
+        nodes_uc1b = self.driver.list_nodes(ex_zone='us-central1-b')
         self.assertEqual(len(nodes), 1)
         self.assertEqual(len(nodes_all), 8)
         self.assertEqual(len(nodes_uc1a), 1)
+        self.assertEqual(len(nodes_uc1b), 0)
         self.assertEqual(nodes[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].name, 'node-name')
         self.assertEqual(nodes_uc1a[0].extra['cpuPlatform'], 'Intel Skylake')
@@ -1103,6 +1113,34 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertTrue(node_data['networkInterfaces'][0][
             'network'].startswith('https://'))
 
+    def test_create_node_location_not_provided(self):
+        # location is not specified neither via datacenter constructor argument
+        # nor via location method argument
+        node_name = 'node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        del size.extra['zone']
+        image = self.driver.ex_get_image('debian-7')
+        self.driver.zone = None
+
+        expected_msg = 'Zone not provided'
+        self.assertRaisesRegex(ValueError, expected_msg,
+                               self.driver.create_node,
+                               node_name, size, image)
+
+    def test_create_node_location_not_provided_inferred_from_size(self):
+        # test a scenario where node location is inferred from NodeSize zone attribute
+        node_name = 'node-name'
+        size = self.driver.ex_get_size('n1-standard-1')
+        image = self.driver.ex_get_image('debian-7')
+        zone = self.driver.ex_list_zones()[0]
+        zone = self.driver.ex_get_zone('us-central1-a')
+
+        self.driver.zone = None
+        size.extra['zone'] = zone
+
+        node = self.driver.create_node(node_name, size, image)
+        self.assertTrue(node)
+
     def test_create_node_network_opts(self):
         node_name = 'node-name'
         size = self.driver.ex_get_size('n1-standard-1')
@@ -1240,6 +1278,17 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         node = self.driver.create_node(node_name, size, image)
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(node.name, node_name)
+
+    def test_create_node_disk_size(self):
+        node_name = 'node-name'
+        image = self.driver.ex_get_image('debian-7')
+        size = self.driver.ex_get_size('n1-standard-1')
+        disk_size = 25
+        node = self.driver.create_node(node_name, size, image,
+                                       ex_disk_size=disk_size)
+        self.assertTrue(isinstance(node, Node))
+        self.assertEqual(node.name, node_name)
+        self.assertEqual(node.extra['boot_disk'].size, str(disk_size))
 
     def test_create_node_image_family(self):
         node_name = 'node-name'
@@ -1542,6 +1591,17 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         volume = self.driver.create_volume(size, volume_name)
         self.assertTrue(isinstance(volume, StorageVolume))
         self.assertEqual(volume.name, volume_name)
+
+    def test_ex_set_volume_labels(self):
+        volume_name = 'lcdisk'
+        zone = self.driver.zone
+        volume_labels = {'one': '1', 'two': '2', 'three': '3'}
+        size = 10
+        new_vol = self.driver.create_volume(size, volume_name, location=zone)
+        self.assertTrue(self.driver.ex_set_volume_labels(new_vol,
+                                                         labels=volume_labels))
+        exist_vol = self.driver.ex_get_volume(volume_name, self.driver.zone)
+        self.assertEqual(exist_vol.extra['labels'], volume_labels)
 
     def test_ex_update_healthcheck(self):
         healthcheck_name = 'lchealthcheck'
@@ -2198,6 +2258,11 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertEqual(disktype.extra['description'], 'SSD Persistent Disk')
         self.assertEqual(disktype.extra['valid_disk_size'], '10GB-10240GB')
         self.assertEqual(disktype.extra['default_disk_size_gb'], '100')
+
+        # zone not set
+        disktype_name = 'pd-ssd'
+        disktype = self.driver.ex_get_disktype(disktype_name)
+        self.assertEqual(disktype.name, disktype_name)
 
     def test_ex_get_zone(self):
         zone_name = 'us-central1-b'
@@ -2969,6 +3034,12 @@ class GCEMockHttp(MockHttp):
             'operations_operation_zones_us-central1-a_disks_lcdisk_resize_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_lcdisk_setLabels_post(
+        self, method, url, body, headers):
+        body = self.fixtures.load(
+            'operations_operation_zones_us-central1-a_disks_lcdisk_setLabels_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_disks_post(
             self, method, url, body, headers):
         body = self.fixtures.load(
@@ -3389,6 +3460,12 @@ class GCEMockHttp(MockHttp):
             'zones_us-central1-a_disks_lcdisk_resize_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
+    def _zones_us_central1_a_disks_lcdisk_setLabels(self, method, url,
+                                                    body, header):
+        body = self.fixtures.load(
+            'zones_us-central1-a_disks_lcdisk_setLabel_post.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
     def _zones_us_central1_a_disks_node_name(self, method, url, body, headers):
         body = self.fixtures.load('generic_disk.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
@@ -3466,6 +3543,11 @@ class GCEMockHttp(MockHttp):
                 'zones_europe-west1-a_instances_post.json')
         else:
             body = self.fixtures.load('zones_europe-west1-a_instances.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_b_instances(self, method, url, body, headers):
+        if method == 'GET':
+            body = '{}'
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_europe_west1_a_diskTypes_pd_standard(self, method, url, body,
@@ -3747,6 +3829,13 @@ class GCEMockHttp(MockHttp):
             # get or list call
             body = self.fixtures.load(
                 'zones_us_central1_a_instanceGroups.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_instanceGroups_zone_attribute_not_present(self, method, url, body, headers):
+        if method == 'GET':
+            # get or list call
+            body = self.fixtures.load(
+                'zones_us_central1_a_instanceGroups_zone_attribute_not_present.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_insert(

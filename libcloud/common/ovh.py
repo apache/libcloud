@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
 
 import hashlib
 import time
@@ -20,7 +21,7 @@ import time
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 from libcloud.utils.py3 import httplib
 from libcloud.utils.connection import get_response_object
@@ -75,7 +76,7 @@ class OvhConnection(ConnectionUserAndKey):
     request_path = API_ROOT
     responseCls = OvhResponse
     timestamp = None
-    ua = []
+    ua = []  # type: List[str]
     LOCATIONS = LOCATIONS
     _timedelta = None
 

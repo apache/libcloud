@@ -16,6 +16,7 @@
 Base types used by other parts of libcloud
 """
 
+from libcloud.common.types import Type
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.types import InvalidCredsError, InvalidCredsException
 
@@ -33,26 +34,6 @@ __all__ = [
 
     "OLD_CONSTANT_TO_NEW_MAPPING"
 ]
-
-
-class Type(object):
-    @classmethod
-    def tostring(cls, value):
-        """Return the string representation of the state object attribute
-        :param str value: the state object to turn into string
-        :return: the uppercase string that represents the state object
-        :rtype: str
-        """
-        return value.upper()
-
-    @classmethod
-    def fromstring(cls, value):
-        """Return the state object attribute that matches the string
-        :param str value: the string to look up
-        :return: the state object attribute that matches the string
-        :rtype: str
-        """
-        return getattr(cls, value.upper(), None)
 
 
 class Provider(Type):
@@ -84,6 +65,7 @@ class Provider(Type):
     :cvar IBM: IBM Developer Cloud
     :cvar IKOULA: Ikoula driver.
     :cvar JOYENT: Joyent driver
+    :cvar KAMATERA: Kamatera driver
     :cvar KTUCLOUD: kt ucloud driver
     :cvar KUBEVIRT: kubevirt driver
     :cvar LIBVIRT: Libvirt driver
@@ -113,7 +95,6 @@ class Provider(Type):
     ABIQUO = 'abiquo'
     ALIYUN_ECS = 'aliyun_ecs'
     AURORACOMPUTE = 'aurora_compute'
-    AZURE = 'azure'
     BLUEBOX = 'bluebox'
     BRIGHTBOX = 'brightbox'
     BSNL = 'bsnl'
@@ -122,7 +103,6 @@ class Provider(Type):
     CLOUDSIGMA = 'cloudsigma'
     CLOUDSCALE = 'cloudscale'
     CLOUDSTACK = 'cloudstack'
-    CLOUDWATT = 'cloudwatt'
     DIGITAL_OCEAN = 'digitalocean'
     DIMENSIONDATA = 'dimensiondata'
     EC2 = 'ec2'
@@ -142,6 +122,7 @@ class Provider(Type):
     INDOSAT = 'indosat'
     INTERNETSOLUTIONS = 'internetsolutions'
     JOYENT = 'joyent'
+    KAMATERA = 'kamatera'
     KTUCLOUD = 'ktucloud'
     KUBEVIRT = 'kubevirt'
     LIBVIRT = 'libvirt'
@@ -176,7 +157,6 @@ class Provider(Type):
     VCLOUD = 'vcloud'
     VOXEL = 'voxel'
     VPSNET = 'vpsnet'
-    VSPHERE = 'vsphere'
     VULTR = 'vultr'
 
     # OpenStack based providers
@@ -365,6 +345,7 @@ class DeploymentError(LibcloudError):
     def __init__(self, node, original_exception=None, driver=None):
         self.node = node
         self.value = original_exception
+        self.original_error = original_exception
         self.driver = driver
 
     def __str__(self):

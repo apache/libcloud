@@ -105,6 +105,32 @@ class BaseTestCase(unittest.TestCase):
             assertRegex(self, lines[10], r'example.com\.\s+900\s+IN\s+MX\s+10\s+mx.example.com')
             assertRegex(self, lines[11], r'example.com\.\s+900\s+IN\s+SRV\s+20\s+10 3333 example.com')
 
+    def test_get_numeric_id(self):
+        values = MOCK_RECORDS_VALUES[0].copy()
+        values['driver'] = self.driver
+        values['zone'] = None
+        record = Record(**values)
+
+        record.id = 'abcd'
+        result = record._get_numeric_id()
+        self.assertEqual(result, 'abcd')
+
+        record.id = '1'
+        result = record._get_numeric_id()
+        self.assertEqual(result, 1)
+
+        record.id = '12345'
+        result = record._get_numeric_id()
+        self.assertEqual(result, 12345)
+
+        record.id = ''
+        result = record._get_numeric_id()
+        self.assertEqual(result, '')
+
+        record.id = None
+        result = record._get_numeric_id()
+        self.assertEqual(result, '')
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

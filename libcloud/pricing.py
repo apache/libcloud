@@ -12,7 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import with_statement
+
+from typing import Dict
 
 """
 A class which handles loading the pricing files.
@@ -27,12 +30,10 @@ try:
         JSONDecodeError = json.JSONDecodeError
     except AttributeError:
         # simplejson < 2.1.0 does not have the JSONDecodeError exception class
-        JSONDecodeError = ValueError
+        JSONDecodeError = ValueError  # type: ignore
 except ImportError:
-    import json
-    JSONDecodeError = ValueError
-
-from libcloud.utils.connection import get_response_object
+    import json  # type: ignore
+    JSONDecodeError = ValueError  # type: ignore
 
 __all__ = [
     'get_pricing',
@@ -53,7 +54,7 @@ CUSTOM_PRICING_FILE_PATH = os.path.expanduser('~/.libcloud/pricing.json')
 PRICING_DATA = {
     'compute': {},
     'storage': {}
-}
+}  # type: Dict[str, Dict]
 
 VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
 
@@ -200,6 +201,8 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL,
     :type file_path: ``str``
     :param file_path: Path where a download pricing file will be saved.
     """
+    from libcloud.utils.connection import get_response_object
+
     dir_name = os.path.dirname(file_path)
 
     if not os.path.exists(dir_name):

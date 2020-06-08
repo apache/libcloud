@@ -74,6 +74,7 @@ RECORD_EXTRA_ATTRIBUTES = {
     'created_on',
     'modified_on',
     'data',
+    'priority'
 }
 
 RECORD_CREATE_ATTRIBUTES = {
@@ -110,13 +111,24 @@ class CloudFlareDNSResponse(JsonResponse):
         errors = body.get('errors', [])
 
         for error in errors:
+            error_chain = error.get('error_chain', [])
+
+            error_chain_errors = []
+            for chain_error in error_chain:
+                error_chain_errors.append('%s: %s' % (
+                    chain_error.get('code', 'unknown'),
+                    chain_error.get('message', '')))
+
             try:
                 exception_class, context = self.exceptions[error['code']]
             except KeyError:
                 exception_class, context = LibcloudError, []
 
             kwargs = {
-                'value': '{}: {}'.format(error['code'], error['message']),
+                'value': '{}: {} (error chain: {})'.format(
+                    error['code'],
+                    error['message'],
+                    ', '.join(error_chain_errors)),
                 'driver': self.connection.driver,
             }
 
@@ -299,9 +311,16 @@ class CloudFlareDNSDriver(DNSDriver):
         Note that for ``extra`` record properties, only the ones specified in
         ``RECORD_CREATE_ATTRIBUTES`` can be set at creation time. Any
         non-settable properties are ignored.
+
+        NOTE: For CAA RecordType, data needs to be in the following format:
+        <flags> <tag> <ca domain name> where the tag can be issue, issuewild
+        or iodef.
+
+        For example: 0 issue test.caa.com
         """
         url = '{}/zones/{}/dns_records'.format(API_BASE, zone.id)
 
+        data = self._normalize_record_data_for_api(type=type, data=data,)
         body = {
             'type': type,
             'name': name,
@@ -330,6 +349,7 @@ class CloudFlareDNSDriver(DNSDriver):
         url = '{}/zones/{}/dns_records/{}'.format(API_BASE, record.zone.id,
                                                   record.id)
 
+        data = self._normalize_record_data_for_api(type=type, data=data,)
         body = {
             'type': record.type if type is None else type,
             'name': record.name if name is None else name,
@@ -414,6 +434,36 @@ class CloudFlareDNSDriver(DNSDriver):
     def ex_disable_ipv6_support(self, zone):
         raise NotImplementedError('not yet implemented in v4 driver')
 
+    def _normalize_record_data_for_api(self, type, data):
+        """
+        Normalize record data for "special" records such as CAA so it can be
+        used with the CloudFlare API.
+        """
+        if not data:
+            return data
+
+        if type == RecordType.CAA:
+            # Replace whitespace with \t character which CloudFlare API
+            # expects
+            data = data.replace(' ', '\t')
+
+        return data
+
+    def _normalize_record_data_from_api(self, type, data):
+        """
+        Normalize record data for special records so it's consistent with
+        the Libcloud API.
+        """
+        if not data:
+            return data
+
+        if type == RecordType.CAA:
+            # CloudFlare uses \t but we normalize it to whitespace so it's
+            # consistent across all the drivers.
+            data = data.replace('\t', ' ')
+
+        return data
+
     def _to_zone(self, item):
         return Zone(
             id=item['id'],
@@ -434,11 +484,14 @@ class CloudFlareDNSDriver(DNSDriver):
         if ttl is not None:
             ttl = int(ttl)
 
+        data = self._normalize_record_data_from_api(item['type'],
+                                                    item['content'])
+
         return Record(
             id=item['id'],
             name=name,
             type=item['type'],
-            data=item['content'],
+            data=data,
             zone=zone,
             driver=self,
             ttl=ttl,

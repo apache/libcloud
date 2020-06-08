@@ -30,6 +30,7 @@ from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.common.base import ConnectionUserAndKey, RawResponse
 from libcloud.common.base import CertificateConnection
 from libcloud.common.base import XmlResponse
+from libcloud.common.base import BaseDriver
 
 # The time format for headers in Azure requests
 AZURE_TIME_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
@@ -47,9 +48,11 @@ class AzureResponse(XmlResponse):
         httplib.NOT_FOUND,
         httplib.CONFLICT,
         httplib.BAD_REQUEST,
-        httplib.TEMPORARY_REDIRECT
         # added TEMPORARY_REDIRECT as this can sometimes be
         # sent by azure instead of a success or fail response
+        httplib.TEMPORARY_REDIRECT,
+        # Used by Azure Blobs range downloads
+        httplib.PARTIAL_CONTENT
     ]
 
     def success(self):
@@ -245,7 +248,7 @@ class AzureConnection(ConnectionUserAndKey):
         return special_header_values
 
 
-class AzureBaseDriver(object):
+class AzureBaseDriver(BaseDriver):
     name = "Microsoft Azure Service Management API"
 
 

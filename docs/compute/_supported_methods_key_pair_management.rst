@@ -24,6 +24,7 @@ Provider                              list key pairs get key pair create key pai
 `Exoscale`_                           yes            yes          yes             yes                           no                          yes            
 `Gandi`_                              yes            yes          no              yes                           no                          yes            
 `Google Compute Engine`_              no             no           no              no                            no                          no             
+`GiG G8 Node Provider`_               no             no           no              no                            no                          no             
 `GoGrid`_                             no             no           no              no                            no                          no             
 `Gridscale`_                          yes            no           no              yes                           no                          no             
 `HostVirtual`_                        no             no           no              no                            no                          no             
@@ -31,8 +32,10 @@ Provider                              list key pairs get key pair create key pai
 `Indosat`_                            no             no           no              no                            no                          no             
 `InternetSolutions`_                  no             no           no              no                            no                          no             
 `Joyent`_                             no             no           no              no                            no                          no             
+`Kamatera`_                           no             no           no              no                            no                          no             
 `Kili Public Cloud`_                  yes            yes          yes             yes                           no                          yes            
 `KTUCloud`_                           yes            yes          yes             yes                           no                          yes            
+`kubevirt`_                           no             no           no              no                            no                          no             
 `Libvirt`_                            no             no           no              no                            no                          no             
 `Linode`_                             no             no           no              no                            no                          no             
 `Maxihost`_                           yes            no           yes             no                            no                          no             
@@ -87,6 +90,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
+.. _`GiG G8 Node Provider`: https://gig.tech
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
@@ -94,8 +98,10 @@ Provider                              list key pairs get key pair create key pai
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
+.. _`kubevirt`: https://www.kubevirt.io
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/

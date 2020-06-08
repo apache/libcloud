@@ -59,4 +59,4 @@ def transform(cls):
             return
 
 
-MANAGER.register_transform(scoped_nodes.Class, transform)
+MANAGER.register_transform(scoped_nodes.ClassDef, transform)

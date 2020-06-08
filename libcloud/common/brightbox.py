@@ -23,7 +23,7 @@ from libcloud.utils.py3 import base64_encode_string
 try:
     import simplejson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 
 class BrightboxResponse(JsonResponse):
@@ -74,6 +74,7 @@ class BrightboxConnection(ConnectionUserAndKey):
             'Content-Length': str(len(body))
         }
 
+        # pylint: disable=assignment-from-no-return
         response = self.connection.request(method='POST', url='/token',
                                            body=body, headers=headers)
 

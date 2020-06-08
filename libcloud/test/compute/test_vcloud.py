@@ -13,13 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+import datetime
+import re
 import sys
+import traceback
 import unittest
 
-from libcloud.utils.py3 import httplib, b
+from libcloud.utils.py3 import httplib, b, assertRaisesRegex, PY2
 from libcloud.utils.py3 import ET
-from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject
-from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, ControlAccess
+from libcloud.utils.iso8601 import UTC
+from libcloud.compute.drivers.vcloud import TerremarkDriver, VCloudNodeDriver, Subject, Lease, fixxpath, get_url_path
+from libcloud.compute.drivers.vcloud import VCloud_1_5_NodeDriver, ControlAccess, Instantiate_1_5_VAppXML
 from libcloud.compute.drivers.vcloud import VCloud_5_1_NodeDriver
 from libcloud.compute.drivers.vcloud import VCloud_5_5_NodeDriver
 from libcloud.compute.drivers.vcloud import Vdc
@@ -29,8 +34,40 @@ from libcloud.compute.types import NodeState
 from libcloud.test import MockHttp
 from libcloud.test.compute import TestCaseMixin
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from mock import Mock, patch, mock_open
 
 from libcloud.test.secrets import VCLOUD_PARAMS
+
+
+BUILTINS = '__builtin__' if PY2 else 'builtins'
+
+
+def print_parameterized_failure(names_values):
+    """
+    Print failure information for a failed, parameterized test.
+    This includes a traceback and parameter values.
+
+    :param names_values: Name, value pairs for parameters of test at failure
+    :type names_values: ``list`` of (``str``,  ``Any``)
+
+    :return: None
+    :rtype: ``None``
+    """
+    formatted_names_values = (
+        '    {name}={value}'.format(name=name, value=value) for name, value in names_values
+    )
+    traceback.print_exc()
+    print(
+        'Data values:\n{values}\n'.format(values='\n'.join(formatted_names_values)),
+        file=sys.stderr
+    )
+
+
+class CallException(Exception):
+    """
+    For halting method execution with mocking
+    """
+    pass
 
 
 class TerremarkTests(unittest.TestCase, TestCaseMixin):
@@ -57,9 +94,9 @@ class TerremarkTests(unittest.TestCase, TestCaseMixin):
             name='testerpart2',
             image=image,
             size=size,
-            vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
-            network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725',
-            cpus=2,
+            ex_vdc='https://services.vcloudexpress.terremark.com/api/v0.8/vdc/224',
+            ex_network='https://services.vcloudexpress.terremark.com/api/v0.8/network/725',
+            ex_cpus=2,
         )
         self.assertTrue(isinstance(node, Node))
         self.assertEqual(
@@ -142,15 +179,28 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, ['65.41.67.2'])
         self.assertEqual(node.private_ips, ['65.41.67.2'])
-        self.assertEqual(node.extra, {'vdc': 'MyVdc',
-                                      'vms': [{
-                                          'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045',
-                                          'name': 'testVm',
-                                          'state': NodeState.RUNNING,
-                                          'public_ips': ['65.41.67.2'],
-                                          'private_ips': ['65.41.67.2'],
-                                          'os_type': 'rhel5_64Guest'
-                                      }]})
+        self.assertEqual(
+            node.extra,
+            {
+                'description': None,
+                'lease_settings': Lease(
+                    'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/leaseSettingsSection/',
+                    deployment_lease=0,
+                    storage_lease=0
+                ),
+                'vdc': 'MyVdc',
+                'vms': [
+                    {
+                        'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e045',
+                        'name': 'testVm',
+                        'state': NodeState.RUNNING,
+                        'public_ips': ['65.41.67.2'],
+                        'private_ips': ['65.41.67.2'],
+                        'os_type': 'rhel5_64Guest'
+                    }
+                ]
+            }
+        )
         node = ret[1]
         self.assertEqual(
             node.id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b')
@@ -158,15 +208,28 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.state, NodeState.RUNNING)
         self.assertEqual(node.public_ips, ['192.168.0.103'])
         self.assertEqual(node.private_ips, ['192.168.0.100'])
-        self.assertEqual(node.extra, {'vdc': 'MyVdc',
-                                      'vms': [{
-                                          'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e046',
-                                          'name': 'testVm2',
-                                          'state': NodeState.RUNNING,
-                                          'public_ips': ['192.168.0.103'],
-                                          'private_ips': ['192.168.0.100'],
-                                          'os_type': 'rhel5_64Guest'
-                                      }]})
+        self.assertEqual(
+            node.extra,
+            {
+                'description': None,
+                'lease_settings': Lease(
+                    'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b/leaseSettingsSection/',
+                    deployment_lease=0,
+                    storage_lease=0
+                ),
+                'vdc': 'MyVdc',
+                'vms': [
+                    {
+                        'id': 'https://vm-vcloud/api/vApp/vm-dd75d1d3-5b7b-48f0-aff3-69622ab7e046',
+                        'name': 'testVm2',
+                        'state': NodeState.RUNNING,
+                        'public_ips': ['192.168.0.103'],
+                        'private_ips': ['192.168.0.100'],
+                        'os_type': 'rhel5_64Guest'
+                    }
+                ]
+            }
+        )
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
@@ -224,6 +287,12 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
         node = self.driver.ex_undeploy_node(
             Node('https://test/api/vApp/undeployErrorTest', 'testNode',
                  state=0, public_ips=[], private_ips=[], driver=self.driver))
+        self.assertEqual(node.state, NodeState.STOPPED)
+
+    def test_ex_undeploy_power_off(self):
+        node = self.driver.ex_undeploy_node(
+            Node('https://test/api/vApp/undeployPowerOffTest', 'testNode', state=0,
+                 public_ips=[], private_ips=[], driver=self.driver), shutdown=False)
         self.assertEqual(node.state, NodeState.STOPPED)
 
     def test_ex_find_node(self):
@@ -339,6 +408,311 @@ class VCloud_1_5_Tests(unittest.TestCase, TestCaseMixin):
             'testNode', NodeState.RUNNING, [], [], self.driver)
         self.driver.ex_set_metadata_entry(node, 'foo', 'bar')
 
+    def test_ex_find_vm_nodes(self):
+        nodes = self.driver.ex_find_vm_nodes('testVm2')
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0].id, 'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6b')
+
+    def test_get_node(self):
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
+        self.assertEqual(node.name, 'testNode')
+
+    def test_get_node_forbidden(self):
+        self.assertRaises(
+            Exception, self.driver._ex_get_node, 'https://vm-vcloud/api/vApp/vapp-access-to-resource-forbidden'
+        )
+
+    def test_to_node_description(self):
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
+        self.assertIsNone(node.extra['description'])
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d')
+        self.assertEqual(node.extra['description'], 'Test Description')
+
+    def test_to_node_lease_settings(self):
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a')
+        lease = Lease(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/leaseSettingsSection/',
+            deployment_lease=0,
+            storage_lease=0
+        )
+        self.assertEqual(node.extra['lease_settings'], lease)
+        node = self.driver._ex_get_node('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d')
+        # 2019-10-07T14:06:29.980725
+        lease = Lease(
+            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d/leaseSettingsSection/',
+            deployment_lease=86400,
+            storage_lease=172800,
+            deployment_lease_expiration=datetime.datetime(
+                year=2019,
+                month=10,
+                day=7,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            ),
+            storage_lease_expiration=datetime.datetime(
+                year=2019,
+                month=10,
+                day=8,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            )
+        )
+        self.assertEqual(node.extra['lease_settings'], lease)
+
+    def test_remove_admin_password(self):
+        pass_enabled_xml = '<AdminPasswordEnabled>{text}</AdminPasswordEnabled>'
+        pass_enabled_true = pass_enabled_xml.format(text='true')
+        pass_enabled_false = pass_enabled_xml.format(text='false')
+        pass_auto_xml = '<AdminPasswordAuto>{text}</AdminPasswordAuto>'
+        pass_auto_true = pass_auto_xml.format(text='true')
+        pass_auto_false = pass_auto_xml.format(text='false')
+        passwd = '<AdminPassword>testpassword</AdminPassword>'
+        assertion_error = False
+
+        for admin_pass_enabled, admin_pass_auto, admin_pass, pass_exists in (
+            (pass_enabled_true, pass_auto_true, passwd, False),
+            (pass_enabled_true, pass_auto_true, '', False),
+            (pass_enabled_true, pass_auto_false, passwd, True),
+            (pass_enabled_true, pass_auto_false, '', False),
+            (pass_enabled_true, '', passwd, False),
+            (pass_enabled_true, '', '', False),
+            (pass_enabled_false, pass_auto_true, passwd, False),
+            (pass_enabled_false, pass_auto_true, '', False),
+            (pass_enabled_false, pass_auto_false, passwd, False),
+            (pass_enabled_false, pass_auto_false, '', False),
+            (pass_enabled_false, '', passwd, False),
+            (pass_enabled_false, '', '', False),
+            ('', pass_auto_true, passwd, False),
+            ('', pass_auto_true, '', False),
+            ('', pass_auto_false, passwd, False),
+            ('', pass_auto_false, '', False),
+            ('', '', passwd, False),
+            ('', '', '', False)
+        ):
+            try:
+                guest_customization_section = ET.fromstring(
+                    '<GuestCustomizationSection xmlns="http://www.vmware.com/vcloud/v1.5">'
+                    + admin_pass_enabled
+                    + admin_pass_auto
+                    + admin_pass
+                    + '</GuestCustomizationSection>'
+                )
+                self.driver._remove_admin_password(guest_customization_section)
+                admin_pass_element = guest_customization_section.find(
+                    fixxpath(guest_customization_section, 'AdminPassword')
+                )
+                if pass_exists:
+                    self.assertIsNotNone(admin_pass_element)
+                else:
+                    self.assertIsNone(admin_pass_element)
+            except AssertionError:
+                assertion_error = True
+                print_parameterized_failure([
+                    ('admin_pass_enabled', admin_pass_enabled),
+                    ('admin_pass_auto', admin_pass_auto),
+                    ('admin_pass', admin_pass),
+                    ('pass_exists', pass_exists)
+                ])
+
+        if assertion_error:
+            self.fail(msg='Assertion error(s) encountered. Details above.')
+
+    @patch('libcloud.compute.drivers.vcloud.VCloud_1_5_NodeDriver._get_vm_elements',
+           side_effect=CallException('Called'))
+    def test_change_vm_script_text_and_file_logic(self, _):
+        assertion_error = False
+
+        for vm_script_file, vm_script_text, open_succeeds, open_call_count, returned_early in (
+            (None, None, True, 0, True),
+            (None, None, False, 0, True),
+            (None, 'script text', True, 0, False),
+            (None, 'script text', False, 0, False),
+            ('file.sh', None, True, 1, False),
+            ('file.sh', None, False, 1, True),
+            ('file.sh', 'script text', True, 0, False),
+            ('file.sh', 'script text', False, 0, False)
+        ):
+            try:
+                if open_succeeds:
+                    open_mock = patch(BUILTINS + '.open', mock_open(read_data='script text'))
+                else:
+                    open_mock = patch(BUILTINS + '.open', side_effect=Exception())
+                with open_mock as mocked_open:
+                    try:
+                        self.driver._change_vm_script(
+                            'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d',
+                            vm_script=vm_script_file,
+                            vm_script_text=vm_script_text)
+                        returned_early_res = True
+                    except CallException:
+                        returned_early_res = False
+                    self.assertEqual(mocked_open.call_count, open_call_count)
+                    self.assertEqual(returned_early_res, returned_early)
+            except AssertionError:
+                assertion_error = True
+                print_parameterized_failure([
+                    ('vm_script_file', vm_script_file),
+                    ('vm_script_text', vm_script_text),
+                    ('open_succeeds', open_succeeds),
+                    ('open_call_count', open_call_count),
+                    ('returned_early', returned_early)
+                ])
+
+        if assertion_error:
+            self.fail(msg='Assertion error(s) encountered. Details above.')
+
+    def test_build_xmltree_description(self):
+        instantiate_xml = Instantiate_1_5_VAppXML(
+            name='testNode',
+            template='https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158',
+            network=None,
+            vm_network=None,
+            vm_fence=None,
+            description=None
+        )
+        self.assertIsNone(instantiate_xml.description)
+        self.assertIsNone(instantiate_xml.root.find('Description'))
+
+        test_description = 'Test Description'
+        instantiate_xml = Instantiate_1_5_VAppXML(
+            name='testNode',
+            template='https://vm-vcloud/api/vAppTemplate/vappTemplate-ac1bc027-bf8c-4050-8643-4971f691c158',
+            network=None,
+            vm_network=None,
+            vm_fence=None,
+            description=test_description
+        )
+        self.assertEqual(instantiate_xml.description, test_description)
+        description_elem = instantiate_xml.root.find('Description')
+        self.assertIsNotNone(description_elem)
+        self.assertEqual(description_elem.text, test_description)
+
+    def test_to_lease(self):
+        res = self.driver.connection.request(
+            get_url_path('https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6d'),
+            headers={'Content-Type': 'application/vnd.vmware.vcloud.vApp+xml'}
+        )
+        lease_settings_section = res.object.find(fixxpath(res.object, 'LeaseSettingsSection'))
+        lease = Lease.to_lease(lease_element=lease_settings_section)
+
+        self.assertEqual(lease.deployment_lease, 86400)
+        self.assertEqual(
+            lease.deployment_lease_expiration,
+            datetime.datetime(
+                year=2019,
+                month=10,
+                day=7,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            )
+        )
+        self.assertEqual(lease.storage_lease, 172800)
+        self.assertEqual(
+            lease.storage_lease_expiration,
+            datetime.datetime(
+                year=2019,
+                month=10,
+                day=8,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            )
+        )
+
+    def test_lease_get_time_deployed(self):
+        deployment_datetime = datetime.datetime(
+                year=2019,
+                month=10,
+                day=6,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            )
+        deployment_lease_exp_actual = datetime.datetime(
+                year=2019,
+                month=10,
+                day=7,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            )
+        storage_lease_exp_actual = datetime.datetime(
+                year=2019,
+                month=10,
+                day=8,
+                hour=14,
+                minute=6,
+                second=29,
+                microsecond=980725,
+                tzinfo=UTC
+            )
+        assertion_error = False
+
+        for deployment_lease, storage_lease, deployment_lease_exp, storage_lease_exp, exception, res in (
+            (None, None, None, None, True, None),
+            (None, None, None, storage_lease_exp_actual, True, None),
+            (None, None, deployment_lease_exp_actual, None, True, None),
+            (None, None, deployment_lease_exp_actual, storage_lease_exp_actual, True, None),
+            (None, 172800, None, None, True, None),
+            (None, 172800, None, storage_lease_exp_actual, False, deployment_datetime),
+            (None, 172800, deployment_lease_exp_actual, None, True, deployment_datetime),
+            (None, 172800, deployment_lease_exp_actual, storage_lease_exp_actual, False, deployment_datetime),
+            (86400, None, None, None, True, None),
+            (86400, None, None, storage_lease_exp_actual, True, None),
+            (86400, None, deployment_lease_exp_actual, None, False, deployment_datetime),
+            (86400, None, deployment_lease_exp_actual, storage_lease_exp_actual, False, deployment_datetime),
+            (86400, 172800, None, None, True, None),
+            (86400, 172800, None, storage_lease_exp_actual, False, deployment_datetime),
+            (86400, 172800, deployment_lease_exp_actual, None, False, deployment_datetime),
+            (86400, 172800, deployment_lease_exp_actual, storage_lease_exp_actual, False, deployment_datetime)
+        ):
+            try:
+                lease = Lease(
+                    'https://vm-vcloud/api/vApp/vapp-8c57a5b6-e61b-48ca-8a78-3b70ee65ef6a/leaseSettingsSection/',
+                    deployment_lease=deployment_lease,
+                    storage_lease=storage_lease,
+                    deployment_lease_expiration=deployment_lease_exp,
+                    storage_lease_expiration=storage_lease_exp
+                )
+
+                if exception:
+                    with assertRaisesRegex(
+                        self,
+                        Exception,
+                        re.escape('Cannot get time deployed. Missing complete lease and expiration information.'),
+                    ):
+                        lease.get_deployment_time()
+                else:
+                    self.assertEqual(lease.get_deployment_time(), res)
+            except AssertionError:
+                assertion_error = True
+                print_parameterized_failure([
+                    ('deployment_lease', deployment_lease),
+                    ('storage_lease', storage_lease),
+                    ('deployment_lease_exp', deployment_lease_exp),
+                    ('storage_lease_exp', storage_lease_exp),
+                    ('exception', exception),
+                    ('res', res)
+                ])
+
+        if assertion_error:
+            self.fail(msg='Assertion error(s) encountered. Details above.')
+
 
 class VCloud_5_1_Tests(unittest.TestCase, TestCaseMixin):
 
@@ -429,6 +803,10 @@ class VCloud_5_5_Tests(unittest.TestCase, TestCaseMixin):
     def test_ex_acquire_mks_ticket(self):
         node = self.driver.ex_find_node('testNode')
         self.driver.ex_acquire_mks_ticket(node.id)
+
+    def test_get_auth_headers(self):
+        headers = self.driver.connection._get_auth_headers()
+        self.assertEqual(headers['Accept'], 'application/*+xml;version=5.5')
 
 
 class TerremarkMockHttp(MockHttp):
@@ -670,6 +1048,13 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load('api_task_undeploy_error.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
+    def _api_vApp_undeployPowerOffTest(self, method, url, body, headers):
+        return self._api_vApp_undeployTest(method, url, body, headers)
+
+    def _api_vApp_undeployPowerOffTest_action_undeploy(self, method, url, body, headers):
+        self.assertIn(b('powerOff'), b(body))
+        return self._api_vApp_undeployTest_action_undeploy(method, url, body, headers)
+
     def _api_vApp_vapp_access_to_resource_forbidden(self, method, url, body, headers):
         raise Exception(
             ET.fromstring(self.fixtures.load('api_vApp_vapp_access_to_resource_forbidden.xml')))
@@ -729,6 +1114,8 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load('api_query_user.xml')
         elif 'type=group' in url:
             body = self.fixtures.load('api_query_group.xml')
+        elif 'type=vm' in url and 'filter=(name==testVm2)' in url:
+            body = self.fixtures.load('api_query_vm.xml')
         else:
             raise AssertionError('Unexpected query type')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
@@ -761,6 +1148,11 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413(self, method, url, body, headers):
         body = self.fixtures.load(
             'api_admin_group_b8202c48_7151_4e61_9a6c_155474c7d413.xml')
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+    def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d(self, method, url, body, headers):
+        body = self.fixtures.load(
+            'api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6d.xml')
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
 

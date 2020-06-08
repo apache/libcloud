@@ -24,6 +24,7 @@ Provider                              list images get image create image delete 
 `Exoscale`_                           yes         no        no           no           no        
 `Gandi`_                              yes         no        no           no           no        
 `Google Compute Engine`_              yes         no        no           no           no        
+`GiG G8 Node Provider`_               yes         no        no           no           no        
 `GoGrid`_                             yes         no        no           no           no        
 `Gridscale`_                          yes         yes       yes          yes          no        
 `HostVirtual`_                        yes         no        no           no           no        
@@ -31,8 +32,10 @@ Provider                              list images get image create image delete 
 `Indosat`_                            yes         no        no           no           no        
 `InternetSolutions`_                  yes         no        no           no           no        
 `Joyent`_                             yes         no        no           no           no        
+`Kamatera`_                           yes         no        no           no           no        
 `Kili Public Cloud`_                  yes         yes       yes          yes          no        
 `KTUCloud`_                           yes         no        no           no           no        
+`kubevirt`_                           yes         no        no           no           no        
 `Libvirt`_                            no          no        no           no           no        
 `Linode`_                             yes         no        no           no           no        
 `Maxihost`_                           yes         no        no           no           no        
@@ -87,6 +90,7 @@ Provider                              list images get image create image delete 
 .. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
 .. _`Google Compute Engine`: https://cloud.google.com/
+.. _`GiG G8 Node Provider`: https://gig.tech
 .. _`GoGrid`: http://www.gogrid.com/
 .. _`Gridscale`: https://gridscale.io
 .. _`HostVirtual`: http://www.hostvirtual.com
@@ -94,8 +98,10 @@ Provider                              list images get image create image delete 
 .. _`Indosat`: http://www.indosat.com/
 .. _`InternetSolutions`: http://www.is.co.za/
 .. _`Joyent`: http://www.joyentcloud.com
+.. _`Kamatera`: https://www.kamatera.com/
 .. _`Kili Public Cloud`: http://kili.io/
 .. _`KTUCloud`: https://ucloudbiz.olleh.com/
+.. _`kubevirt`: https://www.kubevirt.io
 .. _`Libvirt`: http://libvirt.org/
 .. _`Linode`: http://www.linode.com/
 .. _`Maxihost`: https://www.maxihost.com/

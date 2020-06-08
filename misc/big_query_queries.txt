@@ -1,0 +1,40 @@
+# This file contains various useful BigQuery queries for retrieving PyPy
+# download related statistics for the apache-libcloud package
+
+# Number of downloads per file name, sorted by number of downloads
+SELECT file.filename, COUNT(*) AS num_downloads
+FROM `the-psf.pypi.downloads*`
+WHERE file.project = 'apache-libcloud'
+  AND _TABLE_SUFFIX
+    BETWEEN FORMAT_DATE(
+      '%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))
+    AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())
+  GROUP BY file.filename
+  ORDER BY num_downloads DESC
+  LIMIT 100
+
+# Download counts per Libcloud version, sorted by number of downloads
+SELECT REGEXP_EXTRACT(file.filename, r'apache[-\_]libcloud-(\d+.\d+.\d+r?c?\d?).*?$') version, COUNT(*) AS num_downloads
+FROM `the-psf.pypi.downloads*`
+WHERE file.project = 'apache-libcloud'
+  -- Only query the last 30 days of history
+  AND _TABLE_SUFFIX
+    BETWEEN FORMAT_DATE(
+      '%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))
+    AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())
+  GROUP BY version
+  ORDER BY num_downloads DESC
+  LIMIT 100
+
+# Download counts per Libcloud version, sorted by Libcloud version
+SELECT REGEXP_EXTRACT(file.filename, r'apache[-\_]libcloud-(\d+.\d+.\d+r?c?\d?).*?$') version, COUNT(*) AS num_downloads
+FROM `the-psf.pypi.downloads*`
+WHERE file.project = 'apache-libcloud'
+  -- Only query the last 30 days of history
+  AND _TABLE_SUFFIX
+    BETWEEN FORMAT_DATE(
+      '%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))
+    AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())
+  GROUP BY version
+  ORDER BY version DESC
+  LIMIT 100

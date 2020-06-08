@@ -18,6 +18,8 @@
 Loads Google Cloud Platform prices and updates the `pricing.json` data file.
 """
 
+# pylint: skip-file
+
 import os
 import json
 import sys

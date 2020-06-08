@@ -10,6 +10,7 @@ Provider            Documentation                             Provider Constant 
 `DNSimple`_         :doc:`Click </dns/drivers/dnsimple>`      DNSIMPLE          single region driver :mod:`libcloud.dns.drivers.dnsimple`     :class:`DNSimpleDNSDriver`    
 `DurableDNS`_       :doc:`Click </dns/drivers/durabledns>`    DURABLEDNS        single region driver :mod:`libcloud.dns.drivers.durabledns`   :class:`DurableDNSDriver`     
 `Gandi DNS`_                                                  GANDI             single region driver :mod:`libcloud.dns.drivers.gandi`        :class:`GandiDNSDriver`       
+`Gandi LiveDNS`_                                              GANDI_LIVE        single region driver :mod:`libcloud.dns.drivers.gandi_live`   :class:`GandiLiveDNSDriver`   
 `GoDaddy DNS`_      :doc:`Click </dns/drivers/godaddy>`       GODADDY           single region driver :mod:`libcloud.dns.drivers.godaddy`      :class:`GoDaddyDNSDriver`     
 `Google DNS`_       :doc:`Click </dns/drivers/google>`        GOOGLE            single region driver :mod:`libcloud.dns.drivers.google`       :class:`GoogleDNSDriver`      
 `Host Virtual DNS`_ :doc:`Click </dns/drivers/hostvirtual>`   HOSTVIRTUAL       single region driver :mod:`libcloud.dns.drivers.hostvirtual`  :class:`HostVirtualDNSDriver` 
@@ -38,6 +39,7 @@ Provider            Documentation                             Provider Constant 
 .. _`DNSimple`: https://dnsimple.com/
 .. _`DurableDNS`: https://durabledns.com
 .. _`Gandi DNS`: http://www.gandi.net/domain
+.. _`Gandi LiveDNS`: http://www.gandi.net/domain
 .. _`GoDaddy DNS`: https://www.godaddy.com/
 .. _`Google DNS`: https://cloud.google.com/
 .. _`Host Virtual DNS`: https://www.hostvirtual.com/

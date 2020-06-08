@@ -16,12 +16,15 @@
 from __future__ import with_statement
 
 import base64
+import hashlib
+import hmac
 import os
 import binascii
-from io import BytesIO
+from datetime import datetime, timedelta
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlencode
 from libcloud.utils.py3 import urlquote
 from libcloud.utils.py3 import tostring
 from libcloud.utils.py3 import b
@@ -42,25 +45,39 @@ from libcloud.storage.types import ObjectHashMismatchError
 # Desired number of items in each response inside a paginated request
 RESPONSES_PER_REQUEST = 100
 
-# As per the Azure documentation, if the upload file size is less than
-# 100MB, we can upload it in a single request.
-AZURE_BLOCK_MAX_SIZE = 100 * 1024 * 1024
+# According to the Azure Docs:
+# > The block must be less than or equal to 100 MB in size for version
+# > 2016-05-31 and later (4 MB for older versions).
+# However for performance reasons, using a lower upload chunk size
+# usually leads to fewer dropped requests and retries.
+AZURE_UPLOAD_CHUNK_SIZE = int(
+    os.getenv('LIBCLOUD_AZURE_UPLOAD_CHUNK_SIZE_MB', '4')
+) * 1024 * 1024
 
-# Azure block blocks must be maximum 4MB
-# Azure page blobs must be aligned in 512 byte boundaries (4MB fits that)
-AZURE_CHUNK_SIZE = 4 * 1024 * 1024
-
-# Azure page blob must be aligned in 512 byte boundaries
-AZURE_PAGE_CHUNK_SIZE = 512
+AZURE_DOWNLOAD_CHUNK_SIZE = int(
+    os.getenv('LIBCLOUD_AZURE_DOWNLOAD_CHUNK_SIZE_MB', '4')
+) * 1024 * 1024
 
 # The time period (in seconds) for which a lease must be obtained.
 # If set as -1, we get an infinite lease, but that is a bad idea. If
 # after getting an infinite lease, there was an issue in releasing the
 # lease, the object will remain 'locked' forever, unless the lease is
 # released using the lease_id (which is not exposed to the user)
-AZURE_LEASE_PERIOD = 60
+AZURE_LEASE_PERIOD = int(
+    os.getenv('LIBCLOUD_AZURE_LEASE_PERIOD_SECONDS', '60')
+)
 
 AZURE_STORAGE_HOST_SUFFIX = 'blob.core.windows.net'
+
+AZURE_STORAGE_CDN_URL_DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+AZURE_STORAGE_CDN_URL_START_MINUTES = float(
+    os.getenv('LIBCLOUD_AZURE_STORAGE_CDN_URL_START_MINUTES', '5')
+)
+
+AZURE_STORAGE_CDN_URL_EXPIRY_HOURS = float(
+    os.getenv('LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS', '24')
+)
 
 
 class AzureBlobLease(object):
@@ -177,7 +194,7 @@ class AzureBlobsConnection(AzureConnection):
 
         return action
 
-    API_VERSION = '2016-05-31'
+    API_VERSION = '2018-11-09'
 
 
 class AzureBlobsStorageDriver(StorageDriver):
@@ -186,7 +203,6 @@ class AzureBlobsStorageDriver(StorageDriver):
     connectionCls = AzureBlobsConnection
     hash_type = 'md5'
     supports_chunked_encoding = False
-    ex_blob_type = 'BlockBlob'
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
@@ -408,17 +424,20 @@ class AzureBlobsStorageDriver(StorageDriver):
             if not params['marker']:
                 break
 
-    def iterate_container_objects(self, container, ex_prefix=None):
+    def iterate_container_objects(self, container, prefix=None,
+                                  ex_prefix=None):
         """
         @inherits: :class:`StorageDriver.iterate_container_objects`
         """
+        prefix = self._normalize_prefix_argument(prefix, ex_prefix)
+
         params = {'restype': 'container',
                   'comp': 'list',
                   'maxresults': RESPONSES_PER_REQUEST,
                   'include': 'metadata'}
 
-        if ex_prefix:
-            params['prefix'] = ex_prefix
+        if prefix:
+            params['prefix'] = prefix
 
         container_path = self._get_container_path(container)
 
@@ -445,22 +464,6 @@ class AzureBlobsStorageDriver(StorageDriver):
             params['marker'] = body.findtext('NextMarker')
             if not params['marker']:
                 break
-
-    def list_container_objects(self, container, ex_prefix=None):
-        """
-        Return a list of objects for the given container.
-
-        :param container: Container instance.
-        :type container: :class:`Container`
-
-        :param ex_prefix: Only return objects starting with ex_prefix
-        :type ex_prefix: ``str``
-
-        :return: A list of Object instances.
-        :rtype: ``list`` of :class:`Object`
-        """
-        return list(self.iterate_container_objects(container,
-                                                   ex_prefix=ex_prefix))
 
     def get_container(self, container_name):
         """
@@ -499,6 +502,70 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         raise ObjectDoesNotExistError(value=None, driver=self,
                                       object_name=object_name)
+
+    def get_object_cdn_url(self, obj,
+                           ex_expiry=AZURE_STORAGE_CDN_URL_EXPIRY_HOURS):
+        """
+        Return a SAS URL that enables reading the given object.
+
+        :param obj: Object instance.
+        :type  obj: :class:`Object`
+
+        :param ex_expiry: The number of hours after which the URL expires.
+                          Defaults to 24 hours.
+        :type  ex_expiry: ``float``
+
+        :return: A SAS URL for the object.
+        :rtype: ``str``
+        """
+        object_path = self._get_object_path(obj.container, obj.name)
+
+        now = datetime.utcnow()
+        start = now - timedelta(minutes=AZURE_STORAGE_CDN_URL_START_MINUTES)
+        expiry = now + timedelta(hours=ex_expiry)
+
+        params = {
+            'st': start.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
+            'se': expiry.strftime(AZURE_STORAGE_CDN_URL_DATE_FORMAT),
+            'sp': 'r',
+            'spr': 'https' if self.secure else 'http,https',
+            'sv': self.connectionCls.API_VERSION,
+            'sr': 'b',
+        }
+
+        string_to_sign = '\n'.join((
+            params['sp'],
+            params['st'],
+            params['se'],
+            '/blob/{}{}'.format(self.key, object_path),
+            '',  # signedIdentifier
+            '',  # signedIP
+            params['spr'],
+            params['sv'],
+            params['sr'],
+            '',  # snapshot
+            '',  # rscc
+            '',  # rscd
+            '',  # rsce
+            '',  # rscl
+            '',  # rsct
+        ))
+
+        params['sig'] = base64.b64encode(
+            hmac.new(
+                self.secret,
+                string_to_sign.encode('utf-8'),
+                hashlib.sha256
+            ).digest()
+        ).decode('utf-8')
+
+        return '{scheme}://{host}:{port}{action}?{sas_token}'.format(
+            scheme='https' if self.secure else 'http',
+            host=self.connection.host,
+            port=self.connection.port,
+            action=self.connection.morph_action_hook(object_path),
+            sas_token=urlencode(params),
+        )
 
     def _get_container_path(self, container):
         """
@@ -608,7 +675,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         obj_path = self._get_object_path(obj.container, obj.name)
         response = self.connection.request(obj_path, method='GET',
                                            stream=True, raw=True)
-        iterator = response.iter_content(AZURE_CHUNK_SIZE)
+        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
 
         return self._get_object(obj=obj,
                                 callback=read_in_chunks,
@@ -617,65 +684,85 @@ class AzureBlobsStorageDriver(StorageDriver):
                                                  'chunk_size': chunk_size},
                                 success_status_code=httplib.OK)
 
-    def _upload_in_chunks(self, response, data, iterator, object_path,
-                          blob_type, lease, calculate_hash=True):
+    def download_object_range(self, obj, destination_path, start_bytes,
+                              end_bytes=None, overwrite_existing=False,
+                              delete_on_failure=True):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        obj_path = self._get_object_path(obj.container, obj.name)
+        headers = {'x-ms-range': self._get_standard_range_str(start_bytes,
+                                                              end_bytes)}
+        response = self.connection.request(obj_path, headers=headers,
+                                           raw=True, data=None)
+
+        # NOTE: Some Azure Blobs implementation return 200 instead of 206
+        # status code, see
+        # https://github.com/c-w/libcloud-tests/pull/2#issuecomment-592765323
+        # for details.
+        success_status_codes = [httplib.OK, httplib.PARTIAL_CONTENT]
+
+        return self._get_object(obj=obj, callback=self._save_object,
+                                response=response,
+                                callback_kwargs={
+                                    'obj': obj,
+                                    'response': response.response,
+                                    'destination_path': destination_path,
+                                    'overwrite_existing': overwrite_existing,
+                                    'delete_on_failure': delete_on_failure,
+                                    'partial_download': True},
+                                success_status_code=success_status_codes)
+
+    def download_object_range_as_stream(self, obj, start_bytes, end_bytes=None,
+                                        chunk_size=None):
+        self._validate_start_and_end_bytes(start_bytes=start_bytes,
+                                           end_bytes=end_bytes)
+
+        obj_path = self._get_object_path(obj.container, obj.name)
+
+        headers = {'x-ms-range': self._get_standard_range_str(start_bytes,
+                                                              end_bytes)}
+        response = self.connection.request(obj_path, method='GET',
+                                           headers=headers,
+                                           stream=True, raw=True)
+        iterator = response.iter_content(AZURE_DOWNLOAD_CHUNK_SIZE)
+        success_status_codes = [httplib.OK, httplib.PARTIAL_CONTENT]
+
+        return self._get_object(
+            obj=obj, callback=read_in_chunks,
+            response=response,
+            callback_kwargs={'iterator': iterator,
+                             'chunk_size': chunk_size},
+            success_status_code=success_status_codes)
+
+    def _upload_in_chunks(self, stream, object_path, lease, meta_data,
+                          content_type, object_name, file_path, verify_hash,
+                          headers):
         """
-        Uploads data from an interator in fixed sized chunks to S3
-
-        :param response: Response object from the initial POST request
-        :type response: :class:`RawResponse`
-
-        :param data: Any data from the initial POST request
-        :type data: ``str``
-
-        :param iterator: The generator for fetching the upload data
-        :type iterator: ``generator``
-
-        :param object_path: The path of the object to which we are uploading
-        :type object_name: ``str``
-
-        :param blob_type: The blob type being uploaded
-        :type blob_type: ``str``
-
-        :param lease: The lease object to be used for renewal
-        :type lease: :class:`AzureBlobLease`
-
-        :keyword calculate_hash: Indicates if we must calculate the data hash
-        :type calculate_hash: ``bool``
-
-        :return: A tuple of (status, checksum, bytes transferred)
-        :rtype: ``tuple``
+        Uploads data from an interator in fixed sized chunks to Azure Storage
         """
-
-        # Get the upload id from the response xml
-        if response.status != httplib.CREATED:
-            raise LibcloudError('Error initializing upload. Code: %d' %
-                                (response.status), driver=self)
 
         data_hash = None
-        if calculate_hash:
+        if verify_hash:
             data_hash = self._get_hash_function()
 
         bytes_transferred = 0
         count = 1
         chunks = []
-        headers = {}
+        headers = headers or {}
 
         lease.update_headers(headers)
 
-        if blob_type == 'BlockBlob':
-            params = {'comp': 'block'}
-        else:
-            params = {'comp': 'page'}
+        params = {'comp': 'block'}
 
-        # Read the input data in chunk sizes suitable for AWS
-        for data in read_in_chunks(iterator, AZURE_CHUNK_SIZE):
+        # Read the input data in chunk sizes suitable for Azure
+        for data in read_in_chunks(stream, AZURE_UPLOAD_CHUNK_SIZE,
+                                   fill_size=True):
             data = b(data)
             content_length = len(data)
-            offset = bytes_transferred
             bytes_transferred += content_length
 
-            if calculate_hash:
+            if verify_hash:
                 data_hash.update(data)
 
             chunk_hash = self._get_hash_function()
@@ -685,20 +772,15 @@ class AzureBlobsStorageDriver(StorageDriver):
             headers['Content-MD5'] = chunk_hash.decode('utf-8')
             headers['Content-Length'] = str(content_length)
 
-            if blob_type == 'BlockBlob':
-                # Block id can be any unique string that is base64 encoded
-                # A 10 digit number can hold the max value of 50000 blocks
-                # that are allowed for azure
-                block_id = base64.b64encode(b('%10d' % (count)))
-                block_id = block_id.decode('utf-8')
-                params['blockid'] = block_id
+            # Block id can be any unique string that is base64 encoded
+            # A 10 digit number can hold the max value of 50000 blocks
+            # that are allowed for azure
+            block_id = base64.b64encode(b('%10d' % (count)))
+            block_id = block_id.decode('utf-8')
+            params['blockid'] = block_id
 
-                # Keep this data for a later commit
-                chunks.append(block_id)
-            else:
-                headers['x-ms-page-write'] = 'update'
-                headers['x-ms-range'] = 'bytes=%d-%d' % \
-                    (offset, (bytes_transferred - 1))
+            # Keep this data for a later commit
+            chunks.append(block_id)
 
             # Renew lease before updating
             lease.renew()
@@ -714,27 +796,37 @@ class AzureBlobsStorageDriver(StorageDriver):
 
             count += 1
 
-        if calculate_hash:
-            data_hash = data_hash.hexdigest()
+        if verify_hash:
+            data_hash = base64.b64encode(b(data_hash.digest()))
+            data_hash = data_hash.decode('utf-8')
 
-        if blob_type == 'BlockBlob':
-            self._commit_blocks(object_path, chunks, lease)
+        response = self._commit_blocks(object_path=object_path,
+                                       chunks=chunks,
+                                       lease=lease,
+                                       meta_data=meta_data,
+                                       content_type=content_type,
+                                       data_hash=data_hash,
+                                       object_name=object_name,
+                                       file_path=file_path)
 
-        # The Azure service does not return a hash immediately for
-        # chunked uploads. It takes some time for the data to get synced
+        # According to the Azure docs:
+        # > This header refers to the content of the request, meaning, in this
+        # > case, the list of blocks, and not the content of the blob itself.
+        # However, the validation code assumes that the content-md5 in the
+        # server response refers to the object so we must discard the value
         response.headers['content-md5'] = None
 
-        return (True, data_hash, bytes_transferred)
+        return {
+            'response': response,
+            'data_hash': data_hash,
+            'bytes_transferred': bytes_transferred,
+        }
 
-    def _commit_blocks(self, object_path, chunks, lease):
+    def _commit_blocks(self, object_path, chunks, lease,
+                       meta_data, content_type, data_hash,
+                       object_name, file_path):
         """
         Makes a final commit of the data.
-
-        :param object_path: Server side object path.
-        :type object_path: ``str``
-
-        :param upload_id: A list of (chunk_number, chunk_hash) tuples.
-        :type upload_id: ``list``
         """
 
         root = ET.Element('BlockList')
@@ -750,6 +842,21 @@ class AzureBlobsStorageDriver(StorageDriver):
         lease.update_headers(headers)
         lease.renew()
 
+        headers['x-ms-blob-content-type'] = self._determine_content_type(
+            content_type, object_name, file_path)
+
+        if data_hash is not None:
+            headers['x-ms-blob-content-md5'] = data_hash
+
+        self._update_metadata(headers, meta_data)
+
+        data_hash = self._get_hash_function()
+        data_hash.update(data.encode('utf-8'))
+        data_hash = base64.b64encode(b(data_hash.digest()))
+        headers['Content-MD5'] = data_hash.decode('utf-8')
+
+        headers['Content-Length'] = len(data)
+
         response = self.connection.request(object_path, data=data,
                                            params=params, headers=headers,
                                            method='PUT')
@@ -757,121 +864,54 @@ class AzureBlobsStorageDriver(StorageDriver):
         if response.status != httplib.CREATED:
             raise LibcloudError('Error in blocklist commit', driver=self)
 
-    def _check_values(self, blob_type, object_size):
-        """
-        Checks if extension arguments are valid
+        return response
 
-        :param blob_type: The blob type that is being uploaded
-        :type blob_type: ``str``
-
-        :param object_size: The (max) size of the object being uploaded
-        :type object_size: ``int``
-        """
-
-        if blob_type not in ['BlockBlob', 'PageBlob']:
-            raise LibcloudError('Invalid blob type', driver=self)
-
-        if blob_type == 'PageBlob':
-            if not object_size:
-                raise LibcloudError('Max blob size is mandatory for page blob',
-                                    driver=self)
-
-            if object_size % AZURE_PAGE_CHUNK_SIZE:
-                raise LibcloudError('Max blob size is not aligned to '
-                                    'page boundary', driver=self)
-
-    def upload_object(self, file_path, container, object_name, extra=None,
-                      verify_hash=True, ex_blob_type=None, ex_use_lease=False):
+    def upload_object(self, file_path, container, object_name,
+                      verify_hash=True, extra=None, headers=None,
+                      ex_use_lease=False,
+                      **deprecated_kwargs):
         """
         Upload an object currently located on a disk.
 
         @inherits: :class:`StorageDriver.upload_object`
 
-        :param ex_blob_type: Storage class
-        :type ex_blob_type: ``str``
-
         :param ex_use_lease: Indicates if we must take a lease before upload
         :type ex_use_lease: ``bool``
         """
+        if deprecated_kwargs:
+            raise ValueError('Support for arguments was removed: %s'
+                             % ', '.join(deprecated_kwargs.keys()))
 
-        if ex_blob_type is None:
-            ex_blob_type = self.ex_blob_type
+        blob_size = os.stat(file_path).st_size
 
-        # Get the size of the file
-        file_size = os.stat(file_path).st_size
-
-        # The presumed size of the object
-        object_size = file_size
-
-        self._check_values(ex_blob_type, file_size)
-
-        # If size is greater than 64MB or type is Page, upload in chunks
-        if ex_blob_type == 'PageBlob' or file_size > AZURE_BLOCK_MAX_SIZE:
-            # For chunked upload of block blobs, the initial size must
-            # be 0.
-            if ex_blob_type == 'BlockBlob':
-                object_size = None
-        return self._put_object(container=container,
-                                object_name=object_name,
-                                object_size=object_size,
-                                file_path=file_path, extra=extra,
-                                verify_hash=verify_hash,
-                                blob_type=ex_blob_type,
-                                use_lease=ex_use_lease)
+        with open(file_path, 'rb') as fobj:
+            return self._put_object(container=container,
+                                    object_name=object_name,
+                                    extra=extra, verify_hash=verify_hash,
+                                    use_lease=ex_use_lease, headers=headers,
+                                    blob_size=blob_size, file_path=file_path,
+                                    stream=fobj)
 
     def upload_object_via_stream(self, iterator, container, object_name,
-                                 verify_hash=False, extra=None,
-                                 ex_use_lease=False, ex_blob_type=None,
-                                 ex_page_blob_size=None):
+                                 verify_hash=True, extra=None, headers=None,
+                                 ex_use_lease=False,
+                                 **deprecated_kwargs):
         """
         @inherits: :class:`StorageDriver.upload_object_via_stream`
 
-        Note that if ``iterator`` does not support ``seek``, the
-        entire generator will be buffered in memory.
-
-        :param ex_blob_type: Storage class
-        :type ex_blob_type: ``str``
-
-        :param ex_page_blob_size: The maximum size to which the
-            page blob can grow to
-        :type ex_page_blob_size: ``int``
-
         :param ex_use_lease: Indicates if we must take a lease before upload
         :type ex_use_lease: ``bool``
         """
-
-        if ex_blob_type is None:
-            ex_blob_type = self.ex_blob_type
-
-        """
-        Azure requires that for page blobs that a maximum size that the page
-        can grow to.  For block blobs, it is required that the Content-Length
-        header be set.  The size of the block blob will be the total size of
-        the stream minus the current position, so in this case
-        ex_page_blob_size should be 0 (and will be checked in
-        self._check_values).
-        Source:
-        https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob
-        """
-        self._check_values(ex_blob_type, ex_page_blob_size)
-        if ex_blob_type == "BlockBlob":
-            try:
-                iterator.seek(0, os.SEEK_END)
-            except AttributeError:
-                buffer = BytesIO()
-                buffer.writelines(iterator)
-                iterator = buffer
-            blob_size = iterator.tell()
-            iterator.seek(0)
-        else:
-            blob_size = ex_page_blob_size
+        if deprecated_kwargs:
+            raise ValueError('Support for arguments was removed: %s'
+                             % ', '.join(deprecated_kwargs.keys()))
 
         return self._put_object(container=container,
                                 object_name=object_name,
-                                object_size=blob_size,
                                 extra=extra, verify_hash=verify_hash,
-                                blob_type=ex_blob_type,
                                 use_lease=ex_use_lease,
+                                headers=headers,
+                                blob_size=None,
                                 stream=iterator)
 
     def delete_object(self, obj):
@@ -903,69 +943,41 @@ class AzureBlobsStorageDriver(StorageDriver):
             key = 'x-ms-meta-%s' % (key)
             headers[key] = value
 
-    def _prepare_upload_headers(self, object_name, object_size,
-                                extra, meta_data, blob_type):
-        """
-        Prepare headers for uploading an object
-
-        :param object_name: The full name of the object being updated
-        :type object_name: ``str``
-
-        :param object_size: The size of the object. In case of PageBlobs,
-            this indicates the maximum size the blob can grow to
-        :type object_size: ``int``
-
-        :param extra: Extra control data for the upload
-        :type extra: ``dict``
-
-        :param meta_data: Metadata key value pairs
-        :type meta_data: ``dict``
-
-        :param blob_type: Page or Block blob type
-        :type blob_type: ``str``
-        """
-        headers = {}
-
-        if blob_type is None:
-            blob_type = self.ex_blob_type
-
-        headers['x-ms-blob-type'] = blob_type
-
-        self._update_metadata(headers, meta_data)
-
-        if object_size is not None:
-            headers['Content-Length'] = str(object_size)
-
-        if blob_type == 'PageBlob':
-            headers['Content-Length'] = str('0')
-            headers['x-ms-blob-content-length'] = str(object_size)
-
-        return headers
-
-    def _put_object(self, container, object_name, object_size,
-                    file_path=None, extra=None,
-                    verify_hash=True, blob_type=None, use_lease=False,
-                    stream=None):
+    def _put_object(self, container, object_name, stream,
+                    extra=None, verify_hash=True, headers=None,
+                    blob_size=None, file_path=None,
+                    use_lease=False):
         """
         Control function that does the real job of uploading data to a blob
         """
         extra = extra or {}
-        meta_data = extra.get('meta_data', {})
         content_type = extra.get('content_type', None)
-
-        headers = self._prepare_upload_headers(object_name, object_size,
-                                               extra, meta_data, blob_type)
+        meta_data = extra.get('meta_data', {})
 
         object_path = self._get_object_path(container, object_name)
 
         # Get a lease if required and do the operations
         with AzureBlobLease(self, object_path, use_lease) as lease:
-            lease.update_headers(headers)
-
-            result_dict = self._upload_object(object_name, content_type,
-                                              object_path, headers=headers,
-                                              file_path=file_path,
-                                              stream=stream)
+            if blob_size is not None and blob_size <= AZURE_UPLOAD_CHUNK_SIZE:
+                result_dict = self._upload_directly(stream=stream,
+                                                    object_path=object_path,
+                                                    lease=lease,
+                                                    blob_size=blob_size,
+                                                    meta_data=meta_data,
+                                                    headers=headers,
+                                                    content_type=content_type,
+                                                    object_name=object_name,
+                                                    file_path=file_path)
+            else:
+                result_dict = self._upload_in_chunks(stream=stream,
+                                                     object_path=object_path,
+                                                     lease=lease,
+                                                     meta_data=meta_data,
+                                                     headers=headers,
+                                                     content_type=content_type,
+                                                     object_name=object_name,
+                                                     file_path=file_path,
+                                                     verify_hash=verify_hash)
 
             response = result_dict['response']
             bytes_transferred = result_dict['bytes_transferred']
@@ -996,6 +1008,25 @@ class AzureBlobsStorageDriver(StorageDriver):
                       hash=headers['etag'], extra=None,
                       meta_data=meta_data, container=container,
                       driver=self)
+
+    def _upload_directly(self, stream, object_path, lease, blob_size,
+                         meta_data, content_type, object_name, file_path,
+                         headers):
+
+        headers = headers or {}
+        lease.update_headers(headers)
+
+        self._update_metadata(headers, meta_data)
+
+        headers['Content-Length'] = str(blob_size)
+        headers['x-ms-blob-type'] = 'BlockBlob'
+
+        return self._upload_object(object_name=object_name,
+                                   file_path=file_path,
+                                   content_type=content_type,
+                                   request_path=object_path,
+                                   stream=stream,
+                                   headers=headers)
 
     def ex_set_object_metadata(self, obj, meta_data):
         """

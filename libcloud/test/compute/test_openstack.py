@@ -314,7 +314,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
         metadata = {'a': 'b', 'c': 'd'}
         files = {'/file1': 'content1', '/file2': 'content2'}
         node = self.driver.create_node(name='racktest', image=image, size=size,
-                                       metadata=metadata, files=files)
+                                       ex_metadata=metadata, ex_files=files)
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra.get('password'), 'racktestvJq7d3')
         self.assertEqual(node.extra.get('metadata'), metadata)
@@ -950,7 +950,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         size = NodeSize(
             1, '256 slice', None, None, None, None, driver=self.driver)
         node = self.driver.create_node(name='racktest', image=image, size=size,
-                                       availability_zone='testaz')
+                                       ex_availability_zone='testaz')
         self.assertEqual(node.id, '26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe')
         self.assertEqual(node.name, 'racktest')
         self.assertEqual(node.extra['password'], 'racktestvJq7d3')
@@ -1047,6 +1047,16 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
             'cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
         self.assertEqual(
             self.driver.attach_volume(node, volume, '/dev/sdb'), True)
+
+    def test_attach_volume_device_auto(self):
+        node = self.driver.list_nodes()[0]
+        volume = self.driver.ex_get_volume(
+            'cd76a3a1-c4ce-40f6-9b9f-07a61508938d')
+
+        OpenStack_2_0_MockHttp.type = 'DEVICE_AUTO'
+
+        self.assertEqual(
+            self.driver.attach_volume(node, volume, 'auto'), True)
 
     def test_detach_volume(self):
         node = self.driver.list_nodes()[0]
@@ -1442,6 +1452,11 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret[2].ip_address, '10.3.1.2')
         self.assertEqual(
             ret[2].node_id, 'cb4fba64-19e2-40fd-8497-f29da1b21143')
+        self.assertEqual(ret[3].id, '123c5336a-0629-4694-ba30-04b0bdfa88a4')
+        self.assertEqual(ret[3].pool, pool)
+        self.assertEqual(ret[3].ip_address, '10.3.1.3')
+        self.assertEqual(
+            ret[3].node_id, 'cb4fba64-19e2-40fd-8497-f29da1b21143')
 
     def test_OpenStack_2_FloatingIpPool_get_floating_ip(self):
         pool = OpenStack_2_FloatingIpPool(1, 'foo', self.driver.connection)
@@ -2326,6 +2341,17 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         else:
             raise NotImplementedError()
 
+    def _v2_1337_servers_12065_os_volume_attachments_DEVICE_AUTO(self, method, url, body, headers):
+        # test_attach_volume_device_auto
+        if method == "POST":
+            if 'rackspace' not in self.__class__.__name__.lower():
+                body = json.loads(body)
+                self.assertEqual(body['volumeAttachment']['device'], None)
+
+            return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
+        else:
+            raise NotImplementedError()
+
     def _v2_1337_servers_1c01300f_ef97_4937_8f03_ac676d6234be_os_interface_126da55e_cfcb_41c8_ae39_a26cb8a7e723(self, method, url, body, headers):
         if method == "DELETE":
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
@@ -2436,6 +2462,10 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
     def _v1_1_slug_servers_12065_os_volume_attachments(self, method, url, body, headers):
         if method == "POST":
+            if 'rackspace' not in self.__class__.__name__.lower():
+                body = json.loads(body)
+                self.assertEqual(body['volumeAttachment']['device'], '/dev/sdb')
+
             body = self.fixtures.load(
                 '_servers_12065_os_volume_attachments.json')
         else:
@@ -2682,7 +2712,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__floatingips.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
-    
+
     def _v2_1337_v2_0_floatingips_foo_bar_id(self, method, url, body, headers):
         if method == 'DELETE':
             body = ''

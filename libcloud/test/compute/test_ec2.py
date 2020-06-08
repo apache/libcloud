@@ -19,10 +19,13 @@ from collections import OrderedDict
 
 import os
 import sys
+import base64
 from datetime import datetime
 from libcloud.utils.iso8601 import UTC
 
 from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import parse_qs
+from libcloud.utils.py3 import b
 
 from libcloud.compute.drivers.ec2 import EC2NodeDriver
 from libcloud.compute.drivers.ec2 import EC2PlacementGroup
@@ -456,13 +459,27 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         node1 = self.driver.create_node(name='foo', image=image, size=size)
         EC2MockHttp.type = 'ex_iam_profile'
         node2 = self.driver.create_node(name='bar', image=image, size=size,
-                                        ex_iam_profile=iamProfile['name'])
+                                        ex_iamprofile=iamProfile['name'])
         node3 = self.driver.create_node(name='bar', image=image, size=size,
-                                        ex_iam_profile=iamProfile['arn'])
+                                        ex_iamprofile=iamProfile['arn'])
 
         self.assertFalse(node1.extra['iam_profile'])
         self.assertEqual(node2.extra['iam_profile'], iamProfile['id'])
         self.assertEqual(node3.extra['iam_profile'], iamProfile['id'])
+
+    def test_ex_create_node_with_ex_spot(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+        EC2MockHttp.type = 'ex_spot'
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       ex_spot=True)
+        self.assertEqual(node.extra['instance_lifecycle'], 'spot')
+        node = self.driver.create_node(name='foo', image=image, size=size,
+                                       ex_spot=True, ex_spot_max_price=1.5)
+        self.assertEqual(node.extra['instance_lifecycle'], 'spot')
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -1174,11 +1191,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertTrue(resp)
 
         expected_msg = 'Unsupported attribute: invalid'
-        self.assertRaisesRegexp(ValueError, expected_msg,
-                                self.driver.ex_modify_subnet_attribute,
-                                subnet,
-                                'invalid',
-                                True)
+        self.assertRaisesRegex(ValueError, expected_msg,
+                               self.driver.ex_modify_subnet_attribute,
+                               subnet,
+                               'invalid',
+                               True)
 
     def test_ex_delete_subnet(self):
         subnet = self.driver.ex_list_subnets()[0]
@@ -1319,7 +1336,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         }
 
         expected_msg = 'dictionary contains an attribute "not" which value'
-        self.assertRaisesRegexp(ValueError, expected_msg,
+        self.assertRaisesRegex(ValueError, expected_msg,
                                self.driver.connection.request, '/', params=params)
 
         params = {
@@ -1327,7 +1344,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         }
 
         expected_msg = 'dictionary contains an attribute "invalid" which value'
-        self.assertRaisesRegexp(ValueError, expected_msg,
+        self.assertRaisesRegex(ValueError, expected_msg,
                                self.driver.connection.request, '/', params=params)
 
 
@@ -1359,7 +1376,7 @@ class EC2SAEastTests(EC2Tests):
     region = 'sa-east-1'
 
 
-class EC2MockHttp(MockHttp):
+class EC2MockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('ec2')
 
     def _DescribeInstances(self, method, url, body, headers):
@@ -1426,6 +1443,23 @@ class EC2MockHttp(MockHttp):
         body = self.fixtures.load('run_instances.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _ex_user_data_RunInstances(self, method, url, body, headers):
+        # test_create_node_with_ex_userdata
+        if url.startswith('/'):
+            url = url[1:]
+
+        if url.startswith('?'):
+            url = url[1:]
+
+        params = parse_qs(url)
+
+        self.assertTrue('UserData' in params, 'UserData not in params, actual params: %s' % (str(params)))
+        user_data = base64.b64decode(b(params['UserData'][0])).decode('utf-8')
+        self.assertEqual(user_data, 'foo\nbar\foo')
+
+        body = self.fixtures.load('run_instances.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _create_ex_assign_public_ip_RunInstances(self, method, url, body, headers):
         self.assertUrlContainsQueryParams(url, {
             'NetworkInterface.1.AssociatePublicIpAddress': "true",
@@ -1483,6 +1517,10 @@ class EC2MockHttp(MockHttp):
 
     def _ex_iam_profile_RunInstances(self, method, url, body, headers):
         body = self.fixtures.load('run_instances_iam_profile.xml')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _ex_spot_RunInstances(self, method, url, body, headers):
+        body = self.fixtures.load('run_instances_spot.xml')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _TerminateInstances(self, method, url, body, headers):
@@ -1991,6 +2029,31 @@ class OutscaleTests(EC2Tests):
         self.assertTrue('m1.small' in ids)
         self.assertTrue('m1.large' in ids)
         self.assertTrue('m1.xlarge' in ids)
+
+    def test_ex_create_node_with_ex_iam_profile(self):
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        self.assertRaises(NotImplementedError, self.driver.create_node,
+                          name='foo',
+                          image=image, size=size,
+                          ex_iamprofile='foo')
+
+    def test_create_node_with_ex_userdata(self):
+        EC2MockHttp.type = 'ex_user_data'
+
+        image = NodeImage(id='ami-be3adfd7',
+                          name=self.image_name,
+                          driver=self.driver)
+        size = NodeSize('m1.small', 'Small Instance', None, None, None, None,
+                        driver=self.driver)
+
+        result = self.driver.create_node(name='foo', image=image, size=size,
+                                         ex_userdata='foo\nbar\foo')
+        self.assertTrue(result)
 
 
 class FCUMockHttp(EC2MockHttp):

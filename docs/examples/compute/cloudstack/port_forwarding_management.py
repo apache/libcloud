@@ -22,5 +22,5 @@ pprint(rule)
 
 
 # The node now has a public IP and a rule associated to it
-print node
-print node.extra
+print(node)
+print(node.extra)
