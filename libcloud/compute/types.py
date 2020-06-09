@@ -157,6 +157,7 @@ class Provider(Type):
     VCLOUD = 'vcloud'
     VOXEL = 'voxel'
     VPSNET = 'vpsnet'
+    VSPHERE = 'vsphere'
     VULTR = 'vultr'
 
     # OpenStack based providers
@@ -205,7 +206,6 @@ class Provider(Type):
 
     CLEARCENTER = "clearcenter"
     CLEARAPI = "clearapi"
-    MAXIHOST = "maxihost"
 
 DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
                                   Provider.RACKSPACE_NOVA_BETA,
