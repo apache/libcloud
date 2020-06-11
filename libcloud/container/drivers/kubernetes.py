@@ -22,6 +22,7 @@ from libcloud.container.base import (Container, ContainerDriver,
 from libcloud.common.kubernetes import KubernetesException
 from libcloud.common.kubernetes import KubernetesBasicAuthConnection
 from libcloud.common.kubernetes import KubernetesDriverMixin
+from libcloud.common.kubernetes import KubernetesResponse
 
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
@@ -32,52 +33,6 @@ __all__ = [
 
 
 ROOT_URL = '/api/'
-
-
-class KubernetesResponse(JsonResponse):
-
-    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                            httplib.NO_CONTENT]
-
-    def parse_error(self):
-        if self.status == 401:
-            raise InvalidCredsError('Invalid credentials')
-        return self.body
-
-    def success(self):
-        return self.status in self.valid_response_codes
-
-
-class KubernetesException(Exception):
-
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
-        self.args = (code, message)
-
-    def __str__(self):
-        return "%s %s" % (self.code, self.message)
-
-    def __repr__(self):
-        return "KubernetesException %s %s" % (self.code, self.message)
-
-
-class KubernetesConnection(ConnectionUserAndKey):
-    responseCls = KubernetesResponse
-    timeout = 60
-
-    def add_default_headers(self, headers):
-        """
-        Add parameters that are necessary for every request
-        If user and password are specified, include a base http auth
-        header
-        """
-        if 'Content-Type' not in headers:
-            headers['Content-Type'] = 'application/json'
-        if self.key and self.secret:
-            user_b64 = base64.b64encode(b('%s:%s' % (self.key, self.secret)))
-            headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
-        return headers
 
 
 class KubernetesPod(object):

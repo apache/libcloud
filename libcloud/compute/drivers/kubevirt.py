@@ -28,9 +28,11 @@ from datetime import datetime
 
 import libcloud.security
 
-from libcloud.container.drivers.kubernetes import KubernetesResponse
-from libcloud.container.drivers.kubernetes import KubernetesConnection
-from libcloud.container.drivers.kubernetes import VALID_RESPONSE_CODES
+from libcloud.common.kubernetes import KubernetesResponse
+from libcloud.common.kubernetes import KubernetesBasicAuthConnection
+from libcloud.common.kubernetes import KubernetesTLSAuthConnection
+from libcloud.common.kubernetes import KubernetesTokenAuthConnection
+from libcloud.common.kubernetes import VALID_RESPONSE_CODES
 
 from libcloud.common.base import KeyCertificateConnection, ConnectionKey
 from libcloud.common.types import InvalidCredsError, ProviderError
@@ -109,7 +111,7 @@ class KubeVirtNodeDriver(NodeDriver):
     type = Provider.KUBEVIRT
     name = "kubevirt"
     website = 'https://www.kubevirt.io'
-    connectionCls = KubernetesConnection
+    connectionCls = KubernetesBasicAuthConnection
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -123,13 +125,13 @@ class KubeVirtNodeDriver(NodeDriver):
 
         libcloud.security.VERIFY_SSL_CERT = verify
         if token_bearer_auth:
-            self.connectionCls = KubernetesTokenAuthentication
+            self.connectionCls = KubernetesTokenAuthConnection
             if not key:
                 raise ValueError("The token must be a string")
             secure = True
 
         if key_file:
-            self.connectionCls = KubernetesTLSConnection
+            self.connectionCls = KubernetesTLSAuthConnection
             self.key_file = key_file
             self.cert_file = cert_file
             secure = True
@@ -169,7 +171,7 @@ class KubeVirtNodeDriver(NodeDriver):
         self.connection.host = host
         self.connection.port = port
 
-        if self.connectionCls == KubernetesConnection:
+        if self.connectionCls == KubernetesBasicAuthConnection:
             self.connection.secret = secret
         self.connection.key = key
 
