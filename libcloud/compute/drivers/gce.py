@@ -2610,26 +2610,6 @@ class GCENodeDriver(NodeDriver):
         # Create volume cache now for fast lookups of disk info.
         self._ex_populate_volume_dict()
 
-        items = response['items'].values()
-        instances = [item.get('instances', []) for item in items]
-        instances = itertools.chain(*instances)
-
-        for instance in instances:
-            try:
-                node = self._to_node(instance,
-                                     use_disk_cache=ex_use_disk_cache)
-            except ResourceNotFoundError:
-                # If a GCE node has been deleted between
-                #   - is was listed by `request('.../instances', 'GET')
-                #   - it is converted by `self._to_node(i)`
-                # `_to_node()` will raise a ResourceNotFoundError.
-                #
-                # Just ignore that node and return the list of the
-                # other nodes.
-                continue
-
-            list_nodes.append(node)
-
         sizes = {}
         if 'items' in response:
             # The aggregated response returns a dict for each zone
