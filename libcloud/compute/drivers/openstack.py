@@ -228,9 +228,10 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         Perform multiple calls and retrieve all the elements for a paginated
         response.
 
-        This method utilizes "next" attribute in the response object. It also
-        includes infinite loop protection (if the "next" value matches the
-        current path, it will abort).
+        This method utilizes "next" attribute in the response object.
+
+        It also includes an infinite loop protection (if the "next" value
+        matches the current path, it will abort).
 
         :param request_method: Method to call which will send the request and
                                return a response. This method will get passed
@@ -244,25 +245,27 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         result = []
         while path:
             response = request_method(path)
-            items = response.object.get(response_key, [])
+            items = response.object.get(response_key, []) or []
             result.extend(items)
 
             # Retrieve next path
             next_path = response.object.get('next', None)
 
-            if next_path == path or iteration_count > PAGINATION_LIMIT:
-                if iteration_count > PAGINATION_LIMIT:
-                    raise OpenStackException(
-                        'Pagination limit reached for %s, the limit is %d. '
-                        'This might indicate that your API is returning a '
-                        'looping next target for pagination!' % (
-                            path, PAGINATION_LIMIT
-                        ), None
-                    )
-
+            if next_path == path:
                 # Likely an infinite loop since the next path matches the
                 # current one
                 break
+
+            if iteration_count > PAGINATION_LIMIT:
+                # We have iterated over PAGINATION_LIMIT pages, likely an
+                # API returned an invalid response
+                raise OpenStackException(
+                    'Pagination limit reached for %s, the limit is %d. '
+                    'This might indicate that your API is returning a '
+                    'looping next target for pagination!' % (
+                        path, PAGINATION_LIMIT
+                    ), None
+                )
 
             path = next_path
             iteration_count += 1
