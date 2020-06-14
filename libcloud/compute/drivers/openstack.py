@@ -2862,10 +2862,14 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             raise NotImplementedError(
                 "ex_only_active in list_images is not implemented "
                 "in the OpenStack_2_NodeDriver")
-        response = self.image_connection.request('/v2/images')
         images = []
-        for image in response.object['images']:
-            images.append(self._to_image(image))
+        path = '/v2/images'
+        while path:
+            response = self.image_connection.request(path)
+            for image in response.object['images']:
+                images.append(self._to_image(image))
+            # get next bunch of images (pagination)
+            path = response.object.get('next', None)
         return images
 
     def ex_update_image(self, image_id, data):

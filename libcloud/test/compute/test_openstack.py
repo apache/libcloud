@@ -1732,7 +1732,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_list_images(self):
         images = self.driver.list_images()
-        self.assertEqual(len(images), 2, 'Wrong images count')
+        self.assertEqual(len(images), 3, 'Wrong images count')
 
         image = images[0]
         self.assertEqual(image.id, 'f24a3c1b-d52a-4116-91da-25b3eee8f55e')
@@ -2289,7 +2289,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
     def _v2_1337_v2_images(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load('_images_v2.json')
+            # 2nd (and last) page of images
+            if 'marker=e7a40226-3523-4f0f-87d8-d8dc91bbf4a3' in url:
+                body = self.fixtures.load('_images_v2_page2.json')
+            else:
+                # first page of images
+                body = self.fixtures.load('_images_v2.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
