@@ -532,6 +532,16 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_images_detail(self, method, url, body, headers):
+        if method != "GET":
+            raise ValueError('Invalid method: %s' % (method))
+
+        body = self.fixtures.load('v1_slug_images_detail.xml')
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_images_detail_invalid_next(self, method, url, body, headers):
+        if method != "GET":
+            raise ValueError('Invalid method: %s' % (method))
+
         body = self.fixtures.load('v1_slug_images_detail.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
@@ -1692,6 +1702,13 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(snapshots[0]['name'], 'snap-101')
         self.assertEqual(snapshots[3]['name'], 'snap-001')
 
+    def test_list_images_with_pagination_invalid_response_no_infinite_loop(self):
+        # "next" attribute matches the current page, but it shouldn't result in
+        # an infite loop
+        OpenStack_2_0_MockHttp.type = 'invalid_next'
+        ret = self.driver.list_images()
+        self.assertEqual(len(ret), 2)
+
     # NOTE: We use a smaller limit to speed tests up.
     @mock.patch('libcloud.compute.drivers.openstack.PAGINATION_LIMIT', 10)
     def test__paginated_request_raises_if_stuck_in_a_loop(self):
@@ -2295,6 +2312,13 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             else:
                 # first page of images
                 body = self.fixtures.load('_images_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images_invalid_next(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_v2_invalid_next.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
