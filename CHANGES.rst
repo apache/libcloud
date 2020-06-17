@@ -1,6 +1,19 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Fix pagination in the ``list_images()`` method and make sure
+  method returns all the images, even if the result is spread across multiple
+  pages.
+
+  (GITHUB-1467)
+  [Thomas Bechtold - @toabctl]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
