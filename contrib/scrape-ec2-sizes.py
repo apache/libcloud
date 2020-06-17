@@ -126,6 +126,13 @@ REGION_DETAILS = {
         'country': 'Frankfurt',
         'signature_version': '4',
     },
+     'EU (Stockholm)': {
+        'id': 'eu-north-1',
+        'endpoint': 'ec2.eu-north-1.amazonaws.com',
+        'api_name': 'ec2_eu_north_stockholm',
+        'country': 'Stockholm',
+        'signature_version': '4',
+    },
     # Asia
     'Asia Pacific (Mumbai)': {
         'id': 'ap-south-1',
