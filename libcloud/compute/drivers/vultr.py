@@ -328,13 +328,13 @@ class VultrNodeDriver(NodeDriver):
 
         return created_node
 
-    def ex_stop_node(self, node):
+    def stop_node(self, node):
         params = {'SUBID': node.id}
         res = self.connection.post('/v1/server/halt', params)
 
         return res.status == httplib.OK
 
-    def ex_start_node(self, node):
+    def start_node(self, node):
         params = {'SUBID': node.id}
         res = self.connection.post('/v1/server/start', params)
 

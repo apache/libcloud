@@ -364,7 +364,8 @@ class SoftLayerNodeDriver(NodeDriver):
                     ex_domain=None, ex_cpus=None,
                     ex_disk=None, ex_ram=None, ex_bandwidth=None,
                     ex_local_disk=None, ex_datacenter=None, ex_os=None,
-                    ex_keyname=None, ex_hourly=True):
+                    ex_keyname=None, ex_hourly=True, ex_bare_metal=False,
+                    ex_backend_vlan=None):
         """Create a new SoftLayer node
 
         @inherits: :class:`NodeDriver.create_node`
@@ -389,10 +390,8 @@ class SoftLayerNodeDriver(NodeDriver):
         :type       ex_keyname: ``str``
         :keyword    ex_backend_vlan: Id of the backend (private) network Vlan
         :type       ex_backend_vlan: ``int``
-        :keyword    bare_metal: Whether the server will be bare metal
-        :type       bare_metal: ``bool``
-        :keyword    sshKeys: ssh key id to deploy on create node
-        :type       sshKeys: ``str``
+        :keyword    ex_bare_metal: Whether the server will be bare metal
+        :type       ex_bare_metal: ``bool``
         """
         os = 'DEBIAN_LATEST'
         if ex_os:
@@ -441,13 +440,7 @@ class SoftLayerNodeDriver(NodeDriver):
             # it shouldn't be.
             domain = DEFAULT_DOMAIN
 
-        postInstallScriptUri = kwargs.get('postInstallScriptUri')
-
-        bare_metal = kwargs.get('bare_metal', False)
-
-        ex_backend_vlan = kwargs.get('ex_backend_vlan', None)
-
-        if bare_metal:
+        if ex_bare_metal:
             newCCI = {
                 'hostname': name,
                 'domain': domain,
@@ -479,12 +472,6 @@ class SoftLayerNodeDriver(NodeDriver):
 
         if datacenter:
             newCCI['datacenter'] = {'name': datacenter}
-        # sshKeys is an optional ssh key id to deploy
-        sshKeys = kwargs.get('sshKeys')
-        if sshKeys:
-            newCCI['sshKeys'] = [{'id': sshKeys}]
-        if postInstallScriptUri:
-            newCCI['postInstallScriptUri'] = postInstallScriptUri
 
         if ex_backend_vlan:
             backend_network = {
@@ -501,7 +488,7 @@ class SoftLayerNodeDriver(NodeDriver):
                 }
             ]
 
-        if bare_metal:
+        if ex_bare_metal:
             existing_nodes = self.list_nodes()
             res = self.connection.request(
                 'SoftLayer_Hardware', 'createObject', newCCI
