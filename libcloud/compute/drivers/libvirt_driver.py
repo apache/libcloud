@@ -671,6 +671,8 @@ class LibvirtNodeDriver(NodeDriver):
 
         # define the VM
         if image:
+            if IMAGES_LOCATION not in image:
+                image = IMAGES_LOCATION + "/" + image
             if not self.ex_validate_disk(image):
                 raise Exception("You have specified %s as image which does not exist" % image)
             if image.endswith(DISK_IMAGE_TYPES):
