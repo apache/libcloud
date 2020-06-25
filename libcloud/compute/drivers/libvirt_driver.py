@@ -389,10 +389,10 @@ class LibvirtNodeDriver(NodeDriver):
         images = []
 
         for image in output.strip().split('\n'):
-            name, size = image.split(' ')
-            name = name.replace(IMAGES_LOCATION + '/', '')
+            path, size = image.split(' ')
+            name = path.replace(IMAGES_LOCATION + '/', '')
             size = int(size)
-            nodeimage = NodeImage(id=name, name=name, driver=self, extra={'host': self.host, 'size': size})
+            nodeimage = NodeImage(id=path, name=name, driver=self, extra={'host': self.host, 'size': size})
             images.append(nodeimage)
 
         return images
@@ -409,7 +409,18 @@ class LibvirtNodeDriver(NodeDriver):
         domain = self._get_domain_for_node(node=node)
         return domain.undefine() == 0
 
+    def start_node(self, node):
+        domain = self._get_domain_for_node(node=node)
+        return domain.create() == 0
+
+    def stop_node(self, node):
+        domain = self._get_domain_for_node(node=node)
+        return domain.shutdown() == 0
+
     def ex_start_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
         """
         Start a stopped node.
 
@@ -418,10 +429,12 @@ class LibvirtNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        domain = self._get_domain_for_node(node=node)
-        return domain.create() == 0
+        return self.start_node(node=node)
 
-    def ex_stop_node(self, node):
+    def ex_shutdown_node(self, node):
+        # NOTE: This method is here for backward compatibility reasons after
+        # this method was promoted to be part of the standard compute API in
+        # Libcloud v2.7.0
         """
         Shutdown a running node.
 
@@ -432,8 +445,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        domain = self._get_domain_for_node(node=node)
-        return domain.shutdown() == 0
+        return self.stop_node(node=node)
 
     def ex_suspend_node(self, node):
         """
@@ -659,6 +671,8 @@ class LibvirtNodeDriver(NodeDriver):
 
         # define the VM
         if image:
+            if IMAGES_LOCATION not in image:
+                image = IMAGES_LOCATION + "/" + image
             if not self.ex_validate_disk(image):
                 raise Exception("You have specified %s as image which does not exist" % image)
             if image.endswith(DISK_IMAGE_TYPES):
