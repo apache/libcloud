@@ -947,7 +947,13 @@ class VSphereNodeDriver(NodeDriver):
         elif not datastore:
             datastore = self.get_obj([vim.Datastore],
                                      template.datastore[0].info.name)
-        if network:
+        add_network = True
+        if network and len(template.network) > 0:
+            for nets in template.network:
+                if template in nets.vm:
+                    add_network = False
+
+        if network and add_network:
             nicspec = vim.vm.device.VirtualDeviceSpec()
             nicspec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
             nicspec.device = vim.vm.device.VirtualVmxnet3()

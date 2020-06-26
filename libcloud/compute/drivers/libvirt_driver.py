@@ -389,11 +389,10 @@ class LibvirtNodeDriver(NodeDriver):
         images = []
 
         for image in output.strip().split('\n'):
-            name, size = image.split(' ')
-            id = name
-            name = name.replace(IMAGES_LOCATION + '/', '')
+            path, size = image.split(' ')
+            name = path.replace(IMAGES_LOCATION + '/', '')
             size = int(size)
-            nodeimage = NodeImage(id=id, name=name, driver=self, extra={'host': self.host, 'size': size})
+            nodeimage = NodeImage(id=path, name=name, driver=self, extra={'host': self.host, 'size': size})
             images.append(nodeimage)
 
         return images
