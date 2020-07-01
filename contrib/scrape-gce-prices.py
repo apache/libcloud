@@ -18,11 +18,16 @@
 #  under the License.
 
 """
-Price scraper for GCE. An api key is required (https://cloud.google.com/docs/authentication/api-keys)
-  Usage  :
-`python scrape-ec2-prices.py APIKEY` 
-  or if it is the first time using it and no skus are saved:
-`python scrape-ec2-prices.py --all APIKEY`
+Price scraper for GCE. An api key is required
+(https://cloud.google.com/docs/authentication/api-keys)
+
+Usage:
+
+    python scrape-gce-prices.py APIKEY
+
+or if it is the first time using it and no skus are saved:
+
+    python scrape-gce-prices.py --all APIKEY
 """
 
 import json
