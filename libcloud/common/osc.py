@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 from datetime import datetime
 import hashlib
 import hmac
-import time
-from hashlib import sha256
 
 try:
     import simplejson as json
@@ -28,16 +25,19 @@ except ImportError:
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import _real_unicode
 from libcloud.utils.py3 import basestring
-from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
+from libcloud.common.base import ConnectionUserAndKey, XmlResponse
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
 
+import logging
+
 __all__ = [
     'OSCBaseResponse',
     'OSCGenericResponse',
     'OSCTokenConnection',
+    'SignedOSCConnection',
     'OSCRequestSignerAlgorithmV4',
 ]
 
@@ -193,40 +193,35 @@ class OSCRequestSigner(object):
         # TODO: Remove cycling dependency between connection and signer
         self.connection = connection
 
-    def get_request_params(self, params, method='GET', path='/'):
-        return params
-
-    def get_request_headers(self, params, headers, method='GET', path='/',
-                            data=None):
-        return params, headers
-
 
 class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
-    def get_request_params(self, params, method='GET', path='/'):
-        if method == 'GET':
-            params['Version'] = self.version
-        return params
-
-    def get_request_headers(self, params, headers, method='GET', path='/',
+    def get_request_headers(self, service_name, region, action,
                             data=None):
-        now = datetime.utcnow()
-        headers['X-Osc-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
-        headers['X-Osc-Content-SHA256'] = self._get_payload_hash(method, data)
-        headers['Authorization'] = \
-            self._get_authorization_v4_header(params=params, headers=headers,
-                                              dt=now, method=method, path=path,
-                                              data=data)
+        date = datetime.utcnow()
+        host = "{}.{}.outscale.com".format(service_name, region)
+        headers = {
+            'Content-Type': "application/json; charset=utf-8",
+            'X-Osc-Date': date.strftime('%Y%m%dT%H%M%SZ'),
+            'Host': host,
+        }
+        path = "/{}/{}/{}".format(self.connection.service_name, self.version, action)
+        sig = self._get_authorization_v4_header(
+            headers=headers,
+            dt=date,
+            method='POST',
+            path=path,
+            data=data
+        )
+        headers.update({'Authorization': sig})
+        return headers
 
-        return params, headers
-
-    def _get_authorization_v4_header(self, params, headers, dt, method='GET',
+    def _get_authorization_v4_header(self, headers, dt, method='GET',
                                      path='/', data=None):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
-        signature = self._get_signature(params=params, headers=headers,
-                                        dt=dt, method=method, path=path,
+        signature = self._get_signature(headers=headers,dt=dt,
+                                        method=method, path=path,
                                         data=data)
-
         return 'OSC4-HMAC-SHA256 Credential=%(u)s/%(c)s, ' \
                'SignedHeaders=%(sh)s, Signature=%(s)s' % {
                    'u': self.access_key,
@@ -235,75 +230,65 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                    's': signature
                }
 
-    def _get_signature(self, params, headers, dt, method, path, data):
-        key = self._get_key_to_sign_with(dt)
-        string_to_sign = self._get_string_to_sign(params=params,
-                                                  headers=headers, dt=dt,
+    def _get_signature(self, headers, dt, method, path, data):
+        string_to_sign = self._get_string_to_sign(headers=headers, dt=dt,
                                                   method=method, path=path,
                                                   data=data)
-        return _sign(key=key, msg=string_to_sign, hex=True)
+        signing_key = self._get_key_to_sign_with(self.access_secret, dt)
+        return hmac.new(signing_key, string_to_sign.encode('utf-8'),
+                        hashlib.sha256).hexdigest()
 
-    def _get_key_to_sign_with(self, dt):
-            return _sign(
-                _sign(
-                    _sign(
-                        _sign(('OSC4' + self.access_secret),
-                              dt.strftime('%Y%m%d')),
-                        self.connection.driver.region_name),
-                    self.connection.service_name),
-                'osc4_request')
+    @staticmethod
+    def sign(key, msg):
+        return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
-    def _get_string_to_sign(self, params, headers, dt, method, path, data):
-        canonical_request = self._get_canonical_request(params=params,
-                                                        headers=headers,
+    def _get_key_to_sign_with(self, key, dt):
+        dt = dt.strftime('%Y%m%d')
+        k_date = self.sign(('OSC4' + key).encode('utf-8'), dt)
+        k_region = self.sign(k_date, self.connection.region_name)
+        k_service = self.sign(k_region, self.connection.service_name)
+        return self.sign(k_service, 'osc4_request')
+
+    def _get_string_to_sign(self, headers, dt, method, path, data):
+        canonical_request = self._get_canonical_request(headers=headers,
                                                         method=method,
                                                         path=path,
                                                         data=data)
-
-        return '\n'.join(['OSC4-HMAC-SHA256',
-                          dt.strftime('%Y%m%dT%H%M%SZ'),
-                          self._get_credential_scope(dt),
-                          _hash(canonical_request)])
+        return 'OSC4-HMAC-SHA256' + '\n' \
+                        + dt.strftime('%Y%m%dT%H%M%SZ') + '\n' \
+                        + self._get_credential_scope(dt) + '\n' \
+                        + hashlib.sha256(canonical_request.encode('utf-8')).hexdigest()
 
     def _get_credential_scope(self, dt):
         return '/'.join([dt.strftime('%Y%m%d'),
-                         self.connection.driver.region_name,
+                         self.connection.region_name,
                          self.connection.service_name,
                          'osc4_request'])
 
-    def _get_signed_headers(self, headers):
+    @staticmethod
+    def _get_signed_headers(headers):
         return ';'.join([k.lower() for k in sorted(headers.keys())])
 
-    def _get_canonical_headers(self, headers):
+    @staticmethod
+    def _get_canonical_headers(headers):
         return '\n'.join([':'.join([k.lower(), str(v).strip()])
                           for k, v in sorted(headers.items())]) + '\n'
 
-    def _get_payload_hash(self, method, data=None):
-        if method in ('POST', 'PUT'):
-            if data:
-                if hasattr(data, 'next') or hasattr(data, '__next__'):
-                    # File upload; don't try to read the entire payload
-                    return UNSIGNED_PAYLOAD
-                return _hash(data)
-            else:
-                return UNSIGNED_PAYLOAD
-        else:
-            return _hash('')
-
-    def _get_request_params(self, params):
-        # For self.method == GET
+    @staticmethod
+    def _get_request_params(params):
         return '&'.join(["%s=%s" %
                          (urlquote(k, safe=''), urlquote(str(v), safe='~'))
                          for k, v in sorted(params.items())])
 
-    def _get_canonical_request(self, params, headers, method, path, data):
+    def _get_canonical_request(self, headers, method, path, data="{}"):
+        data = data if data else "{}"
         return '\n'.join([
             method,
             path,
-            self._get_request_params(params),
+            self._get_request_params({}),
             self._get_canonical_headers(headers),
             self._get_signed_headers(headers),
-            self._get_payload_hash(method, data)
+            hashlib.sha256(data.encode('utf-8')).hexdigest()
         ])
 
 
@@ -335,27 +320,11 @@ class SignedOSCConnection(OSCTokenConnection):
                                  connection=self)
 
     def add_default_params(self, params):
-        params = self.signer.get_request_params(params=params,
-                                                method=self.method,
-                                                path=self.action)
-
-        # Verify that params only contain simple types and no nested
-        # dictionaries.
-        # params are sent via query params so only strings are supported
         for key, value in params.items():
             if not isinstance(value, (_real_unicode, basestring, int, bool)):
                 msg = PARAMS_NOT_STRING_ERROR_MSG % (key, value, type(value))
                 raise ValueError(msg)
-
         return params
-
-    def pre_connect_hook(self, params, headers):
-        params, headers = self.signer.get_request_headers(params=params,
-                                                          headers=headers,
-                                                          method=self.method,
-                                                          path=self.action,
-                                                          data=self.data)
-        return params, headers
 
 
 class OSCJsonResponse(JsonResponse):
@@ -368,29 +337,3 @@ class OSCJsonResponse(JsonResponse):
         code = response['__type']
         message = response.get('Message', response['message'])
         return ('%s: %s' % (code, message))
-
-
-def _sign(key, msg, hex=False):
-    if hex:
-        return hmac.new(b(key), b(msg), hashlib.sha256).hexdigest()
-    else:
-        return hmac.new(b(key), b(msg), hashlib.sha256).digest()
-
-
-def _hash(msg):
-    return hashlib.sha256(b(msg)).hexdigest()
-
-
-class OSCDriver(BaseDriver):
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, region=None, token=None, **kwargs):
-        self.token = token
-        super(OSCDriver, self).__init__(key, secret=secret, secure=secure,
-                                        host=host, port=port,
-                                        api_version=api_version, region=region,
-                                        token=token, **kwargs)
-
-    def _ex_connection_class_kwargs(self):
-        kwargs = super(OSCDriver, self)._ex_connection_class_kwargs()
-        kwargs['token'] = self.token
-        return kwargs
