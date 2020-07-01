@@ -79,7 +79,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                                      path='/', data=None):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
-        signature = self._get_signature(headers=headers,dt=dt,
+        signature = self._get_signature(headers=headers, dt=dt,
                                         method=method, path=path,
                                         data=data)
         return 'OSC4-HMAC-SHA256 Credential=%(u)s/%(c)s, ' \
@@ -115,9 +115,9 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                                                         path=path,
                                                         data=data)
         return 'OSC4-HMAC-SHA256' + '\n' \
-                        + dt.strftime('%Y%m%dT%H%M%SZ') + '\n' \
-                        + self._get_credential_scope(dt) + '\n' \
-                        + hashlib.sha256(canonical_request.encode('utf-8')).hexdigest()
+            + dt.strftime('%Y%m%dT%H%M%SZ') + '\n' \
+            + self._get_credential_scope(dt) + '\n' \
+            + hashlib.sha256(canonical_request.encode('utf-8')).hexdigest()
 
     def _get_credential_scope(self, dt):
         return '/'.join([dt.strftime('%Y%m%d'),

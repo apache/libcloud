@@ -42,6 +42,7 @@ class OutscaleNodeDriver(NodeDriver):
         self.connection = ConnectionUserAndKey(self.key, self.secret)
         self.connection.region_name = region
         self.connection.service_name = service
+        self.service_name = service
         self.version = version
 
     @staticmethod
@@ -63,7 +64,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -86,7 +87,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -119,7 +120,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -141,7 +142,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -164,7 +165,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -218,7 +219,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -251,7 +252,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -364,7 +365,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -388,7 +389,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -407,7 +408,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -430,7 +431,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -506,7 +507,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -525,7 +526,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -548,7 +549,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -571,7 +572,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -606,7 +607,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -625,7 +626,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -649,7 +650,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -672,7 +673,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -733,7 +734,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -752,7 +753,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -776,7 +777,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -833,7 +834,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -852,7 +853,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -876,7 +877,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -907,7 +908,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
@@ -939,7 +940,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              connection=self.connection)
         headers = signer.get_request_headers(action=action,
                                              data=data,
-                                             service_name=self.connection.service_name,
+                                             service_name=self.service_name,
                                              region=self.region)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
