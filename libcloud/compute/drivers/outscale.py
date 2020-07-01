@@ -22,12 +22,8 @@ from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
 
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
-from libcloud.common.osc import SignedOSCConnection
 
-import logging
-
-
-SERVICE_TYPE = 'compute'
+from libcloud.common.base import ConnectionUserAndKey
 
 
 class OutscaleNodeDriver(NodeDriver):
@@ -43,7 +39,7 @@ class OutscaleNodeDriver(NodeDriver):
         self.key = key
         self.secret = secret
         self.region = region
-        self.connection = SignedOSCConnection(self.key, self.secret)
+        self.connection = ConnectionUserAndKey(self.key, self.secret)
         self.connection.region_name = region
         self.connection.service_name = service
         self.version = version
@@ -413,7 +409,6 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.connection.service_name,
                                              region=self.region)
-        logging.warning(headers)
         endpoint = self.get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
