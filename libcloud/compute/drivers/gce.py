@@ -39,6 +39,8 @@ from libcloud.compute.base import UuidMixin
 from libcloud.compute.providers import Provider
 from libcloud.compute.types import NodeState
 from libcloud.utils.iso8601 import parse_date
+from libcloud.pricing import get_pricing
+
 
 API_VERSION = 'v1'
 DEFAULT_TASK_COMPLETION_TIMEOUT = 180
@@ -2660,16 +2662,19 @@ class GCENodeDriver(NodeDriver):
             request = '/zones/%s/machineTypes' % (zone.name)
 
         response = self.connection.request(request, method='GET').object
-
+        # getting pricing data here so it is done only once
+        instance_prices = get_pricing(driver_type='compute',
+                                      driver_name='gce_instances')
         if 'items' in response:
             # The aggregated response returns a dict for each zone
             if zone is None:
                 for v in response['items'].values():
-                    zone_sizes = [self._to_node_size(s)
+                    zone_sizes = [self._to_node_size(s, instance_prices)
                                   for s in v.get('machineTypes', [])]
                     list_sizes.extend(zone_sizes)
             else:
-                list_sizes = [self._to_node_size(s) for s in response['items']]
+                list_sizes = [self._to_node_size(s, instance_prices)
+                              for s in response['items']]
         return list_sizes
 
     def ex_list_snapshots(self):
@@ -7562,7 +7567,9 @@ class GCENodeDriver(NodeDriver):
             zone = self.ex_get_zone(zone)
         request = '/zones/%s/machineTypes/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
-        return self._to_node_size(response)
+        instance_prices = get_pricing(driver_type='compute',
+                                      driver_name='gce_instances')
+        return self._to_node_size(response, instance_prices)
 
     def ex_get_snapshot(self, name):
         """
@@ -8983,7 +8990,7 @@ class GCENodeDriver(NodeDriver):
                     public_ips=public_ips, private_ips=private_ips,
                     driver=self, size=size, image=image, extra=extra)
 
-    def _to_node_size(self, machine_type):
+    def _to_node_size(self, machine_type, instance_prices):
         """
         Return a Size object from the JSON-response dictionary.
 
@@ -9000,14 +9007,20 @@ class GCENodeDriver(NodeDriver):
         extra['guestCpus'] = machine_type.get('guestCpus')
         extra['creationTimestamp'] = machine_type.get('creationTimestamp')
         try:
-            orig_api_name = self.api_name
-            self.api_name = "%s_%s" % (self.api_name,
-                                       extra['zone'].name.split("-")[0])
-            price = self._get_size_price(size_id=machine_type['name'])
-            self.api_name = orig_api_name
-        except Exception:
+            size_name = machine_type['name'][:2]
+            location = extra['zone'].name
+            location = '-'.join(location.split('-')[:2])
+            machine_ram = float(machine_type.get('memoryMb', 0)) / 1024
+            machine_cpus = float(extra['guestCpus'])
+            cpu_price = instance_prices[size_name]['cpu']['on_demand'][
+                location]['price']
+            ram_price = instance_prices[size_name]['ram']['on_demand'][
+                location]['price']
+            price = machine_cpus * cpu_price + machine_ram * ram_price
+        except KeyError:
             price = None
-
+        except AttributeError:  # no zone
+            price = None
         return GCENodeSize(id=machine_type['id'], name=machine_type['name'],
                            ram=machine_type.get('memoryMb'),
                            disk=machine_type.get('imageSpaceGb'), bandwidth=0,
