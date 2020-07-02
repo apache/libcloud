@@ -105,8 +105,7 @@ jobs:
         #- secure: "nhmQ4i8D2M+fn7FYfHI1Yj22SkLe35tjSWqoEjh1PvaDzuL+DDNUTbJMG6VgSDeztN55FwMH6dZodbEoA8qyojmGGkt6aonMTFWiOTJqRWOOWVc+87bTVeMyM98WsNelXBJsMvvU6VSOuzR8wrYlIoisrbaSKU7zekJDWwc8ffY="
       python: 3.7
       script:
-        - tox -escrape-provider-prices
-        - PYTHONPATH=. .tox/scrape-provider-prices/bin/python contrib/upload-pricing-data-to-s3.py libcloud/data/pricing.json
+        - tox -escrape-and-publish-provider-prices
 
 install:
   # NOTE: This is a workaround since we need to use install --user on Windows
