@@ -12,6 +12,7 @@ addons:
 env:
   global:
     - IS_NIGHTLY_BUILD=$([ "${TRAVIS_EVENT_TYPE}" = "cron" ] && echo "yes" || echo "no")
+    - TRAVIS_EVENT_TYPE="cron"
 
 jobs:
   fast_finish: true
