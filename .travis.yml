@@ -9,6 +9,10 @@ addons:
       - graphviz
       - libvirt-dev
 
+env:
+  global:
+    - IS_NIGHTLY_BUILD=$([ "${TRAVIS_EVENT_TYPE}" = "cron" ] && echo "yes" || echo "no")
+
 matrix:
   fast_finish: true
   include:
@@ -77,6 +81,22 @@ matrix:
       after_success:
         - pip3 install requests
         - python3 ./contrib/trigger_rtd_build.py
+    # Task which scrapes pricing data for various providers and publishes
+    # pricing.json data with latest pricing information in public read only S3
+    # bucket.
+    # It runs daily using Travis cron job mechanism.
+    - name: Scrape and publish pricing data
+      env:
+        # GCE_API_KEY (Kami/libcloud - testing)
+        - secure: "dZjO38POSBq8ZjwrcDGnWdY7WrLPjqA5NoPHJzKcVQFIZN0X6UMH2Nhoi4MOuL9RKM/PCJMEWVxS9W3hcmhZwIbB+iY0Vy2sHc8QyRd/TaxbwK6atI3szNnzkx00AUaCRk8UzDdx++CGgZ31nalkDL676XzRAIVFdUZyTmA0bQQ="
+        # GCE_API_KEY (Kami/libcloud - prod)
+        #- secure: "IYp6pX5FcTaIg5OEsMV4dMn+hVXbDJhLpMQ3W1E56/EOPTYPsj2IxEOLJBTUXQ+gl4xaTFUbd0uMrWrBnpA/Se+Rlc2J5gkpvt4Kv/1KGJfXHEx7zsiqJXZZ0/+oZfg5BWy1e3DDS0jf0stHL1h/+Zs/Icl22LpdC8lOdA0tBIU="
+        # AWS CREDENTIALS
+      python: 3.7
+      script:
+        #- if [[ "${IS_NIGHTLY_BUILD}" = "no" ]]; then echo "Not a nightly build, skipping pricing update"; exit 0; fi
+        - tox -escrape-provider-prices
+        # TODO: Publish pricing data to S3 bucket
 
 install:
   # NOTE: This is a workaround since we need to use install --user on Windows
