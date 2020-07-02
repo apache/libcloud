@@ -13,7 +13,7 @@ env:
   global:
     - IS_NIGHTLY_BUILD=$([ "${TRAVIS_EVENT_TYPE}" = "cron" ] && echo "yes" || echo "no")
 
-matrix:
+jobs:
   fast_finish: true
   include:
     - name: Unit Tests (Python 3.5)
@@ -57,7 +57,6 @@ matrix:
       env: ENV=coverage
       python: 3.7
       before_script: TOX_ENV=coverage-travis
-      before_script: TOX_ENV=mypy
     - name: Docker Test Run
       python: 3.6
       services:
@@ -105,7 +104,6 @@ matrix:
         #- secure: "nhmQ4i8D2M+fn7FYfHI1Yj22SkLe35tjSWqoEjh1PvaDzuL+DDNUTbJMG6VgSDeztN55FwMH6dZodbEoA8qyojmGGkt6aonMTFWiOTJqRWOOWVc+87bTVeMyM98WsNelXBJsMvvU6VSOuzR8wrYlIoisrbaSKU7zekJDWwc8ffY="
       python: 3.7
       script:
-        - if [[ "${IS_NIGHTLY_BUILD}" = "no" ]]; then echo "Not a nightly build, skipping pricing update"; exit 0; fi
         - tox -escrape-provider-prices
         - PYTHONPATH=. .tox/scrape-provider-prices/bin/python contrib/upload-pricing-data-to-s3.py libcloud/data/pricing.json
 
