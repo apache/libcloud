@@ -14,6 +14,11 @@ Compute
   (GITHUB-1467)
   [Thomas Bechtold - @toabctl]
 
+- [GCE] Add script for scraping GCE pricing data and improve price addition in
+  ``_to_node_size`` method.
+  (GITHUB-1468)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
