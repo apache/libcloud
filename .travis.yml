@@ -106,7 +106,7 @@ matrix:
       script:
         #- if [[ "${IS_NIGHTLY_BUILD}" = "no" ]]; then echo "Not a nightly build, skipping pricing update"; exit 0; fi
         - tox -escrape-provider-prices
-        - PYTHONPATH=. contrib/upload-pricing-data-to-s3.py libcloud/data/pricing.json
+        - PYTHONPATH=. .tox/scrape-provider-prices/bin/python contrib/upload-pricing-data-to-s3.py libcloud/data/pricing.json
 
 install:
   # NOTE: This is a workaround since we need to use install --user on Windows
