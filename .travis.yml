@@ -85,7 +85,8 @@ matrix:
     # pricing.json data with latest pricing information in public read only S3
     # bucket.
     # It runs daily using Travis cron job mechanism.
-    - name: Scrape and publish pricing data
+    - if: env(TRAVIS_EVENT_TYPE) = "cron"
+      name: Scrape and publish pricing data
       env:
         # GCE_API_KEY (Kami/libcloud - testing)
         - secure: "dZjO38POSBq8ZjwrcDGnWdY7WrLPjqA5NoPHJzKcVQFIZN0X6UMH2Nhoi4MOuL9RKM/PCJMEWVxS9W3hcmhZwIbB+iY0Vy2sHc8QyRd/TaxbwK6atI3szNnzkx00AUaCRk8UzDdx++CGgZ31nalkDL676XzRAIVFdUZyTmA0bQQ="
