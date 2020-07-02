@@ -101,10 +101,10 @@ matrix:
         # AWS_ACCESS_KEY_SECRET (Kami/libcloud - testing)
         - secure: "fzghtrTJZFcB/sL6c1FS6ZKGHJRkgspIao8jWMV4Tr2ItwcoYyHSYMzVj/e7nRVIVxqmfpZN0z6XixAQC1/Vk2CthlYetj8P0GhLN2JduZmIU261Txu/2EhzEkIcWHnEHCBPj78mX8hCrd04pJPjPxNtAnJoGronQzTnN3yBKeE="
         # AWS_ACCESS_KEY_SECRET (apache/libcloud - prod)
-        - secure: "nhmQ4i8D2M+fn7FYfHI1Yj22SkLe35tjSWqoEjh1PvaDzuL+DDNUTbJMG6VgSDeztN55FwMH6dZodbEoA8qyojmGGkt6aonMTFWiOTJqRWOOWVc+87bTVeMyM98WsNelXBJsMvvU6VSOuzR8wrYlIoisrbaSKU7zekJDWwc8ffY="
+        #- secure: "nhmQ4i8D2M+fn7FYfHI1Yj22SkLe35tjSWqoEjh1PvaDzuL+DDNUTbJMG6VgSDeztN55FwMH6dZodbEoA8qyojmGGkt6aonMTFWiOTJqRWOOWVc+87bTVeMyM98WsNelXBJsMvvU6VSOuzR8wrYlIoisrbaSKU7zekJDWwc8ffY="
       python: 3.7
       script:
-        #- if [[ "${IS_NIGHTLY_BUILD}" = "no" ]]; then echo "Not a nightly build, skipping pricing update"; exit 0; fi
+        - if [[ "${IS_NIGHTLY_BUILD}" = "no" ]]; then echo "Not a nightly build, skipping pricing update"; exit 0; fi
         - tox -escrape-provider-prices
         - PYTHONPATH=. .tox/scrape-provider-prices/bin/python contrib/upload-pricing-data-to-s3.py libcloud/data/pricing.json
 
