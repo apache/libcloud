@@ -12,7 +12,6 @@ addons:
 env:
   global:
     - IS_NIGHTLY_BUILD=$([ "${TRAVIS_EVENT_TYPE}" = "cron" ] && echo "yes" || echo "no")
-    - TRAVIS_EVENT_TYPE="cron"
 
 jobs:
   fast_finish: true
@@ -89,20 +88,20 @@ jobs:
       name: Scrape and publish pricing data
       env:
         # GCE_API_KEY (Kami/libcloud - testing)
-        - secure: "dZjO38POSBq8ZjwrcDGnWdY7WrLPjqA5NoPHJzKcVQFIZN0X6UMH2Nhoi4MOuL9RKM/PCJMEWVxS9W3hcmhZwIbB+iY0Vy2sHc8QyRd/TaxbwK6atI3szNnzkx00AUaCRk8UzDdx++CGgZ31nalkDL676XzRAIVFdUZyTmA0bQQ="
-        # GCE_API_KEY (Kami/libcloud - prod)
-        #- secure: "IYp6pX5FcTaIg5OEsMV4dMn+hVXbDJhLpMQ3W1E56/EOPTYPsj2IxEOLJBTUXQ+gl4xaTFUbd0uMrWrBnpA/Se+Rlc2J5gkpvt4Kv/1KGJfXHEx7zsiqJXZZ0/+oZfg5BWy1e3DDS0jf0stHL1h/+Zs/Icl22LpdC8lOdA0tBIU="
+        #- secure: "dZjO38POSBq8ZjwrcDGnWdY7WrLPjqA5NoPHJzKcVQFIZN0X6UMH2Nhoi4MOuL9RKM/PCJMEWVxS9W3hcmhZwIbB+iY0Vy2sHc8QyRd/TaxbwK6atI3szNnzkx00AUaCRk8UzDdx++CGgZ31nalkDL676XzRAIVFdUZyTmA0bQQ="
+        # GCE_API_KEY (apache/libcloud - prod)
+        - secure: "IYp6pX5FcTaIg5OEsMV4dMn+hVXbDJhLpMQ3W1E56/EOPTYPsj2IxEOLJBTUXQ+gl4xaTFUbd0uMrWrBnpA/Se+Rlc2J5gkpvt4Kv/1KGJfXHEx7zsiqJXZZ0/+oZfg5BWy1e3DDS0jf0stHL1h/+Zs/Icl22LpdC8lOdA0tBIU="
         # AWS CREDENTIALS
         - PRICING_DATA_BUCKET_NAME="libcloud-pricing-data"
         - AWS_REGION="us-east-1"
         # AWS_ACCESS_KEY_ID (Kami/libcloud - testing)
-        - secure: "rBAARNMXKta46/NOJGaiijO16Ie/2jheBlegu6wEWXLxG3gjjXXVl41+SESLB2I30Fd5S2NcBHAY2VcWRZVUAJHOfforcQIdxdEUQhghX3aIhLO1Qe/bSvjbEFtLlHOABb05tqCYHrnL+cSruJi7OYofgkHruACBbStVW5GY+JM="
+        # - secure: "rBAARNMXKta46/NOJGaiijO16Ie/2jheBlegu6wEWXLxG3gjjXXVl41+SESLB2I30Fd5S2NcBHAY2VcWRZVUAJHOfforcQIdxdEUQhghX3aIhLO1Qe/bSvjbEFtLlHOABb05tqCYHrnL+cSruJi7OYofgkHruACBbStVW5GY+JM="
         # AWS_ACCESS_KEY_ID (apache/libcloud - prod)
-        #- secure: "B1mqZHLG/QjU6jTI7Ai9OHi/coLCWjEQTVgTSN6SZn3a0ryaWBJD6/VNHblTBW/gwfip0dcN9cutSiZcByqTakPk5mu+ncQDIMVDzH4uB3G94wEnYBO5UWOSdcAKG0WUuiF+MgwbTxh6oTok1aN3ySlxlWgt5ZRhr2GDfjk9IJY="
+        - secure: "B1mqZHLG/QjU6jTI7Ai9OHi/coLCWjEQTVgTSN6SZn3a0ryaWBJD6/VNHblTBW/gwfip0dcN9cutSiZcByqTakPk5mu+ncQDIMVDzH4uB3G94wEnYBO5UWOSdcAKG0WUuiF+MgwbTxh6oTok1aN3ySlxlWgt5ZRhr2GDfjk9IJY="
         # AWS_ACCESS_KEY_SECRET (Kami/libcloud - testing)
-        - secure: "fzghtrTJZFcB/sL6c1FS6ZKGHJRkgspIao8jWMV4Tr2ItwcoYyHSYMzVj/e7nRVIVxqmfpZN0z6XixAQC1/Vk2CthlYetj8P0GhLN2JduZmIU261Txu/2EhzEkIcWHnEHCBPj78mX8hCrd04pJPjPxNtAnJoGronQzTnN3yBKeE="
+        #- secure: "fzghtrTJZFcB/sL6c1FS6ZKGHJRkgspIao8jWMV4Tr2ItwcoYyHSYMzVj/e7nRVIVxqmfpZN0z6XixAQC1/Vk2CthlYetj8P0GhLN2JduZmIU261Txu/2EhzEkIcWHnEHCBPj78mX8hCrd04pJPjPxNtAnJoGronQzTnN3yBKeE="
         # AWS_ACCESS_KEY_SECRET (apache/libcloud - prod)
-        #- secure: "nhmQ4i8D2M+fn7FYfHI1Yj22SkLe35tjSWqoEjh1PvaDzuL+DDNUTbJMG6VgSDeztN55FwMH6dZodbEoA8qyojmGGkt6aonMTFWiOTJqRWOOWVc+87bTVeMyM98WsNelXBJsMvvU6VSOuzR8wrYlIoisrbaSKU7zekJDWwc8ffY="
+        - secure: "nhmQ4i8D2M+fn7FYfHI1Yj22SkLe35tjSWqoEjh1PvaDzuL+DDNUTbJMG6VgSDeztN55FwMH6dZodbEoA8qyojmGGkt6aonMTFWiOTJqRWOOWVc+87bTVeMyM98WsNelXBJsMvvU6VSOuzR8wrYlIoisrbaSKU7zekJDWwc8ffY="
       python: 3.7
       script:
         - tox -escrape-and-publish-provider-prices
