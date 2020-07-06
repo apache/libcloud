@@ -1,6 +1,24 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [OpenStack] Fix pagination in the ``list_images()`` method and make sure
+  method returns all the images, even if the result is spread across multiple
+  pages.
+
+  (GITHUB-1467)
+  [Thomas Bechtold - @toabctl]
+
+- [GCE] Add script for scraping GCE pricing data and improve price addition in
+  ``_to_node_size`` method.
+  (GITHUB-1468)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
