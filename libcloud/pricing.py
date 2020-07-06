@@ -127,7 +127,7 @@ def set_pricing(driver_type, driver_name, pricing):
     PRICING_DATA[driver_type][driver_name] = pricing
 
 
-def get_size_price(driver_type, driver_name, size_id):
+def get_size_price(driver_type, driver_name, size_id, region=None):
     """
     Return price for the provided size.
 
@@ -147,7 +147,10 @@ def get_size_price(driver_type, driver_name, size_id):
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
 
     try:
-        price = float(pricing[size_id])
+        if region is None:
+            price = float(pricing[size_id])
+        else:
+            price = float(pricing[size_id][region])
     except KeyError:
         # Price not available
         price = None
