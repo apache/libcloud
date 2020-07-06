@@ -53,12 +53,14 @@ jobs:
       env: ENV=coverage
       python: 3.7
       before_script: TOX_ENV=coverage-travis
+      if: type != cron
     - name: Docker Test Run
       python: 3.6
       services:
         - docker
       install:
       script: ./contrib/run_tests.sh
+      if: type != cron
     - name: Documentation
       env:
         - ENV=docs
@@ -76,12 +78,12 @@ jobs:
       after_success:
         - pip3 install requests
         - python3 ./contrib/trigger_rtd_build.py
+      if: type != cron
     # Task which scrapes pricing data for various providers and publishes
     # pricing.json data with latest pricing information in public read only S3
     # bucket.
     # It runs daily using Travis cron job mechanism.
-    - if: type = cron
-      name: Scrape and publish pricing data
+    - name: Scrape and publish pricing data
       env:
         # GCE_API_KEY (apache/libcloud - prod)
         - secure: "IYp6pX5FcTaIg5OEsMV4dMn+hVXbDJhLpMQ3W1E56/EOPTYPsj2IxEOLJBTUXQ+gl4xaTFUbd0uMrWrBnpA/Se+Rlc2J5gkpvt4Kv/1KGJfXHEx7zsiqJXZZ0/+oZfg5BWy1e3DDS0jf0stHL1h/+Zs/Icl22LpdC8lOdA0tBIU="
@@ -95,6 +97,7 @@ jobs:
       python: 3.7
       script:
         - tox -escrape-and-publish-provider-prices
+      if: type = cron
 
 install:
   # NOTE: This is a workaround since we need to use install --user on Windows
