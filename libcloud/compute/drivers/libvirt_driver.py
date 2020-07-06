@@ -431,7 +431,7 @@ class LibvirtNodeDriver(NodeDriver):
         """
         return self.start_node(node=node)
 
-    def ex_shutdown_node(self, node):
+    def ex_stop_node(self, node):
         # NOTE: This method is here for backward compatibility reasons after
         # this method was promoted to be part of the standard compute API in
         # Libcloud v2.7.0
