@@ -55,6 +55,25 @@ class OSCRequestSigner(object):
 
 
 class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
+    @staticmethod
+    def sign(key, msg):
+        return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
+
+    @staticmethod
+    def _get_signed_headers(headers):
+        return ';'.join([k.lower() for k in sorted(headers.keys())])
+
+    @staticmethod
+    def _get_canonical_headers(headers):
+        return '\n'.join([':'.join([k.lower(), str(v).strip()])
+                          for k, v in sorted(headers.items())]) + '\n'
+
+    @staticmethod
+    def _get_request_params(params):
+        return '&'.join(["%s=%s" %
+                         (urlquote(k, safe=''), urlquote(str(v), safe='~'))
+                         for k, v in sorted(params.items())])
+
     def get_request_headers(self, service_name, region, action,
                             data=None):
         date = datetime.utcnow()
@@ -98,10 +117,6 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
         return hmac.new(signing_key, string_to_sign.encode('utf-8'),
                         hashlib.sha256).hexdigest()
 
-    @staticmethod
-    def sign(key, msg):
-        return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
-
     def _get_key_to_sign_with(self, key, dt):
         dt = dt.strftime('%Y%m%d')
         k_date = self.sign(('OSC4' + key).encode('utf-8'), dt)
@@ -124,21 +139,6 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                          self.connection.region_name,
                          self.connection.service_name,
                          'osc4_request'])
-
-    @staticmethod
-    def _get_signed_headers(headers):
-        return ';'.join([k.lower() for k in sorted(headers.keys())])
-
-    @staticmethod
-    def _get_canonical_headers(headers):
-        return '\n'.join([':'.join([k.lower(), str(v).strip()])
-                          for k, v in sorted(headers.items())]) + '\n'
-
-    @staticmethod
-    def _get_request_params(params):
-        return '&'.join(["%s=%s" %
-                         (urlquote(k, safe=''), urlquote(str(v), safe='~'))
-                         for k, v in sorted(params.items())])
 
     def _get_canonical_request(self, headers, method, path, data="{}"):
         data = data if data else "{}"

@@ -16,13 +16,13 @@
 Outscale SDK
 """
 
-import requests
 import json
+
+import requests
+
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
-
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
-
 from libcloud.common.base import ConnectionUserAndKey
 
 
@@ -35,7 +35,7 @@ class OutscaleNodeDriver(NodeDriver):
     name = 'Outscale API'
     website = 'http://www.outscale.com'
 
-    def __init__(self, key, secret, region='eu-west-2', service='api', version='latest'):
+    def __init__(self, key=None, secret=None, region='eu-west-2', service='api', version='latest'):
         self.key = key
         self.secret = secret
         self.region = region
@@ -44,10 +44,6 @@ class OutscaleNodeDriver(NodeDriver):
         self.connection.service_name = service
         self.service_name = service
         self.version = version
-
-    @staticmethod
-    def get_outscale_endpoint(region, version, action):
-        return "https://api.{}.outscale.com/api/{}/{}".format(region, version, action)
 
     def list_locations(self, dry_run=False):
         """
@@ -66,7 +62,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_public_ip(self, dry_run=False):
@@ -89,7 +85,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_public_ip(self, dry_run=False, public_ip=None, public_ip_id=None):
@@ -111,8 +107,8 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeletePublicIp"
         data = {"DryRun": dry_run}
-        if public_ip: data.update({"PublicIp": public_ip})
-        if public_ip_id: data.update({"PublicIpId": public_ip_id})
+        if public_ip is not None: data.update({"PublicIp": public_ip})
+        if public_ip_id is not None: data.update({"PublicIpId": public_ip_id})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
@@ -122,7 +118,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_public_ips(self, data="{}"):
@@ -144,7 +140,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_public_ip_ranges(self, dry_run=False):
@@ -167,7 +163,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def attach_public_ip(self,
@@ -207,11 +203,11 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "LinkPublicIp"
         data = {"DryRun": dry_run}
-        if public_ip: data.update({"PublicIp": public_ip})
-        if public_ip_id: data.update({"PublicIpId": public_ip_id})
-        if nic_id: data.update({"NicId": nic_id})
-        if vm_id: data.update({"VmId": vm_id})
-        if allow_relink: data.update({"AllowRelink": allow_relink})
+        if public_ip is not None: data.update({"PublicIp": public_ip})
+        if public_ip_id is not None: data.update({"PublicIpId": public_ip_id})
+        if nic_id is not None: data.update({"NicId": nic_id})
+        if vm_id is not None: data.update({"VmId": vm_id})
+        if allow_relink is not None: data.update({"AllowRelink": allow_relink})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
@@ -221,7 +217,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def detach_public_ip(self, public_ip=None, link_public_ip_id=None, dry_run=False):
@@ -243,8 +239,8 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "UnlinkPublicIp"
         data = {"DryRun": dry_run}
-        if public_ip: data.update({"PublicIp": public_ip})
-        if link_public_ip_id: data.update({"LinkPublicIpId": link_public_ip_id})
+        if public_ip is not None: data.update({"PublicIp": public_ip})
+        if link_public_ip_id is not None: data.update({"LinkPublicIpId": link_public_ip_id})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
@@ -254,7 +250,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_node(self,
@@ -344,19 +340,19 @@ class OutscaleNodeDriver(NodeDriver):
             "BsuOptimized": bsu_optimized,
             "ImageId": image_id
         }
-        if block_device_mapping: data.update({"BlockDeviceMappings": block_device_mapping})
-        if client_token: data.update({"ClientToken": client_token})
-        if deletion_protection: data.update({"DeletionProtection": deletion_protection})
-        if keypair_name: data.update({"KeypairName": keypair_name})
-        if max_vms_count: data.update({"MaxVmsCount": max_vms_count})
-        if min_vms_count: data.update({"MinVmsCount": min_vms_count})
-        if nics: data.update({"Nics": nics})
-        if performance: data.update({"Performance": performance})
-        if placement: data.update({"Placement": placement})
-        if private_ips: data.update({"PrivateIps": private_ips})
-        if security_group_ids: data.update({"SecurityGroupIds": security_group_ids})
-        if security_groups: data.update({"SecurityGroups": security_groups})
-        if subnet_id: data.update({"SubnetId": subnet_id})
+        if block_device_mapping is not None: data.update({"BlockDeviceMappings": block_device_mapping})
+        if client_token is not None: data.update({"ClientToken": client_token})
+        if deletion_protection is not None: data.update({"DeletionProtection": deletion_protection})
+        if keypair_name is not None: data.update({"KeypairName": keypair_name})
+        if max_vms_count is not None: data.update({"MaxVmsCount": max_vms_count})
+        if min_vms_count is not None: data.update({"MinVmsCount": min_vms_count})
+        if nics is not None: data.update({"Nics": nics})
+        if performance is not None: data.update({"Performance": performance})
+        if placement is not None: data.update({"Placement": placement})
+        if private_ips is not None: data.update({"PrivateIps": private_ips})
+        if security_group_ids is not None: data.update({"SecurityGroupIds": security_group_ids})
+        if security_groups is not None: data.update({"SecurityGroups": security_groups})
+        if subnet_id is not None: data.update({"SubnetId": subnet_id})
         action = "CreateVms"
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -367,7 +363,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def reboot_node(self, node_ids):
@@ -391,7 +387,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_nodes(self, data="{}"):
@@ -410,7 +406,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_node(self, node_ids):
@@ -433,21 +429,22 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def create_image(self,
-                     architecture=None,
-                     vm_id=None,
-                     image_name=None,
-                     description=None,
-                     block_device_mapping=None,
-                     no_reboot=False,
-                     root_device_name=None,
-                     dry_run=False,
-                     source_region_name=None,
-                     file_location=None,
-                    ):
+    def create_image(
+        self,
+        architecture=None,
+        vm_id=None,
+        image_name=None,
+        description=None,
+        block_device_mapping=None,
+        no_reboot=False,
+        root_device_name=None,
+        dry_run=False,
+        source_region_name=None,
+        file_location=None,
+            ):
         """
         Create a new image.
 
@@ -492,13 +489,13 @@ class OutscaleNodeDriver(NodeDriver):
           "DryRun": dry_run,
           "NoReboot": no_reboot,
         }
-        if block_device_mapping: data.update({"BlockDeviceMappings": block_device_mapping})
-        if image_name: data.update({"ImageName": image_name})
-        if description: data.update({"Description": description})
-        if vm_id: data.update({"VmId": vm_id})
-        if root_device_name: data.update({"RootDeviceName": root_device_name})
-        if source_region_name: data.update({"SourceRegionName": source_region_name})
-        if file_location: data.update({"FileLocation": file_location})
+        if block_device_mapping is not None: data.update({"BlockDeviceMappings": block_device_mapping})
+        if image_name is not None: data.update({"ImageName": image_name})
+        if description is not None: data.update({"Description": description})
+        if vm_id is not None: data.update({"VmId": vm_id})
+        if root_device_name is not None: data.update({"RootDeviceName": root_device_name})
+        if source_region_name is not None: data.update({"SourceRegionName": source_region_name})
+        if file_location is not None: data.update({"FileLocation": file_location})
         data = json.dumps(data)
         action = "CreateImage"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -509,7 +506,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_images(self, data="{}"):
@@ -528,7 +525,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def get_image(self, image_id):
@@ -551,7 +548,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_image(self, image_id):
@@ -574,7 +571,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_key_pair(self, name, dry_run=False, public_key=None):
@@ -597,8 +594,7 @@ class OutscaleNodeDriver(NodeDriver):
             "KeypairName": name,
             "DryRun": dry_run,
         }
-        if public_key: data.update({"PublicKey": public_key})
-
+        if public_key is not None: data.update({"PublicKey": public_key})
         data = json.dumps(data)
         action = "CreateKeypair"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -609,7 +605,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_key_pairs(self, data="{}"):
@@ -628,7 +624,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def get_key_pair(self, name):
@@ -652,7 +648,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_key_pair(self, name):
@@ -675,7 +671,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_snapshot(self,
@@ -720,12 +716,12 @@ class OutscaleNodeDriver(NodeDriver):
         data = {
             "DryRun": dry_run,
         }
-        if description: data.update({"Description": description})
-        if file_location: data.update({"FileLocation": file_location})
-        if snapshot_size: data.update({"SnapshotSize": snapshot_size})
-        if source_region_name: data.update({"SourceRegionName": source_region_name})
-        if source_snapshot_id: data.update({"SourceSnapshotId": source_snapshot_id})
-        if volume_id: data.update({"VolumeId": volume_id})
+        if description is not None: data.update({"Description": description})
+        if file_location is not None: data.update({"FileLocation": file_location})
+        if snapshot_size is not None: data.update({"SnapshotSize": snapshot_size})
+        if source_region_name is not None: data.update({"SourceRegionName": source_region_name})
+        if source_snapshot_id is not None: data.update({"SourceSnapshotId": source_snapshot_id})
+        if volume_id is not None: data.update({"VolumeId": volume_id})
         data = json.dumps(data)
         action = "CreateSnapshot"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -736,7 +732,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_snapshots(self, data="{}"):
@@ -755,7 +751,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_snapshot(self, snapshot_id):
@@ -779,7 +775,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_volume(
@@ -822,10 +818,10 @@ class OutscaleNodeDriver(NodeDriver):
             "DryRun": dry_run,
             "SubregionName": subregion_name
         }
-        if iops: data.update({"Iops": iops})
-        if size: data.update({"Size": size})
-        if snapshot_id: data.update({"SnapshotId": snapshot_id})
-        if volume_type: data.update({"VolumeType": volume_type})
+        if iops is not None: data.update({"Iops": iops})
+        if size is not None: data.update({"Size": size})
+        if snapshot_id is not None: data.update({"SnapshotId": snapshot_id})
+        if volume_type is not None: data.update({"VolumeType": volume_type})
         data = json.dumps(data)
         action = "CreateVolume"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -836,7 +832,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_volumes(self, data="{}"):
@@ -855,7 +851,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_volume(self, volume_id):
@@ -879,7 +875,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def attach_volume(self, node_id, volume_id, device_name):
@@ -910,7 +906,7 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def detach_volume(self, volume_id, dry_run=False, force_unlink=False):
@@ -932,7 +928,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "UnlinkVolume"
         data = {"DryRun": dry_run, "VolumeId": volume_id}
-        if force_unlink: data.update({"ForceUnlink": force_unlink})
+        if force_unlink is not None: data.update({"ForceUnlink": force_unlink})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
@@ -942,5 +938,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self.get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
+
+    @staticmethod
+    def _get_outscale_endpoint(region, version, action):
+        return "https://api.{}.outscale.com/api/{}/{}".format(region, version, action)
