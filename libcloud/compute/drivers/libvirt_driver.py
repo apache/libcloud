@@ -637,8 +637,8 @@ class LibvirtNodeDriver(NodeDriver):
                         raise ValueError("Invalid IPv4 address %s" % ip)
                     if gw and not is_valid_ip_address(gw):
                         raise ValueError("Invalid IPv4 address for GW %s" % gw)
-                    name = net['network_name']
-                    cidr = self._ex_get_cidr_from_network_name(name)
+                    network_name = net['network_name']
+                    cidr = self._ex_get_cidr_from_network_name(network_name)
                     mode = 'static'
                 else:
                     mode = 'dhcp'
