@@ -420,7 +420,8 @@ def _list_async(driver):
 
     def _to_location(self, data):
         extra = data
-        return NodeLocation(id=data['id'], name=data['name'], country=None,
+        name = data['name'] + ' ({})'.format(data['code'].upper())
+        return NodeLocation(id=data['id'], name=name, country=None,
                             driver=self, extra=extra)
 
     def _to_size(self, data):
