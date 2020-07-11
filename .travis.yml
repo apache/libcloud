@@ -9,7 +9,7 @@ addons:
       - graphviz
       - libvirt-dev
 
-matrix:
+jobs:
   fast_finish: true
   include:
     - name: Unit Tests (Python 3.5)
@@ -53,13 +53,14 @@ matrix:
       env: ENV=coverage
       python: 3.7
       before_script: TOX_ENV=coverage-travis
-      before_script: TOX_ENV=mypy
+      if: type != cron
     - name: Docker Test Run
       python: 3.6
       services:
         - docker
       install:
       script: ./contrib/run_tests.sh
+      if: type != cron
     - name: Documentation
       env:
         - ENV=docs
@@ -77,6 +78,26 @@ matrix:
       after_success:
         - pip3 install requests
         - python3 ./contrib/trigger_rtd_build.py
+      if: type != cron
+    # Task which scrapes pricing data for various providers and publishes
+    # pricing.json data with latest pricing information in public read only S3
+    # bucket.
+    # It runs daily using Travis cron job mechanism.
+    - name: Scrape and publish pricing data
+      env:
+        # GCE_API_KEY (apache/libcloud - prod)
+        - secure: "IYp6pX5FcTaIg5OEsMV4dMn+hVXbDJhLpMQ3W1E56/EOPTYPsj2IxEOLJBTUXQ+gl4xaTFUbd0uMrWrBnpA/Se+Rlc2J5gkpvt4Kv/1KGJfXHEx7zsiqJXZZ0/+oZfg5BWy1e3DDS0jf0stHL1h/+Zs/Icl22LpdC8lOdA0tBIU="
+        # AWS CREDENTIALS
+        - PRICING_DATA_BUCKET_NAME="libcloud-pricing-data"
+        - AWS_REGION="us-east-1"
+        # AWS_ACCESS_KEY_ID (apache/libcloud - prod)
+        - secure: "B1mqZHLG/QjU6jTI7Ai9OHi/coLCWjEQTVgTSN6SZn3a0ryaWBJD6/VNHblTBW/gwfip0dcN9cutSiZcByqTakPk5mu+ncQDIMVDzH4uB3G94wEnYBO5UWOSdcAKG0WUuiF+MgwbTxh6oTok1aN3ySlxlWgt5ZRhr2GDfjk9IJY="
+        # AWS_ACCESS_KEY_SECRET (apache/libcloud - prod)
+        - secure: "nhmQ4i8D2M+fn7FYfHI1Yj22SkLe35tjSWqoEjh1PvaDzuL+DDNUTbJMG6VgSDeztN55FwMH6dZodbEoA8qyojmGGkt6aonMTFWiOTJqRWOOWVc+87bTVeMyM98WsNelXBJsMvvU6VSOuzR8wrYlIoisrbaSKU7zekJDWwc8ffY="
+      python: 3.7
+      script:
+        - tox -escrape-and-publish-provider-prices
+      if: type = cron
 
 install:
   # NOTE: This is a workaround since we need to use install --user on Windows
