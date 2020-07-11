@@ -46,19 +46,26 @@ def upload_file(file_path):
     if not os.path.isfile(file_path):
         raise ValueError("File %s doesn't exist" % (file_path))
 
-    print("Uploading pricing data file to S3")
+    print("Uploading pricing data files to S3")
 
     cls = get_driver(Provider.S3)
     driver = cls(ACCESS_KEY_ID, ACCESS_KEY_SECRET, region=AWS_REGION)
 
-    file_name = os.path.basename(file_path)
-    object_name = file_name
+    file_paths = [
+        file_path,
+        '%s.sha256' % (file_path),
+        '%s.sha512' % (file_path),
+    ]
 
-    container = driver.get_container(container_name=BUCKET_NAME)
-    obj = container.upload_object(file_path=file_path, object_name=object_name)
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        object_name = file_name
 
-    print(("Object uploaded to: %s/%s" % (BUCKET_NAME, object_name)))
-    print(obj)
+        container = driver.get_container(container_name=BUCKET_NAME)
+        obj = container.upload_object(file_path=file_path, object_name=object_name)
+
+        print(("Object uploaded to: %s/%s" % (BUCKET_NAME, object_name)))
+        print(obj)
 
 
 if __name__ == "__main__":
