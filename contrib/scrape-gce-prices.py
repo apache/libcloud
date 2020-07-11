@@ -548,6 +548,6 @@ if __name__ == "__main__":
 
     if not arg.key:
         raise ValueError("API key needs to provided either as a script "
-                         "argument or via GCE_SERVICE_ID environment "
+                         "argument or via GCE_API_KEY environment "
                          "variable.")
     main(arg.key, skus=arg.all)
