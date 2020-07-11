@@ -97,7 +97,6 @@ jobs:
       python: 3.7
       script:
         - tox -escrape-and-publish-provider-prices
-      if: type = cron
 
 install:
   # NOTE: This is a workaround since we need to use install --user on Windows
