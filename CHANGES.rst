@@ -19,6 +19,11 @@ Compute
   (GITHUB-1468)
   [Eis D. Zaster - @Eis-D-Z]
 
+- [AWS EC2] Update script for scraping AWS EC2 pricing and update EC2 pricing
+  data.
+  (GITHUB-1469)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 

@@ -5,6 +5,20 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.2.0
+--------------
+
+* To accommodate for more complex pricing schemes, pricing data format for AWS
+  EC2 inside ``libcloud/data/pricing.json`` file has changes.
+
+  Previously, it contained a mapping of ``<driver name>_<driver rigion>`` ->
+  ``<instance size>`` -> ``<price>`` and now the pricing is in the following
+  format: ``ec_{linux,windows}`` -> ``<instance size>`` -> ``<region>`` ->
+  ``<price>``.
+
+  This format gives us more flexibility for more complex pricing schemes and
+  also allows us to store prices for non-Linux instances.
+
 Libcloud 3.0.0
 --------------
 
