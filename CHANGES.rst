@@ -4,6 +4,19 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+~~~~~~
+
+- ``libcloud.pricing.download_pricing_file`` function has been updated so it
+  tries to download latest ``pricing.json`` file from our public read-only S3
+  bucket.
+
+  We now run a daily job as part of our CI/CD which scrapes provider prices and
+  publishes the latest version of the ``pricing.json`` file to that bucket.
+
+  For more information, please see
+  https://libcloud.readthedocs.io/en/latest/compute/pricing.html.
+
 Compute
 ~~~~~~~
 
