@@ -22,7 +22,7 @@ This script downloads and parses AWS EC2 from https://pricing.us-east-1.amazonaw
 It writes a Python module with constants about EC2's sizes and regions.
 
 Use it as following:
-    $ python contrib/scrap-ec2-sizes.py > libcloud/compute/constants.py
+    $ python contrib/scrape-ec2-sizes.py > libcloud/compute/constants.py
 """
 
 import re
@@ -124,6 +124,13 @@ REGION_DETAILS = {
         'endpoint': 'ec2.eu-central-1.amazonaws.com',
         'api_name': 'ec2_eu_central',
         'country': 'Frankfurt',
+        'signature_version': '4',
+    },
+    'EU (Stockholm)': {
+        'id': 'eu-north-1',
+        'endpoint': 'ec2.eu-north-1.amazonaws.com',
+        'api_name': 'ec2_eu_north_stockholm',
+        'country': 'Stockholm',
         'signature_version': '4',
     },
     # Asia
@@ -300,7 +307,7 @@ def dump():
     separators = (',', ': ')
 
     print("INSTANCE_TYPES = " + json.dumps(sizes, indent=4, sort_keys=True,
-                                           separators=separators)).replace('null', 'None')
+                                           separators=separators).replace('null', 'None'))
     print("REGION_DETAILS = " + json.dumps(regions, indent=4, sort_keys=True,
                                            separators=separators))
 

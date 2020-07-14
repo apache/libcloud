@@ -44,6 +44,8 @@ EC2_REGIONS = [
     'us-gov-west-1',
     'eu-west-1',
     'eu-west-2',
+    'eu-west-3',
+    'eu-north-1',
     'eu-central-1',
     'ca-central-1',
     'ap-southeast-1',
@@ -265,11 +267,16 @@ def sort_key_by_numeric_other(key_value):
     """
     Split key into numeric, alpha and other part and sort accordingly.
     """
-    return tuple((
-        int(numeric) if numeric else None,
-        INSTANCE_SIZES.index(alpha) if alpha in INSTANCE_SIZES else alpha,
-        other
-    ) for (numeric, alpha, other) in RE_NUMERIC_OTHER.findall(key_value[0]))
+    result = []
+
+    for (numeric, alpha, other) in RE_NUMERIC_OTHER.findall(key_value[0]):
+        numeric = int(numeric) if numeric else -1
+        alpha = INSTANCE_SIZES.index(alpha) if alpha in INSTANCE_SIZES else alpha
+        alpha = str(alpha)
+        item = tuple([numeric, alpha, other])
+        result.append(item)
+
+    return tuple(result)
 
 
 def main():
