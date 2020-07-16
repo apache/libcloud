@@ -20,6 +20,12 @@ Common
 Compute
 ~~~~~~~
 
+- [OpenStack] Add `ex_get_network()` to the OpenStack driver to make it
+  possible to retrieve a single network by using the ID.
+
+  (GITHUB-1474)
+  [Sander Roosingh - @SanderRoosingh]
+
 - [OpenStack] Fix pagination in the ``list_images()`` method and make sure
   method returns all the images, even if the result is spread across multiple
   pages.

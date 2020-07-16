@@ -1817,6 +1817,22 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         response = self.connection.request(self._networks_url_prefix).object
         return self._to_networks(response)
 
+    def ex_get_network(self, network_id):
+        """
+        Retrieve the Network with the given ID
+
+        :param networkId: ID of the network
+        :type networkId: ``str``
+
+        :rtype :class:`OpenStackNetwork`
+        """
+        request_url = "{networks_url_prefix}/{network_id}".format(
+            networks_url_prefix=self._networks_url_prefix,
+            network_id=network_id
+        )
+        response = self.connection.request(request_url).object
+        return self._to_network(response['network'])
+
     def ex_create_network(self, name, cidr):
         """
         Create a new Network
@@ -3065,6 +3081,22 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         response = self.network_connection.request(
             self._networks_url_prefix).object
         return self._to_networks(response)
+
+    def ex_get_network(self, network_id):
+        """
+        Retrieve the Network with the given ID
+
+        :param networkId: ID of the network
+        :type networkId: ``str``
+
+        :rtype :class:`OpenStackNetwork`
+        """
+        request_url = "{networks_url_prefix}/{network_id}".format(
+            networks_url_prefix=self._networks_url_prefix,
+            network_id=network_id
+        )
+        response = self.network_connection.request(request_url).object
+        return self._to_network(response['network'])
 
     def ex_create_network(self, name, **kwargs):
         """

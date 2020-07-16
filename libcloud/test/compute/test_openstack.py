@@ -1840,6 +1840,13 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(network.name, 'net1')
         self.assertEqual(network.extra['subnets'], ['54d6f61d-db07-451c-9ab3-b9609b6b6f0b'])
 
+    def test_ex_get_network(self):
+        network = self.driver.ex_get_network("cc2dad14-827a-feea-416b-f13e50511a0a")
+
+        self.assertEqual(network.id, "cc2dad14-827a-feea-416b-f13e50511a0a")
+        self.assertTrue(isinstance(network, OpenStackNetwork))
+        self.assertEqual(network.name, 'net2')
+
     def test_ex_list_subnets(self):
         subnets = self.driver.ex_list_subnets()
         subnet = subnets[0]
@@ -2633,6 +2640,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         elif method == 'POST':
             body = self.fixtures.load('_v2_0__networks_POST.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v2_1337_v2_0_networks_cc2dad14_827a_feea_416b_f13e50511a0a(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_v2_0__network.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
     def _v2_1337_v2_0_networks_d32019d3_bc6e_4319_9c1d_6722fc136a22(self, method, url, body, headers):
