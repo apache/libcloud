@@ -285,10 +285,8 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         return res.status == httplib.CREATED
 
     def ex_shutdown_node(self, node):
-        attr = {'type': 'shutdown'}
-        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
-                                      data=json.dumps(attr), method='POST')
-        return res.status == httplib.CREATED
+        # NOTE: this method is here for backwards compatibility
+        return self.stop_node(node=node)
 
     def ex_hard_reboot(self, node):
         attr = {'type': 'power_cycle'}
@@ -297,7 +295,17 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
         return res.status == httplib.CREATED
 
     def ex_power_on_node(self, node):
+        # NOTE: this method is here for backwards compatibility
+        return self.start_node(node=node)
+
+    def start_node(self, node):
         attr = {'type': 'power_on'}
+        res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
+                                      data=json.dumps(attr), method='POST')
+        return res.status == httplib.CREATED
+
+    def stop_node(self, node):
+        attr = {'type': 'shutdown'}
         res = self.connection.request('/v2/droplets/%s/actions' % (node.id),
                                       data=json.dumps(attr), method='POST')
         return res.status == httplib.CREATED

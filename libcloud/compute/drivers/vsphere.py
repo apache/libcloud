@@ -279,7 +279,8 @@ class VSphereNodeDriver(NodeDriver):
             "overallStatus": str(summary.overallStatus),
             "metadata": {},
             "type": "template_6_5",
-            "disk_size": int(summary.storage.committed) // (1024**3)
+            "disk_size": int(summary.storage.committed) // (1024**3),
+            'datastore': data.datastore[0].info.name
         }
 
         boot_time = summary.runtime.bootTime

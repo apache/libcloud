@@ -307,7 +307,7 @@ def dump():
     separators = (',', ': ')
 
     print("INSTANCE_TYPES = " + json.dumps(sizes, indent=4, sort_keys=True,
-                                           separators=separators).replace('null','None'))
+                                           separators=separators).replace('null', 'None'))
     print("REGION_DETAILS = " + json.dumps(regions, indent=4, sort_keys=True,
                                            separators=separators))
 

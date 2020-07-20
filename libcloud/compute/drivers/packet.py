@@ -207,7 +207,12 @@ def _list_async(driver):
         result = yield from future
         retval.extend(result)
     return retval""" % resource_type, glob, loc)
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            loop = asyncio.get_event_loop()
+
         return loop.run_until_complete(loc['_list_async'](loc['self']))
 
     def ex_list_nodes_for_project(self, ex_project_id, include='plan', page=1,
@@ -427,7 +432,8 @@ def _list_async(driver):
 
     def _to_location(self, data):
         extra = data
-        return NodeLocation(id=data['id'], name=data['name'], country=None,
+        name = data['name'] + ' ({})'.format(data['code'].upper())
+        return NodeLocation(id=data['id'], name=name, country=None,
                             driver=self, extra=extra)
 
     def _to_size(self, data):
@@ -435,7 +441,7 @@ def _list_async(driver):
             cpus = data['specs']['cpus'][0].get('count')
         except KeyError:
             cpus = None
-        regions = [region.get('href').strip('/facilities/')
+        regions = [region.get('href').replace('/facilities/', '')
             for region in data.get('available_in')]
         extra = {'description': data['description'], 'line': data['line'],
                  'cpus': cpus, 'regions': regions}
