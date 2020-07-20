@@ -31,7 +31,7 @@ class OutscaleNodeDriver(NodeDriver):
     Outscale SDK node driver
     """
 
-    type = Provider.OUTSCALE_SDK
+    type = Provider.OUTSCALE
     name = 'Outscale API'
     website = 'http://www.outscale.com'
 

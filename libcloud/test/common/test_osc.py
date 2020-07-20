@@ -17,8 +17,6 @@ import unittest
 from libcloud.compute.providers import Provider
 from libcloud.compute.providers import get_driver
 
-import logging
-
 
 class EC2MockDriver(object):
     region_name = 'eu-west-2'
@@ -46,7 +44,6 @@ class TestApiOutscale(unittest.TestCase):
     def test_images(self):
         response = self.driver.create_image(image_name="test_libcloud2", vm_id="i-dab9397e")
         self.assertEqual(response.status_code, 200)
-        logging.warning(response.json())
         image_id = response.json()["Image"]["ImageId"]
 
         response = self.driver.get_image(image_id)
