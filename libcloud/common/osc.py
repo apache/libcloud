@@ -78,7 +78,11 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
             'X-Osc-Date': date.strftime('%Y%m%dT%H%M%SZ'),
             'Host': host,
         }
-        path = "/{}/{}/{}".format(self.connection.service_name, self.version, action)
+        path = "/{}/{}/{}".format(
+            self.connection.service_name,
+            self.version,
+            action
+        )
         sig = self._get_authorization_v4_header(
             headers=headers,
             dt=date,

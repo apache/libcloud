@@ -33,11 +33,15 @@ class TestApiOutscale(unittest.TestCase):
         response = self.driver.create_public_ip()
         self.assertEqual(response.status_code, 200)
 
-        response = self.driver.delete_public_ip(public_ip=response.json()["PublicIp"]["PublicIp"])
+        response = self.driver.delete_public_ip(
+            public_ip=response.json()["PublicIp"]["PublicIp"]
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_images(self):
-        response = self.driver.create_image(image_name="image_name", vm_id="vm_id")
+        response = self.driver.create_image(
+            image_name="image_name", vm_id="vm_id"
+        )
         self.assertEqual(response.status_code, 200)
         image_id = response.json()["Image"]["ImageId"]
 

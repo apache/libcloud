@@ -35,7 +35,13 @@ class OutscaleNodeDriver(NodeDriver):
     name = 'Outscale API'
     website = 'http://www.outscale.com'
 
-    def __init__(self, key=None, secret=None, region='eu-west-2', service='api', version='latest'):
+    def __init__(self,
+                 key=None,
+                 secret=None,
+                 region='eu-west-2',
+                 service='api',
+                 version='latest'
+                 ):
         self.key = key
         self.secret = secret
         self.region = region
@@ -62,14 +68,17 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_public_ip(self, dry_run=False):
         """
         Create a new public ip.
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :return: the created public ip
@@ -85,20 +94,27 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_public_ip(self, dry_run=False, public_ip=None, public_ip_id=None):
+    def delete_public_ip(self, dry_run=False,
+                         public_ip=None,
+                         public_ip_id=None):
         """
         Delete instances.
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :param      public_ip: The EIP. In the public Cloud, this parameter is required.
+        :param      public_ip: The EIP. In the public Cloud, this parameter is
+        required.
         :type       public_ip: ``str``
 
-        :param      public_ip_id: The ID representing the association of the EIP with the VM or the NIC. In a Net,
+        :param      public_ip_id: The ID representing the association of the
+        EIP with the VM or the NIC. In a Net,
         this parameter is required.
         :type       public_ip_id: ``str``
 
@@ -120,14 +136,17 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_public_ips(self, data="{}"):
         """
         List all nodes.
 
-        :param      data: json stringify following the outscale api documentation for filter
+        :param      data: json stringify following the outscale api
+        documentation for filter
         :type       data: ``string``
 
         :return: nodes
@@ -142,14 +161,17 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_public_ip_ranges(self, dry_run=False):
         """
         Lists available regions details.
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the
+        required permissions to perform the action.
         :type       dry_run: ``bool``
 
         :return: regions details
@@ -165,7 +187,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def attach_public_ip(self,
@@ -179,25 +203,31 @@ class OutscaleNodeDriver(NodeDriver):
         """
         Attach a volume.
 
-        :param      allow_relink: If true, allows the EIP to be associated with the VM or NIC that you specify even if
+        :param      allow_relink: If true, allows the EIP to be associated
+        with the VM or NIC that you specify even if
         it is already associated with another VM or NIC.
         :type       allow_relink: ``bool``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :param      nic_id:(Net only) The ID of the NIC. This parameter is required if the VM has more than one NIC
-        attached. Otherwise, you need to specify the VmId parameter instead. You cannot specify both parameters
+        :param      nic_id:(Net only) The ID of the NIC. This parameter is
+        required if the VM has more than one NIC attached. Otherwise,
+        you need to specify the VmId parameter instead.
+        You cannot specify both parameters
         at the same time.
         :type       nic_id: ``str``
 
         :param      vm_id: the ID of the VM
         :type       nic_id: ``str``
 
-        :param      public_ip: The EIP. In the public Cloud, this parameter is required.
+        :param      public_ip: The EIP. In the public Cloud, this parameter
+        is required.
         :type       public_ip: ``str``
 
-        :param      public_ip_id: The allocation ID of the EIP. In a Net, this parameter is required.
+        :param      public_ip_id: The allocation ID of the EIP. In a Net,
+        this parameter is required.
         :type       public_ip_id: ``str``
 
         :return: the attached volume
@@ -224,21 +254,28 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def detach_public_ip(self, public_ip=None, link_public_ip_id=None, dry_run=False):
+    def detach_public_ip(self, public_ip=None,
+                         link_public_ip_id=None,
+                         dry_run=False):
         """
         Detach a volume.
 
-        :param      public_ip: (Required in a Net) The ID representing the association of the EIP with the VM or the NIC
+        :param      public_ip: (Required in a Net) The ID representing the
+        association of the EIP with the VM or the NIC
         :type       public_ip: ``str``
 
-        :param      link_public_ip_id: (Required in a Net) The ID representing the association of the EIP with the
+        :param      link_public_ip_id: (Required in a Net) The ID
+        representing the association of the EIP with the
         VM or the NIC.
         :type       link_public_ip_id: ``str``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :return: the attached volume
@@ -259,7 +296,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_node(self,
@@ -287,42 +326,51 @@ class OutscaleNodeDriver(NodeDriver):
         :param      image_id: The ID of the OMI used to create the VM.
         :type       image_id: ``str``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :param      block_device_mapping: One or more block device mappings.
         :type       block_device_mapping: ``dict``
 
-        :param      boot_on_creation: By default or if true, the VM is started on creation. If false, the VM is
+        :param      boot_on_creation: By default or if true, the VM is
+        started on creation. If false, the VM is
         stopped on creation.
         :type       boot_on_creation: ``bool``
 
-        :param      bsu_optimized: If true, the VM is created with optimized BSU I/O.
+        :param      bsu_optimized: If true, the VM is created with optimized
+        BSU I/O.
         :type       bsu_optimized: ``bool``
 
-        :param      client_token: A unique identifier which enables you to manage the idempotency.
+        :param      client_token: A unique identifier which enables you to
+        manage the idempotency.
         :type       client_token: ``bool``
 
-        :param      deletion_protection: If true, you cannot terminate the VM using Cockpit, the CLI or the API.
+        :param      deletion_protection: If true, you cannot terminate the
+        VM using Cockpit, the CLI or the API.
         If false, you can.
         :type       deletion_protection: ``bool``
 
         :param      keypair_name: The name of the keypair.
         :type       keypair_name: ``str``
 
-        :param      max_vms_count: The maximum number of VMs you want to create. If all the VMs cannot be created, the
+        :param      max_vms_count: The maximum number of VMs you want to
+        create. If all the VMs cannot be created, the
         largest possible number of VMs above MinVmsCount is created.
         :type       max_vms_count: ``integer``
 
-        :param      min_vms_count: The minimum number of VMs you want to create. If this number of VMs cannot be
+        :param      min_vms_count: The minimum number of VMs you want to
+        create. If this number of VMs cannot be
         created, no VMs are created.
         :type       min_vms_count: ``integer``
 
-        :param      nics: One or more NICs. If you specify this parameter, you must define one NIC as the primary
+        :param      nics: One or more NICs. If you specify this parameter,
+        you must define one NIC as the primary
         network interface of the VM with 0 as its device number.
         :type       nics: ``dict``
 
-        :param      performance: The performance of the VM (standard | high | highest).
+        :param      performance: The performance of the VM (standard | high
+        | highest).
         :type       performance: ``str``
 
         :param      placement: Information about the placement of the VM.
@@ -331,13 +379,16 @@ class OutscaleNodeDriver(NodeDriver):
         :param      private_ips: One or more private IP addresses of the VM.
         :type       private_ips: ``list``
 
-        :param      security_group_ids: One or more IDs of security group for the VMs.
+        :param      security_group_ids: One or more IDs of security group
+        for the VMs.
         :type       security_group_ids: ``list``
 
-        :param      security_groups: One or more names of security groups for the VMs.
+        :param      security_groups: One or more names of security groups
+        for the VMs.
         :type       security_groups: ``list``
 
-        :param      subnet_id: The ID of the Subnet in which you want to create the VM.
+        :param      subnet_id: The ID of the Subnet in which you want to
+        create the VM.
         :type       subnet_id: ``str``
 
         :return: the created instance
@@ -385,7 +436,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def reboot_node(self, node_ids):
@@ -409,7 +462,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_nodes(self, data="{}"):
@@ -428,7 +483,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_node(self, node_ids):
@@ -451,7 +508,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_image(
@@ -474,7 +533,8 @@ class OutscaleNodeDriver(NodeDriver):
                     you want to create the OMI (required)
         :type       vm_id: ``str``
 
-        :param      architecture: The architecture of the OMI (by default, i386).
+        :param      architecture: The architecture of the OMI (by default,
+        i386).
         :type       architecture: ``str``
 
         :param      description: a description for the new OMI
@@ -486,22 +546,27 @@ class OutscaleNodeDriver(NodeDriver):
         :param      block_device_mapping: One or more block device mappings.
         :type       block_device_mapping: ``dict``
 
-        :param      no_reboot: If false, the VM shuts down before creating the OMI and then reboots.
+        :param      no_reboot: If false, the VM shuts down before creating
+        the OMI and then reboots.
         If true, the VM does not.
         :type       no_reboot: ``bool``
 
         :param      root_device_name: The name of the root device.
         :type       root_device_name: ``str``
 
-        :param      source_region_name: The name of the source Region, which must be the same
+        :param      source_region_name: The name of the source Region,
+        which must be the same
         as the Region of your account.
         :type       source_region_name: ``str``
 
-        :param      file_location: The pre-signed URL of the OMI manifest file, or the full path to the OMI stored in
-        an OSU bucket. If you specify this parameter, a copy of the OMI is created in your account.
+        :param      file_location: The pre-signed URL of the OMI manifest
+        file, or the full path to the OMI stored in
+        an OSU bucket. If you specify this parameter, a copy of the OMI is
+        created in your account.
         :type       file_location: ``str``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :return: the created image
@@ -535,7 +600,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_images(self, data="{}"):
@@ -554,7 +621,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def get_image(self, image_id):
@@ -577,7 +646,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_image(self, image_id):
@@ -600,17 +671,21 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_key_pair(self, name, dry_run=False, public_key=None):
         """
         Create a new key pair.
 
-        :param      name: A unique name for the keypair, with a maximum length of 255 ASCII printable characters.
+        :param      name: A unique name for the keypair, with a maximum
+        length of 255 ASCII printable characters.
         :type       name: ``str``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :param      public_key: The public key. It must be base64-encoded.
@@ -635,7 +710,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_key_pairs(self, data="{}"):
@@ -654,7 +731,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def get_key_pair(self, name):
@@ -678,7 +757,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_key_pair(self, name):
@@ -701,7 +782,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_snapshot(self,
@@ -719,25 +802,32 @@ class OutscaleNodeDriver(NodeDriver):
         :param      description: a description for the new OMI
         :type       description: ``str``
 
-        :param      snapshot_size: The size of the snapshot created in your account, in bytes. This size must be
+        :param      snapshot_size: The size of the snapshot created in your
+        account, in bytes. This size must be
         exactly the same as the source snapshot one.
         :type       snapshot_size: ``integer``
 
-        :param      source_snapshot_id: The ID of the snapshot you want to copy.
+        :param      source_snapshot_id: The ID of the snapshot you want to
+        copy.
         :type       source_snapshot_id: ``str``
 
-        :param      volume_id: The ID of the volume you want to create a snapshot of.
+        :param      volume_id: The ID of the volume you want to create a
+        snapshot of.
         :type       volume_id: ``str``
 
-        :param      source_region_name: The name of the source Region, which must be the same
+        :param      source_region_name: The name of the source Region,
+        which must be the same
         as the Region of your account.
         :type       source_region_name: ``str``
 
-        :param      file_location: The pre-signed URL of the OMI manifest file, or the full path to the OMI stored in
-        an OSU bucket. If you specify this parameter, a copy of the OMI is created in your account.
+        :param      file_location: The pre-signed URL of the OMI manifest
+        file, or the full path to the OMI stored in
+        an OSU bucket. If you specify this parameter, a copy of the OMI is
+        created in your account.
         :type       file_location: ``str``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :return: the created snapshot
@@ -768,7 +858,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_snapshots(self, data="{}"):
@@ -787,7 +879,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_snapshot(self, snapshot_id):
@@ -811,7 +905,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_volume(
@@ -830,21 +926,26 @@ class OutscaleNodeDriver(NodeDriver):
                     you want to create the volume (required)
         :type       snapshot_id: ``str``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :param      size: the size of the volume, in gibibytes (GiB),
                     the maximum allowed size for a volume is 14,901 GiB
         :type       size: ``int``
 
-        :param      subregion_name: The Subregion in which you want to create the volume.
+        :param      subregion_name: The Subregion in which you want to
+        create the volume.
         :type       subregion_name: ``str``
 
-        :param      volume_type: the type of volume you want to create (io1 | gp2 | standard)
+        :param      volume_type: the type of volume you want to create (io1
+        | gp2 | standard)
         :type       volume_type: ``str``
 
-        :param      iops: The number of I/O operations per second (IOPS). This parameter must be specified only if
-        you create an io1 volume. The maximum number of IOPS allowed for io1 volumes is 13000.
+        :param      iops: The number of I/O operations per second (IOPS).
+        This parameter must be specified only if
+        you create an io1 volume. The maximum number of IOPS allowed for io1
+        volumes is 13000.
         :type       iops: ``integer``
 
         :return: the created volume
@@ -872,7 +973,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def list_volumes(self, data="{}"):
@@ -891,7 +994,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def delete_volume(self, volume_id):
@@ -915,7 +1020,9 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def attach_volume(self, node_id, volume_id, device_name):
@@ -937,7 +1044,11 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "LinkVolume"
-        data = json.dumps({"VmId": node_id, "VolumeId": volume_id, "DeviceName": device_name})
+        data = json.dumps({
+            "VmId": node_id,
+            "VolumeId": volume_id,
+            "DeviceName": device_name
+        })
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
                                              version=self.version,
@@ -946,21 +1057,26 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def detach_volume(self, volume_id, dry_run=False, force_unlink=False):
         """
         Detach a volume.
 
-        :param      volume_id: the ID of the volume you want to detach (required)
+        :param      volume_id: the ID of the volume you want to detach
+        (required)
         :type       volume_id: ``str``
 
-        :param      force_unlink: Forces the detachment of the volume in case of previous failure.
+        :param      force_unlink: Forces the detachment of the volume in
+        case of previous failure.
         Important: This action may damage your data or file systems.
         :type       force_unlink: ``bool``
 
-        :param      dry_run: If true, checks whether you have the required permissions to perform the action.
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
         :type       dry_run: ``bool``
 
         :return: the attached volume
@@ -979,9 +1095,15 @@ class OutscaleNodeDriver(NodeDriver):
                                              data=data,
                                              service_name=self.service_name,
                                              region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
         return requests.post(endpoint, data=data, headers=headers)
 
     @staticmethod
     def _get_outscale_endpoint(region, version, action):
-        return "https://api.{}.outscale.com/api/{}/{}".format(region, version, action)
+        return "https://api.{}.outscale.com/api/{}/{}".format(
+            region,
+            version,
+            action
+        )
