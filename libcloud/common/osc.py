@@ -17,11 +17,6 @@ from datetime import datetime
 import hashlib
 import hmac
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 from libcloud.utils.py3 import urlquote
 
 __all__ = [
