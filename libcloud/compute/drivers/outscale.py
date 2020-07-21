@@ -524,8 +524,8 @@ class OutscaleNodeDriver(NodeDriver):
         root_device_name=None,
         dry_run=False,
         source_region_name=None,
-        file_location=None,
-            ):
+        file_location=None
+    ):
         """
         Create a new image.
 
@@ -573,8 +573,8 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         data = {
-          "DryRun": dry_run,
-          "NoReboot": no_reboot,
+            "DryRun": dry_run,
+            "NoReboot": no_reboot,
         }
         if block_device_mapping is not None:
             data.update({"BlockDeviceMappings": block_device_mapping})
