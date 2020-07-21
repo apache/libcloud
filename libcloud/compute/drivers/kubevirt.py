@@ -30,6 +30,7 @@ import libcloud.security
 
 from libcloud.common.kubernetes import KubernetesResponse
 from libcloud.common.kubernetes import KubernetesBasicAuthConnection
+from libcloud.common.kubernetes import KubernetesDriverMixin
 from libcloud.common.kubernetes import KubernetesTLSAuthConnection
 from libcloud.common.kubernetes import KubernetesTokenAuthConnection
 from libcloud.common.kubernetes import VALID_RESPONSE_CODES
@@ -42,72 +43,13 @@ from libcloud.compute.base import NodeDriver, NodeSize, Node
 from libcloud.compute.base import NodeImage, NodeLocation, StorageVolume
 
 __all__ = [
-    "KubernetesTLSConnection",
-    "KubernetesTokenAuthentication",
     "KubeVirtNodeDriver"
 ]
 ROOT_URL = '/api/v1/'
 KUBEVIRT_URL = '/apis/kubevirt.io/v1alpha3/'
 
 
-class KubernetesTLSConnection(KeyCertificateConnection):
-    responseCls = KubernetesResponse
-    timeout = 60
-
-    def __init__(self, key, secure=True, host='localhost',
-                 port='6443', key_file=None, cert_file=None, ca_cert='',
-                 **kwargs):
-
-        super(KubernetesTLSConnection, self).__init__(key_file=key_file,
-                                                      cert_file=cert_file,
-                                                      secure=secure, host=host,
-                                                      port=port, url=None,
-                                                      proxy_url=None,
-                                                      timeout=None,
-                                                      backoff=None,
-                                                      retry_delay=None)
-        if key_file:
-            keypath = os.path.expanduser(key_file)
-            is_file_path = os.path.exists(keypath) and os.path.isfile(keypath)
-            if not is_file_path:
-                raise InvalidCredsError(
-                    'You need an key PEM file to authenticate with '
-                    'via tls. For more info please visit:'
-                    'https://kubernetes.io/docs/concepts/cluster-administration/certificates/')
-            self.key_file = key_file
-            certpath = os.path.expanduser(cert_file)
-            is_file_path = os.path.exists(
-                certpath) and os.path.isfile(certpath)
-            if not is_file_path:
-                raise InvalidCredsError(
-                    'You need an certificate PEM file to authenticate'
-                    'via tls. For more info please visit:'
-                    'https://kubernetes.io/docs/concepts/cluster-administration/certificates/'
-                )
-
-            self.cert_file = cert_file
-
-    def add_default_headers(self, headers):
-        if 'Content-Type' not in headers:
-            headers['Content-Type'] = 'application/json'
-        return headers
-
-
-class KubernetesTokenAuthentication(ConnectionKey):
-    responseCls = KubernetesResponse
-    timeout = 60
-
-    def add_default_headers(self, headers):
-        if 'Content-Type' not in headers:
-            headers['Content-Type'] = 'application/json'
-        if self.key:
-            headers['Authorization'] = 'Bearer ' + self.key
-        else:
-            raise ValueError("Please provide a valid token in the key param")
-        return headers
-
-
-class KubeVirtNodeDriver(NodeDriver):
+class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     type = Provider.KUBEVIRT
     name = "kubevirt"
     website = 'https://www.kubevirt.io'
@@ -118,62 +60,6 @@ class KubeVirtNodeDriver(NodeDriver):
         'running': NodeState.RUNNING,
         'stopped': NodeState.STOPPED
     }
-
-    def __init__(self, key=None, secret=None, secure=True, host="localhost",
-                 port=6443, key_file=None, cert_file=None, ca_cert='',
-                 token_bearer_auth=False, verify=True):
-
-        libcloud.security.VERIFY_SSL_CERT = verify
-        if token_bearer_auth:
-            self.connectionCls = KubernetesTokenAuthConnection
-            if not key:
-                raise ValueError("The token must be a string")
-            secure = True
-
-        if key_file:
-            self.connectionCls = KubernetesTLSAuthConnection
-            self.key_file = key_file
-            self.cert_file = cert_file
-            secure = True
-
-        if host.startswith('https://'):
-            secure = True
-
-        # strip the prefix
-        prefixes = ['http://', 'https://']
-        for prefix in prefixes:
-            if host.startswith(prefix):
-                host = host.lstrip(prefix)
-
-        super(KubeVirtNodeDriver, self).__init__(key=key,
-                                                 secret=secret,
-                                                 secure=secure,
-                                                 host=host,
-                                                 port=port,
-                                                 key_file=key_file,
-                                                 cert_file=cert_file)
-
-        # check if both key and cert files are present
-        if key_file or cert_file:
-            if not(key_file and cert_file):
-                raise Exception("Both key and certificate files are needed")
-
-        if ca_cert:
-            self.connection.connection.ca_cert = ca_cert
-        else:
-            # do not verify SSL certificate
-            warnings.warn("Kubernetes has its own CA, since you didn't supply "
-                          "a CA certificate be aware that SSL verification "
-                          "will be disabled for this session.")
-            self.connection.connection.ca_cert = False
-
-        self.connection.secure = secure
-        self.connection.host = host
-        self.connection.port = port
-
-        if self.connectionCls == KubernetesBasicAuthConnection:
-            self.connection.secret = secret
-        self.connection.key = key
 
     def list_nodes(self, location=None):
         namespaces = []
