@@ -107,8 +107,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeletePublicIp"
         data = {"DryRun": dry_run}
-        if public_ip is not None: data.update({"PublicIp": public_ip})
-        if public_ip_id is not None: data.update({"PublicIpId": public_ip_id})
+        if public_ip is not None:
+            data.update({"PublicIp": public_ip})
+        if public_ip_id is not None:
+            data.update({"PublicIpId": public_ip_id})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
@@ -203,11 +205,16 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "LinkPublicIp"
         data = {"DryRun": dry_run}
-        if public_ip is not None: data.update({"PublicIp": public_ip})
-        if public_ip_id is not None: data.update({"PublicIpId": public_ip_id})
-        if nic_id is not None: data.update({"NicId": nic_id})
-        if vm_id is not None: data.update({"VmId": vm_id})
-        if allow_relink is not None: data.update({"AllowRelink": allow_relink})
+        if public_ip is not None:
+            data.update({"PublicIp": public_ip})
+        if public_ip_id is not None:
+            data.update({"PublicIpId": public_ip_id})
+        if nic_id is not None:
+            data.update({"NicId": nic_id})
+        if vm_id is not None:
+            data.update({"VmId": vm_id})
+        if allow_relink is not None:
+            data.update({"AllowRelink": allow_relink})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
@@ -239,8 +246,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "UnlinkPublicIp"
         data = {"DryRun": dry_run}
-        if public_ip is not None: data.update({"PublicIp": public_ip})
-        if link_public_ip_id is not None: data.update({"LinkPublicIpId": link_public_ip_id})
+        if public_ip is not None:
+            data.update({"PublicIp": public_ip})
+        if link_public_ip_id is not None:
+            data.update({"LinkPublicIpId": link_public_ip_id})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
@@ -340,19 +349,32 @@ class OutscaleNodeDriver(NodeDriver):
             "BsuOptimized": bsu_optimized,
             "ImageId": image_id
         }
-        if block_device_mapping is not None: data.update({"BlockDeviceMappings": block_device_mapping})
-        if client_token is not None: data.update({"ClientToken": client_token})
-        if deletion_protection is not None: data.update({"DeletionProtection": deletion_protection})
-        if keypair_name is not None: data.update({"KeypairName": keypair_name})
-        if max_vms_count is not None: data.update({"MaxVmsCount": max_vms_count})
-        if min_vms_count is not None: data.update({"MinVmsCount": min_vms_count})
-        if nics is not None: data.update({"Nics": nics})
-        if performance is not None: data.update({"Performance": performance})
-        if placement is not None: data.update({"Placement": placement})
-        if private_ips is not None: data.update({"PrivateIps": private_ips})
-        if security_group_ids is not None: data.update({"SecurityGroupIds": security_group_ids})
-        if security_groups is not None: data.update({"SecurityGroups": security_groups})
-        if subnet_id is not None: data.update({"SubnetId": subnet_id})
+        if block_device_mapping is not None:
+            data.update({"BlockDeviceMappings": block_device_mapping})
+        if client_token is not None:
+            data.update({"ClientToken": client_token})
+        if deletion_protection is not None:
+            data.update({"DeletionProtection": deletion_protection})
+        if keypair_name is not None:
+            data.update({"KeypairName": keypair_name})
+        if max_vms_count is not None:
+            data.update({"MaxVmsCount": max_vms_count})
+        if min_vms_count is not None:
+            data.update({"MinVmsCount": min_vms_count})
+        if nics is not None:
+            data.update({"Nics": nics})
+        if performance is not None:
+            data.update({"Performance": performance})
+        if placement is not None:
+            data.update({"Placement": placement})
+        if private_ips is not None:
+            data.update({"PrivateIps": private_ips})
+        if security_group_ids is not None:
+            data.update({"SecurityGroupIds": security_group_ids})
+        if security_groups is not None:
+            data.update({"SecurityGroups": security_groups})
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
         action = "CreateVms"
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -489,13 +511,20 @@ class OutscaleNodeDriver(NodeDriver):
           "DryRun": dry_run,
           "NoReboot": no_reboot,
         }
-        if block_device_mapping is not None: data.update({"BlockDeviceMappings": block_device_mapping})
-        if image_name is not None: data.update({"ImageName": image_name})
-        if description is not None: data.update({"Description": description})
-        if vm_id is not None: data.update({"VmId": vm_id})
-        if root_device_name is not None: data.update({"RootDeviceName": root_device_name})
-        if source_region_name is not None: data.update({"SourceRegionName": source_region_name})
-        if file_location is not None: data.update({"FileLocation": file_location})
+        if block_device_mapping is not None:
+            data.update({"BlockDeviceMappings": block_device_mapping})
+        if image_name is not None:
+            data.update({"ImageName": image_name})
+        if description is not None:
+            data.update({"Description": description})
+        if vm_id is not None:
+            data.update({"VmId": vm_id})
+        if root_device_name is not None:
+            data.update({"RootDeviceName": root_device_name})
+        if source_region_name is not None:
+            data.update({"SourceRegionName": source_region_name})
+        if file_location is not None:
+            data.update({"FileLocation": file_location})
         data = json.dumps(data)
         action = "CreateImage"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -594,7 +623,8 @@ class OutscaleNodeDriver(NodeDriver):
             "KeypairName": name,
             "DryRun": dry_run,
         }
-        if public_key is not None: data.update({"PublicKey": public_key})
+        if public_key is not None:
+            data.update({"PublicKey": public_key})
         data = json.dumps(data)
         action = "CreateKeypair"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -716,12 +746,18 @@ class OutscaleNodeDriver(NodeDriver):
         data = {
             "DryRun": dry_run,
         }
-        if description is not None: data.update({"Description": description})
-        if file_location is not None: data.update({"FileLocation": file_location})
-        if snapshot_size is not None: data.update({"SnapshotSize": snapshot_size})
-        if source_region_name is not None: data.update({"SourceRegionName": source_region_name})
-        if source_snapshot_id is not None: data.update({"SourceSnapshotId": source_snapshot_id})
-        if volume_id is not None: data.update({"VolumeId": volume_id})
+        if description is not None:
+            data.update({"Description": description})
+        if file_location is not None:
+            data.update({"FileLocation": file_location})
+        if snapshot_size is not None:
+            data.update({"SnapshotSize": snapshot_size})
+        if source_region_name is not None:
+            data.update({"SourceRegionName": source_region_name})
+        if source_snapshot_id is not None:
+            data.update({"SourceSnapshotId": source_snapshot_id})
+        if volume_id is not None:
+            data.update({"VolumeId": volume_id})
         data = json.dumps(data)
         action = "CreateSnapshot"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -818,10 +854,14 @@ class OutscaleNodeDriver(NodeDriver):
             "DryRun": dry_run,
             "SubregionName": subregion_name
         }
-        if iops is not None: data.update({"Iops": iops})
-        if size is not None: data.update({"Size": size})
-        if snapshot_id is not None: data.update({"SnapshotId": snapshot_id})
-        if volume_type is not None: data.update({"VolumeType": volume_type})
+        if iops is not None:
+            data.update({"Iops": iops})
+        if size is not None:
+            data.update({"Size": size})
+        if snapshot_id is not None:
+            data.update({"SnapshotId": snapshot_id})
+        if volume_type is not None:
+            data.update({"VolumeType": volume_type})
         data = json.dumps(data)
         action = "CreateVolume"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
@@ -928,7 +968,8 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "UnlinkVolume"
         data = {"DryRun": dry_run, "VolumeId": volume_id}
-        if force_unlink is not None: data.update({"ForceUnlink": force_unlink})
+        if force_unlink is not None:
+            data.update({"ForceUnlink": force_unlink})
         data = json.dumps(data)
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
