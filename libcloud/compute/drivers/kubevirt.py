@@ -15,21 +15,18 @@
 
 # NOTE: Re-enable once we add mypy annotations for the base container API
 # type: ignore
-
 """
 kubevirt driver with support for nodes (vms)
 """
-
 import json
 import time
+import hashlib
 
 from datetime import datetime
 
 from libcloud.common.types import LibcloudError
-from libcloud.common.kubernetes import KubernetesBasicAuthConnection
 from libcloud.common.kubernetes import KubernetesDriverMixin
 from libcloud.common.kubernetes import VALID_RESPONSE_CODES
-
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node
 from libcloud.compute.base import NodeImage, NodeLocation, StorageVolume
@@ -37,7 +34,6 @@ from libcloud.compute.base import NodeImage, NodeLocation, StorageVolume
 __all__ = [
     "KubeVirtNodeDriver"
 ]
-
 ROOT_URL = '/api/v1/'
 KUBEVIRT_URL = '/apis/kubevirt.io/v1alpha3/'
 
@@ -46,7 +42,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     type = Provider.KUBEVIRT
     name = "kubevirt"
     website = 'https://www.kubevirt.io'
-    connectionCls = KubernetesBasicAuthConnection
+    connectionCls = ""
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
@@ -167,10 +163,17 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         """
         namespace = node.extra['namespace']
         name = node.name
-        # stop the vmi first
+        # find and delete services for this VM only
+        services = self.ex_list_services(namespace=namespace, node_name=name)
+        for service in services:
+            service_type = service['spec']['type']
+            self.ex_create_service(node=node, ports=[],
+                                   service_type=service_type)
+        # stop the vmi
         self.stop_node(node)
         try:
-            result = self.connection.request(KUBEVIRT_URL + 'namespaces/' +
+            result = self.connection.request(KUBEVIRT_URL +
+                                             'namespaces/' +
                                              namespace +
                                              '/virtualmachines/' + name,
                                              method='DELETE')
@@ -181,7 +184,8 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     # only has container disk support atm with no persistency
     def create_node(self, name, image, location=None, ex_memory=128, ex_cpu=1,
                     ex_disks=None, ex_network=None,
-                    ex_termination_grace_period=0):
+                    ex_termination_grace_period=0,
+                    ports={}):
         """
         Creating a VM with a containerDisk.
         :param name: A name to give the VM. The VM will be identified by
@@ -254,10 +258,19 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                                accepted values.
                                The parameter must be a tupple or list with
                                (network_type, interface, name)
-        :type ex_network: `iterable` (tupple or list) [network_type, inteface, name] # NOQA
+        :type ex_network: `iterable` (tupple or list) [network_type, inteface, name]
                       network_type: `str` | only "pod" is accepted atm
                       interface: `str` | "masquerade" or "bridge"
                       name: `str`
+
+        :param ports: A dictionary with keys: 'ports_tcp' and 'ports_udp'
+                      'ports_tcp' value is a list of ints that indicate
+                      the ports to be exposed with TCP protocol,
+                      and 'ports_udp' is a list of ints that indicate
+                      the ports to be exposed with UDP protocol.
+        :type  ports: `dict` with keys
+                      'ports_tcp`: `list` of `int`
+                      'ports_udp`: `list` of `int`
         """
         # all valid disk types for which support will be added in the future
         DISK_TYPES = {'containerDisk', 'ephemeral', 'configMap', 'dataVolume',
@@ -299,6 +312,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                             },
                             "resources": {
                                 "requests": {},
+                                "limits": {}
                             },
                         },
                         "networks": [],
@@ -308,17 +322,23 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 }
             }
         }
-        memory = str(ex_memory) + "M"
+        memory = str(ex_memory) + "Mi"
         vm['spec']['template']['spec']['domain']['resources'][
             'requests']['memory'] = memory
+        vm['spec']['template']['spec']['domain']['resources'][
+            'limits']['memory'] = memory
         if ex_cpu < 10:
             cpu = int(ex_cpu)
             vm['spec']['template']['spec']['domain'][
-                'cpu'] = {'cores': cpu}
+                'resources']['requests']['cpu'] = cpu
+            vm['spec']['template']['spec']['domain'][
+                'resources']['limits']['cpu'] = cpu
         else:
             cpu = str(ex_cpu) + "m"
             vm['spec']['template']['spec']['domain']['resources'][
                 'requests']['cpu'] = cpu
+            vm['spec']['template']['spec']['domain']['resources'][
+                'limits']['cpu'] = cpu
         i = 0
         for disk in ex_disks:
             disk_type = disk.get('disk_type')
@@ -407,6 +427,26 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             network_type = "pod"
         network_dict = {network_type: {}, 'name': network_name}
         interface_dict = {interface: {}, 'name': network_name}
+        if ports.get('ports_tcp'):
+            ports_to_expose = []
+            for port in ports['ports_tcp']:
+                ports_to_expose.append(
+                    {
+                        'port': port,
+                        'protocol': 'TCP'
+                    }
+                )
+            interface_dict[interface]['ports'] = ports_to_expose
+        if ports.get('ports_udp'):
+            ports_to_expose = interface_dict[interface].get('ports', [])
+            for port in ports.get('ports_udp'):
+                ports_to_expose.append(
+                    {
+                        'port': port,
+                        'protocol': 'UDP'
+                    }
+                )
+            interface_dict[interface]['ports'] = ports_to_expose
         vm['spec']['template']['spec'][
             'networks'].append(network_dict)
         vm['spec']['template']['spec']['domain']['devices'][
@@ -425,6 +465,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         nodes = self.list_nodes()
         for node in nodes:
             if node.name == name:
+                self.start_node(node)
                 return node
 
     def list_images(self, location=None):
@@ -903,37 +944,69 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
 
         return volumes
 
+    def _ex_connection_class_kwargs(self):
+        kwargs = {}
+        if hasattr(self, 'key_file'):
+            kwargs['key_file'] = self.key_file
+        if hasattr(self, 'cert_file'):
+            kwargs['cert_file'] = self.cert_file
+        return kwargs
+
     def _to_node(self, vm, is_stopped=False):
         """
-        This will conver a VM resource to a node with state "Stopped"
-        It can be started with self.start
         """
         ID = vm['metadata']['uid']
         name = vm['metadata']['name']
         driver = self.connection.driver
         extra = {'namespace': vm['metadata']['namespace']}
         extra['pvcs'] = []
+        memory = 0
         if 'limits' in vm['spec']['template']['spec'][
                 'domain']['resources']:
             if 'memory' in vm['spec']['template']['spec'][
                     'domain']['resources']['limits']:
                 memory = vm['spec']['template']['spec'][
                     'domain']['resources']['limits']['memory']
-                memory = int(memory.rstrip('M'))
-        else:
-            memory = 0
-        if 'limits' in vm['spec']['template']['spec'][
-                'domain']['resources']:
-            if 'cpu' in vm['spec']['template']['spec'][
-                    'domain']['resources']['limits']:
-                cpu = vm['spec']['template']['spec'][
-                    'domain']['resources']['requests']['cpu']
-                cpu = int(cpu.rstrip('m'))
+        elif vm['spec']['template']['spec']['domain']['resources'].get(
+                'requests', None):
 
-        else:
-            cpu = 0
+            if vm['spec']['template']['spec'][
+               'domain']['resources']['requests'].get('memory', None):
+                memory = vm['spec']['template']['spec'][
+                    'domain']['resources']['requests']['memory']
+        if not isinstance(memory, int):
+            if 'M' in memory or 'Mi' in memory:
+                memory = memory.rstrip('M')
+                memory = memory.rstrip('Mi')
+                memory = int(memory)
+            elif 'G' in memory:
+                memory = memory.rstrip('G')
+                memory = int(memory) // 1000
+            elif 'Gi' in memory:
+                memory = memory.rstrip('Gi')
+                memory = int(memory) // 1024
+        cpu = 1
+        if vm['spec']['template']['spec'][
+                'domain']['resources'].get('limits', None):
+            if vm['spec']['template']['spec']['domain']['resources'][
+               'limits'].get('cpu', None):
+                cpu = vm['spec']['template']['spec'][
+                    'domain']['resources']['limits']['cpu']
+        elif vm['spec']['template']['spec'][
+            'domain']['resources'].get('requests', None) and vm[
+                'spec']['template']['spec'][
+                'domain']['resources']['requests'].get('cpu', None):
+            cpu = vm['spec']['template']['spec'][
+                'domain']['resources']['requests']['cpu']
+        elif vm['spec']['template']['spec']['domain'].get('cpu', None):
+            cpu = vm['spec']['template']['spec']['domain'][
+                'cpu'].get('cores', 1)
+        if not isinstance(cpu, int):
+            cpu = int(cpu.rstrip('m'))
         extra_size = {'cpus': cpu}
-        size = NodeSize(id=ID, name=name, ram=memory,
+        size_name = "{} vCPUs, {}MB Ram".format(str(cpu), str(memory))
+        size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
+        size = NodeSize(id=size_id, name=size_name, ram=memory,
                         disk=0, bandwidth=0, price=0,
                         driver=driver, extra=extra_size)
         extra['memory'] = memory
@@ -945,12 +1018,32 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                 if type(v) is dict:
                     if 'image' in v:
                         image_name = v['image']
-        image = NodeImage(ID, image_name, driver)
+        image = NodeImage(image_name, image_name, driver)
         if 'volumes' in vm['spec']['template']['spec']:
             for volume in vm['spec']['template']['spec']['volumes']:
                 if 'persistentVolumeClaim' in volume:
                     extra['pvcs'].append(volume[
                         'persistentVolumeClaim']['claimName'])
+        port_forwards = []
+        services = self.ex_list_services(namespace=extra['namespace'],
+                                         node_name=name)
+        for service in services:
+            service_type = service['spec'].get('type')
+            for port_pair in service['spec']['ports']:
+                protocol = port_pair.get('protocol')
+                public_port = port_pair.get('port')
+                local_port = port_pair.get('targetPort')
+                try:
+                    int(local_port)
+                except ValueError:
+                    local_port = public_port
+                port_forwards.append({
+                    'local_port': local_port,
+                    'public_port': public_port,
+                    'protocol': protocol,
+                    'service_type': service_type
+                })
+        extra['port_forwards'] = port_forwards
         if is_stopped:
             state = NodeState.STOPPED
             public_ips = None
@@ -986,27 +1079,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                                   driver)
                 state = NodeState.RUNNING if "running" in cont_status[
                     'state'] else NodeState.PENDING
-
-        # getting size data
-        for container in pod['spec']['containers']:
-            if container['name'] != "compute":
-                if 'memory' in container['resources']['limits']:
-                    memory = container['resources']['limits']['memory']
-                    memory = int(memory.rstrip('M'))
-                else:
-                    memory = 0
-                if 'cpu' in container['resources']['limits']:
-                    cpu = container['resources']['limits']['cpu']
-                    cpu = int(cpu.rstrip('m'))
-                else:
-                    cpu = 0
-                extra['memory'] = memory
-                extra['cpu'] = cpu
-                extra_size = {'cpus': cpu}
-                size = NodeSize(id=ID, name=name, ram=memory,
-                                disk=0, bandwidth=0, price=0,
-                                driver=driver, extra=extra_size)
-
         public_ips = None
         created_at = datetime.strptime(vm['metadata']['creationTimestamp'],
                                        '%Y-%m-%dT%H:%M:%SZ')
@@ -1022,3 +1094,143 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
                     driver=driver, size=size,
                     image=image, extra=extra,
                     created_at=created_at)
+
+    def ex_list_services(self, namespace='default', node_name=None,
+                         service_name=None):
+        '''
+        If node_name is given then the services returned will be those that
+        concern the node
+        '''
+        params = None
+        if service_name is not None:
+            params = {'fieldSelector': 'metadata.name={}'.format(service_name)}
+        req = ROOT_URL + '/namespaces/{}/services'.format(namespace)
+        result = self.connection.request(req, params=params).object['items']
+        if node_name:
+            res = []
+            for service in result:
+                if node_name in service['metadata'].get('name', ""):
+                    res.append(service)
+            return res
+        return result
+
+    def ex_create_service(self, node, ports, service_type="NodePort",
+                          cluster_ip=None, load_balancer_ip=None,
+                          override_existing_ports=False):
+        '''
+        Each node has a single service of one type on which the exposed ports
+        are described. If a service exists then the port declared will be
+        exposed alongside the existing ones, set override_existing_ports=True
+        to delete existing exposed ports and expose just the ones in the port
+        variable.
+
+        param node: the libcloud node for which the ports will be exposed
+        type  node: libcloud `Node` class
+
+        param ports: a list of dictionaries with keys --> values:
+                     'port' --> port to be exposed on the service
+                     'target_port' --> port on the pod/node, optional
+                                       if empty then it gets the same
+                                       value as 'port' value
+                     'protocol' ---> either 'UDP' or 'TCP', defaults to TCP
+                     'name' --> A name for the service
+                     If ports is an empty `list` and a service exists of this
+                     type then the service will be deleted.
+        type  ports: `list` of `dict` where each `dict` has keys --> values:
+                     'port' --> `int`
+                     'target_port' --> `int`
+                     'protocol' --> `str
+                     'name' --> str
+
+        param service_type: Valid types are ClusterIP, NodePort, LoadBalancer
+        type  service_type: `str`
+
+        param cluster_ip: This can be set with an IP string value if you want
+                          manually set the service's internal IP. If the value
+                          is not correct the method will fail, this value can't
+                          be updated.
+        type  cluster_ip: `str`
+
+        param override_existing_ports: Set to True if you want to delete the
+                                       existing ports exposed by the service
+                                       and keep just the ones declared in the
+                                       present ports argument.
+                                       By default it is false and if the
+                                       service already exists the ports will be
+                                       added to the existing ones.
+        type  override_existing_ports: `boolean`
+        '''
+        # check if service exists first
+        namespace = node.extra.get('namespace', 'default')
+        service_name = 'service-{}-{}'.format(service_type.lower(), node.name)
+        service_list = self.ex_list_services(namespace=namespace,
+                                             service_name=service_name)
+
+        ports_to_expose = []
+        # if ports has a falsey value like None or 0
+        if not ports:
+            ports = []
+        for port_group in ports:
+            if not port_group.get('target_port', None):
+                port_group['target_port'] = port_group['port']
+            if not port_group.get('name', ""):
+                port_group['name'] = 'port-{}'.format(port_group['port'])
+            ports_to_expose.append(
+                {'protocol': port_group.get('protocol', 'TCP'),
+                 'port': int(port_group['port']),
+                 'targetPort': int(port_group['target_port']),
+                 'name': port_group['name']})
+        headers = None
+        data = None
+        if len(service_list) > 0:
+            if not ports:
+                method = 'DELETE'
+            else:
+                method = 'PATCH'
+                spec = {'ports': ports_to_expose}
+                if not override_existing_ports:
+                    existing_ports = service_list[0]['spec']['ports']
+                    spec = {'ports': existing_ports.extend(ports_to_expose)}
+                data = json.dumps({'spec': spec})
+                headers = {"Content-Type": "application/merge-patch+json"}
+            req = "{}/namespaces/{}/services/{}".format(
+                ROOT_URL, namespace, service_name
+            )
+        else:
+            if not ports:
+                raise ValueError("Argument ports is empty but there is no "
+                                 "service of {} type to be deleted".format(
+                                     service_type
+                                 ))
+            method = 'POST'
+            service = {
+                'kind': 'Service',
+                'apiVersion': 'v1',
+                'metadata': {
+                    'name': service_name,
+                    'labels': {
+                        'service': 'kubevirt.io'
+                    }
+                },
+                'spec': {
+                    'type': "",
+                    'selector': {
+                        "kubevirt.io/vm": node.name
+                    },
+                    'ports': []
+                },
+            }
+            service['spec']['ports'] = ports_to_expose
+            service['spec']['type'] = service_type
+            if cluster_ip is not None:
+                service['spec']['clusterIP'] = cluster_ip
+            if service_type == "LoadBalancer" and load_balancer_ip is not None:
+                service['spec']['loadBalancerIP'] = load_balancer_ip
+            data = json.dumps(service)
+            req = "{}/namespaces/{}/services".format(ROOT_URL, namespace)
+        try:
+            result = self.connection.request(req, method=method, data=data,
+                                             headers=headers)
+        except Exception as exc:
+            raise
+        return result.status in VALID_RESPONSE_CODES
