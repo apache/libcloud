@@ -25,8 +25,10 @@ import hashlib
 from datetime import datetime
 
 from libcloud.common.types import LibcloudError
+from libcloud.common.kubernetes import KubernetesBasicAuthConnection
 from libcloud.common.kubernetes import KubernetesDriverMixin
 from libcloud.common.kubernetes import VALID_RESPONSE_CODES
+
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.base import NodeDriver, NodeSize, Node
 from libcloud.compute.base import NodeImage, NodeLocation, StorageVolume
@@ -42,7 +44,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     type = Provider.KUBEVIRT
     name = "kubevirt"
     website = 'https://www.kubevirt.io'
-    connectionCls = ""
+    connectionCls = KubernetesBasicAuthConnection
 
     NODE_STATE_MAP = {
         'pending': NodeState.PENDING,
