@@ -131,7 +131,6 @@ class KubeVirtMockHttp(MockHttp):
         else:
             AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
     def _apis_kubevirt_io_v1alpha3_namespaces_kube_system_virtualmachines(self,
                                                      method, url, body, headers):
         if method == "GET":
@@ -151,7 +150,6 @@ class KubeVirtMockHttp(MockHttp):
         else:
             AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
     def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachines_testvm(self,
                                                     method, url, body, headers):
         header = "application/merge-patch+json"
@@ -199,6 +197,14 @@ class KubeVirtMockHttp(MockHttp):
 
         if method == "GET":
             body = self.fixtures.load('get_pods.json')
+        else:
+            AssertionError('Unsupported method')
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+    
+    def _api_v1_namespaces_default_services(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('get_services.json')
         else:
             AssertionError('Unsupported method')
 
