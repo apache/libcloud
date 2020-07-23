@@ -1193,13 +1193,13 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         self.username = key
         # getting session token
         self._get_session_token()
-        self.driver6_5 = self._get_6_5_driver()
+        self.driver_soap = None
 
-    def _get_6_5_driver(self):
-        return VSphereNodeDriver(self.host, self.username,
-                                 self.connection.secret,
-                                 ca_cert=self.
-                                 connection.connection.ca_cert)
+    def _get_soap_driver(self):
+        self.driver_soap =  VSphereNodeDriver(self.host, self.username,
+                                              self.connection.secret,
+                                              ca_cert=self.
+                                              connection.connection.ca_cert)
 
     def _get_session_token(self):
         uri = "/rest/com/vmware/cis/session"
@@ -1682,7 +1682,9 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                 images.append(NodeImage(id=item['id'],
                               name=item['name'],
                               driver=driver, extra=extra))
-        templates_in_hosts = self.driver6_5.list_images()
+        if self.driver_soap is None:
+            self._get_soap_driver()
+        templates_in_hosts = self.driver_soap.list_images()
         for template in templates_in_hosts:
             if template.name not in names:
                 images += [template]
@@ -1723,7 +1725,9 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                     kwargs['ex_datastore'] = dstore['name']
                     break
             kwargs['folder'] = ex_folder
-            result = self.driver6_5.create_node(**kwargs)
+            if self.driver_soap is None:
+                self._get_soap_driver()
+            result = self.driver_soap.create_node(**kwargs)
             return result
 
         # post creation checks
@@ -1937,14 +1941,18 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         """
         List node snapshots
         """
-        return self.driver6_5.ex_list_snapshots(node)
+        if self.driver_soap is None:
+            self._get_soap_driver()
+        return self.driver_soap.ex_list_snapshots(node)
 
     def ex_create_snapshot(self, node, snapshot_name, description='',
                            dump_memory=False, quiesce=False):
         """
         Create node snapshot
         """
-        return self.driver6_5.ex_create_snapshot(node, snapshot_name,
+        if self.driver_soap is None:
+            self._get_soap_driver()
+        return self.driver_soap.ex_create_snapshot(node, snapshot_name,
                                                  description=description,
                                                  dump_memory=dump_memory,
                                                  quiesce=False)
@@ -1955,7 +1963,9 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         Remove a snapshot from node.
         If snapshot_name is not defined remove the last one.
         """
-        return self.driver6_5.ex_remove_snapshot(
+        if self.driver_soap is None:
+            self._get_soap_driver()
+        return self.driver_soap.ex_remove_snapshot(
             node, snapshot_name=snapshot_name, remove_children=remove_children)
 
     def ex_revert_to_snapshot(self, node, snapshot_name=None):
@@ -1963,8 +1973,22 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         Revert node to a specific snapshot.
         If snapshot_name is not defined revert to the last one.
         """
-        return self.driver6_5.ex_revert_to_snapshot(
+        if self.driver_soap is None:
+            self._get_soap_driver()
+        return self.driver_soap.ex_revert_to_snapshot(
             node, snapshot_name=snapshot_name)
 
     def ex_open_console(self, vm_id):
-        return self.driver6_5.ex_open_console(vm_id)
+        if self.driver_soap is None:
+            self._get_soap_driver()
+        return self.driver_soap.ex_open_console(vm_id)
+
+if __name__ == "__main__":
+    host = "147.75.53.44"
+    port = "443"
+    username = "administrator@vsphere.local"
+    password = "rf9vWJD8$%9dsz"
+    ca_cert = "/home/eis/work/certs/lin/dbad4059.0"
+    #driver = VSphere_6_5_NodeDriver(host=host, username=username, password=password)
+    driver = VSphere_6_7_NodeDriver(key=username,secret=password,host=host,port=port, ca_cert=ca_cert)
+    driver.list_images()
