@@ -1233,6 +1233,6 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         try:
             result = self.connection.request(req, method=method, data=data,
                                              headers=headers)
-        except Exception as exc:
+        except Exception:
             raise
         return result.status in VALID_RESPONSE_CODES
