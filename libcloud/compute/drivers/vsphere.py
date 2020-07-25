@@ -36,7 +36,7 @@ try:
     from pyVmomi import vim, vmodl, VmomiSupport
     from pyVim.task import WaitForTask
 except ImportError:
-    pyvmomi=None
+    pyvmomi = None
 
 import atexit
 
@@ -92,7 +92,8 @@ class VSphereNodeDriver(NodeDriver):
         username and password
         """
         if pyvmomi is None:
-            raise ImportError('Missing "pyvmomi" dependency. You can install it '
+            raise ImportError('Missing "pyvmomi" dependency. '
+                              'You can install it '
                               'using pip - pip install pyvmomi')
         self.host = host
         try:
@@ -518,7 +519,7 @@ class VSphereNodeDriver(NodeDriver):
         uuid = vm.get('summary.config.instanceUuid') or \
             (vm.get('obj').config and vm.get('obj').config.instanceUuid)
         if not uuid:
-            logger.error('No uuid for vm:', vm)
+            logger.error('No uuid for vm: {}'.format(vm))
         annotation = vm.get('summary.config.annotation')
         state = vm.get('summary.runtime.powerState')
         status = self.NODE_STATE_MAP.get(state, NodeState.UNKNOWN)
@@ -1084,7 +1085,8 @@ class VSphereNodeDriver(NodeDriver):
     def ex_open_console(self, vm_uuid):
         vm = self.find_by_uuid(vm_uuid)
         ticket = vm.AcquireTicket(ticketType='webmks')
-        return f'wss://{ticket.host}:{ticket.port}/ticket/{ticket.ticket}'
+        return 'wss://{}:{}/ticket/{}'.format(
+            ticket.host, ticket.port, ticket.ticket)
 
     def _get_version(self):
         content = self.connection.RetrieveContent()
@@ -1198,8 +1200,9 @@ class VSphere_6_7_NodeDriver(NodeDriver):
         self.driver_soap = None
 
     def _get_soap_driver(self):
-        if pyvomi is None:
-            raise ImportError('Missing "pyvmomi" dependency. You can install it '
+        if pyvmomi is None:
+            raise ImportError('Missing "pyvmomi" dependency. '
+                              'You can install it '
                               'using pip - pip install pyvmomi')
         self.driver_soap = VSphereNodeDriver(self.host, self.username,
                                              self.connection.secret,
@@ -1798,7 +1801,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                 if not resource_pool:
                     msg = ("Could not find resource-pool for given location "
                            "(host). Please make sure the location is valid.")
-                    raise VSphereException(code="504", msg=msg)
+                    raise VSphereException(code="504", message=msg)
                 spec['target']['resource_pool_id'] = resource_pool
                 spec['target']['host_id'] = location.id
             elif location.extra.get('type') == 'cluster':
@@ -1807,7 +1810,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                     msg = ("Could not find resource-pool for given location "
                            "(cluster). Please make sure the location "
                            "is valid.")
-                    raise VSphereException(code="504", msg=msg)
+                    raise VSphereException(code="504", message=msg)
                 spec['target']['resource_pool_id'] = resource_pool
             ovf = self._request(ovf_request, method="POST",
                                 data=json.dumps(spec)).object['value']
