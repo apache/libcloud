@@ -56,7 +56,9 @@ class OSCRequestSignerAlgorithmV4TestCase(LibcloudTestCase):
             region=self.driver.region
         )
         self.assertIn(
-            'Credential=my_key/20200721/my_region/my_service/osc4_request',
+            'Credential=my_key/{}/my_region/my_service/osc4_request'.format(
+                datetime.now().strftime('%Y%m%d')
+            ),
             headers["Authorization"]
         )
 
