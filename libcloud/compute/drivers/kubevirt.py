@@ -337,7 +337,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         vm['spec']['template']['spec']['domain']['resources'][
             'limits']['memory'] = memory
         if ex_cpu < 10:
-            cpu = int(ex_cpu)
+            cpu = str(ex_cpu)
             vm['spec']['template']['spec']['domain'][
                 'resources']['requests']['cpu'] = cpu
             vm['spec']['template']['spec']['domain'][
