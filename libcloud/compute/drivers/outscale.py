@@ -474,7 +474,7 @@ class OutscaleNodeDriver(NodeDriver):
         :return: nodes
         :rtype: ``dict``
         """
-        action = "ReadImages"
+        action = "ReadVms"
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
                                              version=self.version,
