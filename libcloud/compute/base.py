@@ -1605,7 +1605,7 @@ class NodeDriver(BaseDriver):
 
     def wait_until_running(self,
                            nodes,  # type: List[Node]
-                           wait_period=3,  # type: float
+                           wait_period=5,  # type: float
                            timeout=600,  # type: int
                            ssh_interface='public_ips',  # type: str
                            force_ipv4=True,  # type: bool
