@@ -43,6 +43,18 @@ Compute
   (GITHUB-1469)
   [Eis D. Zaster - @Eis-D-Z]
 
+- [Deployment] Add new ``wait_period`` argument to the ``deploy_node`` method
+  and default it to 5 seconds.
+
+  This argument tells Libcloud how long to wait between each poll interval when
+  waiting for a node to come online and have IP address assigned to it.
+
+  Previously this argument was not exposed to the end user and defaulted to 3
+  seconds which means it would be quite easy to reach rate limits with some
+  providers when spinning up many instances concurrently using the same
+  credentials.
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 

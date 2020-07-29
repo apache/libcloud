@@ -999,6 +999,7 @@ class NodeDriver(BaseDriver):
                     max_tries=3,  # type: int
                     ssh_interface='public_ips',  # type: str
                     at_exit_func=None,  # type: Callable
+                    wait_period=5,  # type: int
                     **create_node_kwargs):
         # type: (...) -> Node
         """
@@ -1105,6 +1106,12 @@ class NodeDriver(BaseDriver):
                              finishes (this includes throwing an exception),
                              at exit handler function won't be called.
         :type at_exit_func: ``func``
+
+        :param wait_period: How many seconds to wait between each iteration
+                            while waiting for node to transition into
+                            running state and have IP assigned. (default is 5)
+        :type wait_period: ``int``
+
         """
         if not libcloud.compute.ssh.have_paramiko:
             raise RuntimeError('paramiko is not installed. You can install ' +
@@ -1182,7 +1189,7 @@ class NodeDriver(BaseDriver):
         try:
             node, ip_addresses = self.wait_until_running(
                 nodes=[node],
-                wait_period=3,
+                wait_period=wait_period,
                 timeout=wait_timeout,
                 ssh_interface=ssh_interface)[0]
         except Exception as e:
