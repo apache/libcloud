@@ -101,7 +101,14 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
         content = fp.read()
 
     pricing_data = json.loads(content)
-    size_pricing = pricing_data[driver_type][driver_name]
+    # google asia region prices dont include the postfix number in the pricing
+    # data: e.g. we have data for google_asia-east instead of google_asia-east1
+    if driver_name not in pricing_data[driver_type] and driver_name[:-1] in pricing_data[driver_type]:
+        size_pricing = pricing_data[driver_type][driver_name[:-1]]
+    elif driver_name not in pricing_data[driver_type] and driver_name[:-2] in pricing_data[driver_type]:
+        size_pricing = pricing_data[driver_type][driver_name[:-2]]
+    else:
+        size_pricing = pricing_data[driver_type][driver_name]
 
     for driver_type in VALID_PRICING_DRIVER_TYPES:
         # pylint: disable=maybe-no-member

@@ -22,6 +22,7 @@ from libcloud.container.base import (Container, ContainerDriver,
 from libcloud.common.kubernetes import KubernetesException
 from libcloud.common.kubernetes import KubernetesBasicAuthConnection
 from libcloud.common.kubernetes import KubernetesDriverMixin
+from libcloud.common.kubernetes import KubernetesResponse
 
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
@@ -50,6 +51,49 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     website = 'http://kubernetes.io'
     connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
+
+    def __init__(self, key=None, secret=None, secure=False, host='localhost',
+                 port=4243):
+        """
+        :param    key: API key or username to used (required)
+        :type     key: ``str``
+
+        :param    secret: Secret password to be used (required)
+        :type     secret: ``str``
+
+        :param    secure: Whether to use HTTPS or HTTP. Note: Some providers
+                only support HTTPS, and it is on by default.
+        :type     secure: ``bool``
+
+        :param    host: Override hostname used for connections.
+        :type     host: ``str``
+
+        :param    port: Override port used for connections.
+        :type     port: ``int``
+
+        :return: ``None``
+        """
+        super(KubernetesContainerDriver, self).__init__(key=key, secret=secret,
+                                                        secure=secure,
+                                                        host=host,
+                                                        port=port)
+
+        if host is not None:
+            if host.startswith('https://'):
+                secure = True
+
+            # strip the prefix
+            prefixes = ['http://', 'https://']
+            for prefix in prefixes:
+                if host.startswith(prefix):
+                    host = host.lstrip(prefix)
+
+            self.connection.host = host
+            self.connection.port = port
+
+        self.connection.secure = secure
+        self.connection.key = key
+        self.connection.secret = secret
 
     def list_containers(self, image=None, all=True):
         """

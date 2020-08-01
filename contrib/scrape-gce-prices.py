@@ -36,6 +36,7 @@ or if it is the first time using it and no skus are saved:
 """
 
 import copy
+
 import json
 import argparse
 import os
@@ -49,6 +50,10 @@ API_URL = ("https://cloudbilling.googleapis.com/v1/services/"
 
 API_KEY = os.environ.get("GCE_API_KEY", None)
 
+=======
+from requests import request
+
+>>>>>>> mistio-trunk
 usage_type_map = {
     "OnDemand": 'on_demand',
     "Preemptible": 'preemptible',
@@ -387,8 +392,10 @@ PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 def get_all_skus(key):
     # a valid google cloud account API key should be provided
     # https://cloud.google.com/docs/authentication/api-keys
+
     url = API_URL
     params = {"key": key}
+
     data = []
     has_next_page = True
     while has_next_page:
@@ -405,6 +412,7 @@ def get_all_skus(key):
 
         if next_page:
             params["pageToken"] = next_page
+
         else:
             has_next_page = False
 
@@ -515,6 +523,7 @@ def update_pricing_file(pricing_file_path, pricing_data):
         return
 
     data['updated'] = int(time.time())
+
     content = json.dumps(data, indent=4)
     lines = content.splitlines()
     lines = [line.rstrip() for line in lines]
@@ -550,4 +559,5 @@ if __name__ == "__main__":
         raise ValueError("API key needs to provided either as a script "
                          "argument or via GCE_API_KEY environment "
                          "variable.")
+
     main(arg.key, skus=arg.all)

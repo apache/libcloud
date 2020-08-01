@@ -1918,7 +1918,7 @@ class GCENodeDriver(NodeDriver):
         self.project = project
         self.scopes = scopes
         self.credential_file = credential_file or \
-            GoogleOAuth2Credential.default_credential_file + '.' + self.project
+            GoogleOAuth2Credential.default_credential_file + '.' + user_id + self.project
 
         super(GCENodeDriver, self).__init__(user_id, key, **kwargs)
 
@@ -2526,7 +2526,7 @@ class GCENodeDriver(NodeDriver):
                      for a in response.get('items', [])]
         return list_data
 
-    def ex_list_subnetworks(self, region=None):
+    def ex_list_subnetworks(self, region=None, filter_expression=None):
         """
         Return the list of subnetworks.
 
@@ -2543,8 +2543,12 @@ class GCENodeDriver(NodeDriver):
         else:
             request = '/regions/%s/subnetworks' % (region.name)
 
+        params = {}
+        if filter_expression:
+            params['filter'] = filter_expression
         list_subnetworks = []
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method='GET',
+                                           params=params).object
 
         if 'items' in response:
             if region is None:
@@ -2606,26 +2610,58 @@ class GCENodeDriver(NodeDriver):
         # Create volume cache now for fast lookups of disk info.
         self._ex_populate_volume_dict()
 
-        items = response['items'].values()
-        instances = [item.get('instances', []) for item in items]
-        instances = itertools.chain(*instances)
+        sizes = {}
+        if 'items' in response:
+            # The aggregated response returns a dict for each zone
+            if zone is None:
+                # Create volume cache now for fast lookups of disk info.
+                self._ex_populate_volume_dict()
+                for v in response['items'].values():
+                    for i in v.get('instances', []):
+                        try:
+                            if sizes.get(i['machineType']):
+                                i['size'] = sizes[i['machineType']]
+                            else:
+                                i['size'] = self.connection.request(
+                                    i['machineType'], method='GET').object[
+                                        'id']
+                                sizes[i['machineType']] = i['size']
 
-        for instance in instances:
-            try:
-                node = self._to_node(instance,
-                                     use_disk_cache=ex_use_disk_cache)
-            except ResourceNotFoundError:
-                # If a GCE node has been deleted between
-                #   - is was listed by `request('.../instances', 'GET')
-                #   - it is converted by `self._to_node(i)`
-                # `_to_node()` will raise a ResourceNotFoundError.
-                #
-                # Just ignore that node and return the list of the
-                # other nodes.
-                continue
+                            list_nodes.append(
+                                self._to_node(i,
+                                              use_disk_cache=ex_use_disk_cache)
+                            )
+                        # If a GCE node has been deleted between
+                        #   - is was listed by `request('.../instances', 'GET')
+                        #   - it is converted by `self._to_node(i)`
+                        # `_to_node()` will raise a ResourceNotFoundError.
+                        #
+                        # Just ignore that node and return the list of the
+                        # other nodes.
+                        except ResourceNotFoundError:
+                            pass
+            else:
+                for i in response['items']:
+                    try:
+                        if sizes.get(i['machineType']):
+                            i['size'] = sizes[i['machineType']]
+                        else:
+                            i['size'] = self.connection.request(
+                                i['machineType'], method='GET').object['id']
+                            sizes[i['machineType']] = i['size']
 
-            list_nodes.append(node)
-
+                        list_nodes.append(
+                            self._to_node(i, use_disk_cache=ex_use_disk_cache)
+                        )
+                    # If a GCE node has been deleted between
+                    #   - is was listed by `request('.../instances', 'GET')
+                    #   - it is converted by `self._to_node(i)`
+                    # `_to_node()` will raise a ResourceNotFoundError.
+                    #
+                    # Just ignore that node and return the list of the
+                    # other nodes.
+                    except ResourceNotFoundError:
+                        pass
         # Clear the volume cache as lookups are complete.
         self._ex_volume_dict = {}
         return list_nodes
@@ -3941,8 +3977,8 @@ class GCENodeDriver(NodeDriver):
 
         return self.ex_get_subnetwork(name, region_name)
 
-    def ex_create_network(self, name, cidr, description=None,
-                          mode="legacy", routing_mode=None):
+    def ex_create_network(self, name, cidr=None, description=None,
+                          mode="auto", routing_mode=None):
         """
         Create a network. In November 2015, Google introduced Subnetworks and
         suggests using networks with 'auto' generated subnetworks. See, the
@@ -4006,8 +4042,9 @@ class GCENodeDriver(NodeDriver):
     def create_node(
             self, name, size, image, location=None, ex_network='default',
             ex_subnetwork=None, ex_tags=None, ex_metadata=None,
-            ex_boot_disk=None, use_existing_disk=True, external_ip='ephemeral',
-            internal_ip=None, ex_disk_type='pd-standard',
+            ex_boot_disk=None, disk_size=10, use_existing_disk=True,
+            external_ip='ephemeral', internal_ip=None,
+            ex_disk_type='pd-standard',
             ex_disk_auto_delete=True, ex_service_accounts=None,
             description=None, ex_can_ip_forward=None,
             ex_disks_gce_struct=None, ex_nic_gce_struct=None,
@@ -4214,7 +4251,8 @@ class GCENodeDriver(NodeDriver):
                     'diskName': name,
                     'diskSizeGb': ex_disk_size,
                     'diskType': ex_disk_type.extra['selfLink'],
-                    'sourceImage': image.extra['selfLink']
+                    'sourceImage': image.extra['selfLink'],
+                    'diskSizeGb': disk_size
                 }
             }]
 
@@ -7090,7 +7128,7 @@ class GCENodeDriver(NodeDriver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        request = '/zones/%s/disks/%s' % (volume.extra['zone'].name,
+        request = '/zones/%s/disks/%s' % (volume.extra['zone'],
                                           volume.name)
         self.connection.async_request(request, method='DELETE')
         return True
@@ -7536,6 +7574,8 @@ class GCENodeDriver(NodeDriver):
             name, 'instances', res_name='Node')
         request = '/zones/%s/instances/%s' % (zone.name, name)
         response = self.connection.request(request, method='GET').object
+        response['size'] = self.connection.request(
+            response['machineType'], method='GET').object['id']
         return self._to_node(response)
 
     def ex_get_project(self):
@@ -8904,9 +8944,11 @@ class GCENodeDriver(NodeDriver):
         :return: Location object
         :rtype: :class:`NodeLocation`
         """
+        extra = {}
+        extra['region'] = location.get('region').split('/')[-1]
         return NodeLocation(id=location['id'], name=location['name'],
                             country=location['name'].split('-')[0],
-                            driver=self)
+                            extra=extra, driver=self)
 
     def _to_node(self, node, use_disk_cache=False):
         """
@@ -8981,14 +9023,12 @@ class GCENodeDriver(NodeDriver):
                 src_image = extra['boot_disk'].extra['sourceImage']
                 image = self._get_components_from_path(src_image)['name']
             extra['image'] = image
-        size = self._get_components_from_path(node['machineType'])['name']
-
         state = self.NODE_STATE_MAP.get(node['status'], NodeState.UNKNOWN)
 
         return Node(id=node['id'], name=node['name'],
                     state=state,
                     public_ips=public_ips, private_ips=private_ips,
-                    driver=self, size=size, image=image, extra=extra)
+                    driver=self, size=node['size'], image=image, extra=extra)
 
     def _to_node_size(self, machine_type, instance_prices):
         """
@@ -9126,7 +9166,7 @@ class GCENodeDriver(NodeDriver):
         """
         extra = {}
         extra['selfLink'] = volume.get('selfLink')
-        extra['zone'] = self.ex_get_zone(volume['zone'])
+        extra['zone'] = self.ex_get_zone(volume['zone']).name
         extra['status'] = volume.get('status')
         extra['creationTimestamp'] = volume.get('creationTimestamp')
         extra['description'] = volume.get('description')
@@ -9135,12 +9175,8 @@ class GCENodeDriver(NodeDriver):
         extra['sourceSnapshot'] = volume.get('sourceSnapshot')
         extra['sourceSnapshotId'] = volume.get('sourceSnapshotId')
         extra['options'] = volume.get('options')
-        extra['labels'] = volume.get('labels', {})
-        extra['labelFingerprint'] = volume.get('labelFingerprint')
-
-        if 'licenses' in volume:
-            lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
-            extra['licenses'] = lic_objs
+        extra['licenses'] = volume.get('licenses')
+        extra['users'] = volume.get('users')
 
         extra['type'] = volume.get('type', 'pd-standard').split('/')[-1]
 

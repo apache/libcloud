@@ -207,7 +207,12 @@ def _list_async(driver):
         result = yield from future
         retval.extend(result)
     return retval""" % resource_type, glob, loc)
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            loop = asyncio.get_event_loop()
+
         return loop.run_until_complete(loc['_list_async'](loc['self']))
 
     def ex_list_nodes_for_project(self, ex_project_id, include='plan', page=1,
@@ -245,7 +250,7 @@ def _list_async(driver):
 
     def create_node(self, name, size, image, location,
                     ex_project_id=None, ip_addresses=[], cloud_init=None,
-                    **kwargs):
+                    disk=None, disk_size=0, **kwargs):
         """
         Create a node.
 
@@ -254,7 +259,6 @@ def _list_async(driver):
         """
         # if project has been specified on initialization of driver, then
         # create on this project
-
         if self.project_id:
             ex_project_id = self.project_id
         else:
@@ -279,11 +283,10 @@ def _list_async(driver):
             error_message = data.object.get('error_message', message)
             raise ValueError('Failed to create node: %s' % (error_message))
         node = self._to_node(data=data.object)
-        if kwargs.get('disk'):
-            self.attach_volume(node, kwargs.get('disk'))
-        if kwargs.get('disk_size'):
-            volume = self.create_volume(size=kwargs.get('disk_size'),
-                                        location=location)
+        if disk:
+            self.attach_volume(node, disk)
+        if disk_size:
+            volume = self.create_volume(size=disk_size, location=location)
             self.attach_volume(node, volume)
         return node
 
@@ -429,26 +432,36 @@ def _list_async(driver):
 
     def _to_location(self, data):
         extra = data
-        return NodeLocation(id=data['id'], name=data['name'], country=None,
+        name = data['name'] + ' ({})'.format(data['code'].upper())
+        return NodeLocation(id=data['id'], name=name, country=None,
                             driver=self, extra=extra)
 
     def _to_size(self, data):
-        cpus = data['specs']['cpus'][0].get('count')
+        try:
+            cpus = data['specs']['cpus'][0].get('count')
+        except KeyError:
+            cpus = None
+        regions = [region.get('href').replace('/facilities/', '')
+            for region in data.get('available_in')]
         extra = {'description': data['description'], 'line': data['line'],
-                 'cpus': cpus}
-
-        ram = data['specs']['memory']['total']
-        disk = 0
-        for disks in data['specs']['drives']:
-            disk_size = disks['size'].replace('GB', '')
-            if 'TB' in disk_size:
-                disk_size = float(disks['size'].replace('TB', '')) * 1000
-            disk += disks['count'] * int(disk_size)
+                 'cpus': cpus, 'regions': regions}
+        try:
+            ram = int(data['specs']['memory']['total'].replace('GB', '')) * 1024
+        except KeyError:
+            ram = None
+        disk = None
+        if data['specs'].get('drives', ''):
+            disk = 0
+            for disks in data['specs']['drives']:
+                disk_size = disks['size'].replace('GB', '')
+                if 'TB' in disk_size:
+                    disk_size = float(disks['size'].replace('TB', '')) * 1000
+                disk += disks['count'] * int(disk_size)
         name = "%s - %s RAM" % (data.get('name'), ram)
         price = data['pricing'].get('hour')
         return NodeSize(id=data['slug'], name=name,
-                        ram=int(ram.replace('GB', '')) * 1024, disk=disk,
-                        bandwidth=0, price=price, extra=extra, driver=self)
+                        ram=ram, disk=disk, bandwidth=0,
+                        price=price, extra=extra, driver=self)
 
     def _to_key_pairs(self, data):
         extra = {'label': data['label'],

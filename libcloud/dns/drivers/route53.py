@@ -38,7 +38,7 @@ from libcloud.common.aws import AWSGenericResponse, AWSTokenConnection
 from libcloud.common.base import ConnectionUserAndKey
 
 
-API_VERSION = '2012-02-29'
+API_VERSION = '2013-04-01'
 API_HOST = 'route53.amazonaws.com'
 API_ROOT = '/%s/' % (API_VERSION)
 

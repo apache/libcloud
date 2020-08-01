@@ -22,15 +22,21 @@ try:
 except ImportError:
     import json
 import time
+import base64
+import hashlib
 
+from libcloud.utils.xml import fixxpath, findtext, findattr, findall
 from libcloud.common.aliyun import AliyunXmlResponse, SignedAliyunConnection
 from libcloud.common.types import LibcloudError
 from libcloud.compute.base import Node, NodeDriver, NodeImage, NodeSize, \
-    StorageVolume, VolumeSnapshot, NodeLocation
+    StorageVolume, VolumeSnapshot, NodeLocation, KeyPair
 from libcloud.compute.types import NodeState, StorageVolumeState, \
     VolumeSnapshotState
 from libcloud.utils.py3 import _real_unicode as u
+from libcloud.utils.py3 import ensure_string, b
 from libcloud.utils.xml import findall, findattr, findtext
+from libcloud.utils.publickey import get_pubkey_ssh2_fingerprint
+from libcloud.utils.publickey import get_pubkey_comment
 
 __all__ = [
     'DiskCategory',
@@ -38,7 +44,9 @@ __all__ = [
     'ECS_API_VERSION',
     'ECSDriver',
     'ECSSecurityGroup',
-    'ECSZone'
+    'ECSZone',
+    'ECSVpc',
+    'ECSVSwitch'
 ]
 
 ECS_API_VERSION = '2014-05-26'
@@ -360,6 +368,43 @@ class ECSConnection(SignedAliyunConnection):
     service_name = 'ecs'
 
 
+class ECSVpc(object):
+    """
+    Represents a Vpc
+    """
+    def __init__(self, id, name, description=None, driver=None, vpc_id=None,
+                 creation_time=None, status=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.driver = driver
+        self.vpc_id = vpc_id
+        self.creation_time = creation_time
+        self.status = status
+
+    def __repr__(self):
+        return ('<ECSVpc: id=%s, name=%s, driver=%s ...>' %
+                (self.id, self.name, self.driver.name))
+
+
+class ECSVSwitch(object):
+    """
+    Represents a VSwitch
+    """
+    def __init__(self, id, name, description=None, driver=None, vpc_id=None,
+                 creation_time=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.driver = driver
+        self.vpc_id = vpc_id
+        self.creation_time = creation_time
+
+    def __repr__(self):
+        return ('<ECSVSwitch: id=%s, name=%s, driver=%s ...>' %
+                (self.id, self.name, self.driver.name))
+
+
 class ECSSecurityGroup(object):
     """
     Security group used to control nodes internet and intranet accessibility.
@@ -485,7 +530,7 @@ class ECSDriver(NodeDriver):
     name = 'Aliyun ECS'
     website = 'https://www.aliyun.com/product/ecs'
     connectionCls = ECSConnection
-    features = {'create_node': ['password']}
+    features = {'create_node': ['password', 'ssh_key']}
     namespace = None
     path = '/'
 
@@ -569,6 +614,100 @@ class ECSDriver(NodeDriver):
         locations = [self._to_location(each) for each in location_elements]
         return locations
 
+    def ex_list_networks(self, ex_filters=None):
+        params= {'Action': 'DescribeVpcs',
+                 'RegionId': self.region}
+
+        if ex_filters and isinstance(ex_filters, dict):
+            ex_filters.update(params)
+            params = ex_filters
+        def _parse_response(resp_object):
+            sg_elements = findall(resp_object, 'Vpcs/Vpc',
+                                  namespace=self.namespace)
+            sgs = [self._to_network(el) for el in sg_elements]
+            return sgs
+        return self._request_multiple_pages(self.path, params,
+                                            _parse_response)
+
+    def ex_create_network(self, region_id=None, ex_filters=None):
+        """
+        Create a VPC.
+
+        :keyword region_id: the region ID of the VPC to be created.
+        :type region_id: ``str``
+        """
+        params = {'Action': 'CreateVpc'}
+        if region_id:
+            params['RegionId'] = region_id
+        else:
+            params['RegionId'] = self.region
+
+        if ex_filters and isinstance(ex_filters, dict):
+            ex_filters.update(params)
+            params = ex_filters
+
+        resp = self.connection.request(self.path, params)
+
+        return findtext(resp.object, 'VpcId',
+                        namespace=self.namespace)
+
+    def _to_network(self, element, name=None):
+        _id = findtext(element, 'VpcId', namespace=self.namespace)
+        name = findtext(element, 'VpcName',
+                        namespace=self.namespace)
+        description = findtext(element, 'Description',
+                               namespace=self.namespace)
+        status = findtext(element, 'Status',
+                               namespace=self.namespace)
+        creation_time = findtext(element, 'CreationTime',
+                                 namespace=self.namespace)
+        return ECSVpc(_id, name, description=description,
+                                 driver=self,
+                                 creation_time=creation_time,
+                                 status=status)
+
+    def ex_list_switches(self, ex_filters=None):
+        params = {'Action': 'DescribeVSwitches', 'RegionId': self.region}
+
+        if ex_filters and isinstance(ex_filters, dict):
+            ex_filters.update(params)
+            params = ex_filters
+
+        resp = self.connection.request(self.path, params)
+        return self._to_switches(resp.object)
+
+    def ex_create_switch(self, cidr, zone, vpc, region_id=None):
+        params = {'Action': 'CreateVSwitch',
+                  'CidrBlock': cidr,
+                  'VpcId': vpc,
+                  'ZoneId': zone,
+                  'RegionId': self.region}
+        if region_id:
+            params['RegionId'] = region_id
+        else:
+            params['RegionId'] = self.region
+
+        resp = self.connection.request(self.path, params)
+        return findtext(resp.object, 'VSwitchId',
+                        namespace=self.namespace)
+
+    def _to_switches(self, response):
+        return [self._to_switch(el) for el in response.findall(
+            fixxpath(xpath='VSwitches/VSwitch', namespace=self.namespace))
+        ]
+
+    def _to_switch(self, element, name=None):
+        _id = findtext(element, 'VSwitchId', namespace=self.namespace)
+        name = findtext(element, 'VSwitchName',
+                        namespace=self.namespace)
+        description = findtext(element, 'VSwitchDescription',
+                               namespace=self.namespace)
+        creation_time = findtext(element, 'CreationTime',
+                                 namespace=self.namespace)
+        return ECSVSwitch(_id, name, description=description,
+                                 driver=self,
+                                 creation_time=creation_time)
+
     def create_node(self, name, size, image, auth=None,
                     ex_security_group_id=None, ex_description=None,
                     ex_internet_charge_type=None,
@@ -624,7 +763,7 @@ class ECSDriver(NodeDriver):
         :type ex_hostname: ``str``
 
         :keyword ex_io_optimized: Whether the node is IO optimized (optional)
-        :type ex_io_optimized: ``boll``
+        :type ex_io_optimized: ``bool``
 
         :keyword ex_system_disk: The system disk for the node (optional)
         :type ex_system_disk: ``dict``
@@ -670,7 +809,18 @@ class ECSDriver(NodeDriver):
 
         if auth:
             auth = self._get_and_check_auth(auth)
-            params['Password'] = auth.password
+            if getattr(auth, 'pubkey'):
+                key = self.ex_find_or_import_keypair_by_key_material(
+                    auth.pubkey, kwargs.get('ex_keyname'))
+                params['KeyName'] = key['keyName']
+            else:
+                params['Password'] = auth.password
+
+        if 'ex_userdata' in kwargs:
+            params['UserData'] = base64.b64encode(kwargs.get('ex_userdata').encode()).decode()
+
+        if 'ex_keyname' in kwargs:
+            params['KeyPairName'] = kwargs['ex_keyname']
 
         if ex_io_optimized is not None:
             optimized = ex_io_optimized
@@ -710,8 +860,12 @@ class ECSDriver(NodeDriver):
                                 'with id %s. ' % node_id,
                                 driver=self)
         node = nodes[0]
-        self.ex_start_node(node)
+        self._wait_until_state([node], NodeState.STOPPED)
+        self.start_node(node)
         self._wait_until_state(nodes, NodeState.RUNNING)
+
+        if 'ex_allocate_public_ip_address' in kwargs:
+            self.ex_allocate_public_ip(node)
         return node
 
     def reboot_node(self, node, ex_force_stop=False):
@@ -740,7 +894,7 @@ class ECSDriver(NodeDriver):
         current = nodes[0]
         if current.state == NodeState.RUNNING:
             # stop node first
-            self.ex_stop_node(node)
+            self.stop_node(node)
             self._wait_until_state(nodes, NodeState.STOPPED)
         params = {'Action': 'DeleteInstance',
                   'InstanceId': node.id}
@@ -785,19 +939,21 @@ class ECSDriver(NodeDriver):
         return resp.success() and \
             self._wait_until_state([node], NodeState.STOPPED)
 
-    def ex_start_node(self, node):
-        # NOTE: This method is here for backward compatibility reasons after
-        # this method was promoted to be part of the standard compute API in
-        # Libcloud v2.7.0
-        return self.start_node(node=node)
+    def ex_resize_node(self, node, size):
+        """
+        Resize a node
 
-    def ex_stop_node(self, node, ex_force_stop=False):
-        # NOTE: This method is here for backward compatibility reasons after
-        # this method was promoted to be part of the standard compute API in
-        # Libcloud v2.7.0
-        return self.stop_node(node=node, ex_force_stop=ex_force_stop)
+        :param node: The node to resize
+        :param size: The new size of the node
+        """
+        params = {'Action': 'ModifyInstanceSpec',
+                  'InstanceId': node.id,
+                  'InstanceType': size}
+        resp = self.connection.request(self.path, params)
+        return resp.success()
 
-    def ex_create_security_group(self, description=None, client_token=None):
+
+    def ex_create_security_group(self, description=None, client_token=None, vpc_id=None):
         """
         Create a new security group.
 
@@ -810,11 +966,12 @@ class ECSDriver(NodeDriver):
         """
         params = {'Action': 'CreateSecurityGroup',
                   'RegionId': self.region}
-
         if description:
             params['Description'] = description
         if client_token:
             params['ClientToken'] = client_token
+        if vpc_id:
+            params['VpcId'] = vpc_id
         resp = self.connection.request(self.path, params)
         return findtext(resp.object, 'SecurityGroupId',
                         namespace=self.namespace)
@@ -857,6 +1014,89 @@ class ECSDriver(NodeDriver):
             params["SecurityGroupName"] = name
         if description:
             params["Description"] = description
+
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+    def ex_modify_security_group_rule(
+            self, group_id, description, ip_protocol, port_range,
+            source_port_range=None, nic_type=None, policy='accept',
+            dest_cidr_ip='0.0.0.0/0', source_cidr_ip='0.0.0.0/0', priority=None
+    ):
+        """
+        Modify a security group rule.
+        :keyword group_id: id of the security group
+        :type group_id: ``str``
+        :keyword description: new description of the security group
+        :type description: ``unicode``
+        :keyword ip_protocol: IP protocol (icmp, gre, tcp, udl, all)
+        :type ip_protocol: ``unicode``
+        :keyword: port_range: Range of the port numbers of a specific protocol
+        """
+
+        params = {
+            'Action': 'ModifySecurityGroupRule',
+            'RegionId': self.region,
+            'SecurityGroupId': group_id,
+            'Description': description,
+            'IpProtocol': ip_protocol,
+            'PortRange': port_range,
+            'Policy': policy,
+            'DestCidrIp': dest_cidr_ip,
+            'SourceCidrIp': source_cidr_ip
+        }
+
+        if not group_id:
+            raise AttributeError('group_id is required')
+
+        if source_port_range:
+            params["SourcePortRange"] = source_port_range
+        if nic_type:
+            params["Nictype"] = nic_type
+        if priority:
+            params['Priority'] = priority
+
+        resp = self.connection.request(self.path, params)
+        return resp.success()
+
+    def ex_authorize_security_group(
+            self, group_id, description, ip_protocol, port_range,
+            source_port_range=None, nic_type=None, policy='accept',
+            dest_cidr_ip=None, source_cidr_ip='0.0.0.0/0', priority=None
+    ):
+        """
+        Modify a security group rule.
+        :keyword group_id: id of the security group
+        :type group_id: ``str``
+        :keyword description: new description of the security group
+        :type description: ``unicode``
+        :keyword ip_protocol: IP protocol (icmp, gre, tcp, udl, all)
+        :type ip_protocol: ``unicode``
+        :keyword: port_range: Range of the port numbers of a specific protocol
+        """
+
+        params = {
+            'Action': 'AuthorizeSecurityGroup',
+            'RegionId': self.region,
+            'SecurityGroupId': group_id,
+            'Description': description,
+            'IpProtocol': ip_protocol,
+            'PortRange': port_range,
+            'Policy': policy,
+            'SourceCidrIp': source_cidr_ip
+        }
+
+        if not group_id:
+            raise AttributeError('group_id is required')
+
+        if source_port_range:
+            params["SourcePortRange"] = source_port_range
+        if nic_type:
+            params["Nictype"] = nic_type
+        if priority:
+            params['Priority'] = priority
+        if dest_cidr_ip:
+            params['DestCidrIp'] = dest_cidr_ip
 
         resp = self.connection.request(self.path, params)
         return resp.success()
@@ -1514,10 +1754,10 @@ class ECSDriver(NodeDriver):
         mappings = {'size': 'Size',
                     'category': 'Category',
                     'snapshot_id': 'SnapshotId',
-                    'disk_name': 'DiskName',
+                    'name': 'DiskName',
                     'description': 'Description',
                     'device': 'Device',
-                    'delete_with_instance': 'DeleteWithInstance'}
+                    'delete_on_termination': 'DeleteWithInstance'}
         params = {}
         for idx, disk in enumerate(data_disks):
             key_base = 'DataDisk.{0}.'.format(idx + 1)
@@ -1627,7 +1867,7 @@ class ECSDriver(NodeDriver):
 
     def _to_size(self, element):
         _id = findtext(element, 'InstanceTypeId', namespace=self.namespace)
-        ram = float(findtext(element, 'MemorySize', namespace=self.namespace))
+        ram = float(findtext(element, 'MemorySize', namespace=self.namespace)) * 1024
         extra = {}
         extra['cpu_core_count'] = int(findtext(element, 'CpuCoreCount',
                                                namespace=self.namespace))
@@ -1738,3 +1978,125 @@ class ECSDriver(NodeDriver):
                 break
             params.update(pagination.to_dict())
         return results
+
+    # Key pair management methods
+
+    def list_key_pairs(self, fingerprint=None):
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'RegionId': self.region
+        }
+        if fingerprint:
+            params['KeyPairFingerPrint'] = fingerprint
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='KeyPairs/KeyPair',
+                        namespace=self.namespace)
+
+        key_pairs = self._to_key_pairs(elems=elems)
+        return key_pairs
+
+    def get_key_pair(self, name):
+        params = {
+            'Action': 'DescribeKeyPairs',
+            'KeyName': name,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elems = findall(element=response.object, xpath='KeyPairs/KeyPair',
+                        namespace=self.namespace)
+        key_pair = self._to_key_pairs(elems=elems)[0]
+        return key_pair
+
+    def create_key_pair(self, name):
+        params = {
+            'Action': 'CreateKeyPair',
+            'KeyName': name,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def import_key_pair_from_string(self, name, key_material):
+        params = {
+            'Action': 'ImportKeyPair',
+            'KeyPairName': name,
+            'PublicKeyBody': key_material,
+            'RegionId': self.region
+        }
+
+        response = self.connection.request(self.path, params=params)
+        elem = response.object
+        key_pair = self._to_key_pair(elem=elem)
+        return key_pair
+
+    def delete_key_pair(self, key_pair):
+        params = {
+            'Action': 'DeleteKeyPairs',
+            'KeyPairNames': '["%s"]' % key_pair.name,
+            'RegionId': self.region
+        }
+        res = self.connection.request(self.path, params=params)
+
+        return res.status == 200
+
+    def _get_pubkey_ssh2_fingerprint(self, pubkey):
+        key = base64.b64decode(pubkey.strip().split()[1].encode('ascii'))
+        return hashlib.md5(key).hexdigest()
+
+    def ex_find_or_import_keypair_by_key_material(self, pubkey, key_name=None):
+        """
+        Given a public key, look it up in the EC2 KeyPair database. If it
+        exists, return any information we have about it. Otherwise, create it.
+
+        Keys that are created are named based on their comment and fingerprint.
+
+        :rtype: ``dict``
+        """
+        key_fingerprint = self._get_pubkey_ssh2_fingerprint(pubkey)
+        key_comment = get_pubkey_comment(pubkey, default=(
+            key_name or 'unnamed'))
+        if not key_name:
+            key_name = '%s-%s' % (key_comment, key_fingerprint)
+
+        key_pairs = self.list_key_pairs(fingerprint=key_fingerprint)
+
+        if len(key_pairs) >= 1:
+            key_pair = key_pairs[0]
+        else:
+            key_pair = self.import_key_pair_from_string(key_name, pubkey)
+
+        result = {
+            'keyName': key_pair.name,
+            'keyFingerprint': key_pair.fingerprint
+        }
+
+        return result
+
+    def _to_key_pairs(self, elems):
+        key_pairs = [self._to_key_pair(elem=elem) for elem in elems]
+        return key_pairs
+
+    def _to_key_pair(self, elem):
+        name = findtext(element=elem, xpath='KeyPairName', namespace=self.namespace)
+        fingerprint = findtext(element=elem, xpath='KeyPairFingerPrint',
+                               namespace=self.namespace).strip()
+
+        key_pair = KeyPair(name=name,
+                           public_key=None,
+                           fingerprint=fingerprint,
+                           driver=self)
+        return key_pair
+
+    def ex_allocate_public_ip(self, node):
+        params = {
+            'Action': 'AllocatePublicIpAddress',
+            'InstanceId': node.id,
+            'RegionId': self.region
+        }
+        res = self.connection.request(self.path, params=params)
+
+        return res.status == 200

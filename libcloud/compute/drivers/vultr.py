@@ -204,12 +204,18 @@ class VultrNodeDriver(NodeDriver):
         :key public_key: Public part of the new SSH key
         :type name: ``str``
 
-        :return: True on success
-        :rtype: ``bool``
+        :return: The newly created key pair.
+        :rtype: :class:`SSHKey`
         """
         params = {'name': name, 'ssh_key': public_key}
         res = self.connection.post('/v1/sshkey/create', params)
-        return res.status == httplib.OK
+
+        if res.status == httplib.OK:
+            res.object['name'] = name
+            res.object['ssh_key'] = public_key
+            return self._to_ssh_key(res.object)
+        else:
+            return False
 
     def delete_key_pair(self, key_pair):
         """
@@ -322,6 +328,18 @@ class VultrNodeDriver(NodeDriver):
 
         return created_node
 
+    def stop_node(self, node):
+        params = {'SUBID': node.id}
+        res = self.connection.post('/v1/server/halt', params)
+
+        return res.status == httplib.OK
+
+    def start_node(self, node):
+        params = {'SUBID': node.id}
+        res = self.connection.post('/v1/server/start', params)
+
+        return res.status == httplib.OK
+
     def reboot_node(self, node):
         params = {'SUBID': node.id}
         res = self.connection.post('/v1/server/reboot', params)
@@ -352,8 +370,11 @@ class VultrNodeDriver(NodeDriver):
             public_ips = [data['main_ip']]
         else:
             public_ips = []
-
-        extra_keys = []
+            
+        extra_keys = ['os', 'kvm_url', 'date_created',
+                      'pending_charges', 'cost_per_month', 'location',
+                      'vcpu_count', 'disk', 'allowed_bandwidth_gb', 'ram',
+                      'default_password', 'VPSPLANID', 'DCID']
         extra = {}
         for key in extra_keys:
             if key in data:
@@ -372,8 +393,10 @@ class VultrNodeDriver(NodeDriver):
     def _to_size(self, data):
         extra = {
             'vcpu_count': int(data['vcpu_count']),
-            'plan_type': data['plan_type'],
-            'available_locations': data['available_locations']
+            'plan_type': data.get('plan_type'),
+            'windows': data.get('windows'),
+            'deprecated': data.get('deprecated'),
+            'available_locations': data.get('available_locations')
         }
         ram = int(data['ram'])
         disk = int(data['disk'])

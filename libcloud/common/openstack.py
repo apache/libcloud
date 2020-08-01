@@ -158,11 +158,13 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
                  ex_force_service_type=None,
                  ex_force_service_name=None,
                  ex_force_service_region=None,
-                 retry_delay=None, backoff=None):
+                 retry_delay=None, backoff=None, ex_auth_url=None):
         super(OpenStackBaseConnection, self).__init__(
             user_id, key, secure=secure, timeout=timeout,
             retry_delay=retry_delay, backoff=backoff, proxy_url=proxy_url)
 
+        if ex_auth_url:
+            self.auth_url = ex_auth_url
         if ex_force_auth_version:
             self._auth_version = ex_force_auth_version
 
@@ -402,9 +404,8 @@ class OpenStackResponse(Response):
             context = self.connection.context
             driver = self.connection.driver
             key_pair_name = context.get('key_pair_name', None)
-
-            if len(values) > 0 and 'code' in values[0] and \
-                    values[0]['code'] == 404 and key_pair_name:
+            if len(values) > 0 and hasattr(values[0], 'get') and \
+                values[0].get('code') == 404 and key_pair_name:
                 raise KeyPairDoesNotExistError(name=key_pair_name,
                                                driver=driver)
             elif len(values) > 0 and 'message' in values[0]:
@@ -435,7 +436,9 @@ class OpenStackDriverMixin(object):
                  ex_tenant_domain_id='default',
                  ex_force_service_type=None,
                  ex_force_service_name=None,
-                 ex_force_service_region=None, *args, **kwargs):
+                 ex_force_service_region=None,
+                 ex_auth_url=None, *args, **kwargs):
+        self._ex_auth_url = ex_auth_url
         self._ex_force_base_url = ex_force_base_url
         self._ex_force_auth_url = ex_force_auth_url
         self._ex_force_auth_version = ex_force_auth_version
@@ -477,4 +480,6 @@ class OpenStackDriverMixin(object):
             rv['ex_force_service_name'] = self._ex_force_service_name
         if self._ex_force_service_region:
             rv['ex_force_service_region'] = self._ex_force_service_region
+        if self._ex_auth_url:
+            rv['ex_auth_url'] = self._ex_auth_url
         return rv

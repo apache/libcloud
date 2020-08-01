@@ -24,6 +24,7 @@ import base64
 import copy
 import warnings
 import time
+import random
 
 from libcloud.utils.py3 import ET
 from libcloud.utils.py3 import b, basestring, ensure_string
@@ -36,6 +37,7 @@ from libcloud.common.aws import AWSBaseResponse, SignedAWSConnection
 from libcloud.common.aws import DEFAULT_SIGNATURE_VERSION
 from libcloud.common.types import (InvalidCredsError, MalformedResponseError,
                                    LibcloudError)
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.compute.providers import Provider
 from libcloud.compute.base import Node, NodeDriver, NodeLocation, NodeSize
 from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
@@ -44,6 +46,10 @@ from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
     StorageVolumeState, VolumeSnapshotState
 from libcloud.compute.constants import INSTANCE_TYPES, REGION_DETAILS
 from libcloud.pricing import get_size_price
+<<<<<<< HEAD
+=======
+
+>>>>>>> mistio-trunk
 
 __all__ = [
     'API_VERSION',
@@ -763,10 +769,6 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         'ena_support': {
             'xpath': 'enaSupport',
             'transform_func': str
-        },
-        'sriov_net_support': {
-            'xpath': 'sriovNetSupport',
-            'transform_func': str
         }
     },
     'network': {
@@ -1066,6 +1068,10 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         },
         'vpc_id': {
             'xpath': 'vpcId',
+            'transform_func': str
+        },
+        'default': {
+            'xpath': 'defaultForAz',
             'transform_func': str
         }
     },
@@ -1697,6 +1703,7 @@ class BaseEC2NodeDriver(NodeDriver):
                                        driver_name='ec2_linux',
                                        size_id=instance_type,
                                        region=self.region_name)
+
                 if price is None:
                     # it is a weird bare metal instance
                     attributes['price'] = None
@@ -1966,13 +1973,11 @@ class BaseEC2NodeDriver(NodeDriver):
                                          % (availability_zone.name))
                 params['Placement.AvailabilityZone'] = availability_zone.name
 
-        if auth and ex_keyname:
-            raise AttributeError('Cannot specify auth and ex_keyname together')
-
         if auth:
             auth = self._get_and_check_auth(auth)
             # pylint: disable=no-member
-            key = self.ex_find_or_import_keypair_by_key_material(auth.pubkey)
+            key = self.ex_find_or_import_keypair_by_key_material(
+                auth.pubkey, kwargs.get('ex_keyname'))
             params['KeyName'] = key['keyName']
 
         if ex_keyname:
@@ -2111,7 +2116,7 @@ class BaseEC2NodeDriver(NodeDriver):
                             Service (AWS KMS) customer master key (CMK) to use
                             when creating the encrypted volume.
                             Example:
-                            arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123
+                            arn:aws:kms:us-east-1:012345678910:key/abcd1234-a12
                             -456a-a12b-a123b4cd56ef.
                             Only used if encrypted is set to True.
         :type ex_kms_key_id: ``str``
@@ -2309,7 +2314,13 @@ class BaseEC2NodeDriver(NodeDriver):
             'PublicKeyMaterial': base64key
         }
 
-        response = self.connection.request(self.path, params=params)
+        try:
+            response = self.connection.request(self.path, params=params)
+        except BaseHTTPError as e:
+            if 'InvalidKeyPair.Duplicate' in repr(e):
+                key_name = name + str(random.randrange(0, 1000))
+                params.update({'KeyName': key_name})
+                response = self.connection.request(self.path, params=params)
         elem = response.object
         key_pair = self._to_key_pair(elem=elem)
         return key_pair
@@ -2646,8 +2657,7 @@ class BaseEC2NodeDriver(NodeDriver):
                           image_location=None, root_device_name=None,
                           block_device_mapping=None, kernel_id=None,
                           ramdisk_id=None, virtualization_type=None,
-                          ena_support=None, billing_products=None,
-                          sriov_net_support=None):
+                          ena_support=None):
         """
         Registers an Amazon Machine Image based off of an EBS-backed instance.
         Can also be used to create images from snapshots. More information
@@ -2691,14 +2701,6 @@ class BaseEC2NodeDriver(NodeDriver):
                                  Network Adapter for the AMI
         :type       ena_support: ``bool``
 
-        :param      billing_products: The billing product codes
-        :type       billing_products: ''list''
-
-        :param      sriov_net_support: Set to "simple" to enable enhanced
-                                       networking with the Intel 82599 Virtual
-                                       Function interface
-        :type       sriov_net_support: ``str``
-
         :rtype:     :class:`NodeImage`
         """
 
@@ -2732,13 +2734,6 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if ena_support is not None:
             params['EnaSupport'] = ena_support
-
-        if billing_products is not None:
-            params.update(self._get_billing_product_params(
-                          billing_products))
-
-        if sriov_net_support is not None:
-            params['SriovNetSupport'] = sriov_net_support
 
         image = self._to_image(
             self.connection.request(self.path, params=params).object
@@ -2955,7 +2950,10 @@ class BaseEC2NodeDriver(NodeDriver):
                              namespace=NAMESPACE):
             name = findtext(element=group, xpath='groupName',
                             namespace=NAMESPACE)
-            groups.append(name)
+            id = findtext(element=group, xpath='groupId',
+                          namespace=NAMESPACE)
+            group = {'name': name, 'id': id}
+            groups.append(group)
 
         return groups
 
@@ -3496,6 +3494,12 @@ class BaseEC2NodeDriver(NodeDriver):
                                       params=params.copy()).object
 
         return self._get_boolean(res)
+
+    def ex_rename_node(self, node, name):
+        """
+        Rename a Node
+        """
+        return self.ex_create_tags(node, {'Name': name})
 
     def ex_get_metadata_for_node(self, node):
         """
@@ -4205,7 +4209,7 @@ class BaseEC2NodeDriver(NodeDriver):
         }
         return result
 
-    def ex_find_or_import_keypair_by_key_material(self, pubkey):
+    def ex_find_or_import_keypair_by_key_material(self, pubkey, key_name=None):
         """
         Given a public key, look it up in the EC2 KeyPair database. If it
         exists, return any information we have about it. Otherwise, create it.
@@ -4216,7 +4220,8 @@ class BaseEC2NodeDriver(NodeDriver):
         """
         key_fingerprint = get_pubkey_ssh2_fingerprint(pubkey)
         key_comment = get_pubkey_comment(pubkey, default='unnamed')
-        key_name = '%s-%s' % (key_comment, key_fingerprint)
+        if not key_name:
+            key_name = '%s-%s' % (key_comment, key_fingerprint)
 
         key_pairs = self.list_key_pairs()
         key_pairs = [key_pair for key_pair in key_pairs if
@@ -4759,13 +4764,6 @@ class BaseEC2NodeDriver(NodeDriver):
         # Build block device mapping
         block_device_mapping = self._to_device_mappings(element)
 
-        billing_products = []
-        for p in findall(element=element,
-                         xpath="billingProducts/item/billingProduct",
-                         namespace=NAMESPACE):
-
-            billing_products.append(p.text)
-
         # Get our tags
         tags = self._get_resource_tags(element)
 
@@ -4776,7 +4774,7 @@ class BaseEC2NodeDriver(NodeDriver):
         # Add our tags and block device mapping
         extra['tags'] = tags
         extra['block_device_mapping'] = block_device_mapping
-        extra['billing_products'] = billing_products
+
         return NodeImage(id=id, name=name, driver=self, extra=extra)
 
     def _to_volume(self, element, name=None):
