@@ -1206,7 +1206,7 @@ class VSphere_6_7_NodeDriver(NodeDriver):
                               'using pip - pip install pyvmomi')
         self.driver_soap =  VSphereNodeDriver(self.host, self.username,
                                               self.connection.secret,
-                                              ca_cert=self,
+                                              ca_cert=self.
                                               connection.connection.ca_cert)
 
     def _get_session_token(self):
