@@ -1,0 +1,4 @@
+{"value":
+    [{"ipv4": {"mode": "STATIC", "default_gateway": "195.196.0.2",
+      "address": "195.196.197.198", "prefix": 29, "configurable": true},
+      "name": "nic0", "mac": "00:0c:29:59:bd:12", "status": "up"}]}

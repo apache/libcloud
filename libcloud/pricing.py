@@ -43,8 +43,10 @@ __all__ = [
     'download_pricing_file'
 ]
 
-# Default URL to the pricing file
-DEFAULT_FILE_URL = 'https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json'  # NOQA
+# Default URL to the pricing file in a git repo
+DEFAULT_FILE_URL_GIT = 'https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json'  # NOQA
+
+DEFAULT_FILE_URL_S3_BUCKET = 'https://libcloud-pricing-data.s3.amazonaws.com/pricing.json'  # NOQA
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, 'data/pricing.json')
@@ -134,7 +136,7 @@ def set_pricing(driver_type, driver_name, pricing):
     PRICING_DATA[driver_type][driver_name] = pricing
 
 
-def get_size_price(driver_type, driver_name, size_id):
+def get_size_price(driver_type, driver_name, size_id, region=None):
     """
     Return price for the provided size.
 
@@ -153,7 +155,14 @@ def get_size_price(driver_type, driver_name, size_id):
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
 
-    price = pricing.get(size_id)
+    try:
+        if region is None:
+            price = float(pricing[size_id])
+        else:
+            price = float(pricing[size_id][region])
+    except KeyError:
+        # Price not available
+        price = None
 
     return price
 
@@ -190,7 +199,7 @@ def invalidate_module_pricing_cache(driver_type, driver_name):
         del PRICING_DATA[driver_type][driver_name]
 
 
-def download_pricing_file(file_url=DEFAULT_FILE_URL,
+def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET,
                           file_path=CUSTOM_PRICING_FILE_PATH):
     """
     Download pricing file from the file_url and save it to file_path.

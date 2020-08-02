@@ -20,6 +20,7 @@
 import os
 import re
 import json
+import copy
 import time
 from collections import defaultdict, OrderedDict
 
@@ -146,8 +147,16 @@ def update_pricing_file(pricing_file_path, pricing_data):
         content = fp.read()
 
     data = json.loads(content)
-    data['updated'] = int(time.time())
+    original_data = copy.deepcopy(data)
+
     data['compute'].update(pricing_data)
+
+    if data == original_data:
+        # Nothing has changed, bail out early and don't update "updated" attribute
+        print("Nothing has changed, skipping update.")
+        return
+
+    data['updated'] = int(time.time())
 
     # Always sort the pricing info
     data = sort_nested_dict(data)
@@ -193,7 +202,7 @@ def sort_key_by_numeric_other(key_value):
 
 
 def main():
-    print('Scraping EC2 pricing data')
+    print('Scraping EC2 pricing data (this may take up to 2 minutes)....')
 
     pricing_data = scrape_ec2_pricing()
     update_pricing_file(pricing_file_path=PRICING_FILE_PATH,
