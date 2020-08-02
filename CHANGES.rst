@@ -55,6 +55,10 @@ Compute
   credentials.
   [Tomaz Muraus - @Kami]
 
+- [Azure ARM] Add script for scraping Azure ARM instance pricing data.
+  (GITHUB-1470)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
