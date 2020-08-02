@@ -35,6 +35,7 @@ try:
     from pyVim import connect
     from pyVmomi import vim, vmodl, VmomiSupport
     from pyVim.task import WaitForTask
+    pyvmomi = True
 except ImportError:
     pyvmomi = None
 
