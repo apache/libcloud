@@ -1971,7 +1971,7 @@ class BaseEC2NodeDriver(NodeDriver):
             auth = self._get_and_check_auth(auth)
             # pylint: disable=no-member
             key = self.ex_find_or_import_keypair_by_key_material(
-                auth.pubkey, kwargs.get('ex_keyname'))
+                auth.pubkey, ex_keyname)
             params['KeyName'] = key['keyName']
 
         if ex_keyname:
