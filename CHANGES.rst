@@ -1,6 +1,64 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Common
+~~~~~~
+
+- ``libcloud.pricing.download_pricing_file`` function has been updated so it
+  tries to download latest ``pricing.json`` file from our public read-only S3
+  bucket.
+
+  We now run a daily job as part of our CI/CD which scrapes provider prices and
+  publishes the latest version of the ``pricing.json`` file to that bucket.
+
+  For more information, please see
+  https://libcloud.readthedocs.io/en/latest/compute/pricing.html.
+
+Compute
+~~~~~~~
+
+- [OpenStack] Add `ex_get_network()` to the OpenStack driver to make it
+  possible to retrieve a single network by using the ID.
+
+  (GITHUB-1474)
+  [Sander Roosingh - @SanderRoosingh]
+
+- [OpenStack] Fix pagination in the ``list_images()`` method and make sure
+  method returns all the images, even if the result is spread across multiple
+  pages.
+
+  (GITHUB-1467)
+  [Thomas Bechtold - @toabctl]
+
+- [GCE] Add script for scraping GCE pricing data and improve price addition in
+  ``_to_node_size`` method.
+  (GITHUB-1468)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- [AWS EC2] Update script for scraping AWS EC2 pricing and update EC2 pricing
+  data.
+  (GITHUB-1469)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- [Deployment] Add new ``wait_period`` argument to the ``deploy_node`` method
+  and default it to 5 seconds.
+
+  This argument tells Libcloud how long to wait between each poll interval when
+  waiting for a node to come online and have IP address assigned to it.
+
+  Previously this argument was not exposed to the end user and defaulted to 3
+  seconds which means it would be quite easy to reach rate limits with some
+  providers when spinning up many instances concurrently using the same
+  credentials.
+  [Tomaz Muraus - @Kami]
+
+- [Azure ARM] Add script for scraping Azure ARM instance pricing data.
+  (GITHUB-1470)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 

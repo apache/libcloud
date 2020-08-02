@@ -1,0 +1,50 @@
+{
+  "images": [
+    {
+      "status": "active",
+      "image_location": "snapshot",
+      "image_state": "available",
+      "tags": [],
+      "kernel_id": null,
+      "container_format": "bare",
+      "min_ram": 0,
+      "ramdisk_id": null,
+      "locations": [
+        {
+          "url": "file:///var/lib/glance/images/f24a3c1b-d52a-4116-91da-25b3eee8f55c",
+          "metadata": {
+            "mountpoint": "/var/lib/glance/images",
+            "type": "nfs",
+            "id": "NetApp1",
+            "share_location": "nfs://some.ip.somewhere/com_osp_data001"
+          }
+        }
+      ],
+      "visibility": "shared",
+      "updated_at": "2017-11-28T10:19:50Z",
+      "owner": "d85e344900774f5aad27e4e8e91205d6",
+      "schema": "/v2/schemas/image",
+      "file": "/v2/images/f24a3c1b-d52a-4116-91da-25b3eee8f55c/file",
+      "min_disk": 40,
+      "virtual_size": null,
+      "base_image_ref": "5be2b652-a965-4ecb-a2b4-b9f83d7779e6",
+      "size": 1256259584,
+      "instance_uuid": "24f0a531-e45f-491b-86f2-3708dd45a478",
+      "os_distro": "ubuntu",
+      "user_id": "b0d846d9ac93452bb93857e0305584bd",
+      "name": "hypernode",
+      "image_type": "snapshot",
+      "checksum": "3530464d095c9d62771b99ebecd2d70c",
+      "created_at": "2017-09-11T13:00:05Z",
+      "disk_format": "qcow2",
+      "id": "f24a3c1b-d52a-4116-91da-25b3eee8f55c",
+      "protected": false,
+      "os_type": "linux",
+      "direct_url": "file:///var/lib/glance/images/f24a3c1b-d52a-4116-91da-25b3eee8f55c",
+      "self": "/v2/images/f24a3c1b-d52a-4116-91da-25b3eee8f55c",
+      "owner_id": "d85e344900774f5aad27e4e8e91205d6"
+    }
+  ],
+  "schema": "/v2/schemas/images",
+  "first": "/v2/images"
+}

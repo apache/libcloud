@@ -455,6 +455,21 @@
         <revision>v3.0.0</revision>
       </Version>
   </release>
+  <release>
+      <Version>
+        <name>2.8.3</name>
+        <created>2020-06-12</created>
+        <revision>v2.8.3</revision>
+      </Version>
+  </release>
+  <release>
+      <Version>
+        <name>3.1.0</name>
+        <created>2020-06-12</created>
+        <revision>v3.1.0</revision>
+      </Version>
+  </release>
+
   <repository>
       <SVNRepository>
         <location rdf:resource="https://svn.apache.org/repos/asf/libcloud/trunk/"/>

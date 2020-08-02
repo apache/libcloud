@@ -532,6 +532,16 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         return (httplib.ACCEPTED, body, XML_HEADERS, httplib.responses[httplib.ACCEPTED])
 
     def _v1_0_slug_images_detail(self, method, url, body, headers):
+        if method != "GET":
+            raise ValueError('Invalid method: %s' % (method))
+
+        body = self.fixtures.load('v1_slug_images_detail.xml')
+        return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
+
+    def _v1_0_slug_images_detail_invalid_next(self, method, url, body, headers):
+        if method != "GET":
+            raise ValueError('Invalid method: %s' % (method))
+
         body = self.fixtures.load('v1_slug_images_detail.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
@@ -1692,6 +1702,13 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(snapshots[0]['name'], 'snap-101')
         self.assertEqual(snapshots[3]['name'], 'snap-001')
 
+    def test_list_images_with_pagination_invalid_response_no_infinite_loop(self):
+        # "next" attribute matches the current page, but it shouldn't result in
+        # an infite loop
+        OpenStack_2_0_MockHttp.type = 'invalid_next'
+        ret = self.driver.list_images()
+        self.assertEqual(len(ret), 2)
+
     # NOTE: We use a smaller limit to speed tests up.
     @mock.patch('libcloud.compute.drivers.openstack.PAGINATION_LIMIT', 10)
     def test__paginated_request_raises_if_stuck_in_a_loop(self):
@@ -1732,7 +1749,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_list_images(self):
         images = self.driver.list_images()
-        self.assertEqual(len(images), 2, 'Wrong images count')
+        self.assertEqual(len(images), 3, 'Wrong images count')
 
         image = images[0]
         self.assertEqual(image.id, 'f24a3c1b-d52a-4116-91da-25b3eee8f55e')
@@ -1822,6 +1839,13 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(len(networks), 2)
         self.assertEqual(network.name, 'net1')
         self.assertEqual(network.extra['subnets'], ['54d6f61d-db07-451c-9ab3-b9609b6b6f0b'])
+
+    def test_ex_get_network(self):
+        network = self.driver.ex_get_network("cc2dad14-827a-feea-416b-f13e50511a0a")
+
+        self.assertEqual(network.id, "cc2dad14-827a-feea-416b-f13e50511a0a")
+        self.assertTrue(isinstance(network, OpenStackNetwork))
+        self.assertEqual(network.name, 'net2')
 
     def test_ex_list_subnets(self):
         subnets = self.driver.ex_list_subnets()
@@ -2289,7 +2313,19 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
 
     def _v2_1337_v2_images(self, method, url, body, headers):
         if method == "GET":
-            body = self.fixtures.load('_images_v2.json')
+            # 2nd (and last) page of images
+            if 'marker=e7a40226-3523-4f0f-87d8-d8dc91bbf4a3' in url:
+                body = self.fixtures.load('_images_v2_page2.json')
+            else:
+                # first page of images
+                body = self.fixtures.load('_images_v2.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+        else:
+            raise NotImplementedError()
+
+    def _v2_1337_v2_images_invalid_next(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_images_v2_invalid_next.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         else:
             raise NotImplementedError()
@@ -2604,6 +2640,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         elif method == 'POST':
             body = self.fixtures.load('_v2_0__networks_POST.json')
             return (httplib.ACCEPTED, body, self.json_content_headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v2_1337_v2_0_networks_cc2dad14_827a_feea_416b_f13e50511a0a(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load('_v2_0__network.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
     def _v2_1337_v2_0_networks_d32019d3_bc6e_4319_9c1d_6722fc136a22(self, method, url, body, headers):

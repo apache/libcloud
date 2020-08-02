@@ -1,8 +1,53 @@
+#!/usr/bin/env python
+#
+#  Licensed to the Apache Software Foundation (ASF) under one
+#  or more contributor license agreements.  See the NOTICE file
+#  distributed with this work for additional information
+#  regarding copyright ownership.  The ASF licenses this file
+#  to you under the Apache License, Version 2.0 (the
+#  "License"); you may not use this file except in compliance
+#  with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
+"""
+Price scraper for GCE. An api key is required
+(https://cloud.google.com/docs/authentication/api-keys).
+
+Keep in mind that Cloud Billing API needs to be enabled for the account you use
+to authenticate otherwise you will received 403 Forbidden error.
+
+It can be enabled at https://console.cloud.google.com/apis/library/cloudbilling.googleapis.com.
+
+Usage:
+
+    python scrape-gce-prices.py APIKEY
+
+or if it is the first time using it and no skus are saved:
+
+    python scrape-gce-prices.py --all APIKEY
+"""
+
+import copy
 import json
 import argparse
 import os
 import time
+
 from requests import request
+
+GCE_SERVICE_ID = "6F81-5844-456A"
+API_URL = ("https://cloudbilling.googleapis.com/v1/services/"
+           "{}/skus".format(GCE_SERVICE_ID))
+
+API_KEY = os.environ.get("GCE_API_KEY", None)
 
 usage_type_map = {
     "OnDemand": 'on_demand',
@@ -342,22 +387,24 @@ PRICING_FILE_PATH = os.path.abspath(PRICING_FILE_PATH)
 def get_all_skus(key):
     # a valid google cloud account API key should be provided
     # https://cloud.google.com/docs/authentication/api-keys
-    URL = ("https://cloudbilling.googleapis.com/v1/services/"
-           "6F81-5844-456A/skus?key={}")
-    URL = URL.format(key)
-    url = URL
+    url = API_URL
+    params = {"key": key}
     data = []
     has_next_page = True
     while has_next_page:
         try:
-            response = request(method="GET", url=url)
+            response = request(method="GET", url=url, params=params)
             response.raise_for_status()
-        except Exception as exc:
-            raise
+        except Exception as e:
+            msg = str(e)
+            msg = msg.replace(key, '************')
+            raise Exception(msg)
+
         data.extend(response.json().get('skus', {}))
         next_page = response.json().get('nextPageToken')
+
         if next_page:
-            url = URL + "&pageToken={}".format(next_page)
+            params["pageToken"] = next_page
         else:
             has_next_page = False
 
@@ -457,8 +504,17 @@ def update_pricing_file(pricing_file_path, pricing_data):
         content = fp.read()
 
     data = json.loads(content)
-    data['updated'] = int(time.time())
+
+    original_data = copy.deepcopy(data)
+
     data['compute'].update(pricing_data)
+
+    if data == original_data:
+        # Nothing has changed, bail out early and don't update "updated" attribute
+        print("Nothing has changed, skipping update.")
+        return
+
+    data['updated'] = int(time.time())
     content = json.dumps(data, indent=4)
     lines = content.splitlines()
     lines = [line.rstrip() for line in lines]
@@ -469,7 +525,8 @@ def update_pricing_file(pricing_file_path, pricing_data):
 
 
 def main(key, skus=False):
-    print('Scraping GCE pricing data')
+    print('Scraping GCE pricing data (this may take a while)...')
+
     if skus:
         pricing_data = scrape_sku_price_info(key)
     else:
@@ -486,6 +543,11 @@ if __name__ == "__main__":
     parser.add_argument('--all', action="store_true", help=help_msg)
     help_msg = ("Google API key, visit https://cloud.google.com/"
                 "docs/authentication/api-keys")
-    parser.add_argument('key', help=help_msg)
+    parser.add_argument('key', help=help_msg, nargs='?', default=API_KEY)
     arg = parser.parse_args()
+
+    if not arg.key:
+        raise ValueError("API key needs to provided either as a script "
+                         "argument or via GCE_API_KEY environment "
+                         "variable.")
     main(arg.key, skus=arg.all)

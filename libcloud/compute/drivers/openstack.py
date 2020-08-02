@@ -223,6 +223,55 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
                 )
         return {obj: objects}
 
+    def _paginated_request_next(self, path, request_method, response_key):
+        """
+        Perform multiple calls and retrieve all the elements for a paginated
+        response.
+
+        This method utilizes "next" attribute in the response object.
+
+        It also includes an infinite loop protection (if the "next" value
+        matches the current path, it will abort).
+
+        :param request_method: Method to call which will send the request and
+                               return a response. This method will get passed
+                               in "path" as a first argument.
+
+        :param response_key: Key in the response object dictionary which
+                             contains actual objects we are interested in.
+        """
+        iteration_count = 0
+
+        result = []
+        while path:
+            response = request_method(path)
+            items = response.object.get(response_key, []) or []
+            result.extend(items)
+
+            # Retrieve next path
+            next_path = response.object.get('next', None)
+
+            if next_path == path:
+                # Likely an infinite loop since the next path matches the
+                # current one
+                break
+
+            if iteration_count > PAGINATION_LIMIT:
+                # We have iterated over PAGINATION_LIMIT pages, likely an
+                # API returned an invalid response
+                raise OpenStackException(
+                    'Pagination limit reached for %s, the limit is %d. '
+                    'This might indicate that your API is returning a '
+                    'looping next target for pagination!' % (
+                        path, PAGINATION_LIMIT
+                    ), None
+                )
+
+            path = next_path
+            iteration_count += 1
+
+        return result
+
     def destroy_node(self, node):
         uri = '/servers/%s' % (node.id)
         resp = self.connection.request(uri, method='DELETE')
@@ -3132,10 +3181,16 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             raise NotImplementedError(
                 "ex_only_active in list_images is not implemented "
                 "in the OpenStack_2_NodeDriver")
-        response = self.image_connection.request('/v2/images')
+
+        result = self._paginated_request_next(
+            path='/v2/images',
+            request_method=self.image_connection.request,
+            response_key='images')
+
         images = []
-        for image in response.object['images']:
-            images.append(self._to_image(image))
+        for item in result:
+            images.append(self._to_image(item))
+
         return images
 
     def ex_update_image(self, image_id, data):
@@ -3284,6 +3339,22 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         response = self.network_connection.request(
             self._networks_url_prefix).object
         return self._to_networks(response)
+
+    def ex_get_network(self, network_id):
+        """
+        Retrieve the Network with the given ID
+
+        :param networkId: ID of the network
+        :type networkId: ``str``
+
+        :rtype :class:`OpenStackNetwork`
+        """
+        request_url = "{networks_url_prefix}/{network_id}".format(
+            networks_url_prefix=self._networks_url_prefix,
+            network_id=network_id
+        )
+        response = self.network_connection.request(request_url).object
+        return self._to_network(response['network'])
 
     def ex_create_network(self, name, **kwargs):
         """
