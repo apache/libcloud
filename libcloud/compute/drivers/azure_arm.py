@@ -2474,13 +2474,15 @@ class AzureNodeDriver(NodeDriver):
         extra['id'] = data["id"]
         os_type = extra['os_type']
         price_size = "".join(extra['size'].lower().split("_"))
-        price = get_size_price(driver_type='compute', driver_name='azure_%s' % os_type,
-                               size_id=price_size)
-        cost_per_hour = None
-        if price:
-            location = extra.get('location', 'eastus')
-            cost_per_hour = price.get(location)
-        extra['cost_per_hour'] = cost_per_hour
+        try:
+            price = get_size_price(driver_type='compute',
+                                   driver_name='azure_%s' % os_type,
+                                   size_id=price_size,
+                                   region=extra.get('location', 'eastus'))
+        except Exception:
+            price = 0
+
+        extra['cost_per_hour'] = price
         node = Node(data['properties']['vmId'],
                     data['name'],
                     state,
