@@ -71,11 +71,12 @@ class LXDContainerDriverTestCase(unittest.TestCase):
             self.assertEqual(server_config.public, False)
 
     def test_list_images(self):
+        img_id = "54c8caac1f61901ed86c68f24af5f5d3672bdc62c71d04f06df3a59e95684473"
         for driver in self.drivers:
             images = driver.list_images()
             self.assertEqual(len(images), 1)
             self.assertIsInstance(images[0], ContainerImage)
-            self.assertEqual(images[0].id, 'trusty')
+            self.assertEqual(images[0].id, img_id)
             self.assertEqual(images[0].name, 'trusty')
 
     def test_list_containers(self):
