@@ -530,7 +530,7 @@ class LXDContainerDriver(ContainerDriver):
             parameters = json.loads(parameters)
 
             if parameters["source"].get("mode", None) == "pull":
-            
+
                 try:
                     # this means the image must be downloaded
                     image = self.install_image(path=None,
@@ -1456,7 +1456,7 @@ class LXDContainerDriver(ContainerDriver):
             assert_response(response_dict=response_dict, status_code=200)
         except BaseHTTPError as err:
             raise self._get_lxd_api_exception_for_error(err)
-            
+
         return True
 
     def ex_list_networks(self):
