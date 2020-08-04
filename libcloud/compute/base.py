@@ -1884,9 +1884,9 @@ class NodeDriver(BaseDriver):
                 if "ssh session not active" in str(e).lower():
                     # Sometimes connection gets closed or disconnected half
                     # way through.
-                    # If this happens, we try to re-connect before re-attempting
-                    # to run the step.
-                    timeout = int(ssh_client.timeout) if ssh_client.timeout else None
+                    # If this happens, we try to re-connect before
+                    # re-attempting to run the step.
+                    timeout = int(ssh_client.timeout) if ssh_client.timeout else 10
                     ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
                                                           timeout=timeout)
 
