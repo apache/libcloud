@@ -1886,8 +1886,9 @@ class NodeDriver(BaseDriver):
                     # way through.
                     # If this happens, we try to re-connect before re-attempting
                     # to run the step.
+                    timeout = int(ssh_client.timeout) if ssh_client.timeout else None
                     ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
-                                                        timeout=ssh_client.timeout)
+                                                          timeout=timeout)
 
                 if tries >= max_tries:
                     raise LibcloudError(value='Failed after %d tries: %s'
