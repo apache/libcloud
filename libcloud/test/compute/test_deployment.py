@@ -477,6 +477,7 @@ class DeploymentTests(unittest.TestCase):
         ssh_client.timeout = 20
 
         self.assertEqual(ssh_client.connect.call_count, 0)
+        self.assertEqual(ssh_client.close.call_count, 0)
 
         self.driver._run_deployment_script(task=task,
                                            node=self.node,
@@ -484,7 +485,7 @@ class DeploymentTests(unittest.TestCase):
                                            max_tries=5)
 
         self.assertEqual(ssh_client.connect.call_count, 2)
-
+        self.assertEqual(ssh_client.close.call_count, 2 + 1)
 
     @patch('libcloud.compute.base.SSHClient')
     @patch('libcloud.compute.ssh')

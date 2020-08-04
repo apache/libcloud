@@ -1883,12 +1883,21 @@ class NodeDriver(BaseDriver):
 
                 if "ssh session not active" in str(e).lower():
                     # Sometimes connection gets closed or disconnected half
-                    # way through.
+                    # way through for wahtever reason.
                     # If this happens, we try to re-connect before
                     # re-attempting to run the step.
-                    timeout = int(ssh_client.timeout) if ssh_client.timeout else 10
-                    ssh_client = self._ssh_client_connect(ssh_client=ssh_client,
-                                                          timeout=timeout)
+                    try:
+                        ssh_client.close()
+                    except Exception:
+                        # Non fatal since connection is most likely already
+                        # closed at this point
+                        pass
+
+                    timeout = (int(ssh_client.timeout) if ssh_client.timeout
+                               else 10)
+                    ssh_client = self._ssh_client_connect(
+                        ssh_client=ssh_client,
+                        timeout=timeout)
 
                 if tries >= max_tries:
                     raise LibcloudError(value='Failed after %d tries: %s'
