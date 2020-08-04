@@ -1797,7 +1797,13 @@ class NodeDriver(BaseDriver):
 
                 # Retry if a connection is refused, timeout occurred,
                 # or the connection fails due to failed authentication.
-                ssh_client.close()
+                try:
+                    ssh_client.close()
+                except Exception:
+                    # Exception on close() should not be fatal since client
+                    # socket might already be closed
+                    pass
+
                 time.sleep(wait_period)
                 continue
             else:
