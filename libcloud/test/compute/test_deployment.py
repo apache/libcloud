@@ -452,6 +452,40 @@ class DeploymentTests(unittest.TestCase):
         else:
             self.fail('Exception was not thrown')
 
+    def test_run_deployment_script_reconnect_on_ssh_session_not_active(self):
+        # Verify that we try to reconnect if task.run() throws exception with
+        # "SSH client not active" message
+        global exception_counter
+        exception_counter = 0
+
+        def mock_run(*args, **kwargs):
+            # Mock run() method which throws "SSH session not active" exception
+            # during first two calls and on third one it returns None.
+            global exception_counter
+
+            exception_counter += 1
+
+            if exception_counter > 2:
+                return None
+
+            raise Exception("SSH session not active")
+
+        task = Mock()
+        task.run = Mock()
+        task.run = mock_run
+        ssh_client = Mock()
+        ssh_client.timeout = 20
+
+        self.assertEqual(ssh_client.connect.call_count, 0)
+
+        self.driver._run_deployment_script(task=task,
+                                           node=self.node,
+                                           ssh_client=ssh_client,
+                                           max_tries=5)
+
+        self.assertEqual(ssh_client.connect.call_count, 2)
+
+
     @patch('libcloud.compute.base.SSHClient')
     @patch('libcloud.compute.ssh')
     def test_deploy_node_success(self, mock_ssh_module, _):
