@@ -32,3 +32,4 @@ pip-selfcheck.json
 report.html
 .pytest_cache
 .mypy_cache/
+libcloud/data/pricing.json.sha*
