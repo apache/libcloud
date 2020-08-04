@@ -59,6 +59,15 @@ Compute
   (GITHUB-1470)
   [Eis D. Zaster - @Eis-D-Z]
 
+- Update ``deploy_node()`` method to try to re-connect to the server if we
+  receive "SSH connection not active" error when trying to run a deployment
+  step.
+
+  In some scenarios, connection may get closed by the server for whatever
+  reason before finishing all the deployment steps and in this case only
+  re-connecting would help and result in a successful outcome.
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
