@@ -29,7 +29,10 @@ class OSCRequestSigner(object):
     Class which handles signing the outgoing AWS requests.
     """
 
-    def __init__(self, access_key, access_secret, version, connection):
+    def __init__(self, access_key: str,
+                 access_secret: str,
+                 version: str,
+                 connection):
         """
         :param access_key: Access key.
         :type access_key: ``str``
@@ -51,26 +54,26 @@ class OSCRequestSigner(object):
 
 class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
     @staticmethod
-    def sign(key, msg):
+    def sign(key: str, msg: str):
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
     @staticmethod
-    def _get_signed_headers(headers):
+    def _get_signed_headers(headers: dict):
         return ';'.join([k.lower() for k in sorted(headers.keys())])
 
     @staticmethod
-    def _get_canonical_headers(headers):
+    def _get_canonical_headers(headers: dict):
         return '\n'.join([':'.join([k.lower(), str(v).strip()])
                           for k, v in sorted(headers.items())]) + '\n'
 
     @staticmethod
-    def _get_request_params(params):
+    def _get_request_params(params: dict):
         return '&'.join(["%s=%s" %
                          (urlquote(k, safe=''), urlquote(str(v), safe='~'))
                          for k, v in sorted(params.items())])
 
-    def get_request_headers(self, service_name, region, action,
-                            data=None):
+    def get_request_headers(self, service_name: str, region: str, action: str,
+                            data: dict = None):
         date = datetime.utcnow()
         host = "{}.{}.outscale.com".format(service_name, region)
         headers = {
@@ -93,8 +96,11 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
         headers.update({'Authorization': sig})
         return headers
 
-    def _get_authorization_v4_header(self, headers, dt, method='GET',
-                                     path='/', data=None):
+    def _get_authorization_v4_header(self, headers: dict,
+                                     dt: datetime,
+                                     method: str = 'GET',
+                                     path: str = '/',
+                                     data: dict = None):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
         signature = self._get_signature(headers=headers, dt=dt,
@@ -108,7 +114,8 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                    's': signature
                }
 
-    def _get_signature(self, headers, dt, method, path, data):
+    def _get_signature(self, headers: dict, dt: datetime,
+                       method: str, path: str, data: dict):
         string_to_sign = self._get_string_to_sign(headers=headers, dt=dt,
                                                   method=method, path=path,
                                                   data=data)
@@ -116,14 +123,15 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
         return hmac.new(signing_key, string_to_sign.encode('utf-8'),
                         hashlib.sha256).hexdigest()
 
-    def _get_key_to_sign_with(self, key, dt):
+    def _get_key_to_sign_with(self, key: str, dt: datetime):
         dt = dt.strftime('%Y%m%d')
         k_date = self.sign(('OSC4' + key).encode('utf-8'), dt)
         k_region = self.sign(k_date, self.connection.region_name)
         k_service = self.sign(k_region, self.connection.service_name)
         return self.sign(k_service, 'osc4_request')
 
-    def _get_string_to_sign(self, headers, dt, method, path, data):
+    def _get_string_to_sign(self, headers: dict, dt: datetime, method: str,
+                            path: str, data: dict):
         canonical_request = self._get_canonical_request(headers=headers,
                                                         method=method,
                                                         path=path,
@@ -139,7 +147,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                          self.connection.service_name,
                          'osc4_request'])
 
-    def _get_canonical_request(self, headers, method, path, data="{}"):
+    def _get_canonical_request(self, headers, method, path, data = "{}"):
         data = data if data else "{}"
         return '\n'.join([
             method,

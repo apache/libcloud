@@ -36,11 +36,11 @@ class OutscaleNodeDriver(NodeDriver):
     website = 'http://www.outscale.com'
 
     def __init__(self,
-                 key=None,
-                 secret=None,
-                 region='eu-west-2',
-                 service='api',
-                 version='latest'
+                 key: str = None,
+                 secret: str = None,
+                 region: str = 'eu-west-2',
+                 service: str = 'api',
+                 version: str = 'latest'
                  ):
         self.key = key
         self.secret = secret
@@ -50,8 +50,12 @@ class OutscaleNodeDriver(NodeDriver):
         self.connection.service_name = service
         self.service_name = service
         self.version = version
+        self.signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
+                                             access_secret=self.secret,
+                                             version=self.version,
+                                             connection=self.connection)
 
-    def list_locations(self, dry_run=False):
+    def list_locations(self, dry_run: bool = False):
         """
         Lists available regions details.
 
@@ -73,7 +77,7 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def create_public_ip(self, dry_run=False):
+    def create_public_ip(self, dry_run: bool = False):
         """
         Create a new public ip.
 
@@ -86,22 +90,15 @@ class OutscaleNodeDriver(NodeDriver):
             """
         action = "CreatePublicIp"
         data = json.dumps({"DryRun": dry_run})
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_public_ip(self, dry_run=False,
-                         public_ip=None,
-                         public_ip_id=None):
+    def delete_public_ip(self, dry_run: bool = False,
+                         public_ip: str = None,
+                         public_ip_id: str = None):
         """
         Delete instances.
 
@@ -128,20 +125,13 @@ class OutscaleNodeDriver(NodeDriver):
         if public_ip_id is not None:
             data.update({"PublicIpId": public_ip_id})
         data = json.dumps(data)
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_public_ips(self, data="{}"):
+    def list_public_ips(self, data: str = "{}"):
         """
         List all nodes.
 
@@ -153,20 +143,13 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadPublicIps"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_public_ip_ranges(self, dry_run=False):
+    def list_public_ip_ranges(self, dry_run: bool = False):
         """
         Lists available regions details.
 
@@ -179,26 +162,19 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadPublicIpRanges"
         data = json.dumps({"DryRun": dry_run})
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def attach_public_ip(self,
-                         allow_relink=None,
-                         dry_run=False,
-                         nic_id=None,
-                         vm_id=None,
-                         public_ip=None,
-                         public_ip_id=None,
+                         allow_relink: bool = None,
+                         dry_run: bool = False,
+                         nic_id: str = None,
+                         vm_id: str = None,
+                         public_ip: str = None,
+                         public_ip_id: str = None,
                          ):
         """
         Attach a volume.
@@ -246,22 +222,15 @@ class OutscaleNodeDriver(NodeDriver):
         if allow_relink is not None:
             data.update({"AllowRelink": allow_relink})
         data = json.dumps(data)
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def detach_public_ip(self, public_ip=None,
-                         link_public_ip_id=None,
-                         dry_run=False):
+    def detach_public_ip(self, public_ip: str = None,
+                         link_public_ip_id: str = None,
+                         dry_run: bool = False):
         """
         Detach a volume.
 
@@ -288,37 +257,30 @@ class OutscaleNodeDriver(NodeDriver):
         if link_public_ip_id is not None:
             data.update({"LinkPublicIpId": link_public_ip_id})
         data = json.dumps(data)
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_node(self,
-                    image_id,
-                    dry_run=False,
-                    block_device_mapping=None,
-                    boot_on_creation=True,
-                    bsu_optimized=True,
-                    client_token=None,
-                    deletion_protection=False,
-                    keypair_name=None,
-                    max_vms_count=None,
-                    min_vms_count=None,
-                    nics=None,
-                    performance=None,
-                    placement=None,
-                    private_ips=None,
-                    security_group_ids=None,
-                    security_groups=None,
-                    subnet_id=None,
+                    image_id: str,
+                    dry_run: bool = False,
+                    block_device_mapping: dict = None,
+                    boot_on_creation: bool = True,
+                    bsu_optimized: bool = True,
+                    client_token: str = None,
+                    deletion_protection: bool = False,
+                    keypair_name: str = None,
+                    max_vms_count: int = None,
+                    min_vms_count: int = None,
+                    nics: dict = None,
+                    performance: str = None,
+                    placement: dict = None,
+                    private_ips: [str] = None,
+                    security_group_ids: [str] = None,
+                    security_groups: [str] = None,
+                    subnet_id: str = None,
                     ):
         """
         Create a new instance.
@@ -428,20 +390,13 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"SubnetId": subnet_id})
         action = "CreateVms"
         data = json.dumps(data)
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def reboot_node(self, node_ids):
+    def reboot_node(self, node_ids: [str]):
         """
         Reboot instances.
 
@@ -454,20 +409,13 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "RebootVms"
         data = json.dumps({"VmIds": node_ids})
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_nodes(self, data="{}"):
+    def list_nodes(self, data: str = "{}"):
         """
         List all nodes.
 
@@ -475,20 +423,13 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadVms"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_node(self, node_ids):
+    def delete_node(self, node_ids: [str]):
         """
         Delete instances.
 
@@ -500,14 +441,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteVms"
         data = json.dumps({"VmIds": node_ids})
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
@@ -515,16 +449,16 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_image(
         self,
-        architecture=None,
-        vm_id=None,
-        image_name=None,
-        description=None,
-        block_device_mapping=None,
-        no_reboot=False,
-        root_device_name=None,
-        dry_run=False,
-        source_region_name=None,
-        file_location=None
+        architecture: str = None,
+        vm_id: str = None,
+        image_name: str = None,
+        description: str = None,
+        block_device_mapping: dict = None,
+        no_reboot: bool = False,
+        root_device_name: str = None,
+        dry_run: bool = False,
+        source_region_name: str = None,
+        file_location: str = None
     ):
         """
         Create a new image.
@@ -592,20 +526,13 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"FileLocation": file_location})
         data = json.dumps(data)
         action = "CreateImage"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_images(self, data="{}"):
+    def list_images(self, data: str = "{}"):
         """
         List all images.
 
@@ -613,20 +540,13 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadImages"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def get_image(self, image_id):
+    def get_image(self, image_id: str):
         """
         Get a specific image.
 
@@ -638,20 +558,13 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadImages"
         data = '{"Filters": {"ImageIds": ["' + image_id + '"]}}'
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_image(self, image_id):
+    def delete_image(self, image_id: str):
         """
         Delete an image.
 
@@ -663,20 +576,16 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteImage"
         data = '{"ImageId": "' + image_id + '"}'
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def create_key_pair(self, name, dry_run=False, public_key=None):
+    def create_key_pair(self,
+                        name: str,
+                        dry_run: bool = False,
+                        public_key: str = None):
         """
         Create a new key pair.
 
@@ -702,20 +611,13 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"PublicKey": public_key})
         data = json.dumps(data)
         action = "CreateKeypair"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_key_pairs(self, data="{}"):
+    def list_key_pairs(self, data: str = "{}"):
         """
         List all key pairs.
 
@@ -723,20 +625,13 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadKeypairs"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def get_key_pair(self, name):
+    def get_key_pair(self, name: str):
         """
         Get a specific key pair.
 
@@ -749,20 +644,13 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadKeypairs"
         data = '{"Filters": {"KeypairNames" : ["' + name + '"]}}'
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_key_pair(self, name):
+    def delete_key_pair(self, name: str):
         """
         Delete an image.
 
@@ -774,27 +662,20 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteKeypair"
         data = '{"KeypairName": "' + name + '"}'
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_snapshot(self,
-                        description=None,
-                        dry_run=False,
-                        file_location=None,
-                        snapshot_size=None,
-                        source_region_name=None,
-                        source_snapshot_id=None,
-                        volume_id=None,
+                        description: str = None,
+                        dry_run: bool = False,
+                        file_location: str = None,
+                        snapshot_size: int = None,
+                        source_region_name: str = None,
+                        source_snapshot_id: str = None,
+                        volume_id: str = None,
                         ):
         """
         Create a new snapshot.
@@ -850,20 +731,13 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"VolumeId": volume_id})
         data = json.dumps(data)
         action = "CreateSnapshot"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_snapshots(self, data="{}"):
+    def list_snapshots(self, data: str = "{}"):
         """
         List all snapshots.
 
@@ -871,20 +745,13 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadSnapshots"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_snapshot(self, snapshot_id):
+    def delete_snapshot(self, snapshot_id: str):
         """
         Delete a snapshot.
 
@@ -897,14 +764,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteSnapshot"
         data = '{"SnapshotId": "' + snapshot_id + '"}'
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
@@ -912,12 +772,12 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_volume(
         self,
-        subregion_name,
-        dry_run=False,
-        iops=None,
-        size=None,
-        snapshot_id=None,
-        volume_type=None,
+        subregion_name: str,
+        dry_run: bool = False,
+        iops: int = None,
+        size: int = None,
+        snapshot_id: str = None,
+        volume_type: str = None,
     ):
         """
         Create a new volume.
@@ -965,20 +825,14 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"VolumeType": volume_type})
         data = json.dumps(data)
         action = "CreateVolume"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
+
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_volumes(self, data="{}"):
+    def list_volumes(self, data: str = "{}"):
         """
         List all volumes.
 
@@ -986,20 +840,13 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadVolumes"
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_volume(self, volume_id):
+    def delete_volume(self, volume_id: str):
         """
         Delete a volume.
 
@@ -1012,20 +859,13 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteVolume"
         data = '{"VolumeId": "' + volume_id + '"}'
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def attach_volume(self, node_id, volume_id, device_name):
+    def attach_volume(self, node_id: str, volume_id: str, device_name: str):
         """
         Attach a volume.
 
@@ -1049,20 +889,16 @@ class OutscaleNodeDriver(NodeDriver):
             "VolumeId": volume_id,
             "DeviceName": device_name
         })
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def detach_volume(self, volume_id, dry_run=False, force_unlink=False):
+    def detach_volume(self,
+                      volume_id: str,
+                      dry_run: bool = False,
+                      force_unlink: bool = False):
         """
         Detach a volume.
 
@@ -1087,23 +923,23 @@ class OutscaleNodeDriver(NodeDriver):
         if force_unlink is not None:
             data.update({"ForceUnlink": force_unlink})
         data = json.dumps(data)
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+        headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
     @staticmethod
-    def _get_outscale_endpoint(region, version, action):
+    def _get_outscale_endpoint(region: str, version: str, action: str):
         return "https://api.{}.outscale.com/api/{}/{}".format(
             region,
             version,
             action
         )
+
+    def _ex_generate_headers(self, action: str, data: dict):
+        return self.signer.get_request_headers(action=action,
+                                             data=data,
+                                             service_name=self.service_name,
+                                             region=self.region)
+
