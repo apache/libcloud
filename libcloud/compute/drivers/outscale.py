@@ -24,6 +24,8 @@ from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
 from libcloud.common.base import ConnectionUserAndKey
+from libcloud.compute.base import Node, NodeImage, KeyPair
+from libcloud.compute.types import NodeState
 
 
 class OutscaleNodeDriver(NodeDriver):
@@ -55,15 +57,25 @@ class OutscaleNodeDriver(NodeDriver):
                                              version=self.version,
                                              connection=self.connection)
 
-    def list_locations(self, dry_run: bool = False):
+        self.NODE_STATE = {
+            'pending': NodeState.PENDING,
+            'running': NodeState.RUNNING,
+            'shutting-down': NodeState.UNKNOWN,
+            'terminated': NodeState.TERMINATED,
+            'stopped': NodeState.STOPPED
+        }
+
+    def list_locations(self, ex_dry_run: bool = False):
         """
         Lists available regions details.
-
+        :param      ex_dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       ex_dry_run: ``bool``
         :return: regions details
         :rtype: ``dict``
         """
         action = "ReadRegions"
-        data = json.dumps({"DryRun": dry_run})
+        data = json.dumps({"DryRun": ex_dry_run})
         signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
                                              access_secret=self.secret,
                                              version=self.version,
@@ -77,7 +89,7 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def create_public_ip(self, dry_run: bool = False):
+    def ex_create_public_ip(self, dry_run: bool = False):
         """
         Create a new public ip.
 
@@ -96,9 +108,10 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def delete_public_ip(self, dry_run: bool = False,
-                         public_ip: str = None,
-                         public_ip_id: str = None):
+    def ex_delete_public_ip(self,
+                            dry_run: bool = False,
+                            public_ip: str = None,
+                            public_ip_id: str = None):
         """
         Delete instances.
 
@@ -131,7 +144,7 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_public_ips(self, data: str = "{}"):
+    def ex_list_public_ips(self, data: str = "{}"):
         """
         List all nodes.
 
@@ -149,7 +162,7 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_public_ip_ranges(self, dry_run: bool = False):
+    def ex_list_public_ip_ranges(self, dry_run: bool = False):
         """
         Lists available regions details.
 
@@ -168,14 +181,14 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def attach_public_ip(self,
-                         allow_relink: bool = None,
-                         dry_run: bool = False,
-                         nic_id: str = None,
-                         vm_id: str = None,
-                         public_ip: str = None,
-                         public_ip_id: str = None,
-                         ):
+    def ex_attach_public_ip(self,
+                            allow_relink: bool = None,
+                            dry_run: bool = False,
+                            nic_id: str = None,
+                            vm_id: str = None,
+                            public_ip: str = None,
+                            public_ip_id: str = None,
+                            ):
         """
         Attach a volume.
 
@@ -228,9 +241,10 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def detach_public_ip(self, public_ip: str = None,
-                         link_public_ip_id: str = None,
-                         dry_run: bool = False):
+    def ex_detach_public_ip(self,
+                            public_ip: str = None,
+                            link_public_ip_id: str = None,
+                            dry_run: bool = False):
         """
         Detach a volume.
 
@@ -264,130 +278,150 @@ class OutscaleNodeDriver(NodeDriver):
         return requests.post(endpoint, data=data, headers=headers)
 
     def create_node(self,
-                    image_id: str,
-                    dry_run: bool = False,
-                    block_device_mapping: dict = None,
-                    boot_on_creation: bool = True,
-                    bsu_optimized: bool = True,
-                    client_token: str = None,
-                    deletion_protection: bool = False,
-                    keypair_name: str = None,
-                    max_vms_count: int = None,
-                    min_vms_count: int = None,
-                    nics: dict = None,
-                    performance: str = None,
-                    placement: dict = None,
-                    private_ips: [str] = None,
-                    security_group_ids: [str] = None,
-                    security_groups: [str] = None,
-                    subnet_id: str = None,
+                    ex_image_id: str,
+                    ex_dry_run: bool = False,
+                    ex_block_device_mapping: dict = None,
+                    ex_boot_on_creation: bool = True,
+                    ex_bsu_optimized: bool = True,
+                    ex_client_token: str = None,
+                    ex_deletion_protection: bool = False,
+                    ex_keypair_name: str = None,
+                    ex_max_vms_count: int = None,
+                    ex_min_vms_count: int = None,
+                    ex_nics: dict = None,
+                    ex_performance: str = None,
+                    ex_placement: dict = None,
+                    ex_private_ips: [str] = None,
+                    ex_security_group_ids: [str] = None,
+                    ex_security_groups: [str] = None,
+                    ex_subnet_id: str = None,
+                    ex_user_data: str = None,
+                    ex_vm_initiated_shutdown_behavior: str = None,
+                    ex_vm_type: str = None
                     ):
         """
         Create a new instance.
 
-        :param      image_id: The ID of the OMI used to create the VM.
-        :type       image_id: ``str``
+        :param      ex_image_id: The ID of the OMI used to create the VM.
+        :type       ex_image_id: ``str``
 
-        :param      dry_run: If true, checks whether you have the required
+        :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       dry_run: ``bool``
+        :type       ex_dry_run: ``bool``
 
-        :param      block_device_mapping: One or more block device mappings.
-        :type       block_device_mapping: ``dict``
+        :param      ex_block_device_mapping: One or more block device mappings.
+        :type       ex_block_device_mapping: ``dict``
 
-        :param      boot_on_creation: By default or if true, the VM is
+        :param      ex_boot_on_creation: By default or if true, the VM is
         started on creation. If false, the VM is
         stopped on creation.
-        :type       boot_on_creation: ``bool``
+        :type       ex_boot_on_creation: ``bool``
 
-        :param      bsu_optimized: If true, the VM is created with optimized
+        :param      ex_bsu_optimized: If true, the VM is created with optimized
         BSU I/O.
-        :type       bsu_optimized: ``bool``
+        :type       ex_bsu_optimized: ``bool``
 
-        :param      client_token: A unique identifier which enables you to
+        :param      ex_client_token: A unique identifier which enables you to
         manage the idempotency.
-        :type       client_token: ``bool``
+        :type       ex_client_token: ``bool``
 
-        :param      deletion_protection: If true, you cannot terminate the
+        :param      ex_deletion_protection: If true, you cannot terminate the
         VM using Cockpit, the CLI or the API.
         If false, you can.
-        :type       deletion_protection: ``bool``
+        :type       ex_deletion_protection: ``bool``
 
-        :param      keypair_name: The name of the keypair.
-        :type       keypair_name: ``str``
+        :param      ex_keypair_name: The name of the keypair.
+        :type       ex_keypair_name: ``str``
 
-        :param      max_vms_count: The maximum number of VMs you want to
+        :param      ex_max_vms_count: The maximum number of VMs you want to
         create. If all the VMs cannot be created, the
         largest possible number of VMs above MinVmsCount is created.
-        :type       max_vms_count: ``integer``
+        :type       ex_max_vms_count: ``integer``
 
-        :param      min_vms_count: The minimum number of VMs you want to
+        :param      ex_min_vms_count: The minimum number of VMs you want to
         create. If this number of VMs cannot be
         created, no VMs are created.
-        :type       min_vms_count: ``integer``
+        :type       ex_min_vms_count: ``integer``
 
-        :param      nics: One or more NICs. If you specify this parameter,
+        :param      ex_nics: One or more NICs. If you specify this parameter,
         you must define one NIC as the primary
         network interface of the VM with 0 as its device number.
-        :type       nics: ``dict``
+        :type       ex_nics: ``dict``
 
-        :param      performance: The performance of the VM (standard | high
+        :param      ex_performance: The performance of the VM (standard | high
         | highest).
-        :type       performance: ``str``
+        :type       ex_performance: ``str``
 
-        :param      placement: Information about the placement of the VM.
-        :type       placement: ``dict``
+        :param      ex_placement: Information about the placement of the VM.
+        :type       ex_placement: ``dict``
 
-        :param      private_ips: One or more private IP addresses of the VM.
-        :type       private_ips: ``list``
+        :param      ex_private_ips: One or more private IP addresses of the VM.
+        :type       ex_private_ips: ``list``
 
-        :param      security_group_ids: One or more IDs of security group
+        :param      ex_security_group_ids: One or more IDs of security group
         for the VMs.
-        :type       security_group_ids: ``list``
+        :type       ex_security_group_ids: ``list``
 
-        :param      security_groups: One or more names of security groups
+        :param      ex_security_groups: One or more names of security groups
         for the VMs.
-        :type       security_groups: ``list``
+        :type       ex_security_groups: ``list``
 
-        :param      subnet_id: The ID of the Subnet in which you want to
+        :param      ex_subnet_id: The ID of the Subnet in which you want to
         create the VM.
-        :type       subnet_id: ``str``
+        :type       ex_subnet_id: ``str``
+
+        :param      ex_user_data: Data or script used to add a specific configuration to the VM. It must be base64-encoded.
+        :type       ex_user_data: ``str``
+
+        :param      ex_vm_initiated_shutdown_behavior: The VM behavior when you stop it. By default or if set to stop, the
+        VM stops. If set to restart, the VM stops then automatically restarts. If set to terminate, the VM stops and is terminated.
+        create the VM.
+        :type       ex_vm_initiated_shutdown_behavior: ``str``
+
+        :param      ex_vm_type: The type of VM (t2.small by default).
+        :type       ex_vm_type: ``str``
 
         :return: the created instance
         :rtype: ``dict``
         """
         data = {
-            "DryRun": dry_run,
-            "BootOnCreation": boot_on_creation,
-            "BsuOptimized": bsu_optimized,
-            "ImageId": image_id
+            "DryRun": ex_dry_run,
+            "BootOnCreation": ex_boot_on_creation,
+            "BsuOptimized": ex_bsu_optimized,
+            "ImageId": ex_image_id
         }
-        if block_device_mapping is not None:
-            data.update({"BlockDeviceMappings": block_device_mapping})
-        if client_token is not None:
-            data.update({"ClientToken": client_token})
-        if deletion_protection is not None:
-            data.update({"DeletionProtection": deletion_protection})
-        if keypair_name is not None:
-            data.update({"KeypairName": keypair_name})
-        if max_vms_count is not None:
-            data.update({"MaxVmsCount": max_vms_count})
-        if min_vms_count is not None:
-            data.update({"MinVmsCount": min_vms_count})
-        if nics is not None:
-            data.update({"Nics": nics})
-        if performance is not None:
-            data.update({"Performance": performance})
-        if placement is not None:
-            data.update({"Placement": placement})
-        if private_ips is not None:
-            data.update({"PrivateIps": private_ips})
-        if security_group_ids is not None:
-            data.update({"SecurityGroupIds": security_group_ids})
-        if security_groups is not None:
-            data.update({"SecurityGroups": security_groups})
-        if subnet_id is not None:
-            data.update({"SubnetId": subnet_id})
+        if ex_block_device_mapping is not None:
+            data.update({"BlockDeviceMappings": ex_block_device_mapping})
+        if ex_client_token is not None:
+            data.update({"ClientToken": ex_client_token})
+        if ex_deletion_protection is not None:
+            data.update({"DeletionProtection": ex_deletion_protection})
+        if ex_keypair_name is not None:
+            data.update({"KeypairName": ex_keypair_name})
+        if ex_max_vms_count is not None:
+            data.update({"MaxVmsCount": ex_max_vms_count})
+        if ex_min_vms_count is not None:
+            data.update({"MinVmsCount": ex_min_vms_count})
+        if ex_nics is not None:
+            data.update({"Nics": ex_nics})
+        if ex_performance is not None:
+            data.update({"Performance": ex_performance})
+        if ex_placement is not None:
+            data.update({"Placement": ex_placement})
+        if ex_private_ips is not None:
+            data.update({"PrivateIps": ex_private_ips})
+        if ex_security_group_ids is not None:
+            data.update({"SecurityGroupIds": ex_security_group_ids})
+        if ex_security_groups is not None:
+            data.update({"SecurityGroups": ex_security_groups})
+        if ex_user_data is not None:
+            data.update({"UserData": ex_user_data})
+        if ex_vm_initiated_shutdown_behavior is not None:
+            data.update({"VmInstantiatedShutdownBehavior": ex_vm_initiated_shutdown_behavior})
+        if ex_vm_type is not None:
+            data.update({"VmType": ex_vm_type})
+        if ex_subnet_id is not None:
+            data.update({"SubnetId": ex_subnet_id})
         action = "CreateVms"
         data = json.dumps(data)
         headers = self._ex_generate_headers(action, data)
@@ -396,26 +430,65 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def reboot_node(self, node_ids: [str]):
+    def reboot_node(self, node: Node):
         """
         Reboot instances.
 
-        :param      node_ids: the ID(s) of the VM(s)
+        :param      node: the ID(s) of the VM(s)
                     you want to reboot (required)
-        :type       node_ids: ``list``
+        :type       node: ``list``
 
         :return: the rebooted instances
         :rtype: ``dict``
         """
         action = "RebootVms"
-        data = json.dumps({"VmIds": node_ids})
+        data = json.dumps({"VmIds": node.id})
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_nodes(self, data: str = "{}"):
+    def _to_nodes(self, vms: list):
+        nodes_list = []
+        for vm in vms:
+            name = ""
+            private_ips = []
+            for tag in vm["Tags"]:
+                if tag["Key"] == "Name":
+                    name = tag["Value"]
+            if "PrivateIps" in vm["Nics"]:
+                private_ips = vm["Nics"]["PrivateIps"]
+
+            node = Node(id=vm["VmId"],
+                        name=name,
+                        state=self.NODE_STATE[vm["State"]],
+                        public_ips=[],
+                        private_ips=private_ips,
+                        driver=self,
+                        extra=vm)
+            nodes_list.append(node)
+        return nodes_list
+
+    def _to_node_images(self, node_images: list):
+        node_image_list = []
+        for image in node_images:
+            name = ""
+            private_ips = []
+            for tag in image["Tags"]:
+                if tag["Key"] == "Name":
+                    name = tag["Value"]
+            if "PrivateIps" in image["Nics"]:
+                private_ips = image["Nics"]["PrivateIps"]
+
+            node = NodeImage(id=image["NodeId"],
+                             name=name,
+                             driver=self,
+                             extra=image)
+            node_image_list.append(node)
+        return node_image_list
+
+    def list_nodes(self, ex_data: str = "{}"):
         """
         List all nodes.
 
@@ -423,24 +496,25 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadVms"
-        headers = self._ex_generate_headers(action, data)
+        headers = self._ex_generate_headers(action, ex_data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        vms = requests.post(endpoint, data=ex_data, headers=headers).json()["Vms"]
+        return self._to_nodes(vms)
 
-    def delete_node(self, node_ids: [str]):
+    def destroy_node(self, node: Node):
         """
         Delete instances.
 
-        :param      node_ids: one or more IDs of VMs (required)
-        :type       node_ids: ``list``
+        :param      node: one or more IDs of VMs (required)
+        :type       node: ``Node``
 
         :return: request
         :rtype: ``dict``
         """
         action = "DeleteVms"
-        data = json.dumps({"VmIds": node_ids})
+        data = json.dumps({"VmIds": node.id})
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
@@ -449,81 +523,80 @@ class OutscaleNodeDriver(NodeDriver):
 
     def create_image(
         self,
-        architecture: str = None,
-        vm_id: str = None,
-        image_name: str = None,
+        ex_architecture: str = None,
+        node: Node = None,
+        name: str = None,
         description: str = None,
-        block_device_mapping: dict = None,
-        no_reboot: bool = False,
-        root_device_name: str = None,
-        dry_run: bool = False,
-        source_region_name: str = None,
-        file_location: str = None
+        ex_block_device_mapping: dict = None,
+        ex_no_reboot: bool = False,
+        ex_root_device_name: str = None,
+        ex_dry_run: bool = False,
+        ex_source_region_name: str = None,
+        ex_file_location: str = None
     ):
         """
         Create a new image.
 
-        :param      vm_id: the ID of the VM from which
-                    you want to create the OMI (required)
-        :type       vm_id: ``str``
+        :param      node: a valid Node object
+        :type       node: ``str``
 
-        :param      architecture: The architecture of the OMI (by default,
+        :param      ex_architecture: The architecture of the OMI (by default,
         i386).
-        :type       architecture: ``str``
+        :type       ex_architecture: ``str``
 
         :param      description: a description for the new OMI
         :type       description: ``str``
 
-        :param      image_name: A unique name for the new OMI.
-        :type       image_name: ``str``
+        :param      name: A unique name for the new OMI.
+        :type       name: ``str``
 
-        :param      block_device_mapping: One or more block device mappings.
-        :type       block_device_mapping: ``dict``
+        :param      ex_block_device_mapping: One or more block device mappings.
+        :type       ex_block_device_mapping: ``dict``
 
-        :param      no_reboot: If false, the VM shuts down before creating
+        :param      ex_no_reboot: If false, the VM shuts down before creating
         the OMI and then reboots.
         If true, the VM does not.
-        :type       no_reboot: ``bool``
+        :type       ex_no_reboot: ``bool``
 
-        :param      root_device_name: The name of the root device.
-        :type       root_device_name: ``str``
+        :param      ex_root_device_name: The name of the root device.
+        :type       ex_root_device_name: ``str``
 
-        :param      source_region_name: The name of the source Region,
+        :param      ex_source_region_name: The name of the source Region,
         which must be the same
         as the Region of your account.
-        :type       source_region_name: ``str``
+        :type       ex_source_region_name: ``str``
 
-        :param      file_location: The pre-signed URL of the OMI manifest
+        :param      ex_file_location: The pre-signed URL of the OMI manifest
         file, or the full path to the OMI stored in
         an OSU bucket. If you specify this parameter, a copy of the OMI is
         created in your account.
-        :type       file_location: ``str``
+        :type       ex_file_location: ``str``
 
-        :param      dry_run: If true, checks whether you have the required
+        :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       dry_run: ``bool``
+        :type       ex_dry_run: ``bool``
 
         :return: the created image
         :rtype: ``dict``
         """
         data = {
-            "DryRun": dry_run,
-            "NoReboot": no_reboot,
+            "DryRun": ex_dry_run,
+            "NoReboot": ex_no_reboot,
         }
-        if block_device_mapping is not None:
-            data.update({"BlockDeviceMappings": block_device_mapping})
-        if image_name is not None:
-            data.update({"ImageName": image_name})
+        if ex_block_device_mapping is not None:
+            data.update({"BlockDeviceMappings": ex_block_device_mapping})
+        if name is not None:
+            data.update({"ImageName": name})
         if description is not None:
             data.update({"Description": description})
-        if vm_id is not None:
-            data.update({"VmId": vm_id})
-        if root_device_name is not None:
-            data.update({"RootDeviceName": root_device_name})
-        if source_region_name is not None:
-            data.update({"SourceRegionName": source_region_name})
-        if file_location is not None:
-            data.update({"FileLocation": file_location})
+        if node.id is not None:
+            data.update({"VmId": node.id})
+        if ex_root_device_name is not None:
+            data.update({"RootDeviceName": ex_root_device_name})
+        if ex_source_region_name is not None:
+            data.update({"SourceRegionName": ex_source_region_name})
+        if ex_file_location is not None:
+            data.update({"FileLocation": ex_file_location})
         data = json.dumps(data)
         action = "CreateImage"
         headers = self._ex_generate_headers(action, data)
@@ -532,7 +605,7 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_images(self, data: str = "{}"):
+    def list_images(self, ex_data: str = "{}"):
         """
         List all images.
 
@@ -540,11 +613,12 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadImages"
-        headers = self._ex_generate_headers(action, data)
+        headers = self._ex_generate_headers(action, ex_data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        images = requests.post(endpoint, data=ex_data, headers=headers).json()["Images"]
+        return self._to_node_images(images)
 
     def get_image(self, image_id: str):
         """
@@ -562,30 +636,46 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        images = requests.post(endpoint, data=data, headers=headers).json()["Images"]
+        return self._to_node_images(images)[0]
 
-    def delete_image(self, image_id: str):
+    def delete_image(self, node_image: NodeImage):
         """
         Delete an image.
 
-        :param      image_id: the ID of the OMI you want to delete (required)
-        :type       image_id: ``str``
+        :param      node_image: the ID of the OMI you want to delete (required)
+        :type       node_image: ``str``
 
         :return: request
         :rtype: ``dict``
         """
         action = "DeleteImage"
-        data = '{"ImageId": "' + image_id + '"}'
+        data = '{"ImageId": "' + node_image.id + '"}'
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
+            return True
+        return False
+
+    def _to_key_pairs(self, key_pairs):
+        return [self._to_key_pair(key_pair) for key_pair in key_pairs]
+
+    def _to_key_pair(self, key_pair):
+        private_key = key_pair["PrivateKey"] if "PrivateKey" in key_pair else ""
+        return KeyPair(
+            name=key_pair["KeypairName"],
+            public_key=None,
+            private_key=private_key,
+            fingerprint=key_pair["KeypairFingerprint"],
+            driver=self)
 
     def create_key_pair(self,
                         name: str,
-                        dry_run: bool = False,
-                        public_key: str = None):
+                        ex_dry_run: bool = False,
+                        ex_public_key: str = None):
         """
         Create a new key pair.
 
@@ -593,31 +683,32 @@ class OutscaleNodeDriver(NodeDriver):
         length of 255 ASCII printable characters.
         :type       name: ``str``
 
-        :param      dry_run: If true, checks whether you have the required
+        :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       dry_run: ``bool``
+        :type       ex_dry_run: ``bool``
 
-        :param      public_key: The public key. It must be base64-encoded.
-        :type       public_key: ``str``
+        :param      ex_public_key: The public key. It must be base64-encoded.
+        :type       ex_public_key: ``str``
 
         :return: the created key pair
         :rtype: ``dict``
         """
         data = {
             "KeypairName": name,
-            "DryRun": dry_run,
+            "DryRun": ex_dry_run,
         }
-        if public_key is not None:
-            data.update({"PublicKey": public_key})
+        if ex_public_key is not None:
+            data.update({"PublicKey": ex_public_key})
         data = json.dumps(data)
         action = "CreateKeypair"
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        key_pair = requests.post(endpoint, data=data, headers=headers).json()
+        return self._to_key_pair(key_pair["Keypair"])
 
-    def list_key_pairs(self, data: str = "{}"):
+    def list_key_pairs(self, ex_data: str = "{}"):
         """
         List all key pairs.
 
@@ -625,11 +716,12 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadKeypairs"
-        headers = self._ex_generate_headers(action, data)
+        headers = self._ex_generate_headers(action, ex_data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        key_pairs = requests.post(endpoint, data=ex_data, headers=headers).json()
+        return self._to_key_pairs(key_pairs["Keypairs"])
 
     def get_key_pair(self, name: str):
         """
@@ -648,7 +740,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        key_pair = requests.post(endpoint, data=data, headers=headers).json()["Keypairs"][0]
+        return self._to_key_pair(key_pair)
 
     def delete_key_pair(self, name: str):
         """
