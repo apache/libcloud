@@ -338,6 +338,11 @@ class ParamikoSSHClient(BaseSSHClient):
         self.logger.debug('Uploading file', extra=extra)
 
         sftp = self.client.open_sftp()
+
+        transport = self.client.get_transport()
+        transport.use_compression(compress=True)
+        transport.set_keepalive(15)
+
         # less than ideal, but we need to mkdir stuff otherwise file() fails
         head, tail = psplit(path)
 
@@ -399,6 +404,9 @@ class ParamikoSSHClient(BaseSSHClient):
         bufsize = -1
 
         transport = self.client.get_transport()
+        transport.use_compression(compress=True)
+        transport.set_keepalive(15)
+
         chan = transport.open_session()
 
         start_time = time.time()
