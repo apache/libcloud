@@ -91,6 +91,13 @@ class SSHKeyDeployment(Deployment):
         client.put(".ssh/authorized_keys", contents=self.key, mode='a')
         return node
 
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        key = self.key[:100]
+        return ("<SSHKeyDeployment key=%s...>" % (key))
+
 
 class FileDeployment(Deployment):
     """
@@ -124,6 +131,13 @@ class FileDeployment(Deployment):
         client.put(path=self.target, chmod=perms,
                    contents=content)
         return node
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return ("<FileDeployment source=%s, target=%s>" % (
+            self.source, self.target))
 
 
 class ScriptDeployment(Deployment):
@@ -325,3 +339,16 @@ class MultiStepDeployment(Deployment):
         for s in self.steps:
             node = s.run(node, client)
         return node
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        steps = []
+
+        for step in self.steps:
+            steps.append(str(step))
+
+        steps = ', '.join(steps)
+
+        return ("<MultiStepDeployment steps=[%s]>" % (steps))
