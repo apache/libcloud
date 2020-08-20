@@ -68,6 +68,35 @@ Compute
   re-connecting would help and result in a successful outcome.
   [Tomaz Muraus - @Kami]
 
+- [Deployment] Make ``FileDeployment`` class much faster and more efficient
+  when working with large files or when running multiple ``FileDeployment``
+  steps on a single node.
+
+  This was achieved by implementing two changes on the ``ParamikoSSHClient``
+  class:
+
+  1. ``put()`` method now tries to re-use the existing open SFTP connection
+      if one already exists instead of re-creating a new one for each
+     ``put()`` call.
+
+  2. New ``putfo()`` method has been added to the ``ParamikoSSHClient`` class
+     which utilizes the underlying ``sftp.putfo()`` method.
+
+     This method doesn't need to buffer the whole file content in memory and
+     also supports pipelining which makes uploads much faster and more 
+     efficient for larger files.
+  [Tomaz Muraus - @Kami]
+
+- [Deployment] Add ``__repr__()`` and ``__str__()`` methods to all the
+  Deployment classes.
+  [Tomaz Muraus - @Kami]
+
+- [Deployment] New ``keep_alive`` and ``use_compression`` arguments have been
+  added to the ``ParamikoSSHClient`` class constructor.
+
+  Right now those are not exposed yet to the ``deploy_node()`` method.
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
