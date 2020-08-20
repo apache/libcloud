@@ -270,6 +270,8 @@ class ParamikoSSHClient(BaseSSHClient):
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger = self._get_and_setup_logger()
 
+        self.sftp_client = None
+
     def connect(self):
         conninfo = {'hostname': self.hostname,
                     'port': self.port,
@@ -337,7 +339,12 @@ class ParamikoSSHClient(BaseSSHClient):
         extra = {'_path': path, '_mode': mode, '_chmod': chmod}
         self.logger.debug('Uploading file', extra=extra)
 
-        sftp = self.client.open_sftp()
+        if not self.sftp_client:
+            self.sftp_client = self.client.open_sftp()
+        else:
+            print("re using sftp connection")
+
+        sftp = self.sftp_client
 
         transport = self.client.get_transport()
         transport.use_compression(compress=True)
@@ -369,7 +376,7 @@ class ParamikoSSHClient(BaseSSHClient):
         if chmod is not None:
             ak.chmod(chmod)
         ak.close()
-        sftp.close()
+        #sftp.close()
 
         if path[0] == '/':
             file_path = path
@@ -479,7 +486,12 @@ class ParamikoSSHClient(BaseSSHClient):
     def close(self):
         self.logger.debug('Closing server connection')
 
-        self.client.close()
+        if self.client:
+            self.client.close()
+
+        if self.sftp_client:
+            self.sftp_client.close()
+
         return True
 
     def _consume_stdout(self, chan):
