@@ -240,7 +240,9 @@ class ParamikoSSHClient(BaseSSHClient):
                  key=None,  # type: Optional[str]
                  key_files=None,  # type: Optional[Union[str, List[str]]]
                  key_material=None,  # type: Optional[str]
-                 timeout=None  # type: Optional[float]
+                 timeout=None,  # type: Optional[float]
+                 keep_alive=None,  # type: Optional[int]
+                 use_compression=False  # type: bool
                  ):
         """
         Authentication is always attempted in the following order:
@@ -252,6 +254,12 @@ class ParamikoSSHClient(BaseSSHClient):
           password and key is provided)
         - Plain username/password auth, if a password was given (if password is
           provided)
+
+        :param keep_alive: Optional keep alive internal (in seconds) to use.
+        :type keep_alive: ``int``
+
+        :param use_compression: True to use compression.
+        :type use_compression: ``bool``
         """
         if key_files and key_material:
             raise ValueError(('key_files and key_material arguments are '
@@ -265,11 +273,15 @@ class ParamikoSSHClient(BaseSSHClient):
                                                 timeout=timeout)
 
         self.key_material = key_material
+        self.keep_alive = keep_alive
+        self.use_compression = use_compression
 
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger = self._get_and_setup_logger()
 
+        # This object is lazily created on first SFTP operation (e.g. put()
+        # method call)
         self.sftp_client = None
 
     def connect(self):
@@ -456,9 +468,7 @@ class ParamikoSSHClient(BaseSSHClient):
         # Use the system default buffer size
         bufsize = -1
 
-        transport = self.client.get_transport()
-        transport.use_compression(compress=True)
-        transport.set_keepalive(15)
+        transport = self._get_transport()
 
         chan = transport.open_session()
 
@@ -645,6 +655,21 @@ class ParamikoSSHClient(BaseSSHClient):
                ' in PEM format are supported). For more information on '
                ' supported key file types, see %s' % (SUPPORTED_KEY_TYPES_URL))
         raise paramiko.ssh_exception.SSHException(msg)
+
+    def _get_transport(self):
+        """
+        Return transport object taking into account keep alive and compression
+        options passed to the constructor.
+        """
+        transport = self.client.get_transport()
+
+        if self.keep_alive:
+            transport.set_keepalive(self.keep_alive)
+
+        if self.use_compression:
+            transport.use_compression(compress=True)
+
+        return transport
 
     def _get_sftp_client(self):
         """
