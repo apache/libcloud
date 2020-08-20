@@ -83,8 +83,9 @@ Compute
      which utilizes the underlying ``sftp.putfo()`` method.
 
      This method doesn't need to buffer the whole file content in memory and
-     also supports pipelining which makes uploads much faster and more 
+     also supports pipelining which makes uploads much faster and more
      efficient for larger files.
+
   [Tomaz Muraus - @Kami]
 
 - [Deployment] Add ``__repr__()`` and ``__str__()`` methods to all the
