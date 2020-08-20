@@ -76,9 +76,8 @@ Compute
   class:
 
   1. ``put()`` method now tries to re-use the existing open SFTP connection
-      if one already exists instead of re-creating a new one for each
+     if one already exists instead of re-creating a new one for each
      ``put()`` call.
-
   2. New ``putfo()`` method has been added to the ``ParamikoSSHClient`` class
      which utilizes the underlying ``sftp.putfo()`` method.
 
