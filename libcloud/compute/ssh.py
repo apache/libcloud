@@ -375,6 +375,62 @@ class ParamikoSSHClient(BaseSSHClient):
 
         return file_path
 
+    def putfo(self, path, fo=None, chmod=None):
+        """
+        Upload file like object to the remote server.
+
+        Unlike put(), this method operates on file objects and not directly on
+        file content which makes it much more efficient for large files since
+        it utilizes pipelining.
+
+        :param path: Path to upload the file to.
+        :type path: ``str``
+
+        :param fo: File like object to read the content from.
+        :type fo: File handle or file like object.
+
+        :param chmod: Optional permissions to assign to the uploaded file.
+        :type chmod: ``int``
+        """
+        extra = {'_path': path, '_chmod': chmod}
+        self.logger.debug('Uploading file', extra=extra)
+
+        sftp = self._get_sftp_client()
+
+        # less than ideal, but we need to mkdir stuff otherwise file() fails
+        head, tail = psplit(path)
+
+        if path[0] == "/":
+            sftp.chdir("/")
+        else:
+            # Relative path - start from a home directory (~)
+            sftp.chdir('.')
+
+        for part in head.split("/"):
+            if part != "":
+                try:
+                    sftp.mkdir(part)
+                except IOError:
+                    # so, there doesn't seem to be a way to
+                    # catch EEXIST consistently *sigh*
+                    pass
+                sftp.chdir(part)
+
+        cwd = sftp.getcwd()
+
+        sftp.putfo(fo, path)
+        if chmod is not None:
+            ak = sftp.file(tail)
+            ak.chmod(chmod)
+            ak.close()
+
+        if path[0] == '/':
+            file_path = path
+        else:
+            file_path = pjoin(cwd, path)
+
+        return file_path
+
     def delete(self, path):
         extra = {'_path': path}
         self.logger.debug('Deleting file', extra=extra)
@@ -609,10 +665,13 @@ class ParamikoSSHClient(BaseSSHClient):
         # error we assume the connection is closed and we try to re-establish
         # it.
         try:
-            sftp_client.listdir("")
+            sftp_client.listdir(".")
         except OSError as e:
             if "socket is closed" in str(e).lower():
                 self.sftp_client = self.client.open_sftp()
+            elif "no such file" in str(e).lower():
+                # Not a fatal exception, means connection is still open
+                pass
             else:
                 raise e
 
@@ -675,6 +734,10 @@ class ShellOutSSHClient(BaseSSHClient):
         cmd = ['echo "%s" %s %s' % (contents, redirect, path)]
         self._run_remote_shell_command(cmd)
         return path
+
+    def putfo(self, path, fo=None, chmod=None):
+        content = fo.read()
+        return self.put(path=path, contents=content, chmod=chmod)
 
     def delete(self, path):
         cmd = ['rm', '-rf', path]

@@ -126,10 +126,8 @@ class FileDeployment(Deployment):
         perms = int(oct(os.stat(self.source).st_mode)[4:], 8)
 
         with open(self.source, 'rb') as fp:
-            content = fp.read()
-
-        client.put(path=self.target, chmod=perms,
-                   contents=content)
+            client.putfo(path=self.target, chmod=perms,
+                         fo=fp)
         return node
 
     def __str__(self):
