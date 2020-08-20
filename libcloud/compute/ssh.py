@@ -166,6 +166,25 @@ class BaseSSHClient(object):
         raise NotImplementedError(
             'put not implemented for this ssh client')
 
+    def putfo(self, path, fo=None, chmod=None):
+        """
+        Upload file like object to the remote server.
+
+        :param path: Path to upload the file to.
+        :type path: ``str``
+
+        :param fo: File like object to read the content from.
+        :type fo: File handle or file like object.
+
+        :type chmod: ``int``
+        :keyword chmod: chmod file to this after creation.
+
+        :return: Full path to the location where a file has been saved.
+        :rtype: ``str``
+        """
+        raise NotImplementedError(
+            'putfo not implemented for this ssh client')
+
     def delete(self, path):
         # type: (str) -> bool
         """
@@ -394,15 +413,6 @@ class ParamikoSSHClient(BaseSSHClient):
         Unlike put(), this method operates on file objects and not directly on
         file content which makes it much more efficient for large files since
         it utilizes pipelining.
-
-        :param path: Path to upload the file to.
-        :type path: ``str``
-
-        :param fo: File like object to read the content from.
-        :type fo: File handle or file like object.
-
-        :param chmod: Optional permissions to assign to the uploaded file.
-        :type chmod: ``int``
         """
         extra = {'_path': path, '_chmod': chmod}
         self.logger.debug('Uploading file', extra=extra)
