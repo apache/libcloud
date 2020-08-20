@@ -32,7 +32,7 @@ from libcloud.utils.py3 import StringIO
 from libcloud.utils.py3 import u
 from libcloud.utils.py3 import assertRaisesRegex
 
-from mock import patch, Mock, MagicMock
+from mock import patch, Mock, MagicMock, call
 
 if not have_paramiko:
     ParamikoSSHClient = None  # NOQA
@@ -168,7 +168,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
                           expected_msg, mock.connect)
 
     @patch('paramiko.SSHClient', Mock)
-    def test_password_protected_key_no_password_provided(self):
+    def test_password_protected_key_no_password_provided_1(self):
         path = os.path.join(os.path.dirname(__file__),
                             'fixtures', 'misc',
                             'test_rsa_2048b_pass_foobar.key')
@@ -198,7 +198,7 @@ class ParamikoSSHClientTests(LibcloudTestCase):
                           expected_msg, mock.connect)
 
     @patch('paramiko.SSHClient', Mock)
-    def test_password_protected_key_no_password_provided(self):
+    def test_password_protected_key_no_password_provided_2(self):
         path = os.path.join(os.path.dirname(__file__),
                             'fixtures', 'misc',
                             'test_rsa_2048b_pass_foobar.key')
@@ -575,6 +575,215 @@ class ParamikoSSHClientTests(LibcloudTestCase):
         stderr = client._consume_stderr(chan).getvalue()
         self.assertEqual('\x00\x00&\x01\x00ab', stderr)
         self.assertEqual(len(stderr), 7)
+
+    def test_keep_alive_and_compression(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        mock_transport = Mock()
+        client.client.get_transport = Mock(return_value=mock_transport)
+
+        transport = client._get_transport()
+        self.assertEqual(transport.set_keepalive.call_count, 0)
+        self.assertEqual(transport.use_compression.call_count, 0)
+
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu',
+                       'keep_alive': 15,
+                       'use_compression': True}
+        client = ParamikoSSHClient(**conn_params)
+
+        mock_transport = Mock()
+        client.client.get_transport = Mock(return_value=mock_transport)
+
+        transport = client._get_transport()
+        self.assertEqual(transport.set_keepalive.call_count, 1)
+        self.assertEqual(transport.use_compression.call_count, 1)
+
+    def test_put_absolute_path(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        mock_client = Mock()
+        mock_sftp_client = Mock()
+        mock_transport = Mock()
+
+        mock_client.get_transport.return_value = mock_transport
+        mock_sftp_client.getcwd.return_value = '/mock/cwd'
+        client.client = mock_client
+        client.sftp_client = mock_sftp_client
+
+        result = client.put(path='/test/remote/path.txt', contents='foo bar', chmod=455, mode='w')
+        self.assertEqual(result, '/test/remote/path.txt')
+
+        calls = [
+            call('/'),
+            call('test'),
+            call('remote')
+        ]
+        mock_sftp_client.chdir.assert_has_calls(calls, any_order=False)
+
+        calls = [
+            call('path.txt', mode='w'),
+            call().write('foo bar'),
+            call().chmod(455),
+            call().close()
+        ]
+        mock_sftp_client.file.assert_has_calls(calls, any_order=False)
+
+    def test_put_relative_path(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        mock_client = Mock()
+        mock_sftp_client = Mock()
+        mock_transport = Mock()
+
+        mock_client.get_transport.return_value = mock_transport
+        mock_sftp_client.getcwd.return_value = '/mock/cwd'
+        client.client = mock_client
+        client.sftp_client = mock_sftp_client
+
+        result = client.put(path='path2.txt', contents='foo bar 2', chmod=466, mode='a')
+        self.assertEqual(result, '/mock/cwd/path2.txt')
+
+        calls = [
+            call('.')
+        ]
+        mock_sftp_client.chdir.assert_has_calls(calls, any_order=False)
+
+        calls = [
+            call('path2.txt', mode='a'),
+            call().write('foo bar 2'),
+            call().chmod(466),
+            call().close()
+        ]
+        mock_sftp_client.file.assert_has_calls(calls, any_order=False)
+
+    def test_putfo_absolute_path(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        mock_client = Mock()
+        mock_sftp_client = Mock()
+        mock_transport = Mock()
+
+        mock_client.get_transport.return_value = mock_transport
+        mock_sftp_client.getcwd.return_value = '/mock/cwd'
+        client.client = mock_client
+        client.sftp_client = mock_sftp_client
+
+        mock_fo = StringIO('mock stream data 1')
+
+        result = client.putfo(path='/test/remote/path.txt', fo=mock_fo, chmod=455)
+        self.assertEqual(result, '/test/remote/path.txt')
+
+        calls = [
+            call('/'),
+            call('test'),
+            call('remote')
+        ]
+        mock_sftp_client.chdir.assert_has_calls(calls, any_order=False)
+
+        mock_sftp_client.putfo.assert_called_once_with(mock_fo, "/test/remote/path.txt")
+
+        calls = [
+            call('path.txt'),
+            call().chmod(455),
+            call().close()
+        ]
+        mock_sftp_client.file.assert_has_calls(calls, any_order=False)
+
+    def test_putfo_relative_path(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        mock_client = Mock()
+        mock_sftp_client = Mock()
+        mock_transport = Mock()
+
+        mock_client.get_transport.return_value = mock_transport
+        mock_sftp_client.getcwd.return_value = '/mock/cwd'
+        client.client = mock_client
+        client.sftp_client = mock_sftp_client
+
+        mock_fo = StringIO('mock stream data 2')
+
+        result = client.putfo(path='path2.txt', fo=mock_fo, chmod=466)
+        self.assertEqual(result, '/mock/cwd/path2.txt')
+
+        calls = [
+            call('.')
+        ]
+        mock_sftp_client.chdir.assert_has_calls(calls, any_order=False)
+
+        mock_sftp_client.putfo.assert_called_once_with(mock_fo, "path2.txt")
+
+        calls = [
+            call('path2.txt'),
+            call().chmod(466),
+            call().close()
+        ]
+        mock_sftp_client.file.assert_has_calls(calls, any_order=False)
+
+    def test_get_sftp_client(self):
+        conn_params = {'hostname': 'dummy.host.org',
+                       'username': 'ubuntu'}
+        client = ParamikoSSHClient(**conn_params)
+
+        # 1. sftp connection is not opened yet, new one should be opened
+        mock_client = Mock()
+        mock_sft_client = Mock()
+        mock_client.open_sftp.return_value = mock_sft_client
+        client.client = mock_client
+
+        self.assertEqual(mock_client.open_sftp.call_count, 0)
+        self.assertEqual(client._get_sftp_client(), mock_sft_client)
+        self.assertEqual(mock_client.open_sftp.call_count, 1)
+
+        # 2. existing sftp connection which is already opened is re-used
+        mock_client = Mock()
+        mock_sft_client = Mock()
+        client.client = mock_client
+        client.sftp_client = mock_sft_client
+
+        self.assertEqual(mock_client.open_sftp.call_count, 0)
+        self.assertEqual(client._get_sftp_client(), mock_sft_client)
+        self.assertEqual(mock_client.open_sftp.call_count, 0)
+
+        # 3. existing connection is already opened, but it throws
+        # "socket closed" error, we should establish a new one
+        mock_client = Mock()
+        mock_sftp_client = Mock()
+
+        client.client = mock_client
+        client.sftp_client = mock_sftp_client
+
+        mock_sftp_client.listdir.side_effect = OSError("Socket is closed")
+
+        self.assertEqual(mock_client.open_sftp.call_count, 0)
+        sftp_client = client._get_sftp_client()
+        self.assertTrue(sftp_client != mock_sft_client)
+        self.assertTrue(sftp_client)
+        self.assertTrue(client._get_sftp_client())
+        self.assertEqual(mock_client.open_sftp.call_count, 1)
+
+        # 4. fatal exceptions should be propagated
+        mock_client = Mock()
+        mock_sftp_client = Mock()
+
+        client.client = mock_client
+        client.sftp_client = mock_sftp_client
+
+        mock_sftp_client.listdir.side_effect = Exception("Fatal exception")
+
+        self.assertEqual(mock_client.open_sftp.call_count, 0)
+        self.assertRaisesRegex(Exception, "Fatal exception", client._get_sftp_client)
 
 
 class ShellOutSSHClientTests(LibcloudTestCase):
