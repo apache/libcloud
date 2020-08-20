@@ -339,16 +339,7 @@ class ParamikoSSHClient(BaseSSHClient):
         extra = {'_path': path, '_mode': mode, '_chmod': chmod}
         self.logger.debug('Uploading file', extra=extra)
 
-        if not self.sftp_client:
-            self.sftp_client = self.client.open_sftp()
-        else:
-            print("re using sftp connection")
-
-        sftp = self.sftp_client
-
-        transport = self.client.get_transport()
-        transport.use_compression(compress=True)
-        transport.set_keepalive(15)
+        sftp = self._get_sftp_client()
 
         # less than ideal, but we need to mkdir stuff otherwise file() fails
         head, tail = psplit(path)
@@ -376,7 +367,6 @@ class ParamikoSSHClient(BaseSSHClient):
         if chmod is not None:
             ak.chmod(chmod)
         ak.close()
-        #sftp.close()
 
         if path[0] == '/':
             file_path = path
@@ -599,6 +589,34 @@ class ParamikoSSHClient(BaseSSHClient):
                ' in PEM format are supported). For more information on '
                ' supported key file types, see %s' % (SUPPORTED_KEY_TYPES_URL))
         raise paramiko.ssh_exception.SSHException(msg)
+
+    def _get_sftp_client(self):
+        """
+        Create SFTP client from the underlying SSH client.
+
+        This method tries to re-use the existing self.sftp_client (if it
+        exists) and it also tries to verify the connection is opened and if
+        it's not, it will try to re-establish it.
+        """
+        if not self.sftp_client:
+            self.sftp_client = self.client.open_sftp()
+
+        sftp_client = self.sftp_client
+
+        # Verify the connection is still open, if it's not, try to
+        # re-establish it.
+        # We do that, by calling listdir(). If it returns "Socket is closed"
+        # error we assume the connection is closed and we try to re-establish
+        # it.
+        try:
+            sftp_client.listdir("")
+        except OSError as e:
+            if "socket is closed" in str(e).lower():
+                self.sftp_client = self.client.open_sftp()
+            else:
+                raise e
+
+        return self.sftp_client
 
 
 class ShellOutSSHClient(BaseSSHClient):
