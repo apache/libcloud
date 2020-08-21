@@ -173,11 +173,11 @@ class DeploymentTests(unittest.TestCase):
         client.run.assert_called_once_with(FILE_PATH, timeout=None)
 
     def test_script_deployment_absolute_path(self):
-        client = Mock()
-        client.put.return_value = FILE_PATH
-        client.run.return_value = ('', '', 0)
-
         file_path = '{0}root{0}relative.sh'.format(os.path.sep)
+
+        client = Mock()
+        client.put.return_value = file_path
+        client.run.return_value = ('', '', 0)
 
         sd = ScriptDeployment(script='echo "foo"', name=file_path)
         sd.run(self.node, client)
@@ -185,11 +185,11 @@ class DeploymentTests(unittest.TestCase):
         client.run.assert_called_once_with(file_path, timeout=None)
 
     def test_script_deployment_with_arguments(self):
-        client = Mock()
-        client.put.return_value = FILE_PATH
-        client.run.return_value = ('', '', 0)
-
         file_path = '{0}root{0}relative.sh'.format(os.path.sep)
+
+        client = Mock()
+        client.put.return_value = file_path
+        client.run.return_value = ('', '', 0)
 
         args = ['arg1', 'arg2', '--option1=test']
         sd = ScriptDeployment(script='echo "foo"', args=args,
