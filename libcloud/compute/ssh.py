@@ -37,6 +37,7 @@ except ImportError:
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
 import os
+import re
 import time
 import subprocess
 import logging
@@ -166,6 +167,25 @@ class BaseSSHClient(object):
         raise NotImplementedError(
             'put not implemented for this ssh client')
 
+    def putfo(self, path, fo=None, chmod=None):
+        """
+        Upload file like object to the remote server.
+
+        :param path: Path to upload the file to.
+        :type path: ``str``
+
+        :param fo: File like object to read the content from.
+        :type fo: File handle or file like object.
+
+        :type chmod: ``int``
+        :keyword chmod: chmod file to this after creation.
+
+        :return: Full path to the location where a file has been saved.
+        :rtype: ``str``
+        """
+        raise NotImplementedError(
+            'putfo not implemented for this ssh client')
+
     def delete(self, path):
         # type: (str) -> bool
         """
@@ -240,7 +260,9 @@ class ParamikoSSHClient(BaseSSHClient):
                  key=None,  # type: Optional[str]
                  key_files=None,  # type: Optional[Union[str, List[str]]]
                  key_material=None,  # type: Optional[str]
-                 timeout=None  # type: Optional[float]
+                 timeout=None,  # type: Optional[float]
+                 keep_alive=None,  # type: Optional[int]
+                 use_compression=False  # type: bool
                  ):
         """
         Authentication is always attempted in the following order:
@@ -252,6 +274,12 @@ class ParamikoSSHClient(BaseSSHClient):
           password and key is provided)
         - Plain username/password auth, if a password was given (if password is
           provided)
+
+        :param keep_alive: Optional keep alive internal (in seconds) to use.
+        :type keep_alive: ``int``
+
+        :param use_compression: True to use compression.
+        :type use_compression: ``bool``
         """
         if key_files and key_material:
             raise ValueError(('key_files and key_material arguments are '
@@ -265,10 +293,16 @@ class ParamikoSSHClient(BaseSSHClient):
                                                 timeout=timeout)
 
         self.key_material = key_material
+        self.keep_alive = keep_alive
+        self.use_compression = use_compression
 
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger = self._get_and_setup_logger()
+
+        # This object is lazily created on first SFTP operation (e.g. put()
+        # method call)
+        self.sftp_client = None
 
     def connect(self):
         conninfo = {'hostname': self.hostname,
@@ -337,7 +371,8 @@ class ParamikoSSHClient(BaseSSHClient):
         extra = {'_path': path, '_mode': mode, '_chmod': chmod}
         self.logger.debug('Uploading file', extra=extra)
 
-        sftp = self.client.open_sftp()
+        sftp = self._get_sftp_client()
+
         # less than ideal, but we need to mkdir stuff otherwise file() fails
         head, tail = psplit(path)
 
@@ -358,19 +393,59 @@ class ParamikoSSHClient(BaseSSHClient):
                 sftp.chdir(part)
 
         cwd = sftp.getcwd()
+        cwd = self._sanitize_cwd(cwd=cwd)
 
         ak = sftp.file(tail, mode=mode)
         ak.write(contents)
         if chmod is not None:
             ak.chmod(chmod)
         ak.close()
-        sftp.close()
 
-        if path[0] == '/':
-            file_path = path
+        file_path = self._sanitize_file_path(cwd=cwd, file_path=path)
+        return file_path
+
+    def putfo(self, path, fo=None, chmod=None):
+        """
+        Upload file like object to the remote server.
+
+        Unlike put(), this method operates on file objects and not directly on
+        file content which makes it much more efficient for large files since
+        it utilizes pipelining.
+        """
+        extra = {'_path': path, '_chmod': chmod}
+        self.logger.debug('Uploading file', extra=extra)
+
+        sftp = self._get_sftp_client()
+
+        # less than ideal, but we need to mkdir stuff otherwise file() fails
+        head, tail = psplit(path)
+
+        if path[0] == "/":
+            sftp.chdir("/")
         else:
-            file_path = pjoin(cwd, path)
+            # Relative path - start from a home directory (~)
+            sftp.chdir('.')
 
+        for part in head.split("/"):
+            if part != "":
+                try:
+                    sftp.mkdir(part)
+                except IOError:
+                    # so, there doesn't seem to be a way to
+                    # catch EEXIST consistently *sigh*
+                    pass
+                sftp.chdir(part)
+
+        cwd = sftp.getcwd()
+        cwd = self._sanitize_cwd(cwd=cwd)
+
+        sftp.putfo(fo, path)
+        if chmod is not None:
+            ak = sftp.file(tail)
+            ak.chmod(chmod)
+            ak.close()
+
+        file_path = self._sanitize_file_path(cwd=cwd, file_path=path)
         return file_path
 
     def delete(self, path):
@@ -398,7 +473,8 @@ class ParamikoSSHClient(BaseSSHClient):
         # Use the system default buffer size
         bufsize = -1
 
-        transport = self.client.get_transport()
+        transport = self._get_transport()
+
         chan = transport.open_session()
 
         start_time = time.time()
@@ -471,7 +547,12 @@ class ParamikoSSHClient(BaseSSHClient):
     def close(self):
         self.logger.debug('Closing server connection')
 
-        self.client.close()
+        if self.client:
+            self.client.close()
+
+        if self.sftp_client:
+            self.sftp_client.close()
+
         return True
 
     def _consume_stdout(self, chan):
@@ -580,6 +661,83 @@ class ParamikoSSHClient(BaseSSHClient):
                ' supported key file types, see %s' % (SUPPORTED_KEY_TYPES_URL))
         raise paramiko.ssh_exception.SSHException(msg)
 
+    def _sanitize_cwd(self, cwd):
+        # type: (str) -> str
+        # getcwd() returns an invalid path when executing commands on Windows
+        # so we need a special case for that scenario
+        # For example, we convert /C:/Users/Foo -> C:/Users/Foo
+        if re.match(r"^\/\w\:.*$", str(cwd)):
+            cwd = str(cwd[1:])
+
+        return cwd
+
+    def _sanitize_file_path(self, cwd, file_path):
+        # type: (str, str) -> str
+        """
+        Sanitize the provided file path and ensure we always return an
+        absolute path, even if relative path is passed to to this function.
+        """
+
+        if file_path[0] in ['/', '\\'] or re.match(r"^\w\:.*$", file_path):
+            # If it's an absolute path we return path as is
+            # NOTE: We assume it's a Windows absolute path if it's starts with
+            # a drive letter - e.g. C:\\..., D:\\, etc. or with \
+            pass
+        else:
+            if re.match(r"^\w\:.*$", cwd):
+                # Windows path
+                file_path = cwd + '\\' + file_path
+            else:
+                file_path = pjoin(cwd, file_path)
+
+        return file_path
+
+    def _get_transport(self):
+        """
+        Return transport object taking into account keep alive and compression
+        options passed to the constructor.
+        """
+        transport = self.client.get_transport()
+
+        if self.keep_alive:
+            transport.set_keepalive(self.keep_alive)
+
+        if self.use_compression:
+            transport.use_compression(compress=True)
+
+        return transport
+
+    def _get_sftp_client(self):
+        """
+        Create SFTP client from the underlying SSH client.
+
+        This method tries to re-use the existing self.sftp_client (if it
+        exists) and it also tries to verify the connection is opened and if
+        it's not, it will try to re-establish it.
+        """
+        if not self.sftp_client:
+            self.sftp_client = self.client.open_sftp()
+
+        sftp_client = self.sftp_client
+
+        # Verify the connection is still open, if it's not, try to
+        # re-establish it.
+        # We do that, by calling listdir(). If it returns "Socket is closed"
+        # error we assume the connection is closed and we try to re-establish
+        # it.
+        try:
+            sftp_client.listdir(".")
+        except OSError as e:
+            if "socket is closed" in str(e).lower():
+                self.sftp_client = self.client.open_sftp()
+            elif "no such file" in str(e).lower():
+                # Not a fatal exception, means connection is still open
+                pass
+            else:
+                raise e
+
+        return self.sftp_client
+
 
 class ShellOutSSHClient(BaseSSHClient):
     """
@@ -637,6 +795,10 @@ class ShellOutSSHClient(BaseSSHClient):
         cmd = ['echo "%s" %s %s' % (contents, redirect, path)]
         self._run_remote_shell_command(cmd)
         return path
+
+    def putfo(self, path, fo=None, chmod=None):
+        content = fo.read()
+        return self.put(path=path, contents=content, chmod=chmod)
 
     def delete(self, path):
         cmd = ['rm', '-rf', path]

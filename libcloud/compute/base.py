@@ -37,6 +37,7 @@ import socket
 import random
 import binascii
 import datetime
+import traceback
 import atexit
 
 from libcloud.utils.py3 import b
@@ -1900,8 +1901,9 @@ class NodeDriver(BaseDriver):
                         timeout=timeout)
 
                 if tries >= max_tries:
-                    raise LibcloudError(value='Failed after %d tries: %s'
-                                        % (max_tries, str(e)), driver=self)
+                    tb = traceback.format_exc()
+                    raise LibcloudError(value='Failed after %d tries: %s.\n%s'
+                                        % (max_tries, str(e), tb), driver=self)
             else:
                 # Deployment succeeded
                 ssh_client.close()
