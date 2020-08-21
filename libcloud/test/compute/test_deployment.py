@@ -69,6 +69,9 @@ class MockClient(BaseSSHClient):
     def put(self, path, contents, chmod=755, mode='w'):
         return contents
 
+    def putfo(self, path, fo, chmod=755):
+        return fo.read()
+
     def run(self, cmd, timeout=None):
         if self.throw_on_timeout and timeout is not None:
             raise ValueError("timeout")

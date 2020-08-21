@@ -97,6 +97,13 @@ Compute
   Right now those are not exposed yet to the ``deploy_node()`` method.
   [Tomaz Muraus - @Kami]
 
+- [Deployment] Update ``ParamikoSSHClient.put()`` method so it returns a
+  correct path when commands are being executed on a Windows machine.
+
+  Also update related deployment classes so they correctly handle situation
+  when we are executing commands on a Windows server.
+  [Arthur Kamalov, Tomaz Muraus]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 

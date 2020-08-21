@@ -26,6 +26,7 @@ from typing import IO
 from typing import cast
 
 import os
+import re
 import binascii
 
 from libcloud.utils.py3 import basestring, PY3
@@ -209,9 +210,12 @@ class ScriptDeployment(Deployment):
                                contents=self.script)
 
         # Pre-pend cwd if user specified a relative path
-        if self.name and self.name[0] != '/':
+        if self.name and (self.name[0] not in ['/', '\\'] and not re.match(r"^\w\:.*$", file_path)):
             base_path = os.path.dirname(file_path)
             name = os.path.join(base_path, self.name)
+        elif self.name and (self.name[0] == '\\' or re.match(r"^\w\:.*$", file_path)):
+            # Absolute Windows path
+            name = file_path
         else:
             self.name = cast(str, self.name)
             name = self.name

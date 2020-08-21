@@ -37,6 +37,7 @@ except ImportError:
 # Ref: https://bugs.launchpad.net/paramiko/+bug/392973
 
 import os
+import re
 import time
 import subprocess
 import logging
@@ -392,6 +393,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 sftp.chdir(part)
 
         cwd = sftp.getcwd()
+        cwd = self._sanitize_cwd(cwd=cwd)
 
         ak = sftp.file(tail, mode=mode)
         ak.write(contents)
@@ -399,11 +401,7 @@ class ParamikoSSHClient(BaseSSHClient):
             ak.chmod(chmod)
         ak.close()
 
-        if path[0] == '/':
-            file_path = path
-        else:
-            file_path = pjoin(cwd, path)
-
+        file_path = self._sanitize_file_path(cwd=cwd, file_path=path)
         return file_path
 
     def putfo(self, path, fo=None, chmod=None):
@@ -439,6 +437,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 sftp.chdir(part)
 
         cwd = sftp.getcwd()
+        cwd = self._sanitize_cwd(cwd=cwd)
 
         sftp.putfo(fo, path)
         if chmod is not None:
@@ -446,11 +445,7 @@ class ParamikoSSHClient(BaseSSHClient):
             ak.chmod(chmod)
             ak.close()
 
-        if path[0] == '/':
-            file_path = path
-        else:
-            file_path = pjoin(cwd, path)
-
+        file_path = self._sanitize_file_path(cwd=cwd, file_path=path)
         return file_path
 
     def delete(self, path):
@@ -665,6 +660,37 @@ class ParamikoSSHClient(BaseSSHClient):
                ' in PEM format are supported). For more information on '
                ' supported key file types, see %s' % (SUPPORTED_KEY_TYPES_URL))
         raise paramiko.ssh_exception.SSHException(msg)
+
+    def _sanitize_cwd(self, cwd):
+        # type: (str) -> str
+        # getcwd() returns an invalid path when executing commands on Windows
+        # so we need a special case for that scenario
+        # For example, we convert /C:/Users/Foo -> C:/Users/Foo
+        if re.match(r"^\/\w\:.*$", str(cwd)):
+            cwd = str(cwd[1:])
+
+        return cwd
+
+    def _sanitize_file_path(self, cwd, file_path):
+        # type: (str, str) -> str
+        """
+        Sanitize the provided file path and ensure we always return an
+        absolute path, even if relative path is passed to to this function.
+        """
+
+        if file_path[0] in ['/', '\\'] or re.match(r"^\w\:.*$", file_path):
+            # If it's an absolute path we return path as is
+            # NOTE: We assume it's a Windows absolute path if it's starts with
+            # a drive letter - e.g. C:\\..., D:\\, etc. or with \
+            pass
+        else:
+            if re.match(r"^\w\:.*$", cwd):
+                # Windows path
+                file_path = cwd + '\\' + file_path
+            else:
+                file_path = pjoin(cwd, file_path)
+
+        return file_path
 
     def _get_transport(self):
         """
