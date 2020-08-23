@@ -52,11 +52,12 @@ class OutscaleNodeDriver(NodeDriver):
         self.connection.service_name = service
         self.service_name = service
         self.version = version
-        self.signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-
+        self.signer = OSCRequestSignerAlgorithmV4(
+            access_key=self.key,
+            access_secret=self.secret,
+            version=self.version,
+            connection=self.connection
+        )
         self.NODE_STATE = {
             'pending': NodeState.PENDING,
             'running': NodeState.RUNNING,
@@ -106,7 +107,10 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     def ex_delete_public_ip(self,
                             dry_run: bool = False,
@@ -142,7 +146,9 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     def ex_list_public_ips(self, data: str = "{}"):
         """
@@ -239,7 +245,9 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     def ex_detach_public_ip(self,
                             public_ip: str = None,
@@ -275,7 +283,9 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     def create_node(self,
                     ex_image_id: str,
@@ -428,7 +438,9 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        vm = requests.post(endpoint, data=data, headers=headers).json()["Vms"][0]
+
+        return self._to_node(vm)
 
     def reboot_node(self, node: Node):
         """
@@ -447,46 +459,42 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return False
+        return False
+
+    def _to_node(self, vm):
+        name = ""
+        private_ips = []
+        for tag in vm["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        if "PrivateIps" in vm["Nics"]:
+            private_ips = vm["Nics"]["PrivateIps"]
+
+        return Node(id=vm["VmId"],
+                    name=name,
+                    state=self.NODE_STATE[vm["State"]],
+                    public_ips=[],
+                    private_ips=private_ips,
+                    driver=self,
+                    extra=vm)
 
     def _to_nodes(self, vms: list):
-        nodes_list = []
-        for vm in vms:
-            name = ""
-            private_ips = []
-            for tag in vm["Tags"]:
-                if tag["Key"] == "Name":
-                    name = tag["Value"]
-            if "PrivateIps" in vm["Nics"]:
-                private_ips = vm["Nics"]["PrivateIps"]
+        return [self._to_node(vm) for vm in vms]
 
-            node = Node(id=vm["VmId"],
-                        name=name,
-                        state=self.NODE_STATE[vm["State"]],
-                        public_ips=[],
-                        private_ips=private_ips,
-                        driver=self,
-                        extra=vm)
-            nodes_list.append(node)
-        return nodes_list
+    def _to_node_image(self, image):
+        name = ""
+        for tag in image["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        return NodeImage(id=image["NodeId"],
+                         name=name,
+                         driver=self,
+                         extra=image)
 
     def _to_node_images(self, node_images: list):
-        node_image_list = []
-        for image in node_images:
-            name = ""
-            private_ips = []
-            for tag in image["Tags"]:
-                if tag["Key"] == "Name":
-                    name = tag["Value"]
-            if "PrivateIps" in image["Nics"]:
-                private_ips = image["Nics"]["PrivateIps"]
-
-            node = NodeImage(id=image["NodeId"],
-                             name=name,
-                             driver=self,
-                             extra=image)
-            node_image_list.append(node)
-        return node_image_list
+        return [self._to_node_image(node_image) for node_image in node_images]
 
     def list_nodes(self, ex_data: str = "{}"):
         """
@@ -519,7 +527,9 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     def create_image(
         self,
@@ -603,7 +613,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        image = requests.post(endpoint, data=data, headers=headers).json()["Image"]
+        return self._to_node_images(image)
 
     def list_images(self, ex_data: str = "{}"):
         """
@@ -637,7 +648,7 @@ class OutscaleNodeDriver(NodeDriver):
                                                self.version,
                                                action)
         images = requests.post(endpoint, data=data, headers=headers).json()["Images"]
-        return self._to_node_images(images)[0]
+        return self._to_node_image(images)
 
     def delete_image(self, node_image: NodeImage):
         """
@@ -655,8 +666,7 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
             return True
         return False
 
@@ -667,7 +677,7 @@ class OutscaleNodeDriver(NodeDriver):
         private_key = key_pair["PrivateKey"] if "PrivateKey" in key_pair else ""
         return KeyPair(
             name=key_pair["KeypairName"],
-            public_key=None,
+            public_key="",
             private_key=private_key,
             fingerprint=key_pair["KeypairFingerprint"],
             driver=self)
@@ -788,7 +798,8 @@ class OutscaleNodeDriver(NodeDriver):
         ex_snapshot_size: int = None,
         ex_source_region_name: str = None,
         ex_source_snapshot: VolumeSnapshot = None,
-        volume: StorageVolume = None):
+        volume: StorageVolume = None
+    ):
         """
         Create a new snapshot.
 
@@ -846,7 +857,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        snapshot = requests.post(endpoint, data=data, headers=headers).json()["Volume"]
+        return self._to_snapshot(snapshot)
 
     def _to_snapshot(self, snapshot):
         name = None
@@ -963,9 +975,7 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-
         volume = requests.post(endpoint, data=data, headers=headers).json()["Volume"]
-
         return self._to_volume(volume)
 
     def list_volumes(self, ex_data: str = "{}"):
