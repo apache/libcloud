@@ -24,7 +24,7 @@ from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
 from libcloud.common.base import ConnectionUserAndKey
-from libcloud.compute.base import Node, NodeImage, KeyPair
+from libcloud.compute.base import Node, NodeImage, KeyPair, StorageVolume, VolumeSnapshot
 from libcloud.compute.types import NodeState
 
 
@@ -743,85 +743,103 @@ class OutscaleNodeDriver(NodeDriver):
         key_pair = requests.post(endpoint, data=data, headers=headers).json()["Keypairs"][0]
         return self._to_key_pair(key_pair)
 
-    def delete_key_pair(self, name: str):
+    def delete_key_pair(self, key_pair: KeyPair):
         """
         Delete an image.
 
-        :param      name: the name of the keypair you want to delete (required)
-        :type       name: ``str``
+        :param      key_pair: the name of the keypair you want to delete (required)
+        :type       key_pair: ``KeyPair``
 
-        :return: request
-        :rtype: ``dict``
+        :return: boolean
+        :rtype: ``bool``
         """
         action = "DeleteKeypair"
-        data = '{"KeypairName": "' + name + '"}'
+        data = '{"KeypairName": "' + key_pair.name + '"}'
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
-    def create_snapshot(self,
-                        description: str = None,
-                        dry_run: bool = False,
-                        file_location: str = None,
-                        snapshot_size: int = None,
-                        source_region_name: str = None,
-                        source_snapshot_id: str = None,
-                        volume_id: str = None,
-                        ):
+    def _to_volume(self, volume):
+        name = ""
+        for tag in volume["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        return StorageVolume(
+            id=volume["VolumeId"],
+            name=name,
+            size=volume["Size"],
+            driver=self,
+            state=volume["State"],
+            extra=volume
+        )
+
+    def _to_volumes(self, volumes):
+        return [self._to_volumes(volume) for volume in volumes]
+
+    def create_volume_snapshot(
+        self,
+        ex_description: str = None,
+        ex_dry_run: bool = False,
+        ex_file_location: str = None,
+        ex_snapshot_size: int = None,
+        ex_source_region_name: str = None,
+        ex_source_snapshot: VolumeSnapshot = None,
+        volume: StorageVolume = None):
         """
         Create a new snapshot.
 
-        :param      description: a description for the new OMI
-        :type       description: ``str``
+        :param      ex_description: a description for the new OMI
+        :type       ex_description: ``str``
 
-        :param      snapshot_size: The size of the snapshot created in your
+        :param      ex_snapshot_size: The size of the snapshot created in your
         account, in bytes. This size must be
         exactly the same as the source snapshot one.
-        :type       snapshot_size: ``integer``
+        :type       ex_snapshot_size: ``integer``
 
-        :param      source_snapshot_id: The ID of the snapshot you want to
+        :param      ex_source_snapshot: The ID of the snapshot you want to
         copy.
-        :type       source_snapshot_id: ``str``
+        :type       ex_source_snapshot: ``str``
 
-        :param      volume_id: The ID of the volume you want to create a
+        :param      volume: The ID of the volume you want to create a
         snapshot of.
-        :type       volume_id: ``str``
+        :type       volume: ``str``
 
-        :param      source_region_name: The name of the source Region,
-        which must be the same
-        as the Region of your account.
-        :type       source_region_name: ``str``
+        :param      ex_source_region_name: The name of the source Region,
+        which must be the same as the Region of your account.
+        :type       ex_source_region_name: ``str``
 
-        :param      file_location: The pre-signed URL of the OMI manifest
+        :param      ex_file_location: The pre-signed URL of the OMI manifest
         file, or the full path to the OMI stored in
         an OSU bucket. If you specify this parameter, a copy of the OMI is
         created in your account.
-        :type       file_location: ``str``
+        :type       ex_file_location: ``str``
 
-        :param      dry_run: If true, checks whether you have the required
+        :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       dry_run: ``bool``
+        :type       ex_dry_run: ``bool``
 
         :return: the created snapshot
         :rtype: ``dict``
         """
         data = {
-            "DryRun": dry_run,
+            "DryRun": ex_dry_run,
         }
-        if description is not None:
-            data.update({"Description": description})
-        if file_location is not None:
-            data.update({"FileLocation": file_location})
-        if snapshot_size is not None:
-            data.update({"SnapshotSize": snapshot_size})
-        if source_region_name is not None:
-            data.update({"SourceRegionName": source_region_name})
-        if source_snapshot_id is not None:
-            data.update({"SourceSnapshotId": source_snapshot_id})
-        if volume_id is not None:
-            data.update({"VolumeId": volume_id})
+        if ex_description is not None:
+            data.update({"Description": ex_description})
+        if ex_file_location is not None:
+            data.update({"FileLocation": ex_file_location})
+        if ex_snapshot_size is not None:
+            data.update({"SnapshotSize": ex_snapshot_size})
+        if ex_source_region_name is not None:
+            data.update({"SourceRegionName": ex_source_region_name})
+        if ex_source_snapshot is not None:
+            data.update({"SourceSnapshotId": ex_source_snapshot.id})
+        if volume is not None:
+            data.update({"VolumeId": volume.id})
         data = json.dumps(data)
         action = "CreateSnapshot"
         headers = self._ex_generate_headers(action, data)
@@ -830,7 +848,25 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         return requests.post(endpoint, data=data, headers=headers)
 
-    def list_snapshots(self, data: str = "{}"):
+    def _to_snapshot(self, snapshot):
+        name = None
+        for tag in snapshot["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        return VolumeSnapshot(
+            id=snapshot["SnapshotId"],
+            name=name,
+            size=snapshot["Size"],
+            driver=self,
+            state=snapshot["State"],
+            created=None,
+            extra=snapshot
+        )
+
+    def _to_snapshots(self, snapshots):
+        return [self._to_snapshot(snapshot) for snapshot in snapshots]
+
+    def list_snapshots(self, ex_data: str = "{}"):
         """
         List all snapshots.
 
@@ -838,84 +874,88 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadSnapshots"
-        headers = self._ex_generate_headers(action, data)
+        headers = self._ex_generate_headers(action, ex_data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        snapshots = requests.post(endpoint, data=ex_data, headers=headers).json()
 
-    def delete_snapshot(self, snapshot_id: str):
+        return self._to_snapshots(snapshots)
+
+    def destroy_volume_snapshot(self, snapshot: VolumeSnapshot):
         """
         Delete a snapshot.
 
-        :param      snapshot_id: the ID of the snapshot
+        :param      snapshot: the ID of the snapshot
                     you want to delete (required)
-        :type       snapshot_id: ``str``
+        :type       snapshot: ``str``
 
         :return: request
         :rtype: ``dict``
         """
         action = "DeleteSnapshot"
-        data = '{"SnapshotId": "' + snapshot_id + '"}'
+        data = '{"SnapshotId": "' + snapshot.id + '"}'
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     def create_volume(
         self,
-        subregion_name: str,
-        dry_run: bool = False,
-        iops: int = None,
+        ex_subregion_name: str,
+        ex_dry_run: bool = False,
+        ex_iops: int = None,
         size: int = None,
-        snapshot_id: str = None,
-        volume_type: str = None,
+        snapshot: VolumeSnapshot = None,
+        ex_volume_type: str = None,
     ):
         """
         Create a new volume.
 
-        :param      snapshot_id: the ID of the snapshot from which
+        :param      snapshot: the ID of the snapshot from which
                     you want to create the volume (required)
-        :type       snapshot_id: ``str``
+        :type       snapshot: ``str``
 
-        :param      dry_run: If true, checks whether you have the required
+        :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       dry_run: ``bool``
+        :type       ex_dry_run: ``bool``
 
         :param      size: the size of the volume, in gibibytes (GiB),
                     the maximum allowed size for a volume is 14,901 GiB
         :type       size: ``int``
 
-        :param      subregion_name: The Subregion in which you want to
+        :param      ex_subregion_name: The Subregion in which you want to
         create the volume.
-        :type       subregion_name: ``str``
+        :type       ex_subregion_name: ``str``
 
-        :param      volume_type: the type of volume you want to create (io1
+        :param      ex_volume_type: the type of volume you want to create (io1
         | gp2 | standard)
-        :type       volume_type: ``str``
+        :type       ex_volume_type: ``str``
 
-        :param      iops: The number of I/O operations per second (IOPS).
+        :param      ex_iops: The number of I/O operations per second (IOPS).
         This parameter must be specified only if
         you create an io1 volume. The maximum number of IOPS allowed for io1
         volumes is 13000.
-        :type       iops: ``integer``
+        :type       ex_iops: ``integer``
 
         :return: the created volume
         :rtype: ``dict``
         """
         data = {
-            "DryRun": dry_run,
-            "SubregionName": subregion_name
+            "DryRun": ex_dry_run,
+            "SubregionName": ex_subregion_name
         }
-        if iops is not None:
-            data.update({"Iops": iops})
+        if ex_iops is not None:
+            data.update({"Iops": ex_iops})
         if size is not None:
             data.update({"Size": size})
-        if snapshot_id is not None:
-            data.update({"SnapshotId": snapshot_id})
-        if volume_type is not None:
-            data.update({"VolumeType": volume_type})
+        if snapshot is not None:
+            data.update({"SnapshotId": snapshot.id})
+        if ex_volume_type is not None:
+            data.update({"VolumeType": ex_volume_type})
         data = json.dumps(data)
         action = "CreateVolume"
         headers = self._ex_generate_headers(action, data)
@@ -923,9 +963,12 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
 
-    def list_volumes(self, data: str = "{}"):
+        volume = requests.post(endpoint, data=data, headers=headers).json()["Volume"]
+
+        return self._to_volume(volume)
+
+    def list_volumes(self, ex_data: str = "{}"):
         """
         List all volumes.
 
@@ -933,94 +976,101 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadVolumes"
-        headers = self._ex_generate_headers(action, data)
+        headers = self._ex_generate_headers(action, ex_data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        volumes = requests.post(endpoint, data=ex_data, headers=headers).json()["Volumes"]
+        return self._to_volumes(volumes)
 
-    def delete_volume(self, volume_id: str):
+    def destroy_volume(self, volume: StorageVolume):
         """
         Delete a volume.
 
-        :param      volume_id: the ID of the volume
+        :param      volume: the ID of the volume
                     you want to delete (required)
-        :type       volume_id: ``str``
+        :type       volume: ``str``
 
         :return: request
         :rtype: ``dict``
         """
         action = "DeleteVolume"
-        data = '{"VolumeId": "' + volume_id + '"}'
+        data = '{"VolumeId": "' + volume.id + '"}'
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
-    def attach_volume(self, node_id: str, volume_id: str, device_name: str):
+    def attach_volume(self, node: Node, volume: StorageVolume, device: str = None):
         """
         Attach a volume.
 
-        :param      node_id: the ID of the VM you want
+        :param      node: the ID of the VM you want
                     to attach the volume to (required)
-        :type       node_id: ``str``
+        :type       node: ``str``
 
-        :param      volume_id: the ID of the volume
+        :param      volume: the ID of the volume
                     you want to attach (required)
-        :type       volume_id: ``str``
+        :type       volume: ``str``
 
-        :param      device_name: the name of the device (required)
-        :type       device_name: ``str``
+        :param      device: the name of the device (required)
+        :type       device: ``str``
 
         :return: the attached volume
         :rtype: ``dict``
         """
         action = "LinkVolume"
         data = json.dumps({
-            "VmId": node_id,
-            "VolumeId": volume_id,
-            "DeviceName": device_name
+            "VmId": node.id,
+            "VolumeId": volume.id,
+            "DeviceName": device
         })
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     def detach_volume(self,
-                      volume_id: str,
-                      dry_run: bool = False,
-                      force_unlink: bool = False):
+                      volume: StorageVolume,
+                      ex_dry_run: bool = False,
+                      ex_force_unlink: bool = False):
         """
         Detach a volume.
 
-        :param      volume_id: the ID of the volume you want to detach
+        :param      volume: the ID of the volume you want to detach
         (required)
-        :type       volume_id: ``str``
+        :type       volume: ``str``
 
-        :param      force_unlink: Forces the detachment of the volume in
+        :param      ex_force_unlink: Forces the detachment of the volume in
         case of previous failure.
         Important: This action may damage your data or file systems.
-        :type       force_unlink: ``bool``
+        :type       ex_force_unlink: ``bool``
 
-        :param      dry_run: If true, checks whether you have the required
+        :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       dry_run: ``bool``
+        :type       ex_dry_run: ``bool``
 
         :return: the attached volume
         :rtype: ``dict``
         """
         action = "UnlinkVolume"
-        data = {"DryRun": dry_run, "VolumeId": volume_id}
-        if force_unlink is not None:
-            data.update({"ForceUnlink": force_unlink})
+        data = {"DryRun": ex_dry_run, "VolumeId": volume.id}
+        if ex_force_unlink is not None:
+            data.update({"ForceUnlink": ex_force_unlink})
         data = json.dumps(data)
         headers = self._ex_generate_headers(action, data)
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+            return True
+        return False
 
     @staticmethod
     def _get_outscale_endpoint(region: str, version: str, action: str):
