@@ -24,7 +24,13 @@ from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
 from libcloud.common.base import ConnectionUserAndKey
-from libcloud.compute.base import Node, NodeImage, KeyPair, StorageVolume, VolumeSnapshot
+from libcloud.compute.base import \
+    Node,\
+    NodeImage, \
+    KeyPair, \
+    StorageVolume, \
+    VolumeSnapshot, \
+    NodeLocation
 from libcloud.compute.types import NodeState
 
 
@@ -88,7 +94,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        return requests.post(endpoint, data=data, headers=headers)
+        regions = requests.post(endpoint, data=data, headers=headers).json()
+        return self._to_locations(regions["Regions"])
 
     def ex_create_public_ip(self, dry_run: bool = False):
         """
@@ -463,39 +470,6 @@ class OutscaleNodeDriver(NodeDriver):
             return False
         return False
 
-    def _to_node(self, vm):
-        name = ""
-        private_ips = []
-        for tag in vm["Tags"]:
-            if tag["Key"] == "Name":
-                name = tag["Value"]
-        if "PrivateIps" in vm["Nics"]:
-            private_ips = vm["Nics"]["PrivateIps"]
-
-        return Node(id=vm["VmId"],
-                    name=name,
-                    state=self.NODE_STATE[vm["State"]],
-                    public_ips=[],
-                    private_ips=private_ips,
-                    driver=self,
-                    extra=vm)
-
-    def _to_nodes(self, vms: list):
-        return [self._to_node(vm) for vm in vms]
-
-    def _to_node_image(self, image):
-        name = ""
-        for tag in image["Tags"]:
-            if tag["Key"] == "Name":
-                name = tag["Value"]
-        return NodeImage(id=image["NodeId"],
-                         name=name,
-                         driver=self,
-                         extra=image)
-
-    def _to_node_images(self, node_images: list):
-        return [self._to_node_image(node_image) for node_image in node_images]
-
     def list_nodes(self, ex_data: str = "{}"):
         """
         List all nodes.
@@ -773,23 +747,6 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def _to_volume(self, volume):
-        name = ""
-        for tag in volume["Tags"]:
-            if tag["Key"] == "Name":
-                name = tag["Value"]
-        return StorageVolume(
-            id=volume["VolumeId"],
-            name=name,
-            size=volume["Size"],
-            driver=self,
-            state=volume["State"],
-            extra=volume
-        )
-
-    def _to_volumes(self, volumes):
-        return [self._to_volumes(volume) for volume in volumes]
-
     def create_volume_snapshot(
         self,
         ex_description: str = None,
@@ -859,24 +816,6 @@ class OutscaleNodeDriver(NodeDriver):
                                                action)
         snapshot = requests.post(endpoint, data=data, headers=headers).json()["Volume"]
         return self._to_snapshot(snapshot)
-
-    def _to_snapshot(self, snapshot):
-        name = None
-        for tag in snapshot["Tags"]:
-            if tag["Key"] == "Name":
-                name = tag["Value"]
-        return VolumeSnapshot(
-            id=snapshot["SnapshotId"],
-            name=name,
-            size=snapshot["Size"],
-            driver=self,
-            state=snapshot["State"],
-            created=None,
-            extra=snapshot
-        )
-
-    def _to_snapshots(self, snapshots):
-        return [self._to_snapshot(snapshot) for snapshot in snapshots]
 
     def list_snapshots(self, ex_data: str = "{}"):
         """
@@ -1096,3 +1035,80 @@ class OutscaleNodeDriver(NodeDriver):
                                              service_name=self.service_name,
                                              region=self.region)
 
+    def _to_location(self, region):
+        return NodeLocation(id="",
+                    name=region["RegionName"],
+                    country="",
+                    driver=self,
+                    extra=region)
+
+    def _to_locations(self, regions: list):
+        return [self._to_location(region) for region in regions]
+
+    def _to_snapshot(self, snapshot):
+        name = None
+        for tag in snapshot["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        return VolumeSnapshot(
+            id=snapshot["SnapshotId"],
+            name=name,
+            size=snapshot["Size"],
+            driver=self,
+            state=snapshot["State"],
+            created=None,
+            extra=snapshot
+        )
+
+    def _to_snapshots(self, snapshots):
+        return [self._to_snapshot(snapshot) for snapshot in snapshots]
+
+    def _to_volume(self, volume):
+        name = ""
+        for tag in volume["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        return StorageVolume(
+            id=volume["VolumeId"],
+            name=name,
+            size=volume["Size"],
+            driver=self,
+            state=volume["State"],
+            extra=volume
+        )
+
+    def _to_volumes(self, volumes):
+        return [self._to_volumes(volume) for volume in volumes]
+
+    def _to_node(self, vm):
+        name = ""
+        private_ips = []
+        for tag in vm["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        if "Nics" in vm:
+            private_ips = vm["Nics"]["PrivateIps"]
+
+        return Node(id=vm["VmId"],
+                    name=name,
+                    state=self.NODE_STATE[vm["State"]],
+                    public_ips=[],
+                    private_ips=private_ips,
+                    driver=self,
+                    extra=vm)
+
+    def _to_nodes(self, vms: list):
+        return [self._to_node(vm) for vm in vms]
+
+    def _to_node_image(self, image):
+        name = ""
+        for tag in image["Tags"]:
+            if tag["Key"] == "Name":
+                name = tag["Value"]
+        return NodeImage(id=image["NodeId"],
+                         name=name,
+                         driver=self,
+                         extra=image)
+
+    def _to_node_images(self, node_images: list):
+        return [self._to_node_image(node_image) for node_image in node_images]
