@@ -17,12 +17,12 @@
          "spec": {"ports": [{"name": "webhooks", "protocol": "TCP", "port": 443, "targetPort": "webhooks"}],
                   "selector": {"kubevirt.io": "virt-operator"}, "clusterIP": "10.111.39.5", "type": "ClusterIP",
                   "sessionAffinity": "None"},
-         "status": {"loadBalancer": {}}}, 
-     {"metadata": 
+         "status": {"loadBalancer": {}}},
+     {"metadata":
         {"name": "kubevirt-prometheus-metrics", "namespace": "kubevirt",
          "selfLink": "/api/v1/namespaces/kubevirt/services/kubevirt-prometheus-metrics",
          "uid": "cd5e6e0d-45c7-46b5-9545-043aabb75b4e", "resourceVersion": "34388129",
-         "creationTimestamp": "2020-07-22T15:48:27Z", 
+         "creationTimestamp": "2020-07-22T15:48:27Z",
          "labels":
             {"app.kubernetes.io/managed-by": "kubevirt-operator", "kubevirt.io": "", "prometheus.kubevirt.io": ""},
          "annotations":

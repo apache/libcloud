@@ -101,7 +101,10 @@ class KubeVirtMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachines(self,
-                                                     method, url, body, headers):
+                                                                      method,
+                                                                      url,
+                                                                      body,
+                                                                      headers):
         if method == "GET":
             body = self.fixtures.load('get_default_vms.json')
             resp = httplib.OK
@@ -113,7 +116,10 @@ class KubeVirtMockHttp(MockHttp):
         return (resp, body, {}, httplib.responses[httplib.OK])
 
     def _apis_kubevirt_io_v1alpha3_namespaces_kube_node_lease_virtualmachines(self,
-                                                     method, url, body, headers):
+                                                                              method,
+                                                                              url,
+                                                                              body,
+                                                                              headers):
         if method == "GET":
             body = self.fixtures.load('get_kube_node_lease_vms.json')
         elif method == "POST":
@@ -123,7 +129,9 @@ class KubeVirtMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _apis_kubevirt_io_v1alpha3_namespaces_kube_public_virtualmachines(self,
-                                                     method, url, body, headers):
+                                                                          method,
+                                                                          url, body,
+                                                                          headers):
         if method == "GET":
             body = self.fixtures.load('get_kube_public_vms.json')
         elif method == "POST":
@@ -131,8 +139,11 @@ class KubeVirtMockHttp(MockHttp):
         else:
             AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _apis_kubevirt_io_v1alpha3_namespaces_kube_system_virtualmachines(self,
-                                                     method, url, body, headers):
+                                                                          method,
+                                                                          url, body,
+                                                                          headers):
         if method == "GET":
             body = self.fixtures.load('get_kube_system_vms.json')
         elif method == "POST":
@@ -142,7 +153,9 @@ class KubeVirtMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _apis_kubevirt_io_v1alpha3_namespaces_kubevirt_virtualmachines(self,
-                                                     method, url, body, headers):
+                                                                       method,
+                                                                       url, body,
+                                                                       headers):
         if method == "GET":
             body = self.fixtures.load('get_kube_public_vms.json')
         elif method == "POST":
@@ -150,8 +163,11 @@ class KubeVirtMockHttp(MockHttp):
         else:
             AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachines_testvm(self,
-                                                    method, url, body, headers):
+                                                                             method,
+                                                                             url, body,
+                                                                             headers):
         header = "application/merge-patch+json"
         data_stop = {"spec": {"running": False}}
         data_start = {"spec": {"running": True}}
@@ -168,7 +184,10 @@ class KubeVirtMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachines_vm_cirros(self,
-                                                    method, url, body, headers):
+                                                                                method,
+                                                                                url,
+                                                                                body,
+                                                                                headers):
         header = "application/merge-patch+json"
         data_stop = {"spec": {"running": False}}
         data_start = {"spec": {"running": True}}
@@ -185,7 +204,10 @@ class KubeVirtMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _apis_kubevirt_io_v1alpha3_namespaces_default_virtualmachineinstances_testvm(self,
-                                                method, url, body, headers):
+                                                                                     method,
+                                                                                     url,
+                                                                                     body,
+                                                                                     headers):
         if method == "DELETE":
             body = self.fixtures.load('delete_vmi_testvm.json')
         else:
@@ -201,7 +223,7 @@ class KubeVirtMockHttp(MockHttp):
             AssertionError('Unsupported method')
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-    
+
     def _api_v1_namespaces_default_services(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load('get_services.json')

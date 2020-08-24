@@ -168,9 +168,9 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         # find and delete services for this VM only
         services = self.ex_list_services(namespace=namespace, node_name=name)
         for service in services:
-            service_type = service['spec']['type']
-            self.ex_create_service(node=node, ports=[],
-                                   service_type=service_type)
+            service_name = service['metadata']['name']
+            self.ex_delete_service(namespace=namespace,
+                                   service_name=service_name)
         # stop the vmi
         self.stop_node(node)
         try:
@@ -187,7 +187,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
     def create_node(self, name, image, location=None, ex_memory=128, ex_cpu=1,
                     ex_disks=None, ex_network=None,
                     ex_termination_grace_period=0,
-                    ports={}):
+                    ports=None):
         """
         Creating a VM with a containerDisk.
         :param name: A name to give the VM. The VM will be identified by
@@ -429,6 +429,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             network_type = "pod"
         network_dict = {network_type: {}, 'name': network_name}
         interface_dict = {interface: {}, 'name': network_name}
+        ports = ports or {}
         if ports.get('ports_tcp'):
             ports_to_expose = []
             for port in ports['ports_tcp']:
@@ -1141,8 +1142,8 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         type  ports: `list` of `dict` where each `dict` has keys --> values:
                      'port' --> `int`
                      'target_port' --> `int`
-                     'protocol' --> `str
-                     'name' --> str
+                     'protocol' --> `str`
+                     'name' --> `str`
 
         param service_type: Valid types are ClusterIP, NodePort, LoadBalancer
         type  service_type: `str`
@@ -1186,7 +1187,13 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         data = None
         if len(service_list) > 0:
             if not ports:
-                method = 'DELETE'
+                result = True
+                for service in service_list:
+                    service_name = service['metadata']['name']
+                    result = result and self.ex_delete_service(
+                        namespace=namespace,
+                        service_name=service_name)
+                return result
             else:
                 method = 'PATCH'
                 spec = {'ports': ports_to_expose}
@@ -1232,6 +1239,17 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
             req = "{}/namespaces/{}/services".format(ROOT_URL, namespace)
         try:
             result = self.connection.request(req, method=method, data=data,
+                                             headers=headers)
+        except Exception:
+            raise
+        return result.status in VALID_RESPONSE_CODES
+
+    def ex_delete_service(self, namespace, service_name):
+        req = "{}/namespaces/{}/services/{}".format(ROOT_URL, namespace,
+                                                    service_name)
+        headers = {"Content-Type": "application/yaml"}
+        try:
+            result = self.connection.request(req, method="DELETE",
                                              headers=headers)
         except Exception:
             raise
