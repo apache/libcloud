@@ -1015,7 +1015,7 @@ class LXDContainerDriver(ContainerDriver):
 
         try:
 
-            # wait until the timeout...but util getting here the operation
+            # wait until the timeout...but until getting here the operation
             # may have finished already
             id = response_dict['metadata']['id']
             req = '/%s/operations/%s/wait?timeout=%s' % (self.version,
@@ -1069,7 +1069,7 @@ class LXDContainerDriver(ContainerDriver):
     def ex_has_image(self, alias):
         """
         Helper function. Returns true and the image fingerprint
-        if the image with the given alias exits on the host.
+        if the image with the given alias exists on the host.
 
         :param alias: the image alias
         :type  alias: ``str``
@@ -1315,11 +1315,7 @@ class LXDContainerDriver(ContainerDriver):
                 if vol.name == name:
                     return vol
 
-        return self._to_storage_volume(pool_id=None,
-                                       metadata={"pool_id": None,
-                                                 "type": None,
-                                                 "used_by": None,
-                                                 "config": None})
+        return None
 
     def create_volume(self, pool_id, definition, **kwargs):
 
@@ -1484,7 +1480,7 @@ class LXDContainerDriver(ContainerDriver):
 
     def ex_get_network(self, name):
         """
-        Retunrs the LXD network with the given name.
+        Returns the LXD network with the given name.
         Implements GET /1.0/networks/<name>
 
         Authentication: trusted
