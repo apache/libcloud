@@ -54,7 +54,7 @@ class OSCRequestSigner(object):
 
 class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
     @staticmethod
-    def sign(key: str, msg: str):
+    def sign(key, msg):
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
     @staticmethod
@@ -73,7 +73,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                          for k, v in sorted(params.items())])
 
     def get_request_headers(self, service_name: str, region: str, action: str,
-                            data: dict = None):
+                            data: str):
         date = datetime.utcnow()
         host = "{}.{}.outscale.com".format(service_name, region)
         headers = {
@@ -97,10 +97,10 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
         return headers
 
     def _get_authorization_v4_header(self, headers: dict,
+                                     data: str,
                                      dt: datetime,
                                      method: str = 'GET',
-                                     path: str = '/',
-                                     data: dict = None):
+                                     path: str = '/'):
         credentials_scope = self._get_credential_scope(dt=dt)
         signed_headers = self._get_signed_headers(headers=headers)
         signature = self._get_signature(headers=headers, dt=dt,
@@ -115,23 +115,25 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                }
 
     def _get_signature(self, headers: dict, dt: datetime,
-                       method: str, path: str, data: dict):
+                       method: str, path: str, data: str):
         string_to_sign = self._get_string_to_sign(headers=headers, dt=dt,
                                                   method=method, path=path,
                                                   data=data)
-        signing_key = self._get_key_to_sign_with(self.access_secret, dt)
+        signing_key = self._get_key_to_sign_with(
+            self.access_secret,
+            dt.strftime('%Y%m%d')
+        )
         return hmac.new(signing_key, string_to_sign.encode('utf-8'),
                         hashlib.sha256).hexdigest()
 
-    def _get_key_to_sign_with(self, key: str, dt: datetime):
-        dt = dt.strftime('%Y%m%d')
+    def _get_key_to_sign_with(self, key: str, dt: str):
         k_date = self.sign(('OSC4' + key).encode('utf-8'), dt)
         k_region = self.sign(k_date, self.connection.region_name)
         k_service = self.sign(k_region, self.connection.service_name)
         return self.sign(k_service, 'osc4_request')
 
     def _get_string_to_sign(self, headers: dict, dt: datetime, method: str,
-                            path: str, data: dict):
+                            path: str, data: str):
         canonical_request = self._get_canonical_request(headers=headers,
                                                         method=method,
                                                         path=path,
@@ -147,8 +149,7 @@ class OSCRequestSignerAlgorithmV4(OSCRequestSigner):
                          self.connection.service_name,
                          'osc4_request'])
 
-    def _get_canonical_request(self, headers, method, path, data = "{}"):
-        data = data if data else "{}"
+    def _get_canonical_request(self, headers, method, path, data):
         return '\n'.join([
             method,
             path,

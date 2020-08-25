@@ -114,8 +114,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -153,7 +153,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -252,7 +253,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -290,7 +292,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -387,11 +390,14 @@ class OutscaleNodeDriver(NodeDriver):
         create the VM.
         :type       ex_subnet_id: ``str``
 
-        :param      ex_user_data: Data or script used to add a specific configuration to the VM. It must be base64-encoded.
+        :param      ex_user_data: Data or script used to add a specific
+        configuration to the VM. It must be base64-encoded.
         :type       ex_user_data: ``str``
 
-        :param      ex_vm_initiated_shutdown_behavior: The VM behavior when you stop it. By default or if set to stop, the
-        VM stops. If set to restart, the VM stops then automatically restarts. If set to terminate, the VM stops and is terminated.
+        :param      ex_vm_initiated_shutdown_behavior: The VM behavior when
+        you stop it. By default or if set to stop, the
+        VM stops. If set to restart, the VM stops then automatically restarts.
+        If set to terminate, the VM stops and is terminated.
         create the VM.
         :type       ex_vm_initiated_shutdown_behavior: ``str``
 
@@ -434,7 +440,10 @@ class OutscaleNodeDriver(NodeDriver):
         if ex_user_data is not None:
             data.update({"UserData": ex_user_data})
         if ex_vm_initiated_shutdown_behavior is not None:
-            data.update({"VmInstantiatedShutdownBehavior": ex_vm_initiated_shutdown_behavior})
+            data.update({
+                "VmInstantiatedShutdownBehavior":
+                    ex_vm_initiated_shutdown_behavior
+            })
         if ex_vm_type is not None:
             data.update({"VmType": ex_vm_type})
         if ex_subnet_id is not None:
@@ -445,8 +454,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        vm = requests.post(endpoint, data=data, headers=headers).json()["Vms"][0]
-
+        response = requests.post(endpoint, data=data, headers=headers)
+        vm = response.json()["Vms"][0]
         return self._to_node(vm)
 
     def reboot_node(self, node: Node):
@@ -466,7 +475,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return False
         return False
 
@@ -482,8 +492,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        vms = requests.post(endpoint, data=ex_data, headers=headers).json()["Vms"]
-        return self._to_nodes(vms)
+        vms = requests.post(endpoint, data=ex_data, headers=headers)
+        return self._to_nodes(vms.json()["Vms"])
 
     def destroy_node(self, node: Node):
         """
@@ -501,7 +511,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -587,8 +598,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        image = requests.post(endpoint, data=data, headers=headers).json()["Image"]
-        return self._to_node_images(image)
+        image = requests.post(endpoint, data=data, headers=headers).json()
+        return self._to_node_image(image["Image"])
 
     def list_images(self, ex_data: str = "{}"):
         """
@@ -602,8 +613,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        images = requests.post(endpoint, data=ex_data, headers=headers).json()["Images"]
-        return self._to_node_images(images)
+        images = requests.post(endpoint, data=ex_data, headers=headers).json()
+        return self._to_node_images(images["Images"])
 
     def get_image(self, image_id: str):
         """
@@ -621,8 +632,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        images = requests.post(endpoint, data=data, headers=headers).json()["Images"]
-        return self._to_node_image(images)
+        images = requests.post(endpoint, data=data, headers=headers).json()
+        return self._to_node_image(images["Images"])
 
     def delete_image(self, node_image: NodeImage):
         """
@@ -640,7 +651,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -648,7 +660,9 @@ class OutscaleNodeDriver(NodeDriver):
         return [self._to_key_pair(key_pair) for key_pair in key_pairs]
 
     def _to_key_pair(self, key_pair):
-        private_key = key_pair["PrivateKey"] if "PrivateKey" in key_pair else ""
+        private_key = ""
+        if "PrivateKey" in key_pair:
+            private_key = key_pair["PrivateKey"]
         return KeyPair(
             name=key_pair["KeypairName"],
             public_key="",
@@ -704,8 +718,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        key_pairs = requests.post(endpoint, data=ex_data, headers=headers).json()
-        return self._to_key_pairs(key_pairs["Keypairs"])
+        key_pairs = requests.post(endpoint, data=ex_data, headers=headers)
+        return self._to_key_pairs(key_pairs.json()["Keypairs"])
 
     def get_key_pair(self, name: str):
         """
@@ -724,14 +738,15 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        key_pair = requests.post(endpoint, data=data, headers=headers).json()["Keypairs"][0]
-        return self._to_key_pair(key_pair)
+        key_pair = requests.post(endpoint, data=data, headers=headers).json()
+        return self._to_key_pair(key_pair["Keypairs"][0])
 
     def delete_key_pair(self, key_pair: KeyPair):
         """
         Delete an image.
 
-        :param      key_pair: the name of the keypair you want to delete (required)
+        :param      key_pair: the name of the keypair
+        you want to delete (required)
         :type       key_pair: ``KeyPair``
 
         :return: boolean
@@ -743,7 +758,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -814,8 +830,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        snapshot = requests.post(endpoint, data=data, headers=headers).json()["Volume"]
-        return self._to_snapshot(snapshot)
+        snapshot = requests.post(endpoint, data=data, headers=headers)
+        return self._to_snapshot(snapshot.json()["Volume"])
 
     def list_snapshots(self, ex_data: str = "{}"):
         """
@@ -829,9 +845,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        snapshots = requests.post(endpoint, data=ex_data, headers=headers).json()
-
-        return self._to_snapshots(snapshots)
+        snapshots = requests.post(endpoint, data=ex_data, headers=headers)
+        return self._to_snapshots(snapshots.json()["Snapshots"])
 
     def destroy_volume_snapshot(self, snapshot: VolumeSnapshot):
         """
@@ -839,10 +854,10 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      snapshot: the ID of the snapshot
                     you want to delete (required)
-        :type       snapshot: ``str``
+        :type       snapshot: ``VolumeSnapshot``
 
         :return: request
-        :rtype: ``dict``
+        :rtype: ``bool``
         """
         action = "DeleteSnapshot"
         data = '{"SnapshotId": "' + snapshot.id + '"}'
@@ -850,7 +865,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -914,8 +930,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        volume = requests.post(endpoint, data=data, headers=headers).json()["Volume"]
-        return self._to_volume(volume)
+        volume = requests.post(endpoint, data=data, headers=headers)
+        return self._to_volume(volume.json()["Volume"])
 
     def list_volumes(self, ex_data: str = "{}"):
         """
@@ -929,8 +945,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        volumes = requests.post(endpoint, data=ex_data, headers=headers).json()["Volumes"]
-        return self._to_volumes(volumes)
+        volumes = requests.post(endpoint, data=ex_data, headers=headers)
+        return self._to_volumes(volumes.json()["Volumes"])
 
     def destroy_volume(self, volume: StorageVolume):
         """
@@ -938,10 +954,10 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      volume: the ID of the volume
                     you want to delete (required)
-        :type       volume: ``str``
+        :type       volume: ``StorageVolume``
 
         :return: request
-        :rtype: ``dict``
+        :rtype: ``bool``
         """
         action = "DeleteVolume"
         data = '{"VolumeId": "' + volume.id + '"}'
@@ -949,21 +965,27 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
-    def attach_volume(self, node: Node, volume: StorageVolume, device: str = None):
+    def attach_volume(
+        self,
+        node: Node,
+        volume: StorageVolume,
+        device: str = None
+    ):
         """
         Attach a volume.
 
         :param      node: the ID of the VM you want
                     to attach the volume to (required)
-        :type       node: ``str``
+        :type       node: ``Node``
 
         :param      volume: the ID of the volume
                     you want to attach (required)
-        :type       volume: ``str``
+        :type       volume: ``StorageVolume``
 
         :param      device: the name of the device (required)
         :type       device: ``str``
@@ -981,7 +1003,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -1017,7 +1040,8 @@ class OutscaleNodeDriver(NodeDriver):
         endpoint = self._get_outscale_endpoint(self.region,
                                                self.version,
                                                action)
-        if requests.post(endpoint, data=data, headers=headers).status_code == 200:
+        response = requests.post(endpoint, data=data, headers=headers)
+        if response.status_code == 200:
             return True
         return False
 
@@ -1029,18 +1053,22 @@ class OutscaleNodeDriver(NodeDriver):
             action
         )
 
-    def _ex_generate_headers(self, action: str, data: dict):
-        return self.signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
+    def _ex_generate_headers(self, action: str, data: str):
+        return self.signer.get_request_headers(
+            action=action,
+            data=data,
+            service_name=self.service_name,
+            region=self.region
+        )
 
     def _to_location(self, region):
-        return NodeLocation(id="",
-                    name=region["RegionName"],
-                    country="",
-                    driver=self,
-                    extra=region)
+        return NodeLocation(
+            id="",
+            name=region["RegionName"],
+            country="",
+            driver=self,
+            extra=region
+        )
 
     def _to_locations(self, regions: list):
         return [self._to_location(region) for region in regions]
@@ -1053,7 +1081,7 @@ class OutscaleNodeDriver(NodeDriver):
         return VolumeSnapshot(
             id=snapshot["SnapshotId"],
             name=name,
-            size=snapshot["Size"],
+            size=snapshot["VolumeSize"],
             driver=self,
             state=snapshot["State"],
             created=None,
