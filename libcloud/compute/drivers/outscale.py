@@ -83,19 +83,8 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadRegions"
         data = json.dumps({"DryRun": ex_dry_run})
-        signer = OSCRequestSignerAlgorithmV4(access_key=self.key,
-                                             access_secret=self.secret,
-                                             version=self.version,
-                                             connection=self.connection)
-        headers = signer.get_request_headers(action=action,
-                                             data=data,
-                                             service_name=self.service_name,
-                                             region=self.region)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        regions = requests.post(endpoint, data=data, headers=headers).json()
-        return self._to_locations(regions["Regions"])
+        response = self._call_api(action, data)
+        return self._to_locations(response.json()["Regions"])
 
     def ex_create_public_ip(self, dry_run: bool = False):
         """
@@ -110,12 +99,7 @@ class OutscaleNodeDriver(NodeDriver):
             """
         action = "CreatePublicIp"
         data = json.dumps({"DryRun": dry_run})
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -149,12 +133,7 @@ class OutscaleNodeDriver(NodeDriver):
         if public_ip_id is not None:
             data.update({"PublicIpId": public_ip_id})
         data = json.dumps(data)
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -170,11 +149,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadPublicIps"
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        return requests.post(endpoint, data=data, headers=headers)
+        return self._call_api(action, data)
 
     def ex_list_public_ip_ranges(self, dry_run: bool = False):
         """
@@ -189,11 +164,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadPublicIpRanges"
         data = json.dumps({"DryRun": dry_run})
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        return requests.post(endpoint, data=data, headers=headers)
+        return self._call_api(action, data)
 
     def ex_attach_public_ip(self,
                             allow_relink: bool = None,
@@ -249,12 +220,7 @@ class OutscaleNodeDriver(NodeDriver):
         if allow_relink is not None:
             data.update({"AllowRelink": allow_relink})
         data = json.dumps(data)
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -288,12 +254,7 @@ class OutscaleNodeDriver(NodeDriver):
         if link_public_ip_id is not None:
             data.update({"LinkPublicIpId": link_public_ip_id})
         data = json.dumps(data)
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -450,13 +411,7 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"SubnetId": ex_subnet_id})
         action = "CreateVms"
         data = json.dumps(data)
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        vm = response.json()["Vms"][0]
-        return self._to_node(vm)
+        return self._to_node(self._call_api(action, data).json()["Vms"][0])
 
     def reboot_node(self, node: Node):
         """
@@ -471,12 +426,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "RebootVms"
         data = json.dumps({"VmIds": node.id})
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return False
         return False
 
@@ -488,12 +438,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadVms"
-        headers = self._ex_generate_headers(action, ex_data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        vms = requests.post(endpoint, data=ex_data, headers=headers)
-        return self._to_nodes(vms.json()["Vms"])
+        return self._to_nodes(self._call_api(action, ex_data).json()["Vms"])
 
     def destroy_node(self, node: Node):
         """
@@ -507,12 +452,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteVms"
         data = json.dumps({"VmIds": node.id})
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -594,12 +534,8 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"FileLocation": ex_file_location})
         data = json.dumps(data)
         action = "CreateImage"
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        image = requests.post(endpoint, data=data, headers=headers).json()
-        return self._to_node_image(image["Image"])
+        response = self._call_api(action, data)
+        return self._to_node_image(response.json()["Image"])
 
     def list_images(self, ex_data: str = "{}"):
         """
@@ -609,12 +545,8 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadImages"
-        headers = self._ex_generate_headers(action, ex_data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        images = requests.post(endpoint, data=ex_data, headers=headers).json()
-        return self._to_node_images(images["Images"])
+        response = self._call_api(action, ex_data)
+        return self._to_node_images(response.json()["Images"])
 
     def get_image(self, image_id: str):
         """
@@ -628,12 +560,8 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadImages"
         data = '{"Filters": {"ImageIds": ["' + image_id + '"]}}'
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        images = requests.post(endpoint, data=data, headers=headers).json()
-        return self._to_node_image(images["Images"])
+        response = self._call_api(action, data)
+        return self._to_node_image(response.json()["Images"][0])
 
     def delete_image(self, node_image: NodeImage):
         """
@@ -647,28 +575,9 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteImage"
         data = '{"ImageId": "' + node_image.id + '"}'
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
-
-    def _to_key_pairs(self, key_pairs):
-        return [self._to_key_pair(key_pair) for key_pair in key_pairs]
-
-    def _to_key_pair(self, key_pair):
-        private_key = ""
-        if "PrivateKey" in key_pair:
-            private_key = key_pair["PrivateKey"]
-        return KeyPair(
-            name=key_pair["KeypairName"],
-            public_key="",
-            private_key=private_key,
-            fingerprint=key_pair["KeypairFingerprint"],
-            driver=self)
 
     def create_key_pair(self,
                         name: str,
@@ -699,12 +608,8 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"PublicKey": ex_public_key})
         data = json.dumps(data)
         action = "CreateKeypair"
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        key_pair = requests.post(endpoint, data=data, headers=headers).json()
-        return self._to_key_pair(key_pair["Keypair"])
+        response = self._call_api(action, data)
+        return self._to_key_pair(response.json()["Keypair"])
 
     def list_key_pairs(self, ex_data: str = "{}"):
         """
@@ -714,12 +619,8 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadKeypairs"
-        headers = self._ex_generate_headers(action, ex_data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        key_pairs = requests.post(endpoint, data=ex_data, headers=headers)
-        return self._to_key_pairs(key_pairs.json()["Keypairs"])
+        response = self._call_api(action, ex_data)
+        return self._to_key_pairs(response.json()["Keypairs"])
 
     def get_key_pair(self, name: str):
         """
@@ -734,12 +635,8 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadKeypairs"
         data = '{"Filters": {"KeypairNames" : ["' + name + '"]}}'
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        key_pair = requests.post(endpoint, data=data, headers=headers).json()
-        return self._to_key_pair(key_pair["Keypairs"][0])
+        response = self._call_api(action, data)
+        return self._to_key_pair(response.json()["Keypairs"][0])
 
     def delete_key_pair(self, key_pair: KeyPair):
         """
@@ -754,12 +651,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteKeypair"
         data = '{"KeypairName": "' + key_pair.name + '"}'
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -826,12 +718,8 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"VolumeId": volume.id})
         data = json.dumps(data)
         action = "CreateSnapshot"
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        snapshot = requests.post(endpoint, data=data, headers=headers)
-        return self._to_snapshot(snapshot.json()["Volume"])
+        response = self._call_api(action, data)
+        return self._to_snapshot(response.json()["Volume"])
 
     def list_snapshots(self, ex_data: str = "{}"):
         """
@@ -841,12 +729,8 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadSnapshots"
-        headers = self._ex_generate_headers(action, ex_data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        snapshots = requests.post(endpoint, data=ex_data, headers=headers)
-        return self._to_snapshots(snapshots.json()["Snapshots"])
+        response = self._call_api(action, ex_data)
+        return self._to_snapshots(response.json()["Snapshots"])
 
     def destroy_volume_snapshot(self, snapshot: VolumeSnapshot):
         """
@@ -861,12 +745,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteSnapshot"
         data = '{"SnapshotId": "' + snapshot.id + '"}'
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -925,13 +804,8 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"VolumeType": ex_volume_type})
         data = json.dumps(data)
         action = "CreateVolume"
-        headers = self._ex_generate_headers(action, data)
-
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        volume = requests.post(endpoint, data=data, headers=headers)
-        return self._to_volume(volume.json()["Volume"])
+        response = self._call_api(action, data)
+        return self._to_volume(response.json()["Volume"])
 
     def list_volumes(self, ex_data: str = "{}"):
         """
@@ -941,12 +815,8 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadVolumes"
-        headers = self._ex_generate_headers(action, ex_data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        volumes = requests.post(endpoint, data=ex_data, headers=headers)
-        return self._to_volumes(volumes.json()["Volumes"])
+        response = self._call_api(action, ex_data)
+        return self._to_volumes(response.json()["Volumes"])
 
     def destroy_volume(self, volume: StorageVolume):
         """
@@ -961,12 +831,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteVolume"
         data = '{"VolumeId": "' + volume.id + '"}'
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -999,12 +864,7 @@ class OutscaleNodeDriver(NodeDriver):
             "VolumeId": volume.id,
             "DeviceName": device
         })
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -1036,12 +896,7 @@ class OutscaleNodeDriver(NodeDriver):
         if ex_force_unlink is not None:
             data.update({"ForceUnlink": ex_force_unlink})
         data = json.dumps(data)
-        headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
-        response = requests.post(endpoint, data=data, headers=headers)
-        if response.status_code == 200:
+        if self._call_api(action, data).status_code == 200:
             return True
         return False
 
@@ -1052,6 +907,13 @@ class OutscaleNodeDriver(NodeDriver):
             version,
             action
         )
+
+    def _call_api(self, action: str, data: str):
+        headers = self._ex_generate_headers(action, data)
+        endpoint = self._get_outscale_endpoint(self.region,
+                                               self.version,
+                                               action)
+        return requests.post(endpoint, data=data, headers=headers)
 
     def _ex_generate_headers(self, action: str, data: str):
         return self.signer.get_request_headers(
@@ -1140,3 +1002,17 @@ class OutscaleNodeDriver(NodeDriver):
 
     def _to_node_images(self, node_images: list):
         return [self._to_node_image(node_image) for node_image in node_images]
+
+    def _to_key_pairs(self, key_pairs):
+        return [self._to_key_pair(key_pair) for key_pair in key_pairs]
+
+    def _to_key_pair(self, key_pair):
+        private_key = ""
+        if "PrivateKey" in key_pair:
+            private_key = key_pair["PrivateKey"]
+        return KeyPair(
+            name=key_pair["KeypairName"],
+            public_key="",
+            private_key=private_key,
+            fingerprint=key_pair["KeypairFingerprint"],
+            driver=self)
