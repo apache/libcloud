@@ -241,8 +241,6 @@ class LibcloudConnection(LibcloudBaseConnection):
 
         prepped = self.session.prepare_request(req)
 
-        prepped.body = body
-
         self.response = self.session.send(
             prepped,
             stream=stream,
