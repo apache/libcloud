@@ -1,0 +1,56 @@
+{"kind": "ServiceList",
+ "apiVersion": "v1",
+ "metadata":
+    {"selfLink": "/api/v1/namespaces/kubevirt/services", "resourceVersion": "34596194"},
+ "items":
+    [{"metadata":
+        {"name": "kubevirt-operator-webhook", "namespace": "kubevirt",
+         "selfLink": "/api/v1/namespaces/kubevirt/services/kubevirt-operator-webhook",
+         "uid": "14b736f5-c135-4af4-b0c7-7395d1009f70", "resourceVersion": "34388137",
+         "creationTimestamp": "2020-07-22T15:48:27Z",
+         "labels":
+            {"app.kubernetes.io/managed-by": "kubevirt-operator", "kubevirt.io": "", "prometheus.kubevirt.io": ""},
+         "annotations":
+            {"kubevirt.io/install-strategy-identifier": "bea570209e6ec804f964c31126509110fcdeef04",
+             "kubevirt.io/install-strategy-registry": "index.docker.io/kubevirt",
+             "kubevirt.io/install-strategy-version": "v0.31.0"}},
+         "spec": {"ports": [{"name": "webhooks", "protocol": "TCP", "port": 443, "targetPort": "webhooks"}],
+                  "selector": {"kubevirt.io": "virt-operator"}, "clusterIP": "10.111.39.5", "type": "ClusterIP",
+                  "sessionAffinity": "None"},
+         "status": {"loadBalancer": {}}},
+     {"metadata":
+        {"name": "kubevirt-prometheus-metrics", "namespace": "kubevirt",
+         "selfLink": "/api/v1/namespaces/kubevirt/services/kubevirt-prometheus-metrics",
+         "uid": "cd5e6e0d-45c7-46b5-9545-043aabb75b4e", "resourceVersion": "34388129",
+         "creationTimestamp": "2020-07-22T15:48:27Z",
+         "labels":
+            {"app.kubernetes.io/managed-by": "kubevirt-operator", "kubevirt.io": "", "prometheus.kubevirt.io": ""},
+         "annotations":
+            {"kubevirt.io/install-strategy-identifier": "bea570209e6ec804f964c31126509110fcdeef04",
+             "kubevirt.io/install-strategy-registry": "index.docker.io/kubevirt",
+             "kubevirt.io/install-strategy-version": "v0.31.0"}},
+         "spec": {"ports": [{"name": "metrics", "protocol": "TCP", "port": 443, "targetPort": "metrics"}],
+                  "selector": {"prometheus.kubevirt.io": ""}, "clusterIP": "10.96.229.208", "type": "ClusterIP",
+                  "sessionAffinity": "None"}, "status": {"loadBalancer": {}}},
+     {"metadata":
+        {"name": "service-nodeport-testv", "namespace": "kubevirt",
+         "selfLink": "/api/v1/namespaces/kubevirt/services/service-nodeport-testv",
+         "uid": "ae733a33-9c18-46b7-9042-b49fcf453594", "resourceVersion": "34405970",
+         "creationTimestamp": "2020-07-22T17:03:50Z",
+         "labels":
+            {"service": "kubevirt.io"}},
+         "spec": {"ports": [{"name": "port-11222", "protocol": "TCP", "port": 11222, "targetPort": 10000, "nodePort": 32531}],
+                  "selector": {"kubevirt.io/vm": "testv"}, "clusterIP": "10.102.54.176", "type": "NodePort",
+                  "sessionAffinity": "None", "externalTrafficPolicy": "Cluster"}, "status": {"loadBalancer": {}}},
+     {"metadata":
+        {"name": "virt-api", "namespace": "kubevirt", "selfLink": "/api/v1/namespaces/kubevirt/services/virt-api",
+         "uid": "8785768d-8bcb-41f4-8e7d-0255185116ce", "resourceVersion": "34388132",
+         "creationTimestamp": "2020-07-22T15:48:27Z",
+         "labels":
+            {"app.kubernetes.io/managed-by": "kubevirt-operator", "kubevirt.io": "virt-api"},
+         "annotations": {"kubevirt.io/install-strategy-identifier": "bea570209e6ec804f964c31126509110fcdeef04",
+                         "kubevirt.io/install-strategy-registry": "index.docker.io/kubevirt",
+                         "kubevirt.io/install-strategy-version": "v0.31.0"}},
+         "spec": {"ports": [{"protocol": "TCP", "port": 443, "targetPort": 8443}],
+                  "selector": {"kubevirt.io": "virt-api"}, "clusterIP": "10.106.250.243", "type": "ClusterIP",
+                  "sessionAffinity": "None"}, "status": {"loadBalancer": {}}}]}
