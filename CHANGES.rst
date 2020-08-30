@@ -113,6 +113,14 @@ Compute
 - [KubeVirt] Add new methods for managing services which allows users to expose
   ports for the VMs (``ex_list_services``, ``ex_create_service``,
   ``ex_delete_service``).
+  (GITHUB-1478)
+  [Eis D. Zaster - @Eis-D-Z]
+
+Container
+~~~~~~~~~
+
+- [LXD] Add new methods for managing network and storage pool capabilities and
+  include other improvements in some of the existing methods.
   (GITHUB-1477)
   [Eis D. Zaster - @Eis-D-Z]
 
