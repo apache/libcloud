@@ -48,6 +48,7 @@ Provider                              list images get image create image delete 
 `1and1`_                              yes         yes       no           no           no        
 `OpenNebula (v3.8)`_                  yes         no        no           no           no        
 `OpenStack`_                          yes         yes       no           no           no        
+`Outscale API`_                       yes         yes       yes          yes          no        
 `Outscale INC`_                       yes         yes       yes          yes          yes       
 `Outscale SAS`_                       yes         yes       yes          yes          yes       
 `Ovh`_                                yes         yes       no           no           no        
@@ -114,6 +115,7 @@ Provider                              list images get image create image delete 
 .. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
+.. _`Outscale API`: http://www.outscale.com
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/

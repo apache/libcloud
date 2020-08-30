@@ -48,6 +48,7 @@ Provider                              list nodes create node reboot node destroy
 `1and1`_                              yes        yes         yes         yes          no         no        yes         yes        no         
 `OpenNebula (v3.8)`_                  yes        yes         yes         yes          no         no        yes         yes        no         
 `OpenStack`_                          yes        no          yes         yes          yes        yes       yes         yes        no         
+`Outscale API`_                       yes        yes         yes         yes          no         no        yes         no         no         
 `Outscale INC`_                       yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Ovh`_                                yes        yes         no          yes          no         no        yes         yes        yes        
@@ -114,6 +115,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`1and1`: http://www.1and1.com
 .. _`OpenNebula (v3.8)`: http://opennebula.org/
 .. _`OpenStack`: http://openstack.org/
+.. _`Outscale API`: http://www.outscale.com
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
