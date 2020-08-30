@@ -110,6 +110,12 @@ Compute
   (GITHUB-1476)
   [Tio Gobin - @tgn-outscale]
 
+- [KubeVirt] Add new methods for managing services which allows users to expose
+  ports for the VMs (``ex_list_services``, ``ex_create_service``,
+  ``ex_delete_service``).
+  (GITHUB-1477)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
