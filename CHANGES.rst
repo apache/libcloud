@@ -104,6 +104,12 @@ Compute
   when we are executing commands on a Windows server.
   [Arthur Kamalov, Tomaz Muraus]
 
+- [Outscale] Add a new driver for the Outscale provider. Existing Outscale
+  driver utilizes the EC2 compatible API and this one utilizes native Outscale
+  API.
+  (GITHUB-1476)
+  [Tio Gobin - @tgn-outscale]
+
 Changes in Apache Libcloud 3.1.0
 --------------------------------
 
