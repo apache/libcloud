@@ -75,6 +75,7 @@ class OutscaleNodeDriver(NodeDriver):
     def list_locations(self, ex_dry_run: bool = False):
         """
         Lists available regions details.
+
         :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
         :type       ex_dry_run: ``bool``
@@ -108,7 +109,7 @@ class OutscaleNodeDriver(NodeDriver):
                             public_ip: str = None,
                             public_ip_id: str = None):
         """
-        Delete instances.
+        Delete public ip.
 
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -139,7 +140,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_public_ips(self, data: str = "{}"):
         """
-        List all nodes.
+        List all public IPs.
 
         :param      data: json stringify following the outscale api
         documentation for filter
@@ -175,7 +176,7 @@ class OutscaleNodeDriver(NodeDriver):
                             public_ip_id: str = None,
                             ):
         """
-        Attach a volume.
+        Attach public ip to a node.
 
         :param      allow_relink: If true, allows the EIP to be associated
         with the VM or NIC that you specify even if
@@ -229,7 +230,7 @@ class OutscaleNodeDriver(NodeDriver):
                             link_public_ip_id: str = None,
                             dry_run: bool = False):
         """
-        Detach a volume.
+        Detach public ip from a node.
 
         :param      public_ip: (Required in a Net) The ID representing the
         association of the EIP with the VM or the NIC
@@ -415,7 +416,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def reboot_node(self, node: Node):
         """
-        Reboot instances.
+        Reboot instance.
 
         :param      node: the ID(s) of the VM(s)
                     you want to reboot (required)
@@ -442,7 +443,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def destroy_node(self, node: Node):
         """
-        Delete instances.
+        Delete instance.
 
         :param      node: one or more IDs of VMs (required)
         :type       node: ``Node``
@@ -640,7 +641,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def delete_key_pair(self, key_pair: KeyPair):
         """
-        Delete an image.
+        Delete a key pair.
 
         :param      key_pair: the name of the keypair
         you want to delete (required)
@@ -666,7 +667,7 @@ class OutscaleNodeDriver(NodeDriver):
         volume: StorageVolume = None
     ):
         """
-        Create a new snapshot.
+        Create a new volume snapshot.
 
         :param      ex_description: a description for the new OMI
         :type       ex_description: ``str``
@@ -723,7 +724,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def list_snapshots(self, ex_data: str = "{}"):
         """
-        List all snapshots.
+        List all volume snapshots.
 
         :return: snapshots
         :rtype: ``dict``
@@ -734,7 +735,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def destroy_volume_snapshot(self, snapshot: VolumeSnapshot):
         """
-        Delete a snapshot.
+        Delete a volume snapshot.
 
         :param      snapshot: the ID of the snapshot
                     you want to delete (required)
@@ -842,7 +843,7 @@ class OutscaleNodeDriver(NodeDriver):
         device: str = None
     ):
         """
-        Attach a volume.
+        Attach a volume to a node.
 
         :param      node: the ID of the VM you want
                     to attach the volume to (required)
@@ -873,7 +874,7 @@ class OutscaleNodeDriver(NodeDriver):
                       ex_dry_run: bool = False,
                       ex_force_unlink: bool = False):
         """
-        Detach a volume.
+        Detach a volume from a node.
 
         :param      volume: the ID of the volume you want to detach
         (required)
