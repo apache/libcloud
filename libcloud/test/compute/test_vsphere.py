@@ -15,7 +15,7 @@
 
 import sys
 
-from libcloud.compute.drivers.vsphere import VSphere_6_7_NodeDriver
+from libcloud.compute.drivers.vsphere import VSphere_REST_NodeDriver
 from libcloud.compute.types import NodeState
 
 from libcloud.utils.py3 import httplib
@@ -26,18 +26,18 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 class KubeVirtTestCase(unittest.TestCase):
 
-    driver_cls = VSphere_6_7_NodeDriver
+    driver_cls = VSphere_REST_NodeDriver
     fixtures = ComputeFileFixtures('vsphere')
     def setUp(self):
-        VSphere_6_7_NodeDriver.connectionCls.conn_class = VSphereMockHttp
-        self.driver = VSphere_6_7_NodeDriver(key='user',
-                                             secret='pass',
-                                             secure=True,
-                                             host='foo',
-                                             port=443)
+        VSphere_REST_NodeDriver.connectionCls.conn_class = VSphereMockHttp
+        self.driver = VSphere_REST_NodeDriver(key='user',
+                                              secret='pass',
+                                              secure=True,
+                                              host='foo',
+                                              port=443)
     def test_list_nodes(self):
         vm_id = "vm-80"
-        nodes = self.driver.list_nodes(async_=False)
+        nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0].name, 'vCenter')
         self.assertEqual(nodes[0].id, vm_id)
@@ -49,23 +49,23 @@ class KubeVirtTestCase(unittest.TestCase):
         self.assertEqual(locations[0].name, "100.100.100.100")
 
     def test_destroy_node(self):
-        nodes = self.driver.list_nodes(async_=False)
+        nodes = self.driver.list_nodes()
         to_destroy = nodes[-1]
         resp = self.driver.destroy_node(to_destroy)
         self.assertTrue(resp)
 
     def test_start_node(self):
-        nodes = self.driver.list_nodes(async_=False)
+        nodes = self.driver.list_nodes()
         resp = self.driver.start_node(nodes[0])
         self.assertTrue(resp)
 
     def test_stop_node(self):
-        nodes = self.driver.list_nodes(async_=False)
+        nodes = self.driver.list_nodes()
         resp = self.driver.stop_node(nodes[0])
         self.assertTrue(resp)
 
     def test_reboot_node(self):
-        nodes = self.driver.list_nodes(async_=False)
+        nodes = self.driver.list_nodes()
         resp = self.driver.reboot_node(nodes[0])
         self.assertTrue(resp)
 
