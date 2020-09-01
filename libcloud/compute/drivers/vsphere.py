@@ -1179,9 +1179,9 @@ class VSphere_REST_NodeDriver(NodeDriver):
             raise InvalidCredsError("Please provide both username "
                                     "(key) and password (secret).")
         super(VSphere_REST_NodeDriver, self).__init__(key=key,
-                                                     secure=secure,
-                                                     host=host,
-                                                     port=port)
+                                                      secure=secure,
+                                                      host=host,
+                                                      port=port)
         prefixes = ['http://', 'https://']
         for prefix in prefixes:
             if host.startswith(prefix):
@@ -1203,10 +1203,10 @@ class VSphere_REST_NodeDriver(NodeDriver):
             raise ImportError('Missing "pyvmomi" dependency. '
                               'You can install it '
                               'using pip - pip install pyvmomi')
-        self.driver_soap =  VSphereNodeDriver(self.host, self.username,
-                                              self.connection.secret,
-                                              ca_cert=self.
-                                              connection.connection.ca_cert)
+        self.driver_soap = VSphereNodeDriver(self.host, self.username,
+                                             self.connection.secret,
+                                             ca_cert=self.
+                                             connection.connection.ca_cert)
 
     def _get_session_token(self):
         uri = "/rest/com/vmware/cis/session"
@@ -1257,7 +1257,8 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
     def async_list_nodes(self):
         """
-        In this case filtering is not possible. Use this method when the cloud has
+        In this case filtering is not possible.
+        Use this method when the cloud has
         a lot of vms and you want to return them all.
         """
         loop = asyncio.new_event_loop()
@@ -1267,6 +1268,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         interfaces = self._list_interfaces()
         return loop.run_until_complete(self._list_nodes_async(vm_ids,
                                                               interfaces))
+
     async def _list_nodes_async(self, vm_ids, interfaces):
         loop = asyncio.get_event_loop()
         vms = [

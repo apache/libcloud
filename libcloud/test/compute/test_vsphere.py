@@ -16,7 +16,6 @@
 import sys
 
 from libcloud.compute.drivers.vsphere import VSphere_REST_NodeDriver
-from libcloud.compute.types import NodeState
 
 from libcloud.utils.py3 import httplib
 
@@ -24,10 +23,12 @@ from libcloud.test import unittest
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
 
+
 class KubeVirtTestCase(unittest.TestCase):
 
     driver_cls = VSphere_REST_NodeDriver
     fixtures = ComputeFileFixtures('vsphere')
+
     def setUp(self):
         VSphere_REST_NodeDriver.connectionCls.conn_class = VSphereMockHttp
         self.driver = VSphere_REST_NodeDriver(key='user',
@@ -35,6 +36,7 @@ class KubeVirtTestCase(unittest.TestCase):
                                               secure=True,
                                               host='foo',
                                               port=443)
+
     def test_list_nodes(self):
         vm_id = "vm-80"
         nodes = self.driver.list_nodes()
@@ -68,6 +70,7 @@ class KubeVirtTestCase(unittest.TestCase):
         nodes = self.driver.list_nodes()
         resp = self.driver.reboot_node(nodes[0])
         self.assertTrue(resp)
+
 
 class VSphereMockHttp(MockHttp):
 
@@ -141,6 +144,7 @@ class VSphereMockHttp(MockHttp):
         body = ""
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
