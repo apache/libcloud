@@ -61,7 +61,7 @@ API Documentation
 .. _`Outscale Inc.`: outscale_inc.html
 
 Outscale Implementation of Libcloud
-------------------------------
+-----------------------------------
 
 The Outscale driver implements the following ``NodeDriver`` functions:
 
