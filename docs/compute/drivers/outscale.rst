@@ -104,4 +104,16 @@ Volumes
 * ``attach_volume`` - Return a ``boolean``
 * ``detach_volume`` - Returns a ``boolean``
 
+Outscale Extra Functions
+------------------------
 
+The Outscale driver implement the following extra methods:
+
+IP
+__
+* ``ex_create_public_ip`` - Returns a ``boolean``
+* ``ex_delete_public_ip`` - Returns a ``boolean``
+* ``ex_list_public_ips`` - Returns a ``dict``
+* ``ex_list_public_ip_ranges`` - Returns a ``dict``
+* ``ex_attach_public_ip`` - Returns a ``boolean``
+* ``ex_detach_public_ip`` - Returns a ``boolean``
