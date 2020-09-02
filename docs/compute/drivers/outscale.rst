@@ -59,3 +59,49 @@ API Documentation
 
 .. _`Outscale`: https://docs.outscale.com/api
 .. _`Outscale Inc.`: outscale_inc.html
+
+Outscale Implementation of Libcloud
+------------------------------
+
+The Outscale driver implements the following ``NodeDriver`` functions:
+
+Regions
+-------
+* ``list_locations`` - Returns a list of ``NodeLocation``
+
+Nodes
+-----
+* ``create_node`` - Creates a ``Node``
+* ``reboot_node`` - Reboots a ``Node``
+* ``list_nodes`` - Returns a list of ``Node``
+* ``destroy_node`` - Destroys an existing ``Node``
+
+Images
+------
+* ``create_images`` - Returns a ``NodeImage``
+* ``list_images`` - Returns a list of ``NodeImage``
+* ``get_image`` - Returns a ``NodeImage``
+* ``delete_image`` - Return a ``boolean``
+
+Key Pairs
+_________
+* ``create_key_pair`` - Returns a ``KeyPair``
+* ``list_key_pairs`` - Returns a list of ``KeyPair``
+* ``get_key_pair`` - Returns a ``KeyPair``
+* ``delete_key_pair`` - Returns a ``boolean``
+
+Snapshots
+---------
+* ``create_volume_snapshot`` - Returns a ``VolumeSnapshot``
+* ``list_snapshots`` - Returns a list of ``VolumeSnapshot``
+* ``destroy_volume_snapshot`` - Returns a ``boolean``
+
+Volumes
+-------
+* ``create_volume`` - Returns a ``StorageVolume``
+* ``list_volumes`` - Returns a list of ``StorageVolume``
+* ``destroy_volume`` - Returns a ``boolean``
+* ``attach_volume`` - Return a ``boolean``
+* ``detach_volume`` - Returns a ``boolean``
+
+
