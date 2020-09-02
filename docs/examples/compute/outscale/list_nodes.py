@@ -9,6 +9,6 @@ service = 'api'
 Driver = get_driver(Provider.OUTSCALE)
 driver = Driver(key=key, secret=secret, region=region, service=service)
 
-node = driver.list_nodes()
+nodes = driver.list_nodes()
 
-print(node)
+print(nodes)
