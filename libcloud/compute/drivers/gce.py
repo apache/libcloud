@@ -9137,6 +9137,7 @@ class GCENodeDriver(NodeDriver):
         extra['options'] = volume.get('options')
         extra['labels'] = volume.get('labels', {})
         extra['labelFingerprint'] = volume.get('labelFingerprint')
+        extra['users'] = volume.get('users', [])
 
         if 'licenses' in volume:
             lic_objs = self._licenses_from_urls(licenses=volume['licenses'])
