@@ -75,6 +75,9 @@ Nodes
 * ``reboot_node`` - Reboots a ``Node``
 * ``list_nodes`` - Returns a list of ``Node``
 * ``destroy_node`` - Destroys an existing ``Node``
+* ``start_node`` - Start a ``Node``
+* ``start_node`` - Start a ``Node``
+* ``stop_node`` - Stop a ``Node``
 
 Images
 ------
@@ -95,6 +98,7 @@ Snapshots
 * ``create_volume_snapshot`` - Returns a ``VolumeSnapshot``
 * ``list_snapshots`` - Returns a list of ``VolumeSnapshot``
 * ``destroy_volume_snapshot`` - Returns a ``boolean``
+* ``list_volume_snapshots`` - Returns a list of ``VolumeSnapshot``
 
 Volumes
 -------

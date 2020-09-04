@@ -260,7 +260,8 @@ class OutscaleNodeDriver(NodeDriver):
         return False
 
     def create_node(self,
-                    ex_image_id: str,
+                    image: NodeImage,
+                    name: str = None,
                     ex_dry_run: bool = False,
                     ex_block_device_mapping: dict = None,
                     ex_boot_on_creation: bool = True,
@@ -284,8 +285,11 @@ class OutscaleNodeDriver(NodeDriver):
         """
         Create a new instance.
 
-        :param      ex_image_id: The ID of the OMI used to create the VM.
-        :type       ex_image_id: ``str``
+        :param      image: The image used to create the VM.
+        :type       image: ``NodeImage``
+
+        :param      name: The name of the Node.
+        :type       name: ``str``
 
         :param      ex_dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -373,7 +377,7 @@ class OutscaleNodeDriver(NodeDriver):
             "DryRun": ex_dry_run,
             "BootOnCreation": ex_boot_on_creation,
             "BsuOptimized": ex_bsu_optimized,
-            "ImageId": ex_image_id
+            "ImageId": image.id
         }
         if ex_block_device_mapping is not None:
             data.update({"BlockDeviceMappings": ex_block_device_mapping})
@@ -412,23 +416,80 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"SubnetId": ex_subnet_id})
         action = "CreateVms"
         data = json.dumps(data)
-        return self._to_node(self._call_api(action, data).json()["Vms"][0])
+        node = self._to_node(self._call_api(action, data)["Vms"][0])
+        if name is not None:
+            action = "CreateTags"
+            data = {
+                "DryRun": ex_dry_run,
+                "ResourceIds": [node.id],
+                "Tags": {
+                    "Key": "Name",
+                    "Value": name
+                }
+            }
+            data = json.dumps(data)
+            if self._call_api(action, data).status != 200:
+                return False
+            action = "ReadVms"
+            data = {
+                "DryRun": ex_dry_run,
+                "Filters": {
+                    "VmIds": [node.id]
+                }
+            }
+            return self._to_node(
+                self._call_api(action, data).json()["Vms"][0]
+            )
+        return node
 
     def reboot_node(self, node: Node):
         """
         Reboot instance.
 
-        :param      node: the ID(s) of the VM(s)
-                    you want to reboot (required)
+        :param      node: VM(s) you want to reboot (required)
         :type       node: ``list``
 
         :return: the rebooted instances
         :rtype: ``dict``
         """
         action = "RebootVms"
-        data = json.dumps({"VmIds": node.id})
+        data = json.dumps({"VmIds": [node.id]})
         if self._call_api(action, data).status_code == 200:
-            return False
+            return True
+        return False
+
+    def start_node(self, node: Node):
+        """
+                Start a Vm.
+
+                :param      node: the  VM(s)
+                            you want to start (required)
+                :type       node: ``Node``
+
+                :return: the rebooted instances
+                :rtype: ``dict``
+                """
+        action = "StartVms"
+        data = json.dumps({"VmIds": [node.id]})
+        if self._call_api(action, data).status_code == 200:
+            return True
+        return False
+
+    def stop_node(self, node: Node):
+        """
+                Stop a Vm.
+
+                :param      node: the  VM(s)
+                            you want to stop (required)
+                :type       node: ``Node``
+
+                :return: the rebooted instances
+                :rtype: ``dict``
+                """
+        action = "StopVms"
+        data = json.dumps({"VmIds": [node.id]})
+        if self._call_api(action, data).status_code == 200:
+            return True
         return False
 
     def list_nodes(self, ex_data: str = "{}"):
@@ -733,6 +794,25 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, ex_data)
         return self._to_snapshots(response.json()["Snapshots"])
 
+    def list_volume_snapshots(self, volume):
+        """
+        List all snapshot for a given volume.
+
+        :param     volume: the volume from which to look for snapshots
+        :type      volume: StorageVolume
+
+        :rtype: ``list`` of :class ``VolumeSnapshot``
+        """
+        action = "ReadSnapshots"
+        data = {
+            "Filters": {
+                "VolumeIds": [volume.id]
+            }
+        }
+        response = self._call_api(action, data).json()["Snapshots"]
+        return self._to_snapshots(response)
+
+
     def destroy_volume_snapshot(self, snapshot: VolumeSnapshot):
         """
         Delete a volume snapshot.
@@ -811,9 +891,7 @@ class OutscaleNodeDriver(NodeDriver):
     def list_volumes(self, ex_data: str = "{}"):
         """
         List all volumes.
-
-        :return: volumes
-        :rtype: ``dict``
+        :rtype: ``list`` of :class:`.StorageVolume`
         """
         action = "ReadVolumes"
         response = self._call_api(action, ex_data)
