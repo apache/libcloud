@@ -416,7 +416,7 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"SubnetId": ex_subnet_id})
         action = "CreateVms"
         data = json.dumps(data)
-        node = self._to_node(self._call_api(action, data)["Vms"][0])
+        node = self._to_node(self._call_api(action, data).json()["Vms"][0])
         if name is not None:
             action = "CreateTags"
             data = {
@@ -812,7 +812,6 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, data).json()["Snapshots"]
         return self._to_snapshots(response)
 
-
     def destroy_volume_snapshot(self, snapshot: VolumeSnapshot):
         """
         Delete a volume snapshot.
@@ -995,6 +994,9 @@ class OutscaleNodeDriver(NodeDriver):
         :param      login: the login of the account
         :type       login: ``str``
 
+        :param      password: the password of the account
+        :type       password: ``str``
+
         :param      dry_run: the password of the account
         :type       dry_run: ``bool``
 
@@ -1130,7 +1132,6 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return True
         return response.json()
-
 
     def ex_update_account(
         self,
