@@ -1000,8 +1000,8 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: the password of the account
         :type       dry_run: ``bool``
 
-        :return: the attached volume
-        :rtype: ``dict``
+        :return: True if the action successful
+        :rtype: ``boolean``
         """
         action = "CheckAuthentication"
         data = {"DryRun": dry_run, "Login": login, "Password": password}
@@ -1017,7 +1017,7 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :return: the attached volume
+        :return: the account information
         :rtype: ``dict``
         """
         action = "ReadAccounts"
@@ -1097,8 +1097,8 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: the password of the account
         :type       dry_run: ``bool``
 
-        :return: the attached volume
-        :rtype: ``dict``
+        :return: True if the action is successful
+        :rtype: ``boolean``
         """
         action = "CreateAccount"
         data = {"DryRun": dry_run}
@@ -1202,7 +1202,7 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: the password of the account
         :type       dry_run: ``bool``
 
-        :return: the attached volume
+        :return: The new account information
         :rtype: ``dict``
         """
         action = "UpdateAccount"
@@ -1257,14 +1257,16 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :return: the attached volume
-        :rtype: ``dict``
+        :return: True if the action is successful
+        :rtype: ``boolean``
         """
         action = "ResetAccountPassword"
         data = json.dumps({
             "DryRun": dry_run, "Password": password, "Token": token
         })
-        return self._call_api(action, data).json()["Accounts"][0]
+        if self._call_api(action, data).status_code == 200:
+            return True
+        return False
 
     def ex_send_reset_password_email(
         self,
@@ -1283,8 +1285,8 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :return: the attached volume
-        :rtype: ``dict``
+        :return: True if the action is successful
+        :rtype: ``boolean``
         """
         action = "SendResetPasswordEmail"
         data = json.dumps({
@@ -1293,6 +1295,149 @@ class OutscaleNodeDriver(NodeDriver):
         if self._call_api(action, data).status_code == 200:
             return True
         return False
+
+    def ex_create_tag(
+        self,
+        resource_ids: list,
+        tag_key: str = None,
+        tag_value: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Adds one tag to the specified resources.
+        If a tag with the same key already exists for the resource,
+        the tag value is replaced.
+        You can tag the following resources using their IDs:
+
+        :param      resource_ids: One or more resource IDs.
+        :type       resource_ids: ``list``
+
+        :param      tag_key: The key of the tag, with a minimum of 1 character.
+        :type       tag_key: ``str``
+
+        :param      tag_value: The value of the tag, between
+        0 and 255 characters.
+        :type       tag_value: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "CreateTags"
+        data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": []}
+        if tag_key is not None and tag_value is not None:
+            data["Tags"].append({"Key": tag_key, "Value": tag_value})
+        if self._call_api(action, json.dumps(data)).status_code == 200:
+            return True
+        return False
+
+    def ex_create_tags(
+        self,
+        resource_ids: list,
+        tags: list = [],
+        dry_run: bool = False,
+    ):
+        """
+        Adds one or more tags to the specified resources.
+        If a tag with the same key already exists for the resource,
+        the tag value is replaced.
+        You can tag the following resources using their IDs:
+
+        :param      resource_ids: One or more resource IDs.
+        :type       resource_ids: ``list``
+
+        :param      tags: The key of the tag, with a minimum of 1 character.
+        :type       tags: ``list`` of ``dict``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "CreateTags"
+        data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": tags}
+        if self._call_api(action, json.dumps(data)).status_code == 200:
+            return True
+        return False
+
+    def ex_delete_tags(
+        self,
+        resource_ids: list,
+        tags: list = [],
+        dry_run: bool = False,
+    ):
+        """
+        Deletes one or more tags from the specified resources.
+
+        :param      resource_ids: One or more resource IDs.
+        :type       resource_ids: ``list``
+
+        :param      tags: The key of the tag, with a minimum of 1 character.
+        :type       tags: ``list`` of ``dict``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "DeleteTags"
+        data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": tags}
+        if self._call_api(action, json.dumps(data)).status_code == 200:
+            return True
+        return False
+
+    def ex_read_tags(
+        self,
+        resource_ids: list = [],
+        resource_types: list = [],
+        keys: list = [],
+        values: list = [],
+        dry_run: bool = False
+    ):
+        """
+        Lists one or more tags for your resources.
+
+        :param      resource_ids: One or more resource IDs.
+        :type       resource_ids: ``list``
+
+        :param      resource_types: One or more resource IDs.
+        :type       resource_types: ``list``
+
+        :param      keys: One or more resource IDs.
+        :type       keys: ``list``
+
+        :param      values: One or more resource IDs.
+        :type       values: ``list``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: list of tags
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadTags"
+        data = {"Filters": {}, "DryRun": dry_run}
+        if resource_ids is not None:
+            data["Filters"].update({"ResourceIds": resource_ids})
+        if resource_types is not None:
+            data["Filters"].update({"ResourceTypes": resource_types})
+        if keys is not None:
+            data["Filters"].update({"Keys": keys})
+        if values is not None:
+            data["Filters"].update({"Values": values})
+        print(data)
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Tags"]
+        return response.json()
 
     @staticmethod
     def _get_outscale_endpoint(region: str, version: str, action: str):

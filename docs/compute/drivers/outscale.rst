@@ -131,3 +131,11 @@ Accounts
 * ``ex_send_reset_password_email`` - Returns a ``boolean``
 * ``ex_create_account`` - Returns a ``boolean``
 * ``ex_update_account`` - Returns a ``dict``
+
+
+Tags
+----
+* ``ex_create_tag`` - Returns a ``boolean``
+* ``ex_create_tags`` - Returns a ``boolean``
+* ``ex_delete_tags`` - Returns a ``boolean``
+* ``ex_read_tags`` - Returns a ``dict``
