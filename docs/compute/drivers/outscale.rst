@@ -121,3 +121,13 @@ __
 * ``ex_list_public_ip_ranges`` - Returns a ``dict``
 * ``ex_attach_public_ip`` - Returns a ``boolean``
 * ``ex_detach_public_ip`` - Returns a ``boolean``
+
+
+Accounts
+--------
+* ``ex_check_account`` - Returns a ``boolean``
+* ``ex_read_account`` - Returns a ``dict``
+* ``ex_reset_account_password`` - Returns a ``dict``
+* ``ex_send_reset_password_email`` - Returns a ``boolean``
+* ``ex_create_account`` - Returns a ``boolean``
+* ``ex_update_account`` - Returns a ``dict``
