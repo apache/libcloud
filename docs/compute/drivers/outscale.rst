@@ -138,4 +138,4 @@ Tags
 * ``ex_create_tag`` - Returns a ``boolean``
 * ``ex_create_tags`` - Returns a ``boolean``
 * ``ex_delete_tags`` - Returns a ``boolean``
-* ``ex_read_tags`` - Returns a ``dict``
+* ``ex_list_tags`` - Returns a ``dict``

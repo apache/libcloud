@@ -1393,12 +1393,12 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_read_tags(
+    def ex_list_tags(
         self,
-        resource_ids: list = [],
-        resource_types: list = [],
-        keys: list = [],
-        values: list = [],
+        resource_ids: list = None,
+        resource_types: list = None,
+        keys: list = None,
+        values: list = None,
         dry_run: bool = False
     ):
         """
