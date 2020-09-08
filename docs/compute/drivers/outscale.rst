@@ -139,3 +139,9 @@ Tags
 * ``ex_create_tags`` - Returns a ``boolean``
 * ``ex_delete_tags`` - Returns a ``boolean``
 * ``ex_list_tags`` - Returns a ``dict``
+
+Regions and SubRegions
+----------------------
+* ``ex_list_regions`` - Returns a ``list`` of ``dict``
+* ``ex_list_subregions`` - Returns a ``list`` of ``dict``
+

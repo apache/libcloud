@@ -48,7 +48,8 @@ class OutscaleNodeDriver(NodeDriver):
                  secret: str = None,
                  region: str = 'eu-west-2',
                  service: str = 'api',
-                 version: str = 'latest'
+                 version: str = 'latest',
+                 base_uri: str = 'outscale.com'
                  ):
         self.key = key
         self.secret = secret
@@ -57,6 +58,7 @@ class OutscaleNodeDriver(NodeDriver):
         self.connection.region_name = region
         self.connection.service_name = service
         self.service_name = service
+        self.base_uri = base_uri
         self.version = version
         self.signer = OSCRequestSignerAlgorithmV4(
             access_key=self.key,
@@ -74,6 +76,21 @@ class OutscaleNodeDriver(NodeDriver):
 
     def list_locations(self, ex_dry_run: bool = False):
         """
+        Lists available locations details.
+
+        :param      ex_dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       ex_dry_run: ``bool``
+        :return: locations details
+        :rtype: ``dict``
+        """
+        action = "ReadLocations"
+        data = json.dumps({"DryRun": ex_dry_run})
+        response = self._call_api(action, data)
+        return self._to_locations(response.json()["Locations"])
+
+    def ex_list_regions(self, ex_dry_run: bool = False):
+        """
         Lists available regions details.
 
         :param      ex_dry_run: If true, checks whether you have the required
@@ -85,7 +102,22 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadRegions"
         data = json.dumps({"DryRun": ex_dry_run})
         response = self._call_api(action, data)
-        return self._to_locations(response.json()["Regions"])
+        return response.json()["Regions"]
+
+    def ex_list_subregions(self, ex_dry_run: bool = False):
+        """
+        Lists available subregions details.
+
+        :param      ex_dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       ex_dry_run: ``bool``
+        :return: subregions details
+        :rtype: ``dict``
+        """
+        action = "ReadSubregions"
+        data = json.dumps({"DryRun": ex_dry_run})
+        response = self._call_api(action, data)
+        return response.json()["Subregions"]
 
     def ex_create_public_ip(self, dry_run: bool = False):
         """
@@ -438,7 +470,7 @@ class OutscaleNodeDriver(NodeDriver):
                 }
             }
             return self._to_node(
-                self._call_api(action, data).json()["Vms"][0]
+                self._call_api(action, json.dumps(data)).json()["Vms"][0]
             )
         return node
 
@@ -1433,16 +1465,15 @@ class OutscaleNodeDriver(NodeDriver):
             data["Filters"].update({"Keys": keys})
         if values is not None:
             data["Filters"].update({"Values": values})
-        print(data)
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Tags"]
         return response.json()
 
-    @staticmethod
-    def _get_outscale_endpoint(region: str, version: str, action: str):
-        return "https://api.{}.outscale.com/api/{}/{}".format(
+    def _get_outscale_endpoint(self, region: str, version: str, action: str):
+        return "https://api.{}.{}/api/{}/{}".format(
             region,
+            self.base_uri,
             version,
             action
         )
@@ -1462,17 +1493,18 @@ class OutscaleNodeDriver(NodeDriver):
             region=self.region
         )
 
-    def _to_location(self, region):
+    def _to_location(self, location):
+        country = location["Name"].split(", ")[1]
         return NodeLocation(
-            id="",
-            name=region["RegionName"],
-            country="",
+            id=location["Code"],
+            name=location["Name"],
+            country=country,
             driver=self,
-            extra=region
+            extra=location
         )
 
-    def _to_locations(self, regions: list):
-        return [self._to_location(region) for region in regions]
+    def _to_locations(self, locations: list):
+        return [self._to_location(location) for location in locations]
 
     def _to_snapshot(self, snapshot):
         name = None
