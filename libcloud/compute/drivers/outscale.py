@@ -17,8 +17,8 @@ Outscale SDK
 """
 
 import json
-
 import requests
+from datetime import datetime
 
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
@@ -1468,6 +1468,164 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Tags"]
+        return response.json()
+
+    def ex_create_access_key(
+        self,
+        expiration_date: datetime = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a new secret access key and the corresponding access key ID
+        for a specified user. The created key is automatically set to ACTIVE.
+
+        :param      expiration_date: The date and time at which you want the
+        access key to expire, in ISO 8601 format (for example,
+        2017-06-14 or 2017-06-14T00:00:00Z). If not specified, the access key
+        has no expiration date.
+        :type       expiration_date: ``datetime``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: access key if action is successful
+        :rtype: ``dict``
+        """
+        action = "CreateAccessKey"
+        data = {"DryRun": dry_run}
+        if expiration_date is not None:
+            data.update({"ExpirationDate": expiration_date})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["AccessKey"]
+        return response.json()
+
+    def ex_delete_access_key(
+        self,
+        access_key_id: str,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes the specified access key associated with the account
+        that sends the request.
+
+        :param      access_key_id: The ID of the access key you want to delete.
+        :type       access_key_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "DeleteAccessKey"
+        data = {"DryRun": dry_run}
+        if access_key_id is not None:
+            data.update({"AccessKeyId": access_key_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_access_keys(
+        self,
+        access_key_ids: list = None,
+        states: list = None,
+        dry_run: bool = False,
+    ):
+        """
+        Returns information about the access key IDs of a specified user.
+        If the user does not have any access key ID, this action returns
+        an empty list.
+
+        :param      access_key_ids: The IDs of the access keys.
+        :type       access_key_ids: ``list`` of ``str``
+
+        :param      states: The states of the access keys (ACTIVE | INACTIVE).
+        :type       states: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: ``list`` of Access Keys
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadAccessKeys"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if access_key_ids is not None:
+            data["Filters"].update({"AccessKeyIds": access_key_ids})
+        if states is not None:
+            data["Filters"].update({"States": states})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["AccessKeys"]
+        return response.json()
+
+    def ex_list_secret_access_key(
+        self,
+        access_key_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Gets information about the secret access key associated with
+        the account that sends the request.
+
+        :param      access_key_id: The ID of the access key.
+        :type       access_key_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Access Key
+        :rtype: ``dict``
+        """
+        action = "ReadSecretAccessKey"
+        data = {"DryRun": dry_run}
+        if access_key_id is not None:
+            data.update({"AccessKeyId": access_key_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["AccessKey"]
+        return response.json()
+
+    def ex_update_access_key(
+        self,
+        access_key_id: str = None,
+        state: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Modifies the status of the specified access key associated with
+        the account that sends the request.
+        When set to ACTIVE, the access key is enabled and can be used to
+        send requests. When set to INACTIVE, the access key is disabled.
+
+        :param      access_key_id: The ID of the access key.
+        :type       access_key_id: ``str``
+
+        :param      state: The new state of the access key (ACTIVE | INACTIVE).
+        :type       state: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Access Key
+        :rtype: ``dict``
+        """
+        action = "UpdateAccessKey"
+        data = {"DryRun": dry_run}
+        if access_key_id is not None:
+            data.update({"AccessKeyId": access_key_id})
+        if state is not None:
+            data.update({"State": state})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["AccessKey"]
         return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):

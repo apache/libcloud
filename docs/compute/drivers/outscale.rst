@@ -145,3 +145,12 @@ Regions and SubRegions
 * ``ex_list_regions`` - Returns a ``list`` of ``dict``
 * ``ex_list_subregions`` - Returns a ``list`` of ``dict``
 
+Access Keys
+-----------
+* ``ex_create_access_key`` - Returns a ``dict``
+* ``ex_delete_access_key`` - Returns a ``boolean``
+* ``ex_list_access_keys`` - Returns a ``list`` of ``dict``
+* ``ex_list_secret_access_key`` - Returns a ``dict``
+* ``ex_update_access_key`` - Returns a ``dict``
+
+
