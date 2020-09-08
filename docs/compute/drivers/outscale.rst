@@ -153,4 +153,8 @@ Access Keys
 * ``ex_list_secret_access_key`` - Returns a ``dict``
 * ``ex_update_access_key`` - Returns a ``dict``
 
-
+Client Gateway
+--------------
+* ``ex_create_client_gateway`` - Returns a ``dict``
+* ``ex_delete_client_gateway`` - Returns a ``boolean``
+* ``ex_list_client_gateways`` - Returns a ``list`` of ``dict``
