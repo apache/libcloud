@@ -1341,18 +1341,19 @@ class OutscaleNodeDriver(NodeDriver):
         the tag value is replaced.
         You can tag the following resources using their IDs:
 
-        :param      resource_ids: One or more resource IDs.
+        :param      resource_ids: One or more resource IDs. (required)
         :type       resource_ids: ``list``
 
         :param      tag_key: The key of the tag, with a minimum of 1 character.
+        (required)
         :type       tag_key: ``str``
 
         :param      tag_value: The value of the tag, between
-        0 and 255 characters.
+        0 and 255 characters. (required)
         :type       tag_value: ``str``
 
         :param      dry_run: If true, checks whether you have the required
-        permissions to perform the action.
+        permissions to perform the action. (required)
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
@@ -1378,10 +1379,11 @@ class OutscaleNodeDriver(NodeDriver):
         the tag value is replaced.
         You can tag the following resources using their IDs:
 
-        :param      resource_ids: One or more resource IDs.
+        :param      resource_ids: One or more resource IDs. (required)
         :type       resource_ids: ``list``
 
         :param      tags: The key of the tag, with a minimum of 1 character.
+        (required)
         :type       tags: ``list`` of ``dict``
 
         :param      dry_run: If true, checks whether you have the required
@@ -1406,10 +1408,11 @@ class OutscaleNodeDriver(NodeDriver):
         """
         Deletes one or more tags from the specified resources.
 
-        :param      resource_ids: One or more resource IDs.
+        :param      resource_ids: One or more resource IDs. (required)
         :type       resource_ids: ``list``
 
         :param      tags: The key of the tag, with a minimum of 1 character.
+        (required)
         :type       tags: ``list`` of ``dict``
 
         :param      dry_run: If true, checks whether you have the required
@@ -1510,7 +1513,8 @@ class OutscaleNodeDriver(NodeDriver):
         Deletes the specified access key associated with the account
         that sends the request.
 
-        :param      access_key_id: The ID of the access key you want to delete.
+        :param      access_key_id: The ID of the access key you want to
+        delete. (required)
         :type       access_key_id: ``str``
 
         :param      dry_run: If true, checks whether you have the required
@@ -1573,7 +1577,7 @@ class OutscaleNodeDriver(NodeDriver):
         Gets information about the secret access key associated with
         the account that sends the request.
 
-        :param      access_key_id: The ID of the access key.
+        :param      access_key_id: The ID of the access key. (required)
         :type       access_key_id: ``str``
 
         :param      dry_run: If true, checks whether you have the required
@@ -1604,10 +1608,11 @@ class OutscaleNodeDriver(NodeDriver):
         When set to ACTIVE, the access key is enabled and can be used to
         send requests. When set to INACTIVE, the access key is disabled.
 
-        :param      access_key_id: The ID of the access key.
+        :param      access_key_id: The ID of the access key. (required)
         :type       access_key_id: ``str``
 
-        :param      state: The new state of the access key (ACTIVE | INACTIVE).
+        :param      state: The new state of the access key
+        (ACTIVE | INACTIVE). (required)
         :type       state: ``str``
 
         :param      dry_run: If true, checks whether you have the required
@@ -1646,7 +1651,7 @@ class OutscaleNodeDriver(NodeDriver):
         :param      bgp_asn: An Autonomous System Number (ASN) used by
         the Border Gateway Protocol (BGP) to find the path to your
         client gateway through the Internet. (required)
-        :type       bgp_asn: ``int``
+        :type       bgp_asn: ``int`` (required)
 
         :param      connection_type: The communication protocol used to
         establish tunnel with your client gateway (only ipsec.1 is supported).
@@ -1787,6 +1792,162 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return True
         return False
+
+    def ex_create_dhcp_options(
+        self,
+        domaine_name: str = None,
+        domaine_name_servers: list = None,
+        ntp_servers : list = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a new set of DHCP options, that you can then associate
+        with a Net using the UpdateNet method.
+
+        :param      domaine_name: Specify a domain name
+        (for example, MyCompany.com). You can specify only one domain name.
+        :type       domaine_name: ``str``
+
+        :param      domaine_name_servers: The IP addresses of domain name
+        servers. If no IP addresses are specified, the OutscaleProvidedDNS
+        value is set by default.
+        :type       domaine_name_servers: ``list`` of ``str``
+
+        :param      ntp_servers: The IP addresses of the Network Time
+        Protocol (NTP) servers.
+        :type       ntp_servers: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The created Dhcp Options
+        :rtype: ``dict``
+        """
+        action = "CreateDhcpOptions"
+        data = {"DryRun": dry_run}
+        if domaine_name is not None:
+            data.update({"DomaineName": domaine_name})
+        if domaine_name_servers is not None:
+            data.update({"DomaineNameServers": domaine_name_servers})
+        if ntp_servers is not None:
+            data.update({"NtpServers": ntp_servers})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["DhcpOptionsSet"]
+        return response.json()
+
+    def ex_delete_dhcp_options(
+        self,
+        dhcp_options_set_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified DHCP options set.
+        Before deleting a DHCP options set, you must disassociate it from the
+        Nets you associated it with. To do so, you need to associate with each
+        Net a new set of DHCP options, or the default one if you do not want
+        to associate any DHCP options with the Net.
+
+        :param      dhcp_options_set_id: The ID of the DHCP options set
+        you want to delete. (required)
+        :type       dhcp_options_set_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "DeleteDhcpOptions"
+        data = {"DryRun": dry_run}
+        if dhcp_options_set_id is not None:
+            data.update({"DhcpOptionsSetId": dhcp_options_set_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_dhcp_options(
+        self,
+        default: bool = None,
+        dhcp_options_set_id: list = None,
+        domaine_names: list = None,
+        domaine_name_servers: list = None,
+        ntp_servers: list = None,
+        tag_keys: list = None,
+        tag_values: list = None,
+        tags: list = None,
+        dry_run: bool = False,
+    ):
+        """
+        Retrieves information about the content of one or more
+        DHCP options sets.
+
+        :param      default: SIf true, lists all default DHCP options set.
+        If false, lists all non-default DHCP options set.
+        :type       default: ``list`` of ``bool``
+
+        :param      dhcp_options_set_id: The IDs of the DHCP options sets.
+        :type       dhcp_options_set_id: ``list`` of ``str``
+
+        :param      domaine_names: The domain names used for the DHCP
+        options sets.
+        :type       domaine_names: ``list`` of ``str``
+
+        :param      domaine_name_servers: The domain name servers used for
+        the DHCP options sets.
+        :type       domaine_name_servers: ``list`` of ``str``
+
+        :param      ntp_servers: The Network Time Protocol (NTP) servers used
+        for the DHCP options sets.
+        :type       ntp_servers: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the DHCP
+        options sets.
+        :type       ntp_servers: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        DHCP options sets.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: The key/value combination of the tags associated
+        with the DHCP options sets, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a ``list`` of Dhcp Options
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadDhcpOptions"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if default is not None:
+            data["Filters"].update({"Default": default})
+        if dhcp_options_set_id is not None:
+            data["Filters"].update({"DhcpOptionsSetIds": dhcp_options_set_id})
+        if domaine_names is not None:
+            data["Filters"].update({"DomaineNames": domaine_names})
+        if domaine_name_servers is not None:
+            data["Filters"].update({
+                "DomaineNameServers": domaine_name_servers
+            })
+        if ntp_servers is not None:
+            data["Filters"].update({"NtpServers": ntp_servers})
+        if tag_keys is not None:
+            data["Filters"].update({"TagKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["DhcpOptionsSets"]
+        return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
