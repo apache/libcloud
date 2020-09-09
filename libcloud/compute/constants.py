@@ -9186,7 +9186,7 @@ REGION_DETAILS = {
     },
     "eu-north-1": {
         "api_name": "ec2_eu_north",
-        "country": "Stockholm",
+        "country": "Sweden",
         "endpoint": "ec2.eu-north-1.amazonaws.com",
         "id": "eu-north-1",
         "instance_types": [
