@@ -2204,6 +2204,286 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["DirectLinkInterfaces"]
         return response.json()
 
+    def ex_create_flexible_gpu(
+        self,
+        delete_on_vm_deletion: bool = None,
+        generation: str = None,
+        model_name : str = None,
+        subregion_name : str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Allocates a flexible GPU (fGPU) to your account.
+        You can then attach this fGPU to a virtual machine (VM).
+
+        :param      delete_on_vm_deletion: If true, the fGPU is deleted when
+        the VM is terminated.
+        :type       delete_on_vm_deletion: ``bool``
+
+        :param      generation: The processor generation that the fGPU must be
+        compatible with. If not specified, the oldest possible processor
+        generation is selected (as provided by ReadFlexibleGpuCatalog for
+        the specified model of fGPU).
+        :type       generation: ``str``
+
+        :param      model_name: The model of fGPU you want to allocate. For
+        more information, see About Flexible GPUs:
+        https://wiki.outscale.net/display/EN/About+Flexible+GPUs (required)
+        :type       model_name: ``str``
+
+        :param      subregion_name: The Subregion in which you want to create
+        the fGPU. (required)
+        :type       subregion_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Flexible GPU
+        :rtype: ``dict``
+        """
+        action = "CreateFlexibleGpu"
+        data = {"DryRun": dry_run, "DirectLinkInterface": {}}
+        if delete_on_vm_deletion is not None:
+            data.update({"DeleteOnVmDeletion": delete_on_vm_deletion})
+        if generation is not None:
+            data.update({"Generation": generation})
+        if model_name is not None:
+            data.update({"ModelName": model_name})
+        if subregion_name is not None:
+            data.update({
+                "SubregionName": subregion_name
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["FlexibleGpu"]
+        return response.json()
+
+    def ex_delete_flexible_gpu(
+        self,
+        flexible_gpu_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Releases a flexible GPU (fGPU) from your account.
+        The fGPU becomes free to be used by someone else.
+
+        :param      flexible_gpu_id: The ID of the fGPU you want
+        to delete. (required)
+        :type       flexible_gpu_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "DeleteFlexibleGpu"
+        data = {"DryRun": dry_run}
+        if flexible_gpu_id is not None:
+            data.update({"FlexibleGpuId": flexible_gpu_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_unlink_flexible_gpu(
+        self,
+        flexible_gpu_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Detaches a flexible GPU (fGPU) from a virtual machine (VM).
+        The fGPU is in the detaching state until the VM is stopped, after
+        which it becomes available for allocation again.
+
+        :param      flexible_gpu_id: The ID of the fGPU you want to attach.
+        (required)
+        :type       flexible_gpu_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "UnlinkFlexibleGpu"
+        data = {"DryRun": dry_run}
+        if flexible_gpu_id is not None:
+            data.update({"FlexibleGpuId": flexible_gpu_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_link_flexible_gpu(
+        self,
+        flexible_gpu_id: str = None,
+        vm_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Attaches one of your allocated flexible GPUs (fGPUs) to one of your
+        virtual machines (VMs).
+        The fGPU is in the attaching state until the VM is stopped, after
+        which it becomes attached.
+
+        :param      flexible_gpu_id: The ID of the fGPU you want to attach.
+        (required)
+        :type       flexible_gpu_id: ``str``
+
+        :param      vm_id: The ID of the VM you want to attach the fGPU to.
+        (required)
+        :type       vm_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "LinkFlexibleGpu"
+        data = {"DryRun": dry_run}
+        if flexible_gpu_id is not None:
+            data.update({"FlexibleGpuId": flexible_gpu_id})
+        if vm_id is not None:
+            data.update({"VmId": vm_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_flexible_gpu_catalog(
+        self,
+        dry_run: bool = False,
+    ):
+        """
+        Lists all flexible GPUs available in the public catalog.
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Returns the Flexible Gpu Catalog
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadFlexibleGpuCatalog"
+        data = {"DryRun": dry_run}
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["FlexibleGpuCatalog"]
+        return response.json()
+
+    def ex_list_flexible_gpus(
+        self,
+        delete_on_vm_deletion: bool = None,
+        flexible_gpu_ids: list = None,
+        generations: list = None,
+        model_names: list = None,
+        states: list = None,
+        subregion_names: list = None,
+        vm_ids: list = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more flexible GPUs (fGPUs) allocated to your account.
+
+        :param      delete_on_vm_deletion: Indicates whether the fGPU is
+        deleted when terminating the VM.
+        :type       delete_on_vm_deletion: ``bool``
+
+        :param      flexible_gpu_ids: One or more IDs of fGPUs.
+        :type       flexible_gpu_ids: ``list`` of ``str``
+
+        :param      generations: The processor generations that the fGPUs are
+        compatible with.
+        (required)
+        :type       generations: ``list`` of ``str``
+
+        :param      model_names: One or more models of fGPUs. For more
+        information, see About Flexible GPUs:
+        https://wiki.outscale.net/display/EN/About+Flexible+GPUs
+        :type       model_names: ``list`` of ``str``
+
+        :param      states: The states of the fGPUs
+        (allocated | attaching | attached | detaching).
+        :type       states: ``list`` of ``str``
+
+        :param      subregion_names: The Subregions where the fGPUs are
+        located.
+        :type       subregion_names: ``list`` of ``str``
+
+        :param      vm_ids: One or more IDs of VMs.
+        :type       vm_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Returns the Flexible Gpu Catalog
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadFlexibleGpus"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if delete_on_vm_deletion is not None:
+            data["Filters"].update({
+                "DeleteOnVmDeletion": delete_on_vm_deletion
+            })
+        if flexible_gpu_ids is not None:
+            data["Filters"].update({"FlexibleGpuIds": flexible_gpu_ids})
+        if generations is not None:
+            data["Filters"].update({"Generations": generations})
+        if model_names is not None:
+            data["Filters"].update({"ModelNames": model_names})
+        if states is not None:
+            data["Filters"].update({"States": states})
+        if subregion_names is not None:
+            data["Filters"].update({"SubregionNames": subregion_names})
+        if vm_ids is not None:
+            data["Filters"].update({"VmIds": vm_ids})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["FlexibleGpus"]
+        return response.json()
+
+
+    def ex_update_flexible_gpu(
+        self,
+        delete_on_vm_deletion: bool = None,
+        flexible_gpu_id : str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Modifies a flexible GPU (fGPU) behavior.
+
+        :param      delete_on_vm_deletion: If true, the fGPU is deleted when
+        the VM is terminated.
+        :type       delete_on_vm_deletion: ``bool``
+
+        :param      flexible_gpu_id: The ID of the fGPU you want to modify.
+        :type       flexible_gpu_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: the updated Flexible GPU
+        :rtype: ``dict``
+        """
+        action = "UpdateFlexibleGpu"
+        data = {"DryRun": dry_run, "DirectLinkInterface": {}}
+        if delete_on_vm_deletion is not None:
+            data.update({"DeleteOnVmDeletion": delete_on_vm_deletion})
+        if flexible_gpu_id is not None:
+            data.update({"FlexibleGpuId": flexible_gpu_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["FlexibleGpu"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
