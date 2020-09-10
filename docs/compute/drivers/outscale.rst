@@ -169,4 +169,10 @@ Direct Links
 ------------
 * ``ex_create_direct_link`` - Returns a ``dict``
 * ``ex_delete_direct_link`` - Returns a ``boolean``
-* ``ex_list_direct_link`` - Returns a ``list`` of ``dict``
+* ``ex_list_direct_links`` - Returns a ``list`` of ``dict``
+
+Direct Link Interfaces
+----------------------
+* ``ex_create_direct_link_interface`` - Returns a ``dict``
+* ``ex_delete_direct_link_interface`` - Returns a ``boolean``
+* ``ex_list_direct_link_interfaces`` - Returns a ``list`` of ``dict``

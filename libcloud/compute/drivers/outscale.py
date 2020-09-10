@@ -2049,6 +2049,161 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["DirectLinks"]
         return response.json()
 
+    def ex_create_direct_link_interface(
+        self,
+        direct_link_id: str = None,
+        bgp_asn: int = None,
+        bgp_key : str = None,
+        client_private_ip : str = None,
+        direct_link_interface_name : str = None,
+        outscale_private_ip : str = None,
+        virtual_gateway_id : str = None,
+        vlan : int = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a DirectLink interface.
+        DirectLink interfaces enable you to reach one of your Nets through a
+        virtual gateway.
+
+        :param      direct_link_id: The ID of the existing DirectLink for which
+        you want to create the DirectLink interface. (required)
+        :type       direct_link_id: ``str``
+
+        :param      bgp_asn: The BGP (Border Gateway Protocol) ASN (Autonomous
+        System Number) on the customer's side of the DirectLink interface.
+        (required)
+        :type       bgp_asn: ``int``
+
+        :param      bgp_key: The BGP authentication key.
+        :type       bgp_key: ``str``
+
+        :param      client_private_ip: The IP address on the customer's side
+        of the DirectLink interface. (required)
+        :type       client_private_ip: ``str``
+
+        :param      direct_link_interface_name: The name of the DirectLink
+        interface. (required)
+        :type       direct_link_interface_name: ``str``
+
+        :param      outscale_private_ip: The IP address on 3DS OUTSCALE's side
+        of the DirectLink interface.
+        :type       outscale_private_ip: ``str``
+
+        :param      virtual_gateway_id:The ID of the target virtual gateway.
+        (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      vlan: The VLAN number associated with the DirectLink
+        interface. (required)
+        :type       vlan: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Direct Link Interface
+        :rtype: ``dict``
+        """
+        action = "CreateDirectLinkInterface"
+        data = {"DryRun": dry_run, "DirectLinkInterface": {}}
+        if direct_link_id is not None:
+            data.update({"DirectLinkId": direct_link_id})
+        if bgp_asn is not None:
+            data["DirectLinkInterface"].update({"BgpAsn": bgp_asn})
+        if bgp_key is not None:
+            data["DirectLinkInterface"].update({"BgpKey": bgp_key})
+        if client_private_ip is not None:
+            data["DirectLinkInterface"].update({
+                "ClientPrivateIp": client_private_ip
+            })
+        if direct_link_interface_name is not None:
+            data["DirectLinkInterface"].update({
+                "DirectLinkInterfaceName": direct_link_interface_name
+            })
+        if outscale_private_ip is not None:
+            data["DirectLinkInterface"].update({
+                "OutscalePrivateIp": outscale_private_ip
+            })
+        if virtual_gateway_id is not None:
+            data["DirectLinkInterface"].update({
+                "VirtualGatewayId": virtual_gateway_id
+            })
+        if vlan is not None:
+            data["DirectLinkInterface"].update({
+                "Vlan": vlan
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["DirectLinkInterface"]
+        return response.json()
+
+    def ex_delete_direct_link_interface(
+        self,
+        direct_link_interface_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified DirectLink interface.
+
+        :param      direct_link_intreface_id: TThe ID of the DirectLink
+        interface you want to delete. (required)
+        :type       direct_link_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "DeleteDirectLinkInterface"
+        data = {"DryRun": dry_run}
+        if direct_link_interface_id is not None:
+            data.update({"DirectLinkInterfaceId": direct_link_interface_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_direct_link_interfaces(
+        self,
+        direct_link_ids: list = None,
+        direct_link_interface_ids: list = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists all DirectLinks in the Region.
+
+        :param      direct_link_interface_ids: The IDs of the DirectLink
+        interfaces.
+        :type       direct_link_interface_ids: ``list`` of ``str``
+
+        :param      direct_link_ids: The IDs of the DirectLinks.
+        :type       direct_link_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: ``list`` of  Direct Link interfaces
+        :rtype: ``list`` of ``dict``
+        """
+        action = "DeleteDirectLink"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if direct_link_ids is not None:
+            data["Filters"].update({
+                "DirectLinkIds": direct_link_ids
+            })
+        if direct_link_interface_ids is not None:
+            data["Filters"].update({
+                "DirectLinkInterfaceIds": direct_link_interface_ids
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["DirectLinkInterfaces"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
