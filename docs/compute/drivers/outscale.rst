@@ -164,3 +164,9 @@ Dhcp Options
 * ``ex_create_dhcp_options`` - Returns a ``dict``
 * ``ex_delete_dhcp_options`` - Returns a ``boolean``
 * ``ex_list_dhcp_options`` - Returns a ``list`` of ``dict``
+
+Direct Links
+------------
+* ``ex_create_direct_link`` - Returns a ``dict``
+* ``ex_delete_direct_link`` - Returns a ``boolean``
+* ``ex_list_direct_link`` - Returns a ``list`` of ``dict``
