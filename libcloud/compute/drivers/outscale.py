@@ -740,7 +740,7 @@ class OutscaleNodeDriver(NodeDriver):
         you want to delete (required)
         :type       key_pair: ``KeyPair``
 
-        :return: boolean
+        :return: bool
         :rtype: ``bool``
         """
         action = "DeleteKeypair"
@@ -1033,7 +1033,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "CheckAuthentication"
         data = {"DryRun": dry_run, "Login": login, "Password": password}
@@ -1130,7 +1130,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "CreateAccount"
         data = {"DryRun": dry_run}
@@ -1290,7 +1290,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "ResetAccountPassword"
         data = json.dumps({
@@ -1318,7 +1318,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "SendResetPasswordEmail"
         data = json.dumps({
@@ -1357,7 +1357,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "CreateTags"
         data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": []}
@@ -1391,7 +1391,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "CreateTags"
         data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": tags}
@@ -1420,7 +1420,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteTags"
         data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": tags}
@@ -1522,7 +1522,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteAccessKey"
         data = {"DryRun": dry_run}
@@ -1782,7 +1782,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: Returns True if action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteClientGateway"
         data = {"DryRun": dry_run}
@@ -1858,7 +1858,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteDhcpOptions"
         data = {"DryRun": dry_run}
@@ -2011,7 +2011,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteDirectLink"
         data = {"DryRun": dry_run}
@@ -2155,7 +2155,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteDirectLinkInterface"
         data = {"DryRun": dry_run}
@@ -2277,7 +2277,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteFlexibleGpu"
         data = {"DryRun": dry_run}
@@ -2307,7 +2307,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "UnlinkFlexibleGpu"
         data = {"DryRun": dry_run}
@@ -2343,7 +2343,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "LinkFlexibleGpu"
         data = {"DryRun": dry_run}
@@ -2529,7 +2529,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "DeleteInternetService"
         data = {"DryRun": dry_run}
@@ -2564,7 +2564,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "LinkInternetService"
         data = {"DryRun": dry_run}
@@ -2602,7 +2602,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
 
         :return: True if the action is successful
-        :rtype: ``boolean``
+        :rtype: ``bool``
         """
         action = "UnlinkInternetService"
         data = {"DryRun": dry_run}
@@ -2650,7 +2650,7 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      tag_values: The values of the tags associated with the
         Internet services.
-        :type       states: ``list`` of ``str``
+        :type       tag_values: ``list`` of ``str``
 
         :param      tags: The key/value combination of the tags associated
         with the Internet services, in the following format:
@@ -2683,6 +2683,322 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["InternetServices"]
+        return response.json()
+
+    def ex_create_listener_rule(
+        self,
+        vms: [Node] = None,
+        l_load_balancer_name: str = None,
+        l_load_balancer_port: str = None,
+        lr_action: str = None,
+        lr_host_name_pattern: str = None,
+        lr_id: str = None,
+        lr_name: str = None,
+        lr_path_pattern: str = None,
+        lr_priority: int = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a rule for traffic redirection for the specified listener.
+        Each rule must have either the HostNamePattern or PathPattern parameter
+        specified. Rules are treated in priority order, from the highest value
+        to the lowest value.
+        Once the rule is created, you need to register backend VMs with it.
+        For more information, see the RegisterVmsInLoadBalancer method.
+        https://docs.outscale.com/api#registervmsinloadbalancer
+
+        :param      vms: The IDs of the backend VMs. (required)
+        :type       vms: ``list`` of ``Node``
+
+        :param      l_load_balancer_name: The name of the load balancer to
+        which the listener is attached. (required)
+        :type       l_load_balancer_name: ``str``
+
+        :param      l_load_balancer_port: The port of load balancer on which
+        the load balancer is listening (between 1 and 65535 both included).
+        (required)
+        :type       l_load_balancer_port: ``int``
+
+        :param      lr_action: The type of action for the rule
+        (always forward).
+        :type       lr_action: ``str``
+
+        :param      lr_host_name_pattern: A host-name pattern for the rule,
+        with a maximum length of 128 characters. This host-name
+        pattern supports maximum three wildcards, and must not contain
+        any special characters except [-.?].
+        :type       lr_host_name_pattern: ``str``
+
+        :param      lr_id: The ID of the listener.
+        :type       lr_id: ``str``
+
+        :param      lr_name: A human-readable name for the listener rule.
+        :type       lr_name: ``str``
+
+        :param      lr_path_pattern: A path pattern for the rule, with a
+        maximum length of 128 characters. This path pattern supports maximum
+        three wildcards, and must not contain any special characters except
+        [_-.$/~"'@:+?].
+        :type       lr_path_pattern: ``str``
+
+        :param      lr_priority: The priority level of the listener rule,
+        between 1 and 19999 both included. Each rule must have a unique
+        priority level. Otherwise, an error is returned. (required)
+        :type       lr_priority: ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Listener Rule
+        :rtype: ``dict``
+        """
+        action = "CreateListenerRule"
+        data = {"DryRun": dry_run, "Listener": {}, "ListenerRule": {}}
+
+        if vms is not None:
+            vm_ids = [vm.id for vm in vms]
+            data.update({"VmIds": vm_ids})
+        if l_load_balancer_name is not None:
+            data["Listener"].update({
+                "LoadBalancerName": l_load_balancer_name
+            })
+        if l_load_balancer_port is not None:
+            data["Listener"].update({
+                "LoadBalancerPort": l_load_balancer_port
+            })
+        if lr_action is not None:
+            data["ListenerRule"].update({"Action": lr_action})
+        if lr_host_name_pattern is not None:
+            data["ListenerRule"].update({
+                "HostNamePattern": lr_host_name_pattern
+            })
+        if lr_id is not None:
+            data["ListenerRule"].update({"ListenerRuleId": lr_id})
+        if lr_name is not None:
+            data["ListenerRule"].update({"ListenerRuleName": lr_name})
+        if lr_path_pattern is not None:
+            data["ListenerRule"].update({"PathPattern": lr_path_pattern})
+        if lr_priority is not None:
+            data["ListenerRule"].update({"Priority": lr_priority})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ListenerRule"]
+        return response.json()
+
+    def ex_create_load_balancer_listeners(
+        self,
+        load_balancer_name: str = None,
+        l_backend_port: int = None,
+        l_backend_protocol: str = None,
+        l_load_balancer_port: int = None,
+        l_load_balancer_protocol: str = None,
+        l_server_certificate_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates one or more listeners for a specified load balancer.
+
+        :param      load_balancer_name: The name of the load balancer for
+        which you want to create listeners. (required)
+        :type       load_balancer_name: ``str``
+
+        :param      l_backend_port: The port on which the back-end VM is
+        listening (between 1 and 65535, both included). (required)
+        :type       l_backend_port: ``int``
+
+        :param      l_backend_protocol: The protocol for routing traffic to
+        back-end VMs (HTTP | HTTPS | TCP | SSL | UDP).
+        :type       l_backend_protocol: ``int``
+
+        :param      l_load_balancer_port: The port on which the load balancer
+        is listening (between 1 and 65535, both included). (required)
+        :type       l_load_balancer_port: ``int``
+
+        :param      l_load_balancer_protocol: The routing protocol
+        (HTTP | HTTPS | TCP | SSL | UDP). (required)
+        :type       l_load_balancer_protocol: ``str``
+
+        :param      l_server_certificate_id: The ID of the server certificate.
+        (required)
+        :type       l_server_certificate_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Load Balancer Listener
+        :rtype: ``dict``
+        """
+        action = "CreateLoadBalancerListeners"
+        data = {"DryRun": dry_run, "Listeners": {}}
+
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        if l_backend_port is not None:
+            data["Listeners"].update({
+                "BackendPort": l_backend_port
+            })
+        if l_backend_protocol is not None:
+            data["Listeners"].update({
+                "BackendProtocol": l_backend_protocol
+            })
+        if l_load_balancer_port is not None:
+            data["Listeners"].update({
+                "LoadBalancerPort": l_load_balancer_port
+            })
+        if l_load_balancer_protocol is not None:
+            data["Listeners"].update({
+                "LoadBalancerProtocol": l_load_balancer_protocol
+            })
+        if l_server_certificate_id is not None:
+            data["Listeners"].update({
+                "ServerCertificateId": l_server_certificate_id
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["LoadBalancer"]
+        return response.json()
+
+    def ex_delete_listener_rule(
+        self,
+        listener_rule_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a listener rule.
+        The previously active rule is disabled after deletion.
+
+        :param      listener_rule_name: The name of the rule you want to
+        delete. (required)
+        :type       listener_rule_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteListenerRule"
+        data = {"DryRun": dry_run}
+        if listener_rule_name is not None:
+            data.update({"ListenerRuleName": listener_rule_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_load_balancer_listeners(
+        self,
+        load_balancer_name: str = None,
+        load_balancer_ports: [int] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes listeners of a specified load balancer.
+
+        :param      load_balancer_name: The name of the load balancer for
+        which you want to delete listeners. (required)
+        :type       load_balancer_name: ``str``
+
+        :param      load_balancer_ports: One or more port numbers of the
+        listeners you want to delete.. (required)
+        :type       load_balancer_ports: ``list`` of ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteLoadBalancerListeners"
+        data = {"DryRun": dry_run}
+        if load_balancer_ports is not None:
+            data.update({"LoadBalancerPorts": load_balancer_ports})
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_listener_rules(
+        self,
+        listener_rule_names: [str] = None,
+        dry_run: bool = False
+    ):
+        """
+        Describes one or more listener rules. By default, this action returns
+        the full list of listener rules for the account.
+
+        :param      listener_rule_names: The names of the listener rules.
+        :type       listener_rule_names: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Returns the list of Listener Rules
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadListenerRules"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if listener_rule_names is not None:
+            data["Filters"].update({
+                "ListenerRuleNames": listener_rule_names
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["InternetServices"]
+        return response.json()
+
+    def ex_update_listener_rule(
+        self,
+        host_pattern: str = None,
+        listener_rule_name: str = None,
+        path_pattern: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Updates the pattern of the listener rule.
+        This call updates the pattern matching algorithm for incoming traffic.
+
+        :param      host_pattern: TA host-name pattern for the rule, with a
+        maximum length of 128 characters. This host-name pattern supports
+        maximum three wildcards, and must not contain any special characters
+        except [-.?].
+        :type       host_pattern: ``str`
+
+        :param      listener_rule_name: The name of the listener rule.
+        (required)
+        :type       listener_rule_name: ``str``
+
+        :param      path_pattern: A path pattern for the rule, with a maximum
+        length of 128 characters. This path pattern supports maximum three
+        wildcards, and must not contain any special characters
+        except [_-.$/~"'@:+?].
+        :type       path_pattern: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Update the specified Listener Rule
+        :rtype: ``dict``
+        """
+        action = "UpdateListenerRule"
+        data = {"DryRun": dry_run}
+        if host_pattern is not None:
+            data.update({"HostPattern": host_pattern})
+        if listener_rule_name is not None:
+            data.update({"ListenerRuleName": listener_rule_name})
+        if path_pattern is not None:
+            data.update({"PathPattern": path_pattern})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ListenerRule"]
         return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):

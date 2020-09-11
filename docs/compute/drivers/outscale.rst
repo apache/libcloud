@@ -84,29 +84,29 @@ Images
 * ``create_images`` - Returns a ``NodeImage``
 * ``list_images`` - Returns a list of ``NodeImage``
 * ``get_image`` - Returns a ``NodeImage``
-* ``delete_image`` - Return a ``boolean``
+* ``delete_image`` - Return a ``bool``
 
 Key Pairs
 _________
 * ``create_key_pair`` - Returns a ``KeyPair``
 * ``list_key_pairs`` - Returns a list of ``KeyPair``
 * ``get_key_pair`` - Returns a ``KeyPair``
-* ``delete_key_pair`` - Returns a ``boolean``
+* ``delete_key_pair`` - Returns a ``bool``
 
 Snapshots
 ---------
 * ``create_volume_snapshot`` - Returns a ``VolumeSnapshot``
 * ``list_snapshots`` - Returns a list of ``VolumeSnapshot``
-* ``destroy_volume_snapshot`` - Returns a ``boolean``
+* ``destroy_volume_snapshot`` - Returns a ``bool``
 * ``list_volume_snapshots`` - Returns a list of ``VolumeSnapshot``
 
 Volumes
 -------
 * ``create_volume`` - Returns a ``StorageVolume``
 * ``list_volumes`` - Returns a list of ``StorageVolume``
-* ``destroy_volume`` - Returns a ``boolean``
-* ``attach_volume`` - Return a ``boolean``
-* ``detach_volume`` - Returns a ``boolean``
+* ``destroy_volume`` - Returns a ``bool``
+* ``attach_volume`` - Return a ``bool``
+* ``detach_volume`` - Returns a ``bool``
 
 Outscale Extra Functions
 ------------------------
@@ -115,29 +115,29 @@ The Outscale driver implement the following extra methods:
 
 IP
 __
-* ``ex_create_public_ip`` - Returns a ``boolean``
-* ``ex_delete_public_ip`` - Returns a ``boolean``
+* ``ex_create_public_ip`` - Returns a ``bool``
+* ``ex_delete_public_ip`` - Returns a ``bool``
 * ``ex_list_public_ips`` - Returns a ``dict``
 * ``ex_list_public_ip_ranges`` - Returns a ``dict``
-* ``ex_attach_public_ip`` - Returns a ``boolean``
-* ``ex_detach_public_ip`` - Returns a ``boolean``
+* ``ex_attach_public_ip`` - Returns a ``bool``
+* ``ex_detach_public_ip`` - Returns a ``bool``
 
 
 Accounts
 --------
-* ``ex_check_account`` - Returns a ``boolean``
+* ``ex_check_account`` - Returns a ``bool``
 * ``ex_read_account`` - Returns a ``dict``
 * ``ex_reset_account_password`` - Returns a ``dict``
-* ``ex_send_reset_password_email`` - Returns a ``boolean``
-* ``ex_create_account`` - Returns a ``boolean``
+* ``ex_send_reset_password_email`` - Returns a ``bool``
+* ``ex_create_account`` - Returns a ``bool``
 * ``ex_update_account`` - Returns a ``dict``
 
 
 Tags
 ----
-* ``ex_create_tag`` - Returns a ``boolean``
-* ``ex_create_tags`` - Returns a ``boolean``
-* ``ex_delete_tags`` - Returns a ``boolean``
+* ``ex_create_tag`` - Returns a ``bool``
+* ``ex_create_tags`` - Returns a ``bool``
+* ``ex_delete_tags`` - Returns a ``bool``
 * ``ex_list_tags`` - Returns a ``dict``
 
 Regions and SubRegions
@@ -148,7 +148,7 @@ Regions and SubRegions
 Access Keys
 -----------
 * ``ex_create_access_key`` - Returns a ``dict``
-* ``ex_delete_access_key`` - Returns a ``boolean``
+* ``ex_delete_access_key`` - Returns a ``bool``
 * ``ex_list_access_keys`` - Returns a ``list`` of ``dict``
 * ``ex_list_secret_access_key`` - Returns a ``dict``
 * ``ex_update_access_key`` - Returns a ``dict``
@@ -156,33 +156,33 @@ Access Keys
 Client Gateways
 ---------------
 * ``ex_create_client_gateway`` - Returns a ``dict``
-* ``ex_delete_client_gateway`` - Returns a ``boolean``
+* ``ex_delete_client_gateway`` - Returns a ``bool``
 * ``ex_list_client_gateways`` - Returns a ``list`` of ``dict``
 
 Dhcp Options
 ------------
 * ``ex_create_dhcp_options`` - Returns a ``dict``
-* ``ex_delete_dhcp_options`` - Returns a ``boolean``
+* ``ex_delete_dhcp_options`` - Returns a ``bool``
 * ``ex_list_dhcp_options`` - Returns a ``list`` of ``dict``
 
 Direct Links
 ------------
 * ``ex_create_direct_link`` - Returns a ``dict``
-* ``ex_delete_direct_link`` - Returns a ``boolean``
+* ``ex_delete_direct_link`` - Returns a ``bool``
 * ``ex_list_direct_links`` - Returns a ``list`` of ``dict``
 
 Direct Link Interfaces
 ----------------------
 * ``ex_create_direct_link_interface`` - Returns a ``dict``
-* ``ex_delete_direct_link_interface`` - Returns a ``boolean``
+* ``ex_delete_direct_link_interface`` - Returns a ``bool``
 * ``ex_list_direct_link_interfaces`` - Returns a ``list`` of ``dict``
 
 Flexible GPU
 ------------
 * ``ex_create_flexible_gpu`` - Returns a ``dict``
-* ``ex_delete_flexible_gpu`` - Returns a ``boolean``
-* ``ex_link_flexible_gpu`` - Returns a ``boolean``
-* ``ex_unlink_flexible_gpu`` - Returns a ``boolean``
+* ``ex_delete_flexible_gpu`` - Returns a ``bool``
+* ``ex_link_flexible_gpu`` - Returns a ``bool``
+* ``ex_unlink_flexible_gpu`` - Returns a ``bool``
 * ``ex_list_flexible_gpu_catalog`` - Returns a ``list`` of ``dict``
 * ``ex_list_flexible_gpus`` - Returns a ``list`` of ``dict``
 * ``ex_update_flexible_gpu`` - Returns a ``dict``
@@ -190,7 +190,16 @@ Flexible GPU
 Internet Services
 -----------------
 * ``ex_create_internet_service`` - Returns a ``dict``
-* ``ex_delete_internet_service`` - Returns a ``boolean``
-* ``ex_link_internet_service`` - Returns a ``boolean``
-* ``ex_unlink_internet_service`` - Returns a ``boolean``
+* ``ex_delete_internet_service`` - Returns a ``bool``
+* ``ex_link_internet_service`` - Returns a ``bool``
+* ``ex_unlink_internet_service`` - Returns a ``bool``
 * ``ex_list_internet_services`` - Returns a ``list`` of ``dict``
+
+Lister
+------
+* ``ex_create_listener_rule`` - Returns a ``dict``
+* ``ex_create_load_balancer_listeners`` - Returns a ``dict``
+* ``ex_delete_listener_rule`` - Returns a ``bool``
+* ``ex_delete_load_balancer_listeners`` - Returns a ``bool``
+* ``ex_list_listener_rules`` - Returns a ``bool``
+* ``ex_update_listener_rule`` - Returns a ``dict``
