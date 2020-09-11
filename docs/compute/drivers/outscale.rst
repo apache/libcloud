@@ -186,3 +186,11 @@ Flexible GPU
 * ``ex_list_flexible_gpu_catalog`` - Returns a ``list`` of ``dict``
 * ``ex_list_flexible_gpus`` - Returns a ``list`` of ``dict``
 * ``ex_update_flexible_gpu`` - Returns a ``dict``
+
+Internet Services
+-----------------
+* ``ex_create_internet_service`` - Returns a ``dict``
+* ``ex_delete_internet_service`` - Returns a ``boolean``
+* ``ex_link_internet_service`` - Returns a ``boolean``
+* ``ex_unlink_internet_service`` - Returns a ``boolean``
+* ``ex_list_internet_services`` - Returns a ``list`` of ``dict``

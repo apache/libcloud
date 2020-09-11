@@ -2484,6 +2484,207 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["FlexibleGpu"]
         return response.json()
 
+    def ex_create_internet_service(
+        self,
+        dry_run: bool = False,
+    ):
+        """
+        Creates an Internet service you can use with a Net.
+        An Internet service enables your virtual machines (VMs) launched
+        in a Net to connect to the Internet. By default, a Net includes
+        an Internet service, and each Subnet is public. Every VM
+        launched within a default Subnet has a private and a public IP
+        addresses.
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Internet Service
+        :rtype: ``dict``
+        """
+        action = "CreateInternetService"
+        data = {"DryRun": dry_run, "DirectLinkInterface": {}}
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["InternetService"]
+        return response.json()
+
+    def ex_delete_internet_service(
+        self,
+        internet_service_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes an Internet service.
+        Before deleting an Internet service, you must detach it from any Net
+        it is attached to.
+
+        :param      internet_service_id: The ID of the Internet service you
+        want to delete.(required)
+        :type       internet_service_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "DeleteInternetService"
+        data = {"DryRun": dry_run}
+        if internet_service_id is not None:
+            data.update({"InternetServiceId": internet_service_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_link_internet_service(
+        self,
+        internet_service_id: str = None,
+        net_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Attaches an Internet service to a Net.
+        To enable the connection between the Internet and a Net, you must
+        attach an Internet service to this Net.
+
+        :param      internet_service_id: The ID of the Internet service you
+        want to attach. (required)
+        :type       internet_service_id: ``str``
+
+        :param      net_id: The ID of the Net to which you want to attach the
+        Internet service. (required)
+        :type       net_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "LinkInternetService"
+        data = {"DryRun": dry_run}
+        if internet_service_id is not None:
+            data.update({"InternetServiceId": internet_service_id})
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_unlink_internet_service(
+        self,
+        internet_service_id: str = None,
+        net_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Detaches an Internet service from a Net.
+        This action disables and detaches an Internet service from a Net.
+        The Net must not contain any running virtual machine (VM) using an
+        External IP address (EIP).
+
+        :param      internet_service_id: The ID of the Internet service you
+        want to detach. (required)
+        :type       internet_service_id: ``str``
+
+        :param      net_id: The ID of the Net from which you want to detach
+        the Internet service. (required)
+        :type       net_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``boolean``
+        """
+        action = "UnlinkInternetService"
+        data = {"DryRun": dry_run}
+        if internet_service_id is not None:
+            data.update({"InternetServiceId": internet_service_id})
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_internet_services(
+        self,
+        internet_service_ids: [str] = None,
+        link_net_ids: [str] = None,
+        link_states: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False
+    ):
+        """
+        Lists one or more of your Internet services.
+        An Internet service enables your virtual machines (VMs) launched in a
+        Net to connect to the Internet. By default, a Net includes an
+        Internet service, and each Subnet is public. Every VM launched within
+        a default Subnet has a private and a public IP addresses.
+
+        :param      internet_service_ids: One or more filters.
+        :type       internet_service_ids: ``list`` of ``str``
+
+        :param      link_net_ids: The IDs of the Nets the Internet services
+        are attached to.
+        :type       link_net_ids: ``list`` of ``str``
+
+        :param      link_states: The current states of the attachments
+        between the Internet services and the Nets (only available,
+        if the Internet gateway is attached to a VPC). (required)
+        :type       link_states: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the
+        Internet services.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        Internet services.
+        :type       states: ``list`` of ``str``
+
+        :param      tags: The key/value combination of the tags associated
+        with the Internet services, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Returns the list of Internet Services
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadInternetServices"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if internet_service_ids is not None:
+            data["Filters"].update({
+                "InternetServiceIds": internet_service_ids
+            })
+        if link_net_ids is not None:
+            data["Filters"].update({"LinkNetIds": link_net_ids})
+        if link_states is not None:
+            data["Filters"].update({"LinkStates": link_states})
+        if tag_keys is not None:
+            data["Filters"].update({"TasKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["InternetServices"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
