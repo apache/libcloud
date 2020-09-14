@@ -3001,6 +3001,401 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["ListenerRule"]
         return response.json()
 
+    def ex_create_load_balancer(
+        self,
+        load_balancer_name: str = None,
+        load_balancer_type: str = None,
+        security_groups: [str] = None,
+        subnets: [str] = None,
+        subregion_names: str = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        l_backend_port: int = None,
+        l_backend_protocol: str = None,
+        l_load_balancer_port: int = None,
+        l_load_balancer_protocol: str = None,
+        l_server_certificate_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a load balancer.
+        The load balancer is created with a unique Domain Name Service (DNS)
+        name. It receives the incoming traffic and routes it to its registered
+        virtual machines (VMs). By default, this action creates an
+        Internet-facing load balancer, resolving to public IP addresses.
+        To create an internal load balancer in a Net, resolving to private IP
+        addresses, use the LoadBalancerType parameter.
+
+        :param      load_balancer_name: The name of the load balancer for
+        which you want to create listeners. (required)
+        :type       load_balancer_name: ``str``
+
+        :param      load_balancer_type: The type of load balancer:
+        internet-facing or internal. Use this parameter only for load
+        balancers in a Net.
+        :type       load_balancer_type: ``str``
+
+        :param      security_groups: One or more IDs of security groups you
+        want to assign to the load balancer.
+        :type       security_groups: ``list`` of ``str``
+
+        :param      subnets: One or more IDs of Subnets in your Net that you
+        want to attach to the load balancer.
+        :type       subnets: ``list`` of ``str``
+
+        :param      subregion_names: One or more names of Subregions
+        (currently, only one Subregion is supported). This parameter is not
+        required if you create a load balancer in a Net. To create an internal
+        load balancer, use the LoadBalancerType parameter.
+        :type       subregion_names: ``list`` of ``str``
+
+        :param      tag_keys: The key of the tag, with a minimum of 1
+        character. (required)
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The value of the tag, between 0 and 255
+        characters. (required)
+        :type       tag_values: ``list`` of ``str``
+
+        :param      l_backend_port: The port on which the back-end VM is
+        listening (between 1 and 65535, both included). (required)
+        :type       l_backend_port: ``int``
+
+        :param      l_backend_protocol: The protocol for routing traffic to
+        back-end VMs (HTTP | HTTPS | TCP | SSL | UDP).
+        :type       l_backend_protocol: ``int``
+
+        :param      l_load_balancer_port: The port on which the load balancer
+        is listening (between 1 and 65535, both included). (required)
+        :type       l_load_balancer_port: ``int``
+
+        :param      l_load_balancer_protocol: The routing protocol
+        (HTTP | HTTPS | TCP | SSL | UDP). (required)
+        :type       l_load_balancer_protocol: ``str``
+
+        :param      l_server_certificate_id: The ID of the server certificate.
+        (required)
+        :type       l_server_certificate_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Load Balancer
+        :rtype: ``dict``
+        """
+        action = "CreateLoadBalancer"
+        data = {"DryRun": dry_run, "Listeners": {}, "Tags": {}}
+
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        if load_balancer_type is not None:
+            data.update({"LoadBalencerType": load_balancer_type})
+        if security_groups is not None:
+            data.update({"SecurityGroups": security_groups})
+        if subnets is not None:
+            data.update({"Subnets": subnets})
+        if subregion_names is not None:
+            data.update({"SubregionNames": subregion_names})
+        if tag_keys is not None and tag_values is not None \
+            and len(tag_keys) == len(tag_values):
+            for key, value in zip(tag_keys, tag_values):
+                data["Tags"].update({"Key": key, "Value": value})
+        if l_backend_port is not None:
+            data["Listeners"].update({
+                "BackendPort": l_backend_port
+            })
+        if l_backend_protocol is not None:
+            data["Listeners"].update({
+                "BackendProtocol": l_backend_protocol
+            })
+        if l_load_balancer_port is not None:
+            data["Listeners"].update({
+                "LoadBalancerPort": l_load_balancer_port
+            })
+        if l_load_balancer_protocol is not None:
+            data["Listeners"].update({
+                "LoadBalancerProtocol": l_load_balancer_protocol
+            })
+        if l_server_certificate_id is not None:
+            data["Listeners"].update({
+                "ServerCertificateId": l_server_certificate_id
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["LoadBalancer"]
+        return response.json()
+
+    def ex_create_load_balancer(
+        self,
+        load_balancer_names: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Adds one or more tags to the specified load balancers.
+        If a tag with the same key already exists for the load balancer,
+        the tag value is replaced.
+
+        :param      load_balancer_names: The name of the load balancer for
+        which you want to create listeners. (required)
+        :type       load_balancer_names: ``str``
+
+        :param      tag_keys: The key of the tag, with a minimum of 1
+        character. (required)
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The value of the tag, between 0 and 255
+        characters. (required)
+        :type       tag_values: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Load Balancer Tags
+        :rtype: ``dict``
+        """
+        action = "CreateLoadBalancerTags"
+        data = {"DryRun": dry_run, "Tags": {}}
+        if load_balancer_names is not None:
+            data.update({"LoadBalancerNames": load_balancer_names})
+        if tag_keys is not None and tag_values is not None \
+            and len(tag_keys) == len(tag_values):
+            for key, value in zip(tag_keys, tag_values):
+                data["Tags"].update({"Key": key, "Value": value})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_load_balancer(
+        self,
+        load_balancer_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified load balancer.
+
+        :param      load_balancer_name: The name of the load balancer you want
+        to delete. (required)
+        :type       load_balancer_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteLoadBalancer"
+        data = {"DryRun": dry_run}
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_load_balancer_tags(
+        self,
+        load_balancer_names: [str] = None,
+        tag_keys: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified load balancer tags.
+
+        :param      load_balancer_names: The names of the load balancer for
+        which you want to delete tags. (required)
+        :type       load_balancer_names: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteLoadBalancerTags"
+        data = {"DryRun": dry_run, "Tags": {}}
+        if load_balancer_names is not None:
+            data.update({"LoadBalancerNames": load_balancer_names})
+        if tag_keys is not None:
+            data["Tags"].update({"Keys": tag_keys})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_deregister_vms_in_load_balancer(
+        self,
+        backend_vm_ids: [str] = None,
+        load_balancer_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deregisters a specified virtual machine (VM) from a load balancer.
+
+        :param      backend_vm_ids: One or more IDs of back-end VMs.
+        (required)
+        :type       backend_vm_ids: ``str``
+
+        :param      load_balancer_name: The name of the load balancer.
+        (required)
+        :type       load_balancer_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeregisterVmsInLoadBalancer"
+        data = {"DryRun": dry_run}
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        if backend_vm_ids is not None:
+            data.update({"BackendVmIds": backend_vm_ids})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def read_load_balancer_tags(
+        self,
+        load_balancer_names: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Describes the tags associated with one or more specified load
+        balancers.
+
+        :param      load_balancer_names: The names of the load balancer.
+        (required)
+        :type       load_balancer_names: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of load balancer tags
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadLoadBalancerTags"
+        data = {"DryRun": dry_run}
+        if load_balancer_names is not None:
+            data.update({"LoadBalancerNames": load_balancer_names})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Tags"]
+        return response.json()
+
+    def read_load_balancers(
+        self,
+        load_balancer_names: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more load balancers and their attributes.
+
+        :param      load_balancer_names: The names of the load balancer.
+        (required)
+        :type       load_balancer_names: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of load balancer
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadLoadBalancers"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if load_balancer_names is not None:
+            data["Filters"].update({"LoadBalancerNames": load_balancer_names})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["LoadBalancers"]
+        return response.json()
+
+    def ex_read_vms_health(
+        self,
+        backend_vm_ids: [str] = None,
+        load_balancer_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists the state of one or more back-end virtual machines (VMs)
+        registered with a specified load balancer.
+
+        :param      load_balancer_name: The name of the load balancer.
+        (required)
+        :type       load_balancer_name: ``str``
+
+        :param      backend_vm_ids: One or more IDs of back-end VMs.
+        :type       backend_vm_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of back end vms health
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadVmsHealth"
+        data = {"DryRun": dry_run}
+        if backend_vm_ids is not None:
+            data.update({"BackendVmIds": backend_vm_ids})
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["BackendVmHealth"]
+        return response.json()
+
+    def ex_register_vms_in_load_balancer(
+        self,
+        backend_vm_ids: [str] = None,
+        load_balancer_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Registers one or more virtual machines (VMs) with a specified load
+        balancer.
+        The VMs must be running in the same network as the load balancer
+        (in the public Cloud or in the same Net). It may take a little time
+        for a VM to be registered with the load balancer. Once the VM is
+        registered with a load balancer, it receives traffic and requests from
+        this load balancer and is called a back-end VM.
+
+        :param      load_balancer_name: The name of the load balancer.
+        (required)
+        :type       load_balancer_name: ``str``
+
+        :param      backend_vm_ids: One or more IDs of back-end VMs.
+        :type       backend_vm_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of back end vms health
+        :rtype: ``list`` of ``dict``
+        """
+        action = "RegisterVmsInLoadBalancer"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if backend_vm_ids is not None:
+            data.update({"BackendVmIds": backend_vm_ids})
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["BackendVmHealth"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,

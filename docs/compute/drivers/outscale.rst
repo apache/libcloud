@@ -195,11 +195,21 @@ Internet Services
 * ``ex_unlink_internet_service`` - Returns a ``bool``
 * ``ex_list_internet_services`` - Returns a ``list`` of ``dict``
 
-Lister
-------
+Listener
+--------
 * ``ex_create_listener_rule`` - Returns a ``dict``
 * ``ex_create_load_balancer_listeners`` - Returns a ``dict``
 * ``ex_delete_listener_rule`` - Returns a ``bool``
 * ``ex_delete_load_balancer_listeners`` - Returns a ``bool``
 * ``ex_list_listener_rules`` - Returns a ``bool``
 * ``ex_update_listener_rule`` - Returns a ``dict``
+
+Load Balancers
+--------------
+* ``ex_create_load_balancer`` - Returns a ``dict``
+* ``ex_create_load_balancer_tags`` - Returns a ``bool``
+* ``ex_delete_load_balancer`` - Returns a ``bool``
+* ``ex_delete_load_balancer_tags`` - Returns a ``bool``
+* ``ex_deregister_vms_in_load_balancer`` - Returns a ``bool``
+* ``ex_read_load_balancer_tags`` - Returns a ``list`` of ``dict``
+* ``ex_read_vms_health`` - Returns a ``list`` of ``dict``
