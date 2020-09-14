@@ -213,3 +213,8 @@ Load Balancers
 * ``ex_deregister_vms_in_load_balancer`` - Returns a ``bool``
 * ``ex_read_load_balancer_tags`` - Returns a ``list`` of ``dict``
 * ``ex_read_vms_health`` - Returns a ``list`` of ``dict``
+
+Load Balancer Policies
+----------------------
+* ``ex_create_load_balancer_policy`` - Returns a ``dict``
+* ``ex_delete_load_balancer_policy`` - Returns a ``bool``
