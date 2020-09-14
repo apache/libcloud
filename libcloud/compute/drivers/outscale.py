@@ -3647,6 +3647,191 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["NatServices"]
         return response.json()
 
+    def ex_create_net(
+        self,
+        ip_range: str = None,
+        tenancy: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a Net with a specified IP range.
+        The IP range (network range) of your Net must be between a /28 netmask
+        (16 IP addresses) and a /16 netmask (65 536 IP addresses).
+
+        :param      ip_range: The IP range for the Net, in CIDR notation
+        (for example, 10.0.0.0/16). (required)
+        :type       ip_range: ``str``
+
+        :param      tenancy: The tenancy options for the VMs (default if a VM
+        created in a Net can be launched with any tenancy, dedicated if it can
+        be launched with dedicated tenancy VMs running on single-tenant
+        hardware).
+        :type       tenancy: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Nat Service
+        :rtype: ``dict``
+        """
+        action = "CreateNet"
+        data = {"DryRun": dry_run}
+        if ip_range is not None:
+            data.update({"IpRange": ip_range})
+        if tenancy is not None:
+            data.update({"Tenancy": tenancy})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Net"]
+        return response.json()
+
+    def ex_delete_net(
+        self,
+        net_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified Net.
+        Before deleting the Net, you need to delete or detach all the
+        resources associated with the Net:
+
+        - Virtual machines (VMs)
+        - Net peering connections
+        - Custom route tables
+        - External IP addresses (EIPs) allocated to resources in the Net
+        - Network Interface Cards (NICs) created in the Subnets
+        - Virtual gateways, Internet services and NAT services
+        - Load balancers
+        - Security groups
+        - Subnets
+
+        :param      net_id: The ID of the Net you want to delete. (required)
+        :type       net_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteNet"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_read_nets(
+        self,
+        dhcp_options_set_ids: [str] = None,
+        ip_ranges: [str] = None,
+        is_default: bool = None,
+        net_ids: [str] = None,
+        states: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more Nets.
+
+        :param      dhcp_options_set_ids: The IDs of the DHCP options sets.
+        :type       dhcp_options_set_ids: ``list`` of ``str``
+
+        :param      ip_ranges: The IP ranges for the Nets, in CIDR notation
+        (for example, 10.0.0.0/16).
+        :type       ip_ranges: ``list`` of ``str``
+
+        :param      is_default: If true, the Net used is the default one.
+        :type       is_default: ``bool``
+
+        :param      net_ids: The IDs of the Nets.
+        :type       net_ids: ``list`` of ``str``
+
+        :param      states: The states of the Nets (pending | available).
+        :type       states: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the Nets.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        Nets.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: The key/value combination of the tags associated
+        with the Nets, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: A list of Nets
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadNets"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if dhcp_options_set_ids is not None:
+            data["Filters"].update({"DhcpOptionsSetIds": dhcp_options_set_ids})
+        if ip_ranges is not None:
+            data["Filters"].update({"IpRanges": ip_ranges})
+        if is_default is not None:
+            data["Filters"].update({"IsDefault": is_default})
+        if net_ids is not None:
+            data["Filters"].update({"NetIds": net_ids})
+        if states is not None:
+            data["Filters"].update({"States": states})
+        if tag_keys is not None:
+            data["Filters"].update({"TagKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Nets"]
+        return response.json()
+
+    def ex_update_net(
+        self,
+        net_id: str = None,
+        dhcp_options_set_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Associates a DHCP options set with a specified Net.
+
+        :param      net_id: The ID of the Net. (required)
+        :type       net_id: ``str``
+
+        :param      dhcp_options_set_id: The ID of the DHCP options set
+        (or default if you want to associate the default one). (required)
+        :type       dhcp_options_set_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The modified Nat Service
+        :rtype: ``dict``
+        """
+        action = "UpdateNet"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if dhcp_options_set_id is not None:
+            data.update({"DhcpOptionsSetId": dhcp_options_set_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Net"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,

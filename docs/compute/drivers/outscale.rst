@@ -224,3 +224,10 @@ Nat Services
 * ``ex_create_nat_service`` - Returns a ``dict``
 * ``ex_delete_nat_service`` - Returns a ``bool``
 * ``ex_read_nat_services`` - Returns a ``list`` of ``dict``
+
+Net
+---
+* ``ex_create_net`` - Returns a ``dict``
+* ``ex_delete_net`` - Returns a ``bool``
+* ``ex_read_nets`` - Returns a ``list`` of ``dict``
+* ``ex_update_net`` - Returns a ``dict``
