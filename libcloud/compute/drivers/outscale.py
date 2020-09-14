@@ -2675,7 +2675,7 @@ class OutscaleNodeDriver(NodeDriver):
         if link_states is not None:
             data["Filters"].update({"LinkStates": link_states})
         if tag_keys is not None:
-            data["Filters"].update({"TasKeys": tag_keys})
+            data["Filters"].update({"TagKeys": tag_keys})
         if tag_values is not None:
             data["Filters"].update({"TagValues": tag_values})
         if tags is not None:
@@ -3126,7 +3126,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["LoadBalancer"]
         return response.json()
 
-    def ex_create_load_balancer(
+    def ex_create_load_balancer_tags(
         self,
         load_balancer_names: [str] = None,
         tag_keys: [str] = None,
@@ -3500,6 +3500,152 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return True
         return False
+
+    def ex_create_nat_service(
+        self,
+        public_ip: str = None,
+        subnet_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a network address translation (NAT) service in the specified
+        public Subnet of a Net.
+        A NAT service enables virtual machines (VMs) placed in the private
+        Subnet of this Net to connect to the Internet, without being
+        accessible from the Internet.
+        When creating a NAT service, you specify the allocation ID of the
+        External IP (EIP) you want to use as public IP for the NAT service.
+        Once the NAT service is created, you need to create a route in the
+        route table of the private Subnet, with 0.0.0.0/0 as destination and
+        the ID of the NAT service as target. For more information, see
+        LinkPublicIP and CreateRoute.
+        This action also enables you to create multiple NAT services in the
+        same Net (one per public Subnet).
+
+        :param      public_ip: The allocation ID of the EIP to associate
+        with the NAT service. (required)
+        :type       public_ip: ``str``
+
+        :param      subnet_id: The ID of the Subnet in which you want to
+        create the NAT service. (required)
+        :type       subnet_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Nat Service
+        :rtype: ``dict``
+        """
+        action = "CreateNatService"
+        data = {"DryRun": dry_run}
+        if public_ip is not None:
+            data.update({"PublicIp": public_ip})
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NatService"]
+        return response.json()
+
+    def ex_delete_nat_service(
+        self,
+        nat_service_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified network address translation (NAT) service.
+        This action disassociates the External IP address (EIP) from the NAT
+        service, but does not release this EIP from your account. However, it
+        does not delete any NAT service routes in your route tables.
+
+        :param      nat_service_id: TThe ID of the NAT service you want to
+        delete. (required)
+        :type       public_ip: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteNatService"
+        data = {"DryRun": dry_run}
+        if nat_service_id is not None:
+            data.update({"NatServiceId": nat_service_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_read_nat_services(
+        self,
+        nat_service_ids: [str] = None,
+        net_ids: [str] = None,
+        states: [str] = None,
+        subnet_ids: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more network address translation (NAT) services.
+
+        :param      nat_service_ids: The IDs of the NAT services.
+        :type       nat_service_ids: ``list`` of ``str``
+
+        :param      net_ids: The IDs of the Nets in which the NAT services are.
+        :type       net_ids: ``list`` of ``str``
+
+        :param      states: The states of the NAT services
+        (pending | available | deleting | deleted).
+        :type       states: ``list`` of ``str``
+
+        :param      subnet_ids: The IDs of the Subnets in which the NAT
+        services are.
+        :type       subnet_ids: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the NAT
+        services.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the NAT
+        services.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: The values of the tags associated with the NAT
+        services.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of back end vms health
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadNatServices"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if nat_service_ids is not None:
+            data["Filters"].update({"NatServiceIds": nat_service_ids})
+        if states is not None:
+            data["Filters"].update({"States": states})
+        if net_ids is not None:
+            data["Filters"].update({"NetIds": net_ids})
+        if subnet_ids is not None:
+            data["Filters"].update({"SubnetIds": subnet_ids})
+        if tag_keys is not None:
+            data["Filters"].update({"TagKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NatServices"]
+        return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(

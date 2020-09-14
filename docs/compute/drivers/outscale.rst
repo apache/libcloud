@@ -218,3 +218,9 @@ Load Balancer Policies
 ----------------------
 * ``ex_create_load_balancer_policy`` - Returns a ``dict``
 * ``ex_delete_load_balancer_policy`` - Returns a ``bool``
+
+Nat Services
+------------
+* ``ex_create_nat_service`` - Returns a ``dict``
+* ``ex_delete_nat_service`` - Returns a ``bool``
+* ``ex_read_nat_services`` - Returns a ``list`` of ``dict``
