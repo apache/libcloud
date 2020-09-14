@@ -1929,7 +1929,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
         if image.extra['type'] == "ovf":
             node_id = node_id['resource_id']['id']
 
-        node = self.list_nodes(ex_filter_vms=node_id, async_=False)[0]
+        node = self.list_nodes(ex_filter_vms=node_id)[0]
         if create_nic:
             self.ex_add_nic(node, ex_network)
         if update_memory:
