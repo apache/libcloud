@@ -211,8 +211,8 @@ Load Balancers
 * ``ex_delete_load_balancer`` - Returns a ``bool``
 * ``ex_delete_load_balancer_tags`` - Returns a ``bool``
 * ``ex_deregister_vms_in_load_balancer`` - Returns a ``bool``
-* ``ex_read_load_balancer_tags`` - Returns a ``list`` of ``dict``
-* ``ex_read_vms_health`` - Returns a ``list`` of ``dict``
+* ``ex_list_load_balancer_tags`` - Returns a ``list`` of ``dict``
+* ``ex_list_vms_health`` - Returns a ``list`` of ``dict``
 
 Load Balancer Policies
 ----------------------
@@ -223,21 +223,21 @@ Nat Services
 ------------
 * ``ex_create_nat_service`` - Returns a ``dict``
 * ``ex_delete_nat_service`` - Returns a ``bool``
-* ``ex_read_nat_services`` - Returns a ``list`` of ``dict``
+* ``ex_list_nat_services`` - Returns a ``list`` of ``dict``
 
 Net
 ---
 * ``ex_create_net`` - Returns a ``dict``
 * ``ex_delete_net`` - Returns a ``bool``
-* ``ex_read_nets`` - Returns a ``list`` of ``dict``
+* ``ex_list_nets`` - Returns a ``list`` of ``dict``
 * ``ex_update_net`` - Returns a ``dict``
 
 Net Access Point
 ----------------
 * ``ex_create_net_access_point`` - Returns a ``dict``
 * ``ex_delete_net_access_point`` - Returns a ``bool``
-* ``ex_read_net_access_point_services`` - Returns a ``list`` of ``dict``
-* ``ex_read_net_access_points`` - Returns a ``list`` of ``dict``
+* ``ex_list_net_access_point_services`` - Returns a ``list`` of ``dict``
+* ``ex_list_net_access_points`` - Returns a ``list`` of ``dict``
 * ``ex_update_net_access_point`` - Returns a ``dict``
 
 Net Peerings
@@ -245,7 +245,7 @@ Net Peerings
 * ``ex_accept_net_peering`` - Returns a ``dict``
 * ``ex_create_net_peering`` - Returns a ``dict``
 * ``ex_delete_net_peering`` - Returns a ``bool``
-* ``ex_read_net_peerings`` - Returns a ``list`` of ``dict``
+* ``ex_list_net_peerings`` - Returns a ``list`` of ``dict``
 * ``ex_reject_net_peering`` - Returns a ``dict``
 
 Nics
@@ -255,6 +255,6 @@ Nics
 * ``ex_link_nic`` - Returns a ``bool``
 * ``ex_unlink_nic`` - Returns a ``bool``
 * ``ex_link_private_ips`` - Returns a ``bool``
-* ``ex_read_nics`` - Returns a ``list`` of ``dict``
+* ``ex_list_nics`` - Returns a ``list`` of ``dict``
 * ``ex_unlink_private_ips`` - Returns a ``bool``
 * ``ex_update_nic`` - Returns a ``dict``

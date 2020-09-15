@@ -3322,7 +3322,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["LoadBalancers"]
         return response.json()
 
-    def ex_read_vms_health(
+    def ex_list_vms_health(
         self,
         backend_vm_ids: [str] = None,
         load_balancer_name: str = None,
@@ -3580,7 +3580,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_read_nat_services(
+    def ex_list_nat_services(
         self,
         nat_service_ids: [str] = None,
         net_ids: [str] = None,
@@ -3726,7 +3726,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_read_nets(
+    def ex_list_nets(
         self,
         dhcp_options_set_ids: [str] = None,
         ip_ranges: [str] = None,
@@ -3915,7 +3915,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_read_nets_access_point_services(
+    def ex_list_nets_access_point_services(
         self,
         service_ids: [str] = None,
         service_names: [str] = None,
@@ -3951,7 +3951,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["Services"]
         return response.json()
 
-    def ex_read_nets_access_points(
+    def ex_list_nets_access_points(
         self,
         net_access_point_ids: [str] = None,
         net_ids: [str] = None,
@@ -4174,7 +4174,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_read_net_peerings(
+    def ex_list_net_peerings(
         self,
         accepter_net_account_ids: [str] = None,
         accepter_net_ip_ranges: [str] = None,
@@ -4523,7 +4523,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_read_nics(
+    def ex_list_nics(
         self,
         link_nic_sort_numbers: [int] = None,
         link_nic_vm_ids: [str] = None,
@@ -4679,7 +4679,7 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["Nic"]
         return response.json()
-    
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
