@@ -4679,6 +4679,7 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["Nic"]
         return response.json()
+    
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
