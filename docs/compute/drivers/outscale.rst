@@ -248,3 +248,13 @@ Net Peerings
 * ``ex_read_net_peerings`` - Returns a ``list`` of ``dict``
 * ``ex_reject_net_peering`` - Returns a ``dict``
 
+Nics
+----
+* ``ex_create_nic`` - Returns a ``dict``
+* ``ex_delete_nic`` - Returns a ``bool``
+* ``ex_link_nic`` - Returns a ``bool``
+* ``ex_unlink_nic`` - Returns a ``bool``
+* ``ex_link_private_ips`` - Returns a ``bool``
+* ``ex_read_nics`` - Returns a ``list`` of ``dict``
+* ``ex_unlink_private_ips`` - Returns a ``bool``
+* ``ex_update_nic`` - Returns a ``dict``

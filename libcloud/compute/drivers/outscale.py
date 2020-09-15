@@ -4315,6 +4315,370 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
+    def ex_create_nic(
+        self,
+        description: str = None,
+        private_ips_is_primary: [str] = None,
+        private_ips: [str] = None,
+        security_group_ids: [str] = None,
+        subnet_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a network interface card (NIC) in the specified Subnet.
+
+        :param      description: A description for the NIC.
+        :type       description: ``str``
+
+        :param      private_ips_is_primary: If true, the IP address is the
+        primary private IP address of the NIC.
+        :type       private_ips_is_primary: ``list`` of ``str``
+
+        :param      private_ips: The private IP addresses of the NIC.
+        :type       private_ips: ``list`` of ``str``
+
+        :param      security_group_ids: One or more IDs of security groups for
+        the NIC.
+        :type       security_group_ids: ``list`` of ``str``
+
+        :param      subnet_id: The ID of the Subnet in which you want to
+        create the NIC. (required)
+        :type       subnet_id: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Nic
+        :rtype: ``dict``
+        """
+        action = "CreateNic"
+        data = {"DryRun": dry_run, "PrivatesIps": {}}
+        if description is not None:
+            data.update({"Description": description})
+        if security_group_ids is not None:
+            data.update({"SecurityGroupIds": security_group_ids})
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
+        if private_ips is not None and private_ips_is_primary is not None:
+            for primary, ip in zip(private_ips_is_primary, private_ips):
+                data["PrivateIps"].update({
+                    "IsPrimary": primary,
+                    "PrivateIp": ip
+                })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Nic"]
+        return response.json()
+
+    def ex_link_nic(
+        self,
+        nic_id: str = None,
+        node: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Attaches a network interface card (NIC) to a virtual machine (VM).
+        The interface and the VM must be in the same Subregion. The VM can be
+        either running or stopped. The NIC must be in the available state.
+
+        :param      nic_id: The ID of the NIC you want to delete. (required)
+        :type       nic_id: ``str``
+
+        :param      node: The node you want to attach the nic to.
+        :type       nic_id: ``Node``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a Link Id
+        :rtype: ``str``
+        """
+        action = "LinkNic"
+        data = {"DryRun": dry_run}
+        if nic_id is not None:
+            data.update({"NicId": nic_id})
+        if node:
+            data.update({"VmId": node.id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["LinkNicId"]
+        return response.json()
+
+    def ex_unlink_nic(
+        self,
+        link_nic_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Detaches a network interface card (NIC) from a virtual machine (VM).
+        The primary NIC cannot be detached.
+
+        :param      link_nic_id: The ID of the NIC you want to delete.
+        (required)
+        :type       link_nic_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "UnlinkNic"
+        data = {"DryRun": dry_run}
+        if link_nic_id is not None:
+            data.update({"LinkNicId": link_nic_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_nic(
+        self,
+        nic_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes the specified network interface card (NIC).
+        The network interface must not be attached to any virtual machine (VM).
+
+        :param      nic_id: The ID of the NIC you want to delete. (required)
+        :type       nic_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteNic"
+        data = {"DryRun": dry_run}
+        if nic_id is not None:
+            data.update({"NicId": nic_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_link_private_ips(
+        self,
+        allow_relink: bool = None,
+        nic_id: str = None,
+        private_ips: [str] = None,
+        secondary_private_ip_count: int = None,
+        dry_run: bool = False,
+    ):
+        """
+        Assigns one or more secondary private IP addresses to a specified
+        network interface card (NIC). This action is only available in a Net.
+        The private IP addresses to be assigned can be added individually
+        using the PrivateIps parameter, or you can specify the number of
+        private IP addresses to be automatically chosen within the Subnet
+        range using the SecondaryPrivateIpCount parameter. You can specify
+        only one of these two parameters. If none of these parameters are
+        specified, a private IP address is chosen within the Subnet range.
+
+        :param      allow_relink: If true, allows an IP address that is
+        already assigned to another NIC in the same Subnet to be assigned
+        to the NIC you specified.
+        :type       allow_relink: ``str``
+
+        :param      nic_id: The ID of the NIC. (required)
+        :type       nic_id: ``str``
+
+        :param      private_ips: The secondary private IP address or addresses
+        you want to assign to the NIC within the IP address range of the
+        Subnet.
+        :type       private_ips: ``list`` of ``str``
+
+        :param      secondary_private_ip_count: The secondary private IP a
+        ddress or addresses you want to assign to the NIC within the IP
+        address range of the Subnet.
+        :type       secondary_private_ip_count: ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return:True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "LinkPrivateIps"
+        data = {"DryRun": dry_run}
+        if nic_id is not None:
+            data.update({"NicId": nic_id})
+        if allow_relink is not None:
+            data.update({"AllowRelink": allow_relink})
+        if private_ips is not None:
+            data.update({"PrivateIps": private_ips})
+        if secondary_private_ip_count is not None:
+            data.update({
+                "SecondaryPrivateIpCount": secondary_private_ip_count
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_read_nics(
+        self,
+        link_nic_sort_numbers: [int] = None,
+        link_nic_vm_ids: [str] = None,
+        nic_ids: [str] = None,
+        private_ips_private_ips: [str] = None,
+        subnet_ids: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more network interface cards (NICs).
+        A NIC is a virtual network interface that you can attach to a virtual
+        machine (VM) in a Net.
+
+        :param      link_nics_sort_numbers: The device numbers the NICs are
+        attached to.
+        :type       link_nics_sort_numbers: ``list`` of ``int``
+
+        :param      link_nic_vm_ids: The IDs of the VMs the NICs are attached
+        to.
+        :type       link_nic_vm_ids: ``list`` of ``str``
+
+        :param      nic_ids: The IDs of the NICs.
+        :type       nic_ids: ``list`` of ``str``
+
+        :param      private_ips_private_ips: The private IP addresses of the
+        NICs.
+        :type       private_ips_private_ips: ``list`` of ``str``
+
+        :param      subnet_ids: The IDs of the Subnets for the NICs.
+        :type       subnet_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: A list of the Nics
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadNics"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if link_nic_sort_numbers is not None:
+            data["Filters"].update({
+                "LinkNicSortNumbers": link_nic_sort_numbers
+            })
+        if link_nic_vm_ids is not None:
+            data["Filters"].update({
+                "LinkNicVmIds": link_nic_vm_ids
+            })
+        if nic_ids is not None:
+            data["Filters"].update({"NicIds": nic_ids})
+        if private_ips_private_ips is not None:
+            data["Filters"].update({
+                "» PrivateIpsPrivateIps": private_ips_private_ips
+            })
+        if subnet_ids is not None:
+            data["Filters"].update({
+                "SubnetIds": subnet_ids
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Nics"]
+        return response.json()
+
+    def ex_unlink_private_ips(
+        self,
+        nic_id: str = None,
+        private_ips: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Unassigns one or more secondary private IPs from a network interface
+        card (NIC).
+
+        :param      nic_id: The ID of the NIC. (required)
+        :type       nic_id: ``str``
+
+        :param      private_ips: One or more secondary private IP addresses
+        you want to unassign from the NIC. (required)
+        :type       private_ips: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "UnlinkPrivateIps"
+        data = {"DryRun": dry_run}
+        if nic_id is not None:
+            data.update({"NicId": nic_id})
+        if private_ips is not None:
+            data.update({"PrivateIps": private_ips})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_update_nic(
+        self,
+        description: str = None,
+        link_nic_delete_on_vm_deletion: str = None,
+        link_nic_id: str = None,
+        security_group_ids: [str] = None,
+        nic_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Modifies the specified network interface card (NIC). You can specify
+        only one attribute at a time.
+
+        :param      description: A new description for the NIC.
+        :type       description: ``str``
+
+        :param      link_nic_delete_on_vm_deletion: If true, the NIC is
+        deleted when the VM is terminated.
+        :type       link_nic_delete_on_vm_deletion: ``str``
+
+        :param      link_nic_id: The ID of the NIC attachment.
+        :type       link_nic_id: ``str``
+
+        :param      security_group_ids: One or more IDs of security groups
+        for the NIC.
+        :type       security_group_ids: ``list`` of ``str``
+
+        :param      nic_id: The ID of the NIC you want to modify. (required)
+        :type       nic_id: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Nic
+        :rtype: ``dict``
+        """
+        action = "UpdateNic"
+        data = {"DryRun": dry_run, "LinkNic": {}}
+        if description is not None:
+            data.update({"Description": description})
+        if security_group_ids is not None:
+            data.update({"SecurityGroupIds": security_group_ids})
+        if nic_id is not None:
+            data.update({"NicId": nic_id})
+        if link_nic_delete_on_vm_deletion is not None:
+            data["LinkNic"].update({
+                "DeleteOnVmDeletion": link_nic_delete_on_vm_deletion
+            })
+        if link_nic_id is not None:
+            data["LinkNic"].update({
+                "LinkNicId": link_nic_id
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Nic"]
+        return response.json()
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
