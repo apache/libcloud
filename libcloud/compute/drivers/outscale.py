@@ -460,7 +460,7 @@ class OutscaleNodeDriver(NodeDriver):
                 }
             }
             data = json.dumps(data)
-            if self._call_api(action, data).status != 200:
+            if self._call_api(action, data).status_code != 200:
                 return False
             action = "ReadVms"
             data = {
@@ -1715,7 +1715,7 @@ class OutscaleNodeDriver(NodeDriver):
         client gateways.
         :type       public_ips: ``list`` of ``str``
 
-        :param      state: The states of the client gateways
+        :param      states: The states of the client gateways
         (pending | available | deleting | deleted).
         :type       states: ``list`` of ``str``
 
@@ -1797,7 +1797,7 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         domaine_name: str = None,
         domaine_name_servers: list = None,
-        ntp_servers : list = None,
+        ntp_servers: list = None,
         dry_run: bool = False,
     ):
         """
@@ -1953,7 +1953,7 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         bandwidth: str = None,
         direct_link_name: str = None,
-        location : str = None,
+        location: str = None,
         dry_run: bool = False,
     ):
         """
@@ -2031,7 +2031,7 @@ class OutscaleNodeDriver(NodeDriver):
         Lists all DirectLinks in the Region.
 
         :param      direct_link_ids: The IDs of the DirectLinks. (required)
-        :type       direct_link_id: ``list`` of ``str``
+        :type       direct_link_ids: ``list`` of ``str``
 
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -2053,12 +2053,12 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         direct_link_id: str = None,
         bgp_asn: int = None,
-        bgp_key : str = None,
-        client_private_ip : str = None,
-        direct_link_interface_name : str = None,
-        outscale_private_ip : str = None,
-        virtual_gateway_id : str = None,
-        vlan : int = None,
+        bgp_key: str = None,
+        client_private_ip: str = None,
+        direct_link_interface_name: str = None,
+        outscale_private_ip: str = None,
+        virtual_gateway_id: str = None,
+        vlan: int = None,
         dry_run: bool = False,
     ):
         """
@@ -2146,9 +2146,9 @@ class OutscaleNodeDriver(NodeDriver):
         """
         Deletes a specified DirectLink interface.
 
-        :param      direct_link_intreface_id: TThe ID of the DirectLink
+        :param      direct_link_interface_id: TThe ID of the DirectLink
         interface you want to delete. (required)
-        :type       direct_link_id: ``str``
+        :type       direct_link_interface_id: ``str``
 
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -2208,8 +2208,8 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         delete_on_vm_deletion: bool = None,
         generation: str = None,
-        model_name : str = None,
-        subregion_name : str = None,
+        model_name: str = None,
+        subregion_name: str = None,
         dry_run: bool = False,
     ):
         """
@@ -2449,11 +2449,10 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["FlexibleGpus"]
         return response.json()
 
-
     def ex_update_flexible_gpu(
         self,
         delete_on_vm_deletion: bool = None,
-        flexible_gpu_id : str = None,
+        flexible_gpu_id: str = None,
         dry_run: bool = False,
     ):
         """
@@ -3097,8 +3096,7 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"Subnets": subnets})
         if subregion_names is not None:
             data.update({"SubregionNames": subregion_names})
-        if tag_keys is not None and tag_values is not None \
-            and len(tag_keys) == len(tag_values):
+        if tag_keys and tag_values and len(tag_keys) == len(tag_values):
             for key, value in zip(tag_keys, tag_values):
                 data["Tags"].update({"Key": key, "Value": value})
         if l_backend_port is not None:
@@ -3161,8 +3159,7 @@ class OutscaleNodeDriver(NodeDriver):
         data = {"DryRun": dry_run, "Tags": {}}
         if load_balancer_names is not None:
             data.update({"LoadBalancerNames": load_balancer_names})
-        if tag_keys is not None and tag_values is not None \
-            and len(tag_keys) == len(tag_values):
+        if tag_keys and tag_values and len(tag_keys) == len(tag_values):
             for key, value in zip(tag_keys, tag_values):
                 data["Tags"].update({"Key": key, "Value": value})
         response = self._call_api(action, json.dumps(data))
@@ -3210,6 +3207,10 @@ class OutscaleNodeDriver(NodeDriver):
         :param      load_balancer_names: The names of the load balancer for
         which you want to delete tags. (required)
         :type       load_balancer_names: ``str``
+
+        :param      tag_keys: The key of the tag, with a minimum of
+        1 character.
+        :type       tag_keys: ``str``
 
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -3561,7 +3562,7 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      nat_service_id: TThe ID of the NAT service you want to
         delete. (required)
-        :type       public_ip: ``str``
+        :type       nat_service_id: ``str``
 
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -3830,6 +3831,239 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Net"]
+        return response.json()
+
+    def ex_create_net_access_point(
+        self,
+        net_id: str = None,
+        route_table_ids: [str] = None,
+        service_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a Net access point to access a 3DS OUTSCALE service from this
+        Net without using the Internet and External IP addresses.
+        You specify the service using its prefix list name. For more
+        information, see DescribePrefixLists:
+        https://docs.outscale.com/api#describeprefixlists
+        To control the routing of traffic between the Net and the specified
+        service, you can specify one or more route tables. Virtual machines
+        placed in Subnets associated with the specified route table thus use
+        the Net access point to access the service. When you specify a route
+        table, a route is automatically added to it with the destination set
+        to the prefix list ID of the service, and the target set to the ID of
+        the access point.
+
+        :param      net_id: The ID of the Net. (required)
+        :type       ip_range: ``str``
+
+        :param      route_table_ids: One or more IDs of route tables to use
+        for the connection.
+        :type       route_table_ids: ``list`` of ``str``
+
+        :param      service_name: The prefix list name corresponding to the
+        service (for example, com.outscale.eu-west-2.osu for OSU). (required)
+        :type       service_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Access Net Point
+        :rtype: ``dict``
+        """
+        action = "CreateNetAccessPoint"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if route_table_ids is not None:
+            data.update({"RouteTableIds": route_table_ids})
+        if service_name is not None:
+            data.update({"ServiceName": service_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetAccessPoint"]
+        return response.json()
+
+    def ex_delete_net_access_point(
+        self,
+        net_access_point_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes one or more Net access point.
+        This action also deletes the corresponding routes added to the route
+        tables you specified for the Net access point.
+
+        :param      net_access_point_id: The ID of the Net access point.
+        (required)
+        :type       net_access_point_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteNetAccessPoint"
+        data = {"DryRun": dry_run}
+        if net_access_point_id is not None:
+            data.update({"NetAccessPointId": net_access_point_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_read_nets_access_point_services(
+        self,
+        service_ids: [str] = None,
+        service_names: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Describes 3DS OUTSCALE services available to create Net access points.
+        For more information, see CreateNetAccessPoint:
+        https://docs.outscale.com/api#createnetaccesspoint
+
+        :param      service_ids: The IDs of the services.
+        :type       service_ids: ``list`` of ``str``
+
+        :param      service_names: The names of the prefix lists, which
+        identify the 3DS OUTSCALE services they are associated with.
+        :type       service_names: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: A list of Services
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadNetAccessPointsServices"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if service_names is not None:
+            data["Filters"].update({"ServiceNames": service_names})
+        if service_ids is not None:
+            data["Filters"].update({"ServiceIds": service_ids})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Services"]
+        return response.json()
+
+    def ex_read_nets_access_points(
+        self,
+        net_access_point_ids: [str] = None,
+        net_ids: [str] = None,
+        service_names: [str] = None,
+        states: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Describes one or more Net access points.
+
+        :param      net_access_point_ids: The IDs of the Net access points.
+        :type       net_access_point_ids: ``list`` of ``str``
+
+        :param      net_ids: The IDs of the Nets.
+        :type       net_ids: ``list`` of ``str``
+
+        :param      service_names: The The names of the prefix lists
+        corresponding to the services. For more information,
+        see DescribePrefixLists:
+        https://docs.outscale.com/api#describeprefixlists
+        :type       service_names: ``list`` of ``str``
+
+        :param      states: The states of the Net access points
+        (pending | available | deleting | deleted).
+        :type       states: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the Net
+        access points.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        Net access points.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: The key/value combination of the tags associated
+        with the Net access points, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: A list of Net Access Points
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadNetAccessPoints"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if net_access_point_ids is not None:
+            data["Filters"].update({"NetAccessPointIds": net_access_point_ids})
+        if net_ids is not None:
+            data["Filters"].update({"NetIds": net_ids})
+        if service_names is not None:
+            data["Filters"].update({"ServiceNames": service_names})
+        if states is not None:
+            data["Filters"].update({"States": states})
+        if tag_keys is not None:
+            data["Filters"].update({"TagKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetAccessPoints"]
+        return response.json()
+
+    def ex_update_net_access_point(
+        self,
+        add_route_table_ids: [str] = None,
+        net_access_point_id: str = None,
+        remove_route_table_ids: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Modifies the attributes of a Net access point.
+        This action enables you to add or remove route tables associated with
+        the specified Net access point.
+
+        :param      add_route_table_ids: One or more IDs of route tables to
+        associate with the specified Net access point.
+        :type       add_route_table_ids: ``list`` of ``str``
+
+        :param      net_access_point_id: The ID of the Net access point.
+        (required)
+        :type       net_access_point_id: ``str``
+
+        :param      remove_route_table_ids: One or more IDs of route tables to
+        disassociate from the specified Net access point.
+        :type       remove_route_table_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The modified Net Access Point
+        :rtype: ``dict``
+        """
+        action = "UpdateNetAccessPoint"
+        data = {"DryRun": dry_run}
+        if add_route_table_ids is not None:
+            data.update({"AddRouteTablesIds": add_route_table_ids})
+        if net_access_point_id is not None:
+            data.update({"NetAccessPointId": net_access_point_id})
+        if remove_route_table_ids is not None:
+            data.update({"RemoveRouteTableIds": remove_route_table_ids})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetAccessPoint"]
         return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):

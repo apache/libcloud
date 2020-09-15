@@ -231,3 +231,11 @@ Net
 * ``ex_delete_net`` - Returns a ``bool``
 * ``ex_read_nets`` - Returns a ``list`` of ``dict``
 * ``ex_update_net`` - Returns a ``dict``
+
+Net Access Point
+----------------
+* ``ex_create_net_access_point`` - Returns a ``dict``
+* ``ex_delete_net_access_point`` - Returns a ``bool``
+* ``ex_read_net_access_point_services`` - Returns a ``list`` of ``dict``
+* ``ex_read_net_access_points`` - Returns a ``list`` of ``dict``
+* ``ex_update_net_access_point`` - Returns a ``dict``
