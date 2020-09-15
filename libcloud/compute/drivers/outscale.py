@@ -4066,6 +4066,255 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["NetAccessPoint"]
         return response.json()
 
+    def ex_create_net_peering(
+        self,
+        accepter_net_id: str = None,
+        source_net_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Requests a Net peering connection between a Net you own and a peer Net
+        that belongs to you or another account.
+        This action creates a Net peering connection that remains in the
+        pending-acceptance state until it is accepted by the owner of the peer
+        Net. If the owner of the peer Net does not accept the request within
+        7 days, the state of the Net peering connection becomes expired.
+        For more information, see AcceptNetPeering:
+        https://docs.outscale.com/api#acceptnetpeering
+
+        :param      accepter_net_id: The ID of the Net you want to connect
+        with. (required)
+        :type       accepter_net_id: ``str``
+
+        :param      source_net_id: The ID of the Net you send the peering
+        request from. (required)
+        :type       source_net_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Net Peering
+        :rtype: ``dict``
+        """
+        action = "CreateNetPeering"
+        data = {"DryRun": dry_run}
+        if accepter_net_id is not None:
+            data.update({"AccepterNetId": accepter_net_id})
+        if source_net_id is not None:
+            data.update({"SourceNetId": source_net_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetPeering"]
+        return response.json()
+
+    def ex_accept_net_peering(
+        self,
+        net_peering_id: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Accepts a Net peering connection request.
+        To accept this request, you must be the owner of the peer Net. If
+        you do not accept the request within 7 days, the state of the Net
+        peering connection becomes expired.
+
+        :param      net_peering_id: The ID of the Net peering connection you
+        want to accept. (required)
+        :type       net_peering_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The accepted Net Peering
+        :rtype: ``dict``
+        """
+        action = "AcceptNetPeering"
+        data = {"DryRun": dry_run}
+        if net_peering_id is not None:
+            data.update({"NetPeeringId": net_peering_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetPeering"]
+        return response.json()
+
+    def ex_delete_net_peering(
+        self,
+        net_peering_id: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a Net peering connection.
+        If the Net peering connection is in the active state, it can be
+        deleted either by the owner of the requester Net or the owner of the
+        peer Net.
+        If it is in the pending-acceptance state, it can be deleted only by
+        the owner of the requester Net.
+        If it is in the rejected, failed, or expired states, it cannot be
+        deleted.
+
+        :param      net_peering_id: The ID of the Net peering connection you
+        want to delete. (required)
+        :type       net_peering_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteNetPeering"
+        data = {"DryRun": dry_run}
+        if net_peering_id is not None:
+            data.update({"NetPeeringId": net_peering_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_read_net_peerings(
+        self,
+        accepter_net_account_ids: [str] = None,
+        accepter_net_ip_ranges: [str] = None,
+        accepter_net_net_ids: [str] = None,
+        net_peering_ids: [str] = None,
+        source_net_account_ids: [str] = None,
+        source_net_ip_ranges: [str] = None,
+        source_net_net_ids: [str] = None,
+        state_messages: [str] = None,
+        states_names: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more peering connections between two Nets.
+
+        :param      accepter_net_account_ids: The account IDs of the owners of
+        the peer Nets.
+        :type       accepter_net_account_ids: ``list`` of ``str``
+
+        :param      accepter_net_ip_ranges: The IP ranges of the peer Nets, in
+        CIDR notation (for example, 10.0.0.0/24).
+        :type       accepter_net_ip_ranges: ``list`` of ``str``
+
+        :param      accepter_net_net_ids: The IDs of the peer Nets.
+        :type       accepter_net_net_ids: ``list`` of ``str``
+
+        :param      source_net_account_ids: The account IDs of the owners of
+        the peer Nets.
+        :type       source_net_account_ids: ``list`` of ``str``
+
+        :param      source_net_ip_ranges: The IP ranges of the peer Nets.
+        :type       source_net_ip_ranges: ``list`` of ``str``
+
+        :param      source_net_net_ids: The IDs of the peer Nets.
+        :type       source_net_net_ids: ``list`` of ``str``
+
+        :param      net_peering_ids: The IDs of the Net peering connections.
+        :type       net_peering_ids: ``list`` of ``str``
+
+        :param      state_messages: Additional information about the states of
+        the Net peering connections.
+        :type       state_messages: ``list`` of ``str``
+
+        :param      states_names: The states of the Net peering connections
+        (pending-acceptance | active | rejected | failed | expired | deleted).
+        :type       states_names: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the Net
+        peering connections.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: TThe values of the tags associated with the
+        Net peering connections.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: The key/value combination of the tags associated
+        with the Net peering connections, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: A list of Net Access Points
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadNetPeerings"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if accepter_net_account_ids is not None:
+            data["Filters"].update({
+                "AccepterNetAccountIds": accepter_net_account_ids
+            })
+        if accepter_net_ip_ranges is not None:
+            data["Filters"].update({
+                "AccepterNetIpRanges": accepter_net_ip_ranges
+            })
+        if accepter_net_net_ids is not None:
+            data["Filters"].update({"AccepterNetNetIds": accepter_net_net_ids})
+        if source_net_account_ids is not None:
+            data["Filters"].update({
+                "SourceNetAccountIds": source_net_account_ids
+            })
+        if source_net_ip_ranges is not None:
+            data["Filters"].update({
+                "SourceNetIpRanges": source_net_ip_ranges
+            })
+        if source_net_net_ids is not None:
+            data["Filters"].update({"SourceNetNetIds": source_net_net_ids})
+        if net_peering_ids is not None:
+            data["Filters"].update({"NetPeeringIds": net_peering_ids})
+        if state_messages is not None:
+            data["Filters"].update({"StateMessages": state_messages})
+        if states_names is not None:
+            data["Filters"].update({"StateNames": states_names})
+        if tag_keys is not None:
+            data["Filters"].update({"TagKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetPeerings"]
+        return response.json()
+
+    def ex_reject_net_peering(
+        self,
+        net_peering_id: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Rejects a Net peering connection request.
+        The Net peering connection must be in the pending-acceptance state to
+        be rejected. The rejected Net peering connection is then in the
+        rejected state.
+
+        :param      net_peering_id: The ID of the Net peering connection you
+        want to reject. (required)
+        :type       net_peering_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The rejected Net Peering
+        :rtype: ``dict``
+        """
+        action = "RejectNetPeering"
+        data = {"DryRun": dry_run}
+        if net_peering_id is not None:
+            data.update({"NetPeeringId": net_peering_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,

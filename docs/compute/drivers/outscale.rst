@@ -239,3 +239,12 @@ Net Access Point
 * ``ex_read_net_access_point_services`` - Returns a ``list`` of ``dict``
 * ``ex_read_net_access_points`` - Returns a ``list`` of ``dict``
 * ``ex_update_net_access_point`` - Returns a ``dict``
+
+Net Peerings
+------------
+* ``ex_accept_net_peering`` - Returns a ``dict``
+* ``ex_create_net_peering`` - Returns a ``dict``
+* ``ex_delete_net_peering`` - Returns a ``bool``
+* ``ex_read_net_peerings`` - Returns a ``list`` of ``dict``
+* ``ex_reject_net_peering`` - Returns a ``dict``
+
