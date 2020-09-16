@@ -113,8 +113,8 @@ Outscale Extra Functions
 
 The Outscale driver implement the following extra methods:
 
-IP
-__
+Public IPs
+----------
 * ``ex_create_public_ip`` - Returns a ``bool``
 * ``ex_delete_public_ip`` - Returns a ``bool``
 * ``ex_list_public_ips`` - Returns a ``dict``
@@ -258,3 +258,12 @@ Nics
 * ``ex_list_nics`` - Returns a ``list`` of ``dict``
 * ``ex_unlink_private_ips`` - Returns a ``bool``
 * ``ex_update_nic`` - Returns a ``dict``
+
+Product Types
+-------------
+* ``ex_list_product_types`` - Returns a ``list`` of ``dict``
+
+Quotas
+------
+* ``ex_list_quotas`` - Returns a ``list`` of ``dict``
+

@@ -4680,6 +4680,89 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["Nic"]
         return response.json()
 
+    def ex_list_product_types(
+        self,
+        product_type_ids: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Describes one or more product types.
+
+        :param      product_type_ids: The IDs of the product types.
+        :type       product_type_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: A ``list`` of Product Type
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadProductTypes"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if product_type_ids is not None:
+            data["Filters"].update({
+                "ProductTypeIds": product_type_ids
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ProductTypes"]
+        return response.json()
+
+    def ex_list_quotas(
+        self,
+        collections: [str] = None,
+        quota_names: [str] = None,
+        quota_types: [str] = None,
+        short_descriptions: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Describes one or more of your quotas.
+
+        :param      collections: The group names of the quotas.
+        :type       collections: ``list`` of ``str``
+
+        :param      quota_names: The names of the quotas.
+        :type       quota_names: ``list`` of ``str``
+
+        :param      quota_types: The resource IDs if these are
+        resource-specific quotas, global if they are not.
+        :type       quota_types: ``list`` of ``str``
+
+        :param      short_descriptions: The description of the quotas.
+        :type       short_descriptions: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: A ``list`` of Product Type
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadQuotas"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if collections is not None:
+            data["Filters"].update({
+                "Collections": collections
+            })
+        if quota_names is not None:
+            data["Filters"].update({
+                "QuotaNames": quota_names
+            })
+        if quota_types is not None:
+            data["Filters"].update({
+                "QuotaTypes": quota_types
+            })
+        if short_descriptions is not None:
+            data["Filters"].update({
+                "ShortDescriptions": short_descriptions
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["QuotaTypes"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
