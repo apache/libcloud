@@ -4954,6 +4954,310 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["RouteTable"]
         return response.json()
 
+    def ex_create_route_table(
+        self,
+        net_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a route table for a specified Net.
+        You can then add routes and associate this route table with a Subnet.
+
+        :param      net_id: The ID of the Net for which you want to create a
+        route table.
+        (required)
+        :type       net_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Route Table
+        :rtype: ``dict``
+        """
+        action = "CreateRouteTable"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["RouteTable"]
+        return response.json()
+
+    def ex_delete_route_table(
+        self,
+        route_table_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified route table.
+        Before deleting a route table, you must disassociate it from any
+        Subnet. You cannot delete the main route table.
+
+        :param      route_table_id: The ID of the route table you want to
+        delete. (required)
+        :type       route_table_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteRouteTable"
+        data = {"DryRun": dry_run}
+        if route_table_id is not None:
+            data.update({"RouteTableId": route_table_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_link_route_table(
+        self,
+        route_table_id: str = None,
+        subnet_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Associates a Subnet with a route table.
+        The Subnet and the route table must be in the same Net. The traffic is
+        routed according to the route table defined within this Net. You can
+        associate a route table with several Subnets.
+
+        :param      route_table_id: The ID of the route table. (required)
+        :type       route_table_id: ``str``
+
+        :param      subnet_id: The ID of the Subnet. (required)
+        :type       subnet_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Link Route Table Id
+        :rtype: ``str``
+        """
+        action = "LinkRouteTable"
+        data = {"DryRun": dry_run}
+        if route_table_id is not None:
+            data.update({"RouteTableId": route_table_id})
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["LinkRouteTableId"]
+        return response.json()
+
+    def ex_list_route_table(
+        self,
+        link_route_table_ids: [str] = None,
+        link_route_table_link_route_table_ids: [str] = None,
+        link_route_table_main: bool = None,
+        link_subnet_ids: [str] = None,
+        net_ids: [str] = None,
+        route_creation_methods: [str] = None,
+        route_destination_ip_ranges: [str] = None,
+        route_destination_service_ids: [str] = None,
+        route_gateway_ids: [str] = None,
+        route_nat_service_ids: [str] = None,
+        route_net_peering_ids: [str] = None,
+        route_states: [str] = None,
+        route_table_ids: [str] = None,
+        route_vm_ids: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more of your route tables.
+        In your Net, each Subnet must be associated with a route table. If a
+        Subnet is not explicitly associated with a route table, it is
+        implicitly associated with the main route table of the Net.
+
+        :param      link_route_table_ids: The IDs of the route tables involved
+        in the associations.
+        :type       link_route_table_ids: ``list`` of ``str``
+
+        :param      link_route_table_link_route_table_ids: The IDs of the
+        associations between the route tables and the Subnets.
+        :type       link_route_table_link_route_table_ids: ``list`` of ``str``
+
+        :param      link_route_table_main: If true, the route tables are the
+        main ones for their Nets.
+        :type       link_route_table_main: ``bool``
+
+        :param      link_subnet_ids: The IDs of the Subnets involved in the
+        associations.
+        :type       link_subnet_ids: ``list`` of ``str``
+
+        :param      net_ids: The IDs of the route tables involved
+        in the associations.
+        :type       net_ids: ``list`` of ``str``
+
+        :param      route_creation_methods: The methods used to create a route.
+        :type       route_creation_methods: ``list`` of ``str``
+
+        :param      route_destination_ip_ranges: The IP ranges specified in
+        routes in the tables.
+        :type       route_destination_ip_ranges: ``list`` of ``str``
+
+        :param      route_destination_service_ids: The service IDs specified
+        in routes in the tables.
+        :type       route_destination_service_ids: ``list`` of ``str``
+
+        :param      route_gateway_ids: The IDs of the gateways specified in
+        routes in the tables.
+        :type       route_gateway_ids: ``list`` of ``str``
+
+        :param      route_nat_service_ids: The IDs of the NAT services
+        specified in routes in the tables.
+        :type       route_nat_service_ids: ``list`` of ``str``
+
+        :param      route_net_peering_ids: The IDs of the Net peering
+        connections specified in routes in the tables.
+        :type       route_net_peering_ids: ``list`` of ``str``
+
+        :param      route_states: The states of routes in the route tables
+        (active | blackhole). The blackhole state indicates that the target
+        of the route is not available.
+        :type       route_states: ``list`` of ``str``
+
+        :param      route_table_ids: The IDs of the route tables.
+        :type       route_table_ids: ``list`` of ``str``
+
+        :param      route_vm_ids: The IDs of the VMs specified in routes in
+        the tables.
+        :type       route_vm_ids: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the route
+        tables.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        route tables.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: The key/value combination of the tags associated
+        with the route tables, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: list of Route Tables
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadRouteTables"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if link_route_table_ids is not None:
+            data["Filters"].update({
+                "LinkRouteTableIds": link_route_table_ids
+            })
+        if link_route_table_link_route_table_ids is not None:
+            data["Filters"].update({
+                "LinkRouteTableLinkRouteTableIds":
+                link_route_table_link_route_table_ids
+            })
+        if link_route_table_main is not None:
+            data["Filters"].update({
+                "LinkRouteTableMain": link_route_table_main
+            })
+        if link_subnet_ids is not None:
+            data["Filters"].update({
+                "LinkSubnetIds": link_subnet_ids
+            })
+        if net_ids is not None:
+            data["Filters"].update({
+                "NetIds": net_ids
+            })
+        if route_creation_methods is not None:
+            data["Filters"].update({
+                "RouteCreationMethods": route_creation_methods
+            })
+        if route_destination_ip_ranges is not None:
+            data["Filters"].update({
+                "RouteDestinationIpRanges": route_destination_ip_ranges
+            })
+        if route_destination_service_ids is not None:
+            data["Filters"].update({
+                "RouteDestinationServiceIds": route_destination_service_ids
+            })
+        if route_gateway_ids is not None:
+            data["Filters"].update({
+                "RouteGatewayIds": route_gateway_ids
+            })
+        if route_nat_service_ids is not None:
+            data["Filters"].update({
+                "RouteNatServiceIds": route_nat_service_ids
+            })
+        if route_net_peering_ids is not None:
+            data["Filters"].update({
+                "RouteNetPeeringIds": route_net_peering_ids
+            })
+        if route_states is not None:
+            data["Filters"].update({
+                "RouteStates": route_states
+            })
+        if route_table_ids is not None:
+            data["Filters"].update({
+                "RouteTableIds": route_table_ids
+            })
+        if route_vm_ids is not None:
+            data["Filters"].update({
+                "RouteVmIds": route_vm_ids
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if tag_values is not None:
+            data["Filters"].update({
+                "TagValues": tag_values
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["RouteTables"]
+        return response.json()
+
+    def ex_unlink_route_table(
+        self,
+        link_route_table_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Disassociates a Subnet from a route table.
+        After disassociation, the Subnet can no longer use the routes in this
+        route table, but uses the routes in the main route table of the Net
+        instead.
+
+        :param      link_route_table_id: The ID of the route table. (required)
+        :type       link_route_table_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "UnlinkRouteTable"
+        data = {"DryRun": dry_run}
+        if link_route_table_id is not None:
+            data.update({"LinkRouteTableId": link_route_table_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,

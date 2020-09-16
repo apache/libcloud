@@ -272,3 +272,11 @@ Routes
 * ``ex_create_route`` - Returns a ``dict``
 * ``ex_delete_route`` - Returns a ``bool``
 * ``ex_update_route`` - Returns a ``dict``
+
+Route Tables
+------------
+* ``ex_create_route_table`` - Returns a ``dict``
+* ``ex_delete_route_table`` - Returns a ``bool``
+* ``ex_link_route_table`` - Returns a ``bool``
+* ``ex_list_route_tables`` - Returns a ``list`` of ``dict``
+* ``ex_unlink_route_table`` - Returns a ``bool``
