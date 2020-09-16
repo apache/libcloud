@@ -267,3 +267,8 @@ Quotas
 ------
 * ``ex_list_quotas`` - Returns a ``list`` of ``dict``
 
+Routes
+------
+* ``ex_create_route`` - Returns a ``dict``
+* ``ex_delete_route`` - Returns a ``bool``
+* ``ex_update_route`` - Returns a ``dict``
