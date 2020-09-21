@@ -1093,8 +1093,8 @@ class OutscaleNodeDriver(NodeDriver):
         print(data)
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
-            return response.json()
-        return response.status_code
+            return response.json()["ConsumptionEntries"]
+        return response.json()
 
     def ex_create_account(
         self,
