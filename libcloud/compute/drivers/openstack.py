@@ -2841,6 +2841,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         self._ex_force_base_url = original_ex_force_base_url
         if original_ex_force_base_url:
             kwargs['ex_force_base_url'] = self._ex_force_base_url
+        elif 'ex_force_base_url' in kwargs:
+            del kwargs['ex_force_base_url']
         self.connectionCls = original_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
 
