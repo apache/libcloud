@@ -36,20 +36,21 @@ __all__ = [
 
 API_HOST = 'api.ovh.com'
 API_ROOT = '/1.0'
+# From https://us.ovhcloud.com/about/company/data-centers
 LOCATIONS = {
-    'BHS1': {'id': 'BHS1', 'name': 'Montreal 1', 'country': 'CA'},
-    'BHS2': {'id': 'BHS2', 'name': 'Montreal 2', 'country': 'CA'},
-    'BHS3': {'id': 'BHS3', 'name': 'Montreal 3', 'country': 'CA'},
+    'BHS1': {'id': 'BHS1', 'name': 'Beauharnois, Quebec 1', 'country': 'CA'},
+    'BHS2': {'id': 'BHS2', 'name': 'Beauharnois, Quebec 2', 'country': 'CA'},
+    'BHS3': {'id': 'BHS3', 'name': 'Beauharnois, Quebec 3', 'country': 'CA'},
+    'BHS4': {'id': 'BHS4', 'name': 'Beauharnois, Quebec 4', 'country': 'CA'},
+    'BHS5': {'id': 'BHS5', 'name': 'Beauharnois, Quebec 5', 'country': 'CA'},
+    'BHS6': {'id': 'BHS6', 'name': 'Beauharnois, Quebec 6', 'country': 'CA'},
     'DC1': {'id': 'DC1', 'name': 'Paris DC1', 'country': 'FR'},
-    'DE1': {'id': 'DE1', 'name': 'DE1', 'country': 'DE'},
-    'ERI1': {'id': 'ERI1', 'name': 'Erith 1', 'country': 'UK'},
+    'FRA1': {'id': 'FRA1', 'name': 'Frankfurt 1', 'country': 'DE'},
     'GRA1': {'id': 'GRA1', 'name': 'Gravelines 1', 'country': 'FR'},
     'GRA2': {'id': 'GRA2', 'name': 'Gravelines 2', 'country': 'FR'},
-    'GRA3': {'id': 'GRA3', 'name': 'Gravelines 3', 'country': 'FR'},
-    'GRA4': {'id': 'GRA4', 'name': 'Gravelines 4', 'country': 'FR'},
-    'GRA5': {'id': 'GRA5', 'name': 'Gravelines 5', 'country': 'FR'},
     'GSW': {'id': 'GSW', 'name': 'Paris GSW', 'country': 'FR'},
-    'LIM1': {'id': 'LIM1', 'name': 'Limburg 1', 'country': 'DE'},
+    'HIL1': {'id': 'HIL1', 'name': 'Hillsboro, Oregon 1', 'country': 'US'},
+    'LON1': {'id': 'LON1', 'name': 'London 1', 'country': 'UK'},
     'P19': {'id': 'P19', 'name': 'Paris P19', 'country': 'FR'},
     'RBX1': {'id': 'RBX1', 'name': 'Roubaix 1', 'country': 'FR'},
     'RBX2': {'id': 'RBX2', 'name': 'Roubaix 2', 'country': 'FR'},
@@ -61,11 +62,9 @@ LOCATIONS = {
     'SBG1': {'id': 'SBG1', 'name': 'Strasbourg 1', 'country': 'FR'},
     'SBG2': {'id': 'SBG2', 'name': 'Strasbourg 2', 'country': 'FR'},
     'SBG3': {'id': 'SBG3', 'name': 'Strasbourg 3', 'country': 'FR'},
-    'SBG4': {'id': 'SBG4', 'name': 'Strasbourg 4', 'country': 'FR'},
     'SGP1': {'id': 'SGP1', 'name': 'Singapore 1', 'country': 'SG'},
     'SYD1': {'id': 'SYD1', 'name': 'Sydney 1', 'country': 'AU'},
-    'UK1': {'id': 'UK1', 'name': 'London 1', 'country': 'UK'},
-    'VIN1': {'id': 'VIN1', 'name': 'Vint Hill 1', 'country': 'US'},
+    'VIN1': {'id': 'VIN1', 'name': 'Vint Hill, Virginia 1', 'country': 'US'},
     'WAW1': {'id': 'WAW1', 'name': 'Warsaw 1', 'country': 'PL'},
 }
 DEFAULT_ACCESS_RULES = [
