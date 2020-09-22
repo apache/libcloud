@@ -292,3 +292,11 @@ Security Group Rules
 --------------------
 * ``ex_create_security_group_rule`` - Returns a ``dict``
 * ``ex_delete_security_group_rule`` - Returns a ``dict``
+
+
+Subnets
+-------
+* ``ex_create_subnet`` - Returns a ``dict``
+* ``ex_delete_subnet`` - Returns a ``bool``
+* ``ex_list_subnets`` - Returns a ``list`` of ``dict``
+* ``ex_update_subnet`` - Returns a ``dict``

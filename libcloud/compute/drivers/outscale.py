@@ -5465,7 +5465,7 @@ class OutscaleNodeDriver(NodeDriver):
         :return: The new Security Group
         :rtype: ``dict``
         """
-        action = "CreateRoute"
+        action = "CreateSecurityGroup"
         data = {"DryRun": dry_run}
         if description is not None:
             data.update({"Description": description})
@@ -5827,6 +5827,226 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["SecurityGroup"]
+        return response.json()
+
+    def ex_delete_subnet(
+        self,
+        subnet_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified Subnet.
+        You must terminate all the running virtual machines (VMs) in the
+        Subnet before deleting it.
+
+        :param      subnet_id: The ID of the Subnet you want to delete.
+        (required)
+        :type       subnet_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteSubnet"
+        data = {"DryRun": dry_run}
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_update_subnet(
+        self,
+        subnet_id: str = None,
+        map_public_ip_on_launch: bool = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified Subnet.
+        You must terminate all the running virtual machines (VMs) in the
+        Subnet before deleting it.
+
+        :param      subnet_id: The ID of the Subnet you want to delete.
+        (required)
+        :type       subnet_id: ``str``
+
+        :param      map_public_ip_on_launch: If true, a public IP address is
+        assigned to the network interface cards (NICs) created in the s
+        pecified Subnet. (required)
+        :type       map_public_ip_on_launch: ``bool``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The updated Subnet
+        :rtype: ``dict``
+        """
+        action = "DeleteSubnet"
+        data = {"DryRun": dry_run}
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
+        if map_public_ip_on_launch is not None:
+            data.update({"MapPublicIpOnLaunch": map_public_ip_on_launch})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json["Subnet"]
+        return response.json()
+
+    def ex_list_subnets(
+        self,
+        available_ip_counts: [str] = None,
+        ip_ranges: [str] = None,
+        net_ids: [str] = None,
+        states: [str] = None,
+        subnet_ids: [str] = None,
+        subregion_names: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more of your Subnets.
+        If you do not specify any Subnet ID, this action describes all of
+        your Subnets.
+
+
+        :param      available_ip_counts: The number of available IPs.
+        :type       available_ip_counts: ``str``
+
+        :param      ip_ranges: The IP ranges in the Subnets, in CIDR notation
+        (for example, 10.0.0.0/16).
+        :type       ip_ranges: ``str``
+
+        :param      net_ids: The IDs of the Nets in which the Subnets are.
+        :type       net_ids: ``str``
+
+        :param      states: The states of the Subnets (pending | available).
+        :type       states: ``str``
+
+        :param      subnet_ids: The IDs of the Subnets.
+        :type       subnet_ids: ``str``
+
+        :param      subregion_names: The names of the Subregions in which the
+        Subnets are located.
+        :type       subregion_names: ``str``
+
+        :param      tag_keys: TThe keys of the tags associated with the
+        subnets.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        subnets.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: TThe key/value combination of the tags associated
+        with the subnets, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of Subnets
+        :rtype: ``list`` of  ``dict``
+        """
+        action = "ReadSubnets"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if available_ip_counts is not None:
+            data["Filters"].update({
+                "AvailableIpsCounts": available_ip_counts
+            })
+        if ip_ranges is not None:
+            data["Filters"].update({
+                "IpRanges": ip_ranges
+            })
+        if net_ids is not None:
+            data["Filters"].update({
+                "NetIds": net_ids
+            })
+        if states is not None:
+            data["Filters"].update({
+                "States": states
+            })
+        if subnet_ids is not None:
+            data["Filters"].update({
+                "SubetIds": subnet_ids
+            })
+        if subregion_names is not None:
+            data["Filters"].update({
+                "SubregionNames": subregion_names
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if tag_values is not None:
+            data["Filters"].update({
+                "TagValues": tag_values
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Subnets"]
+        return response.json()
+
+    def ex_create_subnet(
+        self,
+        ip_range: str = None,
+        net_id: str = None,
+        subregion_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a Subnet in an existing Net.
+        To create a Subnet in a Net, you have to provide the ID of the Net and
+        the IP range for the Subnet (its network range). Once the Subnet is
+        created, you cannot modify its IP range.
+        The IP range of the Subnet can be either the same as the Net one if
+        you create only a single Subnet in this Net, or a subset of the Net
+        one. In case of several Subnets in a Net, their IP ranges must not
+        overlap. The smallest Subnet you can create uses a /30 netmask
+        (four IP addresses).
+
+        :param      ip_range: The IP range in the Subnet, in CIDR notation
+        (for example, 10.0.0.0/16). (required)
+        :type       ip_range: ``str``
+
+        :param      net_id: The ID of the Net for which you want to create a
+        Subnet. (required)
+        :type       net_id: ``str``
+
+        :param      subregion_name: TThe name of the Subregion in which you
+        want to create the Subnet.
+        :type       subregion_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Subnet
+        :rtype: ``dict``
+        """
+        action = "CreateSubnet"
+        data = {"DryRun": dry_run}
+        if ip_range is not None:
+            data.update({"IpRange": ip_range})
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if subregion_name is not None:
+            data.update({"SubregionName": subregion_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Subnet"]
         return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
