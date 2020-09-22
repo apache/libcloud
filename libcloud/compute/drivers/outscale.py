@@ -3494,8 +3494,8 @@ class OutscaleNodeDriver(NodeDriver):
         the policies to be enabled).
         :type       policy_names: ``list`` of ``str``
 
-        :param      server_certificate_id: The list of policy names (must contain all
-        the policies to be enabled).
+        :param      server_certificate_id: The list of policy names (must
+        contain all the policies to be enabled).
         :type       server_certificate_id: ``str``
 
         :param      dry_run: If true, checks whether you have the required
@@ -5423,6 +5423,182 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return True
         return False
+
+    def ex_create_security_group(
+        self,
+        description: str = None,
+        net_id: str = None,
+        security_group_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a security group.
+        This action creates a security group either in the public Cloud or in
+        a specified Net. By default, a default security group for use in the
+        public Cloud and a default security group for use in a Net are created.
+        When launching a virtual machine (VM), if no security group is
+        explicitly specified, the appropriate default security group is
+        assigned to the VM. Default security groups include a default rule
+        granting VMs network access to each other.
+        When creating a security group, you specify a name. Two security
+        groups for use in the public Cloud or for use in a Net cannot have
+        the same name.
+        You can have up to 500 security groups in the public Cloud. You can
+        create up to 500 security groups per Net.
+        To add or remove rules, use the ex_create_security_group_rule method.
+
+        :param      description: A description for the security group, with a
+        maximum length of 255 ASCII printable characters. (required)
+        :type       description: ``str``
+
+        :param      net_id: The ID of the Net for the security group.
+        :type       net_id: ``str``
+
+        :param      security_group_name: The name of the security group.
+        (required)
+        :type       security_group_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Security Group
+        :rtype: ``dict``
+        """
+        action = "CreateRoute"
+        data = {"DryRun": dry_run}
+        if description is not None:
+            data.update({"Description": description})
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if security_group_name is not None:
+            data.update({"SecurityGroupName": security_group_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroup"]
+        return response.json()
+
+    def ex_delete_security_group(
+        self,
+        security_group_id: str = None,
+        security_group_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified security group.
+        You can specify either the name of the security group or its ID.
+        This action fails if the specified group is associated with a virtual
+        machine (VM) or referenced by another security group.
+
+        :param      security_group_id: The ID of the security group you want
+        to delete.
+        :type       security_group_id: ``str``
+
+        :param      security_group_name: TThe name of the security group.
+        :type       security_group_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteSecurityGroup"
+        data = {"DryRun": dry_run}
+        if security_group_id is not None:
+            data.update({"SecurityGroupId": security_group_id})
+        if security_group_name is not None:
+            data.update({"SecurityGroupName": security_group_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_security_groups(
+        self,
+        account_ids: [str] = None,
+        net_ids: [str] = None,
+        security_group_ids: [str] = None,
+        security_group_names: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more security groups.
+        You can specify either the name of the security groups or their IDs.
+
+        :param      account_ids: The account IDs of the owners of the security
+        groups.
+        :type       account_ids: ``list`` of ``str``
+
+        :param      net_ids: The IDs of the Nets specified when the security
+        groups were created.
+        :type       net_ids: ``list`` of ``str``
+
+        :param      security_group_ids: The IDs of the security groups.
+        :type       security_group_ids: ``list`` of ``str``
+
+        :param      security_group_names: The names of the security groups.
+        :type       security_group_names: ``list`` of ``str``
+
+        :param      tag_keys: TThe keys of the tags associated with the
+        security groups.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        security groups.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: TThe key/value combination of the tags associated
+        with the security groups, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of Security Groups
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadSecurityGroups"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if account_ids is not None:
+            data["Filters"].update({
+                "AccountIds": account_ids
+            })
+        if net_ids is not None:
+            data["Filters"].update({
+                "NetIds": net_ids
+            })
+        if security_group_ids is not None:
+            data["Filters"].update({
+                "SecurityGroupIds": security_group_ids
+            })
+        if security_group_names is not None:
+            data["Filters"].update({
+                "SecurityGroupNames": security_group_names
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if tag_values is not None:
+            data["Filters"].update({
+                "TagValues": tag_values
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroups"]
+        return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(

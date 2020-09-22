@@ -281,3 +281,9 @@ Route Tables
 * ``ex_link_route_table`` - Returns a ``bool``
 * ``ex_list_route_tables`` - Returns a ``list`` of ``dict``
 * ``ex_unlink_route_table`` - Returns a ``bool``
+
+Security Groups
+---------------
+* ``ex_create_security_group`` - Returns a ``dict``
+* ``ex_delete_security_group`` - Returns a ``bool``
+* ``ex_list_security_groups`` - Returns a ``list`` of ``dict``
