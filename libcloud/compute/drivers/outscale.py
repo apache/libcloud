@@ -1090,7 +1090,6 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"FromDate": from_date})
         if to_date is not None:
             data.update({"ToDate": to_date})
-        print(data)
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["ConsumptionEntries"]
