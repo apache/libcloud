@@ -11,6 +11,11 @@ Compute
   (GITHUB-1485)
   [Poul Petersen - @petersen-poul]
 
+- [OpenStack] Fix error setting ``ex_force_XXX_url`` without setting
+   ``ex_force_base_url``.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
