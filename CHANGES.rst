@@ -12,7 +12,7 @@ Compute
   [Poul Petersen - @petersen-poul]
 
 - [OpenStack] Fix error setting ``ex_force_XXX_url`` without setting
-   ``ex_force_base_url``.
+  ``ex_force_base_url``.
   (GITHUB-1492)
   [Miguel Caballer - @micafer]
 
