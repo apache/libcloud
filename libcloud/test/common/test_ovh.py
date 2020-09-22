@@ -16,7 +16,7 @@
 import re
 from libcloud.test import MockHttp
 
-FORMAT_URL = re.compile(r'[./?=-]')
+FORMAT_URL = re.compile(r'[./?=&-]')
 
 
 class BaseOvhMockHttp(MockHttp):

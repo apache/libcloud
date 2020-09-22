@@ -44,7 +44,8 @@ class OvhNodeDriver(NodeDriver):
     VOLUME_STATE_MAP = OpenStackNodeDriver.VOLUME_STATE_MAP
     SNAPSHOT_STATE_MAP = OpenStackNodeDriver.SNAPSHOT_STATE_MAP
 
-    def __init__(self, key, secret, ex_project_id, ex_consumer_key=None, ex_datacenter=None):
+    def __init__(self, key, secret, ex_project_id, ex_consumer_key=None,
+                 ex_datacenter=None):
         """
         Instantiate the driver with the given API credentials.
 
@@ -68,7 +69,8 @@ class OvhNodeDriver(NodeDriver):
         self.datacenter = ex_datacenter
         self.project_id = ex_project_id
         self.consumer_key = ex_consumer_key
-        NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key, ex_datacenter=ex_datacenter)
+        NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key,
+                            ex_datacenter=ex_datacenter)
 
     def _get_project_action(self, suffix):
         base_url = '%s/cloud/project/%s/' % (API_ROOT, self.project_id)
@@ -457,11 +459,13 @@ class OvhNodeDriver(NodeDriver):
         response = self.connection.request(action, method='DELETE')
         return response.status == httplib.OK
 
-    def ex_get_pricing(self, size_id):
-        pricing = self.connection.request('%s/cloud/price' % (API_ROOT),
-            params={'flavorId': size_id}).object['instances'][0]
+    def ex_get_pricing(self, size_id, subsidiary='US'):
+        action = '%s/cloud/subsidiaryPrice' % (API_ROOT)
+        params = {'flavorId': size_id, 'ovhSubsidiary': subsidiary}
+        pricing = self.connection.request(action, params=params
+                                          ).object['instances'][0]
         return {'hourly': pricing['price']['value'],
-            'monthly': pricing['monthlyPrice']['value']}
+                'monthly': pricing['monthlyPrice']['value']}
 
     def _to_volume(self, obj):
         extra = obj.copy()

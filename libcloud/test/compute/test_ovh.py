@@ -126,6 +126,10 @@ class OvhMockHttp(BaseOvhMockHttp):
         body = self.fixtures.load('volume_snapshot_get_details.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(self, method, url, body, headers):
+        body = self.fixtures.load('pricing_get.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 @patch('libcloud.common.ovh.OvhConnection._timedelta', 42)
 class OvhTests(unittest.TestCase):
@@ -237,6 +241,9 @@ class OvhTests(unittest.TestCase):
         snapshot = self.driver.ex_get_volume_snapshot('foo')
         result = self.driver.destroy_volume_snapshot(snapshot)
         self.assertTrue(result)
+
+    def test_get_pricing(self):
+        self.driver.ex_get_pricing('foo-id')
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
