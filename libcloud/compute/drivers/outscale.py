@@ -631,6 +631,96 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, data)
         return self._to_node_image(response.json()["Image"])
 
+      def ex_create_image_export_task(
+        self,
+        image: NodeImage = None,
+        osu_export_disk_image_format: str = None,
+        osu_export_api_key_id: str = None,
+        osu_export_api_secret_key: str = None,
+        osu_export_bucket: str = None,
+        osu_export_manifest_url: str = None,
+        osu_export_prefix: str = None,
+        dry_run: bool = False,
+    ):
+    """
+        Exports an Outscale machine image (OMI) to an Object Storage Unit 
+        (OSU) bucket.
+        This action enables you to copy an OMI between accounts in different 
+        Regions. To copy an OMI in the same Region,
+        you can also use the CreateImage method.
+        The copy of the OMI belongs to you and is
+        independent from the source OMI.
+
+        :param      image: The ID of the OMI to export. (required)
+        :type       image: ``NodeImage``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :param      osu_export_disk_image_format: The format of the 
+        export disk (qcow2 | vdi | vmdk). (required)
+        :type       osu_export_disk_image_format: ``str``
+
+        :param      osu_export_api_key_id: The API key of the OSU
+        account that enables you to access the bucket.
+        :type       osu_export_api_key_id: ``str``
+
+        :param      osu_export_api_secret_key: The secret key of the 
+        OSU account that enables you to access the bucket.
+        :type       osu_export_api_secret_key: ``bool``
+
+        :param      osu_export_bucket: The name of the OSU bucket 
+        you want to export the object to. (required)
+        :type       osu_export_bucket: ``bool``
+
+        :param      osu_export_manifest_url: The URL of the manifest file.
+        :type       osu_export_manifest_url: ``bool``
+
+        :param      osu_export_prefix: The prefix for the key of 
+        the OSU object. This key follows this format: 
+        prefix + object_export_task_id + '.' + disk_image_format.
+        :type       osu_export_prefix: ``bool``
+
+        :return: the created image export task
+        :rtype: ``dict``
+        """
+        action =  "CreateImageExportTask"
+        data = {
+            "DryRun": ex_dry_run,
+            "OsuExport": {
+                "OsuApiKey": {}
+            },
+            }
+        }
+        if image is not None:
+            data.update({"ImageId": image.id})
+        if osu_export_disk_image_format is not None:
+            data["OsuExport"].update({
+                "DiskImageFormat": osu_export_disk_image_format
+                })
+        if osu_export_bucket is not None:
+            data["OsuExport"].update({"OsuBucket": osu_export_bucket})
+        if osu_export_manifest_url is not None:
+            data["OsuExport"].update({
+                "OsuManifestUrl": osu_export_manifest_url
+                })
+        if osu_export_prefix is not None:
+            data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
+        if osu_export_api_key_id is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "ApiKeyId": osu_export_api_key_id
+                })
+        if osu_export_api_secret_key is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "SecretKey": osu_export_api_secret_key
+                })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ImageExportTask"]
+        return response.json()
+
+
     def list_images(self, ex_data: str = "{}"):
         """
         List all images.
@@ -641,6 +731,35 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadImages"
         response = self._call_api(action, ex_data)
         return self._to_node_images(response.json()["Images"])
+
+    def ex_list_images_export_tasks(
+        self,
+        dry_run: bool = False,
+        task_ids: [str] = False,
+        ):
+        """
+        Lists one or more image export tasks.
+
+        :param      task_ids: The IDs of the export tasks.
+        :type       task_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: image export tasks
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadListenerRules"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if task_ids is not None:
+            data["Filters"].update({
+                "TaskIds": task_ids
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ImageExportTasks"]
+        return response.json()
 
     def get_image(self, image_id: str):
         """
@@ -672,6 +791,83 @@ class OutscaleNodeDriver(NodeDriver):
         if self._call_api(action, data).status_code == 200:
             return True
         return False
+
+    def ex_update_image(
+        self,
+        dry_run: bool = False,
+        image: NodeImage = None,
+        perm_to_launch_addition_account_ids: [str] = None,
+        perm_to_launch_addition_global_permission: bool = None,
+        perm_to_launch_removals_account_ids: [str] = None,
+        perm_to_launch_removals_global_permission: bool = None
+    ):
+    """
+        Modifies the specified attribute of an Outscale machine image (OMI).
+        You can specify only one attribute at a time. You can modify 
+        the permissions to access the OMI by adding or removing account 
+        IDs or groups. You can share an OMI with a user that is in the 
+        same Region. The user can create a copy of the OMI you shared, 
+        obtaining all the rights for the copy of the OMI.
+        For more information, see CreateImage.
+
+        :param      image: The ID of the OMI to export. (required)
+        :type       image: ``NodeImage``
+
+        :param      perm_to_launch_addition_account_ids: The account 
+        ID of one or more users who have permissions for the resource.
+        :type       perm_to_launch_addition_account_ids:
+        ``list`` of ``dict``
+
+        :param      perm_to_launch_addition_global_permission:
+        If true, the resource is public. If false, the resource is private.
+        :type       permission_to_launch_addition_global_permission: ``boolean``
+
+        :param      perm_to_launch_removals_account_ids: The account
+        ID of one or more users who have permissions for the resource.
+        :type       imperm_to_launch_removals_account_idsage:
+        ``list`` of ``dict``
+
+        :param      perm_to_launch_removals_global_permission: If true, 
+        the resource is public. If false, the resource is private.
+        :type       perm_to_launch_removals_global_permission: ``boolean``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: the new image
+        :rtype: ``dict``
+        """
+        action = "UpdateImage"
+        data = {
+            "DryRun": ex_dry_run,
+            "PermissionsToLaunch": {
+                "Additions": {}
+                "Removals": {}
+            }
+        }
+        if image is not None:
+            data.update({"ImageId": image.id})
+        if perm_to_launch_addition_account_ids is not None:
+            data["PermissionsToLaunch"]["Additions"].update({
+                "AccountIds": perm_to_launch_addition_account_ids
+                })
+        if perm_to_launch_addition_global_permission is not None:
+            data["PermissionsToLaunch"]["Additions"].update({
+                "GlobalPermission": perm_to_launch_addition_global_permission
+                })
+        if perm_to_launch_removals_account_ids is not None:
+            data["PermissionsToLaunch"]["Removals"].update({
+            "AccountIds": perm_to_launch_removals_account_ids
+            })
+        if perm_to_launch_removals_global_permission is not None:
+            data["PermissionsToLaunch"]["Removals"].update({
+                "GlobalPermission": perm_to_launch_removals_global_permission
+                })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Image"]
+        return response.json()
 
     def create_key_pair(self,
                         name: str,

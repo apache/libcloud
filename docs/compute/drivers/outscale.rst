@@ -85,6 +85,9 @@ Images
 * ``list_images`` - Returns a list of ``NodeImage``
 * ``get_image`` - Returns a ``NodeImage``
 * ``delete_image`` - Return a ``bool``
+* ``ex_create_image_export_task`` - Returns a ``dict``
+* ``ex_list_image_export_task`` - Returns a ``list`` of ``dict``
+* ``ex_update_image`` - Returns a ``dict``
 
 Key Pairs
 _________
