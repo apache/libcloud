@@ -122,7 +122,6 @@ Public IPs
 * ``ex_attach_public_ip`` - Returns a ``bool``
 * ``ex_detach_public_ip`` - Returns a ``bool``
 
-
 Accounts
 --------
 * ``ex_check_account`` - Returns a ``bool``
@@ -131,7 +130,6 @@ Accounts
 * ``ex_send_reset_password_email`` - Returns a ``bool``
 * ``ex_create_account`` - Returns a ``bool``
 * ``ex_update_account`` - Returns a ``dict``
-
 
 Tags
 ----
@@ -207,12 +205,15 @@ Listener
 Load Balancers
 --------------
 * ``ex_create_load_balancer`` - Returns a ``dict``
+* ``ex_update_load_balancer`` - Returns a ``dict``
 * ``ex_create_load_balancer_tags`` - Returns a ``bool``
 * ``ex_delete_load_balancer`` - Returns a ``bool``
 * ``ex_delete_load_balancer_tags`` - Returns a ``bool``
 * ``ex_deregister_vms_in_load_balancer`` - Returns a ``bool``
+* ``ex_register_vms_in_load_balancer`` - Returns a ``bool``
 * ``ex_list_load_balancer_tags`` - Returns a ``list`` of ``dict``
 * ``ex_list_vms_health`` - Returns a ``list`` of ``dict``
+* ``ex_list_load_balancers`` - Returns a ``list`` of ``dict``
 
 Load Balancer Policies
 ----------------------

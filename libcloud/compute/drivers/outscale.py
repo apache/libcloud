@@ -102,7 +102,9 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadRegions"
         data = json.dumps({"DryRun": ex_dry_run})
         response = self._call_api(action, data)
-        return response.json()["Regions"]
+        if response.status_code == 200:
+            return response.json()["Regions"]
+        return response.json()
 
     def ex_list_subregions(self, ex_dry_run: bool = False):
         """
@@ -3265,7 +3267,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def read_load_balancer_tags(
+    def ex_list_load_balancer_tags(
         self,
         load_balancer_names: [str] = None,
         dry_run: bool = False,
@@ -3294,7 +3296,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["Tags"]
         return response.json()
 
-    def read_load_balancers(
+    def ex_list_load_balancers(
         self,
         load_balancer_names: [str] = None,
         dry_run: bool = False,
@@ -3396,6 +3398,170 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["BackendVmHealth"]
         return response.json()
+
+    def ex_update_load_balancer(
+        self,
+        access_log_is_enabled: bool = None,
+        access_log_osu_bucket_name: str = None,
+        access_log_osu_bucket_prefix: str = None,
+        access_log_publication_interval: int = None,
+        health_check_interval: int = None,
+        health_check_healthy_threshold: int = None,
+        health_check_path: str = None,
+        health_check_port: int = None,
+        health_check_protocol: str = None,
+        health_check_timeout: int = None,
+        health_check_unhealthy_threshold: int = None,
+        load_balancer_name: str = None,
+        load_balancer_port: int = None,
+        policy_names: [str] = None,
+        server_certificate_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Modifies the specified attributes of a load balancer.
+
+        You can set a new SSL certificate to an SSL or HTTPS listener of a
+        load balancer.
+        This certificate replaces any certificate used on the same load
+        balancer and port.
+
+        You can also replace the current set of policies for a load balancer
+        with another specified one.
+        If the PolicyNames parameter is empty, all current policies are
+        disabled.
+
+        :param      access_log_is_enabled: If true, access logs are enabled
+        for your load balancer.
+        If false, they are not. If you set this to true in your request, the
+        OsuBucketName parameter is required.
+        :type       access_log_is_enabled: ``bool`
+
+        :param      access_log_osu_bucket_name: The name of the Object Storage
+        Unit (OSU) bucket for the access logs.
+        :type       access_log_osu_bucket_name: ``str``
+
+        :param      access_log_osu_bucket_prefix: The path to the folder of
+        the access logs in your Object Storage Unit (OSU) bucket (by default,
+        the root level of your bucket).
+        :type       access_log_osu_bucket_prefix: ``str``
+
+        :param      access_log_publication_interval: The time interval for the
+        publication of access logs in the Object Storage Unit (OSU) bucket,
+        in minutes. This value can be either 5 or 60 (by default, 60).
+        :type       access_log_publication_interval: ``int``
+
+        :param      health_check_interval: Information about the health check
+        configuration. (required)
+        :type       health_check_interval: ``int``
+
+        :param      health_check_healthy_thresold: The number of consecutive
+        successful pings before considering the VM as healthy (between 2 and
+        10 both included). (required)
+        :type       health_check_healthy_thresold: ``int``
+
+        :param      health_check_path: The path for HTTP or HTTPS requests.
+        (required)
+        :type       health_check_path: ``str``
+
+        :param      health_check_port: The port number (between 1 and 65535,
+        both included). (required)
+        :type       health_check_port: ``int``
+
+        :param      health_check_protocol: The protocol for the URL of the VM
+        (HTTP | HTTPS | TCP | SSL | UDP). (required)
+        :type       health_check_protocol: ``str``
+
+        :param      health_check_timeout: The maximum waiting time for a
+        response before considering the VM as unhealthy, in seconds (between 2
+        and 60 both included). (required)
+        :type       health_check_timeout: ``int``
+
+        :param      health_check_unhealthy_thresold: The number of consecutive
+        failed pings before considering the VM as unhealthy (between 2 and
+        10 both included). (required)
+        :type       health_check_unhealthy_thresold: ``int``
+
+        :param      load_balancer_name: The name of the load balancer.
+        (required)
+        :type       load_balancer_name: ``str``
+
+        :param      load_balancer_port: The port on which the load balancer is
+        listening (between 1 and 65535, both included).
+        :type       load_balancer_port: ``int``
+
+        :param      policy_names: The list of policy names (must contain all
+        the policies to be enabled).
+        :type       policy_names: ``list`` of ``str``
+
+        :param      server_certificate_id: The list of policy names (must contain all
+        the policies to be enabled).
+        :type       server_certificate_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Update the specified Load Balancer
+        :rtype: ``dict``
+        """
+        action = "UpdateLoadBalancer"
+        data = {"DryRun": dry_run, "AccessLog": {}, "HealthCheck": {}}
+        if access_log_is_enabled is not None:
+            data["AccessLog"].update({"IsEnabled": access_log_is_enabled})
+        if access_log_osu_bucket_name is not None:
+            data["AccessLog"].update({
+                "OsuBucketName": access_log_osu_bucket_name
+            })
+        if access_log_osu_bucket_prefix is not None:
+            data["AccessLog"].update({
+                "OsuBucketPrefix": access_log_osu_bucket_prefix
+            })
+        if access_log_publication_interval is not None:
+            data["AccessLog"].update({
+                "PublicationInterval": access_log_publication_interval
+            })
+        if health_check_interval is not None:
+            data["HealthCheck"].update({
+                "CheckInterval": health_check_interval
+            })
+        if health_check_healthy_threshold is not None:
+            data["HealthCheck"].update({
+                "HealthyThreshold": health_check_healthy_threshold
+            })
+        if health_check_path is not None:
+            data["HealthCheck"].update({
+                "Path": health_check_path
+            })
+        if health_check_port is not None:
+            data["HealthCheck"].update({
+                "Port": health_check_port
+            })
+        if health_check_protocol is not None:
+            data["HealthCheck"].update({
+                "Protocol": health_check_protocol
+            })
+        if health_check_timeout is not None:
+            data["HealthCheck"].update({
+                "Timeout": health_check_timeout
+            })
+        if health_check_unhealthy_threshold is not None:
+            data["HealthCheck"].update({
+                "UnhealthyThreshold": health_check_unhealthy_threshold
+            })
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        if load_balancer_port is not None:
+            data.update({"LoadBalancerPort": load_balancer_port})
+        if policy_names is not None:
+            data.update({"PolicyNames": policy_names})
+        if server_certificate_id is not None:
+            data.update({"ServerCertificateId": server_certificate_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["LoadBalancer"]
+        return response.json()
+
 
     def ex_create_load_balancer_policy(
         self,
