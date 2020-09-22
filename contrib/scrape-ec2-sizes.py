@@ -200,13 +200,21 @@ def download_json():
     if os.path.isfile(FILEPATH):
         return open(FILEPATH, 'r')
 
+    def remove_partial_cached_file():
+        if os.path.isfile(FILEPATH):
+            os.remove(FILEPATH)
+
     # File not cached locally, download data and cache it
     with requests.get(URL, stream=True) as response:
+        atexit.register(remove_partial_cached_file)
+
         with open(FILEPATH, 'wb') as fp:
             # NOTE: We use shutil.copyfileobj with large chunk size instead of
             # response.iter_content with large chunk size since data we
             # download is massive and copyfileobj is more efficient.
             shutil.copyfileobj(response.raw, fp, 10 * 1024 * 1024)
+
+        atexit.unregister(remove_partial_cached_file)
 
     return open(FILEPATH, 'r')
 
