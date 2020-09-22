@@ -668,19 +668,19 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      osu_export_api_secret_key: The secret key of the 
         OSU account that enables you to access the bucket.
-        :type       osu_export_api_secret_key: ``bool``
+        :type       osu_export_api_secret_key: ``str``
 
         :param      osu_export_bucket: The name of the OSU bucket 
         you want to export the object to. (required)
-        :type       osu_export_bucket: ``bool``
+        :type       osu_export_bucket: ``str``
 
         :param      osu_export_manifest_url: The URL of the manifest file.
-        :type       osu_export_manifest_url: ``bool``
+        :type       osu_export_manifest_url: ``str``
 
         :param      osu_export_prefix: The prefix for the key of 
         the OSU object. This key follows this format: 
         prefix + object_export_task_id + '.' + disk_image_format.
-        :type       osu_export_prefix: ``bool``
+        :type       osu_export_prefix: ``str``
 
         :return: the created image export task
         :rtype: ``dict``
@@ -820,7 +820,8 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      perm_to_launch_addition_global_permission:
         If true, the resource is public. If false, the resource is private.
-        :type       permission_to_launch_addition_global_permission: ``boolean``
+        :type       permission_to_launch_addition_global_permission:
+        ``boolean``
 
         :param      perm_to_launch_removals_account_ids: The account
         ID of one or more users who have permissions for the resource.
