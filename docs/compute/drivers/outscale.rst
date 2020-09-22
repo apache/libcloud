@@ -304,3 +304,13 @@ Subnets
 Tasks
 -----
 * ``ex_delete_export_task`` - Returns a ``bool``
+
+Vpn Connections
+---------------
+* ``ex_create_vpn_connection`` - Returns a ``dict``
+* ``ex_create_vpn_connection_route`` - Returns a ``bool``
+* ``ex_delete_vpn_connection`` - Returns a ``bool``
+* ``ex_delete_vpn_connection_route`` - Returns a ``bool``
+* ``ex_list_vpn_connections`` - Returns a ``list`` of ``dict``
+
+

@@ -6079,6 +6079,278 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
+    def ex_create_vpn_connection(
+        self,
+        client_gateway_id: str = None,
+        connection_type: str = None,
+        static_routes_only: bool = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a VPN connection between a specified virtual gateway and a
+        specified client gateway.
+        You can create only one VPN connection between a virtual gateway and
+        a client gateway.
+
+        :param      client_gateway_id: The ID of the client gateway. (required)
+        :type       client_gateway_id: ``str``
+
+        :param      connection_type: The type of VPN connection (only ipsec.1
+        is supported). (required)
+        :type       connection_type: ``str``
+
+        :param      static_routes_only: If false, the VPN connection uses
+        dynamic routing with Border Gateway Protocol (BGP). If true, routing
+        is controlled using static routes. For more information about how to
+        create and delete static routes, see CreateVpnConnectionRoute:
+        https://docs.outscale.com/api#createvpnconnectionroute and
+        DeleteVpnConnectionRoute:
+        https://docs.outscale.com/api#deletevpnconnectionroute
+        :type       static_routes_only: ``bool``
+
+        :param      virtual_gateway_id: The ID of the virtual gateway.
+        (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Vpn Connection
+        :rtype: ``dict``
+        """
+        action = "CreateVpnConnection"
+        data = {"DryRun": dry_run}
+        if client_gateway_id is not None:
+            data.update({"ClientGatewayId": client_gateway_id})
+        if connection_type is not None:
+            data.update({"ConnectionType": connection_type})
+        if static_routes_only is not None:
+            data.update({"StaticRoutesOnly": static_routes_only})
+        if virtual_gateway_id is not None:
+            data.update({"StaticRoutesOnly": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VpnConnection"]
+        return response.json()
+
+    def ex_create_vpn_connection_route(
+        self,
+        destination_ip_range: str = None,
+        vpn_connection_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a static route to a VPN connection.
+        This enables you to select the network flows sent by the virtual
+        gateway to the target VPN connection.
+
+        :param      destination_ip_range: The network prefix of the route, in
+        CIDR notation (for example, 10.12.0.0/16).(required)
+        :type       destination_ip_range: ``str``
+
+        :param      vpn_connection_id: The ID of the target VPN connection of
+        the static route. (required)
+        :type       vpn_connection_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "CreateVpnConnectionRoute"
+        data = {"DryRun": dry_run}
+        if destination_ip_range is not None:
+            data.update({"DestinationIpRange": destination_ip_range})
+        if vpn_connection_id is not None:
+            data.update({"VpnConnectionId": vpn_connection_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_vpn_connection(
+        self,
+        vpn_connection_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified VPN connection.
+        If you want to delete a Net and all its dependencies, we recommend to
+        detach the virtual gateway from the Net and delete the Net before
+        deleting the VPN connection. This enables you to delete the Net
+        without waiting for the VPN connection to be deleted.
+
+        :param      vpn_connection_id: TThe ID of the VPN connection you want
+        to delete.
+        (required)
+        :type       vpn_connection_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteVpnConnection"
+        data = {"DryRun": dry_run}
+        if vpn_connection_id is not None:
+            data.update({"VpnConnectionId": vpn_connection_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_vpn_connection_route(
+        self,
+        vpn_connection_id: str = None,
+        destination_ip_range: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified VPN connection.
+        If you want to delete a Net and all its dependencies, we recommend to
+        detach the virtual gateway from the Net and delete the Net before
+        deleting the VPN connection. This enables you to delete the Net
+        without waiting for the VPN connection to be deleted.
+
+        :param      vpn_connection_id: TThe ID of the VPN connection you want
+        to delete.
+        (required)
+        :type       vpn_connection_id: ``str``
+
+        :param      destination_ip_range: The network prefix of the route to
+        delete, in CIDR notation (for example, 10.12.0.0/16). (required)
+        :type       destination_ip_range: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteVpnConnectionRoute"
+        data = {"DryRun": dry_run}
+        if vpn_connection_id is not None:
+            data.update({"VpnConnectionId": vpn_connection_id})
+        if destination_ip_range is not None:
+            data.update({"DestinationIpRange": destination_ip_range})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list__vpn_connections(
+        self,
+        bgp_asns: [int] = None,
+        client_gateway_ids: [str] = None,
+        connection_types: [str] = None,
+        route_destination_ip_ranges: [str] = None,
+        states: [str] = None,
+        static_routes_only: bool = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Describes one or more VPN connections.
+
+        :param      bgp_asns: The Border Gateway Protocol (BGP) Autonomous
+        System Numbers (ASNs) of the connections.
+        :type       bgp_asns: ``list`` of ``int``
+
+        :param      client_gateway_ids: The IDs of the client gateways.
+        :type       client_gateway_ids: ``list`` of ``str``
+
+        :param      connection_types: The types of the VPN connections (only
+        ipsec.1 is supported).
+        :type       connection_types: ``list`` of ``str``
+
+        :param      states: The states of the vpn connections
+        (pending | available).
+        :type       states: ``str``
+
+        :param      route_destination_ip_ranges: The destination IP ranges.
+        :type       route_destination_ip_ranges: ``str``
+
+        :param      static_routes_only: If false, the VPN connection uses
+        dynamic routing with Border Gateway Protocol (BGP). If true, routing
+        is controlled using static routes. For more information about how to
+        create and delete static routes, see CreateVpnConnectionRoute:
+        https://docs.outscale.com/api#createvpnconnectionroute and
+        DeleteVpnConnectionRoute:
+        https://docs.outscale.com/api#deletevpnconnectionroute
+        :type       static_routes_only: ``bool``
+
+        :param      tag_keys: TThe keys of the tags associated with the
+        subnets.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        subnets.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: TThe key/value combination of the tags associated
+        with the subnets, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of Subnets
+        :rtype: ``list`` of  ``dict``
+        """
+        action = "ReadVpnConnections"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if bgp_asns is not None:
+            data["Filters"].update({
+                "BgpAsns": bgp_asns
+            })
+        if client_gateway_ids is not None:
+            data["Filters"].update({
+                "ClientGatewayIds": client_gateway_ids
+            })
+        if connection_types is not None:
+            data["Filters"].update({
+                "ConnectionTypes": connection_types
+            })
+        if states is not None:
+            data["Filters"].update({
+                "States": states
+            })
+        if route_destination_ip_ranges is not None:
+            data["Filters"].update({
+                "RouteDestinationIpRanges": route_destination_ip_ranges
+            })
+        if static_routes_only is not None:
+            data["Filters"].update({
+                "StaticRoutesOnly": static_routes_only
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if tag_values is not None:
+            data["Filters"].update({
+                "TagValues": tag_values
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VpnConnections"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
