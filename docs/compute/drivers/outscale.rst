@@ -287,3 +287,8 @@ Security Groups
 * ``ex_create_security_group`` - Returns a ``dict``
 * ``ex_delete_security_group`` - Returns a ``bool``
 * ``ex_list_security_groups`` - Returns a ``list`` of ``dict``
+
+Security Group Rules
+--------------------
+* ``ex_create_security_group_rule`` - Returns a ``dict``
+* ``ex_delete_security_group_rule`` - Returns a ``dict``

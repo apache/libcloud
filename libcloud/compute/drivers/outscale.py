@@ -305,7 +305,7 @@ class OutscaleNodeDriver(NodeDriver):
                     ex_keypair_name: str = None,
                     ex_max_vms_count: int = None,
                     ex_min_vms_count: int = None,
-                    ex_nics: dict = None,
+                    ex_nics: [dict] = None,
                     ex_performance: str = None,
                     ex_placement: dict = None,
                     ex_private_ips: [str] = None,
@@ -366,7 +366,7 @@ class OutscaleNodeDriver(NodeDriver):
         :param      ex_nics: One or more NICs. If you specify this parameter,
         you must define one NIC as the primary
         network interface of the VM with 0 as its device number.
-        :type       ex_nics: ``dict``
+        :type       ex_nics: ``list`` of ``dict``
 
         :param      ex_performance: The performance of the VM (standard | high
         | highest).
@@ -5598,6 +5598,235 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["SecurityGroups"]
+        return response.json()
+
+    def ex_create_security_group_rule(
+        self,
+        flow: str = None,
+        from_port_range: int = None,
+        ip_range: str = None,
+        rules: [dict] = None,
+        sg_account_id_to_link: str = None,
+        sg_id: str = None,
+        sg_name_to_link: str = None,
+        to_port_range: int = None,
+        dry_run: bool = False,
+    ):
+        """
+        Configures the rules for a security group.
+        The modifications are effective at virtual machine (VM) level as
+        quickly as possible, but a small delay may occur.
+
+        You can add one or more egress rules to a security group for use with
+        a Net.
+        It allows VMs to send traffic to either one or more destination IP
+        address ranges or destination security groups for the same Net.
+        We recommend using a set of IP permissions to authorize outbound
+        access to a destination security group. We also recommended this
+        method to create a rule with a specific IP protocol and a specific
+        port range. In a set of IP permissions, we recommend to specify the
+        the protocol.
+
+        You can also add one or more ingress rules to a security group.
+        In the public Cloud, this action allows one or more IP address ranges
+        to access a security group for your account, or allows one or more
+        security groups (source groups) to access a security group for your
+        own 3DS OUTSCALE account or another one.
+        In a Net, this action allows one or more IP address ranges to access a
+        security group for your Net, or allows one or more other security
+        groups (source groups) to access a security group for your Net. All
+        the security groups must be for the same Net.
+
+        :param      flow: The direction of the flow: Inbound or Outbound.
+        You can specify Outbound for Nets only.type (required)
+        description: ``bool``
+
+        :param      from_port_range: The beginning of the port range for
+        the TCP and UDP protocols, or an ICMP type number.
+        :type       from_port_range: ``int``
+
+        :param      ip_range: The name The IP range for the security group
+        rule, in CIDR notation (for example, 10.0.0.0/16).
+        :type       ip_range: ``str``
+
+        :param      rules: Information about the security group rule to create:
+        https://docs.outscale.com/api#createsecuritygrouprule
+        rules = [
+           {
+                "FromPortRange": int,
+                "IpProtocol": str,
+                "IpRanges": [str],
+                "SecurityGroupsMembers": {
+                    "AccountId": str,
+                    "SecurityGroupIds": str,
+                    "SecurityGroupName": str
+                },
+                "ServiceIds": [str],
+                "ToPortRange": int,
+           }
+        ]
+        :type       rules: ``list`` of  ``dict``
+
+        :param      sg_account_id_to_link: The account ID of the
+        owner of the security group for which you want to create a rule.
+        :type       sg_account_id_to_link: ``str``
+
+        :param      sg_id: The ID of the security group for which
+        you want to create a rule. (required)
+        :type       sg_id: ``str``
+
+        :param      sg_name_to_link: The ID of the source security
+        group. If you are in the Public Cloud, you can also specify the name
+        of the source security group.
+        :type       sg_name_to_link: ``str``
+
+        :param      to_port_range: TThe end of the port range for the TCP and
+        UDP protocols, or an ICMP type number.
+        :type       to_port_range: ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Security Group Rule
+        :rtype: ``dict``
+        """
+        action = "CreateSecurityGroupRule"
+        data = {"DryRun": dry_run}
+        if flow is not None:
+            data.update({"Flow": flow})
+        if from_port_range is not None:
+            data.update({"FromPortRange": from_port_range})
+        if ip_range is not None:
+            data.update({"IpRange": ip_range})
+        if rules is not None:
+            data.update({"Rules": rules})
+        if sg_name_to_link is not None:
+            data.update({
+                "SecurityGroupNameToLink": sg_name_to_link
+            })
+        if sg_id is not None:
+            data.update({"SecurityGroupId": sg_id})
+        if sg_account_id_to_link is not None:
+            data.update({
+                "SecurityGroupAccountIdToLink": sg_account_id_to_link
+            })
+        if to_port_range is not None:
+            data.update({"ToPortRange": to_port_range})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroup"]
+        return response.json()
+
+    def ex_delete_security_group_rule(
+        self,
+        flow: str = None,
+        from_port_range: int = None,
+        ip_protocol: str = None,
+        ip_range: str = None,
+        rules: [dict] = None,
+        sg_account_id_to_unlink: str = None,
+        sg_id: str = None,
+        sg_name_to_unlink: str = None,
+        to_port_range: int = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes one or more inbound or outbound rules from a security group.
+        For the rule to be deleted, the values specified in the deletion
+        request must exactly match the value of the existing rule.
+        In case of TCP and UDP protocols, you have to indicate the destination
+        port or range of ports. In case of ICMP protocol, you have to specify
+        the ICMP type and code.
+        Rules (IP permissions) consist of the protocol, IP address range or
+        source security group.
+        To remove outbound access to a destination security group, we
+        recommend to use a set of IP permissions. We also recommend to specify 
+        the protocol in a set of IP permissions.
+
+        :param      flow: The direction of the flow: Inbound or Outbound.
+        You can specify Outbound for Nets only.type (required)
+        description: ``bool``
+
+        :param      from_port_range: The beginning of the port range for
+        the TCP and UDP protocols, or an ICMP type number.
+        :type       from_port_range: ``int``
+
+        :param      ip_range: The name The IP range for the security group
+        rule, in CIDR notation (for example, 10.0.0.0/16).
+        :type       ip_range: ``str``
+
+        :param      rules: Information about the security group rule to create:
+        https://docs.outscale.com/api#createsecuritygrouprule
+        rules = [
+           {
+                "FromPortRange": int,
+                "IpProtocol": str,
+                "IpRanges": [str],
+                "SecurityGroupsMembers": [
+                    {
+                        "AccountId": str,
+                        "SecurityGroupIds": str,
+                        "SecurityGroupName": str
+                    }
+                ],
+                "ServiceIds": [str],
+                "ToPortRange": int,
+           }
+        ]
+        :type       rules: ``list`` of  ``dict``
+
+        :param      sg_account_id_to_link: The account ID of the
+        owner of the security group for which you want to delete a rule.
+        :type       sg_account_id_to_link: ``str``
+
+        :param      sg_id: The ID of the security group for which
+        you want to delete a rule. (required)
+        :type       sg_id: ``str``
+
+        :param      sg_name_to_link: The ID of the source security
+        group. If you are in the Public Cloud, you can also specify the name
+        of the source security group.
+        :type       sg_name_to_link: ``str``
+
+        :param      to_port_range: TThe end of the port range for the TCP and
+        UDP protocols, or an ICMP type number.
+        :type       to_port_range: ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Security Group Rule
+        :rtype: ``dict``
+        """
+        action = "DeleteSecurityGroupRule"
+        data = {"DryRun": dry_run}
+        if flow is not None:
+            data.update({"Flow": flow})
+        if ip_protocol is not None:
+            data.update({"IpProtocol": ip_protocol})
+        if from_port_range is not None:
+            data.update({"FromPortRange": from_port_range})
+        if ip_range is not None:
+            data.update({"IpRange": ip_range})
+        if rules is not None:
+            data.update({"Rules": rules})
+        if sg_name_to_unlink is not None:
+            data.update({
+                "SecurityGroupNameToUnlink": sg_name_to_unlink
+            })
+        if sg_id is not None:
+            data.update({"SecurityGroupId": sg_id})
+        if sg_account_id_to_unlink is not None:
+            data.update({
+                "SecurityGroupAccountIdToUnlink": sg_account_id_to_unlink
+            })
+        if to_port_range is not None:
+            data.update({"ToPortRange": to_port_range})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroup"]
         return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
