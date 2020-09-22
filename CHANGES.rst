@@ -11,6 +11,11 @@ Compute
   (GITHUB-1485)
   [Poul Petersen - @petersen-poul]
 
+- [OpenStack] Fix error setting ``ex_force_XXX_url`` without setting
+  ``ex_force_base_url``.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
 - [EC2] Update supported EC2 regions and instance sizes and add support 
   for eu-north-1 region.
   (GITHUB-1486)
