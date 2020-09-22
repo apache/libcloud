@@ -102,6 +102,9 @@ Snapshots
 * ``list_snapshots`` - Returns a list of ``VolumeSnapshot``
 * ``destroy_volume_snapshot`` - Returns a ``bool``
 * ``list_volume_snapshots`` - Returns a list of ``VolumeSnapshot``
+* ``ex_create_snapshot_export_task`` - Returns a ``dict``
+* ``ex_list_snapshot_export_tasks`` - Returns a ``list`` of ``dict``
+* ``ex_update_snapshot`` - Returns a ``dict``
 
 Volumes
 -------

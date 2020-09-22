@@ -687,7 +687,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action =  "CreateImageExportTask"
         data = {
-            "DryRun": ex_dry_run,
+            "DryRun": dry_run,
             "OsuExport": {
                 "OsuApiKey": {}
             },
@@ -841,7 +841,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "UpdateImage"
         data = {
-            "DryRun": ex_dry_run,
+            "DryRun": dry_run,
             "PermissionsToLaunch": {
                 "Additions": {}
                 "Removals": {}
@@ -1057,6 +1057,201 @@ class OutscaleNodeDriver(NodeDriver):
         if self._call_api(action, data).status_code == 200:
             return True
         return False
+
+    def ex_create_snapshot_export_task(
+        self,
+        osu_export_disk_image_format: str = None,
+        osu_export_api_key_id: str = None,
+        osu_export_api_secret_key: str = None,
+        osu_export_bucket: str = None,
+        osu_export_manifest_url: str = None,
+        osu_export_prefix: str = None,
+        snapshot: VolumeSnapshot = None,
+        dry_run: bool = False,
+    ):
+    """
+        Exports a snapshot to an Object Storage Unit (OSU) bucket.
+        This action enables you to create a backup of your snapshot or to copy
+        it to another account. You, or other users you send a pre-signed URL
+        to, can then download this snapshot from the OSU bucket using
+        the CreateSnapshot method.
+        This procedure enables you to copy a snapshot between accounts within
+        the same Region or in different Regions. To copy a snapshot within
+        the same Region, you can also use the CreateSnapshot direct method.
+        The copy of the source snapshot is independent and belongs to you.
+
+        :param      osu_export_disk_image_format: The format of the export
+        disk (qcow2 | vdi | vmdk).
+        :type       osu_export_disk_image_format: ``str``
+
+        :param      osu_export_api_key_id: The API key of the OSU account
+        that enables you to access the bucket.
+        :type       osu_export_api_key_id   : ``str``
+
+        :param      osu_export_api_secret_key: The secret key of the OSU
+        account that enables you to access the bucket.
+        :type       osu_export_api_secret_key   : ``str``
+
+        :param      osu_export_bucket: The name of the OSU bucket you want
+        to export the object to.
+        :type       osu_export_bucket   : ``str``
+
+        :param      osu_export_manifest_url: The URL of the manifest file.
+        :type       osu_export_manifest_url   : ``str``
+
+        :param      osu_export_prefix: The prefix for the key of the OSU
+        object. This key follows this format: prefix +
+        object_export_task_id + '.' + disk_image_format.
+        :type       osu_export_prefix   : ``str``
+
+        :param      snapshot: The ID of the snapshot to export.
+        :type       snapshot   : ``VolumeSnapshot``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run   : ``bool``
+
+        :return: the created snapshot export task
+        :rtype: ``dict``
+        """
+        action = "CreateSnapshotExportTask"
+        data = {
+            "DryRun": dry_run,
+            "OsuExport": {
+                "OsuApiKey": {}
+            }
+        }
+        if snapshot is not None:
+            data.update({"SnapshotId": snapshot.id})
+        if osu_export_disk_image_format is not None:
+            data["OsuExport"].update({
+                "DiskImageFormat": osu_export_disk_image_format
+                })
+        if osu_export_bucket is not None:
+            data["OsuExport"].update({"OsuBucket": osu_export_bucket})
+        if osu_export_manifest_url is not None:
+            data["OsuExport"].update({
+                "OsuManifestUrl": osu_export_manifest_url
+                })
+        if osu_export_prefix is not None:
+            data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
+        if osu_export_api_key_id is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "ApiKeyId": osu_export_api_key_id
+                })
+        if osu_export_api_secret_key is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "SecretKey": osu_export_api_secret_key
+                })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SnapshotExportTask"]
+        return response.json()
+
+    def ex_list_snapshot_export_tasks(
+        self,
+        dry_run: bool = False,
+        task_ids: [str] = False,
+        ):
+        """
+        Lists one or more image export tasks.
+
+        :param      task_ids: The IDs of the export tasks.
+        :type       task_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: snapshot export tasks
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadSnapshotExportTasks"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if task_ids is not None:
+            data["Filters"].update({
+                "TaskIds": task_ids
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SnapshotExportTasks"]
+        return response.json()
+
+     def ex_update_snapshot(
+        self,
+        perm_to_create_volume_addition_account_id: [str] = None,
+        perm_to_create_volume_addition_global_perm: bool = None,
+        perm_to_create_volume_removals_account_id: [str] = None,
+        perm_to_create_volume_removals_global_perm: bool = None,
+        snapshot: VolumeSnapshot = None,
+        dry_run: bool = False
+    ):
+    """
+    Modifies the permissions for a specified snapshot.
+    You can add or remove permissions for specified account IDs or groups.
+    You can share a snapshot with a user that is in the same Region.
+    The user can create a copy of the snapshot you shared, obtaining all
+    the rights for the copy of the snapshot.
+
+        :param      perm_to_create_volume_addition_account_id:
+        The account ID of one or more users who have permissions
+        for the resource.
+        :type       perm_to_create_volume_addition_account_id:
+        ``list`` of ``str``
+
+        :param      perm_to_create_volume_addition_global_perm: If true,
+        the resource is public. If false, the resource is private.
+        :type       perm_to_create_volume_addition_global_perm: ``bool``
+
+        :param      perm_to_create_volume_removals_account_id: The account ID
+         of one or more users who have permissions for the resource.
+        :type       perm_to_create_volume_removals_account_id:
+        ``list`` of ``str``
+
+        :param      perm_to_create_volume_removals_global_perm: If true,
+         the resource is public. If false, the resource is private.
+        :type       perm_to_create_volume_removals_global_perm: ``bool``
+
+        :param      snapshot: The ID of the snapshot.
+        :type       snapshot: ``VolumeSnapshot``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: snapshot export tasks
+        :rtype: ``list`` of ``dict``
+        """
+        action = "UpdateSnapshot"
+        data = {
+            "DryRun: ": dry_run,
+            "PermissionsToCreateVolume": {
+                "Additions": {}
+                "Removals": {}
+            }
+        }
+        if snapshot is not None:
+            data.update({"ImageId": snapshot.id})
+        if perm_to_create_volume_addition_account_id is not None:
+            data["PermissionsToCreateVolume"]["Additions"].update({
+                "AccountIds": perm_to_create_volume_addition_account_id
+                })
+        if perm_to_create_volume_addition_global_perm is not None:
+            data["PermissionsToCreateVolume"]["Additions"].update({
+                "GlobalPermission": perm_to_create_volume_addition_global_perm
+                })
+        if perm_to_create_volume_removals_account_id is not None:
+            data["PermissionsToCreateVolume"]["Removals"].update({
+            "AccountIds": perm_to_create_volume_removals_account_id
+            })
+        if perm_to_create_volume_removals_global_perm is not None:
+            data["PermissionsToCreateVolume"]["Removals"].update({
+            "GlobalPermission": perm_to_create_volume_removals_global_perm
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Snapshot"]
+        return response.json()
 
     def create_volume(
         self,
