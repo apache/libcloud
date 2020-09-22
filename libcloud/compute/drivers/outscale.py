@@ -6049,6 +6049,36 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["Subnet"]
         return response.json()
 
+    def ex_delete_export_task(
+        self,
+        export_task_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes an export task.
+        If the export task is not running, the command fails and an error is
+        returned.
+
+        :param      export_task_id: The ID of the export task to delete.
+        (required)
+        :type       export_task_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteExportTask"
+        data = {"DryRun": dry_run}
+        if export_task_id is not None:
+            data.update({"ExportTaskId": export_task_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,

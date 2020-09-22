@@ -300,3 +300,7 @@ Subnets
 * ``ex_delete_subnet`` - Returns a ``bool``
 * ``ex_list_subnets`` - Returns a ``list`` of ``dict``
 * ``ex_update_subnet`` - Returns a ``dict``
+
+Tasks
+-----
+* ``ex_delete_export_task`` - Returns a ``bool``
