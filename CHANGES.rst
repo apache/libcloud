@@ -16,6 +16,11 @@ Compute
   (GITHUB-1492)
   [Miguel Caballer - @micafer]
 
+- [EC2] Update supported EC2 regions and instance sizes and add support 
+  for eu-north-1 region.
+  (GITHUB-1486)
+  [Arturo Noha - @r2ronoha]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 

@@ -468,6 +468,7 @@
         <created>2020-06-12</created>
         <revision>v3.1.0</revision>
     </Version>
+  </release>
   <release>
       <Version>
         <name>3.2.0</name>
