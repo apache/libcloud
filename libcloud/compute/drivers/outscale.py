@@ -1081,7 +1081,7 @@ class OutscaleNodeDriver(NodeDriver):
         The copy of the source snapshot is independent and belongs to you.
 
         :param      osu_export_disk_image_format: The format of the export
-        disk (qcow2 | vdi | vmdk).
+        disk (qcow2 | vdi | vmdk). (required)
         :type       osu_export_disk_image_format: ``str``
 
         :param      osu_export_api_key_id: The API key of the OSU account
@@ -1093,7 +1093,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       osu_export_api_secret_key   : ``str``
 
         :param      osu_export_bucket: The name of the OSU bucket you want
-        to export the object to.
+        to export the object to.  (required)
         :type       osu_export_bucket   : ``str``
 
         :param      osu_export_manifest_url: The URL of the manifest file.
@@ -1104,7 +1104,7 @@ class OutscaleNodeDriver(NodeDriver):
         object_export_task_id + '.' + disk_image_format.
         :type       osu_export_prefix   : ``str``
 
-        :param      snapshot: The ID of the snapshot to export.
+        :param      snapshot: The ID of the snapshot to export. (required)
         :type       snapshot   : ``VolumeSnapshot``
 
         :param      dry_run: If true, checks whether you have the required
@@ -1212,7 +1212,7 @@ class OutscaleNodeDriver(NodeDriver):
          the resource is public. If false, the resource is private.
         :type       perm_to_create_volume_removals_global_perm: ``bool``
 
-        :param      snapshot: The ID of the snapshot.
+        :param      snapshot: The ID of the snapshot. (required)
         :type       snapshot: ``VolumeSnapshot``
 
         :param      dry_run: If true, checks whether you have the required
