@@ -130,6 +130,7 @@ Accounts
 * ``ex_send_reset_password_email`` - Returns a ``bool``
 * ``ex_create_account`` - Returns a ``bool``
 * ``ex_update_account`` - Returns a ``dict``
+* ``ex_list_consumption_account`` - Returns a ``list`` of ``dict``
 
 Tags
 ----
