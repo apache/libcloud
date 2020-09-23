@@ -2127,6 +2127,15 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         ret = self.driver.ex_remove_security_group_from_node(security_group, node)
         self.assertTrue(ret)
 
+    def test_force_net_url(self):
+        d = OpenStack_2_NodeDriver(
+            'user', 'correct_password',
+            ex_force_auth_version='2.0_password',
+            ex_force_auth_url='http://x.y.z.y:5000',
+            ex_force_network_url='http://network.com:9696',
+            ex_tenant_name='admin')
+        self.assertEqual(d._ex_force_base_url, None)
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False

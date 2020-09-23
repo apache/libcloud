@@ -28,6 +28,8 @@ Use it as following:
 import re
 import os
 import json
+import shutil
+import atexit
 
 import requests
 import ijson  # pylint: disable=import-error
@@ -195,22 +197,33 @@ REGION_DETAILS = {
 
 
 def download_json():
-    response = requests.get(URL, stream=True)
-    try:
+    if os.path.isfile(FILEPATH):
         return open(FILEPATH, 'r')
-    except IOError:
-        with open(FILEPATH, 'wb') as fo:
-            for chunk in response.iter_content(chunk_size=2**20):
-                if chunk:
-                    fo.write(chunk)
+
+    def remove_partial_cached_file():
+        if os.path.isfile(FILEPATH):
+            os.remove(FILEPATH)
+
+    # File not cached locally, download data and cache it
+    with requests.get(URL, stream=True) as response:
+        atexit.register(remove_partial_cached_file)
+
+        with open(FILEPATH, 'wb') as fp:
+            # NOTE: We use shutil.copyfileobj with large chunk size instead of
+            # response.iter_content with large chunk size since data we
+            # download is massive and copyfileobj is more efficient.
+            shutil.copyfileobj(response.raw, fp, 10 * 1024 * 1024)
+
+        atexit.unregister(remove_partial_cached_file)
+
     return open(FILEPATH, 'r')
 
 
 def get_json():
-    try:
-        return open(FILEPATH, 'r')
-    except IOError:
-        return download_json()
+    if not os.path.isfile(FILEPATH):
+        return download_json(), False
+
+    return open(FILEPATH, 'r'), True
 
 
 def filter_extras(extras):
@@ -230,9 +243,22 @@ def parse():
     for region_id in regions:
         regions[region_id]['instance_types'] = []
     # Parse
-    json_file = get_json()
+    json_file, from_file = get_json()
     products_data = ijson.items(json_file, 'products')
-    products_data = next(products_data)
+
+    try:
+        products_data = next(products_data)
+    except ijson.common.IncompleteJSONError as e:
+        # This likely indicates that the cached file is incomplete or corrupt so we delete it and re
+        # download data
+        if from_file:
+            os.remove(FILEPATH)
+            json_file, from_file = get_json()
+            products_data = ijson.items(json_file, 'products')
+            products_data = next(products_data)
+        else:
+            raise e
+
     for sku in products_data:
         if products_data[sku]['productFamily'] != "Compute Instance":
             continue

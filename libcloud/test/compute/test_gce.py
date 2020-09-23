@@ -2275,7 +2275,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         self.assertIsNone(zone_no_mw.time_until_mw)
 
 
-class GCEMockHttp(MockHttp):
+class GCEMockHttp(MockHttp, unittest.TestCase):
     fixtures = ComputeFileFixtures('gce')
     json_hdr = {'content-type': 'application/json; charset=UTF-8'}
 
@@ -2405,7 +2405,8 @@ class GCEMockHttp(MockHttp):
             'zones_us_central1_a_instances_node_name_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _global_custom_image_setLabels(self, method, url, body, headers):
+    def _global_images_custom_image_setLabels(self, method, url, body, headers):
+        self.assertTrue('global/images/custom-image/setLabels' in url)
         body = self.fixtures.load(
             'global_custom_image_setLabels_post.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
