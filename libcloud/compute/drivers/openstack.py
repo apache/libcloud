@@ -3885,6 +3885,27 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         return self._manage_router_interface(router, 'remove', subnet=subnet)
 
+    def _to_quota_set(self, obj):
+        res = OpenStack_2_QuotaSet(id=obj['id'],
+                                   cores=obj['cores'],
+                                   instances=obj['instances'],
+                                   key_pairs=obj['key_pairs'],
+                                   metadata_items=obj['metadata_items'],
+                                   ram=obj['ram'],
+                                   server_groups=obj['server_groups'],
+                                   server_group_members=obj['server_group_members'],
+                                   fixed_ips=obj.get('fixed_ips', None),
+                                   floating_ips=obj.get('floating_ips', None),
+                                   networks=obj.get('networks', None),
+                                   security_group_rules=obj.get('security_group_rules', None),
+                                   security_groups=obj.get('security_groups', None),
+                                   injected_file_content_bytes=obj.get('injected_file_content_bytes', None),
+                                   injected_file_path_bytes=obj.get('injected_file_path_bytes', None),
+                                   injected_files=obj.get('injected_files', None),
+                                   driver=self.connection.driver)
+
+        return res
+
     def get_quota_set(self, tenant_id, user_id=None):
         """
         Get the quota for a project or a project and a user.
@@ -3976,27 +3997,6 @@ class OpenStack_1_1_FloatingIpPool(object):
 
     def __repr__(self):
         return ('<OpenStack_1_1_FloatingIpPool: name=%s>' % self.name)
-
-    def _to_quota_set(self, obj):
-        res = OpenStack_2_QuotaSet(id=obj['id'],
-                                   cores=obj['cores'],
-                                   instances=obj['instances'],
-                                   key_pairs=obj['key_pairs'],
-                                   metadata_items=obj['metadata_items'],
-                                   ram=obj['ram'],
-                                   server_groups=obj['server_groups'],
-                                   server_group_members=obj['server_group_members'],
-                                   fixed_ips=obj.get('fixed_ips', None),
-                                   floating_ips=obj.get('floating_ips', None),
-                                   networks=obj.get('networks', None),
-                                   security_group_rules=obj.get('security_group_rules', None),
-                                   security_groups=obj.get('security_groups', None),
-                                   injected_file_content_bytes=obj.get('injected_file_content_bytes', None),
-                                   injected_file_path_bytes=obj.get('injected_file_path_bytes', None),
-                                   injected_files=obj.get('injected_files', None),
-                                   driver=self.connection.driver)
-
-        return res
 
 
 class OpenStack_1_1_FloatingIpAddress(object):
