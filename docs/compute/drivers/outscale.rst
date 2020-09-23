@@ -286,3 +286,10 @@ Route Tables
 * ``ex_link_route_table`` - Returns a ``bool``
 * ``ex_list_route_tables`` - Returns a ``list`` of ``dict``
 * ``ex_unlink_route_table`` - Returns a ``bool``
+
+Server Certificate
+------------------
+* ``ex_create_server_certificate`` - Returns a ``dict``
+* ``ex_delete_server_certificate`` - Returns a ``bool``
+* ``ex_list_server_certificate`` - Returns a ``list`` of ``dict``
+* ``ex_update_server_certificate`` - Returns a ``dict``
