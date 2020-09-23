@@ -4227,6 +4227,10 @@ class OpenStack_2_QuotaSetItem(object):
         self.limit = limit
         self.reserved = reserved
 
+    def __repr__(self):
+        return ('<OpenStack_2_QuotaSetItem in_use="%s", limit="%s",'
+                'reserved="%s">' % (self.id, self.in_use, self.limit,
+                                    self.reserved))
 
 class OpenStack_2_QuotaSet(object):
     """
@@ -4269,4 +4273,6 @@ class OpenStack_2_QuotaSet(object):
             return None
 
     def __repr__(self):
-        return '<OpenStack_2_QuotaSet id="%s">' % (self.id)
+        return ('<OpenStack_2_QuotaSet id="%s", cores="%s", ram="%s",'
+                ' instances="%s">' % (self.id, self.cores, self.ram,
+                                      self.instances))
