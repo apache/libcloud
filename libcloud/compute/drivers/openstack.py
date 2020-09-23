@@ -3961,6 +3961,42 @@ class OpenStack_1_1_FloatingIpPool(object):
     def __repr__(self):
         return ('<OpenStack_1_1_FloatingIpPool: name=%s>' % self.name)
 
+    def _to_quota_set(self, obj):
+        res = OpenStack_2_QuotaSet(id=obj['id'],
+                                   cores=obj['cores'],
+                                   instances=obj['instances'],
+                                   key_pairs=obj['key_pairs'],
+                                   metadata_items=obj['metadata_items'],
+                                   ram=obj['ram'],
+                                   server_groups=obj['server_groups'],
+                                   server_group_members=obj['server_group_members'],
+                                   fixed_ips=obj.get('fixed_ips', None),
+                                   floating_ips=obj.get('floating_ips', None),
+                                   networks=obj.get('networks', None),
+                                   security_group_rules=obj.get('security_group_rules', None),
+                                   security_groups=obj.get('security_groups', None),
+                                   injected_file_content_bytes=obj.get('injected_file_content_bytes', None),
+                                   injected_file_path_bytes=obj.get('injected_file_path_bytes', None),
+                                   injected_files=obj.get('injected_files', None),
+                                   driver=self.connection.driver)
+
+        return res
+
+    def get_quota_set(self, tenant_id, user_id=None):
+        """
+        Get the quota for a project or a project and a user.
+
+        :param      tenant_id: The UUID of the tenant in a multi-tenancy cloud
+        :type       tenant_id: ``str``
+
+        :param      user_id: ID of user to list the quotas for.
+        :type       user_id: ``str``
+
+        :rtype: :class:`OpenStack_2_QuotaSet`
+        """
+        return self._to_quota_set(
+            self.connection.request('/os-quota-sets').object)
+
 
 class OpenStack_1_1_FloatingIpAddress(object):
     """
@@ -4174,3 +4210,36 @@ class OpenStack_2_PortInterface(UuidMixin):
         return (('<OpenStack_2_PortInterface: id=%s, state=%s, '
                  'driver=%s  ...>')
                 % (self.id, self.state, self.driver.name))
+
+
+class OpenStack_2_QuotaSet(object):
+    """
+    A Virtual Router.
+    """
+
+    def __init__(self, id, cores, instances, key_pairs, metadata_items, ram,
+                 server_groups, server_group_members, fixed_ips=None,
+                 floating_ips=None, networks=None, security_group_rules=None,
+                 security_groups=None, injected_file_content_bytes=None,
+                 injected_file_path_bytes=None, injected_files=None,
+                 driver=None):
+        self.id = str(id)
+        self.cores=cores
+        self.instances=instances
+        self.key_pairs=key_pairs
+        self.metadata_items=metadata_items
+        self.ram=ram
+        self.server_groups=server_groups
+        self.server_group_members=server_group_members
+        self.fixed_ips=fixed_ips
+        self.floating_ips=floating_ips
+        self.networks=networks
+        self.security_group_rules=security_group_rules
+        self.security_groups=security_groups
+        self.injected_file_content_bytes=injected_file_content_bytes
+        self.injected_file_path_bytes=injected_file_path_bytes
+        self.injected_files=injected_files
+        self.driver=driver
+
+    def __repr__(self):
+        return '<OpenStack_2_QuotaSet id="%s">' % (self.id)
