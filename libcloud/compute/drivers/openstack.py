@@ -3885,6 +3885,22 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         return self._manage_router_interface(router, 'remove', subnet=subnet)
 
+    def get_quota_set(self, tenant_id, user_id=None):
+        """
+        Get the quota for a project or a project and a user.
+
+        :param      tenant_id: The UUID of the tenant in a multi-tenancy cloud
+        :type       tenant_id: ``str``
+
+        :param      user_id: ID of user to list the quotas for.
+        :type       user_id: ``str``
+
+        :rtype: :class:`OpenStack_2_QuotaSet`
+        """
+        url = '/os-quota-sets/%s/detail' % tenant_id
+        if user_id:
+            url += "?user_id=%s" % user_id 
+        return self._to_quota_set(self.connection.request(url).object)
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -3981,23 +3997,6 @@ class OpenStack_1_1_FloatingIpPool(object):
                                    driver=self.connection.driver)
 
         return res
-
-    def get_quota_set(self, tenant_id, user_id=None):
-        """
-        Get the quota for a project or a project and a user.
-
-        :param      tenant_id: The UUID of the tenant in a multi-tenancy cloud
-        :type       tenant_id: ``str``
-
-        :param      user_id: ID of user to list the quotas for.
-        :type       user_id: ``str``
-
-        :rtype: :class:`OpenStack_2_QuotaSet`
-        """
-        url = '/os-quota-sets/%s/detail' % tenant_id
-        if user_id:
-            url += "?user_id=%s" % user_id 
-        return self._to_quota_set(self.connection.request(url).object)
 
 
 class OpenStack_1_1_FloatingIpAddress(object):
