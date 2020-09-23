@@ -122,7 +122,6 @@ Public IPs
 * ``ex_attach_public_ip`` - Returns a ``bool``
 * ``ex_detach_public_ip`` - Returns a ``bool``
 
-
 Accounts
 --------
 * ``ex_check_account`` - Returns a ``bool``
@@ -207,12 +206,15 @@ Listener
 Load Balancers
 --------------
 * ``ex_create_load_balancer`` - Returns a ``dict``
+* ``ex_update_load_balancer`` - Returns a ``dict``
 * ``ex_create_load_balancer_tags`` - Returns a ``bool``
 * ``ex_delete_load_balancer`` - Returns a ``bool``
 * ``ex_delete_load_balancer_tags`` - Returns a ``bool``
 * ``ex_deregister_vms_in_load_balancer`` - Returns a ``bool``
+* ``ex_register_vms_in_load_balancer`` - Returns a ``bool``
 * ``ex_list_load_balancer_tags`` - Returns a ``list`` of ``dict``
 * ``ex_list_vms_health`` - Returns a ``list`` of ``dict``
+* ``ex_list_load_balancers`` - Returns a ``list`` of ``dict``
 
 Load Balancer Policies
 ----------------------
@@ -280,3 +282,42 @@ Route Tables
 * ``ex_link_route_table`` - Returns a ``bool``
 * ``ex_list_route_tables`` - Returns a ``list`` of ``dict``
 * ``ex_unlink_route_table`` - Returns a ``bool``
+
+Security Groups
+---------------
+* ``ex_create_security_group`` - Returns a ``dict``
+* ``ex_delete_security_group`` - Returns a ``bool``
+* ``ex_list_security_groups`` - Returns a ``list`` of ``dict``
+
+Security Group Rules
+--------------------
+* ``ex_create_security_group_rule`` - Returns a ``dict``
+* ``ex_delete_security_group_rule`` - Returns a ``dict``
+
+
+Subnets
+-------
+* ``ex_create_subnet`` - Returns a ``dict``
+* ``ex_delete_subnet`` - Returns a ``bool``
+* ``ex_list_subnets`` - Returns a ``list`` of ``dict``
+* ``ex_update_subnet`` - Returns a ``dict``
+
+Tasks
+-----
+* ``ex_delete_export_task`` - Returns a ``bool``
+
+Vpn Connections
+---------------
+* ``ex_create_vpn_connection`` - Returns a ``dict``
+* ``ex_create_vpn_connection_route`` - Returns a ``bool``
+* ``ex_delete_vpn_connection`` - Returns a ``bool``
+* ``ex_delete_vpn_connection_route`` - Returns a ``bool``
+* ``ex_list_vpn_connections`` - Returns a ``list`` of ``dict``
+
+Nodes
+-----
+* ``ex_read_admin_password_node`` - Returns a ``str``
+* ``ex_read_console_output_node`` - Returns a ``str``
+* ``ex_list_node_types`` - Returns a ``list`` of ``dict``
+* ``ex_list_nodes_states`` - Returns a ``list`` of ``dict``
+* ``ex_update_node`` - Returns a ``list`` of ``dict``

@@ -102,7 +102,9 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadRegions"
         data = json.dumps({"DryRun": ex_dry_run})
         response = self._call_api(action, data)
-        return response.json()["Regions"]
+        if response.status_code == 200:
+            return response.json()["Regions"]
+        return response.json()
 
     def ex_list_subregions(self, ex_dry_run: bool = False):
         """
@@ -303,7 +305,7 @@ class OutscaleNodeDriver(NodeDriver):
                     ex_keypair_name: str = None,
                     ex_max_vms_count: int = None,
                     ex_min_vms_count: int = None,
-                    ex_nics: dict = None,
+                    ex_nics: [dict] = None,
                     ex_performance: str = None,
                     ex_placement: dict = None,
                     ex_private_ips: [str] = None,
@@ -364,7 +366,7 @@ class OutscaleNodeDriver(NodeDriver):
         :param      ex_nics: One or more NICs. If you specify this parameter,
         you must define one NIC as the primary
         network interface of the VM with 0 as its device number.
-        :type       ex_nics: ``dict``
+        :type       ex_nics: ``list`` of ``dict``
 
         :param      ex_performance: The performance of the VM (standard | high
         | highest).
@@ -549,6 +551,273 @@ class OutscaleNodeDriver(NodeDriver):
         if self._call_api(action, data).status_code == 200:
             return True
         return False
+
+    def ex_read_admin_password_node(self, node: Node, dry_run: bool = False):
+        """
+        Retrieves the administrator password for a Windows running virtual
+        machine (VM).
+        The administrator password is encrypted using the keypair you
+        specified when launching the VM.
+
+        :param      node: the ID of the VM (required)
+        :type       node: ``Node``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The Admin Password of the specified Node.
+        :rtype: ``str``
+        """
+        action = "ReadAdminPassword"
+        data = json.dumps({"DryRun": dry_run, "VmIds": node.id})
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["AdminPassword"]
+        return response.json()
+
+    def ex_read_console_output_node(self, node: Node, dry_run: bool = False):
+        """
+        Gets the console output for a virtual machine (VM). This console
+        provides the most recent 64 KiB output.
+
+        :param      node: the ID of the VM (required)
+        :type       node: ``Node``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The Console Output of the specified Node.
+        :rtype: ``str``
+        """
+        action = "ReadConsoleOutput"
+        data = json.dumps({"DryRun": dry_run, "VmIds": node.id})
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["ConsoleOutput"]
+        return response.json()
+
+    def ex_list_node_types(
+        self,
+        bsu_optimized: bool = None,
+        memory_sizes: [int] = None,
+        vcore_counts: [int] = None,
+        vm_type_names: [str] = None,
+        volume_counts: [int] = None,
+        volume_sizes: [int] = None,
+        dry_run: bool = False
+    ):
+        """
+        Lists one or more predefined VM types.
+
+        :param      bsu_optimized: Indicates whether the VM is optimized for
+        BSU I/O.
+        :type       bsu_optimized: ``bool``
+
+        :param      memory_sizes: The amounts of memory, in gibibytes (GiB).
+        :type       memory_sizes: ``list`` of ``int``
+
+        :param      vcore_counts: The numbers of vCores.
+        :type       vcore_counts: ``list`` of ``int``
+
+        :param      vm_type_names: The names of the VM types. For more
+        information, see Instance Types.
+        :type       vm_type_names: ``list`` of ``str``
+
+        :param      volume_counts: The maximum number of ephemeral storage
+        disks.
+        :type       volume_counts: ``list`` of ``int``
+
+
+        :param      volume_sizes: The size of one ephemeral storage disk,
+        in gibibytes (GiB).
+        :type       volume_sizes: ``list`` of ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: list of vm types
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadVmTypes"
+        data = {"Filters": {}, "DryRun": dry_run}
+        if bsu_optimized is not None:
+            data["Filters"].update({"BsuOptimized": bsu_optimized})
+        if memory_sizes is not None:
+            data["Filters"].update({"MemorySizes": memory_sizes})
+        if vcore_counts is not None:
+            data["Filters"].update({"VcoreCounts": vcore_counts})
+        if vm_type_names is not None:
+            data["Filters"].update({"VmTypeNames": vm_type_names})
+        if volume_counts is not None:
+            data["Filters"].update({"VolumeCounts": volume_counts})
+        if volume_sizes is not None:
+            data["Filters"].update({"VolumeSizes": volume_sizes})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VmTypes"]
+        return response.json()
+
+    def ex_list_nodes_states(
+        self,
+        all_vms: bool = None,
+        subregion_names: [str] = None,
+        vm_ids: [str] = None,
+        vm_states: [str] = None,
+        dry_run: bool = False
+    ):
+        """
+        Lists the status of one or more virtual machines (VMs).
+
+        :param      all_vms: If true, includes the status of all VMs. By
+        default or if set to false, only includes the status of running VMs.
+        :type       all_vms: ``bool``
+
+        :param      subregion_names: The names of the Subregions of the VMs.
+        :type       subregion_names: ``list`` of ``str``
+
+        :param      vm_ids: One or more IDs of VMs.
+        :type       vm_ids: ``list`` of ``str``
+
+        :param      vm_states: The states of the VMs
+        (pending | running | stopping | stopped | shutting-down | terminated
+        | quarantine)
+        :type       vm_states: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: list the status of one ore more vms
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadVmsState"
+        data = {"Filters": {}, "DryRun": dry_run}
+        if all_vms is not None:
+            data.update({"AllVms": all_vms})
+        if subregion_names is not None:
+            data["Filters"].update({"SubregionNames": subregion_names})
+        if vm_ids is not None:
+            data["Filters"].update({"VmIds": vm_ids})
+        if vm_states is not None:
+            data["Filters"].update({"VmStates": vm_states})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VmStates"]
+        return response.json()
+
+    def ex_update_node(self,
+                    block_device_mapping: [dict],
+                    bsu_optimized: bool = None,
+                    deletion_protection: bool = False,
+                    is_source_dest_checked: bool = None,
+                    keypair_name: str = True,
+                    performance: str = True,
+                    security_group_ids: [str] = None,
+                    user_data: str = False,
+                    vm_id: str = None,
+                    vm_initiated_shutown_behavior: str = None,
+                    vm_type: int = None,
+                    dry_run: bool = False
+                    ):
+        """
+        Modifies a specific attribute of a Node (VM).
+        You can modify only one attribute at a time. You can modify the
+        IsSourceDestChecked attribute only if the VM is in a Net.
+        You must stop the VM before modifying the following attributes:
+
+        - VmType
+        - UserData
+        - BsuOptimized
+
+        :param      block_device_mapping: One or more block device mappings
+        of the VM.
+        :type       block_device_mapping: ``dict``
+
+        :param      bsu_optimized: If true, the VM is optimized for BSU I/O.
+        :type       bsu_optimized: ``bool``
+
+        :param      ex_dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       ex_dry_run: ``bool``
+
+        :param      deletion_protection: If true, you cannot terminate the VM
+        using Cockpit, the CLI or the API. If false, you can.
+        :type       ex_block_device_mapping: ``bool``
+
+        :param      is_source_dest_checked: (Net only) If true, the
+        source/destination check is enabled. If false, it is disabled. This
+        value must be false for a NAT VM to perform network address
+        translation (NAT) in a Net.
+        :type       is_source_dest_checked: ``bool``
+
+        :param      keypair_name: The name of the keypair.
+        :type       keypair_name: ``str``
+
+        :param      performance: The performance of the VM
+        (standard | high | highest).
+        :type       performance: ``str``
+
+        :param      security_group_ids: One or more IDs of security groups for
+        the VM.
+        :type       security_group_ids: ``bool``
+
+        :param      user_data: The Base64-encoded MIME user data.
+        :type       user_data: ``str``
+
+        :param      vm_id: The ID of the VM. (required)
+        :type       vm_id: ``str``
+
+        :param      vm_initiated_shutown_behavior: The VM behavior when you
+        stop it. By default or if set to stop, the VM stops. If set to
+        restart, the VM stops then automatically restarts. If set to
+        terminate, the VM stops and is terminated.
+        :type       vm_initiated_shutown_behavior: ``str``
+
+        :param      vm_type: The type of VM. For more information,
+        see Instance Types:
+        https://wiki.outscale.net/display/EN/Instance+Types
+        :type       vm_type: ``str``
+
+        :return: the updated Node
+        :rtype: ``dict``
+        """
+        action = "UpdateVm"
+        data = {
+            "DryRun": dry_run,
+        }
+        if block_device_mapping is not None:
+            data.update({"BlockDeviceMappings": block_device_mapping})
+        if bsu_optimized is not None:
+            data.update({"BsuOptimized": bsu_optimized})
+        if deletion_protection is not None:
+            data.update({"DeletionProtection": deletion_protection})
+        if keypair_name is not None:
+            data.update({"KeypairName": keypair_name})
+        if is_source_dest_checked is not None:
+            data.update({
+                "IsSourceDestChecked": is_source_dest_checked
+            })
+        if performance is not None:
+            data.update({"Performance": performance})
+        if security_group_ids is not None:
+            data.update({"SecurityGroupIds": security_group_ids})
+        if user_data is not None:
+            data.update({"UserDate": user_data})
+        if vm_id is not None:
+            data.update({"VmId": vm_id})
+        if vm_initiated_shutown_behavior is not None:
+            data.update({
+                "VmInitiatedShutdownBehavior": vm_initiated_shutown_behavior
+            })
+        if vm_type is not None:
+            data.update({"VmType": vm_type})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return self._to_node(response.json()["Vm"])
+        return response.json()
 
     def create_image(
         self,
@@ -3304,7 +3573,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def read_load_balancer_tags(
+    def ex_list_load_balancer_tags(
         self,
         load_balancer_names: [str] = None,
         dry_run: bool = False,
@@ -3333,7 +3602,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["Tags"]
         return response.json()
 
-    def read_load_balancers(
+    def ex_list_load_balancers(
         self,
         load_balancer_names: [str] = None,
         dry_run: bool = False,
@@ -3435,6 +3704,170 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["BackendVmHealth"]
         return response.json()
+
+    def ex_update_load_balancer(
+        self,
+        access_log_is_enabled: bool = None,
+        access_log_osu_bucket_name: str = None,
+        access_log_osu_bucket_prefix: str = None,
+        access_log_publication_interval: int = None,
+        health_check_interval: int = None,
+        health_check_healthy_threshold: int = None,
+        health_check_path: str = None,
+        health_check_port: int = None,
+        health_check_protocol: str = None,
+        health_check_timeout: int = None,
+        health_check_unhealthy_threshold: int = None,
+        load_balancer_name: str = None,
+        load_balancer_port: int = None,
+        policy_names: [str] = None,
+        server_certificate_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Modifies the specified attributes of a load balancer.
+
+        You can set a new SSL certificate to an SSL or HTTPS listener of a
+        load balancer.
+        This certificate replaces any certificate used on the same load
+        balancer and port.
+
+        You can also replace the current set of policies for a load balancer
+        with another specified one.
+        If the PolicyNames parameter is empty, all current policies are
+        disabled.
+
+        :param      access_log_is_enabled: If true, access logs are enabled
+        for your load balancer.
+        If false, they are not. If you set this to true in your request, the
+        OsuBucketName parameter is required.
+        :type       access_log_is_enabled: ``bool`
+
+        :param      access_log_osu_bucket_name: The name of the Object Storage
+        Unit (OSU) bucket for the access logs.
+        :type       access_log_osu_bucket_name: ``str``
+
+        :param      access_log_osu_bucket_prefix: The path to the folder of
+        the access logs in your Object Storage Unit (OSU) bucket (by default,
+        the root level of your bucket).
+        :type       access_log_osu_bucket_prefix: ``str``
+
+        :param      access_log_publication_interval: The time interval for the
+        publication of access logs in the Object Storage Unit (OSU) bucket,
+        in minutes. This value can be either 5 or 60 (by default, 60).
+        :type       access_log_publication_interval: ``int``
+
+        :param      health_check_interval: Information about the health check
+        configuration. (required)
+        :type       health_check_interval: ``int``
+
+        :param      health_check_healthy_thresold: The number of consecutive
+        successful pings before considering the VM as healthy (between 2 and
+        10 both included). (required)
+        :type       health_check_healthy_thresold: ``int``
+
+        :param      health_check_path: The path for HTTP or HTTPS requests.
+        (required)
+        :type       health_check_path: ``str``
+
+        :param      health_check_port: The port number (between 1 and 65535,
+        both included). (required)
+        :type       health_check_port: ``int``
+
+        :param      health_check_protocol: The protocol for the URL of the VM
+        (HTTP | HTTPS | TCP | SSL | UDP). (required)
+        :type       health_check_protocol: ``str``
+
+        :param      health_check_timeout: The maximum waiting time for a
+        response before considering the VM as unhealthy, in seconds (between 2
+        and 60 both included). (required)
+        :type       health_check_timeout: ``int``
+
+        :param      health_check_unhealthy_thresold: The number of consecutive
+        failed pings before considering the VM as unhealthy (between 2 and
+        10 both included). (required)
+        :type       health_check_unhealthy_thresold: ``int``
+
+        :param      load_balancer_name: The name of the load balancer.
+        (required)
+        :type       load_balancer_name: ``str``
+
+        :param      load_balancer_port: The port on which the load balancer is
+        listening (between 1 and 65535, both included).
+        :type       load_balancer_port: ``int``
+
+        :param      policy_names: The list of policy names (must contain all
+        the policies to be enabled).
+        :type       policy_names: ``list`` of ``str``
+
+        :param      server_certificate_id: The list of policy names (must
+        contain all the policies to be enabled).
+        :type       server_certificate_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: Update the specified Load Balancer
+        :rtype: ``dict``
+        """
+        action = "UpdateLoadBalancer"
+        data = {"DryRun": dry_run, "AccessLog": {}, "HealthCheck": {}}
+        if access_log_is_enabled is not None:
+            data["AccessLog"].update({"IsEnabled": access_log_is_enabled})
+        if access_log_osu_bucket_name is not None:
+            data["AccessLog"].update({
+                "OsuBucketName": access_log_osu_bucket_name
+            })
+        if access_log_osu_bucket_prefix is not None:
+            data["AccessLog"].update({
+                "OsuBucketPrefix": access_log_osu_bucket_prefix
+            })
+        if access_log_publication_interval is not None:
+            data["AccessLog"].update({
+                "PublicationInterval": access_log_publication_interval
+            })
+        if health_check_interval is not None:
+            data["HealthCheck"].update({
+                "CheckInterval": health_check_interval
+            })
+        if health_check_healthy_threshold is not None:
+            data["HealthCheck"].update({
+                "HealthyThreshold": health_check_healthy_threshold
+            })
+        if health_check_path is not None:
+            data["HealthCheck"].update({
+                "Path": health_check_path
+            })
+        if health_check_port is not None:
+            data["HealthCheck"].update({
+                "Port": health_check_port
+            })
+        if health_check_protocol is not None:
+            data["HealthCheck"].update({
+                "Protocol": health_check_protocol
+            })
+        if health_check_timeout is not None:
+            data["HealthCheck"].update({
+                "Timeout": health_check_timeout
+            })
+        if health_check_unhealthy_threshold is not None:
+            data["HealthCheck"].update({
+                "UnhealthyThreshold": health_check_unhealthy_threshold
+            })
+        if load_balancer_name is not None:
+            data.update({"LoadBalancerName": load_balancer_name})
+        if load_balancer_port is not None:
+            data.update({"LoadBalancerPort": load_balancer_port})
+        if policy_names is not None:
+            data.update({"PolicyNames": policy_names})
+        if server_certificate_id is not None:
+            data.update({"ServerCertificateId": server_certificate_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["LoadBalancer"]
+        return response.json()
+
 
     def ex_create_load_balancer_policy(
         self,
@@ -5296,6 +5729,933 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return True
         return False
+
+    def ex_create_security_group(
+        self,
+        description: str = None,
+        net_id: str = None,
+        security_group_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a security group.
+        This action creates a security group either in the public Cloud or in
+        a specified Net. By default, a default security group for use in the
+        public Cloud and a default security group for use in a Net are created.
+        When launching a virtual machine (VM), if no security group is
+        explicitly specified, the appropriate default security group is
+        assigned to the VM. Default security groups include a default rule
+        granting VMs network access to each other.
+        When creating a security group, you specify a name. Two security
+        groups for use in the public Cloud or for use in a Net cannot have
+        the same name.
+        You can have up to 500 security groups in the public Cloud. You can
+        create up to 500 security groups per Net.
+        To add or remove rules, use the ex_create_security_group_rule method.
+
+        :param      description: A description for the security group, with a
+        maximum length of 255 ASCII printable characters. (required)
+        :type       description: ``str``
+
+        :param      net_id: The ID of the Net for the security group.
+        :type       net_id: ``str``
+
+        :param      security_group_name: The name of the security group.
+        (required)
+        :type       security_group_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Security Group
+        :rtype: ``dict``
+        """
+        action = "CreateSecurityGroup"
+        data = {"DryRun": dry_run}
+        if description is not None:
+            data.update({"Description": description})
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if security_group_name is not None:
+            data.update({"SecurityGroupName": security_group_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroup"]
+        return response.json()
+
+    def ex_delete_security_group(
+        self,
+        security_group_id: str = None,
+        security_group_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified security group.
+        You can specify either the name of the security group or its ID.
+        This action fails if the specified group is associated with a virtual
+        machine (VM) or referenced by another security group.
+
+        :param      security_group_id: The ID of the security group you want
+        to delete.
+        :type       security_group_id: ``str``
+
+        :param      security_group_name: TThe name of the security group.
+        :type       security_group_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteSecurityGroup"
+        data = {"DryRun": dry_run}
+        if security_group_id is not None:
+            data.update({"SecurityGroupId": security_group_id})
+        if security_group_name is not None:
+            data.update({"SecurityGroupName": security_group_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list_security_groups(
+        self,
+        account_ids: [str] = None,
+        net_ids: [str] = None,
+        security_group_ids: [str] = None,
+        security_group_names: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more security groups.
+        You can specify either the name of the security groups or their IDs.
+
+        :param      account_ids: The account IDs of the owners of the security
+        groups.
+        :type       account_ids: ``list`` of ``str``
+
+        :param      net_ids: The IDs of the Nets specified when the security
+        groups were created.
+        :type       net_ids: ``list`` of ``str``
+
+        :param      security_group_ids: The IDs of the security groups.
+        :type       security_group_ids: ``list`` of ``str``
+
+        :param      security_group_names: The names of the security groups.
+        :type       security_group_names: ``list`` of ``str``
+
+        :param      tag_keys: TThe keys of the tags associated with the
+        security groups.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        security groups.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: TThe key/value combination of the tags associated
+        with the security groups, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of Security Groups
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadSecurityGroups"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if account_ids is not None:
+            data["Filters"].update({
+                "AccountIds": account_ids
+            })
+        if net_ids is not None:
+            data["Filters"].update({
+                "NetIds": net_ids
+            })
+        if security_group_ids is not None:
+            data["Filters"].update({
+                "SecurityGroupIds": security_group_ids
+            })
+        if security_group_names is not None:
+            data["Filters"].update({
+                "SecurityGroupNames": security_group_names
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if tag_values is not None:
+            data["Filters"].update({
+                "TagValues": tag_values
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroups"]
+        return response.json()
+
+    def ex_create_security_group_rule(
+        self,
+        flow: str = None,
+        from_port_range: int = None,
+        ip_range: str = None,
+        rules: [dict] = None,
+        sg_account_id_to_link: str = None,
+        sg_id: str = None,
+        sg_name_to_link: str = None,
+        to_port_range: int = None,
+        dry_run: bool = False,
+    ):
+        """
+        Configures the rules for a security group.
+        The modifications are effective at virtual machine (VM) level as
+        quickly as possible, but a small delay may occur.
+
+        You can add one or more egress rules to a security group for use with
+        a Net.
+        It allows VMs to send traffic to either one or more destination IP
+        address ranges or destination security groups for the same Net.
+        We recommend using a set of IP permissions to authorize outbound
+        access to a destination security group. We also recommended this
+        method to create a rule with a specific IP protocol and a specific
+        port range. In a set of IP permissions, we recommend to specify the
+        the protocol.
+
+        You can also add one or more ingress rules to a security group.
+        In the public Cloud, this action allows one or more IP address ranges
+        to access a security group for your account, or allows one or more
+        security groups (source groups) to access a security group for your
+        own 3DS OUTSCALE account or another one.
+        In a Net, this action allows one or more IP address ranges to access a
+        security group for your Net, or allows one or more other security
+        groups (source groups) to access a security group for your Net. All
+        the security groups must be for the same Net.
+
+        :param      flow: The direction of the flow: Inbound or Outbound.
+        You can specify Outbound for Nets only.type (required)
+        description: ``bool``
+
+        :param      from_port_range: The beginning of the port range for
+        the TCP and UDP protocols, or an ICMP type number.
+        :type       from_port_range: ``int``
+
+        :param      ip_range: The name The IP range for the security group
+        rule, in CIDR notation (for example, 10.0.0.0/16).
+        :type       ip_range: ``str``
+
+        :param      rules: Information about the security group rule to create:
+        https://docs.outscale.com/api#createsecuritygrouprule
+        rules = [
+           {
+                "FromPortRange": int,
+                "IpProtocol": str,
+                "IpRanges": [str],
+                "SecurityGroupsMembers": {
+                    "AccountId": str,
+                    "SecurityGroupIds": str,
+                    "SecurityGroupName": str
+                },
+                "ServiceIds": [str],
+                "ToPortRange": int,
+           }
+        ]
+        :type       rules: ``list`` of  ``dict``
+
+        :param      sg_account_id_to_link: The account ID of the
+        owner of the security group for which you want to create a rule.
+        :type       sg_account_id_to_link: ``str``
+
+        :param      sg_id: The ID of the security group for which
+        you want to create a rule. (required)
+        :type       sg_id: ``str``
+
+        :param      sg_name_to_link: The ID of the source security
+        group. If you are in the Public Cloud, you can also specify the name
+        of the source security group.
+        :type       sg_name_to_link: ``str``
+
+        :param      to_port_range: TThe end of the port range for the TCP and
+        UDP protocols, or an ICMP type number.
+        :type       to_port_range: ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Security Group Rule
+        :rtype: ``dict``
+        """
+        action = "CreateSecurityGroupRule"
+        data = {"DryRun": dry_run}
+        if flow is not None:
+            data.update({"Flow": flow})
+        if from_port_range is not None:
+            data.update({"FromPortRange": from_port_range})
+        if ip_range is not None:
+            data.update({"IpRange": ip_range})
+        if rules is not None:
+            data.update({"Rules": rules})
+        if sg_name_to_link is not None:
+            data.update({
+                "SecurityGroupNameToLink": sg_name_to_link
+            })
+        if sg_id is not None:
+            data.update({"SecurityGroupId": sg_id})
+        if sg_account_id_to_link is not None:
+            data.update({
+                "SecurityGroupAccountIdToLink": sg_account_id_to_link
+            })
+        if to_port_range is not None:
+            data.update({"ToPortRange": to_port_range})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroup"]
+        return response.json()
+
+    def ex_delete_security_group_rule(
+        self,
+        flow: str = None,
+        from_port_range: int = None,
+        ip_protocol: str = None,
+        ip_range: str = None,
+        rules: [dict] = None,
+        sg_account_id_to_unlink: str = None,
+        sg_id: str = None,
+        sg_name_to_unlink: str = None,
+        to_port_range: int = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes one or more inbound or outbound rules from a security group.
+        For the rule to be deleted, the values specified in the deletion
+        request must exactly match the value of the existing rule.
+        In case of TCP and UDP protocols, you have to indicate the destination
+        port or range of ports. In case of ICMP protocol, you have to specify
+        the ICMP type and code.
+        Rules (IP permissions) consist of the protocol, IP address range or
+        source security group.
+        To remove outbound access to a destination security group, we
+        recommend to use a set of IP permissions. We also recommend to specify 
+        the protocol in a set of IP permissions.
+
+        :param      flow: The direction of the flow: Inbound or Outbound.
+        You can specify Outbound for Nets only.type (required)
+        description: ``bool``
+
+        :param      from_port_range: The beginning of the port range for
+        the TCP and UDP protocols, or an ICMP type number.
+        :type       from_port_range: ``int``
+
+        :param      ip_range: The name The IP range for the security group
+        rule, in CIDR notation (for example, 10.0.0.0/16).
+        :type       ip_range: ``str``
+
+        :param      rules: Information about the security group rule to create:
+        https://docs.outscale.com/api#createsecuritygrouprule
+        rules = [
+           {
+                "FromPortRange": int,
+                "IpProtocol": str,
+                "IpRanges": [str],
+                "SecurityGroupsMembers": [
+                    {
+                        "AccountId": str,
+                        "SecurityGroupIds": str,
+                        "SecurityGroupName": str
+                    }
+                ],
+                "ServiceIds": [str],
+                "ToPortRange": int,
+           }
+        ]
+        :type       rules: ``list`` of  ``dict``
+
+        :param      sg_account_id_to_link: The account ID of the
+        owner of the security group for which you want to delete a rule.
+        :type       sg_account_id_to_link: ``str``
+
+        :param      sg_id: The ID of the security group for which
+        you want to delete a rule. (required)
+        :type       sg_id: ``str``
+
+        :param      sg_name_to_link: The ID of the source security
+        group. If you are in the Public Cloud, you can also specify the name
+        of the source security group.
+        :type       sg_name_to_link: ``str``
+
+        :param      to_port_range: TThe end of the port range for the TCP and
+        UDP protocols, or an ICMP type number.
+        :type       to_port_range: ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Security Group Rule
+        :rtype: ``dict``
+        """
+        action = "DeleteSecurityGroupRule"
+        data = {"DryRun": dry_run}
+        if flow is not None:
+            data.update({"Flow": flow})
+        if ip_protocol is not None:
+            data.update({"IpProtocol": ip_protocol})
+        if from_port_range is not None:
+            data.update({"FromPortRange": from_port_range})
+        if ip_range is not None:
+            data.update({"IpRange": ip_range})
+        if rules is not None:
+            data.update({"Rules": rules})
+        if sg_name_to_unlink is not None:
+            data.update({
+                "SecurityGroupNameToUnlink": sg_name_to_unlink
+            })
+        if sg_id is not None:
+            data.update({"SecurityGroupId": sg_id})
+        if sg_account_id_to_unlink is not None:
+            data.update({
+                "SecurityGroupAccountIdToUnlink": sg_account_id_to_unlink
+            })
+        if to_port_range is not None:
+            data.update({"ToPortRange": to_port_range})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SecurityGroup"]
+        return response.json()
+
+    def ex_delete_subnet(
+        self,
+        subnet_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified Subnet.
+        You must terminate all the running virtual machines (VMs) in the
+        Subnet before deleting it.
+
+        :param      subnet_id: The ID of the Subnet you want to delete.
+        (required)
+        :type       subnet_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteSubnet"
+        data = {"DryRun": dry_run}
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_update_subnet(
+        self,
+        subnet_id: str = None,
+        map_public_ip_on_launch: bool = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified Subnet.
+        You must terminate all the running virtual machines (VMs) in the
+        Subnet before deleting it.
+
+        :param      subnet_id: The ID of the Subnet you want to delete.
+        (required)
+        :type       subnet_id: ``str``
+
+        :param      map_public_ip_on_launch: If true, a public IP address is
+        assigned to the network interface cards (NICs) created in the s
+        pecified Subnet. (required)
+        :type       map_public_ip_on_launch: ``bool``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The updated Subnet
+        :rtype: ``dict``
+        """
+        action = "DeleteSubnet"
+        data = {"DryRun": dry_run}
+        if subnet_id is not None:
+            data.update({"SubnetId": subnet_id})
+        if map_public_ip_on_launch is not None:
+            data.update({"MapPublicIpOnLaunch": map_public_ip_on_launch})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json["Subnet"]
+        return response.json()
+
+    def ex_list_subnets(
+        self,
+        available_ip_counts: [str] = None,
+        ip_ranges: [str] = None,
+        net_ids: [str] = None,
+        states: [str] = None,
+        subnet_ids: [str] = None,
+        subregion_names: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Lists one or more of your Subnets.
+        If you do not specify any Subnet ID, this action describes all of
+        your Subnets.
+
+
+        :param      available_ip_counts: The number of available IPs.
+        :type       available_ip_counts: ``str``
+
+        :param      ip_ranges: The IP ranges in the Subnets, in CIDR notation
+        (for example, 10.0.0.0/16).
+        :type       ip_ranges: ``str``
+
+        :param      net_ids: The IDs of the Nets in which the Subnets are.
+        :type       net_ids: ``str``
+
+        :param      states: The states of the Subnets (pending | available).
+        :type       states: ``str``
+
+        :param      subnet_ids: The IDs of the Subnets.
+        :type       subnet_ids: ``str``
+
+        :param      subregion_names: The names of the Subregions in which the
+        Subnets are located.
+        :type       subregion_names: ``str``
+
+        :param      tag_keys: TThe keys of the tags associated with the
+        subnets.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        subnets.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: TThe key/value combination of the tags associated
+        with the subnets, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of Subnets
+        :rtype: ``list`` of  ``dict``
+        """
+        action = "ReadSubnets"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if available_ip_counts is not None:
+            data["Filters"].update({
+                "AvailableIpsCounts": available_ip_counts
+            })
+        if ip_ranges is not None:
+            data["Filters"].update({
+                "IpRanges": ip_ranges
+            })
+        if net_ids is not None:
+            data["Filters"].update({
+                "NetIds": net_ids
+            })
+        if states is not None:
+            data["Filters"].update({
+                "States": states
+            })
+        if subnet_ids is not None:
+            data["Filters"].update({
+                "SubetIds": subnet_ids
+            })
+        if subregion_names is not None:
+            data["Filters"].update({
+                "SubregionNames": subregion_names
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if tag_values is not None:
+            data["Filters"].update({
+                "TagValues": tag_values
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Subnets"]
+        return response.json()
+
+    def ex_create_subnet(
+        self,
+        ip_range: str = None,
+        net_id: str = None,
+        subregion_name: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a Subnet in an existing Net.
+        To create a Subnet in a Net, you have to provide the ID of the Net and
+        the IP range for the Subnet (its network range). Once the Subnet is
+        created, you cannot modify its IP range.
+        The IP range of the Subnet can be either the same as the Net one if
+        you create only a single Subnet in this Net, or a subset of the Net
+        one. In case of several Subnets in a Net, their IP ranges must not
+        overlap. The smallest Subnet you can create uses a /30 netmask
+        (four IP addresses).
+
+        :param      ip_range: The IP range in the Subnet, in CIDR notation
+        (for example, 10.0.0.0/16). (required)
+        :type       ip_range: ``str``
+
+        :param      net_id: The ID of the Net for which you want to create a
+        Subnet. (required)
+        :type       net_id: ``str``
+
+        :param      subregion_name: TThe name of the Subregion in which you
+        want to create the Subnet.
+        :type       subregion_name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Subnet
+        :rtype: ``dict``
+        """
+        action = "CreateSubnet"
+        data = {"DryRun": dry_run}
+        if ip_range is not None:
+            data.update({"IpRange": ip_range})
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if subregion_name is not None:
+            data.update({"SubregionName": subregion_name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Subnet"]
+        return response.json()
+
+    def ex_delete_export_task(
+        self,
+        export_task_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes an export task.
+        If the export task is not running, the command fails and an error is
+        returned.
+
+        :param      export_task_id: The ID of the export task to delete.
+        (required)
+        :type       export_task_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteExportTask"
+        data = {"DryRun": dry_run}
+        if export_task_id is not None:
+            data.update({"ExportTaskId": export_task_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_create_vpn_connection(
+        self,
+        client_gateway_id: str = None,
+        connection_type: str = None,
+        static_routes_only: bool = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a VPN connection between a specified virtual gateway and a
+        specified client gateway.
+        You can create only one VPN connection between a virtual gateway and
+        a client gateway.
+
+        :param      client_gateway_id: The ID of the client gateway. (required)
+        :type       client_gateway_id: ``str``
+
+        :param      connection_type: The type of VPN connection (only ipsec.1
+        is supported). (required)
+        :type       connection_type: ``str``
+
+        :param      static_routes_only: If false, the VPN connection uses
+        dynamic routing with Border Gateway Protocol (BGP). If true, routing
+        is controlled using static routes. For more information about how to
+        create and delete static routes, see CreateVpnConnectionRoute:
+        https://docs.outscale.com/api#createvpnconnectionroute and
+        DeleteVpnConnectionRoute:
+        https://docs.outscale.com/api#deletevpnconnectionroute
+        :type       static_routes_only: ``bool``
+
+        :param      virtual_gateway_id: The ID of the virtual gateway.
+        (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new Vpn Connection
+        :rtype: ``dict``
+        """
+        action = "CreateVpnConnection"
+        data = {"DryRun": dry_run}
+        if client_gateway_id is not None:
+            data.update({"ClientGatewayId": client_gateway_id})
+        if connection_type is not None:
+            data.update({"ConnectionType": connection_type})
+        if static_routes_only is not None:
+            data.update({"StaticRoutesOnly": static_routes_only})
+        if virtual_gateway_id is not None:
+            data.update({"StaticRoutesOnly": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VpnConnection"]
+        return response.json()
+
+    def ex_create_vpn_connection_route(
+        self,
+        destination_ip_range: str = None,
+        vpn_connection_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Creates a static route to a VPN connection.
+        This enables you to select the network flows sent by the virtual
+        gateway to the target VPN connection.
+
+        :param      destination_ip_range: The network prefix of the route, in
+        CIDR notation (for example, 10.12.0.0/16).(required)
+        :type       destination_ip_range: ``str``
+
+        :param      vpn_connection_id: The ID of the target VPN connection of
+        the static route. (required)
+        :type       vpn_connection_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "CreateVpnConnectionRoute"
+        data = {"DryRun": dry_run}
+        if destination_ip_range is not None:
+            data.update({"DestinationIpRange": destination_ip_range})
+        if vpn_connection_id is not None:
+            data.update({"VpnConnectionId": vpn_connection_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_vpn_connection(
+        self,
+        vpn_connection_id: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified VPN connection.
+        If you want to delete a Net and all its dependencies, we recommend to
+        detach the virtual gateway from the Net and delete the Net before
+        deleting the VPN connection. This enables you to delete the Net
+        without waiting for the VPN connection to be deleted.
+
+        :param      vpn_connection_id: TThe ID of the VPN connection you want
+        to delete.
+        (required)
+        :type       vpn_connection_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteVpnConnection"
+        data = {"DryRun": dry_run}
+        if vpn_connection_id is not None:
+            data.update({"VpnConnectionId": vpn_connection_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_delete_vpn_connection_route(
+        self,
+        vpn_connection_id: str = None,
+        destination_ip_range: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Deletes a specified VPN connection.
+        If you want to delete a Net and all its dependencies, we recommend to
+        detach the virtual gateway from the Net and delete the Net before
+        deleting the VPN connection. This enables you to delete the Net
+        without waiting for the VPN connection to be deleted.
+
+        :param      vpn_connection_id: TThe ID of the VPN connection you want
+        to delete.
+        (required)
+        :type       vpn_connection_id: ``str``
+
+        :param      destination_ip_range: The network prefix of the route to
+        delete, in CIDR notation (for example, 10.12.0.0/16). (required)
+        :type       destination_ip_range: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteVpnConnectionRoute"
+        data = {"DryRun": dry_run}
+        if vpn_connection_id is not None:
+            data.update({"VpnConnectionId": vpn_connection_id})
+        if destination_ip_range is not None:
+            data.update({"DestinationIpRange": destination_ip_range})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return False
+
+    def ex_list__vpn_connections(
+        self,
+        bgp_asns: [int] = None,
+        client_gateway_ids: [str] = None,
+        connection_types: [str] = None,
+        route_destination_ip_ranges: [str] = None,
+        states: [str] = None,
+        static_routes_only: bool = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        dry_run: bool = False,
+    ):
+        """
+        Describes one or more VPN connections.
+
+        :param      bgp_asns: The Border Gateway Protocol (BGP) Autonomous
+        System Numbers (ASNs) of the connections.
+        :type       bgp_asns: ``list`` of ``int``
+
+        :param      client_gateway_ids: The IDs of the client gateways.
+        :type       client_gateway_ids: ``list`` of ``str``
+
+        :param      connection_types: The types of the VPN connections (only
+        ipsec.1 is supported).
+        :type       connection_types: ``list`` of ``str``
+
+        :param      states: The states of the vpn connections
+        (pending | available).
+        :type       states: ``str``
+
+        :param      route_destination_ip_ranges: The destination IP ranges.
+        :type       route_destination_ip_ranges: ``str``
+
+        :param      static_routes_only: If false, the VPN connection uses
+        dynamic routing with Border Gateway Protocol (BGP). If true, routing
+        is controlled using static routes. For more information about how to
+        create and delete static routes, see CreateVpnConnectionRoute:
+        https://docs.outscale.com/api#createvpnconnectionroute and
+        DeleteVpnConnectionRoute:
+        https://docs.outscale.com/api#deletevpnconnectionroute
+        :type       static_routes_only: ``bool``
+
+        :param      tag_keys: TThe keys of the tags associated with the
+        subnets.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated with the
+        subnets.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: TThe key/value combination of the tags associated
+        with the subnets, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of Subnets
+        :rtype: ``list`` of  ``dict``
+        """
+        action = "ReadVpnConnections"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if bgp_asns is not None:
+            data["Filters"].update({
+                "BgpAsns": bgp_asns
+            })
+        if client_gateway_ids is not None:
+            data["Filters"].update({
+                "ClientGatewayIds": client_gateway_ids
+            })
+        if connection_types is not None:
+            data["Filters"].update({
+                "ConnectionTypes": connection_types
+            })
+        if states is not None:
+            data["Filters"].update({
+                "States": states
+            })
+        if route_destination_ip_ranges is not None:
+            data["Filters"].update({
+                "RouteDestinationIpRanges": route_destination_ip_ranges
+            })
+        if static_routes_only is not None:
+            data["Filters"].update({
+                "StaticRoutesOnly": static_routes_only
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if tag_values is not None:
+            data["Filters"].update({
+                "TagValues": tag_values
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VpnConnections"]
+        return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
