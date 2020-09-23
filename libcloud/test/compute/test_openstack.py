@@ -2139,7 +2139,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_get_quota_set(self):
         quota_set = self.driver.get_quota_set("tenant_id")
         self.assertEqual(quota_set.cores.limit, 20)
-        self.assertEqual(quota_set.cores.in_user, 1)
+        self.assertEqual(quota_set.cores.in_use, 1)
         self.assertEqual(quota_set.cores.reserved, 0)
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
