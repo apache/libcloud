@@ -3923,7 +3923,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         url = '/os-quota-sets/%s/detail' % tenant_id
         if user_id:
             url += "?user_id=%s" % user_id
-        return self._to_quota_set(self.connection.request(url).object['quota_set'])
+        return self._to_quota_set(
+            self.connection.request(url).object['quota_set'])
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -4244,14 +4246,18 @@ class OpenStack_2_QuotaSet(object):
         self.metadata_items = self._to_quota_set_item(metadata_items)
         self.ram = self._to_quota_set_item(ram)
         self.server_groups = self._to_quota_set_item(server_groups)
-        self.server_group_members = self._to_quota_set_item(server_group_members)
+        self.server_group_members = self._to_quota_set_item(
+            server_group_members)
         self.fixed_ips = self._to_quota_set_item(fixed_ips)
         self.floating_ips = self._to_quota_set_item(floating_ips)
         self.networks = self._to_quota_set_item(networks)
-        self.security_group_rules = self._to_quota_set_item(security_group_rules)
+        self.security_group_rules = self._to_quota_set_item(
+            security_group_rules)
         self.security_groups = self._to_quota_set_item(security_groups)
-        self.injected_file_content_bytes = self._to_quota_set_item(injected_file_content_bytes)
-        self.injected_file_path_bytes = self._to_quota_set_item(injected_file_path_bytes)
+        self.injected_file_content_bytes = self._to_quota_set_item(
+            injected_file_content_bytes)
+        self.injected_file_path_bytes = self._to_quota_set_item(
+            injected_file_path_bytes)
         self.injected_files = self._to_quota_set_item(injected_files)
         self.driver = driver
 
