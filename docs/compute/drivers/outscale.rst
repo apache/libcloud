@@ -313,4 +313,10 @@ Vpn Connections
 * ``ex_delete_vpn_connection_route`` - Returns a ``bool``
 * ``ex_list_vpn_connections`` - Returns a ``list`` of ``dict``
 
-
+Nodes
+-----
+* ``ex_read_admin_password_node`` - Returns a ``str``
+* ``ex_read_console_output_node`` - Returns a ``str``
+* ``ex_list_node_types`` - Returns a ``list`` of ``dict``
+* ``ex_list_nodes_states`` - Returns a ``list`` of ``dict``
+* ``ex_update_node`` - Returns a ``list`` of ``dict``

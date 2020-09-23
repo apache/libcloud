@@ -552,6 +552,273 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
+    def ex_read_admin_password_node(self, node: Node, dry_run: bool = False):
+        """
+        Retrieves the administrator password for a Windows running virtual
+        machine (VM).
+        The administrator password is encrypted using the keypair you
+        specified when launching the VM.
+
+        :param      node: the ID of the VM (required)
+        :type       node: ``Node``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The Admin Password of the specified Node.
+        :rtype: ``str``
+        """
+        action = "ReadAdminPassword"
+        data = json.dumps({"DryRun": dry_run, "VmIds": node.id})
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["AdminPassword"]
+        return response.json()
+
+    def ex_read_console_output_node(self, node: Node, dry_run: bool = False):
+        """
+        Gets the console output for a virtual machine (VM). This console
+        provides the most recent 64 KiB output.
+
+        :param      node: the ID of the VM (required)
+        :type       node: ``Node``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The Console Output of the specified Node.
+        :rtype: ``str``
+        """
+        action = "ReadConsoleOutput"
+        data = json.dumps({"DryRun": dry_run, "VmIds": node.id})
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["ConsoleOutput"]
+        return response.json()
+
+    def ex_list_node_types(
+        self,
+        bsu_optimized: bool = None,
+        memory_sizes: [int] = None,
+        vcore_counts: [int] = None,
+        vm_type_names: [str] = None,
+        volume_counts: [int] = None,
+        volume_sizes: [int] = None,
+        dry_run: bool = False
+    ):
+        """
+        Lists one or more predefined VM types.
+
+        :param      bsu_optimized: Indicates whether the VM is optimized for
+        BSU I/O.
+        :type       bsu_optimized: ``bool``
+
+        :param      memory_sizes: The amounts of memory, in gibibytes (GiB).
+        :type       memory_sizes: ``list`` of ``int``
+
+        :param      vcore_counts: The numbers of vCores.
+        :type       vcore_counts: ``list`` of ``int``
+
+        :param      vm_type_names: The names of the VM types. For more
+        information, see Instance Types.
+        :type       vm_type_names: ``list`` of ``str``
+
+        :param      volume_counts: The maximum number of ephemeral storage
+        disks.
+        :type       volume_counts: ``list`` of ``int``
+
+
+        :param      volume_sizes: The size of one ephemeral storage disk,
+        in gibibytes (GiB).
+        :type       volume_sizes: ``list`` of ``int``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: list of vm types
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadVmTypes"
+        data = {"Filters": {}, "DryRun": dry_run}
+        if bsu_optimized is not None:
+            data["Filters"].update({"BsuOptimized": bsu_optimized})
+        if memory_sizes is not None:
+            data["Filters"].update({"MemorySizes": memory_sizes})
+        if vcore_counts is not None:
+            data["Filters"].update({"VcoreCounts": vcore_counts})
+        if vm_type_names is not None:
+            data["Filters"].update({"VmTypeNames": vm_type_names})
+        if volume_counts is not None:
+            data["Filters"].update({"VolumeCounts": volume_counts})
+        if volume_sizes is not None:
+            data["Filters"].update({"VolumeSizes": volume_sizes})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VmTypes"]
+        return response.json()
+
+    def ex_list_nodes_states(
+        self,
+        all_vms: bool = None,
+        subregion_names: [str] = None,
+        vm_ids: [str] = None,
+        vm_states: [str] = None,
+        dry_run: bool = False
+    ):
+        """
+        Lists the status of one or more virtual machines (VMs).
+
+        :param      all_vms: If true, includes the status of all VMs. By
+        default or if set to false, only includes the status of running VMs.
+        :type       all_vms: ``bool``
+
+        :param      subregion_names: The names of the Subregions of the VMs.
+        :type       subregion_names: ``list`` of ``str``
+
+        :param      vm_ids: One or more IDs of VMs.
+        :type       vm_ids: ``list`` of ``str``
+
+        :param      vm_states: The states of the VMs
+        (pending | running | stopping | stopped | shutting-down | terminated
+        | quarantine)
+        :type       vm_states: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: list the status of one ore more vms
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadVmsState"
+        data = {"Filters": {}, "DryRun": dry_run}
+        if all_vms is not None:
+            data.update({"AllVms": all_vms})
+        if subregion_names is not None:
+            data["Filters"].update({"SubregionNames": subregion_names})
+        if vm_ids is not None:
+            data["Filters"].update({"VmIds": vm_ids})
+        if vm_states is not None:
+            data["Filters"].update({"VmStates": vm_states})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VmStates"]
+        return response.json()
+
+    def ex_update_node(self,
+                    block_device_mapping: [dict],
+                    bsu_optimized: bool = None,
+                    deletion_protection: bool = False,
+                    is_source_dest_checked: bool = None,
+                    keypair_name: str = True,
+                    performance: str = True,
+                    security_group_ids: [str] = None,
+                    user_data: str = False,
+                    vm_id: str = None,
+                    vm_initiated_shutown_behavior: str = None,
+                    vm_type: int = None,
+                    dry_run: bool = False
+                    ):
+        """
+        Modifies a specific attribute of a Node (VM).
+        You can modify only one attribute at a time. You can modify the
+        IsSourceDestChecked attribute only if the VM is in a Net.
+        You must stop the VM before modifying the following attributes:
+
+        - VmType
+        - UserData
+        - BsuOptimized
+
+        :param      block_device_mapping: One or more block device mappings
+        of the VM.
+        :type       block_device_mapping: ``dict``
+
+        :param      bsu_optimized: If true, the VM is optimized for BSU I/O.
+        :type       bsu_optimized: ``bool``
+
+        :param      ex_dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       ex_dry_run: ``bool``
+
+        :param      deletion_protection: If true, you cannot terminate the VM
+        using Cockpit, the CLI or the API. If false, you can.
+        :type       ex_block_device_mapping: ``bool``
+
+        :param      is_source_dest_checked: (Net only) If true, the
+        source/destination check is enabled. If false, it is disabled. This
+        value must be false for a NAT VM to perform network address
+        translation (NAT) in a Net.
+        :type       is_source_dest_checked: ``bool``
+
+        :param      keypair_name: The name of the keypair.
+        :type       keypair_name: ``str``
+
+        :param      performance: The performance of the VM
+        (standard | high | highest).
+        :type       performance: ``str``
+
+        :param      security_group_ids: One or more IDs of security groups for
+        the VM.
+        :type       security_group_ids: ``bool``
+
+        :param      user_data: The Base64-encoded MIME user data.
+        :type       user_data: ``str``
+
+        :param      vm_id: The ID of the VM. (required)
+        :type       vm_id: ``str``
+
+        :param      vm_initiated_shutown_behavior: The VM behavior when you
+        stop it. By default or if set to stop, the VM stops. If set to
+        restart, the VM stops then automatically restarts. If set to
+        terminate, the VM stops and is terminated.
+        :type       vm_initiated_shutown_behavior: ``str``
+
+        :param      vm_type: The type of VM. For more information,
+        see Instance Types:
+        https://wiki.outscale.net/display/EN/Instance+Types
+        :type       vm_type: ``str``
+
+        :return: the updated Node
+        :rtype: ``dict``
+        """
+        action = "UpdateVm"
+        data = {
+            "DryRun": dry_run,
+        }
+        if block_device_mapping is not None:
+            data.update({"BlockDeviceMappings": block_device_mapping})
+        if bsu_optimized is not None:
+            data.update({"BsuOptimized": bsu_optimized})
+        if deletion_protection is not None:
+            data.update({"DeletionProtection": deletion_protection})
+        if keypair_name is not None:
+            data.update({"KeypairName": keypair_name})
+        if is_source_dest_checked is not None:
+            data.update({
+                "IsSourceDestChecked": is_source_dest_checked
+            })
+        if performance is not None:
+            data.update({"Performance": performance})
+        if security_group_ids is not None:
+            data.update({"SecurityGroupIds": security_group_ids})
+        if user_data is not None:
+            data.update({"UserDate": user_data})
+        if vm_id is not None:
+            data.update({"VmId": vm_id})
+        if vm_initiated_shutown_behavior is not None:
+            data.update({
+                "VmInitiatedShutdownBehavior": vm_initiated_shutown_behavior
+            })
+        if vm_type is not None:
+            data.update({"VmType": vm_type})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return self._to_node(response.json()["Vm"])
+        return response.json()
+
     def create_image(
         self,
         ex_architecture: str = None,
