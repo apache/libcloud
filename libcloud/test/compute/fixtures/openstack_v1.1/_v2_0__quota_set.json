@@ -1,7 +1,7 @@
 {
     "quota_set": {
         "cores": {
-            "in_use": 0,
+            "in_use": 1,
             "limit": 20,
             "reserved": 0
         },
