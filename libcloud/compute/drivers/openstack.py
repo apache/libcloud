@@ -4232,6 +4232,7 @@ class OpenStack_2_QuotaSetItem(object):
                 'reserved="%s">' % (self.in_use, self.limit,
                                     self.reserved))
 
+
 class OpenStack_2_QuotaSet(object):
     """
     A Qouta Set.
