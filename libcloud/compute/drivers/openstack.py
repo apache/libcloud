@@ -4229,7 +4229,7 @@ class OpenStack_2_QuotaSetItem(object):
 
     def __repr__(self):
         return ('<OpenStack_2_QuotaSetItem in_use="%s", limit="%s",'
-                'reserved="%s">' % (self.id, self.in_use, self.limit,
+                'reserved="%s">' % (self.in_use, self.limit,
                                     self.reserved))
 
 class OpenStack_2_QuotaSet(object):
