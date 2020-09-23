@@ -4256,8 +4256,11 @@ class OpenStack_2_QuotaSet(object):
         self.driver = driver
 
     def _to_quota_set_item(self, obj):
-        return OpenStack_2_QuotaSetItem(obj['in_use'], obj['limit'],
-                                        obj['reserved'])
+        if obj:
+            return OpenStack_2_QuotaSetItem(obj['in_use'], obj['limit'],
+                                            obj['reserved'])
+        else:
+            return None
 
     def __repr__(self):
         return '<OpenStack_2_QuotaSet id="%s">' % (self.id)
