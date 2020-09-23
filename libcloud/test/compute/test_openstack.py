@@ -2801,6 +2801,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load('_v2_0__router_interface.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
+    def _v2_1337_os_quota_sets_tenant_id_detail(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__quota_set.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
     def _v2_1337_servers_1000_action(self, method, url, body, headers):
         if method != 'POST' or body != '{"removeSecurityGroup": {"name": "sgname"}}':
             raise NotImplementedError(body)
