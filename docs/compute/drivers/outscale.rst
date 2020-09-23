@@ -293,3 +293,12 @@ Server Certificate
 * ``ex_delete_server_certificate`` - Returns a ``bool``
 * ``ex_list_server_certificate`` - Returns a ``list`` of ``dict``
 * ``ex_update_server_certificate`` - Returns a ``dict``
+
+Virtual Gateways
+----------------
+* ``ex_create_virtual_gateway`` - Returns a ``dict``
+* ``ex_delete_virtual_gatewat`` - Returns a ``dict``
+* ``ex_link_virtual_gateway`` - Returns a ``dict``
+* ``ex_list_virtual_gateway`` - Returns a ``list`` of ``dict``
+* ``ex_unlink_virtual_gateway`` - Returns a ``dict``
+* ``ex_update_route_propagation`` - Returns a ``dict``

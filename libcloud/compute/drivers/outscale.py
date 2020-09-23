@@ -5817,6 +5817,260 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["ServerCertificate"]
         return response.json()
 
+    def ex_create_virtual_gateway(
+        self,
+        connection_type: str = None,
+        dry_run: bool = False
+    ):
+    """
+        Creates a virtual gateway.
+        A virtual gateway is the access point on the Net
+        side of a VPN connection.
+
+        :param      connection_type: The type of VPN connection supported
+        by the virtual gateway (only ipsec.1 is supported). (required)
+        :type       connection_type: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new virtual gateway
+        :rtype: ``dict``
+        """
+        action = "CreateVirtualGateway"
+        data = {"DryRun": dry_run}
+        if connection_type is not None:
+            data.update({"ConnectionType": connection_type})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VirtualGateway"]
+        return response.json()
+
+    def ex_delete_virtual_gateway(
+        self,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+    """
+        Deletes a specified virtual gateway.
+        Before deleting a virtual gateway, we
+        recommend to detach it from the Net and delete the VPN connection.
+
+        :param      virtual_gateway_id: The ID of the virtual gateway
+        you want to delete. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: request
+        :rtype: ``dict``
+        """
+        action = "DeleteVirtualGateway"
+        data = {"DryRun": dry_run}
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ResponseContext"]
+        return response.json()
+
+    def ex_link_virtual_gateway(
+        self,
+        net_id: str = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+    """
+        Attaches a virtual gateway to a Net.
+
+        :param      net_id: The ID of the Net to which you want to attach
+        the virtual gateway. (required)
+        :type       net_id: ``str``
+
+        :param      virtual_gateway_id: The ID of the virtual
+        gateway. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return:
+        :rtype: ``dict``
+        """
+        action = "LinkVirtualGateway"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetToVirtualGatewayLink"]
+        return response.json()
+
+    def ex_list_virtual_gateway(
+        self,
+        connection_types: [str] = None,
+        link_net_ids: [str] = None,
+        link_states: [str] = None,
+        states: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        virtual_gateway_id: [str] = None,
+        dry_run: bool = False
+    ):
+    """
+        Lists one or more virtual gateways.
+
+        :param      connection_types: The types of the virtual gateways
+        (only ipsec.1 is supported).
+        :type       connection_types: ``list`` of ``dict``
+
+        :param      link_net_ids: The IDs of the Nets the virtual gateways
+        are attached to.
+        :type       link_net_ids: ``list`` of ``dict``
+
+        :param      link_states: The current states of the attachments
+        between the virtual gateways and the Nets
+        (attaching | attached | detaching | detached).
+        :type       link_states: ``list`` of ``dict``
+
+        :param      states: The states of the virtual gateways
+        (pending | available | deleting | deleted).
+        :type       states: ``list`` of ``dict``
+
+        :param      tag_keys: The keys of the tags associated with the
+        virtual gateways.
+        :type       tag_keys: ``list`` of ``dict``
+
+        :param      tag_values: The values of the tags associated with
+        the virtual gateways.
+        :type       tag_values: ``list`` of ``dict``
+
+        :param      tags: The key/value combination of the tags associated
+        with the virtual gateways, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``dict``
+
+        :param      virtual_gateway_id: The IDs of the virtual gateways.
+        :type       virtual_gateway_id: ``list`` of ``dict``
+
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return:
+        :rtype: ``dict``
+        """
+        action = "ReadVirtualGateways"
+        data = {"Filters": {}, "DryRun": dry_run}
+        if connection_types is not None:
+            data["Filters"].update({"ConnectionTypes": connection_types})
+        if link_net_ids is not None:
+            data["Filters"].update({"LinkNetIds": link_net_ids})
+        if link_states is not None:
+            data["Filters"].update({"LinkStates": link_states})
+        if states is not None:
+            data["Filters"].update({"States": states})
+        if tag_keys is not None:
+            data["Filters"].update({"TagKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        if virtual_gateway_id is not None:
+            data["Filters"].update({"VirtualGatewayIds": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VirtualGateways"]
+        return response.json()
+
+    def ex_unlink_virtual_gateway(
+        self,
+        net_id: str = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+    """
+        Detaches a virtual gateway from a Net.
+        You must wait until the virtual gateway is in the detached state
+        before you can attach another Net to it or delete the Net it was
+        previously attached to.
+
+        :param      net_id: The ID of the Net from which you want to detach
+        the virtual gateway. (required)
+        :type       net_id: ``str``
+
+        :param      virtual_gateway_id: The ID of the Net from which you
+        want to detach the virtual gateway. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return:
+        :rtype: ``dict``
+        """
+        action = "UnlinkVirtualGateway"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId	": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ResponseContext"]
+        return response.json()
+
+    def ex_update_route_propagation(
+        self,
+        enable: bool = None,
+        route_table_id: str = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+    """
+        Configures the propagation of routes to a specified route table
+        of a Net by a virtual gateway.
+
+        :param      enable: If true, a virtual gateway can propagate routes
+        to a specified route table of a Net. If false,
+        the propagation is disabled. (required)
+        :type       enable: ``boolean``
+
+        :param      route_table_id: The ID of the route table. (required)
+        :type       route_table_id: ``str``
+
+        :param      virtual_gateway_id: The ID of the virtual
+        gateway. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: route propagation
+        :rtype: ``dict``
+        """
+        action = "UpdateRoutePropagation"
+        data = {"DryRun": dry_run}
+        if enable is not None:
+            data.update({"Enable": enable})
+        if route_table_id is not None:
+            data.update({"RouteTableId": route_table_id})
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["RouteTable"]
+        return response.json()
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
