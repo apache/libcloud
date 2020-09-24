@@ -732,7 +732,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, ex_data)
         return self._to_node_images(response.json()["Images"])
 
-    def ex_list_images_export_tasks(
+    def ex_list_image_export_tasks(
         self,
         dry_run: bool = False,
         task_ids: [str] = False,
@@ -843,7 +843,7 @@ class OutscaleNodeDriver(NodeDriver):
         data = {
             "DryRun": dry_run,
             "PermissionsToLaunch": {
-                "Additions": {}
+                "Additions": {},
                 "Removals": {}
             }
         }
@@ -1226,7 +1226,7 @@ class OutscaleNodeDriver(NodeDriver):
         data = {
             "DryRun: ": dry_run,
             "PermissionsToCreateVolume": {
-                "Additions": {}
+                "Additions": {},
                 "Removals": {}
             }
         }
@@ -5748,7 +5748,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["ResponseContext"]
         return response.json()
 
-    def ex_list_server_certificate(
+    def ex_list_server_certificates(
         self,
         paths: str = None,
         dry_run: bool = False
@@ -5912,7 +5912,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["NetToVirtualGatewayLink"]
         return response.json()
 
-    def ex_list_virtual_gateway(
+    def ex_list_virtual_gateways(
         self,
         connection_types: [str] = None,
         link_net_ids: [str] = None,
