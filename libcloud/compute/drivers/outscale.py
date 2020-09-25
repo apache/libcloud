@@ -6551,7 +6551,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_list__vpn_connections(
+    def ex_list_vpn_connections(
         self,
         bgp_asns: [int] = None,
         client_gateway_ids: [str] = None,
