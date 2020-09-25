@@ -494,15 +494,15 @@ class OutscaleNodeDriver(NodeDriver):
 
     def start_node(self, node: Node):
         """
-                Start a Vm.
+        Start a Vm.
 
-                :param      node: the  VM(s)
-                            you want to start (required)
-                :type       node: ``Node``
+        :param      node: the  VM(s)
+                    you want to start (required)
+        :type       node: ``Node``
 
-                :return: the rebooted instances
-                :rtype: ``dict``
-                """
+        :return: the rebooted instances
+        :rtype: ``dict``
+        """
         action = "StartVms"
         data = json.dumps({"VmIds": [node.id]})
         if self._call_api(action, data).status_code == 200:
@@ -511,15 +511,15 @@ class OutscaleNodeDriver(NodeDriver):
 
     def stop_node(self, node: Node):
         """
-                Stop a Vm.
+        Stop a Vm.
 
-                :param      node: the  VM(s)
-                            you want to stop (required)
-                :type       node: ``Node``
+        :param      node: the  VM(s)
+                    you want to stop (required)
+        :type       node: ``Node``
 
-                :return: the rebooted instances
-                :rtype: ``dict``
-                """
+        :return: the rebooted instances
+        :rtype: ``dict``
+        """
         action = "StopVms"
         data = json.dumps({"VmIds": [node.id]})
         if self._call_api(action, data).status_code == 200:
@@ -709,19 +709,19 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_update_node(self,
-                    block_device_mapping: [dict],
-                    bsu_optimized: bool = None,
-                    deletion_protection: bool = False,
-                    is_source_dest_checked: bool = None,
-                    keypair_name: str = True,
-                    performance: str = True,
-                    security_group_ids: [str] = None,
-                    user_data: str = False,
-                    vm_id: str = None,
-                    vm_initiated_shutown_behavior: str = None,
-                    vm_type: int = None,
-                    dry_run: bool = False
-                    ):
+        block_device_mapping: [dict],
+        bsu_optimized: bool = None,
+        deletion_protection: bool = False,
+        is_source_dest_checked: bool = None,
+        keypair_name: str = True,
+        performance: str = True,
+        security_group_ids: [str] = None,
+        user_data: str = False,
+        vm_id: str = None,
+        vm_initiated_shutown_behavior: str = None,
+        vm_type: int = None,
+        dry_run: bool = False
+    ):
         """
         Modifies a specific attribute of a Node (VM).
         You can modify only one attribute at a time. You can modify the
@@ -739,13 +739,13 @@ class OutscaleNodeDriver(NodeDriver):
         :param      bsu_optimized: If true, the VM is optimized for BSU I/O.
         :type       bsu_optimized: ``bool``
 
-        :param      ex_dry_run: If true, checks whether you have the required
+        :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       ex_dry_run: ``bool``
+        :type       dry_run: ``bool``
 
         :param      deletion_protection: If true, you cannot terminate the VM
         using Cockpit, the CLI or the API. If false, you can.
-        :type       ex_block_device_mapping: ``bool``
+        :type       deletion_protection: ``bool``
 
         :param      is_source_dest_checked: (Net only) If true, the
         source/destination check is enabled. If false, it is disabled. This
@@ -898,9 +898,11 @@ class OutscaleNodeDriver(NodeDriver):
         data = json.dumps(data)
         action = "CreateImage"
         response = self._call_api(action, data)
-        return self._to_node_image(response.json()["Image"])
+        if response.status_code == 200:
+            return self._to_node_image(response.json()["Image"])
+        return response.json()
 
-      def ex_create_image_export_task(
+    def ex_create_image_export_task(
         self,
         image: NodeImage = None,
         osu_export_disk_image_format: str = None,
@@ -911,7 +913,7 @@ class OutscaleNodeDriver(NodeDriver):
         osu_export_prefix: str = None,
         dry_run: bool = False,
     ):
-    """
+        """
         Exports an Outscale machine image (OMI) to an Object Storage Unit 
         (OSU) bucket.
         This action enables you to copy an OMI between accounts in different 
@@ -959,7 +961,6 @@ class OutscaleNodeDriver(NodeDriver):
             "DryRun": dry_run,
             "OsuExport": {
                 "OsuApiKey": {}
-            },
             }
         }
         if image is not None:
@@ -1070,7 +1071,7 @@ class OutscaleNodeDriver(NodeDriver):
         perm_to_launch_removals_account_ids: [str] = None,
         perm_to_launch_removals_global_permission: bool = None
     ):
-    """
+        """
         Modifies the specified attribute of an Outscale machine image (OMI).
         You can specify only one attribute at a time. You can modify 
         the permissions to access the OMI by adding or removing account 
@@ -1338,7 +1339,7 @@ class OutscaleNodeDriver(NodeDriver):
         snapshot: VolumeSnapshot = None,
         dry_run: bool = False,
     ):
-    """
+        """
         Exports a snapshot to an Object Storage Unit (OSU) bucket.
         This action enables you to create a backup of your snapshot or to copy
         it to another account. You, or other users you send a pre-signed URL
@@ -1421,7 +1422,7 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         dry_run: bool = False,
         task_ids: [str] = False,
-        ):
+    ):
         """
         Lists one or more image export tasks.
 
@@ -1446,7 +1447,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["SnapshotExportTasks"]
         return response.json()
 
-     def ex_update_snapshot(
+    def ex_update_snapshot(
         self,
         perm_to_create_volume_addition_account_id: [str] = None,
         perm_to_create_volume_addition_global_perm: bool = None,
@@ -1455,12 +1456,12 @@ class OutscaleNodeDriver(NodeDriver):
         snapshot: VolumeSnapshot = None,
         dry_run: bool = False
     ):
-    """
-    Modifies the permissions for a specified snapshot.
-    You can add or remove permissions for specified account IDs or groups.
-    You can share a snapshot with a user that is in the same Region.
-    The user can create a copy of the snapshot you shared, obtaining all
-    the rights for the copy of the snapshot.
+        """
+        Modifies the permissions for a specified snapshot.
+        You can add or remove permissions for specified account IDs or groups.
+        You can share a snapshot with a user that is in the same Region.
+        The user can create a copy of the snapshot you shared, obtaining all
+        the rights for the copy of the snapshot.
 
         :param      perm_to_create_volume_addition_account_id:
         The account ID of one or more users who have permissions
@@ -6131,7 +6132,7 @@ class OutscaleNodeDriver(NodeDriver):
         private_key: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Creates a server certificate and its matching private key.
         These elements can be used with other services (for example,
         to configure SSL termination on load balancers).
@@ -6197,7 +6198,7 @@ class OutscaleNodeDriver(NodeDriver):
         name: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Deletes a specified server certificate.
 
         :param      name: The name of the server certificate you
@@ -6225,7 +6226,7 @@ class OutscaleNodeDriver(NodeDriver):
         paths: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         List your server certificates.
 
         :param      paths: The path to the server certificate.
@@ -6256,7 +6257,7 @@ class OutscaleNodeDriver(NodeDriver):
         new_path:str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Modifies the name and/or the path of a specified server certificate.
 
         :param      name: The name of the server certificate
@@ -6699,7 +6700,7 @@ class OutscaleNodeDriver(NodeDriver):
         connection_type: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Creates a virtual gateway.
         A virtual gateway is the access point on the Net
         side of a VPN connection.
@@ -6730,7 +6731,7 @@ class OutscaleNodeDriver(NodeDriver):
         virtual_gateway_id: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Deletes a specified virtual gateway.
         Before deleting a virtual gateway, we
         recommend to detach it from the Net and delete the VPN connection.
@@ -6761,7 +6762,7 @@ class OutscaleNodeDriver(NodeDriver):
         virtual_gateway_id: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Attaches a virtual gateway to a Net.
 
         :param      net_id: The ID of the Net to which you want to attach
@@ -6802,7 +6803,7 @@ class OutscaleNodeDriver(NodeDriver):
         virtual_gateway_id: [str] = None,
         dry_run: bool = False
     ):
-    """
+        """
         Lists one or more virtual gateways.
 
         :param      connection_types: The types of the virtual gateways
@@ -6874,7 +6875,7 @@ class OutscaleNodeDriver(NodeDriver):
         virtual_gateway_id: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Detaches a virtual gateway from a Net.
         You must wait until the virtual gateway is in the detached state
         before you can attach another Net to it or delete the Net it was
@@ -6913,7 +6914,7 @@ class OutscaleNodeDriver(NodeDriver):
         virtual_gateway_id: str = None,
         dry_run: bool = False
     ):
-    """
+        """
         Configures the propagation of routes to a specified route table
         of a Net by a virtual gateway.
 
@@ -6947,6 +6948,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["RouteTable"]
+        return response.json()
 
     def ex_delete_subnet(
         self,

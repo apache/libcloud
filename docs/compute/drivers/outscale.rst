@@ -289,8 +289,8 @@ Route Tables
 * ``ex_list_route_tables`` - Returns a ``list`` of ``dict``
 * ``ex_unlink_route_table`` - Returns a ``bool``
 
-Server Certificate
-------------------
+Server Certificates
+-------------------
 * ``ex_create_server_certificate`` - Returns a ``dict``
 * ``ex_delete_server_certificate`` - Returns a ``bool``
 * ``ex_list_server_certificates`` - Returns a ``list`` of ``dict``
@@ -304,7 +304,7 @@ Virtual Gateways
 * ``ex_list_virtual_gateways`` - Returns a ``list`` of ``dict``
 * ``ex_unlink_virtual_gateway`` - Returns a ``dict``
 * ``ex_update_route_propagation`` - Returns a ``dict``
-=======
+
 Security Groups
 ---------------
 * ``ex_create_security_group`` - Returns a ``dict``
