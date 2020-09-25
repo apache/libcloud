@@ -914,9 +914,9 @@ class OutscaleNodeDriver(NodeDriver):
         dry_run: bool = False,
     ):
         """
-        Exports an Outscale machine image (OMI) to an Object Storage Unit 
+        Exports an Outscale machine image (OMI) to an Object Storage Unit
         (OSU) bucket.
-        This action enables you to copy an OMI between accounts in different 
+        This action enables you to copy an OMI between accounts in different
         Regions. To copy an OMI in the same Region,
         you can also use the CreateImage method.
         The copy of the OMI belongs to you and is
@@ -929,7 +929,7 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :param      osu_export_disk_image_format: The format of the 
+        :param      osu_export_disk_image_format: The format of the
         export disk (qcow2 | vdi | vmdk). (required)
         :type       osu_export_disk_image_format: ``str``
 
@@ -937,19 +937,19 @@ class OutscaleNodeDriver(NodeDriver):
         account that enables you to access the bucket.
         :type       osu_export_api_key_id: ``str``
 
-        :param      osu_export_api_secret_key: The secret key of the 
+        :param      osu_export_api_secret_key: The secret key of the
         OSU account that enables you to access the bucket.
         :type       osu_export_api_secret_key: ``str``
 
-        :param      osu_export_bucket: The name of the OSU bucket 
+        :param      osu_export_bucket: The name of the OSU bucket
         you want to export the object to. (required)
         :type       osu_export_bucket: ``str``
 
         :param      osu_export_manifest_url: The URL of the manifest file.
         :type       osu_export_manifest_url: ``str``
 
-        :param      osu_export_prefix: The prefix for the key of 
-        the OSU object. This key follows this format: 
+        :param      osu_export_prefix: The prefix for the key of
+        the OSU object. This key follows this format:
         prefix + object_export_task_id + '.' + disk_image_format.
         :type       osu_export_prefix: ``str``
 
@@ -1073,17 +1073,17 @@ class OutscaleNodeDriver(NodeDriver):
     ):
         """
         Modifies the specified attribute of an Outscale machine image (OMI).
-        You can specify only one attribute at a time. You can modify 
-        the permissions to access the OMI by adding or removing account 
-        IDs or groups. You can share an OMI with a user that is in the 
-        same Region. The user can create a copy of the OMI you shared, 
+        You can specify only one attribute at a time. You can modify
+        the permissions to access the OMI by adding or removing account
+        IDs or groups. You can share an OMI with a user that is in the
+        same Region. The user can create a copy of the OMI you shared,
         obtaining all the rights for the copy of the OMI.
         For more information, see CreateImage.
 
         :param      image: The ID of the OMI to export. (required)
         :type       image: ``NodeImage``
 
-        :param      perm_to_launch_addition_account_ids: The account 
+        :param      perm_to_launch_addition_account_ids: The account
         ID of one or more users who have permissions for the resource.
         :type       perm_to_launch_addition_account_ids:
         ``list`` of ``dict``
@@ -1098,7 +1098,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       imperm_to_launch_removals_account_idsage:
         ``list`` of ``dict``
 
-        :param      perm_to_launch_removals_global_permission: If true, 
+        :param      perm_to_launch_removals_global_permission: If true,
         the resource is public. If false, the resource is private.
         :type       perm_to_launch_removals_global_permission: ``boolean``
 
@@ -1725,17 +1725,17 @@ class OutscaleNodeDriver(NodeDriver):
         dry_run: bool = False
         ):
         """
-        Displays information about the consumption of your account for 
+        Displays information about the consumption of your account for
         each billable resource within the specified time period.
 
 
-        :param      from_date: The beginning of the time period, in 
-        ISO 8601 date-time format (for example, 2017-06-14 or 
+        :param      from_date: The beginning of the time period, in
+        ISO 8601 date-time format (for example, 2017-06-14 or
         2017-06-14T00:00:00Z). (required)
         :type       from_date: ``str``
 
-        :param      to_date: The end of the time period, in 
-        ISO 8601 date-time format (for example, 2017-06-30 or 
+        :param      to_date: The end of the time period, in
+        ISO 8601 date-time format (for example, 2017-06-30 or
         2017-06-30T00:00:00Z). (required)
         :type       to_date: ``str``
 
@@ -6172,7 +6172,7 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
         :type       dry_run: ``bool``
-        
+
         :return: The new server certificate
         :rtype: ``dict``
         """
@@ -6427,7 +6427,7 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
         :type       dry_run: ``bool``
-        
+
         :return: a list of Security Groups
         :rtype: ``list`` of ``dict``
         """
@@ -6607,7 +6607,7 @@ class OutscaleNodeDriver(NodeDriver):
         Rules (IP permissions) consist of the protocol, IP address range or
         source security group.
         To remove outbound access to a destination security group, we
-        recommend to use a set of IP permissions. We also recommend to specify 
+        recommend to use a set of IP permissions. We also recommend to specify
         the protocol in a set of IP permissions.
 
         :param      flow: The direction of the flow: Inbound or Outbound.
@@ -6790,7 +6790,7 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["NetToVirtualGatewayLink"]
         return response.json()
-    
+
     def ex_list_virtual_gateways(
         self,
         connection_types: [str] = None,
@@ -6906,7 +6906,7 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["ResponseContext"]
         return response.json()
-    
+
     def ex_update_route_propagation(
         self,
         enable: bool = None,
@@ -7366,7 +7366,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_list__vpn_connections(
+    def ex_list_vpn_connections(
         self,
         bgp_asns: [int] = None,
         client_gateway_ids: [str] = None,

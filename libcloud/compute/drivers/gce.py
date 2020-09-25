@@ -2087,7 +2087,7 @@ class GCENodeDriver(NodeDriver):
             raise ValueError("Must specify a valid libcloud image object.")
         current_fp = image.extra['labelFingerprint']
         body = {'labels': labels, 'labelFingerprint': current_fp}
-        request = '/global/%s/setLabels' % (image.name)
+        request = '/global/images/%s/setLabels' % (image.name)
         self.connection.async_request(request, method='POST', data=body)
         return True
 
@@ -9137,6 +9137,7 @@ class GCENodeDriver(NodeDriver):
         extra['options'] = volume.get('options')
         extra['labels'] = volume.get('labels', {})
         extra['labelFingerprint'] = volume.get('labelFingerprint')
+        extra['users'] = volume.get('users', [])
 
         if 'licenses' in volume:
             lic_objs = self._licenses_from_urls(licenses=volume['licenses'])

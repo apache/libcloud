@@ -1,6 +1,26 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [GCE] Fix ``ex_set_image_labels`` method using incorrect API path.
+  (GITHUB-1485)
+  [Poul Petersen - @petersen-poul]
+
+- [OpenStack] Fix error setting ``ex_force_XXX_url`` without setting
+  ``ex_force_base_url``.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Update supported EC2 regions and instance sizes and add support 
+  for eu-north-1 region.
+  (GITHUB-1486)
+  [Arturo Noha - @r2ronoha]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
@@ -336,6 +356,37 @@ Container
   (GITHUB-1435)
   [Tomaz Muraus]
 
+
+Changes in Apache Libcloud v2.8.3
+---------------------------------
+
+Compute
+~~~~~~~
+
+- Fix ``deploy_node()`` so an exception is not thrown if any of the output
+  (stdout / stderr) produced by the deployment script contains a non-valid utf-8
+  character.
+
+  Previously, user would see an error similar to "Failed after 3 tries: 'utf-8'
+  codec can't decode byte 0xc0 in position 37: invalid start byte".
+
+  And now we simply ignore byte sequences which we can't decode and include
+  rest of the output which can be decoded.
+
+  (GITHUB-1459)
+  [Tomaz Muraus - @Kami]
+
+Storage
+~~~~~~~
+
+- [AWS S3] Make sure driver works correctly for objects with ``~`` in the name.
+
+  Now when sanitizing the object name, we don't url encode ``~`` character.
+
+  Reported by Michael Militzer - @mmilitzer.
+  (GITHUB-1452, GITHUB-1457)
+  [Tomaz Muraus]
+
 Changes in Apache Libcloud v2.8.2
 ---------------------------------
 
@@ -497,179 +548,11 @@ DNS
   (GITHUB-1428, GITHUB-1429)
   [Tomaz Muraus]
 
-Changes in Apache Libcloud 3.0.0-rc1
-------------------------------------
-
-General
-~~~~~~~
-
-- This release drops support for Python versions older than 3.5.0.
-
-  If you still need to use Libcloud with Python 2.7 or Python 3.4 you can do
-  that by using the latest release which still supported those Python versions
-  (Libcloud v2.8.0).
-  (GITHUB-1377)
-  [Tomaz Muraus]
-
-- Make sure unit tests now also pass on Windows.
-  (GITHUB-1396)
-  [Tomaz Muraus]
-
-Compute
-~~~~~~~
-
-- [VMware vSphere] vSphere driver relies on ``pysphere`` Python library which
-  doesn't support Python 3 so it has been removed.
-
-  There is an unofficial ``pysphere`` fork which adds Python 3 support, but
-  it's out of date and not maintained (https://github.com/machalekj/pysphere/tree/2to3).
-  (GITHUB-1377)
-  [Tomaz Muraus]
-
-- [GCE] Fix ``ex_list_instancegroups`` method so it doesn't throw if ``zone``
-  attribute is not present in the response.
-
-  Reported by Kartik Subbarao (@kartiksubbarao)
-  (GITHUB-1346)
-  [Tomaz Muraus]
-
-- [AWS EC2] Add support for creating spot instances by utilizing new ``ex_spot``
-  and optionally also ``ex_spot_max_price`` keyword argument in the
-  ``create_node`` method.
-  (GITHUB-1398)
-  [Peter Yu - @yukw777]
-
-- Fix some incorrect type annotations in the base compute API.
-
-  Reported by @dpeschman.
-  (GITHUB-1413, GITHUB-1414)
-  [Tomaz Muraus]
-
-- [OpenStack] Fix error with getting node id in ``_to_floating_ip`` method
-  when region is not called ``nova``.
-  (GITHUB-1411, GITHUB-1412)
-  [Miguel Caballer - @micafer]
-
-- [KubeVirt] New KubeVirt driver with initial support for the k8s/KubeVirt
-  add-on.
-  (GITHUB-1394)
-  [Eis D. Zaster - @Eis-D-Z]
-
-Storage
-~~~~~~~
-
-- [AWS S3] Fix upload object code so uploaded data MD5 checksum check is not
-  performed at the end of the upload when AWS KMS server side encryption is
-  used.
-
-  If AWS KMS server side object encryption is used, ETag header value in the
-  response doesn't contain data MD5 digest so we can't perform a checksum
-  check.
-
-  Reported by Jonathan Harden - @jfharden.
-  (GITHUB-1401, GITHUB-1406)
-  [Tomaz Muraus - @Kami]
-
-- [Azure Blobs] Implement chunked upload in the Azure Storage driver.
-
-  Previously, the maximum object size that could be uploaded with the
-  Azure Storage driver was capped at 100 MB: the maximum size that could
-  be uploaded in a single request to Azure. Chunked upload removes this
-  limitation and now enables uploading objects up to Azure's maximum block
-  blob size (~5 TB). The size of the chunks uploaded by the driver can be
-  configured via the ``LIBCLOUD_AZURE_UPLOAD_CHUNK_SIZE_MB`` environment
-  variable and defaults to 4 MB per chunk. Increasing this number trades-off
-  higher memory usage for a lower number of http requests executed by the
-  driver.
-
-  Reported by @rvolykh.
-  (GITHUB-1399, GITHUB-1400)
-  [Clemens Wolff - @c-w]
-
-- [Azure Blobs] Drop support for uploading PageBlob objects via the Azure
-  Storage driver.
-
-  Previously, both PageBlob and BlockBlob objects could be uploaded via the
-  ``upload_object`` and ``upload_object_via_stream`` methods by specifying the
-  ``ex_blob_type`` and ``ex_page_blob_size`` arguments. To simplify the API,
-  these options were removed and all uploaded objects are now of BlockBlob
-  type. Passing ``ex_blob_type`` or ``ex_page_blob_size`` will now raise a
-  ``ValueError``.
-
-  (GITHUB-1400)
-  [Clemens Wolff - @c-w]
-
-- [Common] Add ``prefix`` argument to ``iterate_container_objects`` and
-  ``list_container_objects`` to support object-list filtering in all
-  StorageDriver implementations.
-
-  A lot of the existing storage drivers already implemented the filtering
-  functionality via the ``ex_prefix`` extension argument so it was decided
-  to promote the argument to be part of the standard Libcloud storage API.
-  For any storage driver that doesn't natively implement filtering the results
-  list, a fall-back was implemented which filters the full object stream on
-  the client side.
-
-  For backward compatibility reasons, the ``ex_prefix`` argument will still
-  be respected until a next major release.
-  (GITHUB-1397)
-  [Clemens Wolff - @c-w]
-
-- [Azure Blobs] Implement ``get_object_cdn_url`` for the Azure Storage driver.
-
-  Leveraging Azure storage service shared access signatures, the Azure Storage
-  driver can now be used to generate temporary URLs that grant clients read
-  access to objects. The URLs expire after a certain period of time, either
-  configured via the ``ex_expiry`` argument or the
-  ``LIBCLOUD_AZURE_STORAGE_CDN_URL_EXPIRY_HOURS`` environment variable
-  (default: 24 hours).
-
-  Reported by @rvolykh.
-  (GITHUB-1403, GITHUB-1408)
-  [Clemens Wolff - @c-w]
-
-- [Azure Blobs, Aliyun, Local, Ninefold, S3] Ensure upload headers are
-  respected.
-
-  All storage drivers now pass the optional ``headers`` argument of
-  ``upload_object`` and ``upload_object_via_stream`` to the backend object
-  storage systems (previously the argument was silently ignored).
-
-  (GITHUB-1410)
-  [Clemens Wolff - @c-w]
-
-- [AWS S3] Implement ``get_object_cdn_url`` for the AWS storage driver.
-
-  The AWS storage driver can now be used to generate temporary URLs that
-  grant clients read access to objects. The URLs expire after a certain
-  period of time, either configured via the ``ex_expiry`` argument or the
-  ``LIBCLOUD_S3_STORAGE_CDN_URL_EXPIRY_HOURS`` environment variable
-  (default: 24 hours).
-
-  Reported by @rvolykh.
-  (GITHUB-1403)
-  [Aaron Virshup - @avirshup]
-
-DNS
-~~~
-
-- [Gandi Live] Update the driver and make sure it matches the latest service /
-  API updates.
-  (GITHUB-1416)
-  [Ryan Lee - @zepheiryan]
-
-Container
-~~~~~~~~~
-
-- [LXD] Add new LXD driver.
-  (GITHUB-1395)
-  [Alexandros Giavaras - @pockerman]
-
 Changes in Apache Libcloud v2.8.0
 ---------------------------------
 
 Common
-~~~~~~
+------
 
 - Fix a regression with ``get_driver()`` method not working if ``provider``
   argument value was a string (e.g. using ``get_driver('openstack')``
@@ -699,7 +582,7 @@ Common
   [Tomaz Muraus]
 
 Compute
-~~~~~~~
+-------
 
 - [DigitalOcean] Fix ``attach_volume`` and ``detach_volume`` methods.
   Previously those two methods incorrectly passed volume id instead of
@@ -756,7 +639,7 @@ Compute
   [Tomaz Muraus]
 
 Storage
-~~~~~~~
+-------
 
 - [AWS S3] Make sure ``host`` driver constructor argument has priority
   over ``region`` argument.
@@ -771,14 +654,14 @@ Changes in Apache Libcloud v2.7.0
 ---------------------------------
 
 General
-~~~~~~~
+-------
 
 - Test code with Python 3.8 and advertise that we also support Python 3.8.
   (GITHUB-1371, GITHUB-1374)
   [Tomaz Muraus]
 
 Common
-~~~~~~
+------
 
 - [OpenStack] Fix OpenStack project scoped token authentication. The driver
   constructors now accept ``ex_tenant_domain_id`` argument which tells
@@ -787,7 +670,7 @@ Common
   [kshtsk]
 
 Compute
-~~~~~~~
+-------
 
 - Introduce type annotations for the base compute API methods. This means you
   can now leverage mypy to type check (with some limitations) your code which
@@ -1646,12 +1529,11 @@ Compute
   (LIBCLOUD-952, GITHUB-1124)
   [Mika Lackman]
 
-- [UpCloud] Allow to define hostname and username.
+- [UpCloud] Allow to define hostname and username
   (LIBCLOUD-951, LIBCLOUD-953, GITHUB-1123, GITHUB-1125)
   [Mika Lackman]
 
-- [UpCloud] Add pricing information to list_sizes.
-  (LIBCLOUD-969, GITHUB-1152)
+- [UpCloud] Add pricing information to list_sizes (LIBCLOUD-969, GITHUB-1152)
   [Mika Lackman]
 
 Storage
