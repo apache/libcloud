@@ -494,15 +494,15 @@ class OutscaleNodeDriver(NodeDriver):
 
     def start_node(self, node: Node):
         """
-                Start a Vm.
+        Start a Vm.
 
-                :param      node: the  VM(s)
-                            you want to start (required)
-                :type       node: ``Node``
+        :param      node: the  VM(s)
+                    you want to start (required)
+        :type       node: ``Node``
 
-                :return: the rebooted instances
-                :rtype: ``dict``
-                """
+        :return: the rebooted instances
+        :rtype: ``dict``
+        """
         action = "StartVms"
         data = json.dumps({"VmIds": [node.id]})
         if self._call_api(action, data).status_code == 200:
@@ -511,15 +511,15 @@ class OutscaleNodeDriver(NodeDriver):
 
     def stop_node(self, node: Node):
         """
-                Stop a Vm.
+        Stop a Vm.
 
-                :param      node: the  VM(s)
-                            you want to stop (required)
-                :type       node: ``Node``
+        :param      node: the  VM(s)
+                    you want to stop (required)
+        :type       node: ``Node``
 
-                :return: the rebooted instances
-                :rtype: ``dict``
-                """
+        :return: the rebooted instances
+        :rtype: ``dict``
+        """
         action = "StopVms"
         data = json.dumps({"VmIds": [node.id]})
         if self._call_api(action, data).status_code == 200:
@@ -709,19 +709,19 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_update_node(self,
-                    block_device_mapping: [dict],
-                    bsu_optimized: bool = None,
-                    deletion_protection: bool = False,
-                    is_source_dest_checked: bool = None,
-                    keypair_name: str = True,
-                    performance: str = True,
-                    security_group_ids: [str] = None,
-                    user_data: str = False,
-                    vm_id: str = None,
-                    vm_initiated_shutown_behavior: str = None,
-                    vm_type: int = None,
-                    dry_run: bool = False
-                    ):
+        block_device_mapping: [dict],
+        bsu_optimized: bool = None,
+        deletion_protection: bool = False,
+        is_source_dest_checked: bool = None,
+        keypair_name: str = True,
+        performance: str = True,
+        security_group_ids: [str] = None,
+        user_data: str = False,
+        vm_id: str = None,
+        vm_initiated_shutown_behavior: str = None,
+        vm_type: int = None,
+        dry_run: bool = False
+    ):
         """
         Modifies a specific attribute of a Node (VM).
         You can modify only one attribute at a time. You can modify the
@@ -739,13 +739,13 @@ class OutscaleNodeDriver(NodeDriver):
         :param      bsu_optimized: If true, the VM is optimized for BSU I/O.
         :type       bsu_optimized: ``bool``
 
-        :param      ex_dry_run: If true, checks whether you have the required
+        :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
-        :type       ex_dry_run: ``bool``
+        :type       dry_run: ``bool``
 
         :param      deletion_protection: If true, you cannot terminate the VM
         using Cockpit, the CLI or the API. If false, you can.
-        :type       ex_block_device_mapping: ``bool``
+        :type       deletion_protection: ``bool``
 
         :param      is_source_dest_checked: (Net only) If true, the
         source/destination check is enabled. If false, it is disabled. This
@@ -898,7 +898,98 @@ class OutscaleNodeDriver(NodeDriver):
         data = json.dumps(data)
         action = "CreateImage"
         response = self._call_api(action, data)
-        return self._to_node_image(response.json()["Image"])
+        if response.status_code == 200:
+            return self._to_node_image(response.json()["Image"])
+        return response.json()
+
+    def ex_create_image_export_task(
+        self,
+        image: NodeImage = None,
+        osu_export_disk_image_format: str = None,
+        osu_export_api_key_id: str = None,
+        osu_export_api_secret_key: str = None,
+        osu_export_bucket: str = None,
+        osu_export_manifest_url: str = None,
+        osu_export_prefix: str = None,
+        dry_run: bool = False,
+    ):
+        """
+        Exports an Outscale machine image (OMI) to an Object Storage Unit
+        (OSU) bucket.
+        This action enables you to copy an OMI between accounts in different
+        Regions. To copy an OMI in the same Region,
+        you can also use the CreateImage method.
+        The copy of the OMI belongs to you and is
+        independent from the source OMI.
+
+        :param      image: The ID of the OMI to export. (required)
+        :type       image: ``NodeImage``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :param      osu_export_disk_image_format: The format of the
+        export disk (qcow2 | vdi | vmdk). (required)
+        :type       osu_export_disk_image_format: ``str``
+
+        :param      osu_export_api_key_id: The API key of the OSU
+        account that enables you to access the bucket.
+        :type       osu_export_api_key_id: ``str``
+
+        :param      osu_export_api_secret_key: The secret key of the
+        OSU account that enables you to access the bucket.
+        :type       osu_export_api_secret_key: ``str``
+
+        :param      osu_export_bucket: The name of the OSU bucket
+        you want to export the object to. (required)
+        :type       osu_export_bucket: ``str``
+
+        :param      osu_export_manifest_url: The URL of the manifest file.
+        :type       osu_export_manifest_url: ``str``
+
+        :param      osu_export_prefix: The prefix for the key of
+        the OSU object. This key follows this format:
+        prefix + object_export_task_id + '.' + disk_image_format.
+        :type       osu_export_prefix: ``str``
+
+        :return: the created image export task
+        :rtype: ``dict``
+        """
+        action =  "CreateImageExportTask"
+        data = {
+            "DryRun": dry_run,
+            "OsuExport": {
+                "OsuApiKey": {}
+            }
+        }
+        if image is not None:
+            data.update({"ImageId": image.id})
+        if osu_export_disk_image_format is not None:
+            data["OsuExport"].update({
+                "DiskImageFormat": osu_export_disk_image_format
+                })
+        if osu_export_bucket is not None:
+            data["OsuExport"].update({"OsuBucket": osu_export_bucket})
+        if osu_export_manifest_url is not None:
+            data["OsuExport"].update({
+                "OsuManifestUrl": osu_export_manifest_url
+                })
+        if osu_export_prefix is not None:
+            data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
+        if osu_export_api_key_id is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "ApiKeyId": osu_export_api_key_id
+                })
+        if osu_export_api_secret_key is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "SecretKey": osu_export_api_secret_key
+                })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ImageExportTask"]
+        return response.json()
+
 
     def list_images(self, ex_data: str = "{}"):
         """
@@ -910,6 +1001,35 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadImages"
         response = self._call_api(action, ex_data)
         return self._to_node_images(response.json()["Images"])
+
+    def ex_list_image_export_tasks(
+        self,
+        dry_run: bool = False,
+        task_ids: [str] = False,
+        ):
+        """
+        Lists one or more image export tasks.
+
+        :param      task_ids: The IDs of the export tasks.
+        :type       task_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: image export tasks
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadListenerRules"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if task_ids is not None:
+            data["Filters"].update({
+                "TaskIds": task_ids
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ImageExportTasks"]
+        return response.json()
 
     def get_image(self, image_id: str):
         """
@@ -941,6 +1061,84 @@ class OutscaleNodeDriver(NodeDriver):
         if self._call_api(action, data).status_code == 200:
             return True
         return False
+
+    def ex_update_image(
+        self,
+        dry_run: bool = False,
+        image: NodeImage = None,
+        perm_to_launch_addition_account_ids: [str] = None,
+        perm_to_launch_addition_global_permission: bool = None,
+        perm_to_launch_removals_account_ids: [str] = None,
+        perm_to_launch_removals_global_permission: bool = None
+    ):
+        """
+        Modifies the specified attribute of an Outscale machine image (OMI).
+        You can specify only one attribute at a time. You can modify
+        the permissions to access the OMI by adding or removing account
+        IDs or groups. You can share an OMI with a user that is in the
+        same Region. The user can create a copy of the OMI you shared,
+        obtaining all the rights for the copy of the OMI.
+        For more information, see CreateImage.
+
+        :param      image: The ID of the OMI to export. (required)
+        :type       image: ``NodeImage``
+
+        :param      perm_to_launch_addition_account_ids: The account
+        ID of one or more users who have permissions for the resource.
+        :type       perm_to_launch_addition_account_ids:
+        ``list`` of ``dict``
+
+        :param      perm_to_launch_addition_global_permission:
+        If true, the resource is public. If false, the resource is private.
+        :type       permission_to_launch_addition_global_permission:
+        ``boolean``
+
+        :param      perm_to_launch_removals_account_ids: The account
+        ID of one or more users who have permissions for the resource.
+        :type       imperm_to_launch_removals_account_idsage:
+        ``list`` of ``dict``
+
+        :param      perm_to_launch_removals_global_permission: If true,
+        the resource is public. If false, the resource is private.
+        :type       perm_to_launch_removals_global_permission: ``boolean``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: the new image
+        :rtype: ``dict``
+        """
+        action = "UpdateImage"
+        data = {
+            "DryRun": dry_run,
+            "PermissionsToLaunch": {
+                "Additions": {},
+                "Removals": {}
+            }
+        }
+        if image is not None:
+            data.update({"ImageId": image.id})
+        if perm_to_launch_addition_account_ids is not None:
+            data["PermissionsToLaunch"]["Additions"].update({
+                "AccountIds": perm_to_launch_addition_account_ids
+                })
+        if perm_to_launch_addition_global_permission is not None:
+            data["PermissionsToLaunch"]["Additions"].update({
+                "GlobalPermission": perm_to_launch_addition_global_permission
+                })
+        if perm_to_launch_removals_account_ids is not None:
+            data["PermissionsToLaunch"]["Removals"].update({
+            "AccountIds": perm_to_launch_removals_account_ids
+            })
+        if perm_to_launch_removals_global_permission is not None:
+            data["PermissionsToLaunch"]["Removals"].update({
+                "GlobalPermission": perm_to_launch_removals_global_permission
+                })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Image"]
+        return response.json()
 
     def create_key_pair(self,
                         name: str,
@@ -1129,6 +1327,201 @@ class OutscaleNodeDriver(NodeDriver):
         if self._call_api(action, data).status_code == 200:
             return True
         return False
+
+    def ex_create_snapshot_export_task(
+        self,
+        osu_export_disk_image_format: str = None,
+        osu_export_api_key_id: str = None,
+        osu_export_api_secret_key: str = None,
+        osu_export_bucket: str = None,
+        osu_export_manifest_url: str = None,
+        osu_export_prefix: str = None,
+        snapshot: VolumeSnapshot = None,
+        dry_run: bool = False,
+    ):
+        """
+        Exports a snapshot to an Object Storage Unit (OSU) bucket.
+        This action enables you to create a backup of your snapshot or to copy
+        it to another account. You, or other users you send a pre-signed URL
+        to, can then download this snapshot from the OSU bucket using
+        the CreateSnapshot method.
+        This procedure enables you to copy a snapshot between accounts within
+        the same Region or in different Regions. To copy a snapshot within
+        the same Region, you can also use the CreateSnapshot direct method.
+        The copy of the source snapshot is independent and belongs to you.
+
+        :param      osu_export_disk_image_format: The format of the export
+        disk (qcow2 | vdi | vmdk). (required)
+        :type       osu_export_disk_image_format: ``str``
+
+        :param      osu_export_api_key_id: The API key of the OSU account
+        that enables you to access the bucket.
+        :type       osu_export_api_key_id   : ``str``
+
+        :param      osu_export_api_secret_key: The secret key of the OSU
+        account that enables you to access the bucket.
+        :type       osu_export_api_secret_key   : ``str``
+
+        :param      osu_export_bucket: The name of the OSU bucket you want
+        to export the object to.  (required)
+        :type       osu_export_bucket   : ``str``
+
+        :param      osu_export_manifest_url: The URL of the manifest file.
+        :type       osu_export_manifest_url   : ``str``
+
+        :param      osu_export_prefix: The prefix for the key of the OSU
+        object. This key follows this format: prefix +
+        object_export_task_id + '.' + disk_image_format.
+        :type       osu_export_prefix   : ``str``
+
+        :param      snapshot: The ID of the snapshot to export. (required)
+        :type       snapshot   : ``VolumeSnapshot``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run   : ``bool``
+
+        :return: the created snapshot export task
+        :rtype: ``dict``
+        """
+        action = "CreateSnapshotExportTask"
+        data = {
+            "DryRun": dry_run,
+            "OsuExport": {
+                "OsuApiKey": {}
+            }
+        }
+        if snapshot is not None:
+            data.update({"SnapshotId": snapshot.id})
+        if osu_export_disk_image_format is not None:
+            data["OsuExport"].update({
+                "DiskImageFormat": osu_export_disk_image_format
+                })
+        if osu_export_bucket is not None:
+            data["OsuExport"].update({"OsuBucket": osu_export_bucket})
+        if osu_export_manifest_url is not None:
+            data["OsuExport"].update({
+                "OsuManifestUrl": osu_export_manifest_url
+                })
+        if osu_export_prefix is not None:
+            data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
+        if osu_export_api_key_id is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "ApiKeyId": osu_export_api_key_id
+                })
+        if osu_export_api_secret_key is not None:
+            data["OsuExport"]["OsuApiKey"].update({
+                "SecretKey": osu_export_api_secret_key
+                })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SnapshotExportTask"]
+        return response.json()
+
+    def ex_list_snapshot_export_tasks(
+        self,
+        dry_run: bool = False,
+        task_ids: [str] = False,
+    ):
+        """
+        Lists one or more image export tasks.
+
+        :param      task_ids: The IDs of the export tasks.
+        :type       task_ids: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: snapshot export tasks
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadSnapshotExportTasks"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if task_ids is not None:
+            data["Filters"].update({
+                "TaskIds": task_ids
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["SnapshotExportTasks"]
+        return response.json()
+
+    def ex_update_snapshot(
+        self,
+        perm_to_create_volume_addition_account_id: [str] = None,
+        perm_to_create_volume_addition_global_perm: bool = None,
+        perm_to_create_volume_removals_account_id: [str] = None,
+        perm_to_create_volume_removals_global_perm: bool = None,
+        snapshot: VolumeSnapshot = None,
+        dry_run: bool = False
+    ):
+        """
+        Modifies the permissions for a specified snapshot.
+        You can add or remove permissions for specified account IDs or groups.
+        You can share a snapshot with a user that is in the same Region.
+        The user can create a copy of the snapshot you shared, obtaining all
+        the rights for the copy of the snapshot.
+
+        :param      perm_to_create_volume_addition_account_id:
+        The account ID of one or more users who have permissions
+        for the resource.
+        :type       perm_to_create_volume_addition_account_id:
+        ``list`` of ``str``
+
+        :param      perm_to_create_volume_addition_global_perm: If true,
+        the resource is public. If false, the resource is private.
+        :type       perm_to_create_volume_addition_global_perm: ``bool``
+
+        :param      perm_to_create_volume_removals_account_id: The account ID
+         of one or more users who have permissions for the resource.
+        :type       perm_to_create_volume_removals_account_id:
+        ``list`` of ``str``
+
+        :param      perm_to_create_volume_removals_global_perm: If true,
+         the resource is public. If false, the resource is private.
+        :type       perm_to_create_volume_removals_global_perm: ``bool``
+
+        :param      snapshot: The ID of the snapshot. (required)
+        :type       snapshot: ``VolumeSnapshot``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: snapshot export tasks
+        :rtype: ``list`` of ``dict``
+        """
+        action = "UpdateSnapshot"
+        data = {
+            "DryRun: ": dry_run,
+            "PermissionsToCreateVolume": {
+                "Additions": {},
+                "Removals": {}
+            }
+        }
+        if snapshot is not None:
+            data.update({"ImageId": snapshot.id})
+        if perm_to_create_volume_addition_account_id is not None:
+            data["PermissionsToCreateVolume"]["Additions"].update({
+                "AccountIds": perm_to_create_volume_addition_account_id
+                })
+        if perm_to_create_volume_addition_global_perm is not None:
+            data["PermissionsToCreateVolume"]["Additions"].update({
+                "GlobalPermission": perm_to_create_volume_addition_global_perm
+                })
+        if perm_to_create_volume_removals_account_id is not None:
+            data["PermissionsToCreateVolume"]["Removals"].update({
+            "AccountIds": perm_to_create_volume_removals_account_id
+            })
+        if perm_to_create_volume_removals_global_perm is not None:
+            data["PermissionsToCreateVolume"]["Removals"].update({
+            "GlobalPermission": perm_to_create_volume_removals_global_perm
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Snapshot"]
+        return response.json()
 
     def create_volume(
         self,
@@ -1332,17 +1725,17 @@ class OutscaleNodeDriver(NodeDriver):
         dry_run: bool = False
         ):
         """
-        Displays information about the consumption of your account for 
+        Displays information about the consumption of your account for
         each billable resource within the specified time period.
 
 
-        :param      from_date: The beginning of the time period, in 
-        ISO 8601 date-time format (for example, 2017-06-14 or 
+        :param      from_date: The beginning of the time period, in
+        ISO 8601 date-time format (for example, 2017-06-14 or
         2017-06-14T00:00:00Z). (required)
         :type       from_date: ``str``
 
-        :param      to_date: The end of the time period, in 
-        ISO 8601 date-time format (for example, 2017-06-30 or 
+        :param      to_date: The end of the time period, in
+        ISO 8601 date-time format (for example, 2017-06-30 or
         2017-06-30T00:00:00Z). (required)
         :type       to_date: ``str``
 
@@ -5730,6 +6123,173 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
+    def ex_create_server_certificate(
+        self,
+        body: str = None,
+        chain: str = None,
+        name: str = None,
+        path: str = None,
+        private_key: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Creates a server certificate and its matching private key.
+        These elements can be used with other services (for example,
+        to configure SSL termination on load balancers).
+        You can also specify the chain of intermediate certification
+        authorities if your certificate is not directly signed by a root one.
+        You can specify multiple intermediate certification authorities in
+        the CertificateChain parameter. To do so, concatenate all certificates
+        in the correct order (the first certificate must be the authority of
+        your certificate, the second must the the authority of the
+        first one, and so on).
+        The private key must be a RSA key in PKCS1 form. To check this, open
+        the PEM file and ensure its header reads as follows:
+        BEGIN RSA PRIVATE KEY.
+        [IMPORTANT]
+        This private key must not be protected by a password or a passphrase.
+
+        :param      body: The PEM-encoded X509 certificate. (required)
+        :type       body: ``str``
+
+        :param      chain: The PEM-encoded intermediate certification
+        authorities.
+        :type       chain: ``str``
+
+        :param      name: A unique name for the certificate. Constraints:
+        1-128 alphanumeric characters, pluses (+), equals (=), commas (,),
+        periods (.), at signs (@), minuses (-), or underscores (_). (required)
+        :type       name: ``str``
+
+        :param      path: The path to the server certificate, set to a slash
+        (/) if not specified.
+        :type       path: ``str``
+
+        :param      private_key: The PEM-encoded private key matching
+        the certificate. (required)
+        :type       private_key: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new server certificate
+        :rtype: ``dict``
+        """
+        action = "CreateServerCertificate"
+        data = {"DryRun": dry_run}
+        if body is not None:
+            data.update({"Body": body})
+        if chain is not None:
+            data.update({"Chain": chain})
+        if name is not None:
+            data.update({"Name": name})
+        if path is not None:
+            data.update({"Path": path})
+        if private_key is not None:
+            data.update({"PrivateKey": private_key})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ServerCertificate"]
+        return response.json()
+
+    def ex_delete_server_certificate(
+        self,
+        name: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Deletes a specified server certificate.
+
+        :param      name: The name of the server certificate you
+        want to delete. (required)
+        :type       name: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: True if the action is successful
+        :rtype: ``bool``
+        """
+        action = "DeleteServerCertificate"
+        data = {"DryRun": dry_run}
+        if name is not None:
+            data.update({"Name": name})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ResponseContext"]
+        return response.json()
+
+    def ex_list_server_certificates(
+        self,
+        paths: str = None,
+        dry_run: bool = False
+    ):
+        """
+        List your server certificates.
+
+        :param      paths: The path to the server certificate.
+        :type       paths: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: server certificate
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadServerCertificates"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if paths is not None:
+            data["Filters"].update({
+                "Paths": paths
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ServerCertificates"]
+        return response.json()
+
+    def ex_update_server_certificate(
+        self,
+        name: str = None,
+        new_name: str = None,
+        new_path:str = None,
+        dry_run: bool = False
+    ):
+        """
+        Modifies the name and/or the path of a specified server certificate.
+
+        :param      name: The name of the server certificate
+        you want to modify.
+        :type       name: ``str``
+
+        :param      new_name: A new name for the server certificate.
+        :type       new_name: ``str``
+
+        :param      new_path:A new path for the server certificate.
+        :type       new_path: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: the new server certificate
+        :rtype: ``dict``
+        """
+        action = "UpdateServerCertificate"
+        data = {"DryRun": dry_run}
+        if name is not None:
+            data.update({"Name": name})
+        if new_name is not None:
+            data.update({"NewName": new_name})
+        if new_path is not None:
+            data.update({"NewPath": new_path})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ServerCertificate"]
+        return response.json()
+
     def ex_create_security_group(
         self,
         description: str = None,
@@ -6047,7 +6607,7 @@ class OutscaleNodeDriver(NodeDriver):
         Rules (IP permissions) consist of the protocol, IP address range or
         source security group.
         To remove outbound access to a destination security group, we
-        recommend to use a set of IP permissions. We also recommend to specify 
+        recommend to use a set of IP permissions. We also recommend to specify
         the protocol in a set of IP permissions.
 
         :param      flow: The direction of the flow: Inbound or Outbound.
@@ -6135,6 +6695,261 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["SecurityGroup"]
         return response.json()
 
+    def ex_create_virtual_gateway(
+        self,
+        connection_type: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Creates a virtual gateway.
+        A virtual gateway is the access point on the Net
+        side of a VPN connection.
+
+        :param      connection_type: The type of VPN connection supported
+        by the virtual gateway (only ipsec.1 is supported). (required)
+        :type       connection_type: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: The new virtual gateway
+        :rtype: ``dict``
+        """
+        action = "CreateVirtualGateway"
+        data = {"DryRun": dry_run}
+        if connection_type is not None:
+            data.update({"ConnectionType": connection_type})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VirtualGateway"]
+        return response.json()
+
+
+    def ex_delete_virtual_gateway(
+        self,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Deletes a specified virtual gateway.
+        Before deleting a virtual gateway, we
+        recommend to detach it from the Net and delete the VPN connection.
+
+        :param      virtual_gateway_id: The ID of the virtual gateway
+        you want to delete. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: request
+        :rtype: ``dict``
+        """
+        action = "DeleteVirtualGateway"
+        data = {"DryRun": dry_run}
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ResponseContext"]
+        return response.json()
+
+    def ex_link_virtual_gateway(
+        self,
+        net_id: str = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Attaches a virtual gateway to a Net.
+
+        :param      net_id: The ID of the Net to which you want to attach
+        the virtual gateway. (required)
+        :type       net_id: ``str``
+
+        :param      virtual_gateway_id: The ID of the virtual
+        gateway. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return:
+        :rtype: ``dict``
+        """
+        action = "LinkVirtualGateway"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["NetToVirtualGatewayLink"]
+        return response.json()
+
+    def ex_list_virtual_gateways(
+        self,
+        connection_types: [str] = None,
+        link_net_ids: [str] = None,
+        link_states: [str] = None,
+        states: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        virtual_gateway_id: [str] = None,
+        dry_run: bool = False
+    ):
+        """
+        Lists one or more virtual gateways.
+
+        :param      connection_types: The types of the virtual gateways
+        (only ipsec.1 is supported).
+        :type       connection_types: ``list`` of ``dict``
+
+        :param      link_net_ids: The IDs of the Nets the virtual gateways
+        are attached to.
+        :type       link_net_ids: ``list`` of ``dict``
+
+        :param      link_states: The current states of the attachments
+        between the virtual gateways and the Nets
+        (attaching | attached | detaching | detached).
+        :type       link_states: ``list`` of ``dict``
+
+        :param      states: The states of the virtual gateways
+        (pending | available | deleting | deleted).
+        :type       states: ``list`` of ``dict``
+
+        :param      tag_keys: The keys of the tags associated with the
+        virtual gateways.
+        :type       tag_keys: ``list`` of ``dict``
+
+        :param      tag_values: The values of the tags associated with
+        the virtual gateways.
+        :type       tag_values: ``list`` of ``dict``
+
+        :param      tags: The key/value combination of the tags associated
+        with the virtual gateways, in the following format:
+        "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``dict``
+
+        :param      virtual_gateway_id: The IDs of the virtual gateways.
+        :type       virtual_gateway_id: ``list`` of ``dict``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: list of virtual gateway
+        :rtype: ``list`` of ``dict``
+        """
+        action = "ReadVirtualGateways"
+        data = {"Filters": {}, "DryRun": dry_run}
+        if connection_types is not None:
+            data["Filters"].update({"ConnectionTypes": connection_types})
+        if link_net_ids is not None:
+            data["Filters"].update({"LinkNetIds": link_net_ids})
+        if link_states is not None:
+            data["Filters"].update({"LinkStates": link_states})
+        if states is not None:
+            data["Filters"].update({"States": states})
+        if tag_keys is not None:
+            data["Filters"].update({"TagKeys": tag_keys})
+        if tag_values is not None:
+            data["Filters"].update({"TagValues": tag_values})
+        if tags is not None:
+            data["Filters"].update({"Tags": tags})
+        if virtual_gateway_id is not None:
+            data["Filters"].update({"VirtualGatewayIds": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["VirtualGateways"]
+        return response.json()
+
+    def ex_unlink_virtual_gateway(
+        self,
+        net_id: str = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Detaches a virtual gateway from a Net.
+        You must wait until the virtual gateway is in the detached state
+        before you can attach another Net to it or delete the Net it was
+        previously attached to.
+
+        :param      net_id: The ID of the Net from which you want to detach
+        the virtual gateway. (required)
+        :type       net_id: ``str``
+
+        :param      virtual_gateway_id: The ID of the Net from which you
+        want to detach the virtual gateway. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return:
+        :rtype: ``dict``
+        """
+        action = "UnlinkVirtualGateway"
+        data = {"DryRun": dry_run}
+        if net_id is not None:
+            data.update({"NetId": net_id})
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId	": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["ResponseContext"]
+        return response.json()
+
+    def ex_update_route_propagation(
+        self,
+        enable: bool = None,
+        route_table_id: str = None,
+        virtual_gateway_id: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Configures the propagation of routes to a specified route table
+        of a Net by a virtual gateway.
+
+        :param      enable: If true, a virtual gateway can propagate routes
+        to a specified route table of a Net. If false,
+        the propagation is disabled. (required)
+        :type       enable: ``boolean``
+
+        :param      route_table_id: The ID of the route table. (required)
+        :type       route_table_id: ``str``
+
+        :param      virtual_gateway_id: The ID of the virtual
+        gateway. (required)
+        :type       virtual_gateway_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: route propagation
+        :rtype: ``dict``
+        """
+        action = "UpdateRoutePropagation"
+        data = {"DryRun": dry_run}
+        if enable is not None:
+            data.update({"Enable": enable})
+        if route_table_id is not None:
+            data.update({"RouteTableId": route_table_id})
+        if virtual_gateway_id is not None:
+            data.update({"VirtualGatewayId": virtual_gateway_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["RouteTable"]
+        return response.json()
+
     def ex_delete_subnet(
         self,
         subnet_id: str = None,
@@ -6192,7 +7007,7 @@ class OutscaleNodeDriver(NodeDriver):
         :return: The updated Subnet
         :rtype: ``dict``
         """
-        action = "DeleteSubnet"
+        action = "UpdateSubnet"
         data = {"DryRun": dry_run}
         if subnet_id is not None:
             data.update({"SubnetId": subnet_id})
