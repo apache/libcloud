@@ -109,7 +109,7 @@ class OvhConnection(ConnectionUserAndKey):
     allow_insecure = True
 
     def __init__(self, user_id, *args, **kwargs):
-        self.host = ('%s.%s' % (kwargs.pop('ex_datacenter', ''),
+        self.host = ('%s.%s' % (kwargs.pop('region', ''),
                                 API_HOST)).lstrip('.')
         self.consumer_key = kwargs.pop('ex_consumer_key', None)
         if self.consumer_key is None:

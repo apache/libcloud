@@ -45,7 +45,7 @@ class OvhNodeDriver(NodeDriver):
     SNAPSHOT_STATE_MAP = OpenStackNodeDriver.SNAPSHOT_STATE_MAP
 
     def __init__(self, key, secret, ex_project_id, ex_consumer_key=None,
-                 ex_datacenter=None):
+                 region=None):
         """
         Instantiate the driver with the given API credentials.
 
@@ -61,20 +61,24 @@ class OvhNodeDriver(NodeDriver):
         :param ex_consumer_key: Your consumer key (required)
         :type ex_consumer_key: ``str``
 
-        :param ex_datacenter: The datacenter to connect to (optional)
-        :type ex_datacenter: ``str``
+        :param region: The datacenter to connect to (optional)
+        :type region: ``str``
 
         :rtype: ``None``
         """
-        self.datacenter = ex_datacenter
+        self.region = region
         self.project_id = ex_project_id
         self.consumer_key = ex_consumer_key
         NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key,
-                            ex_datacenter=ex_datacenter)
+                            region=region)
 
     def _get_project_action(self, suffix):
         base_url = '%s/cloud/project/%s/' % (API_ROOT, self.project_id)
         return base_url + suffix
+
+    @classmethod
+    def list_regions(cls):
+        return ['eu', 'ca']
 
     def list_nodes(self, location=None):
         """
@@ -547,4 +551,4 @@ class OvhNodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         return {'ex_consumer_key': self.consumer_key,
-                'ex_datacenter': self.datacenter}
+                'region': self.region}
