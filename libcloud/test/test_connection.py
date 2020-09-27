@@ -40,6 +40,13 @@ class BaseConnectionClassTestCase(unittest.TestCase):
     def tearDown(self):
         if self.orig_proxy:
             os.environ['http_proxy'] = self.orig_proxy
+        elif 'http_proxy' in os.environ:
+            del os.environ['http_proxy']
+
+    @classmethod
+    def tearDownClass(cls):
+        if 'http_proxy' in os.environ:
+            del os.environ['http_proxy']
 
     def test_parse_proxy_url(self):
         conn = LibcloudBaseConnection()
