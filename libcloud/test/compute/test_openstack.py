@@ -2136,8 +2136,8 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
             ex_tenant_name='admin')
         self.assertEqual(d._ex_force_base_url, None)
 
-    def test_get_quota_set(self):
-        quota_set = self.driver.get_quota_set("tenant_id")
+    def test_ex_get_quota_set(self):
+        quota_set = self.driver.ex_get_quota_set("tenant_id")
         self.assertEqual(quota_set.cores.limit, 20)
         self.assertEqual(quota_set.cores.in_use, 1)
         self.assertEqual(quota_set.cores.reserved, 0)

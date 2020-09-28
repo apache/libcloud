@@ -21,6 +21,10 @@ Compute
   (GITHUB-1486)
   [Arturo Noha - @r2ronoha]
 
+- [OpenStack] Enable to get Quota Set detail. 
+  (GITHUB-1495)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
