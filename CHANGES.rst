@@ -4,6 +4,15 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+~~~~~~
+
+- Fix a bug which would cause some prepared requests with empty bodies to be
+  chunked which would cause some of the provider APIs such as OpenStack to
+  return HTTP 400 errors.
+  (GITHUB-1487, GITHUB-1488)
+  [Michael Spagon - @mspagon]
+
 Compute
 ~~~~~~~
 
