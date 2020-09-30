@@ -17,6 +17,7 @@ import os
 import sys
 import os.path
 import random
+import platform
 import warnings
 import threading
 
@@ -100,6 +101,8 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.assertTrue(self.httplib_object.ca_cert is not None)
 
 
+@unittest.skipIf(platform.python_implementation() == "PyPy",
+                 "Skipping test under PyPy since it causes segfault")
 class HttpLayerTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
