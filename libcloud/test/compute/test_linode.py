@@ -36,7 +36,7 @@ class LinodeTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         LinodeNodeDriver.connectionCls.conn_class = LinodeMockHttp
         LinodeMockHttp.use_param = 'api_action'
-        self.driver = LinodeNodeDriver('foo')
+        self.driver = LinodeNodeDriver('foo', api_version='3.0')
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
