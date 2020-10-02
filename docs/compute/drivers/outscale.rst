@@ -299,10 +299,10 @@ Server Certificates
 Virtual Gateways
 ----------------
 * ``ex_create_virtual_gateway`` - Returns a ``dict``
-* ``ex_delete_virtual_gatewat`` - Returns a ``dict``
+* ``ex_delete_virtual_gateway`` - Returns a ``bool``
 * ``ex_link_virtual_gateway`` - Returns a ``dict``
 * ``ex_list_virtual_gateways`` - Returns a ``list`` of ``dict``
-* ``ex_unlink_virtual_gateway`` - Returns a ``dict``
+* ``ex_unlink_virtual_gateway`` - Returns a ``bool``
 * ``ex_update_route_propagation`` - Returns a ``dict``
 
 Security Groups
