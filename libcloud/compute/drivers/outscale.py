@@ -991,21 +991,221 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
 
-    def list_images(self, ex_data: str = "{}"):
+    def list_images(
+        self,
+        account_aliases: [str] = None,
+        account_ids: [str] = None,
+        architectures: [str] = None,
+        block_device_mapping_delete_on_vm_deletion: bool = False,
+        block_device_mapping_device_names: [str] = None,
+        block_device_mapping_snapshot_ids: [str] = None,
+        block_device_mapping_volume_sizes: [int] = None,
+        block_device_mapping_volume_types: [str] = None,
+        descriptions: [str] = None,
+        file_locations: [str] = None,
+        image_ids: [str] = None,
+        image_names: [str] = None,
+        permission_to_launch_account_ids: [str] = None,
+        permission_to_launch_global_permission: bool = False,
+        root_device_names: [str] = None,
+        root_device_types: [str] = None,
+        states: [str] = None,
+        tag_keys: [str] = None,
+        tag_values: [str] = None,
+        tags: [str] = None,
+        virtualization_types: [str] = None,
+        dry_run: bool = False,
+        ):
         """
-        List all images.
+        Lists one or more Outscale machine images (OMIs) you can use.
 
-        :return: images
-        :rtype: ``dict``
+        :param      account_aliases: The account aliases of the
+        owners of the OMIs.
+        :type       account_aliases: ``list`` of ``str``
+
+        :param      account_ids: The account IDs of the owners of the
+        OMIs. By default, all the OMIs for which you have launch
+        permissions are described.
+        :type       account_ids: ``list`` of ``str``
+
+        :param      architectures: The architectures of the
+        OMIs (i386 | x86_64).
+        :type       architectures: ``list`` of ``str``
+
+        :param      block_device_mapping_delete_on_vm_deletion: Indicates
+        whether the block device mapping is deleted when terminating the VM.
+        :type       block_device_mapping_delete_on_vm_deletion:
+        ``bool``
+
+        :param      block_device_mapping_device_names: The device names for
+        the volumes.
+        :type       block_device_mapping_device_names: ``list`` of ``str``
+
+        :param      block_device_mapping_snapshot_ids: The IDs of the
+        snapshots used to create the volumes.
+        :type       block_device_mapping_snapshot_ids: ``list`` of ``str``
+
+        :param      block_device_mapping_volume_sizes: The sizes of the
+        volumes, in gibibytes (GiB).
+        :type       block_device_mapping_volume_sizes: ``list`` of ``int``
+
+        :param      block_device_mapping_volume_types: The types of
+        volumes (standard | gp2 | io1).
+        :type       block_device_mapping_volume_types: ``list`` of ``str``
+
+        :param      descriptions: The descriptions of the OMIs, provided
+        when they were created.
+        :type       descriptions: ``list`` of ``str``
+
+        :param      file_locations: The locations where the OMI files are
+        stored on Object Storage Unit (OSU).
+        :type       file_locations: ``list`` of ``str``
+
+        :param      image_ids: The IDs of the OMIs.
+        :type       image_ids: ``list`` of ``str``
+
+        :param      image_names: The names of the OMIs, provided when
+        they were created.
+        :type       image_names: ``list`` of ``str``
+
+        :param      permission_to_launch_account_ids: The account IDs of the
+        users who have launch permissions for the OMIs.
+        :type       permission_to_launch_account_ids: ``list`` of ``str``
+
+        :param      permission_to_launch_global_permission: If true, lists
+        all public OMIs. If false, lists all private OMIs.
+        :type       permission_to_launch_global_permission: ``list`` of ``str``
+
+        :param      root_device_names: The device names of the root
+        devices (for example, /dev/sda1).
+        :type       root_device_names: ``list`` of ``str``
+
+        :param      root_device_types: The types of root device used by
+        the OMIs (always bsu).
+        :type       root_device_types: ``list`` of ``str``
+
+        :param      states: The states of the OMIs
+        (pending | available | failed).
+        :type       states: ``list`` of ``str``
+
+        :param      tag_keys: The keys of the tags associated with the OMIs.
+        :type       tag_keys: ``list`` of ``str``
+
+        :param      tag_values: The values of the tags associated
+        with the OMIs.
+        :type       tag_values: ``list`` of ``str``
+
+        :param      tags: The key/value combination of the tags associated
+        with the OMIs, in the following format:"Filters":
+        {"Tags":["TAGKEY=TAGVALUE"]}.
+        :type       tags: ``list`` of ``str``
+
+        :param      virtualization_types: The virtualization types
+        (always hvm).
+        :type       virtualization_types: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+
+        :return: a list of image
+        :rtype: ``list`` of ``dict``
         """
         action = "ReadImages"
-        response = self._call_api(action, ex_data)
-        return self._to_node_images(response.json()["Images"])
-
+        data = {"DryRun": dry_run, "Filters": {}}
+        if account_aliases is not None:
+            data["Filters"].update({
+                "AccountAliases": account_aliases
+            })
+        if account_ids is not None:
+            data["Filters"].update({
+                "AccountIds": account_ids
+            })
+        if architectures is not None:
+            data["Filters"].update({
+                "Architectures": architectures
+            })
+        if block_device_mapping_delete_on_vm_deletion is not None:
+            data["Filters"].update({
+                "BlockDeviceMappingDeleteOnVmDeletion": block_device_mapping_delete_on_vm_deletion
+            })
+        if block_device_mapping_device_names is not None:
+            data["Filters"].update({
+                "BlockDeviceMappingDeviceNames": block_device_mapping_device_names
+            })
+        if block_device_mapping_snapshot_ids is not None:
+            data["Filters"].update({
+                "BlockDeviceMappingSnapshotIds": block_device_mapping_snapshot_ids
+            })
+        if block_device_mapping_volume_sizes is not None:
+            data["Filters"].update({
+                "BlockDeviceMappingVolumeSizes": block_device_mapping_volume_sizes
+            })
+        if block_device_mapping_volume_types is not None:
+            data["Filters"].update({
+                "BlockDeviceMappingVolumeTypes": block_device_mapping_volume_types
+            })
+        if descriptions is not None:
+            data["Filters"].update({
+                "Descriptions": descriptions
+            })
+        if file_locations is not None:
+            data["Filters"].update({
+                "FileLocations": file_locations
+            })
+        if image_ids is not None:
+            data["Filters"].update({
+                "ImageIds": image_ids
+            })
+        if image_names is not None:
+            data["Filters"].update({
+                "ImageNames": image_names
+            })
+        if permission_to_launch_account_ids is not None:
+            data["Filters"].update({
+                "PermissionsToLaunchAccountIds": permission_to_launch_account_ids
+            })
+        if permission_to_launch_global_permission is not None:
+            data["Filters"].update({
+                "PermissionsToLaunchGlobalPermission": permission_to_launch_global_permission
+            })
+        if root_device_names is not None:
+            data["Filters"].update({
+                "RootDeviceNames": root_device_names
+            })
+        if root_device_types is not None:
+            data["Filters"].update({
+                "RootDeviceTypes": root_device_types
+            })
+        if states is not None:
+            data["Filters"].update({
+                "States": states
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if image_names is not None:
+            data["Filters"].update({
+                "TagValues": image_names
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        if virtualization_types is not None:
+            data["Filters"].update({
+                "VirtualizationTypes": virtualization_types
+            })
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Images"]
+        return response.json()
+        
     def ex_list_image_export_tasks(
         self,
         dry_run: bool = False,
-        task_ids: [str] = False,
+        task_ids: [str] = None,
         ):
         """
         Lists one or more image export tasks.
@@ -1020,13 +1220,14 @@ class OutscaleNodeDriver(NodeDriver):
         :return: image export tasks
         :rtype: ``list`` of ``dict``
         """
-        action = "ReadListenerRules"
+        action = "ReadImageExportTasks"
         data = {"DryRun": dry_run, "Filters": {}}
         if task_ids is not None:
             data["Filters"].update({
                 "TaskIds": task_ids
             })
         response = self._call_api(action, json.dumps(data))
+        print(response.json())
         if response.status_code == 200:
             return response.json()["ImageExportTasks"]
         return response.json()
@@ -1421,7 +1622,7 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_list_snapshot_export_tasks(
         self,
         dry_run: bool = False,
-        task_ids: [str] = False,
+        task_ids: [str] = None,
     ):
         """
         Lists one or more image export tasks.
@@ -2944,7 +3145,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "CreateFlexibleGpu"
-        data = {"DryRun": dry_run, "DirectLinkInterface": {}}
+        data = {"DryRun": dry_run}
         if delete_on_vm_deletion is not None:
             data.update({"DeleteOnVmDeletion": delete_on_vm_deletion})
         if generation is not None:
@@ -4406,7 +4607,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "CreateNatService"
         data = {"DryRun": dry_run}
         if public_ip is not None:
-            data.update({"PublicIp": public_ip})
+            data.update({"PublicIpId": public_ip})
         if subnet_id is not None:
             data.update({"SubnetId": subnet_id})
         response = self._call_api(action, json.dumps(data))
@@ -5238,6 +5439,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_link_nic(
         self,
+        device_number: int = None,
         nic_id: str = None,
         node: str = None,
         dry_run: bool = False,
@@ -5250,8 +5452,12 @@ class OutscaleNodeDriver(NodeDriver):
         :param      nic_id: The ID of the NIC you want to delete. (required)
         :type       nic_id: ``str``
 
-        :param      node: The node you want to attach the nic to.
-        :type       nic_id: ``Node``
+        :param      device_number: The ID of the NIC you want to delete. (required)
+        :type       device_number: ``str``
+
+        :param      node: The index of the VM device for the NIC attachment
+        (between 1 and 7, both included).
+        :type       node: ``Node``
 
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -5264,8 +5470,10 @@ class OutscaleNodeDriver(NodeDriver):
         data = {"DryRun": dry_run}
         if nic_id is not None:
             data.update({"NicId": nic_id})
+        if device_number is not None:
+            data.update({"DeviceNumber": device_number})
         if node:
-            data.update({"VmId": node.id})
+            data.update({"VmId": node})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["LinkNicId"]
@@ -6744,8 +6952,8 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :return: request
-        :rtype: ``dict``
+        :return: True if the action is successful
+        :rtype: ``bool``
         """
         action = "DeleteVirtualGateway"
         data = {"DryRun": dry_run}
@@ -6753,8 +6961,8 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"VirtualGatewayId": virtual_gateway_id})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
-            return response.json()["ResponseContext"]
-        return response.json()
+            return True
+        return False
 
     def ex_link_virtual_gateway(
         self,
@@ -6893,19 +7101,19 @@ class OutscaleNodeDriver(NodeDriver):
         permissions to perform the action.
         :type       dry_run: ``bool``
 
-        :return:
-        :rtype: ``dict``
+        :return: True if the action is successful
+        :rtype: ``bool``
         """
         action = "UnlinkVirtualGateway"
         data = {"DryRun": dry_run}
         if net_id is not None:
             data.update({"NetId": net_id})
         if virtual_gateway_id is not None:
-            data.update({"VirtualGatewayId	": virtual_gateway_id})
+            data.update({"VirtualGatewayId": virtual_gateway_id})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
-            return response.json()["ResponseContext"]
-        return response.json()
+            return True
+        return False
 
     def ex_update_route_propagation(
         self,
@@ -7015,7 +7223,7 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"MapPublicIpOnLaunch": map_public_ip_on_launch})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
-            return response.json["Subnet"]
+            return response.json()["Subnet"]
         return response.json()
 
     def ex_list_subnets(
@@ -7568,7 +7776,7 @@ class OutscaleNodeDriver(NodeDriver):
         for tag in image["Tags"]:
             if tag["Key"] == "Name":
                 name = tag["Value"]
-        return NodeImage(id=image["NodeId"],
+        return NodeImage(id=image["ImageId"],
                          name=name,
                          driver=self,
                          extra=image)
