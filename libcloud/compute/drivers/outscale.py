@@ -1145,9 +1145,61 @@ class OutscaleNodeDriver(NodeDriver):
             data["Filters"].update({
                 "BlockDeviceMappingVolumeTypes": block_device_mapping_volume_types
             })
-        response = self._call_api(action, ex_data)
+        if descriptions is not None:
+            data["Filters"].update({
+                "Descriptions": descriptions
+            })
+        if file_locations is not None:
+            data["Filters"].update({
+                "FileLocations": file_locations
+            })
+        if image_ids is not None:
+            data["Filters"].update({
+                "ImageIds": image_ids
+            })
+        if image_names is not None:
+            data["Filters"].update({
+                "ImageNames": image_names
+            })
+        if permission_to_launch_account_ids is not None:
+            data["Filters"].update({
+                "PermissionsToLaunchAccountIds": permission_to_launch_account_ids
+            })
+        if permission_to_launch_global_permission is not None:
+            data["Filters"].update({
+                "PermissionsToLaunchGlobalPermission": permission_to_launch_global_permission
+            })
+        if root_device_names is not None:
+            data["Filters"].update({
+                "RootDeviceNames": root_device_names
+            })
+        if root_device_types is not None:
+            data["Filters"].update({
+                "RootDeviceTypes": root_device_types
+            })
+        if states is not None:
+            data["Filters"].update({
+                "States": states
+            })
+        if tag_keys is not None:
+            data["Filters"].update({
+                "TagKeys": tag_keys
+            })
+        if image_names is not None:
+            data["Filters"].update({
+                "TagValues": image_names
+            })
+        if tags is not None:
+            data["Filters"].update({
+                "Tags": tags
+            })
+        if virtualization_types is not None:
+            data["Filters"].update({
+                "VirtualizationTypes": virtualization_types
+            })
+        response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
-            return self._to_node_images(response.json()["Images"])
+            return response.json()["Images"]
         return response.json()
         
     def ex_list_image_export_tasks(
@@ -3093,7 +3145,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "CreateFlexibleGpu"
-        data = {"DryRun": dry_run, "DirectLinkInterface": {}}
+        data = {"DryRun": dry_run}
         if delete_on_vm_deletion is not None:
             data.update({"DeleteOnVmDeletion": delete_on_vm_deletion})
         if generation is not None:
@@ -4555,7 +4607,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "CreateNatService"
         data = {"DryRun": dry_run}
         if public_ip is not None:
-            data.update({"PublicIp": public_ip})
+            data.update({"PublicIpId": public_ip})
         if subnet_id is not None:
             data.update({"SubnetId": subnet_id})
         response = self._call_api(action, json.dumps(data))
@@ -5387,6 +5439,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_link_nic(
         self,
+        device_number: int = None,
         nic_id: str = None,
         node: str = None,
         dry_run: bool = False,
@@ -5399,8 +5452,12 @@ class OutscaleNodeDriver(NodeDriver):
         :param      nic_id: The ID of the NIC you want to delete. (required)
         :type       nic_id: ``str``
 
-        :param      node: The node you want to attach the nic to.
-        :type       nic_id: ``Node``
+        :param      device_number: The ID of the NIC you want to delete. (required)
+        :type       device_number: ``str``
+
+        :param      node: The index of the VM device for the NIC attachment
+        (between 1 and 7, both included).
+        :type       node: ``Node``
 
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
@@ -5413,8 +5470,10 @@ class OutscaleNodeDriver(NodeDriver):
         data = {"DryRun": dry_run}
         if nic_id is not None:
             data.update({"NicId": nic_id})
+        if device_number is not None:
+            data.update({"DeviceNumber": device_number})
         if node:
-            data.update({"VmId": node.id})
+            data.update({"VmId": node})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["LinkNicId"]
@@ -7164,7 +7223,7 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"MapPublicIpOnLaunch": map_public_ip_on_launch})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
-            return response.json["Subnet"]
+            return response.json()["Subnet"]
         return response.json()
 
     def ex_list_subnets(
