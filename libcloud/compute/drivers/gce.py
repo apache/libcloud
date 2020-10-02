@@ -4893,7 +4893,7 @@ class GCENodeDriver(NodeDriver):
         :rtype:   ``list`` of ``dict``
         """
         gce_service_accounts = []
-        if not service_accounts:
+        if service_accounts is None:
             gce_service_accounts = [{
                 'email': default_email,
                 'scopes': [self.AUTH_URL + default_scope]
