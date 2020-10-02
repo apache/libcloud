@@ -134,9 +134,10 @@ class OutscaleNodeDriver(NodeDriver):
             """
         action = "CreatePublicIp"
         data = json.dumps({"DryRun": dry_run})
-        if self._call_api(action, data).status_code == 200:
-            return True
-        return False
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["PublicIp"]
+        return response.json()
 
     def ex_delete_public_ip(self,
                             dry_run: bool = False,
@@ -184,7 +185,10 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadPublicIps"
-        return self._call_api(action, data)
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["PublicIps"]
+        return response.json()
 
     def ex_list_public_ip_ranges(self, dry_run: bool = False):
         """
@@ -199,7 +203,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadPublicIpRanges"
         data = json.dumps({"DryRun": dry_run})
-        return self._call_api(action, data)
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["PublicIps"]
+        return response.json()
 
     def ex_attach_public_ip(self,
                             allow_relink: bool = None,
@@ -570,7 +577,8 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``str``
         """
         action = "ReadAdminPassword"
-        data = json.dumps({"DryRun": dry_run, "VmIds": node.id})
+        print(node)
+        data = json.dumps({"DryRun": dry_run, "VmId": node.id})
         response = self._call_api(action, data)
         if response.status_code == 200:
             return response.json()["AdminPassword"]
@@ -592,7 +600,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``str``
         """
         action = "ReadConsoleOutput"
-        data = json.dumps({"DryRun": dry_run, "VmIds": node.id})
+        data = json.dumps({"DryRun": dry_run, "VmId": node.id})
         response = self._call_api(action, data)
         if response.status_code == 200:
             return response.json()["ConsoleOutput"]
@@ -1090,12 +1098,12 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      perm_to_launch_addition_global_permission:
         If true, the resource is public. If false, the resource is private.
-        :type       permission_to_launch_addition_global_permission:
+        :type       perm_to_launch_addition_global_permission:
         ``boolean``
 
         :param      perm_to_launch_removals_account_ids: The account
         ID of one or more users who have permissions for the resource.
-        :type       imperm_to_launch_removals_account_idsage:
+        :type       perm_to_launch_removals_account_idsage:
         ``list`` of ``dict``
 
         :param      perm_to_launch_removals_global_permission: If true,
@@ -1753,6 +1761,7 @@ class OutscaleNodeDriver(NodeDriver):
         if to_date is not None:
             data.update({"ToDate": to_date})
         response = self._call_api(action, json.dumps(data))
+        print(response.status_code)
         if response.status_code == 200:
             return response.json()["ConsumptionEntries"]
         return response.json()
@@ -1883,14 +1892,7 @@ class OutscaleNodeDriver(NodeDriver):
         dry_run: bool = False,
     ):
         """
-        Creates a new 3DS OUTSCALE account.
-
-        You need 3DS OUTSCALE credentials and the appropriate quotas to
-        create a new account via API. To get quotas, you can send an email
-        to sales@outscale.com.
-        If you want to pass a numeral value as a string instead of an
-        integer, you must wrap your string in additional quotes
-        (for example, '"92000"').
+        Updates the account information for the account that sends the request.
 
         :param      city: The city of the account owner.
         :type       city: ``str``
@@ -2071,7 +2073,7 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_create_tags(
         self,
         resource_ids: list,
-        tags: list = [],
+        tags: list = None,
         dry_run: bool = False,
     ):
         """
@@ -2103,7 +2105,7 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_delete_tags(
         self,
         resource_ids: list,
-        tags: list = [],
+        tags: list = None,
         dry_run: bool = False,
     ):
         """
@@ -2723,7 +2725,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return False
 
-    def ex_list_direct_link(
+    def ex_list_direct_links(
         self,
         direct_link_ids: list = None,
         dry_run: bool = False,
@@ -2741,7 +2743,7 @@ class OutscaleNodeDriver(NodeDriver):
         :return: ``list`` of  Direct Links
         :rtype: ``list`` of ``dict``
         """
-        action = "DeleteDirectLink"
+        action = "ReadDirectLinks"
         data = {"DryRun": dry_run, "Filters": {}}
         if direct_link_ids is not None:
             data["Filters"].update({"DirectLinkIds": direct_link_ids})
@@ -3027,7 +3029,7 @@ class OutscaleNodeDriver(NodeDriver):
     ):
         """
         Attaches one of your allocated flexible GPUs (fGPUs) to one of your
-        virtual machines (VMs).
+        virtual machines (Nodes).
         The fGPU is in the attaching state until the VM is stopped, after
         which it becomes attached.
 
@@ -3651,7 +3653,7 @@ class OutscaleNodeDriver(NodeDriver):
             })
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
-            return response.json()["InternetServices"]
+            return response.json()["ListenerRules"]
         return response.json()
 
     def ex_update_listener_rule(
@@ -4805,7 +4807,7 @@ class OutscaleNodeDriver(NodeDriver):
         :return: A list of Services
         :rtype: ``list`` of ``dict``
         """
-        action = "ReadNetAccessPointsServices"
+        action = "ReadNetAccessPointServices"
         data = {"DryRun": dry_run, "Filters": {}}
         if service_names is not None:
             data["Filters"].update({"ServiceNames": service_names})
@@ -5915,7 +5917,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["LinkRouteTableId"]
         return response.json()
 
-    def ex_list_route_table(
+    def ex_list_route_tables(
         self,
         link_route_table_ids: [str] = None,
         link_route_table_link_route_table_ids: [str] = None,
