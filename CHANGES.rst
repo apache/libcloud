@@ -32,9 +32,18 @@ Compute
 
 - [Ovh] Add support for multiple regions to the driver. User can select
   a region (location) by passing ``location`` argument to the driver
-  constructor (e.g. ``location=ca``.)
+  constructor (e.g. ``location=ca``).
   (GITHUB-1494)
   [Dan Hunsaker - @danhunsaker]
+
+- [GCE] Add support for creating nodes without a service account associated
+  with them. Now when an empty list is passed for ``ex_service_accounts``
+  argument, VM will be created without service account attached.
+
+  For backward compatibility reasons, default value of ``None`` still means to
+  use a default service account.
+  (GITHUB-1497, GITHUB-1495)
+  [David Tomaschik - Matir]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------
