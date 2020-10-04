@@ -63,7 +63,7 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_default_scopes(self):
         self.assertIsNone(self.driver.scopes)
 
-    def test_default_service_account(self):
+    def test_build_service_account_gce_struct_default_service_account(self):
         result = self.driver._build_service_accounts_gce_list(service_accounts=None)
         self.assertEqual(result, [
             {'email': 'default',
@@ -71,9 +71,22 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
              }
         ])
 
-    def test_no_service_account(self):
+    def test_build_service_account_gce_struct_no_service_account(self):
         result = self.driver._build_service_accounts_gce_list(service_accounts=[])
         self.assertEqual(result, [])
+
+    def test_build_service_account_gce_struct_custom_service_account(self):
+        data = [
+            {'email': '1', 'scopes': ['a']},
+            {'email': '2', 'scopes': ['b']}
+        ]
+        expected_result = [
+            {'email': '1', 'scopes': ['https://www.googleapis.com/auth/a']},
+            {'email': '2', 'scopes': ['https://www.googleapis.com/auth/b']}
+        ]
+
+        result = self.driver._build_service_accounts_gce_list(service_accounts=data)
+        self.assertEqual(result, expected_result)
 
     def test_timestamp_to_datetime(self):
         timestamp1 = '2013-06-26T10:05:19.340-07:00'
