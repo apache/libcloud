@@ -30,6 +30,12 @@ Compute
   (GITHUB-1486)
   [Arturo Noha - @r2ronoha]
 
+- [Ovh] Add support for multiple regions to the driver. User can select
+  a region (location) by passing ``location`` argument to the driver
+  constructor (e.g. ``location=ca``.)
+  (GITHUB-1494)
+  [Dan Hunsaker - @danhunsaker]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
