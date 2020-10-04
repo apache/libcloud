@@ -63,6 +63,18 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
     def test_default_scopes(self):
         self.assertIsNone(self.driver.scopes)
 
+    def test_default_service_account(self):
+        result = self.driver._build_service_accounts_gce_list(service_accounts=None)
+        self.assertEqual(result, [
+            {'email': 'default',
+             'scopes': ['https://www.googleapis.com/auth/devstorage.read_only']
+             }
+        ])
+
+    def test_no_service_account(self):
+        result = self.driver._build_service_accounts_gce_list(service_accounts=[])
+        self.assertEqual(result, [])
+
     def test_timestamp_to_datetime(self):
         timestamp1 = '2013-06-26T10:05:19.340-07:00'
         datetime1 = datetime.datetime(2013, 6, 26, 17, 5, 19)
