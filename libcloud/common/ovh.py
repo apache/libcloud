@@ -146,6 +146,8 @@ class OvhConnection(ConnectionUserAndKey):
                                  'Used host: %s. Original error: %s' %
                                  (self.host, str(e)))
 
+        response = OvhResponse(httpcon.getresponse(), httpcon)
+
         if response.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
 
