@@ -138,13 +138,7 @@ class OvhConnection(ConnectionUserAndKey):
         try:
             httpcon.request(method='POST', url=action, body=data, headers=headers)
         except requests.exceptions.ConnectionError as e:
-            if 'name or service not known' in str(e).lower():
-                raise ValueError('Received "name or service not known" error '
-                                 'when requesting consumer key. This likely '
-                                 'indicates invalid region argument was'
-                                 'passed to the driver constructor.'
-                                 'Used host: %s. Original error: %s' %
-                                 (self.host, str(e)))
+            handle_and_rethrow_user_friendly_invalid_region_error(host=self.host, e=e)
 
         response = OvhResponse(httpcon.getresponse(), httpcon)
 
@@ -208,6 +202,29 @@ class OvhConnection(ConnectionUserAndKey):
             'X-Ovh-Timestamp': timestamp,
             'X-Ovh-Signature': signature
         })
-        return super(OvhConnection, self)\
-            .request(action, params=params, data=data, headers=headers,
-                     method=method, raw=raw)
+
+        try:
+            return super(OvhConnection, self)\
+                .request(action, params=params, data=data, headers=headers,
+                        method=method, raw=raw)
+        except requests.exceptions.ConnectionError as e:
+            handle_and_rethrow_user_friendly_invalid_region_error(host=self.host, e=e)
+
+
+def handle_and_rethrow_user_friendly_invalid_region_error(host, e):
+    """
+    Utility method which throws a more user-friendly error in case "name or
+    service not known" error is received when sending a request.
+
+    In most cases this error indicates user passed invalid ``region`` argument
+    to the driver constructor.
+    """
+    if 'name or service not known' in str(e).lower():
+        raise ValueError('Received "name or service not known" error '
+                         'when sending a request. This likely '
+                         'indicates invalid region argument was '
+                         'passed to the driver constructor.'
+                         'Used host: %s. Original error: %s' %
+                         (host, str(e)))
+
+    raise e
