@@ -140,9 +140,11 @@ class OvhConnection(ConnectionUserAndKey):
         httpcon = LibcloudConnection(host=self.host, port=443)
 
         try:
-            httpcon.request(method='POST', url=action, body=data, headers=headers)
+            httpcon.request(method='POST', url=action, body=data,
+                            headers=headers)
         except requests.exceptions.ConnectionError as e:
-            handle_and_rethrow_user_friendly_invalid_region_error(host=self.host, e=e)
+            handle_and_rethrow_user_friendly_invalid_region_error(
+                host=self.host, e=e)
 
         response = OvhResponse(httpcon.getresponse(), httpcon)
 
@@ -210,9 +212,10 @@ class OvhConnection(ConnectionUserAndKey):
         try:
             return super(OvhConnection, self)\
                 .request(action, params=params, data=data, headers=headers,
-                        method=method, raw=raw)
+                         method=method, raw=raw)
         except requests.exceptions.ConnectionError as e:
-            handle_and_rethrow_user_friendly_invalid_region_error(host=self.host, e=e)
+            handle_and_rethrow_user_friendly_invalid_region_error(
+                host=self.host, e=e)
 
 
 def handle_and_rethrow_user_friendly_invalid_region_error(host, e):
