@@ -111,8 +111,12 @@ class OvhConnection(ConnectionUserAndKey):
     allow_insecure = True
 
     def __init__(self, user_id, *args, **kwargs):
-        self.host = ('%s.%s' % (kwargs.pop('region', ''),
-                                API_HOST)).lstrip('.')
+        region = kwargs.pop('region', '')
+        if region:
+            self.host = ('%s.%s' % (region,
+                                    API_HOST)).lstrip('.')
+        else:
+            self.host = API_HOST
         self.consumer_key = kwargs.pop('ex_consumer_key', None)
         if self.consumer_key is None:
             consumer_key_json = self.request_consumer_key(user_id)
