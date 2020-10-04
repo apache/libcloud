@@ -45,6 +45,14 @@ Compute
   (GITHUB-1497, GITHUB-1495)
   [David Tomaschik - Matir]
 
+- [VSphere] Add new VMware VSphere driver which utilizes ``pyvmomi`` library
+  and works under Python 3.
+
+  If you want to use this driver, you need to install ``pyvmomi`` dependency -
+  ``pip install pyvmomi``
+  (GITHUB-1481)
+  [Eis D. Zaster - @Eis-D-Z]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
