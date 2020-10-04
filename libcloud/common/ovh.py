@@ -23,8 +23,6 @@ try:
 except ImportError:
     import json  # type: ignore
 
-import requests
-
 from libcloud.utils.py3 import httplib
 from libcloud.utils.connection import get_response_object
 from libcloud.common.types import InvalidCredsError
@@ -142,7 +140,7 @@ class OvhConnection(ConnectionUserAndKey):
         try:
             httpcon.request(method='POST', url=action, body=data,
                             headers=headers)
-        except requests.exceptions.ConnectionError as e:
+        except Exception as e:
             handle_and_rethrow_user_friendly_invalid_region_error(
                 host=self.host, e=e)
 
@@ -213,7 +211,7 @@ class OvhConnection(ConnectionUserAndKey):
             return super(OvhConnection, self)\
                 .request(action, params=params, data=data, headers=headers,
                          method=method, raw=raw)
-        except requests.exceptions.ConnectionError as e:
+        except Exception as e:
             handle_and_rethrow_user_friendly_invalid_region_error(
                 host=self.host, e=e)
 
@@ -226,7 +224,9 @@ def handle_and_rethrow_user_friendly_invalid_region_error(host, e):
     In most cases this error indicates user passed invalid ``region`` argument
     to the driver constructor.
     """
-    if 'name or service not known' in str(e).lower():
+    msg = str(e).lower()
+
+    if 'name or service not known' in msg or 'getaddrinfo failed' in msg:
         raise ValueError('Received "name or service not known" error '
                          'when sending a request. This likely '
                          'indicates invalid region argument was '
