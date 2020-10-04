@@ -147,6 +147,21 @@ class OvhTests(unittest.TestCase):
         OvhMockHttp.type = None
         self.driver = OvhNodeDriver(*OVH_PARAMS)
 
+    def test_region_argument(self):
+        driver = OvhNodeDriver(*OVH_PARAMS)
+        self.assertEqual(driver.connection.host, 'api.ovh.com')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region=None)
+        self.assertEqual(driver.connection.host, 'api.ovh.com')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region='ca')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region='eu')
+        self.assertEqual(driver.connection.host, 'eu.api.ovh.com')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region='ca')
+        self.assertEqual(driver.connection.host, 'ca.api.ovh.com')
+
     def test_list_nodes_invalid_region(self):
         OvhNodeDriver.connectionCls.conn_class = LibcloudConnection
         driver = OvhNodeDriver(*OVH_PARAMS, region='invalid')
