@@ -23,6 +23,8 @@ try:
 except ImportError:
     import json  # type: ignore
 
+import requests
+
 from libcloud.utils.py3 import httplib
 from libcloud.utils.connection import get_response_object
 from libcloud.common.types import InvalidCredsError
@@ -132,8 +134,17 @@ class OvhConnection(ConnectionUserAndKey):
             'X-Ovh-Application': user_id,
         }
         httpcon = LibcloudConnection(host=self.host, port=443)
-        httpcon.request(method='POST', url=action, body=data, headers=headers)
-        response = JsonResponse(httpcon.getresponse(), httpcon)
+
+        try:
+            httpcon.request(method='POST', url=action, body=data, headers=headers)
+        except requests.exceptions.ConnectionError as e:
+            if 'name or service not known' in str(e).lower():
+                raise ValueError('Received "name or service not known" error '
+                                 'when requesting consumer key. This likely '
+                                 'indicates invalid region argument was'
+                                 'passed to the driver constructor.'
+                                 'Used host: %s. Original error: %s' %
+                                 (self.host, str(e)))
 
         if response.status == httplib.UNAUTHORIZED:
             raise InvalidCredsError()
