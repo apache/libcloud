@@ -22,6 +22,9 @@ FORMAT_URL = re.compile(r'[./?=&-]')
 class BaseOvhMockHttp(MockHttp):
 
     def _get_method_name(self, type, use_param, qs, path):
+        if type:
+            meth_name = '_json%s_%s_%s' % (FORMAT_URL.sub('_', path), 'get', type)
+            return meth_name
         return "_json"
 
     def _json(self, method, url, body, headers):
