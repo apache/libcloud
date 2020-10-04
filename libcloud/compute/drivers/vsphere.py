@@ -117,10 +117,12 @@ class VSphereNodeDriver(NodeDriver):
             if 'connection refused' in error_message or 'is not a vim server' \
                                                         in error_message:
                 raise LibcloudError('Check that the host provided is a '
-                                    'vSphere installation')
+                                    'vSphere installation',
+                                    driver=self)
             if 'name or service not known' in error_message:
                 raise LibcloudError(
-                    'Check that the vSphere host is accessible')
+                    'Check that the vSphere host is accessible',
+                    driver=self)
             if 'certificate verify failed' in error_message:
                 # bypass self signed certificates
                 try:
@@ -137,7 +139,8 @@ class VSphereNodeDriver(NodeDriver):
                 )
                 atexit.register(connect.Disconnect, self.connection)
             else:
-                raise LibcloudError('Cannot connect to vSphere')
+                raise LibcloudError('Cannot connect to vSphere',
+                                    driver=self)
 
     def list_locations(self, ex_show_hosts_in_drs=True):
         """
@@ -734,7 +737,8 @@ class VSphereNodeDriver(NodeDriver):
         vm = self.find_by_uuid(node.id)
         if not vm.snapshot:
             raise LibcloudError(
-                "Remove snapshot failed. No snapshots for node %s" % node.name)
+                "Remove snapshot failed. No snapshots for node %s" % node.name,
+                driver=self)
         snapshots = recurse_snapshots(vm.snapshot.rootSnapshotList)
         if not snapshot_name:
             snapshot = snapshots[-1].snapshot
@@ -744,7 +748,8 @@ class VSphereNodeDriver(NodeDriver):
                     snapshot = s.snapshot
                     break
             else:
-                raise LibcloudError("Snapshot `%s` not found" % snapshot_name)
+                raise LibcloudError("Snapshot `%s` not found" % snapshot_name,
+                                    driver=self)
         return self.wait_for_task(snapshot.RemoveSnapshot_Task(
             removeChildren=remove_children))
 
@@ -756,7 +761,8 @@ class VSphereNodeDriver(NodeDriver):
         vm = self.find_by_uuid(node.id)
         if not vm.snapshot:
             raise LibcloudError("Revert failed. No snapshots "
-                                "for node %s" % node.name)
+                                "for node %s" % node.name,
+                                driver=self)
         snapshots = recurse_snapshots(vm.snapshot.rootSnapshotList)
         if not snapshot_name:
             snapshot = snapshots[-1].snapshot
@@ -766,7 +772,8 @@ class VSphereNodeDriver(NodeDriver):
                     snapshot = s.snapshot
                     break
             else:
-                raise LibcloudError("Snapshot `%s` not found" % snapshot_name)
+                raise LibcloudError("Snapshot `%s` not found" % snapshot_name,
+                                    driver=self)
         return self.wait_for_task(snapshot.RevertToSnapshot_Task())
 
     def _find_template_by_uuid(self, template_uuid):
@@ -785,9 +792,11 @@ class VSphereNodeDriver(NodeDriver):
                 if vm.config.instanceUuid == template_uuid:
                     template = vm
         except Exception as exc:
-            raise LibcloudError("Error while searching for template, ", exc)
+            raise LibcloudError("Error while searching for template: %s" % exc,
+                                driver=self)
         if not template:
-            raise LibcloudError("Unable to locate VirtualMachine.")
+            raise LibcloudError("Unable to locate VirtualMachine.",
+                                driver=self)
 
         return template
 
@@ -801,7 +810,8 @@ class VSphereNodeDriver(NodeDriver):
             # perhaps it is a moid
             vm = self._get_item_by_moid('VirtualMachine', node_uuid)
             if not vm:
-                raise LibcloudError("Unable to locate VirtualMachine.")
+                raise LibcloudError("Unable to locate VirtualMachine.",
+                                    driver=self)
         return vm
 
     def find_custom_field_key(self, key_id):
@@ -845,14 +855,15 @@ class VSphereNodeDriver(NodeDriver):
             if (time.time() - start_time >= timeout):
                 raise LibcloudError('Timeout while waiting '
                                     'for import task Id %s'
-                                    % task.info.id)
+                                    % task.info.id,
+                                    driver=self)
             if task.info.state == 'success':
                 if task.info.result and str(task.info.result) != 'success':
                     return task.info.result
                 return True
 
             if task.info.state == 'error':
-                raise LibcloudError(task.info.error.msg)
+                raise LibcloudError(task.info.error.msg, driver=self)
             time.sleep(interval)
 
     def create_node(self, name, image, size, location=None, ex_cluster=None,
