@@ -88,6 +88,7 @@ class Provider(Type):
     :cvar VCL: VCL driver
     :cvar VCLOUD: vmware vCloud
     :cvar VPSNET: VPS.net
+    :cvar VSphere: VSphere driver.
     :cvar VULTR: vultr driver.
     """
     AZURE = 'azure'
@@ -159,6 +160,7 @@ class Provider(Type):
     VCLOUD = 'vcloud'
     VOXEL = 'voxel'
     VPSNET = 'vpsnet'
+    VSPHERE = 'vsphere'
     VULTR = 'vultr'
 
     # OpenStack based providers
