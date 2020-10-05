@@ -716,7 +716,8 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["VmStates"]
         return response.json()
 
-    def ex_update_node(self,
+    def ex_update_node(
+        self,
         block_device_mapping: [dict],
         bsu_optimized: bool = None,
         deletion_protection: bool = False,
@@ -998,7 +999,6 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["ImageExportTask"]
         return response.json()
 
-
     def list_images(
         self,
         account_aliases: [str] = None,
@@ -1014,7 +1014,7 @@ class OutscaleNodeDriver(NodeDriver):
         image_ids: [str] = None,
         image_names: [str] = None,
         permission_to_launch_account_ids: [str] = None,
-        permission_to_launch_global_permission: bool = False,
+        permission_to_lauch_global_permission: bool = False,
         root_device_names: [str] = None,
         root_device_types: [str] = None,
         states: [str] = None,
@@ -1023,7 +1023,7 @@ class OutscaleNodeDriver(NodeDriver):
         tags: [str] = None,
         virtualization_types: [str] = None,
         dry_run: bool = False,
-        ):
+    ):
         """
         Lists one or more Outscale machine images (OMIs) you can use.
 
@@ -1080,9 +1080,9 @@ class OutscaleNodeDriver(NodeDriver):
         users who have launch permissions for the OMIs.
         :type       permission_to_launch_account_ids: ``list`` of ``str``
 
-        :param      permission_to_launch_global_permission: If true, lists
+        :param      permission_to_lauch_global_permission: If true, lists
         all public OMIs. If false, lists all private OMIs.
-        :type       permission_to_launch_global_permission: ``list`` of ``str``
+        :type       permission_to_lauch_global_permission: ``list`` of ``str``
 
         :param      root_device_names: The device names of the root
         devices (for example, /dev/sda1).
@@ -1134,24 +1134,29 @@ class OutscaleNodeDriver(NodeDriver):
                 "Architectures": architectures
             })
         if block_device_mapping_delete_on_vm_deletion is not None:
+            key = "BlockDeviceMappingDeleteOnVmDeletion"
             data["Filters"].update({
-                "BlockDeviceMappingDeleteOnVmDeletion": block_device_mapping_delete_on_vm_deletion
+                key: block_device_mapping_delete_on_vm_deletion
             })
         if block_device_mapping_device_names is not None:
+            key = "BlockDeviceMappingDeviceNames"
             data["Filters"].update({
-                "BlockDeviceMappingDeviceNames": block_device_mapping_device_names
+                key: block_device_mapping_device_names
             })
         if block_device_mapping_snapshot_ids is not None:
+            key = "BlockDeviceMappingSnapshotIds"
             data["Filters"].update({
-                "BlockDeviceMappingSnapshotIds": block_device_mapping_snapshot_ids
+                key: block_device_mapping_snapshot_ids
             })
         if block_device_mapping_volume_sizes is not None:
+            key = "BlockDeviceMappingVolumeSizes"
             data["Filters"].update({
-                "BlockDeviceMappingVolumeSizes": block_device_mapping_volume_sizes
+                key: block_device_mapping_volume_sizes
             })
         if block_device_mapping_volume_types is not None:
+            key = "BlockDeviceMappingVolumeTypes"
             data["Filters"].update({
-                "BlockDeviceMappingVolumeTypes": block_device_mapping_volume_types
+                key: block_device_mapping_volume_types
             })
         if descriptions is not None:
             data["Filters"].update({
@@ -1170,12 +1175,14 @@ class OutscaleNodeDriver(NodeDriver):
                 "ImageNames": image_names
             })
         if permission_to_launch_account_ids is not None:
+            key = "PermissionsToLaunchAccountIds"
             data["Filters"].update({
-                "PermissionsToLaunchAccountIds": permission_to_launch_account_ids
+                key: permission_to_launch_account_ids
             })
-        if permission_to_launch_global_permission is not None:
+        if permission_to_lauch_global_permission is not None:
+            key = "PermissionsToLaunchGlobalPermission"
             data["Filters"].update({
-                "PermissionsToLaunchGlobalPermission": permission_to_launch_global_permission
+                key: permission_to_lauch_global_permission
             })
         if root_device_names is not None:
             data["Filters"].update({
@@ -1214,7 +1221,7 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         dry_run: bool = False,
         task_ids: [str] = None,
-        ):
+    ):
         """
         Lists one or more image export tasks.
 
@@ -1304,8 +1311,7 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      perm_to_launch_removals_account_ids: The account
         ID of one or more users who have permissions for the resource.
-        :type       perm_to_launch_removals_account_idsage:
-        ``list`` of ``dict``
+        :type       perm_to_launch_removals_account_ids: ``list`` of ``dict``
 
         :param      perm_to_launch_removals_global_permission: If true,
         the resource is public. If false, the resource is private.
@@ -1335,15 +1341,15 @@ class OutscaleNodeDriver(NodeDriver):
         if perm_to_launch_addition_global_permission is not None:
             data["PermissionsToLaunch"]["Additions"].update({
                 "GlobalPermission": perm_to_launch_addition_global_permission
-                })
+            })
         if perm_to_launch_removals_account_ids is not None:
             data["PermissionsToLaunch"]["Removals"].update({
-            "AccountIds": perm_to_launch_removals_account_ids
+                "AccountIds": perm_to_launch_removals_account_ids
             })
         if perm_to_launch_removals_global_permission is not None:
             data["PermissionsToLaunch"]["Removals"].update({
                 "GlobalPermission": perm_to_launch_removals_global_permission
-                })
+            })
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Image"]
@@ -1605,23 +1611,23 @@ class OutscaleNodeDriver(NodeDriver):
         if osu_export_disk_image_format is not None:
             data["OsuExport"].update({
                 "DiskImageFormat": osu_export_disk_image_format
-                })
+            })
         if osu_export_bucket is not None:
             data["OsuExport"].update({"OsuBucket": osu_export_bucket})
         if osu_export_manifest_url is not None:
             data["OsuExport"].update({
                 "OsuManifestUrl": osu_export_manifest_url
-                })
+            })
         if osu_export_prefix is not None:
             data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
         if osu_export_api_key_id is not None:
             data["OsuExport"]["OsuApiKey"].update({
                 "ApiKeyId": osu_export_api_key_id
-                })
+            })
         if osu_export_api_secret_key is not None:
             data["OsuExport"]["OsuApiKey"].update({
                 "SecretKey": osu_export_api_secret_key
-                })
+            })
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["SnapshotExportTask"]
@@ -1714,18 +1720,18 @@ class OutscaleNodeDriver(NodeDriver):
         if perm_to_create_volume_addition_account_id is not None:
             data["PermissionsToCreateVolume"]["Additions"].update({
                 "AccountIds": perm_to_create_volume_addition_account_id
-                })
+            })
         if perm_to_create_volume_addition_global_perm is not None:
             data["PermissionsToCreateVolume"]["Additions"].update({
                 "GlobalPermission": perm_to_create_volume_addition_global_perm
-                })
+            })
         if perm_to_create_volume_removals_account_id is not None:
             data["PermissionsToCreateVolume"]["Removals"].update({
-            "AccountIds": perm_to_create_volume_removals_account_id
+                "AccountIds": perm_to_create_volume_removals_account_id
             })
         if perm_to_create_volume_removals_global_perm is not None:
             data["PermissionsToCreateVolume"]["Removals"].update({
-            "GlobalPermission": perm_to_create_volume_removals_global_perm
+                "GlobalPermission": perm_to_create_volume_removals_global_perm
             })
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
@@ -1932,7 +1938,7 @@ class OutscaleNodeDriver(NodeDriver):
         from_date: str = None,
         to_date: str = None,
         dry_run: bool = False
-        ):
+    ):
         """
         Displays information about the consumption of your account for
         each billable resource within the specified time period.
@@ -4357,11 +4363,6 @@ class OutscaleNodeDriver(NodeDriver):
         configuration. (required)
         :type       health_check_interval: ``int``
 
-        :param      health_check_healthy_thresold: The number of consecutive
-        successful pings before considering the VM as healthy (between 2 and
-        10 both included). (required)
-        :type       health_check_healthy_thresold: ``int``
-
         :param      health_check_path: The path for HTTP or HTTPS requests.
         (required)
         :type       health_check_path: ``str``
@@ -4379,10 +4380,15 @@ class OutscaleNodeDriver(NodeDriver):
         and 60 both included). (required)
         :type       health_check_timeout: ``int``
 
-        :param      health_check_unhealthy_thresold: The number of consecutive
+        :param      health_check_healthy_threshold: The number of consecutive
         failed pings before considering the VM as unhealthy (between 2 and
         10 both included). (required)
-        :type       health_check_unhealthy_thresold: ``int``
+        :type       health_check_healthy_threshold: ``int``
+
+        :param      health_check_unhealthy_threshold: The number of
+        consecutive failed pings before considering the VM as unhealthy
+        (between 2 and 10 both included).(required)
+        :type       health_check_unhealthy_threshold: ``int``
 
         :param      load_balancer_name: The name of the load balancer.
         (required)
@@ -4463,7 +4469,6 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["LoadBalancer"]
         return response.json()
-
 
     def ex_create_load_balancer_policy(
         self,
@@ -4923,7 +4928,7 @@ class OutscaleNodeDriver(NodeDriver):
         the access point.
 
         :param      net_id: The ID of the Net. (required)
-        :type       ip_range: ``str``
+        :type       net_id: ``str``
 
         :param      route_table_ids: One or more IDs of route tables to use
         for the connection.
@@ -5454,7 +5459,8 @@ class OutscaleNodeDriver(NodeDriver):
         :param      nic_id: The ID of the NIC you want to delete. (required)
         :type       nic_id: ``str``
 
-        :param      device_number: The ID of the NIC you want to delete. (required)
+        :param      device_number: The ID of the NIC you want to delete.
+        (required)
         :type       device_number: ``str``
 
         :param      node: The index of the VM device for the NIC attachment
@@ -5612,9 +5618,9 @@ class OutscaleNodeDriver(NodeDriver):
         A NIC is a virtual network interface that you can attach to a virtual
         machine (VM) in a Net.
 
-        :param      link_nics_sort_numbers: The device numbers the NICs are
+        :param      link_nic_sort_numbers: The device numbers the NICs are
         attached to.
-        :type       link_nics_sort_numbers: ``list`` of ``int``
+        :type       link_nic_sort_numbers: ``list`` of ``int``
 
         :param      link_nic_vm_ids: The IDs of the VMs the NICs are attached
         to.
@@ -5651,7 +5657,7 @@ class OutscaleNodeDriver(NodeDriver):
             data["Filters"].update({"NicIds": nic_ids})
         if private_ips_private_ips is not None:
             data["Filters"].update({
-                "» PrivateIpsPrivateIps": private_ips_private_ips
+                "PrivateIpsPrivateIps": private_ips_private_ips
             })
         if subnet_ids is not None:
             data["Filters"].update({
@@ -6464,7 +6470,7 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         name: str = None,
         new_name: str = None,
-        new_path:str = None,
+        new_path: str = None,
         dry_run: bool = False
     ):
         """
@@ -6832,6 +6838,10 @@ class OutscaleNodeDriver(NodeDriver):
         rule, in CIDR notation (for example, 10.0.0.0/16).
         :type       ip_range: ``str``
 
+        :param      ip_protocol: The IP protocol name (tcp, udp, icmp) or
+        protocol number. By default, -1, which means all protocols.
+        :type       ip_protocol: ``str``
+
         :param      rules: Information about the security group rule to create:
         https://docs.outscale.com/api#createsecuritygrouprule
         rules = [
@@ -6852,18 +6862,18 @@ class OutscaleNodeDriver(NodeDriver):
         ]
         :type       rules: ``list`` of  ``dict``
 
-        :param      sg_account_id_to_link: The account ID of the
+        :param      sg_account_id_to_unlink: The account ID of the
         owner of the security group for which you want to delete a rule.
-        :type       sg_account_id_to_link: ``str``
+        :type       sg_account_id_to_unlink: ``str``
 
         :param      sg_id: The ID of the security group for which
         you want to delete a rule. (required)
         :type       sg_id: ``str``
 
-        :param      sg_name_to_link: The ID of the source security
+        :param      sg_name_to_unlink: The ID of the source security
         group. If you are in the Public Cloud, you can also specify the name
         of the source security group.
-        :type       sg_name_to_link: ``str``
+        :type       sg_name_to_unlink: ``str``
 
         :param      to_port_range: TThe end of the port range for the TCP and
         UDP protocols, or an ICMP type number.
@@ -6934,7 +6944,6 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["VirtualGateway"]
         return response.json()
-
 
     def ex_delete_virtual_gateway(
         self,
