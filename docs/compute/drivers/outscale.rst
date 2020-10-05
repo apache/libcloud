@@ -76,7 +76,6 @@ Nodes
 * ``list_nodes`` - Returns a list of ``Node``
 * ``destroy_node`` - Destroys an existing ``Node``
 * ``start_node`` - Start a ``Node``
-* ``start_node`` - Start a ``Node``
 * ``stop_node`` - Stop a ``Node``
 
 Images
