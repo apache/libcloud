@@ -6830,22 +6830,6 @@ class OutscaleNodeDriver(NodeDriver):
 
         :param      rules: Information about the security group rule to create:
         https://docs.outscale.com/api#createsecuritygrouprule
-        rules = [
-           {
-                "FromPortRange": int,
-                "IpProtocol": str,
-                "IpRanges": [str],
-                "SecurityGroupsMembers": [
-                    {
-                        "AccountId": str,
-                        "SecurityGroupIds": str,
-                        "SecurityGroupName": str
-                    }
-                ],
-                "ServiceIds": [str],
-                "ToPortRange": int,
-           }
-        ]
         :type       rules: ``list`` of  ``dict``
 
         :param      sg_account_id_to_unlink: The account ID of the
