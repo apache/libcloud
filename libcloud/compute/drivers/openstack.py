@@ -3885,6 +3885,47 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         return self._manage_router_interface(router, 'remove', subnet=subnet)
 
+    def _to_quota_set(self, obj):
+        res = OpenStack_2_QuotaSet(
+            id=obj['id'],
+            cores=obj['cores'],
+            instances=obj['instances'],
+            key_pairs=obj['key_pairs'],
+            metadata_items=obj['metadata_items'],
+            ram=obj['ram'],
+            server_groups=obj['server_groups'],
+            server_group_members=obj['server_group_members'],
+            fixed_ips=obj.get('fixed_ips', None),
+            floating_ips=obj.get('floating_ips', None),
+            networks=obj.get('networks', None),
+            security_group_rules=obj.get('security_group_rules', None),
+            security_groups=obj.get('security_groups', None),
+            injected_file_content_bytes=obj.get('injected_file_content_bytes',
+                                                None),
+            injected_file_path_bytes=obj.get('injected_file_path_bytes', None),
+            injected_files=obj.get('injected_files', None),
+            driver=self.connection.driver)
+
+        return res
+
+    def ex_get_quota_set(self, tenant_id, user_id=None):
+        """
+        Get the quota for a project or a project and a user.
+
+        :param      tenant_id: The UUID of the tenant in a multi-tenancy cloud
+        :type       tenant_id: ``str``
+
+        :param      user_id: ID of user to list the quotas for.
+        :type       user_id: ``str``
+
+        :rtype: :class:`OpenStack_2_QuotaSet`
+        """
+        url = '/os-quota-sets/%s/detail' % tenant_id
+        if user_id:
+            url += "?user_id=%s" % user_id
+        return self._to_quota_set(
+            self.connection.request(url).object['quota_set'])
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -4174,3 +4215,122 @@ class OpenStack_2_PortInterface(UuidMixin):
         return (('<OpenStack_2_PortInterface: id=%s, state=%s, '
                  'driver=%s  ...>')
                 % (self.id, self.state, self.driver.name))
+
+
+class OpenStack_2_QuotaSetItem(object):
+    """
+    Qouta Set Item info. Each item has three attributes: in_use,
+    limit and reserved.
+
+    See:
+    https://docs.openstack.org/api-ref/compute/?expanded=show-the-detail-of-quota-detail#show-a-quota
+    """
+
+    def __init__(self, in_use, limit, reserved):
+        """
+        :param in_use: Number of currently used resources.
+        :type in_use: ``int``
+        :param limit: Max number of available resources.
+        :type limit: ``int``
+        :param reserved: Number of reserved resources.
+        :type reserved: ``int``
+        """
+        self.in_use = in_use
+        self.limit = limit
+        self.reserved = reserved
+
+    def __repr__(self):
+        return ('<OpenStack_2_QuotaSetItem in_use="%s", limit="%s",'
+                'reserved="%s">' % (self.in_use, self.limit,
+                                    self.reserved))
+
+
+class OpenStack_2_QuotaSet(object):
+    """
+    Qouta Set info. To get the informatio about quotas and used resources.
+
+    See:
+    https://docs.openstack.org/api-ref/compute/?expanded=show-the-detail-of-quota-detail#show-a-quota
+
+    """
+
+    def __init__(self, id, cores, instances, key_pairs, metadata_items, ram,
+                 server_groups, server_group_members, fixed_ips=None,
+                 floating_ips=None, networks=None, security_group_rules=None,
+                 security_groups=None, injected_file_content_bytes=None,
+                 injected_file_path_bytes=None, injected_files=None,
+                 driver=None):
+        """
+        :param id: Quota Set ID.
+        :type id: ``str``
+        :param cores: Quota Set of cores.
+        :type cores: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param instances: Quota Set of instances.
+        :type instances: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param key_pairs: Quota Set of key pairs.
+        :type key_pairs: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param metadata_items: Quota Set of metadata items.
+        :type metadata_items: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param ram: Quota Set of RAM.
+        :type ram: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param server_groups: Quota Set of server groups.
+        :type server_groups: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param fixed_ips: Quota Set of fixed ips. (optional)
+        :type fixed_ips: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param floating_ips: Quota Set of floating ips. (optional)
+        :type floating_ips: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param networks: Quota Set of networks. (optional)
+        :type networks: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param security_group_rules: Quota Set of security group rules.
+                                     (optional)
+        :type security_group_rules: :class:`.OpenStack_2_QuotaSetItem`
+                                    or ``dict``
+        :param security_groups: Quota Set of security groups. (optional)
+        :type security_groups: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        :param injected_file_content_bytes: Quota Set of injected file content
+                                            bytes. (optional)
+        :type injected_file_content_bytes: :class:`.OpenStack_2_QuotaSetItem`
+                                           or ``dict``
+        :param injected_file_path_bytes: Quota Set of injected file path bytes.
+                                         (optional)
+        :type injected_file_path_bytes: :class:`.OpenStack_2_QuotaSetItem`
+                                        or ``dict``
+        :param injected_files: Quota Set of injected files. (optional)
+        :type injected_files: :class:`.OpenStack_2_QuotaSetItem` or ``dict``
+        """
+        self.id = str(id)
+        self.cores = self._to_quota_set_item(cores)
+        self.instances = self._to_quota_set_item(instances)
+        self.key_pairs = self._to_quota_set_item(key_pairs)
+        self.metadata_items = self._to_quota_set_item(metadata_items)
+        self.ram = self._to_quota_set_item(ram)
+        self.server_groups = self._to_quota_set_item(server_groups)
+        self.server_group_members = self._to_quota_set_item(
+            server_group_members)
+        self.fixed_ips = self._to_quota_set_item(fixed_ips)
+        self.floating_ips = self._to_quota_set_item(floating_ips)
+        self.networks = self._to_quota_set_item(networks)
+        self.security_group_rules = self._to_quota_set_item(
+            security_group_rules)
+        self.security_groups = self._to_quota_set_item(security_groups)
+        self.injected_file_content_bytes = self._to_quota_set_item(
+            injected_file_content_bytes)
+        self.injected_file_path_bytes = self._to_quota_set_item(
+            injected_file_path_bytes)
+        self.injected_files = self._to_quota_set_item(injected_files)
+        self.driver = driver
+
+    def _to_quota_set_item(self, obj):
+        if obj:
+            if isinstance(obj, OpenStack_2_QuotaSetItem):
+                return obj
+            elif isinstance(obj, dict):
+                return OpenStack_2_QuotaSetItem(obj['in_use'], obj['limit'],
+                                                obj['reserved'])
+        else:
+            return None
+
+    def __repr__(self):
+        return ('<OpenStack_2_QuotaSet id="%s", cores="%s", ram="%s",'
+                ' instances="%s">' % (self.id, self.cores, self.ram,
+                                      self.instances))

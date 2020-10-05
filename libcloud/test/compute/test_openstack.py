@@ -2136,6 +2136,11 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
             ex_tenant_name='admin')
         self.assertEqual(d._ex_force_base_url, None)
 
+    def test_ex_get_quota_set(self):
+        quota_set = self.driver.ex_get_quota_set("tenant_id")
+        self.assertEqual(quota_set.cores.limit, 20)
+        self.assertEqual(quota_set.cores.in_use, 1)
+        self.assertEqual(quota_set.cores.reserved, 0)
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -2795,6 +2800,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                                                                                            body, headers):
         if method == 'PUT':
             body = self.fixtures.load('_v2_0__router_interface.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_os_quota_sets_tenant_id_detail(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__quota_set.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
     def _v2_1337_servers_1000_action(self, method, url, body, headers):
