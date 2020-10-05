@@ -965,7 +965,7 @@ class OutscaleNodeDriver(NodeDriver):
         :return: the created image export task
         :rtype: ``dict``
         """
-        action =  "CreateImageExportTask"
+        action = "CreateImageExportTask"
         data = {
             "DryRun": dry_run,
             "OsuExport": {
@@ -977,23 +977,23 @@ class OutscaleNodeDriver(NodeDriver):
         if osu_export_disk_image_format is not None:
             data["OsuExport"].update({
                 "DiskImageFormat": osu_export_disk_image_format
-                })
+            })
         if osu_export_bucket is not None:
             data["OsuExport"].update({"OsuBucket": osu_export_bucket})
         if osu_export_manifest_url is not None:
             data["OsuExport"].update({
                 "OsuManifestUrl": osu_export_manifest_url
-                })
+            })
         if osu_export_prefix is not None:
             data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
         if osu_export_api_key_id is not None:
             data["OsuExport"]["OsuApiKey"].update({
                 "ApiKeyId": osu_export_api_key_id
-                })
+            })
         if osu_export_api_secret_key is not None:
             data["OsuExport"]["OsuApiKey"].update({
                 "SecretKey": osu_export_api_secret_key
-                })
+            })
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["ImageExportTask"]
@@ -1216,7 +1216,7 @@ class OutscaleNodeDriver(NodeDriver):
         if response.status_code == 200:
             return response.json()["Images"]
         return response.json()
-        
+
     def ex_list_image_export_tasks(
         self,
         dry_run: bool = False,
@@ -1337,7 +1337,7 @@ class OutscaleNodeDriver(NodeDriver):
         if perm_to_launch_addition_account_ids is not None:
             data["PermissionsToLaunch"]["Additions"].update({
                 "AccountIds": perm_to_launch_addition_account_ids
-                })
+            })
         if perm_to_launch_addition_global_permission is not None:
             data["PermissionsToLaunch"]["Additions"].update({
                 "GlobalPermission": perm_to_launch_addition_global_permission
