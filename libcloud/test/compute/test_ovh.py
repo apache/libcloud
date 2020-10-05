@@ -17,6 +17,8 @@ import unittest
 from mock import patch
 
 from libcloud.utils.py3 import httplib
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.http import LibcloudConnection
 
 from libcloud.compute.drivers.ovh import OvhNodeDriver
 
@@ -126,6 +128,17 @@ class OvhMockHttp(BaseOvhMockHttp):
         body = self.fixtures.load('volume_snapshot_get_details.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _json_1_0_cloud_subsidiaryPrice_ovhSubsidiary_US_flavorId_foo_id_get(self, method, url, body, headers):
+        return self._json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(method, url, body, headers)
+
+    def _json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(self, method, url, body, headers):
+        body = self.fixtures.load('pricing_get.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _json_1_0_cloud_project_project_id_instance_get_invalid_app_key_error(self, method, url, body, headers):
+        body = '{"message":"Invalid application key"}'
+        return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.OK])
+
 
 @patch('libcloud.common.ovh.OvhConnection._timedelta', 42)
 class OvhTests(unittest.TestCase):
@@ -133,6 +146,39 @@ class OvhTests(unittest.TestCase):
         OvhNodeDriver.connectionCls.conn_class = OvhMockHttp
         OvhMockHttp.type = None
         self.driver = OvhNodeDriver(*OVH_PARAMS)
+
+    def test_region_argument(self):
+        driver = OvhNodeDriver(*OVH_PARAMS)
+        self.assertEqual(driver.connection.host, 'api.ovh.com')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region=None)
+        self.assertEqual(driver.connection.host, 'api.ovh.com')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region='ca')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region='eu')
+        self.assertEqual(driver.connection.host, 'eu.api.ovh.com')
+
+        driver = OvhNodeDriver(*OVH_PARAMS, region='ca')
+        self.assertEqual(driver.connection.host, 'ca.api.ovh.com')
+
+    def test_list_nodes_invalid_region(self):
+        OvhNodeDriver.connectionCls.conn_class = LibcloudConnection
+        driver = OvhNodeDriver(*OVH_PARAMS, region='invalid')
+
+        expected_msg = r'invalid region argument was passed.*Used host: invalid.api.ovh.com.*'
+        self.assertRaisesRegex(ValueError, expected_msg, driver.list_nodes)
+
+        expected_msg = r'invalid region argument was passed.*Used host: invalid.api.ovh.com.*'
+        self.assertRaisesRegex(ValueError, expected_msg, driver.connection.request_consumer_key, '1')
+
+    def test_invalid_application_key_correct_error(self):
+        OvhMockHttp.type = 'invalid_app_key_error'
+        driver = OvhNodeDriver('appkeyinvalid', 'application_secret', 'project_id',
+                               'consumer_key')
+
+        expected_msg = r'Invalid application key'
+        self.assertRaisesRegex(BaseHTTPError, expected_msg, driver.list_nodes)
 
     def test_list_locations(self):
         images = self.driver.list_locations()
@@ -237,6 +283,10 @@ class OvhTests(unittest.TestCase):
         snapshot = self.driver.ex_get_volume_snapshot('foo')
         result = self.driver.destroy_volume_snapshot(snapshot)
         self.assertTrue(result)
+
+    def test_get_pricing(self):
+        self.driver.ex_get_pricing('foo-id')
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

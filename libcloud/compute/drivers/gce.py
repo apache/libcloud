@@ -4887,13 +4887,16 @@ class GCENodeDriver(NodeDriver):
                                        accepts the aliases defined in
                                        'gcloud compute'.
 
-        :type     service_accounts: ``list`` of ``dict`` or None
+        :type     service_accounts: ``list`` of ``dict``, ``None`` or an empty
+                                    list. ``None` means use a default service
+                                    account and an empty list indicates no
+                                    service account.
 
         :return:  list of dictionaries usable in the GCE API.
         :rtype:   ``list`` of ``dict``
         """
         gce_service_accounts = []
-        if not service_accounts:
+        if service_accounts is None:
             gce_service_accounts = [{
                 'email': default_email,
                 'scopes': [self.AUTH_URL + default_scope]

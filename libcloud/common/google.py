@@ -96,7 +96,7 @@ try:
     from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 except ImportError:
     # The cryptography library is unavailable
-    SHA256 = None
+    SHA256 = None  # type: ignore
 
 UTC_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
