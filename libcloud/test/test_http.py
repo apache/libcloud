@@ -16,10 +16,19 @@
 import os
 import sys
 import os.path
+import random
+import platform
 import warnings
+import threading
+
+from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer
+
+import requests
 
 import libcloud.security
 
+from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import reload
 from libcloud.utils.py3 import assertRaisesRegex
 from libcloud.http import LibcloudConnection
@@ -90,6 +99,79 @@ class TestHttpLibSSLTests(unittest.TestCase):
         self.httplib_object._setup_ca_cert()
 
         self.assertTrue(self.httplib_object.ca_cert is not None)
+
+
+@unittest.skipIf(platform.python_implementation() == "PyPy",
+                 "Skipping test under PyPy since it causes segfault")
+class HttpLayerTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.listen_host = '127.0.0.1'
+        cls.listen_port = random.randint(10024, 65555)
+        cls.mock_server = HTTPServer((cls.listen_host, cls.listen_port), MockHTTPServerRequestHandler)
+
+        cls.mock_server_thread = threading.Thread(target=cls.mock_server.serve_forever)
+        cls.mock_server_thread.setDaemon(True)
+        cls.mock_server_thread.start()
+
+    @classmethod
+    def tearDownCls(cls):
+        cls.mock_server_thread.kill()
+
+    def test_prepared_request_empty_body_chunked_encoding_not_used(self):
+        connection = LibcloudConnection(host=self.listen_host, port=self.listen_port)
+        connection.prepared_request(method='GET', url='/test/prepared-request-1', body='', stream=True)
+
+        self.assertEqual(connection.response.status_code, httplib.OK)
+        self.assertEqual(connection.response.content, b'/test/prepared-request-1')
+
+        connection = LibcloudConnection(host=self.listen_host, port=self.listen_port)
+        connection.prepared_request(method='GET', url='/test/prepared-request-2', body=None, stream=True)
+
+        self.assertEqual(connection.response.status_code, httplib.OK)
+        self.assertEqual(connection.response.content, b'/test/prepared-request-2')
+
+    def test_prepared_request_with_body(self):
+        connection = LibcloudConnection(host=self.listen_host, port=self.listen_port)
+        connection.prepared_request(method='GET', url='/test/prepared-request-3', body='test body', stream=True)
+
+        self.assertEqual(connection.response.status_code, httplib.OK)
+        self.assertEqual(connection.response.content, b'/test/prepared-request-3')
+
+
+class MockHTTPServerRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path in ['/test/prepared-request-1', '/test/prepared-request-2']:
+            # Verify that chunked encoding is not used for prepared requests
+            # with empty body
+            # See https://github.com/apache/libcloud/issues/1487
+            headers = dict(self.headers)
+            assert 'Content-Length' not in headers
+
+            self.connection.setblocking(0)
+            # Body should not contain '0' which indicates chunked request
+            body = self.rfile.read(1)
+            assert body is None
+
+            self.send_response(requests.codes.ok)
+            self.end_headers()
+
+            self.wfile.write(self.path.encode('utf-8'))
+        elif self.path == '/test/prepared-request-3':
+            headers = dict(self.headers)
+            assert int(headers['Content-Length']) == 9
+
+            body = self.rfile.read(int(headers['Content-Length']))
+            assert body == b'test body'
+
+            self.send_response(requests.codes.ok)
+            self.end_headers()
+
+            self.wfile.write(self.path.encode('utf-8'))
+        else:
+            self.send_response(requests.codes.internal_server_error)
+            self.end_headers()
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

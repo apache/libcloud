@@ -128,6 +128,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.outscale', 'OutscaleNodeDriver'),
     Provider.PROFIT_BRICKS:
     ('libcloud.compute.drivers.profitbricks', 'ProfitBricksNodeDriver'),
+    Provider.VSPHERE:
+    ('libcloud.compute.drivers.vsphere', 'VSphereNodeDriver'),
     Provider.VULTR:
     ('libcloud.compute.drivers.vultr', 'VultrNodeDriver'),
     Provider.AURORACOMPUTE:

@@ -44,7 +44,8 @@ class OvhNodeDriver(NodeDriver):
     VOLUME_STATE_MAP = OpenStackNodeDriver.VOLUME_STATE_MAP
     SNAPSHOT_STATE_MAP = OpenStackNodeDriver.SNAPSHOT_STATE_MAP
 
-    def __init__(self, key, secret, ex_project_id, ex_consumer_key=None):
+    def __init__(self, key, secret, ex_project_id, ex_consumer_key=None,
+                 region=None):
         """
         Instantiate the driver with the given API credentials.
 
@@ -60,16 +61,24 @@ class OvhNodeDriver(NodeDriver):
         :param ex_consumer_key: Your consumer key (required)
         :type ex_consumer_key: ``str``
 
+        :param region: The datacenter to connect to (optional)
+        :type region: ``str``
+
         :rtype: ``None``
         """
-        self.datacenter = None
+        self.region = region
         self.project_id = ex_project_id
         self.consumer_key = ex_consumer_key
-        NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key)
+        NodeDriver.__init__(self, key, secret, ex_consumer_key=ex_consumer_key,
+                            region=region)
 
     def _get_project_action(self, suffix):
         base_url = '%s/cloud/project/%s/' % (API_ROOT, self.project_id)
         return base_url + suffix
+
+    @classmethod
+    def list_regions(cls):
+        return ['eu', 'ca']
 
     def list_nodes(self, location=None):
         """
@@ -454,6 +463,14 @@ class OvhNodeDriver(NodeDriver):
         response = self.connection.request(action, method='DELETE')
         return response.status == httplib.OK
 
+    def ex_get_pricing(self, size_id, subsidiary='US'):
+        action = '%s/cloud/subsidiaryPrice' % (API_ROOT)
+        params = {'flavorId': size_id, 'ovhSubsidiary': subsidiary}
+        pricing = self.connection.request(action, params=params
+                                          ).object['instances'][0]
+        return {'hourly': pricing['price']['value'],
+                'monthly': pricing['monthlyPrice']['value']}
+
     def _to_volume(self, obj):
         extra = obj.copy()
         extra.pop('id')
@@ -492,8 +509,8 @@ class OvhNodeDriver(NodeDriver):
         extra = {'vcpus': obj['vcpus'], 'type': obj['type'],
                  'region': obj['region']}
         return NodeSize(id=obj['id'], name=obj['name'], ram=obj['ram'],
-                        disk=obj['disk'], bandwidth=None, price=None,
-                        driver=self, extra=extra)
+                        disk=obj['disk'], bandwidth=obj['outboundBandwidth'],
+                        price=None, driver=self, extra=extra)
 
     def _to_sizes(self, objs):
         return [self._to_size(obj) for obj in objs]
@@ -533,4 +550,5 @@ class OvhNodeDriver(NodeDriver):
         return [self._to_snapshot(obj) for obj in objs]
 
     def _ex_connection_class_kwargs(self):
-        return {'ex_consumer_key': self.consumer_key}
+        return {'ex_consumer_key': self.consumer_key,
+                'region': self.region}

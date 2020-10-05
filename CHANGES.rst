@@ -4,6 +4,15 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+~~~~~~
+
+- Fix a bug which would cause some prepared requests with empty bodies to be
+  chunked which would cause some of the provider APIs such as OpenStack to
+  return HTTP 400 errors.
+  (GITHUB-1487, GITHUB-1488)
+  [Michael Spagon - @mspagon]
+
 Compute
 ~~~~~~~
 
@@ -20,6 +29,33 @@ Compute
   for eu-north-1 region.
   (GITHUB-1486)
   [Arturo Noha - @r2ronoha]
+
+- [Ovh] Add support for multiple regions to the driver. User can select
+  a region (location) by passing ``location`` argument to the driver
+  constructor (e.g. ``location=ca``).
+  (GITHUB-1494)
+  [Dan Hunsaker - @danhunsaker]
+
+- [GCE] Add support for creating nodes without a service account associated
+  with them. Now when an empty list is passed for ``ex_service_accounts``
+  argument, VM will be created without service account attached.
+
+  For backward compatibility reasons, default value of ``None`` still means to
+  use a default service account.
+  (GITHUB-1497, GITHUB-1495)
+  [David Tomaschik - Matir]
+
+- [VSphere] Add new VMware VSphere driver which utilizes ``pyvmomi`` library
+  and works under Python 3.
+
+  If you want to use this driver, you need to install ``pyvmomi`` dependency -
+  ``pip install pyvmomi``
+  (GITHUB-1481)
+  [Eis D. Zaster - @Eis-D-Z]
+
+- [OpenStack] Enable to get Quota Set detail. 
+  (GITHUB-1495)
+  [Miguel Caballer - @micafer]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------
