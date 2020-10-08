@@ -1,0 +1,13 @@
+{
+    "id": 23456,
+    "status": "creating",
+    "label": "TestingClone",
+    "created": "2020-10-11T16:44:07",
+    "updated": "2020-10-11T16:44:07",
+    "filesystem_path": "/dev/disk/by-id/scsi-0Linode_Volume_TestingClone",
+    "size": 100,
+    "linode_id": null,
+    "linode_label": null,
+    "region": "eu-west",
+    "tags": []
+}

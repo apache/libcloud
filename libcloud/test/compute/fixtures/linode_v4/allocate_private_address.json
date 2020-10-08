@@ -1,0 +1,11 @@
+{
+    "address": "192.168.100.10",
+    "gateway": null,
+    "subnet_mask": "255.255.128.0",
+    "prefix": 17,
+    "type": "ipv4",
+    "public": false,
+    "rdns": null,
+    "linode_id": 22344420,
+    "region": "eu-west"
+}

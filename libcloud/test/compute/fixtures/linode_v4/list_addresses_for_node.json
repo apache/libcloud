@@ -1,0 +1,57 @@
+{
+    "ipv4": {
+        "public": [
+            {
+                "address": "176.58.100.100",
+                "gateway": "1176.58.100.1",
+                "subnet_mask": "255.255.255.0",
+                "prefix": 24,
+                "type": "ipv4",
+                "public": true,
+                "rdns": "rdns.linode.com",
+                "linode_id": 22344420,
+                "region": "eu-west"
+            }
+        ],
+        "private": [
+            {
+                "address": "192.168.15.21",
+                "gateway": null,
+                "subnet_mask": "255.255.128.0",
+                "prefix": 17,
+                "type": "ipv4",
+                "public": false,
+                "rdns": null,
+                "linode_id": 22344420,
+                "region": "eu-west"
+            }
+        ],
+        "shared": [],
+        "reserved": []
+    },
+    "ipv6": {
+        "slaac": {
+            "address": "ffff:ffff::ffff:ffff:ffff:ffff",
+            "gateway": "fe80::1",
+            "subnet_mask": "ffff:ffff:ffff:ffff::",
+            "prefix": 64,
+            "type": "ipv6",
+            "rdns": null,
+            "linode_id": 22344420,
+            "region": "eu-west",
+            "public": true
+        },
+        "link_local": {
+            "address": "fffff:ffff::ffff:ffff:ffff:ffff",
+            "gateway": "fe80::1",
+            "subnet_mask": "ffff:ffff:ffff:ffff::",
+            "prefix": 64,
+            "type": "ipv6",
+            "rdns": null,
+            "linode_id": 22344420,
+            "region": "eu-west",
+            "public": false
+        },
+        "global": []
+    }
+}
