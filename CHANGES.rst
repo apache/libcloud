@@ -53,9 +53,22 @@ Compute
   (GITHUB-1481)
   [Eis D. Zaster - @Eis-D-Z]
 
-- [OpenStack] Enable to get Quota Set detail. 
+- [OpenStack] Enable to get Quota Set detail.
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
+
+DNS
+~~~
+
+- [Common] Fix a bug with the header value returned by the
+  ``export_zone_to_bind_format`` method containing an invalid timestamp (value
+  for the minute part of the timestamp was wrong and contained month number
+  instead of the minutes value).
+
+  Reported by Kurt Schwehr - @schwehr.
+
+  (GITHUB-1500)
+  [Tomaz Muraus - @Kami]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------
