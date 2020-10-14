@@ -20,6 +20,8 @@ __all__ = [
     'DigitalOceanDNSDriver'
 ]
 
+import json
+
 from libcloud.utils.py3 import httplib
 
 from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
@@ -128,7 +130,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         except Exception:
             params['ip_address'] = '127.0.0.1'
 
-        res = self.connection.request('/v2/domains', params=params,
+        res = self.connection.request('/v2/domains', data=json.dumps(params),
                                       method='POST')
 
         return Zone(id=res.object['domain']['name'],
@@ -183,7 +185,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
                 params['ttl'] = extra['ttl']
 
         res = self.connection.request('/v2/domains/%s/records' % zone.id,
-                                      params=params,
+                                      data=json.dumps(params),
                                       method='POST')
 
         return Record(id=res.object['domain_record']['id'],
@@ -243,7 +245,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         res = self.connection.request('/v2/domains/%s/records/%s' %
                                       (record.zone.id, record.id),
-                                      params=params,
+                                      data=json.dumps(params),
                                       method='PUT')
 
         return Record(id=res.object['domain_record']['id'],
