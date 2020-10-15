@@ -145,7 +145,7 @@ class VultrConnection(ConnectionKey):
 
         try:
             return self.method \
-                   not in self.unauthenticated_endpoints[self.action]
+                not in self.unauthenticated_endpoints[self.action]
         except KeyError:
             return True
 
@@ -344,7 +344,7 @@ class VultrNodeDriver(NodeDriver):
         if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
             if state == NodeState.RUNNING and \
-                data['power_status'] != 'running':
+                    data['power_status'] != 'running':
                 state = NodeState.STOPPED
         else:
             state = NodeState.UNKNOWN
@@ -360,17 +360,17 @@ class VultrNodeDriver(NodeDriver):
             private_ips = []
         created_at = parse_date(data['date_created'])
 
-        # TODO: remove extra keys and return Node with full api because we know:
+        # TODO: remove extra keys and return Node with full api:
         # TODO: size = None,  # type: NodeSize
         # TODO: image = None,  # type: NodeImage
         # response ordering
         extra_keys = [
             "ram", "disk", "vcpu_count",
             "location",  # Location name
-            "DCID",  # Location id in which to create the server. See v1/regions/list
-            "default_password", "pending_charges", "cost_per_month", "current_bandwidth_gb",
-            "allowed_bandwidth_gb", "netmask_v4", "gateway_v4", "power_status",
-            "server_state",
+            "DCID",  # Location id. See v1/regions/list
+            "default_password", "pending_charges", "cost_per_month",
+            "current_bandwidth_gb", "allowed_bandwidth_gb", "netmask_v4",
+            "gateway_v4", "power_status", "server_state",
             "VPSPLANID",  # Plan id, see /v1/plans/list
             "v6_networks",
             # TODO: Does we really need kvm_url?
@@ -385,8 +385,8 @@ class VultrNodeDriver(NodeDriver):
                 extra[key] = data[key]
 
         node = Node(id=data['SUBID'], name=data['label'], state=state,
-                    public_ips=public_ips, private_ips=private_ips, extra=extra,
-                    created_at=created_at, driver=self)
+                    public_ips=public_ips, private_ips=private_ips,
+                    extra=extra, created_at=created_at, driver=self)
 
         return node
 
@@ -402,7 +402,8 @@ class VultrNodeDriver(NodeDriver):
         }
         ram = int(data['ram'])
         disk = int(data['disk'])
-        bandwidth = int(float(data['bandwidth']))  # NodeSize accepted int instead float
+        # NodeSize accepted int instead float
+        bandwidth = int(float(data['bandwidth']))
         price = float(data['price_per_month'])
 
         return NodeSize(id=data['VPSPLANID'], name=data['name'],
