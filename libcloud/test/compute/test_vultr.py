@@ -52,6 +52,10 @@ class VultrTests(LibcloudTestCase):
         self.assertTrue(image.id is not None)
         self.assertTrue(image.name is not None)
 
+    def test_list_sizes_dont_require_api_key(self):
+        self.driver.list_sizes()
+        self.assertFalse(self.driver.connection.require_api_key())
+
     def test_list_sizes_success(self):
         """count of current plans"""
         sizes = self.driver.list_sizes()
@@ -67,6 +71,10 @@ class VultrTests(LibcloudTestCase):
         self.assertEqual(size.name, '16384 MB RAM,384 GB SSD,5.00 TB BW')
         self.assertEqual(size.ram, 16384)
 
+    def test_list_locations_dont_require_api_key(self):
+        self.driver.list_locations()
+        self.assertFalse(self.driver.connection.require_api_key())
+
     def test_list_locations_success(self):
         locations = self.driver.list_locations()
         self.assertTrue(len(locations) >= 1)
@@ -74,6 +82,21 @@ class VultrTests(LibcloudTestCase):
         location = locations[0]
         self.assertEqual(location.id, '1')
         self.assertEqual(location.name, 'New Jersey')
+        self.assertEqual(location.extra['continent'], 'North America')
+
+    def test_list_locations_extra_success(self):
+        locations = self.driver.list_locations()
+        self.assertTrue(len(locations) >= 1)
+        extra_keys = [
+            'continent',
+            'state',
+            'ddos_protection',
+            'block_storage',
+            'regioncode']
+        for location in locations:
+            self.assertTrue(len(location.extra.keys()) >= 5)
+            self.assertTrue(all(item in location.extra.keys()
+                                for item in extra_keys))
 
     def test_list_nodes_require_api_key(self):
         self.driver.list_nodes()
@@ -95,7 +118,8 @@ class VultrTests(LibcloudTestCase):
         nodes = self.driver.list_nodes()
         for node in nodes:
             self.assertTrue(len(node.extra.keys()) > 5)
-            self.assertTrue(all(item in node.extra.keys() for item in extra_keys))
+            self.assertTrue(all(item in node.extra.keys()
+                                for item in extra_keys))
 
     def test_reboot_node_success(self):
         node = self.driver.list_nodes()[0]

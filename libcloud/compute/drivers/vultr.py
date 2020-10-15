@@ -150,6 +150,19 @@ class VultrConnection(ConnectionKey):
             return True
 
 
+class VultrNodeDriverHelper(object):
+    """
+        VultrNode helper class.
+    """
+
+    def handle_extra(self, extra_keys, data):
+        extra = {}
+        for key in extra_keys:
+            if key in data:
+                extra[key] = data[key]
+        return extra
+
+
 class VultrNodeDriver(NodeDriver):
     """
     VultrNode node driver.
@@ -183,6 +196,10 @@ class VultrNodeDriver(NodeDriver):
                             'tag']
     EX_CREATE_ATTRIBUTES.extend(EX_CREATE_YES_NO_ATTRIBUTES)
     EX_CREATE_ATTRIBUTES.extend(EX_CREATE_ID_ATTRIBUTES.keys())
+
+    def __init__(self, *args, **kwargs):
+        super(VultrNodeDriver, self).__init__(*args, **kwargs)
+        self._helper = VultrNodeDriverHelper()
 
     def list_nodes(self):
         return self._list_resources('/v1/server/list', self._to_node)
@@ -379,10 +396,7 @@ class VultrNodeDriver(NodeDriver):
             "OSID",  # Operating system to use. See v1/os/list.
             "APPID", "FIREWALLGROUPID"
         ]
-        extra = {}
-        for key in extra_keys:
-            if key in data:
-                extra[key] = data[key]
+        extra = self._helper.handle_extra(extra_keys, data)
 
         node = Node(id=data['SUBID'], name=data['label'], state=state,
                     public_ips=public_ips, private_ips=private_ips,
@@ -391,28 +405,36 @@ class VultrNodeDriver(NodeDriver):
         return node
 
     def _to_location(self, data):
+        extra_keys = ['continent', 'state', 'ddos_protection',
+                      'block_storage', 'regioncode']
+        extra = self._helper.handle_extra(extra_keys, data)
+
         return NodeLocation(id=data['DCID'], name=data['name'],
-                            country=data['country'], driver=self)
+                            country=data['country'], extra=extra, driver=self)
 
     def _to_size(self, data):
-        extra = {
-            'vcpu_count': int(data['vcpu_count']),
-            'plan_type': data['plan_type'],
-            'available_locations': data['available_locations']
-        }
+        extra_keys = [
+            'vcpu_count', 'plan_type', 'available_locations',
+        ]
+        extra = self._helper.handle_extra(extra_keys, data)
+
+        # backward compatibility
+        if extra.get('vcpu_count').isdigit():
+            extra['vcpu_count'] = int(extra['vcpu_count'])
+
         ram = int(data['ram'])
         disk = int(data['disk'])
         # NodeSize accepted int instead float
         bandwidth = int(float(data['bandwidth']))
         price = float(data['price_per_month'])
-
         return NodeSize(id=data['VPSPLANID'], name=data['name'],
                         ram=ram, disk=disk,
                         bandwidth=bandwidth, price=price,
                         extra=extra, driver=self)
 
     def _to_image(self, data):
-        extra = {'arch': data['arch'], 'family': data['family']}
+        extra_keys = ['arch', 'family']
+        extra = self._helper.handle_extra(extra_keys, data)
         return NodeImage(id=data['OSID'], name=data['name'], extra=extra,
                          driver=self)
 
