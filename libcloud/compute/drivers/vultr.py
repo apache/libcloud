@@ -19,16 +19,16 @@ Vultr Driver
 import time
 from functools import update_wrapper
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
-
 from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.compute.types import Provider, NodeState
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 from libcloud.common.types import ServiceUnavailableError
-from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
+from libcloud.compute.base import NodeDriver
+from libcloud.compute.types import Provider, NodeState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlencode
 
 
 class rate_limited:
@@ -56,7 +56,7 @@ class rate_limited:
         def wrapper(*args, **kwargs):
             last_exception = None
 
-            for i in range(self.retries + 1):
+            for _ in range(self.retries + 1):
                 try:
                     return call(*args, **kwargs)
                 except ServiceUnavailableError as e:
@@ -145,7 +145,7 @@ class VultrConnection(ConnectionKey):
 
         try:
             return self.method \
-                not in self.unauthenticated_endpoints[self.action]
+                   not in self.unauthenticated_endpoints[self.action]
         except KeyError:
             return True
 
@@ -233,6 +233,7 @@ class VultrNodeDriver(NodeDriver):
     def list_images(self):
         return self._list_resources('/v1/os/list', self._to_image)
 
+    # pylint: disable=too-many-locals
     def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
                     ex_create_attr=None):
         """
@@ -311,7 +312,7 @@ class VultrNodeDriver(NodeDriver):
         retry_count = 3
         created_node = None
 
-        for i in range(retry_count):
+        for _ in range(retry_count):
             try:
                 nodes = self.list_nodes()
                 created_node = [n for n in nodes if n.id == subid][0]
@@ -343,7 +344,7 @@ class VultrNodeDriver(NodeDriver):
         if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
             if state == NodeState.RUNNING and \
-               data['power_status'] != 'running':
+                data['power_status'] != 'running':
                 state = NodeState.STOPPED
         else:
             state = NodeState.UNKNOWN
@@ -352,16 +353,40 @@ class VultrNodeDriver(NodeDriver):
             public_ips = [data['main_ip']]
         else:
             public_ips = []
+        # simple check that we have ip address in value
+        if len(data['internal_ip']) > 0:
+            private_ips = [data['internal_ip']]
+        else:
+            private_ips = []
+        created_at = parse_date(data['date_created'])
 
-        extra_keys = []
+        # TODO: remove extra keys and return Node with full api because we know:
+        # TODO: size = None,  # type: NodeSize
+        # TODO: image = None,  # type: NodeImage
+        # response ordering
+        extra_keys = [
+            "ram", "disk", "vcpu_count",
+            "location",  # Location name
+            "DCID",  # Location id in which to create the server. See v1/regions/list
+            "default_password", "pending_charges", "cost_per_month", "current_bandwidth_gb",
+            "allowed_bandwidth_gb", "netmask_v4", "gateway_v4", "power_status",
+            "server_state",
+            "VPSPLANID",  # Plan id, see /v1/plans/list
+            "v6_networks",
+            # TODO: Does we really need kvm_url?
+            "kvm_url",
+            "auto_backups", "tag",
+            "OSID",  # Operating system to use. See v1/os/list.
+            "APPID", "FIREWALLGROUPID"
+        ]
         extra = {}
         for key in extra_keys:
             if key in data:
                 extra[key] = data[key]
 
         node = Node(id=data['SUBID'], name=data['label'], state=state,
-                    public_ips=public_ips, private_ips=None, extra=extra,
-                    driver=self)
+                    public_ips=public_ips, private_ips=private_ips, extra=extra,
+                    created_at=created_at, driver=self)
 
         return node
 
@@ -377,7 +402,7 @@ class VultrNodeDriver(NodeDriver):
         }
         ram = int(data['ram'])
         disk = int(data['disk'])
-        bandwidth = float(data['bandwidth'])
+        bandwidth = int(float(data['bandwidth']))  # NodeSize accepted int instead float
         price = float(data['price_per_month'])
 
         return NodeSize(id=data['VPSPLANID'], name=data['name'],
