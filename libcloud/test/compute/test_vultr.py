@@ -26,6 +26,7 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.types import ServiceUnavailableError
 
 from libcloud.compute.drivers.vultr import VultrNodeDriver
+from libcloud.compute.base import NodeImage, NodeSize
 
 from libcloud.test import LibcloudTestCase, MockHttp
 from libcloud.test.file_fixtures import ComputeFileFixtures
@@ -111,9 +112,19 @@ class VultrTests(LibcloudTestCase):
         self.assertEqual(nodes[0].private_ips, ['10.7.96.85'])
         self.assertEqual(nodes[2].private_ips, [])
 
+    def test_list_nodes_image_success(self):
+        nodes = self.driver.list_nodes()
+        node = nodes[0]
+        self.assertTrue(isinstance(node.image, NodeImage))
+
+    def test_list_nodes_size_success(self):
+        nodes = self.driver.list_nodes()
+        node = nodes[0]
+        self.assertTrue(isinstance(node.size, NodeSize))
+
     def test_list_nodes_success_extra(self):
         extra_keys = [
-            "ram", "disk", "vcpu_count", "default_password", "power_status",
+            "default_password", "pending_charges", "cost_per_month",
         ]
         nodes = self.driver.list_nodes()
         for node in nodes:
