@@ -33,6 +33,7 @@ Provider                      list containers list objects create container dele
 `RGW Outscale`_               yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (sa-east-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (us-east-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
+`Amazon S3 (us-gov-east-1)`_  yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes
 `Amazon S3 (us-gov-west-1)`_  yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (us-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (us-west-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
@@ -68,6 +69,7 @@ Provider                      list containers list objects create container dele
 .. _`RGW Outscale`: https://en.outscale.com/
 .. _`Amazon S3 (sa-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-east-2)`: http://aws.amazon.com/s3/
+.. _`Amazon S3 (us-gov-east-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-gov-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
