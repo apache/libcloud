@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Maintainer: Aaron Welch <welch@packet.net>
-# Based on code written by Jed Smith <jed@packet.com> who based it on
+# Maintainer:
+# Based on code written by Jed Smith <jed@jedsmith.org> who based it on
 # code written by Alex Polvi <polvi@cloudkick.com>
 #
 
