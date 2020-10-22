@@ -1,5 +1,5 @@
 EquinixMetal Compute Driver Documentation
-===================================
+=========================================
 
 `EquinixMetal`_ is a dedicated bare metal cloud hosting provider
 
