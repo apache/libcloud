@@ -265,8 +265,9 @@ def _list_async(driver):
         facility = location.extra['code']
         params = {'hostname': name, 'plan': size.id,
                   'operating_system': image.id, 'facility': facility,
-                  'include': 'plan', 'billing_cycle': 'hourly',
-                  'ip_addresses': ip_addresses}
+                  'include': 'plan', 'billing_cycle': 'hourly'}
+        if ip_addresses:
+            params['ip_addresses'] = ip_addresses
         params.update(kwargs)
         if cloud_init:
             params["userdata"] = cloud_init
