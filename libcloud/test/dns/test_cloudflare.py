@@ -261,9 +261,22 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
 
         self.assertEqual(zone, updated_zone)
 
-    def test_normalize_record_data_for_api(self):
-        result = self.driver._normalize_record_data_for_api(RecordType.CAA, '0 issue foo.bar')
-        self.assertEqual(result, '0\tissue\tfoo.bar')
+    def test_caa_normalize_record_data_for_api(self):
+        content, data = self.driver._normalize_record_data_for_api(RecordType.CAA, '0 issue foo.bar')
+        self.assertEqual(content, '0\tissue\tfoo.bar')
+        self.assertEqual(data, {})
+
+    def test_sshfp_normalize_record_data_for_api(self):
+        content, data = self.driver._normalize_record_data_for_api(RecordType.SSHFP, '2 1 ABCDEF12345')
+        self.assertIsNone(content)
+        self.assertEqual(
+            data,
+            {
+                "algorithm": "2",
+                "type": "1",
+                "fingerprint": "ABCDEF12345"
+            }
+        )
 
     def test_normalize_record_data_from_apu(self):
         result = self.driver._normalize_record_data_from_api(RecordType.CAA, '0\tissue\tfoo.bar')

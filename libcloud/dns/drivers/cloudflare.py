@@ -317,14 +317,20 @@ class CloudFlareDNSDriver(DNSDriver):
         or iodef.
 
         For example: 0 issue test.caa.com
+
+        NOTE: For SSHFP RecordType, data need to be in the format:
+        <algorithm> <type> <fingerprint>
         """
         url = '{}/zones/{}/dns_records'.format(API_BASE, zone.id)
 
-        data = self._normalize_record_data_for_api(type=type, data=data,)
+        content, data = self._normalize_record_data_for_api(
+            type=type, data=data
+        )
         body = {
             'type': type,
             'name': name,
-            'content': data,
+            'content': content,
+            'data': data
         }
 
         merge_valid_keys(body, RECORD_CREATE_ATTRIBUTES, extra)
@@ -349,11 +355,14 @@ class CloudFlareDNSDriver(DNSDriver):
         url = '{}/zones/{}/dns_records/{}'.format(API_BASE, record.zone.id,
                                                   record.id)
 
-        data = self._normalize_record_data_for_api(type=type, data=data,)
+        content, data = self._normalize_record_data_for_api(
+            type=type, data=data
+        )
         body = {
             'type': record.type if type is None else type,
             'name': record.name if name is None else name,
-            'content': record.data if data is None else data,
+            'content': content,
+            'data': data,
             'extra': record.extra or {},
         }
 
@@ -436,18 +445,28 @@ class CloudFlareDNSDriver(DNSDriver):
 
     def _normalize_record_data_for_api(self, type, data):
         """
-        Normalize record data for "special" records such as CAA so it can be
-        used with the CloudFlare API.
+        Normalize record data for "special" records such as CAA and SSHFP
+        so it can be used with the CloudFlare API.
         """
+        cf_data = {}
         if not data:
-            return data
+            return data, cf_data
 
         if type == RecordType.CAA:
             # Replace whitespace with \t character which CloudFlare API
             # expects
             data = data.replace(' ', '\t')
 
-        return data
+        elif type == RecordType.SSHFP:
+            _fp = data.split(" ")
+            cf_data = {
+                "algorithm": _fp[0],
+                "type": _fp[1],
+                "fingerprint": _fp[2]
+            }
+            data = None
+
+        return data, cf_data
 
     def _normalize_record_data_from_api(self, type, data):
         """
