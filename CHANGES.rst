@@ -64,6 +64,10 @@ Storage
   been replaced with ``fasteners`` library.
   [Tomaz Muraus - @Kami]
 
+- [S3] Add support for ``us-gov-east-1`` region.
+  (GITHUB-1509, GITHUB-1510)
+  [Andy Spohn - @spohnan]
+
 DNS
 ~~~
 
