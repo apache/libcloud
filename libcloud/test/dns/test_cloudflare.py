@@ -137,6 +137,18 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         self.assertEqual(record.type, 'A')
         self.assertEqual(record.data, '127.0.0.3')
 
+    def test_create_record_SSHFP_record_type(self):
+        zone = self.driver.list_zones()[0]
+
+        CloudFlareMockHttp.type = 'sshfp_record_type'
+        record = self.driver.create_record(name='test_sshfp', zone=zone,
+                                           type=RecordType.SSHFP,
+                                           data='2 1 ABCDEF12345')
+        self.assertEqual(record.id, '200')
+        self.assertEqual(record.name, 'test_sshfp')
+        self.assertEqual(record.type, 'SSHFP')
+        self.assertEqual(record.data, '2 1 ABCDEF12345')
+
     def test_create_record_CAA_record_type(self):
         zone = self.driver.list_zones()[0]
 
@@ -350,6 +362,24 @@ class CloudFlareMockHttp(MockHttp, unittest.TestCase):
         self.assertEqual(body['content'], '0\tissue\tcaa.example.com')
 
         body = self.fixtures.load('records_{}.json'.format(method))
+
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _client_v4_zones_1234_dns_records_sshfp_record_type(self, method, url, body, headers):
+        if method not in ['POST']:
+            raise AssertionError('Unsupported method: %s' % (method))
+
+        url = urlparse.urlparse(url)
+        # Verify record data has been correctly normalized
+        body = json.loads(body)
+        expected_data = {
+            "algorithm": "2",
+            "type": "1",
+            "fingerprint": "ABCDEF12345"
+        }
+        self.assertEqual(body['data'], expected_data)
+
+        body = self.fixtures.load('records_{}_sshfp.json'.format(method))
 
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
