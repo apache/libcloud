@@ -57,6 +57,13 @@ Compute
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
 
+Storage
+~~~~~~~
+
+- Deprecated ``lockfile`` library which is used by the Local Storage driver has
+  been replaced with ``fasteners`` library.
+  [Tomaz Muraus - @Kami]
+
 DNS
 ~~~
 

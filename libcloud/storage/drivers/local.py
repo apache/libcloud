@@ -21,14 +21,17 @@ from __future__ import with_statement
 
 import errno
 import os
+import time
 import shutil
+import tempfile
+import threading
+from hashlib import sha256
 
 try:
-    import lockfile
-    from lockfile import LockTimeout, mkdirlockfile
+    import fasteners
 except ImportError:
-    raise ImportError('Missing lockfile dependency, you can install it '
-                      'using pip: pip install lockfile')
+    raise ImportError('Missing fasteners dependency, you can install it '
+                      'using pip: pip install fasteners')
 
 from libcloud.utils.files import read_in_chunks
 from libcloud.utils.files import exhaust_iterator
@@ -51,19 +54,47 @@ class LockLocalStorage(object):
     """
     A class to help in locking a local path before being updated
     """
+
     def __init__(self, path):
         self.path = path
-        self.lock = mkdirlockfile.MkdirLockFile(self.path, threaded=True)
+
+        self.ipc_lock_path = os.path.join(tempfile.gettempdir(), "%s.lock" % (
+            sha256(path.encode("utf-8")).hexdigest()))
+
+        # NOTE: fasteners.InterProcess lock has no guarantees regards usage by
+        # multiple threads in a single process which means we also need to
+        # use threading.lock for that purpose
+        self.thread_lock = threading.Lock()
+        self.ipc_lock = fasteners.InterProcessLock(self.ipc_lock_path)
 
     def __enter__(self):
-        try:
-            self.lock.acquire(timeout=0.1)
-        except LockTimeout:
-            raise LibcloudError('Lock timeout')
+        lock_acquire_timeout = 5
+        start_time = int(time.time())
+        end_time = start_time + lock_acquire_timeout
+
+        while int(time.time()) < end_time:
+            success = self.thread_lock.acquire(blocking=True)
+
+            if success:
+                break
+
+        if not success:
+            raise LibcloudError("Failed to acquire thread lock for path %s "
+                                "in 5 seconds" % (self.path))
+
+        success = self.ipc_lock.acquire(blocking=True, timeout=5)
+
+        if not success:
+            raise LibcloudError("Failed to acquire IPC lock (%s) for path %s "
+                                "in 5 seconds" %
+                                (self.ipc_lock_path, self.path))
 
     def __exit__(self, type, value, traceback):
-        if self.lock.is_locked():
-            self.lock.release()
+        if self.thread_lock.locked():
+            self.thread_lock.release()
+
+        if self.ipc_lock.exists():
+            self.ipc_lock.release()
 
         if value is not None:
             raise value
@@ -314,7 +345,6 @@ class LocalStorageDriver(StorageDriver):
         """
 
         path = self.get_container_cdn_url(container)
-        lockfile.MkdirFileLock(path, threaded=True)
 
         with LockLocalStorage(path):
             self._make_path(path)
