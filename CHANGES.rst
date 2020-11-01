@@ -81,6 +81,10 @@ DNS
   (GITHUB-1500)
   [Tomaz Muraus - @Kami]
 
+- [CloudFlare DNS] Add support for creating ``SSHFP`` records.
+  (GITHUB-1512, GITHUB-1513)
+  [Will Hughes - @insertjokehere]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
