@@ -329,9 +329,11 @@ class CloudFlareDNSDriver(DNSDriver):
         body = {
             'type': type,
             'name': name,
-            'content': content,
-            'data': data
+            'content': content
         }
+
+        if data:
+            body['data'] = data
 
         merge_valid_keys(body, RECORD_CREATE_ATTRIBUTES, extra)
 
@@ -362,9 +364,11 @@ class CloudFlareDNSDriver(DNSDriver):
             'type': record.type if type is None else type,
             'name': record.name if name is None else name,
             'content': content,
-            'data': data,
             'extra': record.extra or {},
         }
+
+        if data:
+            body['data'] = data
 
         merge_valid_keys(body['extra'], RECORD_UPDATE_ATTRIBUTES, extra)
 
