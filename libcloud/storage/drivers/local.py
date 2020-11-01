@@ -73,7 +73,7 @@ class LockLocalStorage(object):
         end_time = start_time + lock_acquire_timeout
 
         while int(time.time()) < end_time:
-            success = self.thread_lock.acquire(blocking=True)
+            success = self.thread_lock.acquire(blocking=False)
 
             if success:
                 break
