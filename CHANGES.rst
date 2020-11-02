@@ -57,6 +57,10 @@ Compute
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Enable to get Neutron Quota details in OpenStack driver.
+  (GITHUB-1514)
+  [Miguel Caballer - @micafer]
+
 DNS
 ~~~
 
