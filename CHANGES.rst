@@ -61,6 +61,17 @@ Compute
   (GITHUB-1514)
   [Miguel Caballer - @micafer]
 
+Storage
+~~~~~~~
+
+- Deprecated ``lockfile`` library which is used by the Local Storage driver has
+  been replaced with ``fasteners`` library.
+  [Tomaz Muraus - @Kami]
+
+- [S3] Add support for ``us-gov-east-1`` region.
+  (GITHUB-1509, GITHUB-1510)
+  [Andy Spohn - @spohnan]
+
 DNS
 ~~~
 
@@ -73,6 +84,10 @@ DNS
 
   (GITHUB-1500)
   [Tomaz Muraus - @Kami]
+
+- [CloudFlare DNS] Add support for creating ``SSHFP`` records.
+  (GITHUB-1512, GITHUB-1513)
+  [Will Hughes - @insertjokehere]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------
