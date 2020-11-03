@@ -55,8 +55,9 @@ class LockLocalStorage(object):
     A class to help in locking a local path before being updated
     """
 
-    def __init__(self, path):
+    def __init__(self, path, timeout=5):
         self.path = path
+        self.lock_acquire_timeout = timeout
 
         self.ipc_lock_path = os.path.join(tempfile.gettempdir(), "%s.lock" % (
             sha256(path.encode("utf-8")).hexdigest()))
@@ -68,7 +69,7 @@ class LockLocalStorage(object):
         self.ipc_lock = fasteners.InterProcessLock(self.ipc_lock_path)
 
     def __enter__(self):
-        lock_acquire_timeout = 5
+        lock_acquire_timeout = self.lock_acquire_timeout
         start_time = int(time.time())
         end_time = start_time + lock_acquire_timeout
 
@@ -82,14 +83,17 @@ class LockLocalStorage(object):
 
         if not success:
             raise LibcloudError("Failed to acquire thread lock for path %s "
-                                "in 5 seconds" % (self.path))
+                                "in %s seconds" % (self.path,
+                                                   lock_acquire_timeout))
 
-        success = self.ipc_lock.acquire(blocking=True, timeout=5)
+        success = self.ipc_lock.acquire(blocking=True,
+                                        timeout=lock_acquire_timeout)
 
         if not success:
             raise LibcloudError("Failed to acquire IPC lock (%s) for path %s "
-                                "in 5 seconds" %
-                                (self.ipc_lock_path, self.path))
+                                "in %s seconds" %
+                                (self.ipc_lock_path, self.path,
+                                 lock_acquire_timeout))
 
     def __exit__(self, type, value, traceback):
         if self.thread_lock.locked():
