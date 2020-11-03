@@ -73,7 +73,9 @@ class LockLocalStorage(object):
         end_time = start_time + lock_acquire_timeout
 
         while int(time.time()) < end_time:
+            # pylint: disable=assignment-from-no-return
             success = self.thread_lock.acquire(blocking=False)
+            # enable: disable=assignment-from-no-return
 
             if success:
                 break
