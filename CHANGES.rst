@@ -62,6 +62,12 @@ Compute
   (GITHUB-1507, GITHUB-1508)
   [@sergerdn]
 
+- [Vultr] Make sure ``private_ips`` attribute on the ``Node`` object is
+  correctly populated when listing nodes. Also add additional values to the
+  ``node.extra`` dictionary.
+  (GITHUB-1506)
+  [@sergerdn]
+
 Storage
 ~~~~~~~
 
