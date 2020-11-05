@@ -122,7 +122,7 @@ class DigitalOceanDNSMockHttp(MockHttp):
     def _v2_domains_CREATE(self, method, url, body, headers):
         if body is None:
             body = self.fixtures.load('_v2_domains_UNPROCESSABLE_ENTITY.json')
-            return (self.response_map[self.type], body, {},
+            return (self.response_map['UNPROCESSABLE'], body, {},
                     httplib.responses[self.response_map['UNPROCESSABLE']])
         body = self.fixtures.load('_v2_domains_CREATE.json')
         return (self.response_map[self.type], body, {},
@@ -151,7 +151,7 @@ class DigitalOceanDNSMockHttp(MockHttp):
                                               body, headers):
         if body is None:
             body = self.fixtures.load('_v2_domains_UNPROCESSABLE_ENTITY.json')
-            return (self.response_map[self.type], body, {},
+            return (self.response_map['UNPROCESSABLE'], body, {},
                     httplib.responses[self.response_map['UNPROCESSABLE']])
         body = self.fixtures.load('_v2_domains_testdomain_records_CREATE.json')
         return (self.response_map[self.type], body, {},
@@ -174,7 +174,7 @@ class DigitalOceanDNSMockHttp(MockHttp):
             self, method, url, body, headers):
         if body is None:
             body = self.fixtures.load('_v2_domains_UNPROCESSABLE_ENTITY.json')
-            return (self.response_map[self.type], body, {},
+            return (self.response_map['UNPROCESSABLE'], body, {},
                     httplib.responses[self.response_map['UNPROCESSABLE']])
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234564_UPDATE.json')
