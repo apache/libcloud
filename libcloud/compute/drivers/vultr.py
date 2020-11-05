@@ -15,20 +15,574 @@
 """
 Vultr Driver
 """
-
 import time
 from functools import update_wrapper
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import urlencode
-
 from libcloud.common.base import ConnectionKey, JsonResponse
-from libcloud.compute.types import Provider, NodeState
 from libcloud.common.types import InvalidCredsError
 from libcloud.common.types import LibcloudError
 from libcloud.common.types import ServiceUnavailableError
-from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
+from libcloud.compute.base import NodeDriver
+from libcloud.compute.types import Provider, NodeState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.utils.py3 import httplib
+from libcloud.utils.py3 import urlencode
+
+# For matching region by id
+VULTR_COMPUTE_INSTANCE_LOCATIONS = {
+    "1": {
+        "DCID": "1",
+        "name": "New Jersey",
+        "country": "US",
+        "continent": "North America",
+        "state": "NJ",
+        "regioncode": "EWR"
+    },
+    "2": {
+        "DCID": "2",
+        "name": "Chicago",
+        "country": "US",
+        "continent": "North America",
+        "state": "IL",
+        "regioncode": "ORD"
+    },
+    "3": {
+        "DCID": "3",
+        "name": "Dallas",
+        "country": "US",
+        "continent": "North America",
+        "state": "TX",
+        "regioncode": "DFW"
+    },
+    "4": {
+        "DCID": "4",
+        "name": "Seattle",
+        "country": "US",
+        "continent": "North America",
+        "state": "WA",
+        "regioncode": "SEA"
+    },
+    "5": {
+        "DCID": "5",
+        "name": "Los Angeles",
+        "country": "US",
+        "continent": "North America",
+        "state": "CA",
+        "regioncode": "LAX"
+    },
+    "6": {
+        "DCID": "6",
+        "name": "Atlanta",
+        "country": "US",
+        "continent": "North America",
+        "state": "GA",
+        "regioncode": "ATL"
+    },
+    "7": {
+        "DCID": "7",
+        "name": "Amsterdam",
+        "country": "NL",
+        "continent": "Europe",
+        "state": "",
+        "regioncode": "AMS"
+    },
+    "8": {
+        "DCID": "8",
+        "name": "London",
+        "country": "GB",
+        "continent": "Europe",
+        "state": "",
+        "regioncode": "LHR"
+    },
+    "9": {
+        "DCID": "9",
+        "name": "Frankfurt",
+        "country": "DE",
+        "continent": "Europe",
+        "state": "",
+        "regioncode": "FRA"
+    },
+    "12": {
+        "DCID": "12",
+        "name": "Silicon Valley",
+        "country": "US",
+        "continent": "North America",
+        "state": "CA",
+        "regioncode": "SJC"
+    },
+    "19": {
+        "DCID": "19",
+        "name": "Sydney",
+        "country": "AU",
+        "continent": "Australia",
+        "state": "",
+        "regioncode": "SYD"
+    },
+    "22": {
+        "DCID": "22",
+        "name": "Toronto",
+        "country": "CA",
+        "continent": "North America",
+        "state": "",
+        "regioncode": "YTO"
+    },
+    "24": {
+        "DCID": "24",
+        "name": "Paris",
+        "country": "FR",
+        "continent": "Europe",
+        "state": "",
+        "regioncode": "CDG"
+    },
+    "25": {
+        "DCID": "25",
+        "name": "Tokyo",
+        "country": "JP",
+        "continent": "Asia",
+        "state": "",
+        "regioncode": "NRT"
+    },
+    "34": {
+        "DCID": "34",
+        "name": "Seoul",
+        "country": "KR",
+        "continent": "Asia",
+        "state": "",
+        "regioncode": "ICN"
+    },
+    "39": {
+        "DCID": "39",
+        "name": "Miami",
+        "country": "US",
+        "continent": "North America",
+        "state": "FL",
+        "regioncode": "MIA"
+    },
+    "40": {
+        "DCID": "40",
+        "name": "Singapore",
+        "country": "SG",
+        "continent": "Asia",
+        "state": "",
+        "regioncode": "SGP"
+    }
+}
+# For matching image by id
+VULTR_COMPUTE_INSTANCE_IMAGES = {
+    "127": {
+        "OSID": 127,
+        "name": "CentOS 6 x64",
+        "arch": "x64",
+        "family": "centos",
+        "windows": False
+    },
+    "147": {
+        "OSID": 147,
+        "name": "CentOS 6 i386",
+        "arch": "i386",
+        "family": "centos",
+        "windows": False
+    },
+    "167": {
+        "OSID": 167,
+        "name": "CentOS 7 x64",
+        "arch": "x64",
+        "family": "centos",
+        "windows": False
+    },
+    "381": {
+        "OSID": 381,
+        "name": "CentOS 7 SELinux x64",
+        "arch": "x64",
+        "family": "centos",
+        "windows": False
+    },
+    "362": {
+        "OSID": 362,
+        "name": "CentOS 8 x64",
+        "arch": "x64",
+        "family": "centos",
+        "windows": False
+    },
+    "401": {
+        "OSID": 401,
+        "name": "CentOS 8 Stream x64",
+        "arch": "x64",
+        "family": "centos",
+        "windows": False
+    },
+    "215": {
+        "OSID": 215,
+        "name": "Ubuntu 16.04 x64",
+        "arch": "x64",
+        "family": "ubuntu",
+        "windows": False
+    },
+    "216": {
+        "OSID": 216,
+        "name": "Ubuntu 16.04 i386",
+        "arch": "i386",
+        "family": "ubuntu",
+        "windows": False
+    },
+    "270": {
+        "OSID": 270,
+        "name": "Ubuntu 18.04 x64",
+        "arch": "x64",
+        "family": "ubuntu",
+        "windows": False
+    },
+    "387": {
+        "OSID": 387,
+        "name": "Ubuntu 20.04 x64",
+        "arch": "x64",
+        "family": "ubuntu",
+        "windows": False
+    },
+    "194": {
+        "OSID": 194,
+        "name": "Debian 8 i386 (jessie)",
+        "arch": "i386",
+        "family": "debian",
+        "windows": False
+    },
+    "244": {
+        "OSID": 244,
+        "name": "Debian 9 x64 (stretch)",
+        "arch": "x64",
+        "family": "debian",
+        "windows": False
+    },
+    "352": {
+        "OSID": 352,
+        "name": "Debian 10 x64 (buster)",
+        "arch": "x64",
+        "family": "debian",
+        "windows": False
+    },
+    "230": {
+        "OSID": 230,
+        "name": "FreeBSD 11 x64",
+        "arch": "x64",
+        "family": "freebsd",
+        "windows": False
+    },
+    "327": {
+        "OSID": 327,
+        "name": "FreeBSD 12 x64",
+        "arch": "x64",
+        "family": "freebsd",
+        "windows": False
+    },
+    "366": {
+        "OSID": 366,
+        "name": "OpenBSD 6.6 x64",
+        "arch": "x64",
+        "family": "openbsd",
+        "windows": False
+    },
+    "394": {
+        "OSID": 394,
+        "name": "OpenBSD 6.7 x64",
+        "arch": "x64",
+        "family": "openbsd",
+        "windows": False
+    },
+    "391": {
+        "OSID": 391,
+        "name": "Fedora CoreOS",
+        "arch": "x64",
+        "family": "fedora-coreos",
+        "windows": False
+    },
+    "367": {
+        "OSID": 367,
+        "name": "Fedora 31 x64",
+        "arch": "x64",
+        "family": "fedora",
+        "windows": False
+    },
+    "389": {
+        "OSID": 389,
+        "name": "Fedora 32 x64",
+        "arch": "x64",
+        "family": "fedora",
+        "windows": False
+    },
+    "124": {
+        "OSID": 124,
+        "name": "Windows 2012 R2 x64",
+        "arch": "x64",
+        "family": "windows",
+        "windows": False
+    },
+    "240": {
+        "OSID": 240,
+        "name": "Windows 2016 x64",
+        "arch": "x64",
+        "family": "windows",
+        "windows": False
+    },
+    "159": {
+        "OSID": 159,
+        "name": "Custom",
+        "arch": "x64",
+        "family": "iso",
+        "windows": False
+    },
+    "164": {
+        "OSID": 164,
+        "name": "Snapshot",
+        "arch": "x64",
+        "family": "snapshot",
+        "windows": False
+    },
+    "180": {
+        "OSID": 180,
+        "name": "Backup",
+        "arch": "x64",
+        "family": "backup",
+        "windows": False
+    },
+    "186": {
+        "OSID": 186,
+        "name": "Application",
+        "arch": "x64",
+        "family": "application",
+        "windows": False
+    }
+}
+VULTR_COMPUTE_INSTANCE_SIZES = {
+    "201": {
+        "VPSPLANID": "201",
+        "name": "1024 MB RAM,25 GB SSD,1.00 TB BW",
+        "vcpu_count": "1",
+        "ram": "1024",
+        "disk": "25",
+        "bandwidth": "1.00",
+        "bandwidth_gb": "1024",
+        "price_per_month": "5.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "202": {
+        "VPSPLANID": "202",
+        "name": "2048 MB RAM,55 GB SSD,2.00 TB BW",
+        "vcpu_count": "1",
+        "ram": "2048",
+        "disk": "55",
+        "bandwidth": "2.00",
+        "bandwidth_gb": "2048",
+        "price_per_month": "10.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "203": {
+        "VPSPLANID": "203",
+        "name": "4096 MB RAM,80 GB SSD,3.00 TB BW",
+        "vcpu_count": "2",
+        "ram": "4096",
+        "disk": "80",
+        "bandwidth": "3.00",
+        "bandwidth_gb": "3072",
+        "price_per_month": "20.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "204": {
+        "VPSPLANID": "204",
+        "name": "8192 MB RAM,160 GB SSD,4.00 TB BW",
+        "vcpu_count": "4",
+        "ram": "8192",
+        "disk": "160",
+        "bandwidth": "4.00",
+        "bandwidth_gb": "4096",
+        "price_per_month": "40.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "205": {
+        "VPSPLANID": "205",
+        "name": "16384 MB RAM,320 GB SSD,5.00 TB BW",
+        "vcpu_count": "6",
+        "ram": "16384",
+        "disk": "320",
+        "bandwidth": "5.00",
+        "bandwidth_gb": "5120",
+        "price_per_month": "80.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "206": {
+        "VPSPLANID": "206",
+        "name": "32768 MB RAM,640 GB SSD,6.00 TB BW",
+        "vcpu_count": "8",
+        "ram": "32768",
+        "disk": "640",
+        "bandwidth": "6.00",
+        "bandwidth_gb": "6144",
+        "price_per_month": "160.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "207": {
+        "VPSPLANID": "207",
+        "name": "65536 MB RAM,1280 GB SSD,10.00 TB BW",
+        "vcpu_count": "16",
+        "ram": "65536",
+        "disk": "1280",
+        "bandwidth": "10.00",
+        "bandwidth_gb": "10240",
+        "price_per_month": "320.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "208": {
+        "VPSPLANID": "208",
+        "name": "98304 MB RAM,1600 GB SSD,15.00 TB BW",
+        "vcpu_count": "24",
+        "ram": "98304",
+        "disk": "1600",
+        "bandwidth": "15.00",
+        "bandwidth_gb": "15360",
+        "price_per_month": "640.00",
+        "plan_type": "SSD",
+        "windows": False,
+    },
+    "115": {
+        "VPSPLANID": "115",
+        "name": "8192 MB RAM,110 GB SSD,10.00 TB BW",
+        "vcpu_count": "2",
+        "ram": "8192",
+        "disk": "110",
+        "bandwidth": "10.00",
+        "bandwidth_gb": "10240",
+        "price_per_month": "60.00",
+        "plan_type": "DEDICATED",
+        "windows": False,
+    },
+    "116": {
+        "VPSPLANID": "116",
+        "name": "16384 MB RAM,2x110 GB SSD,20.00 TB BW",
+        "vcpu_count": "4",
+        "ram": "16384",
+        "disk": "110",
+        "bandwidth": "20.00",
+        "bandwidth_gb": "20480",
+        "price_per_month": "120.00",
+        "plan_type": "DEDICATED",
+        "windows": False,
+    },
+    "117": {
+        "VPSPLANID": "117",
+        "name": "24576 MB RAM,3x110 GB SSD,30.00 TB BW",
+        "vcpu_count": "6",
+        "ram": "24576",
+        "disk": "110",
+        "bandwidth": "30.00",
+        "bandwidth_gb": "30720",
+        "price_per_month": "180.00",
+        "plan_type": "DEDICATED",
+        "windows": False,
+    },
+    "118": {
+        "VPSPLANID": "118",
+        "name": "32768 MB RAM,4x110 GB SSD,40.00 TB BW",
+        "vcpu_count": "8",
+        "ram": "32768",
+        "disk": "110",
+        "bandwidth": "40.00",
+        "bandwidth_gb": "40960",
+        "price_per_month": "240.00",
+        "plan_type": "DEDICATED",
+        "windows": False,
+    },
+    "400": {
+        "VPSPLANID": "400",
+        "name": "1024 MB RAM,32 GB SSD,1.00 TB BW",
+        "vcpu_count": "1",
+        "ram": "1024",
+        "disk": "32",
+        "bandwidth": "1.00",
+        "bandwidth_gb": "1024",
+        "price_per_month": "6.00",
+        "plan_type": "HIGHFREQUENCY",
+        "windows": False,
+    },
+    "401": {
+        "VPSPLANID": "401",
+        "name": "2048 MB RAM,64 GB SSD,2.00 TB BW",
+        "vcpu_count": "1",
+        "ram": "2048",
+        "disk": "64",
+        "bandwidth": "2.00",
+        "bandwidth_gb": "2048",
+        "price_per_month": "12.00",
+        "plan_type": "HIGHFREQUENCY",
+        "windows": False,
+    },
+    "402": {
+        "VPSPLANID": "402",
+        "name": "4096 MB RAM,128 GB SSD,3.00 TB BW",
+        "vcpu_count": "2",
+        "ram": "4096",
+        "disk": "128",
+        "bandwidth": "3.00",
+        "bandwidth_gb": "3072",
+        "price_per_month": "24.00",
+        "plan_type": "HIGHFREQUENCY",
+        "windows": False,
+    },
+    "403": {
+        "VPSPLANID": "403",
+        "name": "8192 MB RAM,256 GB SSD,4.00 TB BW",
+        "vcpu_count": "3",
+        "ram": "8192",
+        "disk": "256",
+        "bandwidth": "4.00",
+        "bandwidth_gb": "4096",
+        "price_per_month": "48.00",
+        "plan_type": "HIGHFREQUENCY",
+        "windows": False,
+    },
+    "404": {
+        "VPSPLANID": "404",
+        "name": "16384 MB RAM,384 GB SSD,5.00 TB BW",
+        "vcpu_count": "4",
+        "ram": "16384",
+        "disk": "384",
+        "bandwidth": "5.00",
+        "bandwidth_gb": "5120",
+        "price_per_month": "96.00",
+        "plan_type": "HIGHFREQUENCY",
+        "windows": False,
+    },
+    "405": {
+        "VPSPLANID": "405",
+        "name": "32768 MB RAM,512 GB SSD,6.00 TB BW",
+        "vcpu_count": "8",
+        "ram": "32768",
+        "disk": "512",
+        "bandwidth": "6.00",
+        "bandwidth_gb": "6144",
+        "price_per_month": "192.00",
+        "plan_type": "HIGHFREQUENCY",
+        "windows": False,
+    },
+    "406": {
+        "VPSPLANID": "406",
+        "name": "49152 MB RAM,768 GB SSD,8.00 TB BW",
+        "vcpu_count": "12",
+        "ram": "49152",
+        "disk": "768",
+        "bandwidth": "8.00",
+        "bandwidth_gb": "8192",
+        "price_per_month": "256.00",
+        "plan_type": "HIGHFREQUENCY",
+        "windows": False,
+    }
+}
 
 
 class rate_limited:
@@ -56,7 +610,7 @@ class rate_limited:
         def wrapper(*args, **kwargs):
             last_exception = None
 
-            for i in range(self.retries + 1):
+            for _ in range(self.retries + 1):
                 try:
                     return call(*args, **kwargs)
                 except ServiceUnavailableError as e:
@@ -150,6 +704,19 @@ class VultrConnection(ConnectionKey):
             return True
 
 
+class VultrNodeDriverHelper(object):
+    """
+        VultrNode helper class.
+    """
+
+    def handle_extra(self, extra_keys, data):
+        extra = {}
+        for key in extra_keys:
+            if key in data:
+                extra[key] = data[key]
+        return extra
+
+
 class VultrNodeDriver(NodeDriver):
     """
     VultrNode node driver.
@@ -183,6 +750,10 @@ class VultrNodeDriver(NodeDriver):
                             'tag']
     EX_CREATE_ATTRIBUTES.extend(EX_CREATE_YES_NO_ATTRIBUTES)
     EX_CREATE_ATTRIBUTES.extend(EX_CREATE_ID_ATTRIBUTES.keys())
+
+    def __init__(self, *args, **kwargs):
+        super(VultrNodeDriver, self).__init__(*args, **kwargs)
+        self._helper = VultrNodeDriverHelper()
 
     def list_nodes(self):
         return self._list_resources('/v1/server/list', self._to_node)
@@ -233,6 +804,7 @@ class VultrNodeDriver(NodeDriver):
     def list_images(self):
         return self._list_resources('/v1/os/list', self._to_image)
 
+    # pylint: disable=too-many-locals
     def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
                     ex_create_attr=None):
         """
@@ -311,7 +883,7 @@ class VultrNodeDriver(NodeDriver):
         retry_count = 3
         created_node = None
 
-        for i in range(retry_count):
+        for _ in range(retry_count):
             try:
                 nodes = self.list_nodes()
                 created_node = [n for n in nodes if n.id == subid][0]
@@ -343,7 +915,7 @@ class VultrNodeDriver(NodeDriver):
         if 'status' in data:
             state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
             if state == NodeState.RUNNING and \
-               data['power_status'] != 'running':
+                    data['power_status'] != 'running':
                 state = NodeState.STOPPED
         else:
             state = NodeState.UNKNOWN
@@ -352,41 +924,90 @@ class VultrNodeDriver(NodeDriver):
             public_ips = [data['main_ip']]
         else:
             public_ips = []
+        # simple check that we have ip address in value
+        if len(data['internal_ip']) > 0:
+            private_ips = [data['internal_ip']]
+        else:
+            private_ips = []
+        created_at = parse_date(data['date_created'])
 
-        extra_keys = []
-        extra = {}
-        for key in extra_keys:
-            if key in data:
-                extra[key] = data[key]
+        # response ordering
+        extra_keys = [
+            "location",  # Location name
+            "default_password", "pending_charges", "cost_per_month",
+            "current_bandwidth_gb", "allowed_bandwidth_gb", "netmask_v4",
+            "gateway_v4", "power_status", "server_state",
+            "v6_networks",
+            # TODO: Does we really need kvm_url?
+            "kvm_url",
+            "auto_backups", "tag",
+            # "OSID",  # Operating system to use. See v1/os/list.
+            "APPID", "FIREWALLGROUPID"
+        ]
+        extra = self._helper.handle_extra(extra_keys, data)
 
-        node = Node(id=data['SUBID'], name=data['label'], state=state,
-                    public_ips=public_ips, private_ips=None, extra=extra,
-                    driver=self)
+        resolve_data = VULTR_COMPUTE_INSTANCE_IMAGES.get(data["OSID"])
+        if resolve_data:
+            image = self._to_image(resolve_data)
+        else:
+            image = None
+
+        resolve_data = VULTR_COMPUTE_INSTANCE_SIZES.get(data["VPSPLANID"])
+        if resolve_data:
+            size = self._to_size(resolve_data)
+        else:
+            size = None
+
+        # resolve_data = VULTR_COMPUTE_INSTANCE_LOCATIONS.get(data['DCID'])
+        # if resolve_data:
+        #     location = self._to_location(resolve_data)
+        # extra['location'] = location
+
+        node = Node(
+            id=data['SUBID'],
+            name=data['label'],
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            image=image,
+            size=size,
+            extra=extra,
+            created_at=created_at,
+            driver=self)
 
         return node
 
     def _to_location(self, data):
+        extra_keys = ['continent', 'state', 'ddos_protection',
+                      'block_storage', 'regioncode']
+        extra = self._helper.handle_extra(extra_keys, data)
+
         return NodeLocation(id=data['DCID'], name=data['name'],
-                            country=data['country'], driver=self)
+                            country=data['country'], extra=extra, driver=self)
 
     def _to_size(self, data):
-        extra = {
-            'vcpu_count': int(data['vcpu_count']),
-            'plan_type': data['plan_type'],
-            'available_locations': data['available_locations']
-        }
+        extra_keys = [
+            'vcpu_count', 'plan_type', 'available_locations',
+        ]
+        extra = self._helper.handle_extra(extra_keys, data)
+
+        # backward compatibility
+        if extra.get('vcpu_count').isdigit():
+            extra['vcpu_count'] = int(extra['vcpu_count'])
+
         ram = int(data['ram'])
         disk = int(data['disk'])
-        bandwidth = float(data['bandwidth'])
+        # NodeSize accepted int instead float
+        bandwidth = int(float(data['bandwidth']))
         price = float(data['price_per_month'])
-
         return NodeSize(id=data['VPSPLANID'], name=data['name'],
                         ram=ram, disk=disk,
                         bandwidth=bandwidth, price=price,
                         extra=extra, driver=self)
 
     def _to_image(self, data):
-        extra = {'arch': data['arch'], 'family': data['family']}
+        extra_keys = ['arch', 'family']
+        extra = self._helper.handle_extra(extra_keys, data)
         return NodeImage(id=data['OSID'], name=data['name'], extra=extra,
                          driver=self)
 
