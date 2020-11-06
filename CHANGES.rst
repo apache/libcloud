@@ -57,6 +57,10 @@ Compute
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Add ex_get_size_extra_specs function to OpenStack driver.
+  (GITHUB-1517)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
