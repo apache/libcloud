@@ -61,6 +61,10 @@ Compute
   (GITHUB-1517)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Enable to get Neutron Quota details in OpenStack driver.
+  (GITHUB-1514)
+  [Miguel Caballer - @micafer]
+
 - [DigitalOcean] ``_node_node`` method now ensures ``image`` and ``size``
   attributes are also set correctly and populated on the ``Node`` object.
   (GITHUB-1507, GITHUB-1508)

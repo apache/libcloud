@@ -2148,6 +2148,12 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(quota_set.cores.in_use, 1)
         self.assertEqual(quota_set.cores.reserved, 0)
 
+    def test_ex_get_network_quota(self):
+        quota_set = self.driver.ex_get_network_quotas("tenant_id")
+        self.assertEqual(quota_set.floatingip.limit, 2)
+        self.assertEqual(quota_set.floatingip.in_use, 1)
+        self.assertEqual(quota_set.floatingip.reserved, 0)
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
     should_list_volumes = True
@@ -2824,6 +2830,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method != 'POST' or body != '{"removeSecurityGroup": {"name": "sgname"}}':
             raise NotImplementedError(body)
         return httplib.ACCEPTED, None, {}, httplib.responses[httplib.ACCEPTED]
+
+    def _v2_1337_v2_0_quotas_tenant_id_details_json(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v2_0__network_quota.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 
