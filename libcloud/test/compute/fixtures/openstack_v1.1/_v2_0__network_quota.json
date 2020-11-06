@@ -1,0 +1,44 @@
+{
+    "quota": {
+        "floatingip": {
+            "used": 1,
+            "limit": 2,
+            "reserved": 0
+        },
+        "rbac_policy": {
+            "used": 4,
+            "limit": 10,
+            "reserved": 0
+        },
+        "subnetpool": {
+            "used": 2,
+            "limit": -1,
+            "reserved": 0
+        },
+        "security_group_rule": {
+            "used": 10,
+            "limit": 100,
+            "reserved": 1
+        },
+        "security_group": {
+            "used": 3,
+            "limit": 10,
+            "reserved": 0
+        },
+        "subnet": {
+            "used": 3,
+            "limit": 100,
+            "reserved": 0
+        },
+        "port": {
+            "used": 21,
+            "limit": 500,
+            "reserved": 3
+        },
+        "network" :{
+            "used": 9,
+            "limit": 100,
+            "reserved": 2
+        }
+    }
+}
