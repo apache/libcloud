@@ -2254,6 +2254,18 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._to_size(self.connection.request(
             '/flavors/%s' % (size_id,)) .object['flavor'])
 
+    def ex_get_size_extra_specs(self, size_id):
+        """
+        Get the extra_specs field of a NodeSize
+
+        :param      size_id: ID of the size which should be used
+        :type       size_id: ``str``
+
+        :rtype: `dict`
+        """
+        return self.connection.request(
+            '/flavors/%s/os-extra_specs' % (size_id,)) .object['extra_specs']
+
     def get_image(self, image_id):
         """
         Get a NodeImage
