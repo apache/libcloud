@@ -61,6 +61,17 @@ Compute
   (GITHUB-1514)
   [Miguel Caballer - @micafer]
 
+- [DigitalOcean] ``_node_node`` method now ensures ``image`` and ``size``
+  attributes are also set correctly and populated on the ``Node`` object.
+  (GITHUB-1507, GITHUB-1508)
+  [@sergerdn]
+
+- [Vultr] Make sure ``private_ips`` attribute on the ``Node`` object is
+  correctly populated when listing nodes. Also add additional values to the
+  ``node.extra`` dictionary.
+  (GITHUB-1506)
+  [@sergerdn]
+
 Storage
 ~~~~~~~
 
@@ -88,6 +99,12 @@ DNS
 - [CloudFlare DNS] Add support for creating ``SSHFP`` records.
   (GITHUB-1512, GITHUB-1513)
   [Will Hughes - @insertjokehere]
+
+- [DigitalOcean] Update driver and make sure request data is sent as part of
+  HTTP request body on POST and PUT operations (previously it was sent as
+  part of query params).
+  (GITHUB-1505)
+  [Andrew Starr-Bochicchio - @andrewsomething]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------

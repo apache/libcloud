@@ -33,7 +33,6 @@ Provider                      enable container cdn enable object cdn get contain
 `RGW Outscale`_               no                   no                no                    no                
 `Amazon S3 (sa-east-1)`_      no                   no                no                    yes               
 `Amazon S3 (us-east-2)`_      no                   no                no                    yes               
-`Amazon S3 (us-gov-east-1)`_  no                   no                no                    yes
 `Amazon S3 (us-gov-west-1)`_  no                   no                no                    yes               
 `Amazon S3 (us-west-1)`_      no                   no                no                    yes               
 `Amazon S3 (us-west-2)`_      no                   no                no                    yes               

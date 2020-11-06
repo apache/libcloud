@@ -18,16 +18,15 @@ DigitalOcean Driver
 import json
 import warnings
 
-from libcloud.utils.iso8601 import parse_date
-from libcloud.utils.py3 import httplib
-
 from libcloud.common.digitalocean import DigitalOcean_v1_Error
 from libcloud.common.digitalocean import DigitalOcean_v2_BaseDriver
 from libcloud.common.types import InvalidCredsError
-from libcloud.compute.types import Provider, NodeState
-from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
 from libcloud.compute.base import Node, NodeDriver
+from libcloud.compute.base import NodeImage, NodeSize, NodeLocation, KeyPair
 from libcloud.compute.base import StorageVolume, VolumeSnapshot
+from libcloud.compute.types import Provider, NodeState
+from libcloud.utils.iso8601 import parse_date
+from libcloud.utils.py3 import httplib
 
 __all__ = [
     'DigitalOceanNodeDriver',
@@ -657,9 +656,31 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver,
             if key in data:
                 extra[key] = data[key]
         extra['region'] = data.get('region', {}).get('name')
-        node = Node(id=data['id'], name=data['name'], state=state,
-                    public_ips=public_ips, private_ips=private_ips,
-                    created_at=created, driver=self, extra=extra)
+
+        # Untouched extra values, backwards compatibility
+        resolve_data = data.get('image')
+        if resolve_data:
+            image = self._to_image(resolve_data)
+        else:
+            image = None
+
+        resolve_data = extra.get('size')
+        if resolve_data:
+            size = self._to_size(resolve_data)
+        else:
+            size = None
+
+        node = Node(
+            id=data['id'],
+            name=data['name'],
+            state=state,
+            image=image,
+            size=size,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            created_at=created,
+            driver=self,
+            extra=extra)
         return node
 
     def _to_image(self, data):
