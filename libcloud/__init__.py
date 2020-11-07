@@ -19,7 +19,6 @@ libcloud provides a unified interface to the cloud computing resources.
 :var __version__: Current version of libcloud
 """
 
-import logging
 import os
 import codecs
 import atexit
@@ -29,6 +28,9 @@ from libcloud.base import DriverTypeFactoryMap  # NOQA
 from libcloud.base import get_driver  # NOQA
 
 try:
+    # TODO: This import is slow and adds overhead in situations when no
+    # requests are made but it's necessary for detecting bad version of
+    # requests
     import requests  # NOQA
     have_requests = True
 except ImportError:
@@ -99,6 +101,7 @@ def _init_once():
             have_paramiko = False
 
         if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
+            import logging
             paramiko.util.log_to_file(filename=path, level=logging.DEBUG)
 
     # check for broken `yum install python-requests`

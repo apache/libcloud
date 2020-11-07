@@ -2509,7 +2509,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :type   client_data: ``dict``
 
         :param  client_token: The token to enable idempotency for VM
-                import requests.(optional)
+                              (optional)
         :type   client_token: ``str``
 
         :param  description: The description string for the
