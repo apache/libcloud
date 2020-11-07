@@ -68,6 +68,21 @@ Compute
   (GITHUB-1506)
   [@sergerdn]
 
+- [EC2] Optimize EC2 driver imports and move all the large constant files to
+  separate modules in ``libcloud/compute/constants/ec2_*.py`` files.
+
+  Previously all the constants were contained in
+  ``libcloud/compute/constants.py`` file. That file was imported when importing
+  EC2 driver which would add unnecessary import time and memory overhead in case
+  this data was not actually used.
+
+  Now most of the large imports are lazy and only happen when that data is
+  needed (aka when ``list_sizes()`` method is called).
+
+  ``libcloud/compute/constants.py`` file has also been removed.
+
+  [Tomaz Muraus - @Kami]
+
 Storage
 ~~~~~~~
 
