@@ -20,9 +20,6 @@ from typing import cast
 
 from enum import Enum
 
-from libcloud.utils.py3 import httplib
-from libcloud.utils.py3 import _real_unicode
-
 if False:
     # Work around for MYPY for cyclic import problem
     from libcloud.compute.base import BaseDriver
@@ -68,7 +65,7 @@ class Type(str, Enum):
     def __eq__(self, other):
         if isinstance(other, Type):
             return other.value == self.value
-        elif isinstance(other, (str, _real_unicode)):
+        elif isinstance(other, str):
             return self.value == other
 
         return super(Type, self).__eq__(other)
@@ -162,8 +159,10 @@ class InvalidCredsError(ProviderError):
     def __init__(self, value='Invalid credentials with the provider',
                  driver=None):
         # type: (str, Optional[BaseDriver]) -> None
+        # NOTE: We don't use http.client constants here since that adds ~20ms
+        # import time overhead
         super(InvalidCredsError, self).__init__(value,
-                                                http_code=httplib.UNAUTHORIZED,
+                                                http_code=401,
                                                 driver=driver)
 
 
@@ -176,9 +175,11 @@ class ServiceUnavailableError(ProviderError):
 
     def __init__(self, value='Service unavailable at provider', driver=None):
         # type: (str, Optional[BaseDriver]) -> None
+        # NOTE: We don't use http.client constants here since that adds ~20ms
+        # import time overhead
         super(ServiceUnavailableError, self).__init__(
             value,
-            http_code=httplib.SERVICE_UNAVAILABLE,
+            http_code=503,
             driver=driver
         )
 

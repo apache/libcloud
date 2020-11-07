@@ -28,13 +28,6 @@ from libcloud.base import DriverType  # NOQA
 from libcloud.base import DriverTypeFactoryMap  # NOQA
 from libcloud.base import get_driver  # NOQA
 
-
-try:
-    import paramiko  # NOQA
-    have_paramiko = True
-except ImportError:
-    have_paramiko = False
-
 try:
     import requests  # NOQA
     have_requests = True
@@ -82,6 +75,7 @@ def _init_once():
     This also checks for known environment/dependency incompatibilities.
     """
     path = os.getenv('LIBCLOUD_DEBUG')
+
     if path:
         mode = 'a'
 
@@ -96,6 +90,14 @@ def _init_once():
 
         fo = codecs.open(path, mode, encoding='utf8')
         enable_debug(fo)
+
+        # NOTE: We use lazy import to avoid unnecessary import time overhead
+
+        try:
+            import paramiko  # NOQA
+            have_paramiko = True
+        except ImportError:
+            have_paramiko = False
 
         if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
             paramiko.util.log_to_file(filename=path, level=logging.DEBUG)

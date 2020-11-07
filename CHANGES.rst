@@ -13,6 +13,14 @@ Common
   (GITHUB-1487, GITHUB-1488)
   [Michael Spagon - @mspagon]
 
+- Optimize various code imports (remove unnecessary imports, make some lazy,
+  etc.), so now importing most of the modules is around ~20-40% faster (~70
+  vs ~140 ms) and in some cases such as EC2 driver even more.
+
+  Now majority of the import time is spent in importing ``requests`` library.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
@@ -80,7 +88,7 @@ Compute
   needed (aka when ``list_sizes()`` method is called).
 
   ``libcloud/compute/constants.py`` file has also been removed.
-
+  (GITHUB-1519)
   [Tomaz Muraus - @Kami]
 
 Storage
