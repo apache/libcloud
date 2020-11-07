@@ -92,7 +92,6 @@ def _init_once():
         enable_debug(fo)
 
         # NOTE: We use lazy import to avoid unnecessary import time overhead
-
         try:
             import paramiko  # NOQA
             have_paramiko = True

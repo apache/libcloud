@@ -18,11 +18,12 @@
 #  under the License.
 
 """
-This script downloads and parses AWS EC2 from https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json.
+This script downloads and parses AWS EC2 from
+https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/index.json.
 It writes a Python module with constants about EC2's sizes and regions.
 
-Use it as following:
-    $ python contrib/scrape-ec2-sizes.py > libcloud/compute/constants.py
+Use it as following (run it in the root of the repo directory):
+    $ python contrib/scrape-ec2-sizes.py
 """
 
 import re
@@ -345,7 +346,7 @@ def dump():
         fp.write(FILE_HEADER + "\n")
         fp.write("\n")
         fp.write("INSTANCE_TYPES = " + json.dumps(sizes, indent=4, sort_keys=True,
-                                           separators=separators).replace('null', 'None'))
+                                                  separators=separators).replace('null', 'None'))
 
     print("")
     print("Data written to %s" % (file_path))
@@ -357,7 +358,7 @@ def dump():
         fp.write(FILE_HEADER + "\n")
         fp.write("\n")
         fp.write("REGION_DETAILS = " + json.dumps(regions, indent=4, sort_keys=True,
-                                           separators=separators))
+                                                  separators=separators).replace('null', 'None'))
 
     print("Data written to %s" % (file_path))
     print("")
@@ -381,7 +382,7 @@ def dump():
         fp.write(FILE_HEADER + "\n")
         fp.write("\n")
         fp.write("REGION_DETAILS = " + json.dumps(regions_partial, indent=4, sort_keys=True,
-                                           separators=separators))
+                                                  separators=separators).replace('null', 'None'))
 
     print("Data written to %s" % (file_path))
     print("")

@@ -42,14 +42,13 @@ from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
     StorageVolumeState, VolumeSnapshotState
-from libcloud.compute.constants.ec2_region_details_partial import REGION_DETAILS \
-    as REGION_DETAILS_PARTIAL
+from libcloud.compute.constants.ec2_region_details_partial import \
+    REGION_DETAILS as REGION_DETAILS_PARTIAL
 from libcloud.pricing import get_size_price
 
 __all__ = [
     'API_VERSION',
     'NAMESPACE',
-    'INSTANCE_TYPES',
     'OUTSCALE_INSTANCE_TYPES',
     'OUTSCALE_SAS_REGION_DETAILS',
     'OUTSCALE_INC_REGION_DETAILS',
@@ -1688,8 +1687,10 @@ class BaseEC2NodeDriver(NodeDriver):
         # NOTE: Those two imports are intentionally here and made lazy to
         # avoid importing massive constant file in case it's not actually
         # needed
-        from libcloud.compute.constants.ec2_region_details_complete import REGION_DETAILS
-        from libcloud.compute.constants.ec2_instance_types import INSTANCE_TYPES
+        from libcloud.compute.constants.ec2_region_details_complete import \
+            REGION_DETAILS
+        from libcloud.compute.constants.ec2_instance_types import \
+            INSTANCE_TYPES
 
         available_types = REGION_DETAILS[self.region_name]['instance_types']
         sizes = []
@@ -5941,7 +5942,8 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
     signature_version = '2'
 
     def list_sizes(self, location=None):
-        from libcloud.compute.constants.ec2_instance_types import INSTANCE_TYPES
+        from libcloud.compute.constants.ec2_instance_types import \
+            INSTANCE_TYPES
 
         available_types = REGION_DETAILS_NIMBUS['instance_types']
         sizes = []
