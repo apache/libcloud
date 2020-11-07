@@ -29,10 +29,10 @@ Use it as following (run it in the root of the repo directory):
 import re
 import os
 import json
-import shutil
 import atexit
 
 import requests
+import tqdm  # pylint: disable=import-error
 import ijson  # pylint: disable=import-error
 
 FILEPATH = os.environ.get('TMP_JSON', '/tmp/ec.json')
@@ -228,12 +228,21 @@ def download_json():
     with requests.get(URL, stream=True) as response:
         atexit.register(remove_partial_cached_file)
 
+        total_size_in_bytes = int(response.headers.get('content-length', 0))
+        progress_bar = tqdm.tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+
+        chunk_size = 10 * 1024 * 1024
+
         with open(FILEPATH, 'wb') as fp:
             # NOTE: We use shutil.copyfileobj with large chunk size instead of
             # response.iter_content with large chunk size since data we
             # download is massive and copyfileobj is more efficient.
-            shutil.copyfileobj(response.raw, fp, 10 * 1024 * 1024)
+            # shutil.copyfileobj(response.raw, fp, 10 * 1024 * 1024)
+            for chunk_data in response.iter_content(chunk_size):
+                progress_bar.update(len(chunk_data))
+                fp.write(chunk_data)
 
+        progress_bar.close()
         atexit.unregister(remove_partial_cached_file)
 
     return open(FILEPATH, 'r')
