@@ -36,7 +36,7 @@ jobs:
     - name: License and File name Checks
       env: ENV=checks
       python: 3.7
-      before_script: TOX_ENV=checks
+      before_script: TOX_ENV=checks,import-timings
     - name: Lint (flake8)
       env: ENV=lint
       python: 3.7
