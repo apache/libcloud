@@ -97,8 +97,8 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None,
                               it uses a default path.
 
     :type cache_all: ``bool``
-    :param cache_all: True to cache pricing data in memory for all the drivers and
-                      not just for the requested one.
+    :param cache_all: True to cache pricing data in memory for all the drivers
+                      and not just for the requested one.
 
     :rtype: ``dict``
     :return: Dictionary with pricing where a key name is size ID and
