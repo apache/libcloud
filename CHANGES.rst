@@ -21,6 +21,22 @@ Common
   (GITHUB-1519)
   [Tomaz Muraus]
 
+- ``libcloud.pricing.get_size_price()`` function has been updated so it only
+  caches pricing data in memory for the requested drivers.
+
+  This way we avoid caching data in memory for drivers which may never be
+  used.
+
+  If you want to revert to old behavior (cache pricing data for all the
+  drivers in memory), you can do that by passing ``cache_all=True`` argument
+  to that function.
+
+  Passing ``cache_all=True`` might come handy in situations where you know the
+  application will work with a lot of different drivers - this way you can
+  avoid multiple disk reads when requesting pricing data for different drivers.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 

@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
-
-from typing import Dict
-
 """
 A class which handles loading the pricing files.
 """
+
+from __future__ import with_statement
+
+from typing import Dict
+from typing import Optional
+from typing import Union
 
 import os.path
 from os.path import join as pjoin
@@ -62,6 +64,7 @@ VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
 
 
 def get_pricing_file_path(file_path=None):
+    # type: (Optional[str]) -> str
     if os.path.exists(CUSTOM_PRICING_FILE_PATH) and \
        os.path.isfile(CUSTOM_PRICING_FILE_PATH):
         # Custom pricing file is available, use it
@@ -70,9 +73,18 @@ def get_pricing_file_path(file_path=None):
     return DEFAULT_PRICING_FILE_PATH
 
 
-def get_pricing(driver_type, driver_name, pricing_file_path=None):
+def get_pricing(driver_type, driver_name, pricing_file_path=None,
+                cache_all=False):
+    # type: (str, str, Optional[str], bool) -> Optional[dict]
     """
     Return pricing for the provided driver.
+
+    NOTE: This method will also cache data for the requested driver
+    memory.
+
+    We intentionally only cache data for the requested driver and not all the
+    pricing data since the whole pricing data is quite large (~2 MB). This
+    way we avoid unncessary memory overhead.
 
     :type driver_type: ``str``
     :param driver_type: Driver type ('compute' or 'storage')
@@ -83,6 +95,10 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     :type pricing_file_path: ``str``
     :param pricing_file_path: Custom path to a price file. If not provided
                               it uses a default path.
+
+    :type cache_all: ``bool``
+    :param cache_all: True to cache pricing data in memory for all the drivers and
+                      not just for the requested one.
 
     :rtype: ``dict``
     :return: Dictionary with pricing where a key name is size ID and
@@ -97,22 +113,34 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None):
     if not pricing_file_path:
         pricing_file_path = get_pricing_file_path(file_path=pricing_file_path)
 
-    with open(pricing_file_path) as fp:
+    with open(pricing_file_path, "r") as fp:
         content = fp.read()
 
     pricing_data = json.loads(content)
-    size_pricing = pricing_data[driver_type][driver_name]
+    driver_pricing = pricing_data[driver_type][driver_name]
 
-    for driver_type in VALID_PRICING_DRIVER_TYPES:
-        # pylint: disable=maybe-no-member
-        pricing = pricing_data.get(driver_type, None)
-        if pricing:
+    # NOTE: We only cache prices in memory for the the requested drivers.
+    # This way we avoid storing massive pricing data for all the drivers in
+    # memory
+
+    if cache_all:
+        for driver_type in VALID_PRICING_DRIVER_TYPES:
+            # pylint: disable=maybe-no-member
+            pricing = pricing_data.get(driver_type, None)
+
+            if not pricing:
+                continue
+
             PRICING_DATA[driver_type] = pricing
+    else:
+        set_pricing(driver_type=driver_type, driver_name=driver_name,
+                    pricing=driver_pricing)
 
-    return size_pricing
+    return driver_pricing
 
 
 def set_pricing(driver_type, driver_name, pricing):
+    # type: (str, str, dict) -> None
     """
     Populate the driver pricing dictionary.
 
@@ -130,6 +158,7 @@ def set_pricing(driver_type, driver_name, pricing):
 
 
 def get_size_price(driver_type, driver_name, size_id, region=None):
+    # type: (str, str, Union[str,int], Optional[str]) -> Optional[float]
     """
     Return price for the provided size.
 
@@ -147,6 +176,9 @@ def get_size_price(driver_type, driver_name, size_id, region=None):
     :return: Size price.
     """
     pricing = get_pricing(driver_type=driver_type, driver_name=driver_name)
+    assert pricing is not None
+
+    price = None  # Type: Optional[float]
 
     try:
         if region is None:
@@ -161,6 +193,7 @@ def get_size_price(driver_type, driver_name, size_id, region=None):
 
 
 def invalidate_pricing_cache():
+    # type: () -> None
     """
     Invalidate pricing cache for all the drivers.
     """
@@ -169,6 +202,7 @@ def invalidate_pricing_cache():
 
 
 def clear_pricing_data():
+    # type: () -> None
     """
     Invalidate pricing cache for all the drivers.
 
@@ -179,6 +213,7 @@ def clear_pricing_data():
 
 
 def invalidate_module_pricing_cache(driver_type, driver_name):
+    # type: (str, str) -> None
     """
     Invalidate the cache for the specified driver.
 
@@ -194,6 +229,7 @@ def invalidate_module_pricing_cache(driver_type, driver_name):
 
 def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET,
                           file_path=CUSTOM_PRICING_FILE_PATH):
+    # type: (str, str) -> None
     """
     Download pricing file from the file_url and save it to file_path.
 
