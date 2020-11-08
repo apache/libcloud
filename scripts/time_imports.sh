@@ -18,8 +18,8 @@
 set -e
 
 # Script which fails if any of the import takes more than threshold ms
-LIBCLOUD_CUMULATIVE_IMPORT_TIME_LIMIT_US=170000
-EC2_DRIVER_CUMULATIVE_IMPORT_TIME_LIMIT_US=220000
+LIBCLOUD_CUMULATIVE_IMPORT_TIME_LIMIT_US=350000
+EC2_DRIVER_CUMULATIVE_IMPORT_TIME_LIMIT_US=450000
 
 # Clean up any cached files to ensure consistent and clean environment
 find . -name "*.pyc" -print0 | xargs -0 rm
