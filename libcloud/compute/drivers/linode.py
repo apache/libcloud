@@ -770,6 +770,7 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
         'rebuilding': NodeState.UPDATING,
         'cloning': NodeState.MIGRATING,
         'restoring': NodeState.PENDING,
+        'resizing': NodeState.RECONFIGURING
     }
 
     LINODE_DISK_STATES = {
@@ -1583,7 +1584,8 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
             'location': data['region'],
             'linode_id': data['linode_id'],
             'linode_label': data['linode_label'],
-            'state': self.LINODE_VOLUME_STATES[data['status']]
+            'state': self.LINODE_VOLUME_STATES[data['status']],
+            'filesystem_path': data['filesystem_path']
         }
         return StorageVolume(
             id=str(data['id']),
