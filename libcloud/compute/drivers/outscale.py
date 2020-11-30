@@ -20,6 +20,7 @@ import json
 import requests
 from datetime import datetime
 
+from typing import List
 from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
@@ -87,7 +88,9 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadLocations"
         data = json.dumps({"DryRun": ex_dry_run})
         response = self._call_api(action, data)
-        return self._to_locations(response.json()["Locations"])
+        if response.status_code == 200:
+            return self._to_locations(response.json()["Locations"])
+        return response.json()
 
     def ex_list_regions(self, ex_dry_run: bool = False):
         """
@@ -119,7 +122,9 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadSubregions"
         data = json.dumps({"DryRun": ex_dry_run})
         response = self._call_api(action, data)
-        return response.json()["Subregions"]
+        if response.status_code == 200:
+            return response.json()["Subregions"]
+        return response.json()
 
     def ex_create_public_ip(self, dry_run: bool = False):
         """
@@ -169,9 +174,10 @@ class OutscaleNodeDriver(NodeDriver):
         if public_ip_id is not None:
             data.update({"PublicIpId": public_ip_id})
         data = json.dumps(data)
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_public_ips(self, data: str = "{}"):
         """
@@ -262,9 +268,10 @@ class OutscaleNodeDriver(NodeDriver):
         if allow_relink is not None:
             data.update({"AllowRelink": allow_relink})
         data = json.dumps(data)
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_detach_public_ip(self,
                             public_ip: str = None,
@@ -296,9 +303,10 @@ class OutscaleNodeDriver(NodeDriver):
         if link_public_ip_id is not None:
             data.update({"LinkPublicIpId": link_public_ip_id})
         data = json.dumps(data)
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def create_node(self,
                     image: NodeImage,
@@ -312,12 +320,12 @@ class OutscaleNodeDriver(NodeDriver):
                     ex_keypair_name: str = None,
                     ex_max_vms_count: int = None,
                     ex_min_vms_count: int = None,
-                    ex_nics: [dict] = None,
+                    ex_nics: List[dict] = None,
                     ex_performance: str = None,
                     ex_placement: dict = None,
-                    ex_private_ips: [str] = None,
-                    ex_security_group_ids: [str] = None,
-                    ex_security_groups: [str] = None,
+                    ex_private_ips: List[str] = None,
+                    ex_security_group_ids: List[str] = None,
+                    ex_security_groups: List[str] = None,
                     ex_subnet_id: str = None,
                     ex_user_data: str = None,
                     ex_vm_initiated_shutdown_behavior: str = None,
@@ -469,8 +477,9 @@ class OutscaleNodeDriver(NodeDriver):
                 }
             }
             data = json.dumps(data)
-            if self._call_api(action, data).status_code != 200:
-                return False
+            response = self._call_api(action, data)
+            if response.status_code != 200:
+                return response.json()
             action = "ReadVms"
             data = {
                 "DryRun": ex_dry_run,
@@ -495,9 +504,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "RebootVms"
         data = json.dumps({"VmIds": [node.id]})
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def start_node(self, node: Node):
         """
@@ -508,13 +518,14 @@ class OutscaleNodeDriver(NodeDriver):
         :type       node: ``Node``
 
         :return: the rebooted instances
-        :rtype: ``dict``
+        :rtype: ``bool``
         """
         action = "StartVms"
         data = json.dumps({"VmIds": [node.id]})
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def stop_node(self, node: Node):
         """
@@ -525,13 +536,14 @@ class OutscaleNodeDriver(NodeDriver):
         :type       node: ``Node``
 
         :return: the rebooted instances
-        :rtype: ``dict``
+        :rtype: ``bool``
         """
         action = "StopVms"
         data = json.dumps({"VmIds": [node.id]})
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def list_nodes(self, ex_data: str = "{}"):
         """
@@ -541,7 +553,10 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "ReadVms"
-        return self._to_nodes(self._call_api(action, ex_data).json()["Vms"])
+        response = self._call_api(action, ex_data)
+        if response.status_code == 200:
+            return self._to_nodes(response.json()["Vms"])
+        return response.json()
 
     def destroy_node(self, node: Node):
         """
@@ -551,13 +566,14 @@ class OutscaleNodeDriver(NodeDriver):
         :type       node: ``Node``
 
         :return: request
-        :rtype: ``dict``
+        :rtype: ``bool``
         """
         action = "DeleteVms"
         data = json.dumps({"VmIds": node.id})
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_read_admin_password_node(self, node: Node, dry_run: bool = False):
         """
@@ -577,7 +593,6 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``str``
         """
         action = "ReadAdminPassword"
-        print(node)
         data = json.dumps({"DryRun": dry_run, "VmId": node.id})
         response = self._call_api(action, data)
         if response.status_code == 200:
@@ -609,11 +624,11 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_list_node_types(
         self,
         bsu_optimized: bool = None,
-        memory_sizes: [int] = None,
-        vcore_counts: [int] = None,
-        vm_type_names: [str] = None,
-        volume_counts: [int] = None,
-        volume_sizes: [int] = None,
+        memory_sizes: List[int] = None,
+        vcore_counts: List[int] = None,
+        vm_type_names: List[str] = None,
+        volume_counts: List[int] = None,
+        volume_sizes: List[int] = None,
         dry_run: bool = False
     ):
         """
@@ -671,9 +686,9 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_list_nodes_states(
         self,
         all_vms: bool = None,
-        subregion_names: [str] = None,
-        vm_ids: [str] = None,
-        vm_states: [str] = None,
+        subregion_names: List[str] = None,
+        vm_ids: List[str] = None,
+        vm_states: List[str] = None,
         dry_run: bool = False
     ):
         """
@@ -718,13 +733,13 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_update_node(
         self,
-        block_device_mapping: [dict],
+        block_device_mapping: List[dict],
         bsu_optimized: bool = None,
         deletion_protection: bool = False,
         is_source_dest_checked: bool = None,
         keypair_name: str = True,
         performance: str = True,
-        security_group_ids: [str] = None,
+        security_group_ids: List[str] = None,
         user_data: str = False,
         vm_id: str = None,
         vm_initiated_shutown_behavior: str = None,
@@ -1001,27 +1016,27 @@ class OutscaleNodeDriver(NodeDriver):
 
     def list_images(
         self,
-        account_aliases: [str] = None,
-        account_ids: [str] = None,
-        architectures: [str] = None,
+        account_aliases: List[str] = None,
+        account_ids: List[str] = None,
+        architectures: List[str] = None,
         block_device_mapping_delete_on_vm_deletion: bool = False,
-        block_device_mapping_device_names: [str] = None,
-        block_device_mapping_snapshot_ids: [str] = None,
-        block_device_mapping_volume_sizes: [int] = None,
-        block_device_mapping_volume_types: [str] = None,
-        descriptions: [str] = None,
-        file_locations: [str] = None,
-        image_ids: [str] = None,
-        image_names: [str] = None,
-        permission_to_launch_account_ids: [str] = None,
+        block_device_mapping_device_names: List[str] = None,
+        block_device_mapping_snapshot_ids: List[str] = None,
+        block_device_mapping_volume_sizes: List[int] = None,
+        block_device_mapping_volume_types: List[str] = None,
+        descriptions: List[str] = None,
+        file_locations: List[str] = None,
+        image_ids: List[str] = None,
+        image_names: List[str] = None,
+        permission_to_launch_account_ids: List[str] = None,
         permission_to_lauch_global_permission: bool = False,
-        root_device_names: [str] = None,
-        root_device_types: [str] = None,
-        states: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
-        virtualization_types: [str] = None,
+        root_device_names: List[str] = None,
+        root_device_types: List[str] = None,
+        states: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
+        virtualization_types: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -1220,7 +1235,7 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_list_image_export_tasks(
         self,
         dry_run: bool = False,
-        task_ids: [str] = None,
+        task_ids: List[str] = None,
     ):
         """
         Lists one or more image export tasks.
@@ -1260,7 +1275,9 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadImages"
         data = '{"Filters": {"ImageIds": ["' + image_id + '"]}}'
         response = self._call_api(action, data)
-        return self._to_node_image(response.json()["Images"][0])
+        if response.status_code == 200:
+            return self._to_node_image(response.json()["Images"][0])
+        return response.json()
 
     def delete_image(self, node_image: NodeImage):
         """
@@ -1270,21 +1287,22 @@ class OutscaleNodeDriver(NodeDriver):
         :type       node_image: ``str``
 
         :return: request
-        :rtype: ``dict``
+        :rtype: ``bool``
         """
         action = "DeleteImage"
         data = '{"ImageId": "' + node_image.id + '"}'
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_update_image(
         self,
         dry_run: bool = False,
         image: NodeImage = None,
-        perm_to_launch_addition_account_ids: [str] = None,
+        perm_to_launch_addition_account_ids: List[str] = None,
         perm_to_launch_addition_global_permission: bool = None,
-        perm_to_launch_removals_account_ids: [str] = None,
+        perm_to_launch_removals_account_ids: List[str] = None,
         perm_to_launch_removals_global_permission: bool = None
     ):
         """
@@ -1385,7 +1403,9 @@ class OutscaleNodeDriver(NodeDriver):
         data = json.dumps(data)
         action = "CreateKeypair"
         response = self._call_api(action, data)
-        return self._to_key_pair(response.json()["Keypair"])
+        if response.status_code == 200:
+            return self._to_key_pair(response.json()["Keypair"])
+        return response.json()
 
     def list_key_pairs(self, ex_data: str = "{}"):
         """
@@ -1396,7 +1416,9 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadKeypairs"
         response = self._call_api(action, ex_data)
-        return self._to_key_pairs(response.json()["Keypairs"])
+        if response.status_code == 200:
+            return self._to_key_pairs(response.json()["Keypairs"])
+        return response.json()
 
     def get_key_pair(self, name: str):
         """
@@ -1412,7 +1434,9 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadKeypairs"
         data = '{"Filters": {"KeypairNames" : ["' + name + '"]}}'
         response = self._call_api(action, data)
-        return self._to_key_pair(response.json()["Keypairs"][0])
+        if response.status_code == 200:
+            return self._to_key_pair(response.json()["Keypairs"][0])
+        return response.json()
 
     def delete_key_pair(self, key_pair: KeyPair):
         """
@@ -1427,9 +1451,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteKeypair"
         data = '{"KeypairName": "' + key_pair.name + '"}'
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def create_volume_snapshot(
         self,
@@ -1495,7 +1520,9 @@ class OutscaleNodeDriver(NodeDriver):
         data = json.dumps(data)
         action = "CreateSnapshot"
         response = self._call_api(action, data)
-        return self._to_snapshot(response.json()["Volume"])
+        if response.status_code == 200:
+            return self._to_snapshot(response.json()["Volume"])
+        return response.json()
 
     def list_snapshots(self, ex_data: str = "{}"):
         """
@@ -1506,7 +1533,9 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadSnapshots"
         response = self._call_api(action, ex_data)
-        return self._to_snapshots(response.json()["Snapshots"])
+        if response.status_code == 200:
+            return self._to_snapshots(response.json()["Snapshots"])
+        return response.json()
 
     def list_volume_snapshots(self, volume):
         """
@@ -1523,8 +1552,10 @@ class OutscaleNodeDriver(NodeDriver):
                 "VolumeIds": [volume.id]
             }
         }
-        response = self._call_api(action, data).json()["Snapshots"]
-        return self._to_snapshots(response)
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return self._to_snapshots(response.json()["Snapshots"])
+        return response.json()
 
     def destroy_volume_snapshot(self, snapshot: VolumeSnapshot):
         """
@@ -1539,9 +1570,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteSnapshot"
         data = '{"SnapshotId": "' + snapshot.id + '"}'
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_snapshot_export_task(
         self,
@@ -1636,7 +1668,7 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_list_snapshot_export_tasks(
         self,
         dry_run: bool = False,
-        task_ids: [str] = None,
+        task_ids: List[str] = None,
     ):
         """
         Lists one or more image export tasks.
@@ -1664,9 +1696,9 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_update_snapshot(
         self,
-        perm_to_create_volume_addition_account_id: [str] = None,
+        perm_to_create_volume_addition_account_id: List[str] = None,
         perm_to_create_volume_addition_global_perm: bool = None,
-        perm_to_create_volume_removals_account_id: [str] = None,
+        perm_to_create_volume_removals_account_id: List[str] = None,
         perm_to_create_volume_removals_global_perm: bool = None,
         snapshot: VolumeSnapshot = None,
         dry_run: bool = False
@@ -1794,7 +1826,9 @@ class OutscaleNodeDriver(NodeDriver):
         data = json.dumps(data)
         action = "CreateVolume"
         response = self._call_api(action, data)
-        return self._to_volume(response.json()["Volume"])
+        if response.status_code == 200:
+            return self._to_volume(response.json()["Volume"])
+        return response.json()
 
     def list_volumes(self, ex_data: str = "{}"):
         """
@@ -1803,7 +1837,9 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadVolumes"
         response = self._call_api(action, ex_data)
-        return self._to_volumes(response.json()["Volumes"])
+        if response.status_code == 200:
+            return self._to_volumes(response.json()["Volumes"])
+        return response.json()
 
     def destroy_volume(self, volume: StorageVolume):
         """
@@ -1818,9 +1854,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteVolume"
         data = '{"VolumeId": "' + volume.id + '"}'
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def attach_volume(
         self,
@@ -1851,9 +1888,10 @@ class OutscaleNodeDriver(NodeDriver):
             "VolumeId": volume.id,
             "DeviceName": device
         })
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def detach_volume(self,
                       volume: StorageVolume,
@@ -1883,9 +1921,10 @@ class OutscaleNodeDriver(NodeDriver):
         if ex_force_unlink is not None:
             data.update({"ForceUnlink": ex_force_unlink})
         data = json.dumps(data)
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_check_account(
         self,
@@ -1914,9 +1953,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "CheckAuthentication"
         data = {"DryRun": dry_run, "Login": login, "Password": password}
-        if self._call_api(action, json.dumps(data)).status_code == 200:
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_read_account(self, dry_run: bool = False):
         """
@@ -1931,7 +1971,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "ReadAccounts"
         data = json.dumps({"DryRun": dry_run})
-        return self._call_api(action, data).json()["Accounts"][0]
+        response = self._call_api(action, data)
+        if response.status_code == 200:
+            return response.json()["Accounts"][0]
+        return response.json()
 
     def ex_list_consumption_account(
         self,
@@ -2206,9 +2249,10 @@ class OutscaleNodeDriver(NodeDriver):
         data = json.dumps({
             "DryRun": dry_run, "Password": password, "Token": token
         })
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_send_reset_password_email(
         self,
@@ -2234,9 +2278,10 @@ class OutscaleNodeDriver(NodeDriver):
         data = json.dumps({
             "DryRun": dry_run, "Email": email
         })
-        if self._call_api(action, data).status_code == 200:
+        response = self._call_api(action, data)
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_tag(
         self,
@@ -2273,9 +2318,10 @@ class OutscaleNodeDriver(NodeDriver):
         data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": []}
         if tag_key is not None and tag_value is not None:
             data["Tags"].append({"Key": tag_key, "Value": tag_value})
-        if self._call_api(action, json.dumps(data)).status_code == 200:
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_tags(
         self,
@@ -2305,9 +2351,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "CreateTags"
         data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": tags}
-        if self._call_api(action, json.dumps(data)).status_code == 200:
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_delete_tags(
         self,
@@ -2334,9 +2381,10 @@ class OutscaleNodeDriver(NodeDriver):
         """
         action = "DeleteTags"
         data = {"DryRun": dry_run, "ResourceIds": resource_ids, "Tags": tags}
-        if self._call_api(action, json.dumps(data)).status_code == 200:
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_tags(
         self,
@@ -2441,7 +2489,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_access_keys(
         self,
@@ -2701,7 +2749,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_dhcp_options(
         self,
@@ -2777,7 +2825,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_dhcp_options(
         self,
@@ -2930,7 +2978,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_direct_links(
         self,
@@ -3074,7 +3122,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_direct_link_interfaces(
         self,
@@ -3196,7 +3244,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_unlink_flexible_gpu(
         self,
@@ -3226,7 +3274,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_link_flexible_gpu(
         self,
@@ -3264,7 +3312,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_flexible_gpu_catalog(
         self,
@@ -3447,7 +3495,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_link_internet_service(
         self,
@@ -3484,7 +3532,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_unlink_internet_service(
         self,
@@ -3522,16 +3570,16 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_internet_services(
         self,
-        internet_service_ids: [str] = None,
-        link_net_ids: [str] = None,
-        link_states: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        internet_service_ids: List[str] = None,
+        link_net_ids: List[str] = None,
+        link_states: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False
     ):
         """
@@ -3796,12 +3844,12 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_delete_load_balancer_listeners(
         self,
         load_balancer_name: str = None,
-        load_balancer_ports: [int] = None,
+        load_balancer_ports: List[int] = None,
         dry_run: bool = False,
     ):
         """
@@ -3831,11 +3879,11 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_listener_rules(
         self,
-        listener_rule_names: [str] = None,
+        listener_rule_names: List[str] = None,
         dry_run: bool = False
     ):
         """
@@ -3914,11 +3962,11 @@ class OutscaleNodeDriver(NodeDriver):
         self,
         load_balancer_name: str = None,
         load_balancer_type: str = None,
-        security_groups: [str] = None,
-        subnets: [str] = None,
+        security_groups: List[str] = None,
+        subnets: List[str] = None,
         subregion_names: str = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
         l_backend_port: int = None,
         l_backend_protocol: str = None,
         l_load_balancer_port: int = None,
@@ -4036,9 +4084,9 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_create_load_balancer_tags(
         self,
-        load_balancer_names: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
+        load_balancer_names: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -4103,12 +4151,12 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_delete_load_balancer_tags(
         self,
-        load_balancer_names: [str] = None,
-        tag_keys: [str] = None,
+        load_balancer_names: List[str] = None,
+        tag_keys: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -4138,11 +4186,11 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_deregister_vms_in_load_balancer(
         self,
-        backend_vm_ids: [str] = None,
+        backend_vm_ids: List[str] = None,
         load_balancer_name: str = None,
         dry_run: bool = False,
     ):
@@ -4173,11 +4221,11 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_load_balancer_tags(
         self,
-        load_balancer_names: [str] = None,
+        load_balancer_names: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -4206,7 +4254,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_load_balancers(
         self,
-        load_balancer_names: [str] = None,
+        load_balancer_names: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -4234,7 +4282,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_vms_health(
         self,
-        backend_vm_ids: [str] = None,
+        backend_vm_ids: List[str] = None,
         load_balancer_name: str = None,
         dry_run: bool = False,
     ):
@@ -4269,7 +4317,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_register_vms_in_load_balancer(
         self,
-        backend_vm_ids: [str] = None,
+        backend_vm_ids: List[str] = None,
         load_balancer_name: str = None,
         dry_run: bool = False,
     ):
@@ -4322,7 +4370,7 @@ class OutscaleNodeDriver(NodeDriver):
         health_check_unhealthy_threshold: int = None,
         load_balancer_name: str = None,
         load_balancer_port: int = None,
-        policy_names: [str] = None,
+        policy_names: List[str] = None,
         server_certificate_id: str = None,
         dry_run: bool = False,
     ):
@@ -4573,7 +4621,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_nat_service(
         self,
@@ -4651,17 +4699,17 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_nat_services(
         self,
-        nat_service_ids: [str] = None,
-        net_ids: [str] = None,
-        states: [str] = None,
-        subnet_ids: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        nat_service_ids: List[str] = None,
+        net_ids: List[str] = None,
+        states: List[str] = None,
+        subnet_ids: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -4797,18 +4845,18 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_nets(
         self,
-        dhcp_options_set_ids: [str] = None,
-        ip_ranges: [str] = None,
+        dhcp_options_set_ids: List[str] = None,
+        ip_ranges: List[str] = None,
         is_default: bool = None,
-        net_ids: [str] = None,
-        states: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        net_ids: List[str] = None,
+        states: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -4909,7 +4957,7 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_create_net_access_point(
         self,
         net_id: str = None,
-        route_table_ids: [str] = None,
+        route_table_ids: List[str] = None,
         service_name: str = None,
         dry_run: bool = False,
     ):
@@ -4986,12 +5034,12 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_nets_access_point_services(
         self,
-        service_ids: [str] = None,
-        service_names: [str] = None,
+        service_ids: List[str] = None,
+        service_names: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5026,13 +5074,13 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_nets_access_points(
         self,
-        net_access_point_ids: [str] = None,
-        net_ids: [str] = None,
-        service_names: [str] = None,
-        states: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        net_access_point_ids: List[str] = None,
+        net_ids: List[str] = None,
+        service_names: List[str] = None,
+        states: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5097,9 +5145,9 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_update_net_access_point(
         self,
-        add_route_table_ids: [str] = None,
+        add_route_table_ids: List[str] = None,
         net_access_point_id: str = None,
-        remove_route_table_ids: [str] = None,
+        remove_route_table_ids: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5183,7 +5231,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_accept_net_peering(
         self,
-        net_peering_id: [str] = None,
+        net_peering_id: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5214,7 +5262,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_delete_net_peering(
         self,
-        net_peering_id: [str] = None,
+        net_peering_id: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5245,22 +5293,22 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_net_peerings(
         self,
-        accepter_net_account_ids: [str] = None,
-        accepter_net_ip_ranges: [str] = None,
-        accepter_net_net_ids: [str] = None,
-        net_peering_ids: [str] = None,
-        source_net_account_ids: [str] = None,
-        source_net_ip_ranges: [str] = None,
-        source_net_net_ids: [str] = None,
-        state_messages: [str] = None,
-        states_names: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        accepter_net_account_ids: List[str] = None,
+        accepter_net_ip_ranges: List[str] = None,
+        accepter_net_net_ids: List[str] = None,
+        net_peering_ids: List[str] = None,
+        source_net_account_ids: List[str] = None,
+        source_net_ip_ranges: List[str] = None,
+        source_net_net_ids: List[str] = None,
+        state_messages: List[str] = None,
+        states_names: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5359,7 +5407,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_reject_net_peering(
         self,
-        net_peering_id: [str] = None,
+        net_peering_id: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5386,14 +5434,14 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_nic(
         self,
         description: str = None,
-        private_ips_is_primary: [str] = None,
-        private_ips: [str] = None,
-        security_group_ids: [str] = None,
+        private_ips_is_primary: List[str] = None,
+        private_ips: List[str] = None,
+        security_group_ids: List[str] = None,
         subnet_id: str = None,
         dry_run: bool = False,
     ):
@@ -5514,7 +5562,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_delete_nic(
         self,
@@ -5542,13 +5590,13 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_link_private_ips(
         self,
         allow_relink: bool = None,
         nic_id: str = None,
-        private_ips: [str] = None,
+        private_ips: List[str] = None,
         secondary_private_ip_count: int = None,
         dry_run: bool = False,
     ):
@@ -5602,15 +5650,15 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_nics(
         self,
-        link_nic_sort_numbers: [int] = None,
-        link_nic_vm_ids: [str] = None,
-        nic_ids: [str] = None,
-        private_ips_private_ips: [str] = None,
-        subnet_ids: [str] = None,
+        link_nic_sort_numbers: List[int] = None,
+        link_nic_vm_ids: List[str] = None,
+        nic_ids: List[str] = None,
+        private_ips_private_ips: List[str] = None,
+        subnet_ids: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5671,7 +5719,7 @@ class OutscaleNodeDriver(NodeDriver):
     def ex_unlink_private_ips(
         self,
         nic_id: str = None,
-        private_ips: [str] = None,
+        private_ips: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5701,14 +5749,14 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_update_nic(
         self,
         description: str = None,
         link_nic_delete_on_vm_deletion: str = None,
         link_nic_id: str = None,
-        security_group_ids: [str] = None,
+        security_group_ids: List[str] = None,
         nic_id: str = None,
         dry_run: bool = False,
     ):
@@ -5763,7 +5811,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_product_types(
         self,
-        product_type_ids: [str] = None,
+        product_type_ids: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5792,10 +5840,10 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_quotas(
         self,
-        collections: [str] = None,
-        quota_names: [str] = None,
-        quota_types: [str] = None,
-        short_descriptions: [str] = None,
+        collections: List[str] = None,
+        quota_names: List[str] = None,
+        quota_types: List[str] = None,
+        short_descriptions: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -5955,7 +6003,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_update_route(
         self,
@@ -6093,7 +6141,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_link_route_table(
         self,
@@ -6133,23 +6181,23 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_route_tables(
         self,
-        link_route_table_ids: [str] = None,
-        link_route_table_link_route_table_ids: [str] = None,
+        link_route_table_ids: List[str] = None,
+        link_route_table_link_route_table_ids: List[str] = None,
         link_route_table_main: bool = None,
-        link_subnet_ids: [str] = None,
-        net_ids: [str] = None,
-        route_creation_methods: [str] = None,
-        route_destination_ip_ranges: [str] = None,
-        route_destination_service_ids: [str] = None,
-        route_gateway_ids: [str] = None,
-        route_nat_service_ids: [str] = None,
-        route_net_peering_ids: [str] = None,
-        route_states: [str] = None,
-        route_table_ids: [str] = None,
-        route_vm_ids: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        link_subnet_ids: List[str] = None,
+        net_ids: List[str] = None,
+        route_creation_methods: List[str] = None,
+        route_destination_ip_ranges: List[str] = None,
+        route_destination_service_ids: List[str] = None,
+        route_gateway_ids: List[str] = None,
+        route_nat_service_ids: List[str] = None,
+        route_net_peering_ids: List[str] = None,
+        route_states: List[str] = None,
+        route_table_ids: List[str] = None,
+        route_vm_ids: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -6337,7 +6385,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_server_certificate(
         self,
@@ -6595,17 +6643,17 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_security_groups(
         self,
-        account_ids: [str] = None,
-        net_ids: [str] = None,
-        security_group_ids: [str] = None,
-        security_group_names: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        account_ids: List[str] = None,
+        net_ids: List[str] = None,
+        security_group_ids: List[str] = None,
+        security_group_names: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -6687,7 +6735,7 @@ class OutscaleNodeDriver(NodeDriver):
         flow: str = None,
         from_port_range: int = None,
         ip_range: str = None,
-        rules: [dict] = None,
+        rules: List[dict] = None,
         sg_account_id_to_link: str = None,
         sg_id: str = None,
         sg_name_to_link: str = None,
@@ -6792,7 +6840,7 @@ class OutscaleNodeDriver(NodeDriver):
         from_port_range: int = None,
         ip_protocol: str = None,
         ip_range: str = None,
-        rules: [dict] = None,
+        rules: List[dict] = None,
         sg_account_id_to_unlink: str = None,
         sg_id: str = None,
         sg_name_to_unlink: str = None,
@@ -6943,7 +6991,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_link_virtual_gateway(
         self,
@@ -6982,14 +7030,14 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_virtual_gateways(
         self,
-        connection_types: [str] = None,
-        link_net_ids: [str] = None,
-        link_states: [str] = None,
-        states: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
-        virtual_gateway_id: [str] = None,
+        connection_types: List[str] = None,
+        link_net_ids: List[str] = None,
+        link_states: List[str] = None,
+        states: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
+        virtual_gateway_id: List[str] = None,
         dry_run: bool = False
     ):
         """
@@ -7094,7 +7142,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_update_route_propagation(
         self,
@@ -7167,7 +7215,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_update_subnet(
         self,
@@ -7209,15 +7257,15 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_list_subnets(
         self,
-        available_ip_counts: [str] = None,
-        ip_ranges: [str] = None,
-        net_ids: [str] = None,
-        states: [str] = None,
-        subnet_ids: [str] = None,
-        subregion_names: [str] = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        available_ip_counts: List[str] = None,
+        ip_ranges: List[str] = None,
+        net_ids: List[str] = None,
+        states: List[str] = None,
+        subnet_ids: List[str] = None,
+        subregion_names: List[str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
@@ -7387,7 +7435,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_create_vpn_connection(
         self,
@@ -7480,7 +7528,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_delete_vpn_connection(
         self,
@@ -7513,7 +7561,7 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_delete_vpn_connection_route(
         self,
@@ -7553,19 +7601,19 @@ class OutscaleNodeDriver(NodeDriver):
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
-        return False
+        return response.json()
 
     def ex_list_vpn_connections(
         self,
-        bgp_asns: [int] = None,
-        client_gateway_ids: [str] = None,
-        connection_types: [str] = None,
-        route_destination_ip_ranges: [str] = None,
-        states: [str] = None,
+        bgp_asns: List[int] = None,
+        client_gateway_ids: List[str] = None,
+        connection_types: List[str] = None,
+        route_destination_ip_ranges: List[str] = None,
+        states: List[str] = None,
         static_routes_only: bool = None,
-        tag_keys: [str] = None,
-        tag_values: [str] = None,
-        tags: [str] = None,
+        tag_keys: List[str] = None,
+        tag_values: List[str] = None,
+        tags: List[str] = None,
         dry_run: bool = False,
     ):
         """
