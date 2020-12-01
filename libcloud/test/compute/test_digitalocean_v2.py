@@ -112,15 +112,16 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
     def test_list_nodes_success(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
-        self.assertEqual(nodes[0].name, 'example.com')
-        self.assertEqual(nodes[0].public_ips, ['104.236.32.182'])
-        self.assertEqual(nodes[0].extra['image']['id'], 6918990)
-        self.assertEqual(nodes[0].extra['size_slug'], '512mb')
-        self.assertEqual(len(nodes[0].extra['tags']), 2)
+        self.assertEqual(nodes[0].name, 'ubuntu-s-1vcpu-1gb-sfo3-01')
+        self.assertEqual(nodes[0].public_ips, ['128.199.13.158'])
+        self.assertEqual(nodes[0].extra['image']['id'], 69463186)
+        self.assertEqual(nodes[0].extra['size_slug'], 's-1vcpu-1gb')
+        self.assertEqual(len(nodes[0].extra['tags']), 0)
 
     def test_list_nodes_fills_created_datetime(self):
         nodes = self.driver.list_nodes()
-        self.assertEqual(nodes[0].created_at, datetime(2014, 11, 14, 16, 29, 21, tzinfo=UTC))
+        self.assertEqual(nodes[0].created_at,
+                         datetime(2020, 10, 15, 13, 58, 22, tzinfo=UTC))
 
     def test_create_node_invalid_size(self):
         image = NodeImage(id='invalid', name=None, driver=self.driver)
@@ -129,7 +130,8 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
 
         DigitalOceanMockHttp.type = 'INVALID_IMAGE'
         expected_msg = \
-            r'You specified an invalid image for Droplet creation. \(code: (404|HTTPStatus.NOT_FOUND)\)'
+            r'You specified an invalid image for Droplet creation.' + \
+            r' \(code: (404|HTTPStatus.NOT_FOUND)\)'
         assertRaisesRegex(self, Exception, expected_msg,
                           self.driver.create_node,
                           name='test', size=size, image=image,
@@ -239,9 +241,9 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
 
     def test__paginated_request_single_page(self):
         nodes = self.driver._paginated_request('/v2/droplets', 'droplets')
-        self.assertEqual(nodes[0]['name'], 'example.com')
-        self.assertEqual(nodes[0]['image']['id'], 6918990)
-        self.assertEqual(nodes[0]['size_slug'], '512mb')
+        self.assertEqual(nodes[0]['name'], 'ubuntu-s-1vcpu-1gb-sfo3-01')
+        self.assertEqual(nodes[0]['image']['id'], 69463186)
+        self.assertEqual(nodes[0]['size_slug'], 's-1vcpu-1gb')
 
     def test__paginated_request_two_pages(self):
         DigitalOceanMockHttp.type = 'PAGE_ONE'
@@ -345,7 +347,7 @@ class DigitalOcean_v2_Tests(LibcloudTestCase):
         # The API returns 204 NO CONTENT if all is well.
         self.assertTrue(ret)
 
-    def test_floating_ip_can_be_deleted_by_calling_delete_on_floating_ip_object(self):
+    def test_floating_ip_can_be_deleted_by_calling_delete_on_floating_ip_object(self):  # noqa: E501
         nyc1 = [r for r in self.driver.list_locations() if r.id == 'nyc1'][0]
         floating_ip = self.driver.ex_create_floating_ip(nyc1)
         ret = floating_ip.delete()
@@ -426,12 +428,14 @@ class DigitalOceanMockHttp(MockHttp):
         return (httplib.NO_CONTENT, body, {},
                 httplib.responses[httplib.NO_CONTENT])
 
-    def _v2_droplets_3164444_actions_KERNELCHANGE(self, method, url, body, headers):
+    def _v2_droplets_3164444_actions_KERNELCHANGE(
+            self, method, url, body, headers):
         # change_kernel
         body = self.fixtures.load('ex_change_kernel.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
 
-    def _v2_droplets_3164444_actions_ENABLEIPV6(self, method, url, body, headers):
+    def _v2_droplets_3164444_actions_ENABLEIPV6(
+            self, method, url, body, headers):
         # enable_ipv6
         body = self.fixtures.load('ex_enable_ipv6.json')
         return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
@@ -564,21 +568,26 @@ class DigitalOceanMockHttp(MockHttp):
     def _v2_floating_ips_167_138_123_111(self, method, url, body, headers):
         if method == 'DELETE':
             body = ''
-            return (httplib.NO_CONTENT, body, {}, httplib.responses[httplib.NO_CONTENT])
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
 
-    def _v2_floating_ips_133_166_122_204_actions(self, method, url, body, headers):
+    def _v2_floating_ips_133_166_122_204_actions(
+            self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('attach_floating_ip.json')
-            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+            return (httplib.CREATED, body, {},
+                    httplib.responses[httplib.CREATED])
         else:
             raise NotImplementedError()
 
-    def _v2_floating_ips_154_138_103_175_actions(self, method, url, body, headers):
+    def _v2_floating_ips_154_138_103_175_actions(
+            self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('detach_floating_ip.json')
-            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+            return (httplib.CREATED, body, {},
+                    httplib.responses[httplib.CREATED])
         else:
             raise NotImplementedError()
 

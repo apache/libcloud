@@ -53,9 +53,62 @@ Compute
   (GITHUB-1481)
   [Eis D. Zaster - @Eis-D-Z]
 
-- [OpenStack] Enable to get Quota Set detail. 
+- [OpenStack] Enable to get Quota Set detail.
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
+
+- [OpenStack] Add ex_get_size_extra_specs function to OpenStack driver.
+  (GITHUB-1517)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Enable to get Neutron Quota details in OpenStack driver.
+  (GITHUB-1514)
+  [Miguel Caballer - @micafer]
+
+- [DigitalOcean] ``_node_node`` method now ensures ``image`` and ``size``
+  attributes are also set correctly and populated on the ``Node`` object.
+  (GITHUB-1507, GITHUB-1508)
+  [@sergerdn]
+
+- [Vultr] Make sure ``private_ips`` attribute on the ``Node`` object is
+  correctly populated when listing nodes. Also add additional values to the
+  ``node.extra`` dictionary.
+  (GITHUB-1506)
+  [@sergerdn]
+
+Storage
+~~~~~~~
+
+- Deprecated ``lockfile`` library which is used by the Local Storage driver has
+  been replaced with ``fasteners`` library.
+  [Tomaz Muraus - @Kami]
+
+- [S3] Add support for ``us-gov-east-1`` region.
+  (GITHUB-1509, GITHUB-1510)
+  [Andy Spohn - @spohnan]
+
+DNS
+~~~
+
+- [Common] Fix a bug with the header value returned by the
+  ``export_zone_to_bind_format`` method containing an invalid timestamp (value
+  for the minute part of the timestamp was wrong and contained month number
+  instead of the minutes value).
+
+  Reported by Kurt Schwehr - @schwehr.
+
+  (GITHUB-1500)
+  [Tomaz Muraus - @Kami]
+
+- [CloudFlare DNS] Add support for creating ``SSHFP`` records.
+  (GITHUB-1512, GITHUB-1513)
+  [Will Hughes - @insertjokehere]
+
+- [DigitalOcean] Update driver and make sure request data is sent as part of
+  HTTP request body on POST and PUT operations (previously it was sent as
+  part of query params).
+  (GITHUB-1505)
+  [Andrew Starr-Bochicchio - @andrewsomething]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------

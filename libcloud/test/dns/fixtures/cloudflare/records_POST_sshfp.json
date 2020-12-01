@@ -1,0 +1,24 @@
+{
+  "result": {
+    "id": "200",
+    "type": "SSHFP",
+    "name": "test_sshfp.example.com",
+    "content": "2 1 ABCDEF12345",
+    "proxiable": true,
+    "proxied": true,
+    "ttl": 1,
+    "locked": false,
+    "zone_id": "1234",
+    "zone_name": "example.com",
+    "modified_on": "2018-12-22T21:28:00.801892Z",
+    "created_on": "2018-12-22T21:28:00.801892Z",
+    "meta": {
+      "auto_added": false,
+      "managed_by_apps": false,
+      "managed_by_argo_tunnel": false
+    }
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}
