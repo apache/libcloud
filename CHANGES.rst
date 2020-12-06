@@ -122,6 +122,11 @@ Compute
   (GITHUB-1511)
   [Dimitris Galanis - @dimgal1]
 
+- [OutScale] Add various extension methods to the driver. For information on
+  available extenion methods, please refer to the driver documentation.
+  (GITHUB-1499)
+  [@tgn-outscale]
+
 Storage
 ~~~~~~~
 
