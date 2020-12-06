@@ -81,6 +81,14 @@ Compute
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Add ex_get_size_extra_specs function to OpenStack driver.
+  (GITHUB-1517)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Enable to get Neutron Quota details in OpenStack driver.
+  (GITHUB-1514)
+  [Miguel Caballer - @micafer]
+
 - [DigitalOcean] ``_node_node`` method now ensures ``image`` and ``size``
   attributes are also set correctly and populated on the ``Node`` object.
   (GITHUB-1507, GITHUB-1508)
@@ -140,6 +148,10 @@ DNS
   part of query params).
   (GITHUB-1505)
   [Andrew Starr-Bochicchio - @andrewsomething]
+
+- [AuroraDNS] Throw correct exception on 403 authorization failed API error.
+  (GITHUB-1521, GITHUB-1522)
+  [Freek Dijkstra - @macfreek]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------

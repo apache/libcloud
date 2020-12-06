@@ -1,0 +1,6 @@
+{
+    "extra_specs": {
+        "hw:cpu_policy": "shared",
+        "hw:numa_nodes": "1"
+    }
+}
