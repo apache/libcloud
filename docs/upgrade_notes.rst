@@ -8,6 +8,38 @@ preserve the old behavior when this is possible.
 Libcloud 3.3.0
 --------------
 
+* ``libcloud.pricing.get_size_pricing()`` now only caches pricing data in
+  memory for the requested drivers.
+
+  This way we avoid unnecessary overhead of caching data in memory for all the
+  drivers.
+
+  If you want to revert to the old behavior (cache pricing data for all the
+  drivers in memory), you can do that by passing ``cache_all=True`` argument
+  to that function as shown below:
+
+  .. sourcecode:: python
+
+    from libcloud.pricing import get_size_pricing
+
+    price = get_size_price("compute", "bluebox", cache_all=True)
+
+  Or by setting ``libcloud.pricing.CACHE_ALL_PRICING_DATA`` module level
+  variable to ``True``:
+
+  .. sourcecode:: python
+
+    import libcloud.pricing
+
+    libcloud.pricing.CACHE_ALL_PRICING_DATA = True
+
+    # Your code here
+    # ...
+
+  Passing ``cache_all=True`` might come handy in situations where you know the
+  application will work with a lot of different drivers - this way you can
+  avoid multiple disk reads when requesting pricing data for different drivers.
+
 * Packet driver has been renamed to Equinix Metal. Provider name
   has changed from ``Provider.PACKET`` to ``Provider.EQUINIXMETAL``,
   while everything else works as before.

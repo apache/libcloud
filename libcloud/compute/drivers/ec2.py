@@ -42,13 +42,13 @@ from libcloud.compute.base import NodeImage, StorageVolume, VolumeSnapshot
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError, \
     StorageVolumeState, VolumeSnapshotState
-from libcloud.compute.constants import INSTANCE_TYPES, REGION_DETAILS
+from libcloud.compute.constants.ec2_region_details_partial import \
+    REGION_DETAILS as REGION_DETAILS_PARTIAL
 from libcloud.pricing import get_size_price
 
 __all__ = [
     'API_VERSION',
     'NAMESPACE',
-    'INSTANCE_TYPES',
     'OUTSCALE_INSTANCE_TYPES',
     'OUTSCALE_SAS_REGION_DETAILS',
     'OUTSCALE_INC_REGION_DETAILS',
@@ -92,7 +92,7 @@ DEFAULT_OUTSCALE_API_VERSION = '2016-04-01'
 OUTSCALE_NAMESPACE = 'http://api.outscale.com/wsdl/fcuext/2014-04-15/'
 
 # Add Nimbus region
-REGION_DETAILS['nimbus'] = {
+REGION_DETAILS_NIMBUS = {
     # Nimbus clouds have 3 EC2-style instance types but their particular
     # RAM allocations are configured by the admin
     'country': 'custom',
@@ -1178,8 +1178,7 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
     }
 }
 
-VALID_EC2_REGIONS = REGION_DETAILS.keys()
-VALID_EC2_REGIONS = [r for r in VALID_EC2_REGIONS if r != 'nimbus']
+VALID_EC2_REGIONS = REGION_DETAILS_PARTIAL.keys()
 VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
 
 
@@ -1247,7 +1246,7 @@ class EC2Connection(SignedAWSConnection):
     """
 
     version = API_VERSION
-    host = REGION_DETAILS['us-east-1']['endpoint']
+    host = REGION_DETAILS_PARTIAL['us-east-1']['endpoint']
     responseCls = EC2Response
     service_name = 'ec2'
 
@@ -1685,6 +1684,14 @@ class BaseEC2NodeDriver(NodeDriver):
         return nodes
 
     def list_sizes(self, location=None):
+        # NOTE: Those two imports are intentionally here and made lazy to
+        # avoid importing massive constant file in case it's not actually
+        # needed
+        from libcloud.compute.constants.ec2_region_details_complete import \
+            REGION_DETAILS
+        from libcloud.compute.constants.ec2_instance_types import \
+            INSTANCE_TYPES
+
         available_types = REGION_DETAILS[self.region_name]['instance_types']
         sizes = []
 
@@ -2502,7 +2509,7 @@ class BaseEC2NodeDriver(NodeDriver):
         :type   client_data: ``dict``
 
         :param  client_token: The token to enable idempotency for VM
-                import requests.(optional)
+                              (optional)
         :type   client_token: ``str``
 
         :param  description: The description string for the
@@ -5789,7 +5796,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         if region not in valid_regions:
             raise ValueError('Invalid region: %s' % (region))
 
-        details = REGION_DETAILS[region]
+        details = REGION_DETAILS_PARTIAL[region]
         self.region_name = region
         self.token = token
         self.api_name = details['api_name']
@@ -5933,6 +5940,21 @@ class NimbusNodeDriver(BaseEC2NodeDriver):
     friendly_name = 'Nimbus Private Cloud'
     connectionCls = NimbusConnection
     signature_version = '2'
+
+    def list_sizes(self, location=None):
+        from libcloud.compute.constants.ec2_instance_types import \
+            INSTANCE_TYPES
+
+        available_types = REGION_DETAILS_NIMBUS['instance_types']
+        sizes = []
+
+        for instance_type in available_types:
+            attributes = INSTANCE_TYPES[instance_type]
+            attributes = copy.deepcopy(attributes)
+            attributes['price'] = None  # pricing not available
+            sizes.append(NodeSize(driver=self, **attributes))
+
+        return sizes
 
     def ex_describe_addresses(self, nodes):
         """

@@ -10,4 +10,4 @@ requests_mock
 pytest==5.3.2
 cryptography==2.8
 # NOTE: Only needed by nttcis loadbalancer driver
-pyopenssl
+pyopenssl==19.1.0

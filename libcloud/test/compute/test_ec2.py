@@ -32,7 +32,7 @@ from libcloud.compute.drivers.ec2 import EC2PlacementGroup
 from libcloud.compute.drivers.ec2 import NimbusNodeDriver, EucNodeDriver
 from libcloud.compute.drivers.ec2 import OutscaleSASNodeDriver
 from libcloud.compute.drivers.ec2 import IdempotentParamError
-from libcloud.compute.drivers.ec2 import REGION_DETAILS, VALID_EC2_REGIONS
+from libcloud.compute.drivers.ec2 import VALID_EC2_REGIONS
 from libcloud.compute.drivers.ec2 import ExEC2AvailabilityZone
 from libcloud.compute.drivers.ec2 import EC2NetworkSubnet
 from libcloud.compute.base import Node, NodeImage, NodeSize, NodeLocation
@@ -55,7 +55,7 @@ null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
 class BaseEC2Tests(LibcloudTestCase):
 
     def test_instantiate_driver_valid_regions(self):
-        regions = REGION_DETAILS.keys()
+        regions = VALID_EC2_REGIONS
         regions = [d for d in regions if d != 'nimbus' and d != 'cn-north-1']
 
         region_endpoints = [
