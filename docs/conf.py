@@ -16,11 +16,6 @@ import sys
 import datetime
 import subprocess
 
-from sphinx.environment import BuildEnvironment
-
-#from sphinx.ext.autodoc import AutodocRegistry
-#from sphinx.ext.autodoc import AutodocReporter
-
 from sphinx.domains.python import PythonDomain
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -274,22 +269,13 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
 
-
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
 autoclass_content = 'both'
 
-BuildEnvironment.warn_node = ignore_more_than_one_target_found_errors
-
 # Ignore "more than one target found for cross-reference" errors which are false
-# positives
-class PatchedPythonDomain(PythonDomain):
-    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
-        if 'refspecific' in node:
-            del node['refspecific']
-        return super(PatchedPythonDomain, self).resolve_xref(
-            env, fromdocname, builder, typ, target, node, contnode)
-
-#def setup(sphinx):
-    #sphinx.override_domain(PatchedPythonDomain)
+# non fatal / false positive
+suppress_warnings = [
+    'ref.python'
+]
