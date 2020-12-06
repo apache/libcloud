@@ -5,6 +5,33 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.3.0
+--------------
+
+* Packet driver has been renamed to Equinix Metal. Provider name
+  has changed from ``Provider.PACKET`` to ``Provider.EQUINIXMETAL``,
+  while everything else works as before.
+
+  Before:
+
+    .. sourcecode:: python
+
+      from libcloud.compute.types import Provider
+      from libcloud.compute.providers import get_driver
+
+      cls = get_driver(Provider.PACKET)
+      driver = cls('api_key')
+
+  After:
+
+    .. sourcecode:: python
+
+      from libcloud.compute.types import Provider
+      from libcloud.compute.providers import get_driver
+
+      cls = get_driver(Provider.EQUINIXMETAL)
+      driver = cls('api_key')
+
 Libcloud 3.2.0
 --------------
 

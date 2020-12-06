@@ -1,7 +1,7 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-cls = get_driver(Provider.PACKET)
+cls = get_driver(Provider.EQUINIXMETAL)
 
 driver = cls('your API auth token')
 
