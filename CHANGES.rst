@@ -29,7 +29,8 @@ Common
 
   If you want to revert to old behavior (cache pricing data for all the
   drivers in memory), you can do that by passing ``cache_all=True`` argument
-  to that function.
+  to that function or set ``libcloud.pricing.CACHE_ALL_PRICING_DATA`` module
+  level variable to ``True``.
 
   Passing ``cache_all=True`` might come handy in situations where you know the
   application will work with a lot of different drivers - this way you can

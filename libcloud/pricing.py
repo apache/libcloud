@@ -62,6 +62,10 @@ PRICING_DATA = {
 
 VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
 
+# Set this to True to cache all the pricing data in memory instead of just the one for the drivers
+# which are used
+CACHE_ALL_PRICING_DATA = False
+
 
 def get_pricing_file_path(file_path=None):
     # type: (Optional[str]) -> str
@@ -104,6 +108,8 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None,
     :return: Dictionary with pricing where a key name is size ID and
              the value is a price.
     """
+    cache_all = cache_all or CACHE_ALL_PRICING_DATA
+
     if driver_type not in VALID_PRICING_DRIVER_TYPES:
         raise AttributeError('Invalid driver type: %s', driver_type)
 

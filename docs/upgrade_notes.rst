@@ -24,6 +24,18 @@ Libcloud 3.3.0
 
     price = get_size_price("compute", "bluebox", cache_all=True)
 
+  Or by setting ``libcloud.pricing.CACHE_ALL_PRICING_DATA`` module level
+  variable to ``True``:
+
+  .. sourcecode:: python
+
+    import libcloud.pricing
+
+    libcloud.pricing.CACHE_ALL_PRICING_DATA = True
+
+    # Your code here
+    # ...
+
   Passing ``cache_all=True`` might come handy in situations where you know the
   application will work with a lot of different drivers - this way you can
   avoid multiple disk reads when requesting pricing data for different drivers.
