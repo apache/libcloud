@@ -116,6 +116,12 @@ Compute
   (GITHUB-1519)
   [Tomaz Muraus - @Kami]
 
+- [Packet / Equinix Metal] Packet driver has been renamed to Equinix Metal. If
+  your code uses Packet.net driver, you need to update it as per example in
+  Upgrade Notes documentation section.
+  (GITHUB-1511)
+  [Dimitris Galanis - @dimgal1]
+
 Storage
 ~~~~~~~
 
