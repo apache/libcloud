@@ -110,6 +110,10 @@ DNS
   (GITHUB-1505)
   [Andrew Starr-Bochicchio - @andrewsomething]
 
+- [AuroraDNS] Throw correct exception on 403 authorization failed API error.
+  (GITHUB-1521, GITHUB-1522)
+  [Freek Dijkstra - @macfreek]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
