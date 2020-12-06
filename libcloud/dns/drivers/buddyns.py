@@ -76,8 +76,8 @@ class BuddyNSDNSDriver(DNSDriver):
         :param domain: Zone domain name (e.g. example.com)
         :type domain: ``str``
 
-        :param type: Zone type (This is not really used. See API docs for extra
-          parameters)
+        :param type: Zone type (This is not really used. See API docs for \
+          extra parameters)
         :type type: ``str``
 
         :param ttl: TTL for new records (This is used through the extra param)

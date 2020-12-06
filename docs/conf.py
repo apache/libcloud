@@ -276,6 +276,10 @@ autoclass_content = 'both'
 
 # Ignore "more than one target found for cross-reference" errors which are false
 # non fatal / false positive
+autodoc_warningiserror = False
+
 suppress_warnings = [
-    'ref.python'
+    'ref.python',
+    'autodoc.*',
+    'misc.highlighting_failure',
 ]
