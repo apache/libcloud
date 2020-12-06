@@ -62,8 +62,8 @@ PRICING_DATA = {
 
 VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
 
-# Set this to True to cache all the pricing data in memory instead of just the one for the drivers
-# which are used
+# Set this to True to cache all the pricing data in memory instead of just the
+# one for the drivers which are used
 CACHE_ALL_PRICING_DATA = False
 
 
