@@ -20,6 +20,7 @@ Provider                              list key pairs get key pair create key pai
 `Amazon EC2`_                         yes            yes          yes             yes                           no                          yes            
 `Enomaly Elastic Computing Platform`_ no             no           no              no                            no                          no             
 `ElasticHosts`_                       no             no           no              no                            no                          no             
+`EquinixMetal`_                       yes            no           yes             no                            no                          yes            
 `Eucalyptus`_                         yes            yes          yes             yes                           no                          yes            
 `Exoscale`_                           yes            yes          yes             yes                           no                          yes            
 `Gandi`_                              yes            yes          no              yes                           no                          yes            
@@ -52,7 +53,6 @@ Provider                              list key pairs get key pair create key pai
 `Outscale INC`_                       yes            yes          yes             yes                           no                          yes            
 `Outscale SAS`_                       yes            yes          yes             yes                           no                          yes            
 `Ovh`_                                yes            yes          no              yes                           no                          yes            
-`Packet`_                             yes            no           yes             no                            no                          yes            
 `ProfitBricks`_                       no             no           no              no                            no                          no             
 `Rackspace Cloud (Next Gen)`_         yes            yes          yes             yes                           no                          yes            
 `Rackspace Cloud (First Gen)`_        no             no           no              no                            no                          no             
@@ -88,6 +88,7 @@ Provider                              list key pairs get key pair create key pai
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
+.. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
@@ -120,7 +121,6 @@ Provider                              list key pairs get key pair create key pai
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`Packet`: http://www.packet.com/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com

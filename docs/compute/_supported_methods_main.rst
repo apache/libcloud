@@ -20,6 +20,7 @@ Provider                              list nodes create node reboot node destroy
 `Amazon EC2`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Enomaly Elastic Computing Platform`_ yes        yes         yes         yes          no         no        yes         yes        no         
 `ElasticHosts`_                       yes        yes         yes         yes          no         no        yes         yes        yes        
+`EquinixMetal`_                       yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Eucalyptus`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Exoscale`_                           yes        yes         yes         yes          no         no        yes         yes        yes        
 `Gandi`_                              yes        yes         yes         yes          no         no        yes         yes        no         
@@ -48,11 +49,10 @@ Provider                              list nodes create node reboot node destroy
 `1and1`_                              yes        yes         yes         yes          no         no        yes         yes        no         
 `OpenNebula (v3.8)`_                  yes        yes         yes         yes          no         no        yes         yes        no         
 `OpenStack`_                          yes        no          yes         yes          yes        yes       yes         yes        no         
-`Outscale API`_                       yes        yes         yes         yes          no         no        yes         no         no         
+`Outscale API`_                       yes        yes         yes         yes          yes        yes       yes         no         no         
 `Outscale INC`_                       yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Outscale SAS`_                       yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Ovh`_                                yes        yes         no          yes          no         no        yes         yes        yes        
-`Packet`_                             yes        yes         yes         yes          yes        yes       yes         yes        no         
 `ProfitBricks`_                       yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Rackspace Cloud (Next Gen)`_         yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Rackspace Cloud (First Gen)`_        yes        yes         yes         yes          yes        yes       yes         yes        yes        
@@ -88,6 +88,7 @@ Provider                              list nodes create node reboot node destroy
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
 .. _`Enomaly Elastic Computing Platform`: http://www.enomaly.com/
 .. _`ElasticHosts`: http://www.elastichosts.com/
+.. _`EquinixMetal`: https://metal.equinix.com/
 .. _`Eucalyptus`: http://www.eucalyptus.com/
 .. _`Exoscale`: https://www.exoscale.com/
 .. _`Gandi`: http://www.gandi.net/
@@ -120,7 +121,6 @@ Provider                              list nodes create node reboot node destroy
 .. _`Outscale INC`: http://www.outscale.com
 .. _`Outscale SAS`: http://www.outscale.com
 .. _`Ovh`: https://www.ovh.com/
-.. _`Packet`: http://www.packet.com/
 .. _`ProfitBricks`: http://www.profitbricks.com
 .. _`Rackspace Cloud (Next Gen)`: http://www.rackspace.com
 .. _`Rackspace Cloud (First Gen)`: http://www.rackspace.com
