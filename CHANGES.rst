@@ -13,6 +13,31 @@ Common
   (GITHUB-1487, GITHUB-1488)
   [Michael Spagon - @mspagon]
 
+- Optimize various code imports (remove unnecessary imports, make some lazy,
+  etc.), so now importing most of the modules is around ~20-40% faster (~70
+  vs ~140 ms) and in some cases such as EC2 driver even more.
+
+  Now majority of the import time is spent in importing ``requests`` library.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
+- ``libcloud.pricing.get_size_price()`` function has been updated so it only
+  caches pricing data in memory for the requested drivers.
+
+  This way we avoid caching data in memory for drivers which may never be
+  used.
+
+  If you want to revert to old behavior (cache pricing data for all the
+  drivers in memory), you can do that by passing ``cache_all=True`` argument
+  to that function or set ``libcloud.pricing.CACHE_ALL_PRICING_DATA`` module
+  level variable to ``True``.
+
+  Passing ``cache_all=True`` might come handy in situations where you know the
+  application will work with a lot of different drivers - this way you can
+  avoid multiple disk reads when requesting pricing data for different drivers.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
 Compute
 ~~~~~~~
 
@@ -57,9 +82,65 @@ Compute
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Add ex_get_size_extra_specs function to OpenStack driver.
+  (GITHUB-1517)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Enable to get Neutron Quota details in OpenStack driver.
+  (GITHUB-1514)
+  [Miguel Caballer - @micafer]
+
+- [DigitalOcean] ``_node_node`` method now ensures ``image`` and ``size``
+  attributes are also set correctly and populated on the ``Node`` object.
+  (GITHUB-1507, GITHUB-1508)
+  [@sergerdn]
+
+- [Vultr] Make sure ``private_ips`` attribute on the ``Node`` object is
+  correctly populated when listing nodes. Also add additional values to the
+  ``node.extra`` dictionary.
+  (GITHUB-1506)
+  [@sergerdn]
+
+- [EC2] Optimize EC2 driver imports and move all the large constant files to
+  separate modules in ``libcloud/compute/constants/ec2_*.py`` files.
+
+  Previously all the constants were contained in
+  ``libcloud/compute/constants.py`` file. That file was imported when importing
+  EC2 driver which would add unnecessary import time and memory overhead in case
+  this data was not actually used.
+
+  Now most of the large imports are lazy and only happen when that data is
+  needed (aka when ``list_sizes()`` method is called).
+
+  ``libcloud/compute/constants.py`` file has also been removed.
+  (GITHUB-1519)
+  [Tomaz Muraus - @Kami]
+
+- [Packet / Equinix Metal] Packet driver has been renamed to Equinix Metal. If
+  your code uses Packet.net driver, you need to update it as per example in
+  Upgrade Notes documentation section.
+  (GITHUB-1511)
+  [Dimitris Galanis - @dimgal1]
+
+- [OutScale] Add various extension methods to the driver. For information on
+  available extenion methods, please refer to the driver documentation.
+  (GITHUB-1499)
+  [@tgn-outscale]
+
 - [Linode] Add support for Linode's API v4.
   (GITHUB-1504)
   [Dimitris Galanis - @dimgal1]
+
+Storage
+~~~~~~~
+
+- Deprecated ``lockfile`` library which is used by the Local Storage driver has
+  been replaced with ``fasteners`` library.
+  [Tomaz Muraus - @Kami]
+
+- [S3] Add support for ``us-gov-east-1`` region.
+  (GITHUB-1509, GITHUB-1510)
+  [Andy Spohn - @spohnan]
 
 DNS
 ~~~
@@ -73,6 +154,24 @@ DNS
 
   (GITHUB-1500)
   [Tomaz Muraus - @Kami]
+
+- [CloudFlare DNS] Add support for creating ``SSHFP`` records.
+  (GITHUB-1512, GITHUB-1513)
+  [Will Hughes - @insertjokehere]
+
+- [DigitalOcean] Update driver and make sure request data is sent as part of
+  HTTP request body on POST and PUT operations (previously it was sent as
+  part of query params).
+  (GITHUB-1505)
+  [Andrew Starr-Bochicchio - @andrewsomething]
+
+- [AuroraDNS] Throw correct exception on 403 authorization failed API error.
+  (GITHUB-1521, GITHUB-1522)
+  [Freek Dijkstra - @macfreek]
+
+- [Linode] Add support for Linode's API v4.
+  (GITHUB-1504)
+  [Dimitris Galanis - @dimgal1]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------

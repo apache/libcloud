@@ -1912,7 +1912,7 @@ class NodeDriver(BaseDriver):
         return node
 
     def _get_size_price(self, size_id):
-        # type: (str) -> float
+        # type: (str) -> Optional[float]
         """
         Return pricing information for the provided size id.
         """

@@ -2,88 +2,186 @@
   "droplets": [
     {
       "id": 3164444,
-      "name": "example.com",
-      "memory": 512,
+      "name": "ubuntu-s-1vcpu-1gb-sfo3-01",
+      "memory": 1024,
       "vcpus": 1,
-      "disk": 20,
+      "disk": 25,
       "locked": false,
       "status": "active",
-      "kernel": {
-        "id": 2233,
-        "name": "Ubuntu 14.04 x64 vmlinuz-3.13.0-37-generic",
-        "version": "3.13.0-37-generic"
-      },
-      "created_at": "2014-11-14T16:29:21Z",
+      "kernel": null,
+      "created_at": "2020-10-15T13:58:22Z",
       "features": [
-        "backups",
-        "ipv6",
-        "virtio"
+        "private_networking",
+        "ipv6"
       ],
-      "backup_ids": [
-        7938002
-      ],
-      "snapshot_ids": [
-
-      ],
+      "backup_ids": [],
+      "next_backup_window": null,
+      "snapshot_ids": [],
       "image": {
-        "id": 6918990,
-        "name": "14.04 x64",
+        "id": 69463186,
+        "name": "20.04 (LTS) x64",
         "distribution": "Ubuntu",
-        "slug": "ubuntu-14-04-x64",
+        "slug": "ubuntu-20-04-x64",
         "public": true,
         "regions": [
+          "nyc3",
           "nyc1",
-          "ams1",
           "sfo1",
           "nyc2",
           "ams2",
           "sgp1",
           "lon1",
-          "nyc3",
           "ams3",
-          "nyc3"
+          "fra1",
+          "tor1",
+          "sfo2",
+          "blr1",
+          "sfo3"
         ],
-        "created_at": "2014-10-17T20:24:33Z",
-        "min_disk_size": 20
+        "created_at": "2020-09-03T02:05:57Z",
+        "min_disk_size": 15,
+        "type": "base",
+        "size_gigabytes": 2.36,
+        "description": "Ubuntu 20.04 x86",
+        "tags": [],
+        "status": "available"
       },
-      "size_slug": "512mb",
+      "volume_ids": [],
+      "size": {
+        "slug": "s-1vcpu-1gb",
+        "memory": 1024,
+        "vcpus": 1,
+        "disk": 25,
+        "transfer": 1,
+        "price_monthly": 5,
+        "price_hourly": 0.00744,
+        "regions": [
+          "ams2",
+          "ams3",
+          "blr1",
+          "fra1",
+          "lon1",
+          "nyc1",
+          "nyc2",
+          "nyc3",
+          "sfo1",
+          "sfo2",
+          "sfo3",
+          "sgp1",
+          "tor1"
+        ],
+        "available": true
+      },
+      "size_slug": "s-1vcpu-1gb",
       "networks": {
         "v4": [
           {
-            "ip_address": "104.236.32.182",
-            "netmask": "255.255.192.0",
-            "gateway": "104.236.0.1",
+            "ip_address": "10.124.0.2",
+            "netmask": "255.255.240.0",
+            "gateway": "<nil>",
+            "type": "private"
+          },
+          {
+            "ip_address": "128.199.13.158",
+            "netmask": "255.255.240.0",
+            "gateway": "128.199.0.1",
             "type": "public"
           }
         ],
         "v6": [
           {
-            "ip_address": "2604:A880:0800:0010:0000:0000:02DD:4001",
+            "ip_address": "2604:a880:4:1d0::142:9000",
             "netmask": 64,
-            "gateway": "2604:A880:0800:0010:0000:0000:0000:0001",
+            "gateway": "2604:a880:4:1d0::1",
             "type": "public"
           }
         ]
       },
       "region": {
-        "name": "New York 3",
-        "slug": "nyc3",
-        "sizes": [
-
-        ],
+        "name": "San Francisco 3",
+        "slug": "sfo3",
         "features": [
-          "virtio",
           "private_networking",
           "backups",
           "ipv6",
-          "metadata"
+          "metadata",
+          "install_agent",
+          "storage",
+          "image_transfer"
         ],
-        "available": null
+        "available": true,
+        "sizes": [
+          "s-1vcpu-1gb",
+          "512mb",
+          "s-1vcpu-2gb",
+          "1gb",
+          "s-3vcpu-1gb",
+          "s-2vcpu-2gb",
+          "s-1vcpu-3gb",
+          "s-2vcpu-4gb",
+          "2gb",
+          "s-4vcpu-8gb",
+          "m-1vcpu-8gb",
+          "c-2",
+          "4gb",
+          "c2-2vcpu-4gb",
+          "g-2vcpu-8gb",
+          "gd-2vcpu-8gb",
+          "m-16gb",
+          "s-8vcpu-16gb",
+          "s-6vcpu-16gb",
+          "c-4",
+          "8gb",
+          "c2-4vpcu-8gb",
+          "m-2vcpu-16gb",
+          "m3-2vcpu-16gb",
+          "g-4vcpu-16gb",
+          "gd-4vcpu-16gb",
+          "m6-2vcpu-16gb",
+          "m-32gb",
+          "s-8vcpu-32gb",
+          "c-8",
+          "16gb",
+          "c2-8vpcu-16gb",
+          "m-4vcpu-32gb",
+          "m3-4vcpu-32gb",
+          "g-8vcpu-32gb",
+          "s-12vcpu-48gb",
+          "gd-8vcpu-32gb",
+          "m6-4vcpu-32gb",
+          "m-64gb",
+          "s-16vcpu-64gb",
+          "c-16",
+          "32gb",
+          "c2-16vcpu-32gb",
+          "m-8vcpu-64gb",
+          "m3-8vcpu-64gb",
+          "g-16vcpu-64gb",
+          "s-20vcpu-96gb",
+          "48gb",
+          "gd-16vcpu-64gb",
+          "m6-8vcpu-64gb",
+          "m-128gb",
+          "s-24vcpu-128gb",
+          "c-32",
+          "64gb",
+          "c2-32vpcu-64gb",
+          "m-16vcpu-128gb",
+          "m3-16vcpu-128gb",
+          "g-32vcpu-128gb",
+          "s-32vcpu-192gb",
+          "gd-32vcpu-128gb",
+          "m-24vcpu-192gb",
+          "m-224gb",
+          "m6-16vcpu-128gb",
+          "m3-24vcpu-192gb",
+          "m6-24vcpu-192gb",
+          "m3-32vcpu-256gb",
+          "m6-32vcpu-256gb"
+        ]
       },
-      "tags": [
-        "environment:prod",
-        "database"
-      ]
+      "tags": [],
+      "vpc_uuid": "11e7ec07-6abf-4a06-86fd-3eedb53d7458"
     }
   ],
   "links": {},

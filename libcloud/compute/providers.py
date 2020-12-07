@@ -136,8 +136,8 @@ DRIVERS = {
     ('libcloud.compute.drivers.auroracompute', 'AuroraComputeNodeDriver'),
     Provider.CLOUDWATT:
     ('libcloud.compute.drivers.cloudwatt', 'CloudwattNodeDriver'),
-    Provider.PACKET:
-    ('libcloud.compute.drivers.packet', 'PacketNodeDriver'),
+    Provider.EQUINIXMETAL:
+    ('libcloud.compute.drivers.equinixmetal', 'EquinixMetalNodeDriver'),
     Provider.ONAPP:
     ('libcloud.compute.drivers.onapp', 'OnAppNodeDriver'),
     Provider.OVH:

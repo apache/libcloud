@@ -23,6 +23,10 @@ PRICING_FILE_PATH = os.path.join(os.path.dirname(__file__), 'pricing_test.json')
 
 
 class PricingTestCase(unittest.TestCase):
+    def setUp(self):
+        super(PricingTestCase, self).setUp()
+
+        libcloud.pricing.PRICING_DATA = {"compute": {}, "storage": {}}
 
     def test_get_pricing_success(self):
         self.assertFalse('foo' in libcloud.pricing.PRICING_DATA['compute'])
@@ -101,6 +105,67 @@ class PricingTestCase(unittest.TestCase):
         libcloud.pricing.set_pricing(driver_type='compute', driver_name='foo',
                                      pricing={'foo': 1})
         self.assertTrue('foo' in libcloud.pricing.PRICING_DATA['compute'])
+
+    def test_get_pricing_data_caching(self):
+        # Ensure we only cache pricing data in memory for requested drivers
+        self.assertEqual(libcloud.pricing.PRICING_DATA["compute"], {})
+        self.assertEqual(libcloud.pricing.PRICING_DATA["storage"], {})
+
+        pricing = libcloud.pricing.get_pricing(driver_type='compute',
+                                               driver_name='foo',
+                                               pricing_file_path=PRICING_FILE_PATH)
+        self.assertEqual(pricing['1'], 1.0)
+        self.assertEqual(pricing['2'], 2.0)
+
+        self.assertEqual(len(libcloud.pricing.PRICING_DATA["compute"]), 1)
+        self.assertTrue("foo" in libcloud.pricing.PRICING_DATA["compute"])
+
+        pricing = libcloud.pricing.get_pricing(driver_type='compute',
+                                               driver_name='baz',
+                                               pricing_file_path=PRICING_FILE_PATH)
+        self.assertEqual(pricing['1'], 5.0)
+        self.assertEqual(pricing['2'], 6.0)
+
+        self.assertEqual(len(libcloud.pricing.PRICING_DATA["compute"]), 2)
+        self.assertTrue("foo" in libcloud.pricing.PRICING_DATA["compute"])
+        self.assertTrue("baz" in libcloud.pricing.PRICING_DATA["compute"])
+
+    def test_get_pricing_data_module_level_variable_is_true(self):
+        # Ensure we only cache pricing data in memory for requested drivers
+        self.assertEqual(libcloud.pricing.PRICING_DATA["compute"], {})
+        self.assertEqual(libcloud.pricing.PRICING_DATA["storage"], {})
+
+        libcloud.pricing.CACHE_ALL_PRICING_DATA = True
+
+        pricing = libcloud.pricing.get_pricing(driver_type='compute',
+                                               driver_name='foo',
+                                               pricing_file_path=PRICING_FILE_PATH,
+                                               cache_all=False)
+        self.assertEqual(pricing['1'], 1.0)
+        self.assertEqual(pricing['2'], 2.0)
+
+        self.assertEqual(len(libcloud.pricing.PRICING_DATA["compute"]), 3)
+        self.assertTrue("foo" in libcloud.pricing.PRICING_DATA["compute"])
+        self.assertTrue("bar" in libcloud.pricing.PRICING_DATA["compute"])
+        self.assertTrue("baz" in libcloud.pricing.PRICING_DATA["compute"])
+
+    def test_get_pricing_data_caching_cache_all(self):
+        # Ensure we only cache pricing data in memory for requested drivers
+        self.assertEqual(libcloud.pricing.PRICING_DATA["compute"], {})
+        self.assertEqual(libcloud.pricing.PRICING_DATA["storage"], {})
+
+        pricing = libcloud.pricing.get_pricing(driver_type='compute',
+                                               driver_name='foo',
+                                               pricing_file_path=PRICING_FILE_PATH,
+                                               cache_all=True)
+        self.assertEqual(pricing['1'], 1.0)
+        self.assertEqual(pricing['2'], 2.0)
+
+        self.assertEqual(len(libcloud.pricing.PRICING_DATA["compute"]), 3)
+        self.assertTrue("foo" in libcloud.pricing.PRICING_DATA["compute"])
+        self.assertTrue("bar" in libcloud.pricing.PRICING_DATA["compute"])
+        self.assertTrue("baz" in libcloud.pricing.PRICING_DATA["compute"])
+
 
 if __name__ == '__main__':
     sys.exit(unittest.main())

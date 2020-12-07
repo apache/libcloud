@@ -1601,7 +1601,7 @@ class DimensionDataIpAddressList(object):
         :type  create_time: ``date time``
 
         :param child_ip_address_lists: List of IP address list to be included
-        :type  child_ip_address_lists: List
+        :type  child_ip_address_lists: List \
         of :class:'DimensionDataIpAddressList'
         """
         self.id = id
