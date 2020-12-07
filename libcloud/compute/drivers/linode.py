@@ -987,6 +987,20 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
                                            method='POST').object
         return self._to_node(response)
 
+    def ex_get_node(self, node_id):
+        """
+        Return a Node object based on a node ID.
+
+        :keyword node_id: Node's ID
+        :type    node_id: ``str``
+
+        :return: Created node
+        :rtype  : :class:`Node`
+        """
+        response = self.connection.request('/v4/linode/instances/%s'
+                                            % node_id).object
+        return self._to_node(response)
+
     def ex_list_disks(self, node):
         """
         List disks associated with the node.
@@ -1299,6 +1313,20 @@ class LinodeNodeDriverV4(LinodeNodeDriver):
                                            data=json.dumps(attr),
                                            method='POST').object
 
+        return self._to_volume(response)
+
+    def ex_get_volume(self, volume_id):
+        """
+        Return a Volume object based on a volume ID.
+
+        :param  volume_id: Volume's id
+        :type   volume_id: ``str``
+
+        :return:  A StorageVolume object for the volume
+        :rtype:   :class:`StorageVolume`
+        """
+        response = self.connection.request('/v4/volumes/%s'
+                                      % volume_id).object
         return self._to_volume(response)
 
     def create_image(self, disk, name=None, description=None):

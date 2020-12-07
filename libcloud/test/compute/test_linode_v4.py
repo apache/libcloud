@@ -206,6 +206,15 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         result = self.driver.ex_resize_node(node, size=size)
         self.assertTrue(result)
 
+    def test_ex_get_node(self):
+        node_id = '22344420'
+        node = self.driver.ex_get_node(node_id)
+        self.assertEqual(node.name, 'test_2')
+        self.assertEqual(node.image, 'linode/centos8')
+        self.assertEqual(node.extra['tags'], ['testing'])
+        self.assertEqual(node.public_ips, ['212.71.239.24'])
+        self.assertEqual(node.extra['hypervisor'], 'kvm')
+
     def test_ex_list_disks(self):
         node = Node('22344420', None, None, None, None, driver=self.driver)
         disks = self.driver.ex_list_disks(node)
@@ -360,6 +369,14 @@ class LinodeTestsV4(unittest.TestCase, TestCaseMixin):
         self.assertEqual(volume.size, cloned_volume.size)
         self.assertEqual(cloned_volume.name, 'TestingClone')
 
+    def test_ex_get_volume(self):
+        volume_id = '123456'
+        volume = self.driver.ex_get_volume(volume_id)
+
+        self.assertEqual(volume.name, 'Testvolume1')
+        self.assertEqual(volume.size, 10)
+        self.assertEqual(volume.extra['linode_id'], 456353688)
+
     def test_create_image(self):
         node = Node('22344420', None, None, None, None, driver=self.driver)
         disk = self.driver.ex_list_disks(node)[0]
@@ -485,6 +502,9 @@ class LinodeMockHttpV4(MockHttp):
         if method == 'PUT':
             body = self.fixtures.load('ex_rename_node.json')
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('ex_get_node.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v4_linode_instances_22344420_resize(self, method, url, body, headers):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -521,7 +541,11 @@ class LinodeMockHttpV4(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v4_volumes_123456(self, method, url, body, headers):
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'GET':
+            body = self.fixtures.load('ex_get_volume.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _v4_volumes_12345_resize(self, method, url, body, headers):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])

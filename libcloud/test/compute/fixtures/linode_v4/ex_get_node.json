@@ -1,0 +1,42 @@
+{
+    "id": 22344420,
+    "label": "test_2",
+    "group": "",
+    "status": "running",
+    "created": "2020-12-07T14:58:19",
+    "updated": "2020-12-07T14:58:19",
+    "type": "g6-nanode-1",
+    "ipv4": [
+        "212.71.239.24"
+    ],
+    "ipv6": "2a01:7e00::f03c:92ff:fe48:dc47/64",
+    "image": "linode/centos8",
+    "region": "eu-west",
+    "specs": {
+        "disk": 25600,
+        "memory": 1024,
+        "vcpus": 1,
+        "gpus": 0,
+        "transfer": 1000
+    },
+    "alerts": {
+        "cpu": 90,
+        "network_in": 10,
+        "network_out": 10,
+        "transfer_quota": 80,
+        "io": 10000
+    },
+    "backups": {
+        "enabled": false,
+        "schedule": {
+            "day": null,
+            "window": null
+        },
+        "last_successful": null
+    },
+    "hypervisor": "kvm",
+    "watchdog_enabled": true,
+    "tags": [
+        "testing"
+    ]
+}
