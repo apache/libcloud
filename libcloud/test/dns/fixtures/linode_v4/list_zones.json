@@ -1,0 +1,63 @@
+{
+    "data": [
+        {
+            "id": 123,
+            "type": "master",
+            "domain": "test.com",
+            "tags": [],
+            "group": "",
+            "status": "active",
+            "description": "",
+            "soa_email": "admin@test.com",
+            "retry_sec": 7200,
+            "master_ips": [],
+            "axfr_ips": [],
+            "expire_sec": 2419200,
+            "refresh_sec": 3600,
+            "ttl_sec": 300,
+            "created": "2020-10-16T07:44:39",
+            "updated": "2020-10-16T07:45:42"
+        },
+        {
+            "id": 1234,
+            "type": "master",
+            "domain": "example.com",
+            "tags": [
+                "test123"
+            ],
+            "group": "",
+            "status": "active",
+            "description": "",
+            "soa_email": "admin@example.com",
+            "retry_sec": 0,
+            "master_ips": [],
+            "axfr_ips": [],
+            "expire_sec": 0,
+            "refresh_sec": 0,
+            "ttl_sec": 0,
+            "created": "2020-10-16T07:46:07",
+            "updated": "2020-10-16T07:46:07"
+        },
+        {
+            "id": 12345,
+            "type": "master",
+            "domain": "testing.com",
+            "tags": [],
+            "group": "",
+            "status": "active",
+            "description": "",
+            "soa_email": "admin@testing.com",
+            "retry_sec": 0,
+            "master_ips": [],
+            "axfr_ips": [],
+            "expire_sec": 0,
+            "refresh_sec": 0,
+            "ttl_sec": 0,
+            "created": "2020-10-16T07:46:26",
+            "updated": "2020-10-16T07:46:26"
+        }
+    ],
+    "page": 1,
+    "pages": 1,
+    "results": 3
+}

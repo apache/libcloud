@@ -1,0 +1,16 @@
+{
+    "id": 1234,
+    "status": "creating",
+    "label": "Volume1",
+    "created": "2020-10-09T18:26:03",
+    "updated": "2020-10-09T18:26:03",
+    "filesystem_path": "/dev/disk/by-id/scsi-0Linode_Volume_Volume1",
+    "size": 50,
+    "linode_id": null,
+    "linode_label": null,
+    "region": "ap-west",
+    "tags": [
+        "test123",
+        "testing"
+    ]
+}

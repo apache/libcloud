@@ -20,19 +20,20 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.linode import LinodeException
 from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import RecordDoesNotExistError
-from libcloud.dns.drivers.linode import LinodeDNSDriver
+from libcloud.dns.drivers.linode import LinodeDNSDriver, LinodeDNSDriverV3
 
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import DNSFileFixtures
-from libcloud.test.secrets import DNS_PARAMS_LINODE
+from libcloud.test.secrets import DNS_PARAMS_LINODE, DNS_KEYWORD_PARAMS_LINODE
 
 
 class LinodeTests(unittest.TestCase):
     def setUp(self):
-        LinodeDNSDriver.connectionCls.conn_class = LinodeMockHttp
+        LinodeDNSDriverV3.connectionCls.conn_class = LinodeMockHttp
         LinodeMockHttp.use_param = 'api_action'
         LinodeMockHttp.type = None
-        self.driver = LinodeDNSDriver(*DNS_PARAMS_LINODE)
+        self.driver = LinodeDNSDriver(*DNS_PARAMS_LINODE,
+                                      **DNS_KEYWORD_PARAMS_LINODE)
 
     def assertHasKeys(self, dictionary, keys):
         for key in keys:

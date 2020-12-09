@@ -127,6 +127,10 @@ Compute
   (GITHUB-1499)
   [@tgn-outscale]
 
+- [Linode] Add support for Linode's API v4.
+  (GITHUB-1504)
+  [Dimitris Galanis - @dimgal1]
+
 Storage
 ~~~~~~~
 
@@ -164,6 +168,10 @@ DNS
 - [AuroraDNS] Throw correct exception on 403 authorization failed API error.
   (GITHUB-1521, GITHUB-1522)
   [Freek Dijkstra - @macfreek]
+
+- [Linode] Add support for Linode's API v4.
+  (GITHUB-1504)
+  [Dimitris Galanis - @dimgal1]
 
 Changes in Apache Libcloud 3.2.0
 --------------------------------

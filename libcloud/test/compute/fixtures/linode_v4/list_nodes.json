@@ -1,0 +1,96 @@
+{
+    "data": [
+        {
+            "id": 22344420,
+            "label": "test_2",
+            "group": "",
+            "status": "running",
+            "created": "2020-10-08T18:51:29",
+            "updated": "2020-10-08T18:51:29",
+            "type": "g6-nanode-1",
+            "ipv4": [
+                "138.89.34.81",
+                "192.168.1.230"
+            ],
+            "ipv6": "2a01:7e00::f03c:92ff:fe48:dc47/64",
+            "image": "linode/centos7",
+            "region": "eu-west",
+            "specs": {
+                "disk": 25600,
+                "memory": 1024,
+                "vcpus": 1,
+                "gpus": 0,
+                "transfer": 1000
+            },
+            "alerts": {
+                "cpu": 90,
+                "network_in": 10,
+                "network_out": 10,
+                "transfer_quota": 80,
+                "io": 10000
+            },
+            "backups": {
+                "enabled": false,
+                "schedule": {
+                    "day": null,
+                    "window": null
+                },
+                "last_successful": null
+            },
+            "hypervisor": "kvm",
+            "watchdog_enabled": true,
+            "tags": [
+                "123",
+                "abcdefg",
+                "testing"
+            ]
+        },
+        {
+            "id": 22344421,
+            "label": "test_1",
+            "group": "",
+            "status": "running",
+            "created": "2020-10-08T18:51:42",
+            "updated": "2020-10-08T18:51:42",
+            "type": "g6-nanode-1",
+            "ipv4": [
+                "156.12.197.243"
+            ],
+            "ipv6": "2a01:7e00::f03c:92ff:fe48:dcf2/64",
+            "image": "linode/centos7",
+            "region": "eu-west",
+            "specs": {
+                "disk": 25600,
+                "memory": 1024,
+                "vcpus": 1,
+                "gpus": 0,
+                "transfer": 1000
+            },
+            "alerts": {
+                "cpu": 90,
+                "network_in": 10,
+                "network_out": 10,
+                "transfer_quota": 80,
+                "io": 10000
+            },
+            "backups": {
+                "enabled": false,
+                "schedule": {
+                    "day": null,
+                    "window": null
+                },
+                "last_successful": null
+            },
+            "hypervisor": "kvm",
+            "watchdog_enabled": true,
+            "tags": [
+                "123",
+                "abcdefg",
+                "testing"
+            ]
+        }
+    ],
+    "page": 1,
+    "pages": 1,
+    "results": 2
+}
