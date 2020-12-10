@@ -24,6 +24,7 @@ __all__ = [
 
 DO_SPACES_HOSTS_BY_REGION = {'nyc3': 'nyc3.digitaloceanspaces.com',
                              'ams3': 'ams3.digitaloceanspaces.com',
+                             'sfo2': 'sfo2.digitaloceanspaces.com',
                              'sgp1': 'sgp1.digitaloceanspaces.com'}
 DO_SPACES_DEFAULT_REGION = 'nyc3'
 DEFAULT_SIGNATURE_VERSION = '2'
