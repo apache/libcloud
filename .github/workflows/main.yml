@@ -43,7 +43,7 @@ jobs:
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v2
       with:
-        version: ${{ matrix.python_version }}
+        python-version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
       run: |
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
@@ -72,7 +72,7 @@ jobs:
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v2
       with:
-        version: ${{ matrix.python_version }}
+        python-version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
       run: |
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
@@ -101,7 +101,7 @@ jobs:
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v2
       with:
-        version: ${{ matrix.python_version }}
+        python-version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
       run: |
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
@@ -130,7 +130,7 @@ jobs:
     - name: Use Python ${{ matrix.python_version }}
       uses: actions/setup-python@v2
       with:
-        version: ${{ matrix.python_version }}
+        python-version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
       run: |
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
