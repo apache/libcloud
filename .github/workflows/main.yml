@@ -132,23 +132,33 @@ jobs:
         python_version: [3.7]
 
     steps:
-    - uses: actions/checkout@master
-      with:
-        fetch-depth: 1
-    - name: Use Python ${{ matrix.python_version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python_version }}
-    - name: Install OS / deb dependencies
-      run: |
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
-    - name: Install Python Dependencies
-      run: |
-        pip install "tox==3.20.1"
-    - name: Build Docs
-      run: |
-        tox -e docs-travis
-    - name: Trigger ReadTheDocs build
-      run: |
-        pip install requests
-        python ./contrib/trigger_rtd_build.py
+      - name: Print Environment Info
+        id: printenv
+        run: |
+          printenv | sort
+
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.20.1"
+
+      - name: Build Docs
+        run: |
+          tox -e docs-travis
+
+      - name: Trigger ReadTheDocs build
+        run: |
+          pip install requests
+          python ./contrib/trigger_rtd_build.py
