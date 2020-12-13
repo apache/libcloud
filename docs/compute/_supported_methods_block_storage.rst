@@ -38,7 +38,7 @@ Provider                              list volumes create volume destroy volume 
 `KTUCloud`_                           yes          yes           yes            yes           yes           no             yes            
 `kubevirt`_                           yes          yes           yes            yes           yes           no             no             
 `Libvirt`_                            no           no            no             no            no            no             no             
-`Linode`_                             no           no            yes            no            no            no             no             
+`Linode`_                             yes          yes           yes            yes           yes           no             no             
 `Maxihost`_                           no           no            no             no            no            no             no             
 `MedOne`_                             no           no            no             no            no            no             no             
 `NephoScale`_                         no           no            no             no            no            no             no             

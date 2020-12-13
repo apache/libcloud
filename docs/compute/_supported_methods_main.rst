@@ -38,7 +38,7 @@ Provider                              list nodes create node reboot node destroy
 `KTUCloud`_                           yes        yes         yes         yes          no         no        yes         yes        yes        
 `kubevirt`_                           yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Libvirt`_                            yes        no          yes         yes          yes        yes       no          no         no         
-`Linode`_                             yes        yes         yes         yes          yes        yes       yes         yes        yes        
+`Linode`_                             yes        yes         yes         yes          yes        yes       yes         yes        no         
 `Maxihost`_                           yes        yes         yes         yes          yes        yes       yes         yes        no         
 `MedOne`_                             yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `NephoScale`_                         yes        yes         yes         yes          yes        yes       yes         yes        yes        

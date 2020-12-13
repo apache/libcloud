@@ -288,6 +288,14 @@ def generate_providers_table(api):
             from libcloud.compute.drivers.digitalocean import \
                 DigitalOcean_v2_NodeDriver
             cls = DigitalOcean_v2_NodeDriver
+        elif name.lower() == 'linode' and api.startswith('compute'):
+            from libcloud.compute.drivers.linode import \
+                LinodeNodeDriverV4
+            cls = LinodeNodeDriverV4
+        elif name.lower() == 'linode' and api.startswith('dns'):
+            from libcloud.dns.drivers.linode import \
+                LinodeDNSDriverV4
+            cls = LinodeDNSDriverV4
 
         if name.lower() in IGNORED_PROVIDERS:
             continue
