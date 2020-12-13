@@ -35,7 +35,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version:
-          - 3.5,
+          - 3.5
           - 3.6
           - 3.7
           - 3.8
@@ -150,5 +150,5 @@ jobs:
         tox -e docs-travis
     - name: Trigger ReadTheDocs build
       run: |
-        - pip3 install requests
-        - python3 ./contrib/trigger_rtd_build.py
+        - pip install requests
+        - python ./contrib/trigger_rtd_build.py
