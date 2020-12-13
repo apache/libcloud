@@ -150,5 +150,5 @@ jobs:
         tox -e docs-travis
     - name: Trigger ReadTheDocs build
       run: |
-        - pip install requests
-        - python ./contrib/trigger_rtd_build.py
+        pip install requests
+        python ./contrib/trigger_rtd_build.py
