@@ -40,11 +40,9 @@ class MinIOStorageDriverTestCase(unittest.TestCase):
         self.driver = self.create_driver()
 
     def test_connection_class_type(self):
-        return
         self.assertEqual(self.driver.connectionCls, MinIOConnectionAWS4)
 
     def test_connection_class_default_host(self):
-        return
         self.assertEqual(self.driver.connectionCls.host, self.default_host)
         self.assertEqual(self.driver.connectionCls.port, 443)
 
