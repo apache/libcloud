@@ -32,8 +32,8 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip == 'false' }}
 
     strategy:
+      fail-fast: false
       matrix:
-        fail-fast: false
         python_version:
           - 3.5,
           - 3.6
