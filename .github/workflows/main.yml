@@ -1,6 +1,14 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - trunk
+  pull_request:
+    branches:
+      - trunk
+  schedule:
+    - cron: '0 2 * * *'
 
 jobs:
   unit_tests:
@@ -17,7 +25,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Use Python ${{ matrix.python_version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
@@ -43,7 +51,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Use Python ${{ matrix.python_version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
@@ -69,7 +77,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Use Python ${{ matrix.python_version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
@@ -95,7 +103,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Use Python ${{ matrix.python_version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         version: ${{ matrix.python_version }}
     - name: Install OS / deb dependencies
