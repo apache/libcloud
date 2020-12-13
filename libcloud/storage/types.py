@@ -105,6 +105,7 @@ class Provider(object):
     S3_US_GOV_WEST = 's3_us_gov_west'
     S3_RGW = 's3_rgw'
     S3_RGW_OUTSCALE = 's3_rgw_outscale'
+    MINIO = 'minio'
 
     # Deperecated
     CLOUDFILES_US = 'cloudfiles_us'
