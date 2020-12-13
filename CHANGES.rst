@@ -142,6 +142,10 @@ Storage
   (GITHUB-1509, GITHUB-1510)
   [Andy Spohn - @spohnan]
 
+- [DigitalOcean Spaces] Add support for sfo2 regon.
+  (GITHUB-1525)
+  [Cristian Rasch - @cristianrasch]
+
 DNS
 ~~~
 
