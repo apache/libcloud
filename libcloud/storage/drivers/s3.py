@@ -422,9 +422,15 @@ class BaseS3StorageDriver(StorageDriver):
             container = Container(name=container_name, extra=None, driver=self)
             return container
         elif response.status == httplib.CONFLICT:
+            if "BucketAlreadyOwnedByYou" in response.body:
+                raise ContainerAlreadyExistsError(
+                value='Container with this name already exists. The name must '
+                      'be unique among all the containers in the system.',
+                container_name=container_name, driver=self)
+
             raise InvalidContainerNameError(
                 value='Container with this name already exists. The name must '
-                      'be unique among all the containers in the system',
+                      'be unique among all the containers in the system.',
                 container_name=container_name, driver=self)
         elif response.status == httplib.BAD_REQUEST:
             raise ContainerError(
