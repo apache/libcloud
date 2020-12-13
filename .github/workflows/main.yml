@@ -14,6 +14,7 @@ jobs:
   # Special job which skips duplicate jobs
   pre_job:
     name: Skip Duplicate Jobs Pre Job
+    runs-on: ubuntu-latest
     # Map a step output to a job output
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
