@@ -1,0 +1,113 @@
+name: CI
+
+on: [push]
+
+jobs:
+  unit_tests:
+    name: Run Unit Tests
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        python_version: [3.5, 3.6, 3.7, 3.8, 3.9, pypy3]
+        os: [ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+    - name: Install Python Dependencies
+      run: |
+        pip install "tox==3.20.1"
+    - name: Run tox target
+      run: |
+        tox -e py${{ matrix.python_version }}
+
+  code_coverage:
+    name: Generate Code Coverage
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+    - name: Install Python Dependencies
+      run: |
+        pip install "tox==3.20.1"
+    - name: Run Checks
+      run: |
+        tox -e coverage-travis
+
+  lint_checks:
+    name: Run various lint checks
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+    - name: Install Python Dependencies
+      run: |
+        pip install "tox==3.20.1"
+    - name: Run Checks
+      run: |
+        tox -e checks,import-timings,lint,pylint
+
+  docs:
+    name: Build and upload Documentation
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Use Python ${{ matrix.python_version }}
+      uses: actions/setup-python@v1
+      with:
+        version: ${{ matrix.python_version }}
+    - name: Install OS / deb dependencies
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+    - name: Install Python Dependencies
+      run: |
+        pip install "tox==3.20.1"
+    - name: Build Docs
+      run: |
+        tox -e docs-travis
+    - name: Trigger ReadTheDocs build
+      run: |
+        - pip3 install requests
+        - python3 ./contrib/trigger_rtd_build.py
