@@ -89,7 +89,7 @@ jobs:
         pip install "tox==3.20.1"
     - name: Run Checks
       run: |
-        tox -e coverage-travis
+        tox -e coverage-ci
 
   lint_checks:
     name: Run various lint checks
