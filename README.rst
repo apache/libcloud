@@ -7,13 +7,16 @@ through a unified and easy to use API.
 
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat
-    :target: https://libcloud.readthedocs.org
+        :target: https://libcloud.readthedocs.org
 
 .. image:: https://img.shields.io/pypi/v/apache-libcloud.svg
-    :target: https://pypi.python.org/pypi/apache-libcloud/
+        :target: https://pypi.python.org/pypi/apache-libcloud/
 
-.. image:: https://img.shields.io/travis/apache/libcloud/trunk.svg
-        :target: http://travis-ci.org/apache/libcloud
+.. image:: https://github.com/apache/libcloud/workflows/CI/badge.svg?branch=trunk
+        :target: https://github.com/apache/libcloud/actions?query=workflow%3ACI
+
+.. image:: https://github.com/apache/libcloud/workflows/Publish%20pricing.json%20to%20S3%20bucket/badge.svg?branch=trunk
+        :target: https://github.com/apache/libcloud/actions?query=workflow%3A%22Publish+pricing.json+to+S3+bucket%22
 
 .. image:: https://img.shields.io/codecov/c/github/apache/libcloud/trunk.svg
         :target: https://codecov.io/github/apache/libcloud?branch=trunk
