@@ -17,11 +17,9 @@
 import sys
 import unittest
 
+from libcloud.common.types import LibcloudError
 from libcloud.storage.drivers.minio import MinIOStorageDriver
 from libcloud.storage.drivers.minio import MinIOConnectionAWS4
-from libcloud.storage.drivers.rgw import S3RGWOutscaleStorageDriver
-from libcloud.storage.drivers.rgw import S3RGWConnectionAWS4
-from libcloud.storage.drivers.rgw import S3RGWConnectionAWS2
 
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
@@ -62,6 +60,10 @@ class MinIOStorageDriverTestCase(unittest.TestCase):
         self.assertEqual(driver.connectionCls.host, host)
         self.assertEqual(driver.connection.port, 9000)
         self.assertEqual(driver.connection.secure, True)
+
+    def test_empty_host_error(self):
+        self.assertRaisesRegex(LibcloudError, "host argument is required",
+                               self.driver_type, *self.driver_args)
 
 
 if __name__ == '__main__':
