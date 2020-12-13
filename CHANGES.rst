@@ -146,6 +146,19 @@ Storage
   (GITHUB-1525)
   [Cristian Rasch - @cristianrasch]
 
+- [MinIO] Add new driver for MinIO object storage (https://min.io).
+  (GITHUB-1528, GITHUB-1454)
+  [Tomaz Muraus - @Kami]
+
+- [S3] Update S3 and other drivers which are based on the S3 one (Google
+  Storage, RGW, MinIO) to correctly throw ``ContainerAlreadyExistsError`` if
+  container creation fails because container with this name already exists.
+
+  Previously in such scenario, ``InvalidContainerNameError`` exception which
+  does not comply with the Libcloud standard API was thrown.
+  (GITHUB-1528)
+  [Tomaz Muraus - @Kami]
+
 DNS
 ~~~
 
