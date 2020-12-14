@@ -3,7 +3,7 @@ flake8==3.7.9
 astroid==2.3.3
 pylint==2.4.4
 mock==3.0.5
-codecov==2.1.4
+codecov==2.1.10
 coverage==4.5.4
 requests
 requests_mock
