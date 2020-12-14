@@ -38,6 +38,8 @@ Common
   (GITHUB-1519)
   [Tomaz Muraus]
 
+- Advertise Python 3.9 support in setup.py.
+
 Compute
 ~~~~~~~
 
