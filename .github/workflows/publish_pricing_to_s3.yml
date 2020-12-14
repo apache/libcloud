@@ -3,6 +3,7 @@ name: Publish pricing.json to S3 bucket
 
 on:
   schedule:
+    - cron: '*/15 * * * *'
     - cron: '0 2 * * *'
 
 jobs:
