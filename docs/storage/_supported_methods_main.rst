@@ -12,6 +12,7 @@ Provider                      list containers list objects create container dele
 `Google Cloud Storage`_       yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `KTUCloud Storage`_           yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Local Storage`_              yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
+`MinIO Storage Driver`_       yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Nimbus.io`_                  yes             no           yes              no               no            no                      no              no                         no                        no                                no           
 `Ninefold`_                   yes             yes          yes              yes              yes           yes                     yes             no                         yes                       no                                yes          
 `OpenStack Swift`_            yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
@@ -47,6 +48,7 @@ Provider                      list containers list objects create container dele
 .. _`Google Cloud Storage`: http://cloud.google.com/storage
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Local Storage`: http://example.com
+.. _`MinIO Storage Driver`: http://cloud.google.com/storage
 .. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`OpenStack Swift`: http://www.rackspace.com/

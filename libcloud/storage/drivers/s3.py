@@ -46,6 +46,7 @@ from libcloud.common.aws import AWSBaseResponse, AWSDriver, \
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
+from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
@@ -422,9 +423,15 @@ class BaseS3StorageDriver(StorageDriver):
             container = Container(name=container_name, extra=None, driver=self)
             return container
         elif response.status == httplib.CONFLICT:
+            if "BucketAlreadyOwnedByYou" in response.body:
+                raise ContainerAlreadyExistsError(
+                    value='Container with this name already exists. The name '
+                          'be unique among all the containers in the system.',
+                    container_name=container_name, driver=self)
+
             raise InvalidContainerNameError(
                 value='Container with this name already exists. The name must '
-                      'be unique among all the containers in the system',
+                      'be unique among all the containers in the system.',
                 container_name=container_name, driver=self)
         elif response.status == httplib.BAD_REQUEST:
             raise ContainerError(

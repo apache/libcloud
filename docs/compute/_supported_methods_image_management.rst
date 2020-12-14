@@ -38,7 +38,7 @@ Provider                              list images get image create image delete 
 `KTUCloud`_                           yes         no        no           no           no        
 `kubevirt`_                           yes         no        no           no           no        
 `Libvirt`_                            no          no        no           no           no        
-`Linode`_                             yes         no        no           no           no        
+`Linode`_                             yes         no        yes          yes          no        
 `Maxihost`_                           yes         no        no           no           no        
 `MedOne`_                             yes         no        no           no           no        
 `NephoScale`_                         yes         no        no           no           no        

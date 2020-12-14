@@ -96,6 +96,8 @@ DRIVERS = {
     Provider.DIGITALOCEAN_SPACES:
     ('libcloud.storage.drivers.digitalocean_spaces',
      'DigitalOceanSpacesStorageDriver'),
+    Provider.MINIO:
+    ('libcloud.storage.drivers.minio', 'MinIOStorageDriver'),
 }
 
 
