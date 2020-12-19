@@ -75,6 +75,51 @@ Libcloud 3.3.0
   slashes or similar and are upgrading from Libcloud ``v2.3.0`` or older where
   no path sanitization was performed.
 
+  Example S3 bucket layout with this option disabled (default) and enabled.
+
+  Object with the following name: ``/my-bucket/sub-directory/file.txt``
+
+    .. code-block:: bash
+
+      # Disabled
+
+      root
+      +-- my-bucket/
+        +-- sub-directory/
+          +-- file.txt
+
+      # Enabled
+
+      root
+      +-- /
+        +-- my-bucket/
+          +-- sub-directory/
+            +-- file.txt
+
+  Object with the following name: ``/my-bucket//directory1/file.txt``
+
+    .. code-block:: bash
+
+      # Disabled
+
+      root
+      +-- my-bucket/
+        +-- directory1/
+          +-- file.txt
+
+      # Enabled
+
+      root
+      +-- /
+        +-- my-bucket/
+          +-- /
+            +-- directory1/
+              +-- file.txt
+
+  As you can see from the examples above, directory layout is not the same
+  with this option enabled and disabled so you should be careful when you
+  use it.
+
 Libcloud 3.2.0
 --------------
 
