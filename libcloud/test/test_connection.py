@@ -23,6 +23,8 @@ from mock import Mock, patch
 
 import requests_mock
 
+import libcloud.common.base
+
 from libcloud.test import unittest
 from libcloud.common.base import Connection, CertificateConnection
 from libcloud.http import LibcloudBaseConnection
@@ -208,6 +210,26 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         conn.request_path = 'v1/'
         self.assertEqual(conn.morph_action_hook('/test'), '/v1/test')
         self.assertEqual(conn.morph_action_hook('test'), '/v1/test')
+
+        conn.request_path = '/a'
+        self.assertEqual(conn.morph_action_hook('//b/c.txt'), '/a/b/c.txt')
+
+        conn.request_path = '/b'
+        self.assertEqual(conn.morph_action_hook('/foo//'), '/b/foo/')
+
+        libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES = True
+
+        conn.request_path = '/'
+        self.assertEqual(conn.morph_action_hook('/'), '//')
+
+        conn.request_path = ''
+        self.assertEqual(conn.morph_action_hook('/'), '/')
+
+        conn.request_path = '/a'
+        self.assertEqual(conn.morph_action_hook('//b/c.txt'), '/a//b/c.txt')
+
+        conn.request_path = '/b'
+        self.assertEqual(conn.morph_action_hook('/foo//'), '/b/foo//')
 
     def test_connect_with_prefix(self):
         """

@@ -161,6 +161,24 @@ Storage
   (GITHUB-1528)
   [Tomaz Muraus - @Kami]
 
+- Add new ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES`` module level
+  variable.
+
+  When this value is set to ``True`` (defaults to ``False`` for backward
+  compatibility reasons), Libcloud won't try to sanitize the URL path and
+  remove any double slashes.
+
+  In most cases, this won't matter and sanitzing double slashes is a safer
+  default, but in some cases such as S3, where double slashes can be a valid
+  path (e.g. ``/my-bucket//path1/file.txt``), this option may come handy.
+
+  When this variable is set to ``True``, behavior is also consistent with
+  Libcloud versions prior to v2.0.0.
+
+  Reported by Jonathan Hanson - @triplepoint.
+  (GITHUB-1529)
+  [Tomaz Muraus - @Kami]
+
 DNS
 ~~~
 
