@@ -345,6 +345,16 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
             'xpath': 'ImportOSSObject',
             'transform_func': u
         }
+    },
+    'tags': {
+        'tag_key': {
+            'xpath': 'TagKey',
+            'transform_func': u
+        },
+        'tag_value': {
+            'xpath': 'TagValue',
+            'transform_func': u
+        }
     }
 }
 
@@ -1424,12 +1434,26 @@ class ECSDriver(NodeDriver):
                                  namespace=self.namespace)
         private_ips = _get_ips(private_ip_els)
 
+        def _get_tags(tags):
+            return [
+                self._get_extra_dict(
+                    tag,
+                    RESOURCE_EXTRA_ATTRIBUTES_MAP['tags']
+                ) for tag in tags
+            ]
+
+        tag_els = findall(element=instance,
+                          xpath='Tags//Tag',
+                          namespace=self.namespace)
+        tags = _get_tags(tag_els)
+
         # Extra properties
         extra = self._get_extra_dict(instance,
                                      RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
         extra['vpc_attributes'] = self._get_vpc_attributes(instance)
         extra['eip_address'] = self._get_eip_address(instance)
         extra['operation_locks'] = self._get_operation_locks(instance)
+        extra['tags'] = tags
 
         node = Node(id=_id, name=name, state=state,
                     public_ips=public_ips, private_ips=private_ips,
