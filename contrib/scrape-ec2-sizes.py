@@ -290,7 +290,7 @@ def parse():
             raise e
 
     for sku in products_data:
-        if products_data[sku]['productFamily'] != "Compute Instance":
+        if products_data[sku].get('productFamily', "unknown") != "Compute Instance":
             continue
         location = products_data[sku]['attributes'].pop('location')
         if location not in REGION_DETAILS:
