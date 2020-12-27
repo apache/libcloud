@@ -120,6 +120,9 @@ Libcloud 3.3.0
   with this option enabled and disabled so you should be careful when you
   use it.
 
+  This change affects all the drivers which are used when that module level
+  variable is set.
+
 Libcloud 3.2.0
 --------------
 
