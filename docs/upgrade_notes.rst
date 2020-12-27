@@ -64,6 +64,65 @@ Libcloud 3.3.0
       cls = get_driver(Provider.EQUINIXMETAL)
       driver = cls('api_key')
 
+* New ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES`` module level variable
+  has been added which defaults to ``False`` for backward compatibility reasons.
+
+  When set to ``True``, Libcloud code won't perform any URL path sanitization
+  and will allow URL paths with double slashes (e.g.
+  ``/my-bucket//foo/1.txt``).
+
+  This may come handy to the users who have S3 paths which contains double
+  slashes or similar and are upgrading from Libcloud ``v2.3.0`` or older where
+  no path sanitization was performed.
+
+  Example S3 bucket layout with this option disabled (default) and enabled.
+
+  Object with the following name: ``/my-bucket/sub-directory/file.txt``
+
+    .. code-block:: bash
+
+      # Disabled
+
+      root
+      +-- my-bucket/
+        +-- sub-directory/
+          +-- file.txt
+
+      # Enabled
+
+      root
+      +-- /
+        +-- my-bucket/
+          +-- sub-directory/
+            +-- file.txt
+
+  Object with the following name: ``/my-bucket//directory1/file.txt``
+
+    .. code-block:: bash
+
+      # Disabled
+
+      root
+      +-- my-bucket/
+        +-- directory1/
+          +-- file.txt
+
+      # Enabled
+
+      root
+      +-- /
+        +-- my-bucket/
+          +-- /
+            +-- directory1/
+              +-- file.txt
+
+  As you can see from the examples above, directory layout is not the same
+  with this option enabled and disabled so you should be careful when you
+  use it.
+
+  This change affects all the drivers which are used when that module level
+  variable is set.
+
 Libcloud 3.2.0
 --------------
 
