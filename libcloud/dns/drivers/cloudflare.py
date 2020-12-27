@@ -96,6 +96,10 @@ class CloudFlareDNSResponse(JsonResponse):
         1061: (ZoneAlreadyExistsError, ['zone_id']),
         1002: (RecordDoesNotExistError, ['record_id']),
         81053: (RecordAlreadyExistsError, ['record_id']),
+        # 81057: The record already exists.
+        81057: (RecordAlreadyExistsError, []),
+        # 81058: A record with those settings already exists.
+        81058: (RecordAlreadyExistsError, ['record_id']),
     }
 
     def success(self):
@@ -131,6 +135,11 @@ class CloudFlareDNSResponse(JsonResponse):
                     ', '.join(error_chain_errors)),
                 'driver': self.connection.driver,
             }
+
+            if error['code'] == 81057:
+                # Record id is not available when creating a record and not updating
+                # it
+                kwargs["record_id"] = "unknown"
 
             merge_valid_keys(kwargs, context, self.connection.context)
 

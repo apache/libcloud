@@ -192,6 +192,11 @@ DNS
   (GITHUB-1504)
   [Dimitris Galanis - @dimgal1]
 
+- [CloudFlare] Update driver so it correctly throws
+  ``RecordAlreadyExists`` error on various error responses which represent
+  this error.
+  [Tomaz Muraus - @Kami]
+
 Changes in Apache Libcloud 3.2.0
 --------------------------------
 
