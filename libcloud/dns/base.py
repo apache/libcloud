@@ -546,7 +546,7 @@ class DNSDriver(BaseDriver):
 
         name += '.'
 
-        ttl = record.extra['ttl'] if 'ttl' in record.extra else record.zone.ttl
+        ttl = record.ttl if record.ttl else record.zone.ttl
         ttl = str(ttl)
         data = record.data
 
