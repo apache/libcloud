@@ -160,8 +160,9 @@ class Record(object):
         self.data = data
         self.zone = zone
         self.driver = driver
-        self.ttl = ttl
         self.extra = extra or {}
+        if ttl is not None:
+            self.extra['ttl'] = ttl
 
     def update(self,
                name=None,  # type: Optional[str]
@@ -195,6 +196,26 @@ class Record(object):
             return record_id_int
 
         return record_id
+
+    @property
+    def ttl(self):
+        # type: () -> Optional[int]
+        """
+        Get TTL of a Record, if defined.
+        Backward compatible with Record.ttl attribute.
+        This method is deprecated in favour of Record.extra['ttl'].
+        """
+        return self.extra.get('ttl')
+
+    @ttl.setter
+    def ttl(self, ttl):
+        # type: (int) -> None
+        """
+        Set TTL of a Record, overriding the Zone.ttl.
+        Backward compatible with Record.ttl attribute.
+        This method is deprecated in favour of Record.extra['ttl'].
+        """
+        self.extra['ttl'] = ttl
 
     def __repr__(self):
         # type: () -> str
