@@ -53,6 +53,10 @@ MOCK_RECORDS_VALUES = [
      'data': 'mx.example.com', 'extra': {'priority': 10}},
     {'id': 5, 'name': '', 'type': RecordType.SRV,
      'data': '10 3333 example.com', 'extra': {'priority': 20}},
+
+    # Custom TTL (using deprecated ttl parameter)
+    {'id': 6, 'name': 'www2', 'type': RecordType.A, 'data': '127.0.0.1',
+     'ttl': 123},
 ]
 
 
@@ -117,6 +121,7 @@ class BaseTestCase(unittest.TestCase):
             assertRegex(self, lines[9], r'test2.example.com\.\s+900\s+IN\s+TXT\s+"test \\"foo\\" \\"bar\\""')
             assertRegex(self, lines[10], r'example.com\.\s+900\s+IN\s+MX\s+10\s+mx.example.com')
             assertRegex(self, lines[11], r'example.com\.\s+900\s+IN\s+SRV\s+20\s+10 3333 example.com')
+            assertRegex(self, lines[12], r'www2.example.com\.\s+123\s+IN\s+A\s+127\.0\.0\.1')
 
     def test_get_numeric_id(self):
         values = MOCK_RECORDS_VALUES[0].copy()
