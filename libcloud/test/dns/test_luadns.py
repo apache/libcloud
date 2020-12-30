@@ -199,7 +199,7 @@ class LuadnsTests(unittest.TestCase):
         self.assertEqual(record.id, '31')
         self.assertEqual(record.name, 'test.com.')
         self.assertEqual(record.data, '127.0.0.1')
-        self.assertIsNone(record.ttl)
+        self.assertEqual(record.ttl, 13)
 
     def test_record_already_exists_error(self):
         pass

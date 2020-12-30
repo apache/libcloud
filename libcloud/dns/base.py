@@ -161,7 +161,8 @@ class Record(object):
         self.zone = zone
         self.driver = driver
         self.extra = extra or {}
-        if ttl is not None:
+        # extra['ttl'] overrides ttl
+        if ttl is not None and self.extra.get('ttl') is None:
             self.extra['ttl'] = ttl
 
     def update(self,

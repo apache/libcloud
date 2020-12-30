@@ -109,7 +109,7 @@ class BaseTestCase(unittest.TestCase):
         self.assertEqual(lines2[0], expected_header)
 
         for lines in [lines1, lines2]:
-            self.assertEqual(len(lines), 2 + 1 + 9)
+            self.assertEqual(len(lines), 2 + 1 + 10)
             assertRegex(self, lines[1], r'\$ORIGIN example\.com\.')
             assertRegex(self, lines[2], r'\$TTL 900')
 
