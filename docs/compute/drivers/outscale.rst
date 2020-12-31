@@ -342,3 +342,10 @@ Nodes
 * ``ex_list_node_types`` - Returns a ``list`` of ``dict``
 * ``ex_list_nodes_states`` - Returns a ``list`` of ``dict``
 * ``ex_update_node`` - Returns a ``list`` of ``dict``
+
+Certificate Authority
+---------------------
+* ``ex_create_certificate_authority`` - Returns a ``dict``
+* ``ex_delete_certificate_authority`` - Returns a ``bool``
+* ``ex_read_certificate_authorities`` - Returns a ``list`` of ``dict``
+

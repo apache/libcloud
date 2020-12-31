@@ -7709,6 +7709,128 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["VpnConnections"]
         return response.json()
 
+    def ex_create_certificate_authority(
+        self,
+        ca_perm: str = None,
+        description: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Creates a Client Certificate Authority (CA).
+
+        :param      ca_perm: The CA in PEM format. (required)
+        :type       ca_perm: ``str``
+
+        :param      description: The description of the CA.
+        :type       description: ``bool``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+        """
+        action = "CreateCa"
+        data = {"DryRun": dry_run}
+        if ca_perm is not None:
+            data.update({"CaPerm": ca_perm})
+        if description is not None:
+            data.update({"Description": description})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Ca"]
+        return response.json()
+
+    def ex_delete_certificate_authority(
+        self,
+        ca_id: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Deletes a specified Client Certificate Authority (CA).
+
+        :param      ca_id: The ID of the CA you want to delete. (required)
+        :type       ca_id: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+        """
+        action = "DeleteCa"
+        data = {"DryRun": dry_run}
+        if ca_id is not None:
+            data.update({"CaId": ca_id})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return True
+        return response.json()
+
+    def ex_read_certificate_authorities(
+        self,
+        ca_fingerprints: List[str] = None,
+        ca_ids: List[str] = None,
+        descriptions: List[str] = None,
+        dry_run: bool = False
+    ):
+        """
+        Returns information about one or more of your Client Certificate
+        Authorities (CAs).
+
+        :param      ca_fingerprints: The fingerprints of the CAs.
+        :type       ca_fingerprints: ``list`` of ``str``
+
+        :param      ca_ids: The IDs of the CAs.
+        :type       ca_ids: ``list`` of ``str``
+
+        :param      descriptions: The descriptions of the CAs.
+        :type       descriptions: ``list`` of ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+        """
+        action = "ReadCas"
+        data = {"DryRun": dry_run, "Filters": {}}
+        if ca_fingerprints is not None:
+            data["Filters"].update({"CaFingerprints": ca_fingerprints})
+        if ca_ids is not None:
+            data["Filters"].update({"CaIds": ca_ids})
+        if descriptions is not None:
+            data["Filters"].update({"Descriptions": descriptions})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Cas"]
+        return response.json()
+
+    def ex_update_certificate_authority(
+        self,
+        ca_id: str = None,
+        description: str = None,
+        dry_run: bool = False
+    ):
+        """
+        Modifies the specified attribute of a Client Certificate Authority
+        (CA).
+
+        :param      ca_id: The ID of the CA. (required)
+        :type       ca_id: ``str``
+
+        :param      description: The description of the CA.
+        :type       description: ``str``
+
+        :param      dry_run: If true, checks whether you have the required
+        permissions to perform the action.
+        :type       dry_run: ``bool``
+        """
+        action = "UpdateCa"
+        data = {"DryRun": dry_run}
+        if ca_id is not None:
+            data.update({"CaId": ca_id})
+        if description is not None:
+            data.update({"Description": description})
+        response = self._call_api(action, json.dumps(data))
+        if response.status_code == 200:
+            return response.json()["Ca"]
+        return response.json()
+
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
             region,
