@@ -127,11 +127,17 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(driver.signature_version, "4")
 
         # Verify that signature_version can be overriden via constructor argument
+        driver = EC2NodeDriver(*EC2_PARAMS, region="us-east-1", signature_version="2")
+        self.assertEqual(driver.signature_version, "2")
+
         driver = EC2NodeDriver(*EC2_PARAMS, region="us-east-1", signature_version="4")
         self.assertEqual(driver.signature_version, "4")
 
         driver = EC2NodeDriver(*EC2_PARAMS, region="eu-central-1", signature_version="2")
         self.assertEqual(driver.signature_version, "2")
+
+        driver = EC2NodeDriver(*EC2_PARAMS, region="eu-central-1", signature_version="4")
+        self.assertEqual(driver.signature_version, "4")
 
     def test_instantiate_driver_with_token(self):
         token = 'temporary_credentials_token'
