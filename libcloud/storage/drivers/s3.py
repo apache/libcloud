@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+from typing import Optional
+
 import base64
 import hmac
 import time
@@ -1047,6 +1050,15 @@ class BaseS3StorageDriver(StorageDriver):
 
         return container
 
+    def _get_content_length_from_headers(self,
+                                         headers: Dict[str, str]
+                                         ) -> Optional[int]:
+        """
+        Prase object size from the provided response headers.
+        """
+        content_length = headers.get("content-length", None)
+        return content_length
+
     def _headers_to_object(self, object_name, container, headers):
         hash = headers['etag'].replace('"', '')
         extra = {'content_type': headers['content-type'],
@@ -1063,7 +1075,13 @@ class BaseS3StorageDriver(StorageDriver):
             key = key.replace(self.http_vendor_prefix + '-meta-', '')
             meta_data[key] = value
 
-        obj = Object(name=object_name, size=headers['content-length'],
+        content_length = self._get_content_length_from_headers(headers=headers)
+
+        if content_length is None:
+            raise KeyError("Can not deduce object size from headers for "
+                           "object %s" % (object_name))
+
+        obj = Object(name=object_name, size=int(content_length),
                      hash=hash, extra=extra,
                      meta_data=meta_data,
                      container=container,
