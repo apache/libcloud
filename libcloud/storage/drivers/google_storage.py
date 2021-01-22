@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+from typing import Optional
+
 import copy
 import json
 
@@ -406,3 +409,14 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         self.json_connection.request(
             url, method='POST',
             data=json.dumps({'role': role, 'entity': entity}))
+
+    def _get_content_length_from_headers(self,
+                                         headers: Dict[str, str]
+                                         ) -> Optional[int]:
+        # We need to override this since Google storage doesn't always return
+        # Content-Length header.
+        # See https://github.com/apache/libcloud/issues/1544 for details.
+        x_goog_content_length = headers.get('x-goog-stored-content-length',
+                                            None)
+        content_length = headers.get('content-length', x_goog_content_length)
+        return content_length

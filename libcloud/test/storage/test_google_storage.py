@@ -79,6 +79,21 @@ class GoogleStorageMockHttp(S3MockHttp):
 
         return httplib.OK, body, headers, httplib.responses[httplib.OK]
 
+    def _test2_test_cont_length_get_object(self, method, url, body, headers):
+        # test_get_object_object_size_not_in_content_length_header
+        # Google uses a different HTTP header prefix for meta data
+        body = self.fixtures.load('list_containers.xml')
+        headers = {
+            'content-type': 'application/zip',
+            'etag': '"e31208wqsdoj329jd"',
+            'x-goog-meta-rabbits': 'monkeys',
+            'x-goog-stored-content-length': '9587',
+            'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
+        }
+
+        return httplib.OK, body, headers, httplib.responses[httplib.OK]
+
+
     def _container_path_UNAUTHORIZED(self, method, url, body, headers):
         return (httplib.UNAUTHORIZED,
                 '',
@@ -331,6 +346,18 @@ class GoogleStorageTests(S3Tests, GoogleTestCase):
     def test_token(self):
         # Not supported on Google Storage
         pass
+
+    def test_get_object_object_size_in_content_length(self):
+        self.mock_response_klass.type = 'get_object'
+        obj = self.driver.get_object(container_name='test2',
+                                     object_name='test')
+        self.assertEqual(obj.size, 12345)
+
+    def test_get_object_object_size_not_in_content_length_header(self):
+        self.mock_response_klass.type = 'get_object'
+        obj = self.driver.get_object(container_name='test2',
+                                     object_name='test_cont_length')
+        self.assertEqual(obj.size, 9587)
 
     def test_delete_permissions(self):
         mock_request = mock.Mock()
