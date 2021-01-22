@@ -106,6 +106,33 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.driver = EC2NodeDriver(*EC2_PARAMS,
                                     **{'region': self.region})
 
+    def test_regions_and_signature_versions(self):
+        # Verify that correct signature versions are used for each region
+        driver = EC2NodeDriver(*EC2_PARAMS, region="us-east-1")
+        self.assertEqual(driver.signature_version, "2")
+
+        driver = EC2NodeDriver(*EC2_PARAMS, region="us-east-2")
+        self.assertEqual(driver.signature_version, "4")
+
+        driver = EC2NodeDriver(*EC2_PARAMS, region="eu-west-1")
+        self.assertEqual(driver.signature_version, "2")
+
+        driver = EC2NodeDriver(*EC2_PARAMS, region="eu-west-3")
+        self.assertEqual(driver.signature_version, "4")
+
+        driver = EC2NodeDriver(*EC2_PARAMS, region="ca-central-1")
+        self.assertEqual(driver.signature_version, "4")
+
+        driver = EC2NodeDriver(*EC2_PARAMS, region="eu-central-1")
+        self.assertEqual(driver.signature_version, "4")
+
+        # Verify that signature_version can be overriden via constructor argument
+        driver = EC2NodeDriver(*EC2_PARAMS, region="us-east-1", signature_version="4")
+        self.assertEqual(driver.signature_version, "4")
+
+        driver = EC2NodeDriver(*EC2_PARAMS, region="eu-central-1", signature_version="2")
+        self.assertEqual(driver.signature_version, "2")
+
     def test_instantiate_driver_with_token(self):
         token = 'temporary_credentials_token'
         driver = EC2NodeDriver(*EC2_PARAMS, **{'region': self.region, 'token': token})

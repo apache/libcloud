@@ -5788,7 +5788,7 @@ class EC2NodeDriver(BaseEC2NodeDriver):
     }
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 region='us-east-1', token=None, **kwargs):
+                 region='us-east-1', token=None, signature_version=None, **kwargs):
         if hasattr(self, '_region'):
             region = self._region  # pylint: disable=no-member
 
@@ -5801,8 +5801,16 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         self.token = token
         self.api_name = details['api_name']
         self.country = details['country']
-        self.signature_version = details.get('signature_version',
-                                             DEFAULT_SIGNATURE_VERSION)
+
+        # Precedencs goes as follow from highest to lowest:
+        # 1. signature_version constructor argument
+        # 2. signature_version in constants file
+        # 3. DEFAULT_SIGNATURE_VERSION constant
+        if signature_version:
+            self.signature_version = signature_version
+        else:
+            self.signature_version = details.get('signature_version',
+                                                 DEFAULT_SIGNATURE_VERSION)
 
         host = host or details['endpoint']
 
