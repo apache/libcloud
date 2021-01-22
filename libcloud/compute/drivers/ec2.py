@@ -5802,9 +5802,10 @@ class EC2NodeDriver(BaseEC2NodeDriver):
         self.api_name = details['api_name']
         self.country = details['country']
 
-        # Precedencs goes as follow from highest to lowest:
+        # Precedence goes as follows from highest to lowest:
         # 1. signature_version constructor argument
-        # 2. signature_version in constants file
+        # 2. signature_version from ec2_region_details_partial.py constants
+        # file
         # 3. DEFAULT_SIGNATURE_VERSION constant
         if signature_version:
             self.signature_version = signature_version
