@@ -1,6 +1,36 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Compute
+~~~~~~~
+
+- [EC2] Fix a regression introduced in v3.3.0 which would break EC2 driver for
+  some regions because the driver would incorrectly try to use signature version
+  2 for all the regions whereas some newer regions require signature version 4
+  to be used.
+
+  If you are unable to upgrade, you can use the following workaround, as long
+  as you only use code which supports / works with authentication signature
+  algorithm version 4:
+
+  .. sourcecode:: python
+
+    import libcloud.common.aws
+    libcloud.common.aws.DEFAULT_SIGNATURE_VERSION = "4"
+
+    # Instantiate affected driver here...
+
+  Reported by @olegrtecno.
+  (GITHUB-1545, GITHUB-1546)
+
+- [EC2] Allow user to override which signature algorithm version is used for
+  authentication by passing ``signature_version`` keyword argument to the EC2
+  driver constructor.
+  (GITHUB-1546)
+
 Changes in Apache Libcloud 3.3.0
 --------------------------------
 

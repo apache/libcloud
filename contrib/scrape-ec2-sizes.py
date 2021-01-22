@@ -374,7 +374,7 @@ def dump():
 
     # 3. Write file with partial region details (everything except instance_types attribute)
     regions_partial = {}
-    keys_to_keep = ["api_name", "country", "id", "endpoint"]
+    keys_to_keep = ["api_name", "country", "id", "endpoint", "signature_version"]
 
     for region_name, region_details in regions.items():
         regions_partial[region_name] = {}
