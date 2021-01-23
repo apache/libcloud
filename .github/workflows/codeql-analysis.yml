@@ -2,10 +2,9 @@ name: "CodeQL Analysis"
 
 on:
   push:
-    branches: [ trunk, codesql_scan ]
+    branches: [ trunk ]
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ trunk, codesql_scan ]
+    branches: [ trunk ]
   schedule:
     - cron: '23 15 * * 3'
 
