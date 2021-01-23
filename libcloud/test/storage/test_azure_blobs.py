@@ -775,7 +775,7 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertTrue('some-value' in obj.meta_data)
 
     def test_upload_big_block_object_success(self):
-        file_path = tempfile.mktemp(suffix='.jpg')
+        _, file_path = tempfile.mkstemp(suffix='.jpg')
         file_size = AZURE_UPLOAD_CHUNK_SIZE + 1
 
         with open(file_path, 'w') as file_hdl:
@@ -820,7 +820,7 @@ class AzureBlobsTests(unittest.TestCase):
 
     def test_upload_big_block_object_success_with_lease(self):
         self.mock_response_klass.use_param = 'comp'
-        file_path = tempfile.mktemp(suffix='.jpg')
+        _, file_path = tempfile.mkstemp(suffix='.jpg')
         file_size = AZURE_UPLOAD_CHUNK_SIZE * 2
 
         with open(file_path, 'w') as file_hdl:
