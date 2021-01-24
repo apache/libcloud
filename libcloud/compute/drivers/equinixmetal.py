@@ -447,22 +447,31 @@ def _list_async(driver):
                             driver=self, extra=extra)
 
     def _to_size(self, data):
-        cpus = data['specs']['cpus'][0].get('count')
+        try:
+            cpus = data['specs']['cpus'][0].get('count')
+        except KeyError:
+            cpus = None
+        regions = [region.get('href').replace('/metal/v1/facilities/', '')
+                   for region in data.get('available_in', [])]
         extra = {'description': data['description'], 'line': data['line'],
-                 'cpus': cpus}
-
-        ram = data['specs']['memory']['total']
-        disk = 0
-        for disks in data['specs']['drives']:
-            disk_size = disks['size'].replace('GB', '')
-            if 'TB' in disk_size:
-                disk_size = float(disks['size'].replace('TB', '')) * 1000
-            disk += disks['count'] * int(disk_size)
+                 'cpus': cpus, 'regions': regions}
+        try:
+            ram = int(data['specs']['memory']['total'].replace('GB', '')) * 1024  # noqa
+        except KeyError:
+            ram = None
+        disk = None
+        if data['specs'].get('drives', ''):
+            disk = 0
+            for disks in data['specs']['drives']:
+                disk_size = disks['size'].replace('GB', '')
+                if 'TB' in disk_size:
+                    disk_size = float(disks['size'].replace('TB', '')) * 1000
+                disk += disks['count'] * int(disk_size)
         name = "%s - %s RAM" % (data.get('name'), ram)
         price = data['pricing'].get('hour')
         return NodeSize(id=data['slug'], name=name,
-                        ram=int(ram.replace('GB', '')) * 1024, disk=disk,
-                        bandwidth=0, price=price, extra=extra, driver=self)
+                        ram=ram, disk=disk, bandwidth=0,
+                        price=price, extra=extra, driver=self)
 
     def _to_key_pairs(self, data):
         extra = {'label': data['label'],
