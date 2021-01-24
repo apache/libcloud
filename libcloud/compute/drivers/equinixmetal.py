@@ -433,7 +433,11 @@ def _list_async(driver):
         return node
 
     def _to_image(self, data):
-        extra = {'distro': data['distro'], 'version': data['version']}
+        extra = {
+            'distro': data['distro'],
+            'version': data['version'],
+            'supported_sizes': data.get('provisionable_on', [])
+        }
         return NodeImage(id=data['slug'], name=data['name'], extra=extra,
                          driver=self)
 
