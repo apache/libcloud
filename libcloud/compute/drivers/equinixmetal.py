@@ -208,7 +208,12 @@ def _list_async(driver):
         result = yield from future
         retval.extend(result)
     return retval""" % resource_type, glob, loc)
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            loop = asyncio.get_event_loop()
+
         return loop.run_until_complete(loc['_list_async'](loc['self']))
 
     def ex_list_nodes_for_project(self, ex_project_id, include='plan', page=1,
