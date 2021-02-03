@@ -1,0 +1,43 @@
+# Workflow which runs on daily basis and publishes pricing data to S3 bucket
+name: Publish pricing.json to S3 bucket
+
+on:
+  schedule:
+    - cron: '0 13 * * *'
+    - cron: '0 2 * * *'
+
+jobs:
+  generate_and_publish_pricing_data:
+    name: Generate and Publish Pricing file to S3
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+      - name: Print Environment Info
+        id: printenv
+        run: |
+          printenv | sort
+
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.20.1"
+
+      - name: Generate and publish pricing data
+        env:
+          GCE_API_KEY: ${{ secrets.GCE_API_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_KEY_SECRET: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+        run: |
+          tox -escrape-and-publish-provider-prices

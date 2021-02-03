@@ -12,6 +12,7 @@ Provider                      enable container cdn enable object cdn get contain
 `Google Cloud Storage`_       no                   no                no                    no                
 `KTUCloud Storage`_           yes                  no                yes                   yes               
 `Local Storage`_              yes                  yes               yes                   yes               
+`MinIO Storage Driver`_       no                   no                no                    no                
 `Nimbus.io`_                  no                   no                no                    no                
 `Ninefold`_                   no                   yes               no                    yes               
 `OpenStack Swift`_            yes                  no                yes                   yes               
@@ -47,6 +48,7 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Google Cloud Storage`: http://cloud.google.com/storage
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Local Storage`: http://example.com
+.. _`MinIO Storage Driver`: http://cloud.google.com/storage
 .. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`OpenStack Swift`: http://www.rackspace.com/

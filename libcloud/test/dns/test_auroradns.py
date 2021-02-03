@@ -15,6 +15,7 @@
 import sys
 import json
 
+from libcloud.common.types import ProviderError
 from libcloud.dns.drivers.auroradns import AuroraDNSDriver
 from libcloud.dns.drivers.auroradns import AuroraDNSHealthCheckType
 from libcloud.dns.types import RecordType
@@ -36,6 +37,15 @@ class AuroraDNSDriverTests(LibcloudTestCase):
         AuroraDNSDriver.connectionCls.conn_class = AuroraDNSDriverMockHttp
         AuroraDNSDriverMockHttp.type = None
         self.driver = AuroraDNSDriver(*DNS_PARAMS_AURORADNS)
+
+    def test_403_status_code(self):
+        AuroraDNSDriverMockHttp.type = "HTTP_FORBIDDEN"
+
+        with self.assertRaises(ProviderError) as ctx:
+            self.driver.list_zones()
+
+        self.assertEqual(ctx.exception.value, "Authorization failed")
+        self.assertEqual(ctx.exception.http_code, 403)
 
     def test_merge_extra_data(self):
         rdata = {
@@ -261,6 +271,10 @@ class AuroraDNSDriverMockHttp(MockHttp):
         else:
             body = self.fixtures.load('zone_list.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _zones_HTTP_FORBIDDEN(self, method, url, body, headers):
+        body = "{}"
+        return (httplib.FORBIDDEN, body, {}, httplib.responses[httplib.FORBIDDEN])
 
     def _zones_example_com(self, method, url, body, headers):
         body = None

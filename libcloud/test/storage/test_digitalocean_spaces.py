@@ -22,7 +22,8 @@ from libcloud.storage.base import Container, Object
 from libcloud.storage.drivers.digitalocean_spaces import (
     DigitalOceanSpacesStorageDriver,
     DOSpacesConnectionAWS4,
-    DOSpacesConnectionAWS2)
+    DOSpacesConnectionAWS2,
+    DO_SPACES_HOSTS_BY_REGION)
 
 from libcloud.test import LibcloudTestCase
 from libcloud.test.secrets import STORAGE_S3_PARAMS
@@ -99,6 +100,13 @@ class DigitalOceanSpacesTests_v4(DigitalOceanSpacesTests):
     def test_connection_class_host(self):
         host = self.driver.connectionCls.host
         self.assertEqual(host, self.default_host)
+
+    def test_valid_regions(self):
+        for region, hostname in DO_SPACES_HOSTS_BY_REGION.items():
+            driver = self.driver_type(*self.driver_args,
+                                      region=region)
+            self.assertEqual(driver.connectionCls.host, hostname)
+            self.assertTrue(driver.connectionCls.host.startswith(region))
 
 
 class DigitalOceanSpacesDoubleInstanceTests(LibcloudTestCase):

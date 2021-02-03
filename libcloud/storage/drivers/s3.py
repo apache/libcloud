@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+from typing import Optional
+
 import base64
 import hmac
 import time
@@ -46,6 +49,7 @@ from libcloud.common.aws import AWSBaseResponse, AWSDriver, \
 from libcloud.storage.base import Object, Container, StorageDriver
 from libcloud.storage.types import ContainerError
 from libcloud.storage.types import ContainerIsNotEmptyError
+from libcloud.storage.types import ContainerAlreadyExistsError
 from libcloud.storage.types import InvalidContainerNameError
 from libcloud.storage.types import ContainerDoesNotExistError
 from libcloud.storage.types import ObjectDoesNotExistError
@@ -58,6 +62,7 @@ S3_US_STANDARD_HOST = 's3.amazonaws.com'
 S3_US_EAST2_HOST = 's3-us-east-2.amazonaws.com'
 S3_US_WEST_HOST = 's3-us-west-1.amazonaws.com'
 S3_US_WEST_OREGON_HOST = 's3-us-west-2.amazonaws.com'
+S3_US_GOV_EAST_HOST = 's3-us-gov-east-1.amazonaws.com'
 S3_US_GOV_WEST_HOST = 's3-us-gov-west-1.amazonaws.com'
 S3_CN_NORTH_HOST = 's3.cn-north-1.amazonaws.com.cn'
 S3_CN_NORTHWEST_HOST = 's3.cn-northwest-1.amazonaws.com.cn'
@@ -81,6 +86,7 @@ REGION_TO_HOST_MAP = {
     'us-east-2': S3_US_EAST2_HOST,
     'us-west-1': S3_US_WEST_HOST,
     'us-west-2': S3_US_WEST_OREGON_HOST,
+    'us-gov-east-1': S3_US_GOV_EAST_HOST,
     'us-gov-west-1': S3_US_GOV_WEST_HOST,
     'cn-north-1': S3_CN_NORTH_HOST,
     'cn-northwest-1': S3_CN_NORTHWEST_HOST,
@@ -420,9 +426,15 @@ class BaseS3StorageDriver(StorageDriver):
             container = Container(name=container_name, extra=None, driver=self)
             return container
         elif response.status == httplib.CONFLICT:
+            if "BucketAlreadyOwnedByYou" in response.body:
+                raise ContainerAlreadyExistsError(
+                    value='Container with this name already exists. The name '
+                          'be unique among all the containers in the system.',
+                    container_name=container_name, driver=self)
+
             raise InvalidContainerNameError(
                 value='Container with this name already exists. The name must '
-                      'be unique among all the containers in the system',
+                      'be unique among all the containers in the system.',
                 container_name=container_name, driver=self)
         elif response.status == httplib.BAD_REQUEST:
             raise ContainerError(
@@ -1038,6 +1050,15 @@ class BaseS3StorageDriver(StorageDriver):
 
         return container
 
+    def _get_content_length_from_headers(self,
+                                         headers: Dict[str, str]
+                                         ) -> Optional[int]:
+        """
+        Prase object size from the provided response headers.
+        """
+        content_length = headers.get("content-length", None)
+        return content_length
+
     def _headers_to_object(self, object_name, container, headers):
         hash = headers['etag'].replace('"', '')
         extra = {'content_type': headers['content-type'],
@@ -1054,7 +1075,13 @@ class BaseS3StorageDriver(StorageDriver):
             key = key.replace(self.http_vendor_prefix + '-meta-', '')
             meta_data[key] = value
 
-        obj = Object(name=object_name, size=headers['content-length'],
+        content_length = self._get_content_length_from_headers(headers=headers)
+
+        if content_length is None:
+            raise KeyError("Can not deduce object size from headers for "
+                           "object %s" % (object_name))
+
+        obj = Object(name=object_name, size=int(content_length),
                      hash=hash, extra=extra,
                      meta_data=meta_data,
                      container=container,
@@ -1214,6 +1241,17 @@ class S3USWestOregonStorageDriver(S3StorageDriver):
     connectionCls = S3USWestOregonConnection
     ex_location_name = 'us-west-2'
     region_name = 'us-west-2'
+
+
+class S3USGovEastConnection(S3SignatureV4Connection):
+    host = S3_US_GOV_EAST_HOST
+
+
+class S3USGovEastStorageDriver(S3StorageDriver):
+    name = 'Amazon S3 (us-gov-east-1)'
+    connectionCls = S3USGovEastConnection
+    ex_location_name = 'us-gov-east-1'
+    region_name = 'us-gov-east-1'
 
 
 class S3USGovWestConnection(S3SignatureV4Connection):

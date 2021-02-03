@@ -59,6 +59,13 @@ __all__ = [
 # Module level variable indicates if the failed HTTP requests should be retried
 RETRY_FAILED_HTTP_REQUESTS = False
 
+# Set to True to allow double slashes in the URL path. This way
+# morph_action_hook() won't strip potentially double slashes in the URLs.
+# This is to support scenarios such as this one -
+# https://github.com/apache/libcloud/issues/1529.
+# We default it to False for backward compatibility reasons.
+ALLOW_PATH_DOUBLE_SLASHES = False
+
 
 class LazyObject(object):
     """An object that doesn't get initialized until accessed."""
@@ -653,8 +660,23 @@ class Connection(object):
         return response
 
     def morph_action_hook(self, action):
+        """
+        Here we strip any duplicated leading or traling slashes to
+        prevent typos and other issues where some APIs don't correctly
+        handle double slashes.
+
+        Keep in mind that in some situations, "/" is a vallid path name
+        so we have a module flag which disables this behavior
+        (https://github.com/apache/libcloud/issues/1529).
+        """
+        if ALLOW_PATH_DOUBLE_SLASHES:
+            # Special case to support scenarios where double slashes are
+            # valid - e.g. for S3 paths - /bucket//path1/path2.txt
+            return self.request_path + action
+
         url = urlparse.urljoin(self.request_path.lstrip('/').rstrip('/') +
                                '/', action.lstrip('/'))
+
         if not url.startswith('/'):
             return '/' + url
         else:

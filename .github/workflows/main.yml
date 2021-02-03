@@ -1,0 +1,179 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - trunk
+  pull_request:
+    branches:
+      - trunk
+  schedule:
+    - cron: '0 1 * * *'
+
+jobs:
+  # Special job which skips duplicate jobs
+  # NOTE: It looks like Apache disabled using external actions
+  # pre_job:
+  #   name: Skip Duplicate Jobs Pre Job
+  #   runs-on: ubuntu-latest
+  #   # Map a step output to a job output
+  #   outputs:
+  #     should_skip: ${{ steps.skip_check.outputs.should_skip }}
+  #   steps:
+  #     - id: skip_check
+  #       uses: fkirc/skip-duplicate-actions@f05289cf5f432138afd3408d79ca931eb0df74c3 # v3.0.0
+  #       with:
+  #         github_token: ${{ github.token }}
+
+  unit_tests:
+    name: Run Unit Tests
+    runs-on: ${{ matrix.os }}
+
+    # needs: pre_job
+    # if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - pypy3
+        os:
+          - ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.20.1"
+
+      - name: Run tox target
+        run: |
+          tox -e py${{ matrix.python_version }}
+
+  code_coverage:
+    name: Generate Code Coverage
+    runs-on: ubuntu-latest
+
+    # needs: pre_job
+    # if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.20.1"
+
+      - name: Run Checks
+        run: |
+          tox -e coverage-ci
+
+  lint_checks:
+    name: Run Various Lint and Other Checks
+    runs-on: ubuntu-latest
+
+    # needs: pre_job
+    # if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.20.1"
+
+      - name: Run Checks
+        run: |
+          tox -e checks,import-timings,lint,pylint
+
+  docs:
+    name: Build and upload Documentation
+    runs-on: ubuntu-latest
+
+    # needs: pre_job
+    # if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
+
+    strategy:
+      matrix:
+        python_version: [3.7]
+
+    steps:
+      - name: Print Environment Info
+        id: printenv
+        run: |
+          printenv | sort
+
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.20.1"
+
+      - name: Build Docs
+        run: |
+          tox -e docs-travis
+
+      - name: Trigger ReadTheDocs build
+        env:
+          RTD_TOKEN: ${{ secrets.RTD_TOKEN }}
+        run: |
+          pip install requests
+          python ./contrib/trigger_rtd_build.py

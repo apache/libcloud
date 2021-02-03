@@ -110,7 +110,8 @@ class DigitalOceanDNSMockHttp(MockHttp):
         'EMPTY': httplib.OK,
         'NOT_FOUND': httplib.NOT_FOUND,
         'UNAUTHORIZED': httplib.UNAUTHORIZED,
-        'UPDATE': httplib.OK
+        'UPDATE': httplib.OK,
+        'UNPROCESSABLE': httplib.UNPROCESSABLE_ENTITY,
     }
 
     def _v2_domains(self, method, url, body, headers):
@@ -119,6 +120,10 @@ class DigitalOceanDNSMockHttp(MockHttp):
                 httplib.responses[self.response_map[self.type]])
 
     def _v2_domains_CREATE(self, method, url, body, headers):
+        if body is None:
+            body = self.fixtures.load('_v2_domains_UNPROCESSABLE_ENTITY.json')
+            return (self.response_map['UNPROCESSABLE'], body, {},
+                    httplib.responses[self.response_map['UNPROCESSABLE']])
         body = self.fixtures.load('_v2_domains_CREATE.json')
         return (self.response_map[self.type], body, {},
                 httplib.responses[self.response_map[self.type]])
@@ -144,6 +149,10 @@ class DigitalOceanDNSMockHttp(MockHttp):
 
     def _v2_domains_testdomain_records_CREATE(self, method, url,
                                               body, headers):
+        if body is None:
+            body = self.fixtures.load('_v2_domains_UNPROCESSABLE_ENTITY.json')
+            return (self.response_map['UNPROCESSABLE'], body, {},
+                    httplib.responses[self.response_map['UNPROCESSABLE']])
         body = self.fixtures.load('_v2_domains_testdomain_records_CREATE.json')
         return (self.response_map[self.type], body, {},
                 httplib.responses[self.response_map[self.type]])
@@ -163,6 +172,10 @@ class DigitalOceanDNSMockHttp(MockHttp):
 
     def _v2_domains_testdomain_records_1234564_UPDATE(
             self, method, url, body, headers):
+        if body is None:
+            body = self.fixtures.load('_v2_domains_UNPROCESSABLE_ENTITY.json')
+            return (self.response_map['UNPROCESSABLE'], body, {},
+                    httplib.responses[self.response_map['UNPROCESSABLE']])
         body = self.fixtures.load(
             '_v2_domains_testdomain_records_1234564_UPDATE.json')
         return (self.response_map[self.type], body, {},

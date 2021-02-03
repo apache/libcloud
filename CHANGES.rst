@@ -1,8 +1,53 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud in development
------------------------------------------
+Changes in Apache Libcloud 3.3.1
+--------------------------------
+
+Compute
+~~~~~~~
+
+- [EC2] Fix a regression introduced in v3.3.0 which would break EC2 driver for
+  some regions because the driver would incorrectly try to use signature version
+  2 for all the regions whereas some newer regions require signature version 4
+  to be used.
+
+  If you are unable to upgrade, you can use the following workaround, as long
+  as you only use code which supports / works with authentication signature
+  algorithm version 4:
+
+  .. sourcecode:: python
+
+    import libcloud.common.aws
+    libcloud.common.aws.DEFAULT_SIGNATURE_VERSION = "4"
+
+    # Instantiate affected driver here...
+
+  Reported by @olegrtecno.
+  (GITHUB-1545, GITHUB-1546)
+
+- [EC2] Allow user to override which signature algorithm version is used for
+  authentication by passing ``signature_version`` keyword argument to the EC2
+  driver constructor.
+  (GITHUB-1546)
+
+Storage
+~~~~~~~
+
+- [Google Cloud Storage] Fix a bug and make sure we also correctly handle
+  scenario in ``get_object()`` method when the object size is returned in
+  ``x-goog-stored-content-length`` and not ``content-length`` header.
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+  (GITHUB-1544, GITHUB-1547)
+
+- [Google Cloud Storage] Update ``get_object()`` method and ensure
+  ``object.size`` attribute is an integer and not a string. This way it's
+  consistent with ``list_objects()`` method.
+  (GITHUB-1547)
+
+Changes in Apache Libcloud 3.3.0
+--------------------------------
 
 Common
 ~~~~~~
@@ -12,6 +57,33 @@ Common
   return HTTP 400 errors.
   (GITHUB-1487, GITHUB-1488)
   [Michael Spagon - @mspagon]
+
+- Optimize various code imports (remove unnecessary imports, make some lazy,
+  etc.), so now importing most of the modules is around ~20-40% faster (~70
+  vs ~140 ms) and in some cases such as EC2 driver even more.
+
+  Now majority of the import time is spent in importing ``requests`` library.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
+- ``libcloud.pricing.get_size_price()`` function has been updated so it only
+  caches pricing data in memory for the requested drivers.
+
+  This way we avoid caching data in memory for drivers which may never be
+  used.
+
+  If you want to revert to old behavior (cache pricing data for all the
+  drivers in memory), you can do that by passing ``cache_all=True`` argument
+  to that function or set ``libcloud.pricing.CACHE_ALL_PRICING_DATA`` module
+  level variable to ``True``.
+
+  Passing ``cache_all=True`` might come handy in situations where you know the
+  application will work with a lot of different drivers - this way you can
+  avoid multiple disk reads when requesting pricing data for different drivers.
+  (GITHUB-1519)
+  [Tomaz Muraus]
+
+- Advertise Python 3.9 support in setup.py.
 
 Compute
 ~~~~~~~
@@ -57,6 +129,101 @@ Compute
   (GITHUB-1495)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Add ex_get_size_extra_specs function to OpenStack driver.
+  (GITHUB-1517)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Enable to get Neutron Quota details in OpenStack driver.
+  (GITHUB-1514)
+  [Miguel Caballer - @micafer]
+
+- [DigitalOcean] ``_node_node`` method now ensures ``image`` and ``size``
+  attributes are also set correctly and populated on the ``Node`` object.
+  (GITHUB-1507, GITHUB-1508)
+  [@sergerdn]
+
+- [Vultr] Make sure ``private_ips`` attribute on the ``Node`` object is
+  correctly populated when listing nodes. Also add additional values to the
+  ``node.extra`` dictionary.
+  (GITHUB-1506)
+  [@sergerdn]
+
+- [EC2] Optimize EC2 driver imports and move all the large constant files to
+  separate modules in ``libcloud/compute/constants/ec2_*.py`` files.
+
+  Previously all the constants were contained in
+  ``libcloud/compute/constants.py`` file. That file was imported when importing
+  EC2 driver which would add unnecessary import time and memory overhead in case
+  this data was not actually used.
+
+  Now most of the large imports are lazy and only happen when that data is
+  needed (aka when ``list_sizes()`` method is called).
+
+  ``libcloud/compute/constants.py`` file has also been removed.
+  (GITHUB-1519)
+  [Tomaz Muraus - @Kami]
+
+- [Packet / Equinix Metal] Packet driver has been renamed to Equinix Metal. If
+  your code uses Packet.net driver, you need to update it as per example in
+  Upgrade Notes documentation section.
+  (GITHUB-1511)
+  [Dimitris Galanis - @dimgal1]
+
+- [OutScale] Add various extension methods to the driver. For information on
+  available extenion methods, please refer to the driver documentation.
+  (GITHUB-1499)
+  [@tgn-outscale]
+
+- [Linode] Add support for Linode's API v4.
+  (GITHUB-1504)
+  [Dimitris Galanis - @dimgal1]
+
+Storage
+~~~~~~~
+
+- Deprecated ``lockfile`` library which is used by the Local Storage driver has
+  been replaced with ``fasteners`` library.
+  [Tomaz Muraus - @Kami]
+
+- [S3] Add support for ``us-gov-east-1`` region.
+  (GITHUB-1509, GITHUB-1510)
+  [Andy Spohn - @spohnan]
+
+- [DigitalOcean Spaces] Add support for sfo2 regon.
+  (GITHUB-1525)
+  [Cristian Rasch - @cristianrasch]
+
+- [MinIO] Add new driver for MinIO object storage (https://min.io).
+  (GITHUB-1528, GITHUB-1454)
+  [Tomaz Muraus - @Kami]
+
+- [S3] Update S3 and other drivers which are based on the S3 one (Google
+  Storage, RGW, MinIO) to correctly throw ``ContainerAlreadyExistsError`` if
+  container creation fails because container with this name already exists.
+
+  Previously in such scenario, ``InvalidContainerNameError`` exception which
+  does not comply with the Libcloud standard API was thrown.
+  (GITHUB-1528)
+  [Tomaz Muraus - @Kami]
+
+- Add new ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES`` module level
+  variable.
+
+  When this value is set to ``True`` (defaults to ``False`` for backward
+  compatibility reasons), Libcloud won't try to sanitize the URL path and
+  remove any double slashes.
+
+  In most cases, this won't matter and sanitzing double slashes is a safer
+  default, but in some cases such as S3, where double slashes can be a valid
+  path (e.g. ``/my-bucket//path1/file.txt``), this option may come handy.
+
+  When this variable is set to ``True``, behavior is also consistent with
+  Libcloud versions prior to v2.0.0.
+
+  Reported by Jonathan Hanson - @triplepoint.
+  (GITHUB-1529)
+  [Tomaz Muraus - @Kami]
+
 DNS
 ~~~
 
@@ -68,6 +235,29 @@ DNS
   Reported by Kurt Schwehr - @schwehr.
 
   (GITHUB-1500)
+  [Tomaz Muraus - @Kami]
+
+- [CloudFlare DNS] Add support for creating ``SSHFP`` records.
+  (GITHUB-1512, GITHUB-1513)
+  [Will Hughes - @insertjokehere]
+
+- [DigitalOcean] Update driver and make sure request data is sent as part of
+  HTTP request body on POST and PUT operations (previously it was sent as
+  part of query params).
+  (GITHUB-1505)
+  [Andrew Starr-Bochicchio - @andrewsomething]
+
+- [AuroraDNS] Throw correct exception on 403 authorization failed API error.
+  (GITHUB-1521, GITHUB-1522)
+  [Freek Dijkstra - @macfreek]
+
+- [Linode] Add support for Linode's API v4.
+  (GITHUB-1504)
+  [Dimitris Galanis - @dimgal1]
+
+- [CloudFlare] Update driver so it correctly throws
+  ``RecordAlreadyExists`` error on various error responses which represent
+  this error.
   [Tomaz Muraus - @Kami]
 
 Changes in Apache Libcloud 3.2.0

@@ -1,0 +1,15 @@
+{
+    "id": "private/12345",
+    "label": "Test",
+    "description": "Test Image",
+    "created": "2020-10-11T17:27:54",
+    "updated": "2020-10-11T17:27:54",
+    "size": 25088,
+    "created_by": "unwebme",
+    "type": "manual",
+    "is_public": false,
+    "deprecated": false,
+    "vendor": null,
+    "expiry": null,
+    "eol": null
+}

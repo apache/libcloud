@@ -130,12 +130,40 @@ class S3MockHttp(BaseRangeDownloadMockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK])
 
     def _test2_test_get_object(self, method, url, body, headers):
-        # test_get_object
+        # test_get_object_success
         body = self.fixtures.load('list_containers.xml')
         headers = {'content-type': 'application/zip',
                    'etag': '"e31208wqsdoj329jd"',
                    'x-amz-meta-rabbits': 'monkeys',
                    'content-length': '12345',
+                   'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
+                   }
+
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _test2_get_object_no_content_length(self, method, url, body, headers):
+        # test_get_object_unable_to_determine_object_size
+        body = self.fixtures.load('list_containers.xml')
+        headers = {'content-type': 'application/zip',
+                   'etag': '"e31208wqsdoj329jd"',
+                   'x-amz-meta-rabbits': 'monkeys',
+                   'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
+                   }
+
+        return (httplib.OK,
+                body,
+                headers,
+                httplib.responses[httplib.OK])
+
+    def _test2_test_get_object_no_content_length(self, method, url, body, headers):
+        # test_get_object_unable_to_determine_object_size
+        body = self.fixtures.load('list_containers.xml')
+        headers = {'content-type': 'application/zip',
+                   'etag': '"e31208wqsdoj329jd"',
+                   'x-amz-meta-rabbits': 'monkeys',
                    'last-modified': 'Thu, 13 Sep 2012 07:13:22 GMT'
                    }
 
@@ -579,12 +607,21 @@ class S3Tests(unittest.TestCase):
 
         self.assertEqual(obj.name, 'test')
         self.assertEqual(obj.container.name, 'test2')
-        self.assertEqual(obj.size, '12345')
+        self.assertEqual(obj.size, 12345)
         self.assertEqual(obj.hash, 'e31208wqsdoj329jd')
         self.assertEqual(obj.extra['last_modified'],
                          'Thu, 13 Sep 2012 07:13:22 GMT')
         self.assertEqual(obj.extra['content_type'], 'application/zip')
         self.assertEqual(obj.meta_data['rabbits'], 'monkeys')
+
+    def test_get_object_unable_to_determine_object_size(self):
+        self.mock_response_klass.type = 'get_object_no_content_length'
+
+        expected_msg = "Can not deduce object size from headers"
+        self.assertRaisesRegex(KeyError, expected_msg,
+                               self.driver.get_object,
+                               container_name='test2',
+                               object_name='test')
 
     def test_create_container_bad_request(self):
         # invalid container name, returns a 400 bad request

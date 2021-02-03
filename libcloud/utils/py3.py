@@ -24,7 +24,6 @@ from __future__ import absolute_import
 
 import sys
 import types
-import unittest
 
 DEFAULT_LXML = False
 
@@ -52,16 +51,6 @@ if (2, 7) <= sys.version_info < (2, 8):
 
 if sys.version_info >= (3, 0):
     PY3 = True
-
-if PY2_pre_279:
-    try:
-        from backports.ssl_match_hostname import match_hostname, CertificateError  # NOQA
-    except ImportError:
-        import warnings
-        warnings.warn("Missing backports.ssl_match_hostname package")
-else:
-    # ssl module in Python >= 3.2 includes match hostname function
-    from ssl import match_hostname, CertificateError  # NOQA
 
 if PY3:
     import http.client as httplib
@@ -148,12 +137,16 @@ if PY3:
             return base64.decodestring(*args, **kwargs)
 
     def assertRaisesRegex(self, *args, **kwargs):
+        import unittest
+
         if not isinstance(self, unittest.TestCase):
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')
         return getattr(self, 'assertRaisesRegex')(*args, **kwargs)
 
     def assertRegex(self, *args, **kwargs):
+        import unittest
+
         if not isinstance(self, unittest.TestCase):
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')
@@ -228,6 +221,8 @@ else:
         return base64.decodestring(*args, **kwargs)
 
     def assertRaisesRegex(self, *args, **kwargs):
+        import unittest
+
         if not isinstance(self, unittest.TestCase):
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')
@@ -235,6 +230,8 @@ else:
         return getattr(self, 'assertRaisesRegex')(*args, **kwargs)
 
     def assertRegex(self, *args, **kwargs):
+        import unittest
+
         if not isinstance(self, unittest.TestCase):
             raise ValueError('First argument "self" needs to be an instance '
                              'of unittest.TestCase')

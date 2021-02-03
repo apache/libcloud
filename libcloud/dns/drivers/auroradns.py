@@ -168,7 +168,7 @@ class AuroraDNSResponse(JsonResponse):
             raise InvalidCredsError(**error)
         elif status == httplib.FORBIDDEN:
             error['value'] = 'Authorization failed'
-            error['http_status'] = status
+            error['http_code'] = status
             raise ProviderError(**error)
         elif status == httplib.NOT_FOUND:
             context = self.connection.context

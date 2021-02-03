@@ -4,6 +4,16 @@ Amazon S3 Storage Driver Documentation
 `Amazon Simple Storage Service (Amazon S3)`_ is an online cloud storage service
 from Amazon Web Services.
 
+.. note::
+
+    If you are upgrading from Libcloud v2.3.0 or older versions and are
+    utilizing paths with duplicated slashes (e.g. ``/my-bucket//path/1.txt``)
+    or a root bucked named as ``/``, you will need to utilize
+    ``libcloud.common.base.ALLOW_PATH_DOUBLE_SLASHES`` variable which was
+    added in Libcloud v3.3.0 so you can access objects in those paths.
+
+    For more information, please refer to the "Upgrade Notes".
+
 Multipart uploads
 -----------------
 

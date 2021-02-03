@@ -20,9 +20,9 @@ import sys
 import platform
 import shutil
 import unittest
+import time
 import tempfile
-
-import mock
+import multiprocessing
 
 from libcloud.common.types import LibcloudError
 from libcloud.storage.base import Container
@@ -36,11 +36,10 @@ from libcloud.utils.files import exhaust_iterator
 try:
     from libcloud.storage.drivers.local import LocalStorageDriver
     from libcloud.storage.drivers.local import LockLocalStorage
-    from lockfile import LockTimeout
+    import fasteners
 except ImportError:
-    print('lockfile library is not available, skipping local_storage tests...')
+    print('fasteners library is not available, skipping local_storage tests...')
     LocalStorageDriver = None
-    LockTimeout = None
 
 
 class LocalTests(unittest.TestCase):
@@ -74,6 +73,52 @@ class LocalTests(unittest.TestCase):
             if 'being used by another process' in msg and platform.system().lower() == 'windows':
                 return
             raise e
+
+    @unittest.skipIf(platform.system().lower() == 'windows', 'Unsupported on Windows')
+    def test_lock_local_storage(self):
+        # 1. Acquire succeeds
+        lock = LockLocalStorage("/tmp/a")
+        with lock:
+            self.assertTrue(True)
+
+        # 2. Acquire fails because lock is already acquired
+        lock = LockLocalStorage("/tmp/b", timeout=0.5)
+        with lock:
+            expected_msg = "Failed to acquire thread lock"
+            self.assertRaisesRegex(LibcloudError, expected_msg, lock.__enter__)
+
+        # 3. Multiprocessing scenario where IPC lock is involved
+        def acquire_lock_in_subprocess(pid, success):
+            # For first process acquire should succeed and for the second it should fail
+
+            lock = LockLocalStorage("/tmp/c", timeout=0.5)
+
+            if pid == 1:
+                with lock:
+                    time.sleep(1)
+
+                success.value = 1
+            elif pid == 2:
+                expected_msg = "Failed to acquire IPC lock"
+                self.assertRaisesRegex(LibcloudError, expected_msg, lock.__enter__)
+                success.value = 1
+            else:
+                raise ValueError("Invalid pid")
+
+        success_1  = multiprocessing.Value('i', 0)
+        success_2  = multiprocessing.Value('i', 0)
+
+        p1 = multiprocessing.Process(target=acquire_lock_in_subprocess, args=(1, success_1,))
+        p1.start()
+
+        p2 = multiprocessing.Process(target=acquire_lock_in_subprocess, args=(2, success_2,))
+        p2.start()
+
+        p1.join()
+        p2.join()
+
+        self.assertEqual(bool(success_1.value), True, "Check didn't pass")
+        self.assertEqual(bool(success_2.value), True, "Second check didn't pass")
 
     def test_list_containers_empty(self):
         containers = self.driver.list_containers()
@@ -531,14 +576,6 @@ class LocalTests(unittest.TestCase):
         obj.delete()
         container.delete()
         self.remove_tmp_file(tmppath)
-
-    @mock.patch("lockfile.mkdirlockfile.MkdirLockFile.acquire",
-                mock.MagicMock(side_effect=LockTimeout))
-    def test_proper_lockfile_imports(self):
-        # LockLocalStorage was previously using an un-imported exception
-        # in its __enter__ method, so the following would raise a NameError.
-        lls = LockLocalStorage("blah")
-        self.assertRaises(LibcloudError, lls.__enter__)
 
 
 if not LocalStorageDriver:

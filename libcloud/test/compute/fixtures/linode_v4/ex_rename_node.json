@@ -1,0 +1,42 @@
+{
+    "id": 22344420,
+    "label": "new_name",
+    "group": "",
+    "status": "running",
+    "created": "2020-10-09T12:46:54",
+    "updated": "2020-10-09T12:46:54",
+    "type": "g6-nanode-1",
+    "ipv4": [
+        "156.12.197.243"
+    ],
+    "ipv6": "2a01:7e00::f03c:92ff:fe77:e4bd/64",
+    "image": "linode/centos7",
+    "region": "eu-west",
+    "specs": {
+        "disk": 25600,
+        "memory": 1024,
+        "vcpus": 1,
+        "gpus": 0,
+        "transfer": 1000
+    },
+    "alerts": {
+        "cpu": 90,
+        "network_in": 10,
+        "network_out": 10,
+        "transfer_quota": 80,
+        "io": 10000
+    },
+    "backups": {
+        "enabled": false,
+        "schedule": {
+            "day": null,
+            "window": null
+        },
+        "last_successful": null
+    },
+    "hypervisor": "kvm",
+    "watchdog_enabled": true,
+    "tags": [
+        "testing123"
+    ]
+}

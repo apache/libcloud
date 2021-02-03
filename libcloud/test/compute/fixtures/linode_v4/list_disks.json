@@ -1,0 +1,25 @@
+{
+    "data": [
+        {
+            "id": 23517413,
+            "status": "ready",
+            "label": "CentOS 7 Disk",
+            "created": "2020-10-09T12:46:55",
+            "updated": "2020-10-09T14:17:33",
+            "filesystem": "ext4",
+            "size": 25088
+        },
+        {
+            "id": 66517499,
+            "status": "ready",
+            "label": "512 MB Swap Image",
+            "created": "2020-10-09T12:46:55",
+            "updated": "2020-10-09T14:17:40",
+            "filesystem": "swap",
+            "size": 512
+        }
+    ],
+    "page": 1,
+    "pages": 1,
+    "results": 2
+}

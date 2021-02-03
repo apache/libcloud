@@ -1,0 +1,20 @@
+{
+    "id": 123,
+    "type": "master",
+    "domain": "test.com",
+    "tags": [
+        "test123"
+    ],
+    "group": "",
+    "status": "active",
+    "description": "",
+    "soa_email": "admin@test.com",
+    "retry_sec": 0,
+    "master_ips": [],
+    "axfr_ips": [],
+    "expire_sec": 0,
+    "refresh_sec": 0,
+    "ttl_sec": 0,
+    "created": "2020-10-16T07:46:07",
+    "updated": "2020-10-16T07:59:22"
+}
