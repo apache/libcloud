@@ -68,6 +68,9 @@ AZURE_LEASE_PERIOD = int(
 )
 
 AZURE_STORAGE_HOST_SUFFIX = 'blob.core.windows.net'
+AZURE_STORAGE_HOST_SUFFIX_CHINA = 'blob.core.chinacloudapi.cn'
+AZURE_STORAGE_HOST_SUFFIX_GOVERNMENT = 'blob.core.usgovcloudapi.net'
+AZURE_STORAGE_HOST_SUFFIX_PRIVATELINK = 'privatelink.blob.core.windows.net'
 
 AZURE_STORAGE_CDN_URL_DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -173,9 +176,10 @@ class AzureBlobsConnection(AzureConnection):
     these deployments, the parameter ``account_prefix`` must be set on the
     connection. This is done by instantiating the driver with arguments such
     as ``host='somewhere.tld'`` and ``key='theaccount'``. To specify a custom
-    host without an account prefix, e.g. for use-cases where the custom host
-    implements an auditing proxy or similar, the driver can be instantiated
-    with ``host='theaccount.somewhere.tld'`` and ``key=''``.
+    host without an account prefix, e.g. to connect to Azure Government or
+    Azure China, the driver can be instantiated with the appropriate storage
+    endpoint suffix, e.g. ``host='blob.core.usgovcloudapi.net'`` and
+    ``key='theaccount'``.
 
     :param account_prefix: Optional prefix identifying the storage account.
                            Used when connecting to a custom deployment of the
@@ -206,7 +210,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None,
                  **kwargs):
-        self._host_argument_set = bool(host)
+        self._host = host
 
         # B64decode() this key and keep it, so that we don't have to do
         # so for every request. Minor performance improvement
@@ -217,15 +221,34 @@ class AzureBlobsStorageDriver(StorageDriver):
                                                       port=port, **kwargs)
 
     def _ex_connection_class_kwargs(self):
-        result = {}
+        # if the user didn't provide a custom host value, assume we're
+        # targeting the default Azure Storage endpoints
+        if self._host is None:
+            return {'host': '%s.%s' % (self.key, AZURE_STORAGE_HOST_SUFFIX)}
 
-        # host argument has precedence
-        if not self._host_argument_set:
-            result['host'] = '%s.%s' % (self.key, AZURE_STORAGE_HOST_SUFFIX)
+        # connecting to a special storage region like Azure Government or
+        # Azure China requires setting a custom storage endpoint but we
+        # still use the same scheme to identify a specific account as for
+        # the standard storage endpoint
+        try:
+            host_suffix = next(
+                host_suffix
+                for host_suffix in (
+                    AZURE_STORAGE_HOST_SUFFIX_CHINA,
+                    AZURE_STORAGE_HOST_SUFFIX_GOVERNMENT,
+                    AZURE_STORAGE_HOST_SUFFIX_PRIVATELINK,
+                )
+                if self._host.endswith(host_suffix)
+            )
+        except StopIteration:
+            pass
         else:
-            result['account_prefix'] = self.key
+            return {'host': '%s.%s' % (self.key, host_suffix)}
 
-        return result
+        # if the host isn't targeting one of the special storage regions, it
+        # must be pointing to Azurite or IoT Edge Storage so switch to prefix
+        # identification
+        return {'account_prefix': self.key}
 
     def _xml_to_container(self, node):
         """
