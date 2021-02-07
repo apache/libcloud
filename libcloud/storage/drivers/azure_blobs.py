@@ -177,7 +177,7 @@ class AzureBlobsConnection(AzureConnection):
     implements an auditing proxy or similar, the driver can be instantiated
     with ``host='theaccount.somewhere.tld'`` and ``key=''``.
 
-    :param account_prefix: Optional prefix identifying the sotrage account.
+    :param account_prefix: Optional prefix identifying the storage account.
                            Used when connecting to a custom deployment of the
                            storage service like Azurite or IoT Edge Storage.
     :type account_prefix: ``str``
