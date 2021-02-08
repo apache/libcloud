@@ -935,6 +935,23 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(host2, 'fakeaccount2.blob.core.windows.net')
         self.assertEqual(host3, 'test.foo.bar.com')
 
+    def test_normalize_http_headers(self):
+        driver = self.driver_type('fakeaccount1', 'deadbeafcafebabe==')
+
+        headers = driver._fix_headers({
+            # should be normalized to include x-ms-blob prefix
+            'Content-Encoding': 'gzip',
+            'content-language': 'en-us',
+            # should be passed through
+            'x-foo': 'bar',
+        })
+
+        self.assertEqual(headers, {
+            'x-ms-blob-content-encoding': 'gzip',
+            'x-ms-blob-content-language': 'en-us',
+            'x-foo': 'bar',
+        })
+
 
 class AzuriteBlobsTests(AzureBlobsTests):
     driver_args = STORAGE_AZURITE_BLOBS_PARAMS
