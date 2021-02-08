@@ -803,6 +803,7 @@ class AzureBlobsStorageDriver(StorageDriver):
         response = self._commit_blocks(object_path=object_path,
                                        chunks=chunks,
                                        lease=lease,
+                                       headers=headers,
                                        meta_data=meta_data,
                                        content_type=content_type,
                                        data_hash=data_hash,
@@ -822,7 +823,7 @@ class AzureBlobsStorageDriver(StorageDriver):
             'bytes_transferred': bytes_transferred,
         }
 
-    def _commit_blocks(self, object_path, chunks, lease,
+    def _commit_blocks(self, object_path, chunks, lease, headers,
                        meta_data, content_type, data_hash,
                        object_name, file_path):
         """
@@ -837,7 +838,7 @@ class AzureBlobsStorageDriver(StorageDriver):
 
         data = tostring(root)
         params = {'comp': 'blocklist'}
-        headers = {}
+        headers = headers or {}
 
         lease.update_headers(headers)
         lease.renew()
@@ -856,6 +857,8 @@ class AzureBlobsStorageDriver(StorageDriver):
         headers['Content-MD5'] = data_hash.decode('utf-8')
 
         headers['Content-Length'] = len(data)
+
+        headers = self._fix_headers(headers)
 
         response = self.connection.request(object_path, data=data,
                                            params=params, headers=headers,
@@ -928,6 +931,31 @@ class AzureBlobsStorageDriver(StorageDriver):
                                           object_name=obj.name)
 
         return False
+
+    def _fix_headers(self, headers):
+        """
+        Update common HTTP headers to their equivalent in Azure Storage
+
+        :param headers: The headers dictionary to be updated
+        :type headers: ``dict``
+        """
+        to_fix = (
+            'cache-control',
+            'content-encoding',
+            'content-language',
+        )
+
+        fixed = {}
+
+        for key, value in headers.items():
+            key_lower = key.lower()
+
+            if key_lower in to_fix:
+                fixed['x-ms-blob-%s' % key_lower] = value
+            else:
+                fixed[key] = value
+
+        return fixed
 
     def _update_metadata(self, headers, meta_data):
         """

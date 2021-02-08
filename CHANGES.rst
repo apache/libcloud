@@ -1,6 +1,18 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud 3.3.2
+--------------------------------
+
+Storage
+~~~~~~~
+
+- [Azure Blobs] Respect Content-Encoding, Content-Language and Cache-Control
+  headers when uploading blobs via stream.
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+  (GITHUB-1550)
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 
