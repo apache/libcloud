@@ -935,6 +935,24 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertEqual(host2, 'fakeaccount2.blob.core.windows.net')
         self.assertEqual(host3, 'test.foo.bar.com')
 
+    def test_storage_driver_host_govcloud(self):
+        driver1 = self.driver_type(
+            'fakeaccount1', 'deadbeafcafebabe==',
+            host='blob.core.usgovcloudapi.net')
+        driver2 = self.driver_type(
+            'fakeaccount2', 'deadbeafcafebabe==',
+            host='fakeaccount2.blob.core.usgovcloudapi.net')
+
+        host1 = driver1.connection.host
+        host2 = driver2.connection.host
+        account_prefix_1 = driver1.connection.account_prefix
+        account_prefix_2 = driver2.connection.account_prefix
+
+        self.assertEqual(host1, 'fakeaccount1.blob.core.usgovcloudapi.net')
+        self.assertEqual(host2, 'fakeaccount2.blob.core.usgovcloudapi.net')
+        self.assertIsNone(account_prefix_1)
+        self.assertIsNone(account_prefix_2)
+
 
 class AzuriteBlobsTests(AzureBlobsTests):
     driver_args = STORAGE_AZURITE_BLOBS_PARAMS
