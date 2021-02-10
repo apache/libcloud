@@ -953,6 +953,17 @@ class AzureBlobsTests(unittest.TestCase):
         self.assertIsNone(account_prefix_1)
         self.assertIsNone(account_prefix_2)
 
+    def test_storage_driver_host_azurite(self):
+        driver = self.driver_type(
+            'fakeaccount1', 'deadbeafcafebabe==',
+            host='localhost', port=10000, secure=False)
+
+        host = driver.connection.host
+        account_prefix = driver.connection.account_prefix
+
+        self.assertEqual(host, 'localhost')
+        self.assertEqual(account_prefix, 'fakeaccount1')
+
 
 class AzuriteBlobsTests(AzureBlobsTests):
     driver_args = STORAGE_AZURITE_BLOBS_PARAMS
