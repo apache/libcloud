@@ -61,7 +61,7 @@ class EquinixMetalTest(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra['billing_cycle'], 'hourly')
         self.assertEqual(node.extra['locked'], False)
         self.assertEqual(node.size.id, 'baremetal_1')
-        self.assertEqual(node.size.name, 'Type 1 - 16GB RAM')
+        self.assertEqual(node.size.name, 'Type 1 - 16384 RAM')
         self.assertEqual(node.size.ram, 16384)
         self.assertEqual(node.size.disk, 240)
         self.assertEqual(node.size.price, 0.4)

@@ -1,6 +1,27 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud 3.3.2
+--------------------------------
+
+Storage
+~~~~~~~
+
+- [Azure Blobs] Enable the Azure storage driver to be used with
+  Azure Government, Azure China, and Azure Private Link by setting
+  the driver host argument to the endpoint suffix for the environment.
+
+  Reported by Melissa Kersh - @mkcello96
+  (GITHUB-1551)
+
+Compute
+~~~~~~~
+
+- [Equinix Metal] Various improvements to the driver. 
+
+  (GITHUB-1548)
+  [Dimitris Galanis - @dimgal1]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 

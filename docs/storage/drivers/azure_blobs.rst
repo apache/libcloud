@@ -33,6 +33,19 @@ below.
 .. literalinclude:: /examples/storage/azure/instantiate.py
    :language: python
 
+Connecting to Azure Government
+------------------------------
+
+To target an `Azure Government`_ storage account, you can instantiate the driver
+by setting a custom storage host argument as shown below.
+
+.. literalinclude:: /examples/storage/azure/instantiate_gov.py
+   :language: python
+
+Setting a custom host argument can also be leveraged to customize the blob
+endpoint and connect to a storage account in `Azure China`_ or
+`Azure Private Link`_.
+
 Connecting to self-hosted Azure Storage implementations
 -------------------------------------------------------
 
@@ -51,3 +64,6 @@ Azure Storage implementations such as `Azure Blob Storage on IoT Edge`_.
 .. _`BlockBlobStorage accounts`: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#blockblobstorage-accounts
 .. _`Azurite storage emulator`: https://github.com/Azure/Azurite
 .. _`Azure Blob Storage on IoT Edge`: https://docs.microsoft.com/en-us/azure/iot-edge/how-to-store-data-blob
+.. _`Azure Government`: https://docs.microsoft.com/en-us/azure/azure-government/documentation-government-developer-guide
+.. _`Azure China`: https://docs.microsoft.com/en-us/azure/china/resources-developer-guide
+.. _`Azure Private Link`: https://docs.microsoft.com/en-us/azure/private-link/private-link-overview

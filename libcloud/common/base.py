@@ -984,19 +984,6 @@ class BaseDriver(object):
         self.key = key
         self.secret = secret
         self.secure = secure
-        args = [self.key]
-
-        if self.secret is not None:
-            args.append(self.secret)
-
-        args.append(secure)
-
-        if host is not None:
-            args.append(host)
-
-        if port is not None:
-            args.append(port)
-
         self.api_version = api_version
         self.region = region
 
@@ -1005,8 +992,23 @@ class BaseDriver(object):
                             'retry_delay': kwargs.pop('retry_delay', None),
                             'backoff': kwargs.pop('backoff', None),
                             'proxy_url': kwargs.pop('proxy_url', None)})
-        self.connection = self.connectionCls(*args, **conn_kwargs)
 
+        args = [self.key]
+
+        if self.secret is not None:
+            args.append(self.secret)
+
+        args.append(secure)
+
+        host = conn_kwargs.pop('host', None) or host
+
+        if host is not None:
+            args.append(host)
+
+        if port is not None:
+            args.append(port)
+
+        self.connection = self.connectionCls(*args, **conn_kwargs)
         self.connection.driver = self
         self.connection.connect()
 
