@@ -22,6 +22,11 @@ Compute
   (GITHUB-1548)
   [Dimitris Galanis - @dimgal1]
 
+- [OpenStack] Fix error getting non existing description of Ports.
+
+  (GITHUB-1543)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 

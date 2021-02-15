@@ -2874,7 +2874,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                 allowed_address_pairs=element['allowed_address_pairs'],
                 binding_vnic_type=element['binding:vnic_type'],
                 device_id=element['device_id'],
-                description=element['description'],
+                description=element.get('description', None),
                 device_owner=element['device_owner'],
                 fixed_ips=element['fixed_ips'],
                 mac_address=element['mac_address'],
