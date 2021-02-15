@@ -7,6 +7,12 @@ Changes in Apache Libcloud 3.3.2
 Storage
 ~~~~~~~
 
+- [Azure Blobs] Respect Content-Encoding, Content-Language and Cache-Control
+  headers when uploading blobs via stream.
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+  (GITHUB-1550)
+
 - [Azure Blobs] Enable the Azure storage driver to be used with
   Azure Government, Azure China, and Azure Private Link by setting
   the driver host argument to the endpoint suffix for the environment.
