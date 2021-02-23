@@ -7711,7 +7711,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_create_certificate_authority(
         self,
-        ca_perm: str = None,
+        ca_perm: str,
         description: str = None,
         dry_run: bool = False
     ):
@@ -7727,11 +7727,12 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
         :type       dry_run: ``bool``
+
+        :return: the created Ca.
+        :rtype: ``dict``
         """
         action = "CreateCa"
-        data = {"DryRun": dry_run}
-        if ca_perm is not None:
-            data.update({"CaPerm": ca_perm})
+        data = {"DryRun": dry_run, "CaPerm": ca_perm}
         if description is not None:
             data.update({"Description": description})
         response = self._call_api(action, json.dumps(data))
@@ -7741,7 +7742,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_delete_certificate_authority(
         self,
-        ca_id: str = None,
+        ca_id: str,
         dry_run: bool = False
     ):
         """
@@ -7755,9 +7756,7 @@ class OutscaleNodeDriver(NodeDriver):
         :type       dry_run: ``bool``
         """
         action = "DeleteCa"
-        data = {"DryRun": dry_run}
-        if ca_id is not None:
-            data.update({"CaId": ca_id})
+        data = {"DryRun": dry_run, "CaId": ca_id}
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
@@ -7786,6 +7785,9 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
         :type       dry_run: ``bool``
+
+        :return: a list of all Ca matching filled filters.
+        :rtype: ``list`` of  ``dict``
         """
         action = "ReadCas"
         data = {"DryRun": dry_run, "Filters": {}}
@@ -7802,7 +7804,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_update_certificate_authority(
         self,
-        ca_id: str = None,
+        ca_id: str,
         description: str = None,
         dry_run: bool = False
     ):
@@ -7819,11 +7821,12 @@ class OutscaleNodeDriver(NodeDriver):
         :param      dry_run: If true, checks whether you have the required
         permissions to perform the action.
         :type       dry_run: ``bool``
+
+        :return: a the created Ca or the request result.
+        :rtype: ``dict``
         """
         action = "UpdateCa"
-        data = {"DryRun": dry_run}
-        if ca_id is not None:
-            data.update({"CaId": ca_id})
+        data = {"DryRun": dry_run, "CaId": ca_id}
         if description is not None:
             data.update({"Description": description})
         response = self._call_api(action, json.dumps(data))
@@ -7884,14 +7887,15 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_delete_api_access_rule(
         self,
-        api_access_rule_id: str = None,
+        api_access_rule_id: str,
         dry_run: bool = False,
     ):
         """
         Delete an API access rule.
         You cannot delete the last remaining API access rule.
 
-        :param      api_access_rule_id: The id of the targeted rule.
+        :param      api_access_rule_id: The id of the targeted rule
+        (required).
         :type       api_access_rule_id: ``str``
 
         :param      dry_run: If true, checks whether you have the required
@@ -7966,7 +7970,7 @@ class OutscaleNodeDriver(NodeDriver):
 
     def ex_update_api_access_rule(
         self,
-        api_access_rule_id: str = None,
+        api_access_rule_id: str,
         ca_ids: List[str] = None,
         cns: List[str] = None,
         description: str = None,
@@ -7979,7 +7983,8 @@ class OutscaleNodeDriver(NodeDriver):
         for a parameter that is not specified, any previously set value
         is deleted.
 
-        :param      api_access_rule_id: The id of the rule we want to update.
+        :param      api_access_rule_id: The id of the rule we want to update
+        (required).
         :type       api_access_rule_id: ``str``
 
         :param      ca_ids: One or more IDs of Client Certificate Authorities
