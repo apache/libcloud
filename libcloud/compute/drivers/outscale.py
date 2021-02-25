@@ -7870,6 +7870,11 @@ class OutscaleNodeDriver(NodeDriver):
         :return: a dict containing the API access rule created.
         :rtype: ``dict``
         """
+
+        if not ca_ids and not ip_ranges:
+            raise ValueError(
+                "Either ca_ids or ip_ranges argument must be provided.")
+
         action = "CreateApiAccessRule"
         data = {"DryRun": dry_run}
         if description is not None:
