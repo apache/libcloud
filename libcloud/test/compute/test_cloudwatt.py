@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import unittest
 
 from libcloud.compute.drivers.cloudwatt import CloudwattNodeDriver
@@ -30,3 +31,13 @@ class CloudwattNodeDriverTests(OpenStack_1_1_Tests, unittest.TestCase):
 
     def test_auth_token_without_base_url_raises_exception(self):
         pass
+
+    def test_ex_auth_cache_passed_to_identity_connection(self):
+        pass
+
+    def test_unauthorized_clears_cached_auth_context(self):
+        pass
+
+
+if __name__ == '__main__':
+    sys.exit(unittest.main())

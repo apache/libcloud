@@ -41,14 +41,20 @@ from libcloud.test import unittest
 from libcloud.test import MockHttp
 from libcloud.test.secrets import OPENSTACK_PARAMS
 from libcloud.test.file_fixtures import ComputeFileFixtures
+from libcloud.test.compute.test_openstack import OpenStackMockAuthCache
 from libcloud.test.compute.test_openstack import OpenStackMockHttp
 from libcloud.test.compute.test_openstack import OpenStack_2_0_MockHttp
+
+TOMORROW = datetime.datetime.today() + datetime.timedelta(1)
+YESTERDAY = datetime.datetime.today() - datetime.timedelta(1)
 
 
 class OpenStackIdentityConnectionTestCase(unittest.TestCase):
     def setUp(self):
         OpenStackBaseConnection.auth_url = None
         OpenStackBaseConnection.conn_class = OpenStackMockHttp
+        OpenStack_2_0_MockHttp.type = None
+        OpenStackIdentity_3_0_MockHttp.type = None
 
     def test_auth_url_is_correctly_assembled(self):
         tuples = [
@@ -166,9 +172,6 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
         connection = self._get_mock_connection(OpenStack_2_0_MockHttp)
         auth_url = connection.auth_url
 
-        yesterday = datetime.datetime.today() - datetime.timedelta(1)
-        tomorrow = datetime.datetime.today() + datetime.timedelta(1)
-
         osa = OpenStackIdentity_2_0_Connection(auth_url=auth_url,
                                                user_id=user_id,
                                                key=key,
@@ -179,7 +182,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 
         # Force re-auth, expired token
         osa.auth_token = None
-        osa.auth_token_expires = yesterday
+        osa.auth_token_expires = YESTERDAY
         count = 5
 
         for i in range(0, count):
@@ -189,7 +192,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
 
         # No force reauth, expired token
         osa.auth_token = None
-        osa.auth_token_expires = yesterday
+        osa.auth_token_expires = YESTERDAY
 
         mocked_auth_method.call_count = 0
         self.assertEqual(mocked_auth_method.call_count, 0)
@@ -209,7 +212,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             osa.authenticate(force=False)
 
             if i == 0:
-                osa.auth_token_expires = tomorrow
+                osa.auth_token_expires = TOMORROW
 
         self.assertEqual(mocked_auth_method.call_count, 1)
 
@@ -229,6 +232,104 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             osa.authenticate(force=False)
 
         self.assertEqual(mocked_auth_method.call_count, 1)
+
+    def test_authentication_cache(self):
+        tuples = [
+            # 1.0 does not provide token expiration, so it always
+            # re-authenticates and never uses the cache.
+            # ('1.0', OpenStackMockHttp, {}),
+            ('1.1', OpenStackMockHttp, {}),
+            ('2.0', OpenStack_2_0_MockHttp, {}),
+            ('2.0_apikey', OpenStack_2_0_MockHttp, {}),
+            ('2.0_password', OpenStack_2_0_MockHttp, {}),
+            ('3.x_password', OpenStackIdentity_3_0_MockHttp, {'user_id': 'test_user_id', 'key': 'test_key',
+                                                              'token_scope': 'project', 'tenant_name': 'test_tenant',
+                                                              'tenant_domain_id': 'test_tenant_domain_id',
+                                                              'domain_name': 'test_domain'}),
+            ('3.x_oidc_access_token', OpenStackIdentity_3_0_MockHttp, {'user_id': 'test_user_id', 'key': 'test_key',
+                                                              'token_scope': 'domain', 'tenant_name': 'test_tenant',
+                                                              'tenant_domain_id': 'test_tenant_domain_id',
+                                                              'domain_name': 'test_domain'})
+        ]
+
+        user_id = OPENSTACK_PARAMS[0]
+        key = OPENSTACK_PARAMS[1]
+
+        for (auth_version, mock_http_class, kwargs) in tuples:
+            mock_http_class.type = None
+            connection = \
+                self._get_mock_connection(mock_http_class=mock_http_class)
+            auth_url = connection.auth_url
+
+            if not kwargs:
+                kwargs['user_id'] = user_id
+                kwargs['key'] = key
+
+            auth_cache = OpenStackMockAuthCache()
+            self.assertEqual(len(auth_cache), 0)
+            kwargs['auth_cache'] = auth_cache
+
+            cls = get_class_for_auth_version(auth_version=auth_version)
+            osa = cls(auth_url=auth_url, parent_conn=connection, **kwargs)
+            osa = osa.authenticate()
+
+            # Token is cached
+            self.assertEqual(len(auth_cache), 1)
+
+            # New client, token from cache is re-used
+            osa = cls(auth_url=auth_url, parent_conn=connection, **kwargs)
+            osa.request = Mock(wraps=osa.request)
+            osa = osa.authenticate()
+
+            # No auth API call
+            if auth_version in ('1.1', '2.0', '2.0_apikey', '2.0_password'):
+                self.assertEqual(osa.request.call_count, 0)
+            elif auth_version in ('3.x_password', '3.x_oidc_access_token'):
+                # v3 only caches token and expiration; service catalog URLs
+                # and the rest of the auth context are fetched from Keystone
+                osa.request.assert_called_once_with(
+                    action='/v3/auth/tokens', params=None, data=None,
+                    headers={'X-Subject-Token': '00000000000000000000000000000000',
+                             'X-Auth-Token': '00000000000000000000000000000000'},
+                    method='GET', raw=False)
+
+            # Cache size unchanged
+            self.assertEqual(len(auth_cache), 1)
+
+            # Authenticates if cached token expired
+            cache_key = list(auth_cache.store.keys())[0]
+            auth_context = auth_cache.get(cache_key)
+            auth_context.expiration = YESTERDAY
+            auth_cache.put(cache_key, auth_context)
+
+            osa = cls(auth_url=auth_url, parent_conn=connection, **kwargs)
+            osa.request = Mock(wraps=osa.request)
+            osa._get_unscoped_token_from_oidc_token = Mock(return_value='000')
+            OpenStackIdentity_3_0_MockHttp.type = 'GET_UNAUTHORIZED_POST_OK'
+            osa = osa.authenticate()
+
+            if auth_version in ('1.1', '2.0', '2.0_apikey', '2.0_password'):
+                self.assertEqual(osa.request.call_count, 1)
+                self.assertTrue(osa.request.call_args[1]['method'], 'POST')
+            elif auth_version in ('3.x_password', '3.x_oidc_access_token'):
+                self.assertTrue(osa.request.call_args[0][0], '/v3/auth/tokens')
+                self.assertTrue(osa.request.call_args[1]['method'], 'POST')
+
+            # Token evicted from cache if 401 received on another call
+            if hasattr(osa, 'list_projects'):
+                mock_http_class.type = None
+                auth_cache.reset()
+
+                osa = cls(auth_url=auth_url, parent_conn=connection, **kwargs)
+                osa.request = Mock(wraps=osa.request)
+                osa = osa.authenticate()
+                self.assertEqual(len(auth_cache), 1)
+                mock_http_class.type = 'UNAUTHORIZED'
+                try:
+                    osa.list_projects()
+                except:  # These methods don't handle 401s
+                    pass
+                self.assertEqual(len(auth_cache), 0)
 
     def _get_mock_connection(self, mock_http_class, auth_url=None):
         OpenStackBaseConnection.conn_class = mock_http_class
@@ -767,6 +868,13 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
+    def _v3_projects_UNAUTHORIZED(self, method, url, body, headers):
+        if method == 'GET':
+            body = ComputeFileFixtures('openstack').load('_v3__auth.json')
+            return (httplib.UNAUTHORIZED, body, self.json_content_headers,
+                    httplib.responses[httplib.UNAUTHORIZED])
+        raise NotImplementedError()
+
     def _v3_OS_FEDERATION_identity_providers_test_user_id_protocols_test_tenant_auth(self, method, url, body, headers):
         if method == 'GET':
             if 'Authorization' not in headers:
@@ -784,6 +892,14 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
         raise NotImplementedError()
 
     def _v3_auth_tokens(self, method, url, body, headers):
+        if method == 'GET':
+            body = json.loads(
+                ComputeFileFixtures('openstack').load('_v3__auth.json'))
+            body['token']['expires_at'] = TOMORROW.isoformat()
+            headers = self.json_content_headers.copy()
+            headers['x-subject-token'] = '00000000000000000000000000000000'
+            return (httplib.OK, json.dumps(body), headers,
+                    httplib.responses[httplib.OK])
         if method == 'POST':
             status = httplib.OK
             data = json.loads(body)
@@ -796,6 +912,16 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             headers = self.json_content_headers.copy()
             headers['x-subject-token'] = '00000000000000000000000000000000'
             return (status, body, headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
+
+    def _v3_auth_tokens_GET_UNAUTHORIZED_POST_OK(self, method, url, body, headers):
+        if method == 'GET':
+            body = ComputeFileFixtures('openstack').load(
+                '_v3__auth_unauthorized.json')
+            return (httplib.UNAUTHORIZED, body, self.json_content_headers,
+                    httplib.responses[httplib.UNAUTHORIZED])
+        if method == 'POST':
+            return self._v3_auth_tokens(method, url, body, headers)
         raise NotImplementedError()
 
     def _v3_users(self, method, url, body, headers):
