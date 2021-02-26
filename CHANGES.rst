@@ -33,6 +33,10 @@ Compute
   (GITHUB-1543)
   [Miguel Caballer - @micafer]
 
+- [Outscale] Various updates to the driver.
+  (GITHUB-1549)
+  [Tio Gobin - @tgn-outscale]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 
