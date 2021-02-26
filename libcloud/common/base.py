@@ -637,7 +637,7 @@ class Connection(object):
 
             if errno == -5:
                 # Throw a more-friendly exception on "no address associated
-                # with hostname" error. This error could simpli indicate that
+                # with hostname" error. This error could simply indicate that
                 # "host" Connection class attribute is set to an incorrect
                 # value
                 class_name = self.__class__.__name__
