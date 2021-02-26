@@ -37,6 +37,10 @@ Compute
   (GITHUB-1549)
   [Tio Gobin - @tgn-outscale]
 
+- [Ovh] Fix driver so it doesn't throw if a node is in resizing state.
+  (GITHUB-1555)
+  [Rob Juffermans - @robjuffermans]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 

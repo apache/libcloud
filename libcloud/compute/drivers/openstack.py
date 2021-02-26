@@ -120,7 +120,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         'PASSWORD': NodeState.PENDING,
         'RESCUE': NodeState.PENDING,
         'REBOOT': NodeState.REBOOTING,
-        'RESIZE': NodeState.MIGRATING,
+        'RESIZE': NodeState.RECONFIGURING,
         'HARD_REBOOT': NodeState.REBOOTING,
         'SHARE_IP': NodeState.PENDING,
         'SHARE_IP_NO_CONFIG': NodeState.PENDING,
