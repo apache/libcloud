@@ -231,6 +231,9 @@ class OvhTests(unittest.TestCase):
                                        location=location)
         self.assertEqual(node.name, 'test_vm')
 
+    def test_resizing_node(self):
+        assert self.driver.NODE_STATE_MAP['RESIZE']
+
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
         self.driver.destroy_node(node)
