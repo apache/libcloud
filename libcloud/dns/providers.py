@@ -72,6 +72,10 @@ DRIVERS = {
     ('libcloud.dns.drivers.zonomi', 'ZonomiDNSDriver'),
     Provider.DURABLEDNS:
     ('libcloud.dns.drivers.durabledns', 'DurableDNSDriver'),
+    Provider.LEASEWEB:
+    ('libcloud.dns.drivers.leaseweb', 'LeaseWebDNSDriver'),
+    Provider.CLOUDNS:
+    ('libcloud.dns.drivers.cloudns', 'ClouDNSDNSDriver'),
     Provider.AURORADNS:
     ('libcloud.dns.drivers.auroradns', 'AuroraDNSDriver'),
     Provider.GODADDY:
