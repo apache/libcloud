@@ -145,6 +145,28 @@
             {
                 "endpoints": [
                     {
+                        "region": "RegionOne",
+                        "tenantId": "1337",
+                        "publicURL": "https://test_endpoint.com/v3/1337",
+                        "versionInfo": "https://test_endpoint.com/v3/",
+                        "versionList": "https://test_endpoint.com/",
+                        "versionId": "2"
+                    },
+                    {
+                        "region": "fr1",
+                        "tenantId": "1337",
+                        "publicURL": "https://test_endpoint.com/v3/1337",
+                        "versionInfo": "https://test_endpoint.com/v3/",
+                        "versionList": "https://test_endpoint.com/",
+                        "versionId": "2"
+                    }
+                ],
+                "name": "cinderv3",
+                "type": "volumev3"
+            },
+            {
+                "endpoints": [
+                    {
                         "region": "DFW",
                         "tenantId": "613469",
                         "publicURL": "https://dfw.servers.api.rackspacecloud.com/v2/1337",

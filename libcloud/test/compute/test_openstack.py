@@ -1689,10 +1689,15 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         # normally authentication happens lazily, but we force it here
         self.driver.volumev2_connection._populate_hosts_and_request_paths()
 
+        self.driver_klass.volumev3_connectionCls.conn_class = OpenStack_2_0_MockHttp
+        self.driver_klass.volumev3_connectionCls.auth_url = "https://auth.api.example.com"
+        # normally authentication happens lazily, but we force it here
+        self.driver.volumev3_connection._populate_hosts_and_request_paths()
+
     def test__paginated_request_single_page(self):
         snapshots = self.driver._paginated_request(
             '/snapshots/detail', 'snapshots',
-            self.driver.volumev2_connection
+            self.driver._get_volume_connection()
         )['snapshots']
 
         self.assertEqual(len(snapshots), 3)
@@ -1701,7 +1706,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test__paginated_request_two_pages(self):
         snapshots = self.driver._paginated_request(
             '/snapshots/detail?unit_test=paginate', 'snapshots',
-            self.driver.volumev2_connection
+            self.driver._get_volume_connection()
         )['snapshots']
 
         self.assertEqual(len(snapshots), 6)
@@ -1721,7 +1726,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         with pytest.raises(OpenStackException):
             self.driver._paginated_request(
                 '/snapshots/detail?unit_test=pagination_loop', 'snapshots',
-                self.driver.volumev2_connection
+                self.driver._get_volume_connection()
             )
 
     def test_ex_force_auth_token_passed_to_connection(self):
@@ -2040,31 +2045,31 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         })
 
     def test_create_volume_passes_location_to_request_only_if_not_none(self):
-        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+        with patch.object(self.driver._get_volume_connection(), 'request') as mock_request:
             self.driver.create_volume(1, 'test', location='mylocation')
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertEqual(kwargs["data"]["volume"]["availability_zone"], "mylocation")
 
     def test_create_volume_does_not_pass_location_to_request_if_none(self):
-        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+        with patch.object(self.driver._get_volume_connection(), 'request') as mock_request:
             self.driver.create_volume(1, 'test')
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("availability_zone" in kwargs["data"]["volume"])
 
     def test_create_volume_passes_volume_type_to_request_only_if_not_none(self):
-        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+        with patch.object(self.driver._get_volume_connection(), 'request') as mock_request:
             self.driver.create_volume(1, 'test', ex_volume_type='myvolumetype')
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertEqual(kwargs["data"]["volume"]["volume_type"], "myvolumetype")
 
     def test_create_volume_does_not_pass_volume_type_to_request_if_none(self):
-        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+        with patch.object(self.driver._get_volume_connection(), 'request') as mock_request:
             self.driver.create_volume(1, 'test')
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("volume_type" in kwargs["data"]["volume"])
 
     def test_create_volume_passes_image_ref_to_request_only_if_not_none(self):
-        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+        with patch.object(self.driver._get_volume_connection(), 'request') as mock_request:
             self.driver.create_volume(
                 1, 'test', ex_image_ref='353c4bd2-b28f-4857-9b7b-808db4397d03')
             name, args, kwargs = mock_request.mock_calls[0]
@@ -2073,7 +2078,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
                 "353c4bd2-b28f-4857-9b7b-808db4397d03")
 
     def test_create_volume_does_not_pass_image_ref_to_request_if_none(self):
-        with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+        with patch.object(self.driver._get_volume_connection(), 'request') as mock_request:
             self.driver.create_volume(1, 'test')
             name, args, kwargs = mock_request.mock_calls[0]
             self.assertFalse("imageRef" in kwargs["data"]["volume"])
@@ -2081,7 +2086,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
     def test_ex_create_snapshot_does_not_post_optional_parameters_if_none(self):
         volume = self.driver.list_volumes()[0]
         with patch.object(self.driver, '_to_snapshot'):
-            with patch.object(self.driver.volumev2_connection, 'request') as mock_request:
+            with patch.object(self.driver._get_volume_connection(), 'request') as mock_request:
                 self.driver.create_volume_snapshot(volume,
                                                    name=None,
                                                    ex_description=None,
@@ -2701,16 +2706,16 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load('_v2_0__subnets.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v2_1337_volumes_detail(self, method, url, body, headers):
+    def _v3_1337_volumes_detail(self, method, url, body, headers):
         body = self.fixtures.load('_v2_0__volumes.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v2_1337_volumes(self, method, url, body, headers):
+    def _v3_1337_volumes(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('_v2_0__volume.json')
             return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v2_1337_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+    def _v3_1337_volumes_cd76a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__volume.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
@@ -2718,7 +2723,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v2_1337_volumes_abc6a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
+    def _v3_1337_volumes_abc6a3a1_c4ce_40f6_9b9f_07a61508938d(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__volume_abc6a3a1_c4ce_40f6_9b9f_07a61508938d.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
@@ -2726,7 +2731,7 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = ''
             return (httplib.NO_CONTENT, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v2_1337_snapshots_detail(self, method, url, body, headers):
+    def _v3_1337_snapshots_detail(self, method, url, body, headers):
         if ('unit_test=paginate' in url and 'marker' not in url) or \
                 'unit_test=pagination_loop' in url:
             body = self.fixtures.load('_v2_0__snapshots_paginate_start.json')
@@ -2734,12 +2739,12 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load('_v2_0__snapshots.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v2_1337_snapshots(self, method, url, body, headers):
+    def _v3_1337_snapshots(self, method, url, body, headers):
         if method == 'POST':
             body = self.fixtures.load('_v2_0__snapshot.json')
             return (httplib.CREATED, body, self.json_content_headers, httplib.responses[httplib.OK])
 
-    def _v2_1337_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
+    def _v3_1337_snapshots_3fbbcccf_d058_4502_8844_6feeffdf4cb5(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__snapshot.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])

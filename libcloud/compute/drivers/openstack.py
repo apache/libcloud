@@ -45,7 +45,7 @@ from libcloud.compute.base import (NodeDriver, Node, NodeLocation,
                                    StorageVolume, VolumeSnapshot)
 from libcloud.compute.base import KeyPair
 from libcloud.compute.types import NodeState, StorageVolumeState, Provider, \
-    VolumeSnapshotState, Type
+    VolumeSnapshotState, Type, LibcloudError
 from libcloud.pricing import get_size_price
 from libcloud.utils.xml import findall
 from libcloud.utils.py3 import ET
@@ -96,6 +96,12 @@ class OpenStackNetworkConnection(OpenStackBaseConnection):
 class OpenStackVolumeV2Connection(OpenStackBaseConnection):
     service_type = 'volumev2'
     service_name = 'cinderv2'
+    service_region = 'RegionOne'
+
+
+class OpenStackVolumeV3Connection(OpenStackBaseConnection):
+    service_type = 'volumev3'
+    service_name = 'cinderv3'
     service_region = 'RegionOne'
 
 
@@ -2742,6 +2748,15 @@ class OpenStack_2_VolumeV2Connection(OpenStackVolumeV2Connection):
         return json.dumps(data)
 
 
+class OpenStack_2_VolumeV3Connection(OpenStackVolumeV3Connection):
+    responseCls = OpenStack_1_1_Response
+    accept_format = 'application/json'
+    default_content_type = 'application/json; charset=UTF-8'
+
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
 class OpenStack_2_PortInterfaceState(Type):
     """
     Standard states of OpenStack_2_PortInterfaceState
@@ -2795,7 +2810,10 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     # API of the cinder service:
     # https://developer.openstack.org/api-ref/block-storage/
     volumev2_connectionCls = OpenStack_2_VolumeV2Connection
+    volumev3_connectionCls = OpenStack_2_VolumeV3Connection
     volumev2_connection = None
+    volumev3_connection = None
+    volume_connection = None
 
     type = Provider.OPENSTACK
 
@@ -2835,6 +2853,11 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             kwargs['ex_force_base_url'] = \
                 str(kwargs.pop('ex_force_volume_url',
                                original_ex_force_base_url))
+        # the V3 API
+        self.connectionCls = self.volumev3_connectionCls
+        super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
+        self.volumev3_connection = self.connection
+        # the V2 API
         self.connectionCls = self.volumev2_connectionCls
         super(OpenStack_2_NodeDriver, self).__init__(*args, **kwargs)
         self.volumev2_connection = self.connection
@@ -3431,6 +3454,21 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         return self._to_port(response.object['port'])
 
+    def _get_volume_connection(self):
+        """
+        Get the correct Volume connection (v3 or v2)
+        """
+        if not self.volume_connection:
+            try:
+                # Try to use v3 API first
+                # if the endpoint is not found
+                self.volumev3_connection.get_service_catalog()
+                self.volume_connection = self.volumev3_connection
+            except LibcloudError:
+                # then return the v2 conn
+                self.volume_connection = self.volumev2_connection
+        return self.volume_connection
+
     def list_volumes(self):
         """
         Get a list of Volumes that are available.
@@ -3438,7 +3476,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :rtype: ``list`` of :class:`StorageVolume`
         """
         return self._to_volumes(self._paginated_request(
-            '/volumes/detail', 'volumes', self.volumev2_connection))
+            '/volumes/detail', 'volumes', self._get_volume_connection()))
 
     def ex_get_volume(self, volumeId):
         """
@@ -3450,7 +3488,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :return: :class:`StorageVolume`
         """
         return self._to_volume(
-            self.volumev2_connection.request('/volumes/%s' % volumeId).object)
+            self._get_volume_connection().request('/volumes/%s' % volumeId)
+                .object)
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type=None, ex_image_ref=None):
@@ -3504,9 +3543,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         if snapshot:
             volume['snapshot_id'] = snapshot.id
 
-        resp = self.volumev2_connection.request('/volumes',
-                                                method='POST',
-                                                data={'volume': volume})
+        resp = self._get_volume_connection().request('/volumes',
+                                                     method='POST',
+                                                     data={'volume': volume})
         return self._to_volume(resp.object)
 
     def destroy_volume(self, volume):
@@ -3518,8 +3557,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``bool``
         """
-        return self.volumev2_connection.request('/volumes/%s' % volume.id,
-                                                method='DELETE').success()
+        return self._get_volume_connection().request('/volumes/%s' % volume.id,
+                                                     method='DELETE').success()
 
     def ex_list_snapshots(self):
         """
@@ -3528,7 +3567,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :rtype: ``list`` of :class:`VolumeSnapshot`
         """
         return self._to_snapshots(self._paginated_request(
-            '/snapshots/detail', 'snapshots', self.volumev2_connection))
+            '/snapshots/detail', 'snapshots', self._get_volume_connection()))
 
     def create_volume_snapshot(self, volume, name=None, ex_description=None,
                                ex_force=True):
@@ -3560,8 +3599,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             data['snapshot']['description'] = ex_description
 
         return self._to_snapshot(
-            self.volumev2_connection.request('/snapshots', method='POST',
-                                             data=data).object)
+            self._get_volume_connection().request('/snapshots', method='POST',
+                                                  data=data).object)
 
     def destroy_volume_snapshot(self, snapshot):
         """
@@ -3572,8 +3611,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.volumev2_connection.request('/snapshots/%s' % snapshot.id,
-                                                method='DELETE')
+        resp = self._get_volume_connection().request(
+            '/snapshots/%s' % snapshot.id, method='DELETE')
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def ex_list_security_groups(self):
