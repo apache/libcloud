@@ -20,7 +20,8 @@ __all__ = [
 import itertools
 import json
 
-from libcloud.common.base import JsonResponse, ConnectionUserAndKey
+from libcloud.common.base import ConnectionKey, ConnectionUserAndKey
+from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.dns.base import DNSDriver, Zone, Record
 from libcloud.dns.types import Provider, RecordType
@@ -146,11 +147,16 @@ class CloudFlareDNSResponse(JsonResponse):
             raise exception_class(**kwargs)
 
 
-class CloudFlareDNSConnection(ConnectionUserAndKey):
+class BaseDNSConnection:
     host = API_HOST
     secure = True
     responseCls = CloudFlareDNSResponse
 
+    def encode_data(self, data):
+        return json.dumps(data)
+
+
+class GlobalAPIKeyDNSConnection(BaseDNSConnection, ConnectionUserAndKey):
     def add_default_headers(self, headers):
         headers['Content-Type'] = 'application/json'
         headers['X-Auth-Email'] = self.user_id
@@ -158,15 +164,20 @@ class CloudFlareDNSConnection(ConnectionUserAndKey):
 
         return headers
 
-    def encode_data(self, data):
-        return json.dumps(data)
+
+class TokenDNSConnection(BaseDNSConnection, ConnectionKey):
+    def add_default_headers(self, headers):
+        headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = 'Bearer %s' % self.key
+
+        return headers
 
 
 class CloudFlareDNSDriver(DNSDriver):
     type = Provider.CLOUDFLARE
     name = 'CloudFlare DNS'
     website = 'https://www.cloudflare.com'
-    connectionCls = CloudFlareDNSConnection
+    connectionCls = GlobalAPIKeyDNSConnection
 
     RECORD_TYPE_MAP = {
         RecordType.A: 'A',
@@ -183,6 +194,16 @@ class CloudFlareDNSDriver(DNSDriver):
     ZONES_PAGE_SIZE = 50
     RECORDS_PAGE_SIZE = 100
     MEMBERSHIPS_PAGE_SIZE = 50
+
+    def __init__(self, key, secret=None, secure=True, host=None, port=None,
+                 **kwargs):
+
+        if secret is None:
+            self.connectionCls = TokenDNSConnection
+
+        super(CloudFlareDNSDriver, self).__init__(
+            key=key, secret=secret, secure=secure,
+            host=host, port=port, **kwargs)
 
     def iterate_zones(self):
         def _iterate_zones(params):

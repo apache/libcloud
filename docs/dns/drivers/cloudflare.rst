@@ -13,10 +13,16 @@ Instantiating the driver
 ------------------------
 
 To instantiate the driver you need to pass email address associated with your
-account and API key available on the `account page`_ to the driver constructor
+account and a Global API key available on the `account page`_ to the driver constructor
 as shown below.
 
 .. literalinclude:: /examples/dns/cloudflare/instantiate_driver.py
+   :language: python
+
+Alternatively, authentication can also be done via an API Token as shown below.
+It is recommended that the token at least has the Zone.DNS permissions.
+
+.. literalinclude:: /examples/dns/cloudflare/instantiate_driver_token.py
    :language: python
 
 API Docs
