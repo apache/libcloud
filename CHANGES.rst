@@ -41,6 +41,11 @@ Compute
   (GITHUB-1555)
   [Rob Juffermans - @robjuffermans]
 
+- [GCE] Get accelerators field in the GCE machineType.
+
+  (GITHUB-1565)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 

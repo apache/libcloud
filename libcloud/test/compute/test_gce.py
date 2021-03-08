@@ -730,9 +730,14 @@ class GCENodeDriverTest(GoogleTestCase, TestCaseMixin):
         sizes = self.driver.list_sizes()
         sizes_all = self.driver.list_sizes('all')
         self.assertEqual(len(sizes), 22)
-        self.assertEqual(len(sizes_all), 100)
+        self.assertEqual(len(sizes_all), 101)
         self.assertEqual(sizes[0].name, 'f1-micro')
         self.assertEqual(sizes[0].extra['zone'].name, 'us-central1-a')
+        self.assertEqual(sizes_all[20].name, 'a2-highgpu-1g')
+        self.assertEqual(len(sizes_all[20].extra['accelerators']), 1)
+        self.assertEqual(
+            sizes_all[20].extra['accelerators'][0]['guestAcceleratorType'],
+            "nvidia-tesla-v100")
         names = [s.name for s in sizes_all]
         self.assertEqual(names.count('n1-standard-1'), 5)
 

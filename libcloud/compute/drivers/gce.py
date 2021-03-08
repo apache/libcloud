@@ -9009,6 +9009,7 @@ class GCENodeDriver(NodeDriver):
         extra['description'] = machine_type.get('description')
         extra['guestCpus'] = machine_type.get('guestCpus')
         extra['creationTimestamp'] = machine_type.get('creationTimestamp')
+        extra['accelerators'] = machine_type.get('accelerators', [])
         try:
             size_name = machine_type['name'][:2]
             location = extra['zone'].name
