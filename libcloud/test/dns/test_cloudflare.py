@@ -21,6 +21,8 @@ from libcloud.common.types import LibcloudError
 from libcloud.test import unittest
 
 from libcloud.dns.drivers.cloudflare import CloudFlareDNSDriver
+from libcloud.dns.drivers.cloudflare import GlobalAPIKeyDNSConnection
+from libcloud.dns.drivers.cloudflare import TokenDNSConnection
 from libcloud.dns.drivers.cloudflare import ZONE_EXTRA_ATTRIBUTES
 from libcloud.dns.drivers.cloudflare import RECORD_EXTRA_ATTRIBUTES
 from libcloud.dns.types import RecordType
@@ -41,6 +43,14 @@ class CloudFlareDNSDriverTestCase(unittest.TestCase):
         CloudFlareMockHttp.type = None
         CloudFlareMockHttp.use_param = 'a'
         self.driver = CloudFlareDNSDriver(*DNS_PARAMS_CLOUDFLARE)
+
+    def test_auth_key(self):
+        driver = CloudFlareDNSDriver('user@example.com', 'key')
+        self.assertEqual(driver.connectionCls, GlobalAPIKeyDNSConnection)
+
+    def test_auth_token(self):
+        driver = CloudFlareDNSDriver('sometoken')
+        self.assertEqual(driver.connectionCls, TokenDNSConnection)
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
