@@ -147,7 +147,7 @@ class CloudFlareDNSResponse(JsonResponse):
             raise exception_class(**kwargs)
 
 
-class BaseDNSConnection:
+class BaseDNSConnection(object):
     host = API_HOST
     secure = True
     responseCls = CloudFlareDNSResponse
