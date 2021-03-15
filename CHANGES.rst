@@ -41,6 +41,11 @@ Compute
   (GITHUB-1555)
   [Rob Juffermans - @robjuffermans]
 
+- [OpenStack] Support volume v3 API endpoint in OpenStack driver.
+
+  (GITHUB-1561)
+  [Miguel Caballer - @micafer]
+
 - [GCE] Get accelerators field in the GCE machineType.
 
   (GITHUB-1565)
@@ -51,7 +56,6 @@ DNS
 
 - [CloudFlare] Enable authentication via API Tokens.
   [Clemens Wolff - @c-w]
-
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------
