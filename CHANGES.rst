@@ -41,6 +41,11 @@ Compute
   (GITHUB-1555)
   [Rob Juffermans - @robjuffermans]
 
+- [OpenStack] Support volume v3 API endpoint in OpenStack driver.
+
+  (GITHUB-1561)
+  [Miguel Caballer - @micafer]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 
