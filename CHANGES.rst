@@ -41,11 +41,17 @@ Compute
   (GITHUB-1555)
   [Rob Juffermans - @robjuffermans]
 
+- [GCE] Get accelerators field in the GCE machineType.
+
+  (GITHUB-1565)
+  [Miguel Caballer - @micafer]
+
 DNS
 ~~~
 
 - [CloudFlare] Enable authentication via API Tokens.
   [Clemens Wolff - @c-w]
+
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------
