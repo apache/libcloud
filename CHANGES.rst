@@ -46,6 +46,13 @@ Compute
   (GITHUB-1565)
   [Miguel Caballer - @micafer]
 
+DNS
+~~~
+
+- [CloudFlare] Enable authentication via API Tokens.
+  [Clemens Wolff - @c-w]
+
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 
