@@ -171,15 +171,15 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
             try:
                 params['priority'] = extra['priority']
             except KeyError:
-                params['priority'] = 'null'
+                params['priority'] = None
             try:
                 params['port'] = extra['port']
             except KeyError:
-                params['port'] = 'null'
+                params['port'] = None
             try:
                 params['weight'] = extra['weight']
             except KeyError:
-                params['weight'] = 'null'
+                params['weight'] = None
 
             if 'ttl' in extra:
                 params['ttl'] = extra['ttl']
