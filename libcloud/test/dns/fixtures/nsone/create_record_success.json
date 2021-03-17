@@ -1,0 +1,24 @@
+{
+    "id": "608f9619ebe68600ac9f807d",
+    "domain": "test.com",
+    "zone": "test.com",
+    "use_client_subnet": true,
+    "answers": [
+        {
+            "answer": [
+                "127.0.0.1"
+            ],
+            "id": "608f9619ebe68600ac9f807c"
+        }
+    ],
+    "regions": {},
+    "meta": {},
+    "link": null,
+    "filters": [],
+    "ttl": 3600,
+    "tier": 1,
+    "type": "A",
+    "networks": [
+        0
+    ]
+}
