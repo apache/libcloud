@@ -57,6 +57,7 @@ jobs:
 
       - name: Install OS / deb dependencies
         run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
       - name: Install Python Dependencies
@@ -90,6 +91,7 @@ jobs:
 
       - name: Install OS / deb dependencies
         run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Install Python Dependencies
@@ -123,6 +125,7 @@ jobs:
 
       - name: Install OS / deb dependencies
         run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Install Python Dependencies
@@ -161,6 +164,7 @@ jobs:
 
       - name: Install OS / deb dependencies
         run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz gcc libvirt-dev
 
       - name: Install Python Dependencies
