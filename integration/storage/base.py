@@ -20,6 +20,7 @@ import random
 import re
 import socket
 import string
+import sys
 import tempfile
 import time
 import unittest
@@ -31,6 +32,7 @@ try:
 except ImportError:
     docker = None
 
+from libcloud.common.types import LibcloudError
 from libcloud.storage import providers, types
 
 
@@ -62,8 +64,25 @@ class Integration:
         def tearDown(self):
             for container in self.driver.list_containers():
                 for obj in container.list_objects():
-                    obj.delete()
-                container.delete()
+                    try:
+                        obj.delete()
+                    except LibcloudError as ex:
+                        print(
+                            'Unable to delete object {} in container {}: {}.'
+                            'Delete it manually.'
+                            .format(obj.name, container.name, ex),
+                            file=sys.stderr
+                        )
+
+                try:
+                    container.delete()
+                except LibcloudError as ex:
+                    print(
+                        'Unable to delete container {}: {}.'
+                        'Delete it manually.'
+                        .format(container.name, ex),
+                        file=sys.stderr
+                    )
 
         def test_containers(self):
             # make a new container
@@ -317,7 +336,15 @@ class Integration:
                 for line in cls.container.logs().splitlines():
                     print(line)
 
-            cls.container.kill()
+            try:
+                cls.container.kill()
+            except docker.errors.DockerException as ex:
+                print(
+                    'Unable to terminate docker container {}: {}.'
+                    'Stop it manually.'
+                    .format(cls.container.short_id, ex),
+                    file=sys.stderr
+                )
 
 
 def wait_for(port, host='localhost', timeout=10):
