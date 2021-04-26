@@ -19,6 +19,8 @@ import socket
 import sys
 import ssl
 
+from requests.exceptions import ConnectTimeout
+
 from mock import Mock, patch
 
 import requests_mock
@@ -179,6 +181,26 @@ class BaseConnectionClassTestCase(unittest.TestCase):
 
         conn = LibcloudConnection(host='localhost', port=80)
         self.assertEqual(conn.host, 'http://localhost')
+
+    def test_connection_session_timeout(self):
+        """
+        Test that the connection timeout attribute is set correctly
+        """
+        conn = LibcloudConnection(host='localhost', port=8080)
+        self.assertEqual(conn.session.timeout, 60)
+
+        conn = LibcloudConnection(host='localhost', port=8080, timeout=10)
+        self.assertEqual(conn.session.timeout, 10)
+    
+    def test_connection_timeout_raised(self):
+        """
+        Test that the connection times out
+        """
+        conn = LibcloudConnection(host='localhost', port=8080, timeout=0.1)
+        # use a not-routable address to test that the connection timeouts
+        host = "http://10.255.255.1"
+        with self.assertRaises(ConnectTimeout):
+            conn.request('GET', host)
 
     def test_connection_url_merging(self):
         """
