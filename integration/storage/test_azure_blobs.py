@@ -14,11 +14,25 @@
 # limitations under the License.
 
 import base64
+import os
 import string
 import sys
 import unittest
 
+try:
+    from azure import identity
+    from azure.mgmt import resource
+    from azure.mgmt import storage
+    from azure.mgmt.resource.resources import models as resource_models
+    from azure.mgmt.storage import models as storage_models
+except ImportError:
+    identity = resource = storage = resource_models = storage_models = None
+
 from integration.storage.base import Integration, random_string
+
+DEFAULT_TIMEOUT_SECONDS = 300
+DEFAULT_AZURE_LOCATION = 'EastUS2'
+MAX_STORAGE_ACCOUNT_NAME_LENGTH = 24
 
 
 class AzuriteStorageTest(Integration.ContainerTestBase):
@@ -59,6 +73,104 @@ class IotedgeStorageTest(Integration.ContainerTestBase):
     port = 11002
     environment = {'LOCAL_STORAGE_ACCOUNT_NAME': account, 'LOCAL_STORAGE_ACCOUNT_KEY': secret}
     ready_message = b'BlobService - StartAsync completed'
+
+
+class StorageTest(Integration.TestBase):
+    provider = 'azure_blobs'
+
+    kind = storage_models.Kind.STORAGE
+    access_tier = None  # type: storage_models.AccessTier
+
+    @classmethod
+    def setUpClass(cls):
+        if identity is None:
+            raise unittest.SkipTest('missing azure-identity library')
+
+        if resource is None or resource_models is None:
+            raise unittest.SkipTest('missing azure-mgmt-resource library')
+
+        if storage is None or storage_models is None:
+            raise unittest.SkipTest('missing azure-mgmt-storage library')
+
+        config = {
+            key: os.getenv(key)
+            for key in (
+                'AZURE_TENANT_ID',
+                'AZURE_SUBSCRIPTION_ID',
+                'AZURE_CLIENT_ID',
+                'AZURE_CLIENT_SECRET',
+            )
+        }
+
+        for key, value in config.items():
+            if not value:
+                raise unittest.SkipTest('missing environment variable %s' % key)
+
+        credentials = identity.ClientSecretCredential(
+            tenant_id=config['AZURE_TENANT_ID'],
+            client_id=config['AZURE_CLIENT_ID'],
+            client_secret=config['AZURE_CLIENT_SECRET'],
+        )
+
+        resource_client = resource.ResourceManagementClient(
+            credentials,
+            config['AZURE_SUBSCRIPTION_ID'],
+        )
+
+        storage_client = storage.StorageManagementClient(
+            credentials,
+            config['AZURE_SUBSCRIPTION_ID'],
+        )
+
+        location = os.getenv('AZURE_LOCATION', DEFAULT_AZURE_LOCATION)
+        name = 'libcloud'
+        name += random_string(MAX_STORAGE_ACCOUNT_NAME_LENGTH - len(name))
+        timeout = float(os.getenv('AZURE_TIMEOUT_SECONDS', DEFAULT_TIMEOUT_SECONDS))
+
+        group = resource_client.resource_groups.create_or_update(
+            resource_group_name=name,
+            parameters=resource_models.ResourceGroup(
+                location=location,
+                tags={
+                    'test': cls.__name__,
+                    'run': os.getenv('GITHUB_RUN_ID', '-'),
+                },
+            ),
+            timeout=timeout,
+        )
+
+        cls.addClassCleanup(lambda: resource_client.resource_groups
+                            .begin_delete(group.name)
+                            .result(timeout))
+
+        account = storage_client.storage_accounts.begin_create(
+            resource_group_name=group.name,
+            account_name=name,
+            parameters=storage_models.StorageAccountCreateParameters(
+                sku=storage_models.Sku(name=storage_models.SkuName.STANDARD_LRS),
+                access_tier=cls.access_tier,
+                kind=cls.kind,
+                location=location,
+            ),
+        ).result(timeout)
+
+        keys = storage_client.storage_accounts.list_keys(
+            resource_group_name=group.name,
+            account_name=account.name,
+            timeout=timeout,
+        )
+
+        cls.account = account.name
+        cls.secret = keys.keys[0].value
+
+
+class StorageV2Test(StorageTest):
+    kind = storage_models.Kind.STORAGE_V2
+
+
+class BlobStorageTest(StorageTest):
+    kind = storage_models.Kind.BLOB_STORAGE
+    access_tier = storage_models.AccessTier.HOT
 
 
 if __name__ == '__main__':
