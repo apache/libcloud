@@ -21,7 +21,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@master
-        uses: actions/checkout@v2
         with:
           persist-credentials: false
           submodules: recursive
