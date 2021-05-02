@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud 3.3.2
---------------------------------
+Changes in Apache Libcloud 3.3.2 (in development)
+-------------------------------------------------
 
 Storage
 ~~~~~~~
@@ -23,7 +23,7 @@ Storage
 Compute
 ~~~~~~~
 
-- [Equinix Metal] Various improvements to the driver. 
+- [Equinix Metal] Various improvements to the driver.
 
   (GITHUB-1548)
   [Dimitris Galanis - @dimgal1]
