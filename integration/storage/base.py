@@ -139,14 +139,17 @@ class Integration:
             self.driver.delete_object(obj)
 
             # check that a missing file can't be deleted or looked up
-            with self.assertRaises(types.ObjectDoesNotExistError):
-                self.driver.delete_object(obj)
-            with self.assertRaises(types.ObjectDoesNotExistError):
-                self.driver.get_object(container.name, blob_name)
+            self.assert_file_is_missing(container, obj)
 
             # check that the file is deleted
             blobs = self.driver.list_container_objects(container)
             self.assertEqual([blob.name for blob in blobs], [blob_name[::-1]])
+
+        def assert_file_is_missing(self, container, obj):
+            with self.assertRaises(types.ObjectDoesNotExistError):
+                self.driver.delete_object(obj)
+            with self.assertRaises(types.ObjectDoesNotExistError):
+                self.driver.get_object(container.name, obj.name)
 
         def test_objects(self, size=1 * MB):
             def do_upload(container, blob_name, content):
@@ -285,6 +288,7 @@ class Integration:
         image = None
         version = 'latest'
         environment = {}
+        command = None
         ready_message = None
 
         host = 'localhost'
@@ -312,6 +316,7 @@ class Integration:
 
             cls.container = cls.client.containers.run(
                 '{}:{}'.format(cls.image, cls.version),
+                command=cls.command,
                 detach=True,
                 auto_remove=True,
                 ports={cls.port: cls.port},
