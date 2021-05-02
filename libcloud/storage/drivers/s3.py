@@ -1065,6 +1065,9 @@ class BaseS3StorageDriver(StorageDriver):
                  'etag': headers['etag']}
         meta_data = {}
 
+        if 'content-encoding' in headers:
+            extra['content_encoding'] = headers['content-encoding']
+
         if 'last-modified' in headers:
             extra['last_modified'] = headers['last-modified']
 
