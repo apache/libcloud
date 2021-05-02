@@ -1979,6 +1979,14 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         ret = self.driver.ex_update_port(port, port_security_enabled=False)
         self.assertEqual(ret.extra['name'], 'Some port name')
 
+    def test_ex_update_port_allowed_address_pairs(self):
+        allowed_address_pairs = [{'ip_address': '1.2.3.4'},
+                                 {'ip_address': '2.3.4.5'}]
+        port = self.driver.ex_get_port('126da55e-cfcb-41c8-ae39-a26cb8a7e723')
+        ret = self.driver.ex_update_port(
+            port, allowed_address_pairs=allowed_address_pairs)
+        self.assertEqual(ret.extra['allowed_address_pairs'], allowed_address_pairs)
+
     def test_detach_port_interface(self):
         node = Node(id='1c01300f-ef97-4937-8f03-ac676d6234be', name=None,
                     state=None, public_ips=None, private_ips=None,
