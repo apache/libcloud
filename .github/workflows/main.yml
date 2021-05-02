@@ -81,7 +81,7 @@ jobs:
 
       - name: Run tox target
         run: |
-          tox -e py${{ matrix.python_version }}
+         script -e -c "tox -e py${{ matrix.python_version }}"
 
   code_coverage:
     name: Generate Code Coverage
@@ -123,7 +123,7 @@ jobs:
 
       - name: Run Checks
         run: |
-          tox -e coverage-ci
+          script -e -c "tox -e coverage-ci"
 
   lint_checks:
     name: Run Various Lint and Other Checks
@@ -165,7 +165,7 @@ jobs:
 
       - name: Run Checks
         run: |
-          tox -e checks,import-timings,lint,pylint
+          script -e -c "tox -e checks,import-timings,lint,pylint"
 
   docs:
     name: Build and upload Documentation
@@ -212,7 +212,7 @@ jobs:
 
       - name: Build Docs
         run: |
-          tox -e docs-travis
+          script -e -c "tox -e docs-travis"
 
       - name: Trigger ReadTheDocs build
         env:

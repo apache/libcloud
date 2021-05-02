@@ -74,4 +74,4 @@ jobs:
 
       - name: Run tox target
         run: |
-          tox -e integration-storage
+          script -e -c "tox -e integration-storage"
