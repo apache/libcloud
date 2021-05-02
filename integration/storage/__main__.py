@@ -21,6 +21,6 @@ import unittest
 if __name__ == '__main__':
     loader = unittest.TestLoader()
     tests = loader.discover(os.path.dirname(__file__))
-    runner = unittest.runner.TextTestRunner()
+    runner = unittest.runner.TextTestRunner(verbosity=3)
     result = runner.run(tests)
     sys.exit(len(result.errors))
