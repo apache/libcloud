@@ -13,21 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+from bottle import request
+from functools import wraps
 
-from bottle import route
-
-from integration.api.data import NODES, REPORT_DATA
-from integration.api.util import secure
+from integration.compute.config import EXPECTED_AUTH
 
 
-@route('/compute/nodes', method='GET')
-@secure
-def list_nodes():
-    return json.dumps(NODES)
+def secure(f):
+    @wraps(f)
+    def secure_route(*args, **kwargs):
+        if 'Authorization' not in request.headers:
+            raise Exception('Argghhhh')
+        else:
+            auth = request.headers['Authorization']
 
-
-@route('/compute/report_data', method='GET')
-@secure
-def ex_report_data():
-    return REPORT_DATA
+            if auth != EXPECTED_AUTH:
+                raise Exception('Bad authentication')
+            return f(*args, **kwargs)
+    return secure_route

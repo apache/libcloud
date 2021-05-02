@@ -1,0 +1,5 @@
+azure-identity
+azure-mgmt-resource
+azure-mgmt-storage
+docker
+requests
