@@ -51,6 +51,11 @@ Compute
   (GITHUB-1565)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Support updating ``allowed_address_pairs`` on OpenStack ports
+  using ``ex_update_port`` method.
+  (GITHUB-1569)
+  [@dpeschman]
+
 DNS
 ~~~
 
