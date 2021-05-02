@@ -57,6 +57,12 @@ DNS
 - [CloudFlare] Enable authentication via API Tokens.
   [Clemens Wolff - @c-w]
 
+- [DigitalOcean] Fix ``create_record()`` and ``update_record()`` method and
+  pass ``None`` instead of string value ``null`` for priority, port and weight
+  parameters if they are not provided as method arguments.
+  (GITHUB-1570)
+  [Gasper Vozel - @karantan]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 
