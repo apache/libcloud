@@ -2,7 +2,7 @@ OpenStack Compute Driver Documentation
 ======================================
 
 `OpenStack`_ is an open-source project which allows you to build and run your
-own public or a private cloud.
+own public or private cloud.
 
 .. figure:: /_static/images/provider_logos/openstack.png
     :align: center
@@ -100,7 +100,7 @@ Available arguments:
   driver obtains API endpoint URL from the server catalog, but if this argument
   is provided, this step is skipped and the provided value is used directly. Only valid 
   in case of api_version >= 2.0.
-  * ``ex_force_volume_url`` - Base URL to the OpenStack cinder API endpoint. By default,
+* ``ex_force_volume_url`` - Base URL to the OpenStack cinder API endpoint. By default,
   driver obtains API endpoint URL from the server catalog, but if this argument
   is provided, this step is skipped and the provided value is used directly. Only valid 
   in case of api_version >= 2.0.
@@ -179,6 +179,21 @@ public cloud providers support it.
    :language: python
 .. _`Cloud-Init examples`: http://cloudinit.readthedocs.org/en/latest/topics/examples.html
 
+8. Authentication token cache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since version ???, authentication tokens can be stored in an external cache.
+This enables multiple processes to reuse the tokens, reducing the number of
+token allocations in the OpenStack authentication service.
+
+.. literalinclude:: /examples/compute/openstack/auth_cache.py
+   :language: python
+
+If the cache implementation stores tokens somewhere outside the process - for
+instance, to disk or a remote system - running this program twice will
+allocate a token from OpenStack, store it in the cache, then reuse that token
+on the second run.
+
 Non-standard functionality and extension methods
 ------------------------------------------------
 
@@ -209,6 +224,9 @@ token on the first request or if the auth token is about to expire.
 
 As noted in the example 4 above, this doesn't hold true if you use
 ``ex_force_auth_token`` argument.
+
+Tokens can also be stored in an external cache for shared use among multiple
+processes; see example 8 above.
 
 Troubleshooting
 ---------------
