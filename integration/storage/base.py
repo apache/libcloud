@@ -98,9 +98,7 @@ class Integration:
             container = self.driver.get_container(container_name)
             self.assertEqual(container.name, container_name)
 
-            # check that an existing container can't be re-created
-            with self.assertRaises(types.ContainerAlreadyExistsError):
-                self.driver.create_container(container_name)
+            self.assert_existing_container_cannot_be_recreated(container)
 
             # check that the new container can be listed
             containers = self.driver.list_containers()
@@ -150,6 +148,10 @@ class Integration:
             # check that the file is deleted
             blobs = self.driver.list_container_objects(container)
             self.assertEqual([blob.name for blob in blobs], [blob_name[::-1]])
+
+        def assert_existing_container_cannot_be_recreated(self, container):
+            with self.assertRaises(types.ContainerAlreadyExistsError):
+                self.driver.create_container(container.name)
 
         def assert_file_is_missing(self, container, obj):
             with self.assertRaises(types.ObjectDoesNotExistError):
