@@ -45,6 +45,9 @@ class Integration:
         account = None
         secret = None
 
+        container_name_prefix = 'lcsit'
+        container_name_max_length = 63
+
         def setUp(self):
             for required in 'provider', 'account', 'secret':
                 value = getattr(self, required, None)
@@ -63,6 +66,9 @@ class Integration:
 
         def tearDown(self):
             for container in self.driver.list_containers():
+                if not container.name.startswith(self.container_name_prefix):
+                    continue
+
                 for obj in container.list_objects():
                     try:
                         obj.delete()
@@ -86,19 +92,17 @@ class Integration:
 
         def test_containers(self):
             # make a new container
-            container_name = random_container_name()
+            container_name = self._random_container_name()
             container = self.driver.create_container(container_name)
             self.assertEqual(container.name, container_name)
             container = self.driver.get_container(container_name)
             self.assertEqual(container.name, container_name)
 
-            # check that an existing container can't be re-created
-            with self.assertRaises(types.ContainerAlreadyExistsError):
-                self.driver.create_container(container_name)
+            self.assert_existing_container_cannot_be_recreated(container)
 
             # check that the new container can be listed
             containers = self.driver.list_containers()
-            self.assertEqual([c.name for c in containers], [container_name])
+            self.assertIn(container_name, [c.name for c in containers])
 
             # delete the container
             self.driver.delete_container(container)
@@ -109,12 +113,12 @@ class Integration:
 
             # check that the container is deleted
             containers = self.driver.list_containers()
-            self.assertEqual([c.name for c in containers], [])
+            self.assertNotIn(container_name, [c.name for c in containers])
 
         def _test_objects(self, do_upload, do_download, size=1 * MB):
             content = os.urandom(size)
             blob_name = 'testblob'
-            container = self.driver.create_container(random_container_name())
+            container = self.driver.create_container(self._random_container_name())
 
             # upload a file
             obj = do_upload(container, blob_name, content)
@@ -145,6 +149,10 @@ class Integration:
             blobs = self.driver.list_container_objects(container)
             self.assertEqual([blob.name for blob in blobs], [blob_name[::-1]])
 
+        def assert_existing_container_cannot_be_recreated(self, container):
+            with self.assertRaises(types.ContainerAlreadyExistsError):
+                self.driver.create_container(container.name)
+
         def assert_file_is_missing(self, container, obj):
             with self.assertRaises(types.ObjectDoesNotExistError):
                 self.driver.delete_object(obj)
@@ -167,7 +175,7 @@ class Integration:
         def test_objects_range_downloads(self):
             blob_name = 'testblob-range'
             content = b'0123456789'
-            container = self.driver.create_container(random_container_name())
+            container = self.driver.create_container(self._random_container_name())
 
             obj = self.driver.upload_object(
                 self._create_tempfile(content=content),
@@ -255,7 +263,7 @@ class Integration:
         def test_upload_via_stream_with_content_encoding(self):
             object_name = 'content_encoding.gz'
             content = gzip.compress(os.urandom(MB // 100))
-            container = self.driver.create_container(random_container_name())
+            container = self.driver.create_container(self._random_container_name())
             self.driver.upload_object_via_stream(
                 iter(content),
                 container,
@@ -269,7 +277,7 @@ class Integration:
 
         def test_cdn_url(self):
             content = os.urandom(MB // 100)
-            container = self.driver.create_container(random_container_name())
+            container = self.driver.create_container(self._random_container_name())
             obj = self.driver.upload_object_via_stream(iter(content), container, 'cdn')
 
             response = requests.get(self.driver.get_object_cdn_url(obj))
@@ -283,6 +291,16 @@ class Integration:
             os.close(fobj)
             self.addCleanup(os.remove, path)
             return path
+
+        @classmethod
+        def _random_container_name(cls):
+            suffix = random_string(cls.container_name_max_length)
+            name = cls.container_name_prefix + suffix
+            name = re.sub('[^a-z0-9-]', '-', name)
+            name = re.sub('-+', '-', name)
+            name = name[:cls.container_name_max_length]
+            name = name.lower()
+            return name
 
     class ContainerTestBase(TestBase):
         image = None
@@ -371,17 +389,6 @@ def wait_for(port, host='localhost', timeout=10):
 
 def random_string(length, alphabet=string.ascii_lowercase + string.digits):
     return ''.join(random.choice(alphabet) for _ in range(length))
-
-
-def random_container_name(prefix='test'):
-    max_length = 63
-    suffix = random_string(max_length)
-    name = prefix + suffix
-    name = re.sub('[^a-z0-9-]', '-', name)
-    name = re.sub('-+', '-', name)
-    name = name[:max_length]
-    name = name.lower()
-    return name
 
 
 def read_stream(stream):
