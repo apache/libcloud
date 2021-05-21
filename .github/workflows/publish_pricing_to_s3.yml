@@ -41,3 +41,10 @@ jobs:
           AWS_ACCESS_KEY_SECRET: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
         run: |
           script -e -c "tox -escrape-and-publish-provider-prices"
+
+      - name: Verify files can be downloaded
+        # Verify that the permissions are correct and files can be downloaded publicly
+        run: |
+          curl --fail https://libcloud-pricing-data.s3.amazonaws.com/pricing.json
+          curl --fail https://libcloud-pricing-data.s3.amazonaws.com/pricing.json.sha256
+          curl --fail https://libcloud-pricing-data.s3.amazonaws.com/pricing.json.sha512
