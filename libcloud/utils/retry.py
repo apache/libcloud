@@ -47,25 +47,25 @@ RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
                     TransientSSLError)
 
 
-class Retry:
+class MinimalRetry:
 
-    def __init__(self, retry_exceptions=RETRY_EXCEPTIONS, retry_delay=DEFAULT_DELAY,
+    def __init__(self, retry_delay=DEFAULT_DELAY,
                  timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
         """
         Wrapper around retrying that helps to handle common transient exceptions.
-
+        This minimalistic version only retries SSL errors and rate limiting.
         :param retry_exceptions: types of exceptions to retry on.
+
         :param retry_delay: retry delay between the attempts.
         :param timeout: maximum time to wait.
         :param backoff: multiplier added to delay between attempts.
 
         :Example:
 
-        retry_request = Retry(timeout=1, retry_delay=1, backoff=1)
+        retry_request = MinimalRetry(timeout=1, retry_delay=1, backoff=1)
         retry_request(self.connection.request)()
         """
-        if retry_exceptions is None:
-            retry_exceptions = RETRY_EXCEPTIONS
+
         if retry_delay is None:
             retry_delay = DEFAULT_DELAY
         if timeout is None:
@@ -75,7 +75,6 @@ class Retry:
 
         timeout = max(timeout, 0)
 
-        self.retry_exceptions = retry_exceptions
         self.retry_delay = retry_delay
         self.timeout = timeout
         self.backoff = backoff
@@ -118,4 +117,34 @@ class Retry:
         return retry_loop
 
     def should_retry(self, exception):
+        return False
+
+
+class Retry(MinimalRetry):
+
+    def __init__(self, retry_exceptions=RETRY_EXCEPTIONS,
+                 retry_delay=DEFAULT_DELAY, timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
+        """
+        Wrapper around retrying that helps to handle common transient exceptions.
+        This version retries the errors that `libcloud.utils.retry:MinimalRetry` retries
+        and all errors of the exception types that are given.
+
+        :param retry_exceptions: types of exceptions to retry on.
+        :param retry_delay: retry delay between the attempts.
+        :param timeout: maximum time to wait.
+        :param backoff: multiplier added to delay between attempts.
+
+        :Example:
+
+        retry_request = Retry(retry_exceptions=(httplib.NotConnected,), timeout=1, retry_delay=1, backoff=1)
+        retry_request(self.connection.request)()
+        """
+
+        super().__init__(retry_delay=retry_delay, timeout=timeout, backoff=backoff)
+        if retry_exceptions is None:
+            retry_exceptions = RETRY_EXCEPTIONS
+        self.retry_exceptions = retry_exceptions
+
+    def should_retry(self, exception):
         return type(exception) in self.retry_exceptions
+
