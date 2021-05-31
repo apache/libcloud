@@ -33,7 +33,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 
-from libcloud.utils.misc import lowercase_keys, retry
+from libcloud.utils.misc import lowercase_keys
+from libcloud.utils.retry import Retry
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.http import LibcloudConnection, HttpLibResponseProxy
@@ -314,6 +315,7 @@ class Connection(object):
 
     responseCls = Response
     rawResponseCls = RawResponse
+    retryCls = Retry
     connection = None
     host = '127.0.0.1'  # type: str
     port = 443
@@ -610,9 +612,9 @@ class Connection(object):
                     stream=stream)
             else:
                 if retry_enabled:
-                    retry_request = retry(timeout=self.timeout,
-                                          retry_delay=self.retry_delay,
-                                          backoff=self.backoff)
+                    retry_request = self.retryCls(retry_delay=self.retry_delay,
+                                                  timeout=self.timeout,
+                                                  backoff=self.backoff)
                     retry_request(self.connection.request)(method=method,
                                                            url=url,
                                                            body=data,
