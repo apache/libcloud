@@ -234,13 +234,16 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         Convert an API response to a Pod object
         """
-        container_statuses = data["status"]["containerStatuses"]
+        container_statuses = data["status"].get("containerStatuses", {})
         containers = []
         # response contains the status of the containers in a separate field
         for container in data["spec"]["containers"]:
-            spec = list(
-                filter(lambda i: i["name"] == container["name"], container_statuses)
-            )[0]
+            if container_statuses:
+                spec = list(
+                    filter(lambda i: i["name"] == container["name"], container_statuses)
+                )[0]
+            else:
+                spec = container_statuses
             containers.append(self._to_container(container, spec, data))
         return KubernetesPod(
             name=data["metadata"]["name"],
@@ -253,17 +256,19 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         Convert container in Container instances
         """
         return Container(
-            id=container_status["containerID"],
+            id=container_status.get("containerID") or data["name"],
             name=data["name"],
             image=ContainerImage(
-                id=container_status["imageID"],
+                id=container_status.get("imageID") or data["image"],
                 name=data["image"],
                 path=None,
                 version=None,
                 driver=self.connection.driver,
             ),
             ip_addresses=None,
-            state=ContainerState.RUNNING,
+            state=(
+                ContainerState.RUNNING if container_status else ContainerState.UNKNOWN
+            ),
             driver=self.connection.driver,
             extra={
                 "pod": pod_data["metadata"]["name"],
