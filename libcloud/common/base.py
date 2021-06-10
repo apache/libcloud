@@ -25,6 +25,8 @@ import copy
 import binascii
 import time
 
+import cchardet
+
 from libcloud.utils.py3 import ET
 
 import libcloud
@@ -500,7 +502,8 @@ class Connection(object):
         self.ua.append(token)
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, stream=False, json=None):
+                method='GET', raw=False, stream=False, json=None,
+                autodetect_response_encoding=True):
         """
         Request a given `action`.
 
@@ -534,6 +537,11 @@ class Connection(object):
         :param stream: True to return an iterator in Response.iter_content
                     and allow streaming of the response data
                     (for downloading large files)
+
+        :type autodetect_response_encoding: ``bool``
+        :param autodetect_response_encoding: True to set the response encoding
+                    automatically using the `cchardet` (faster alternative of
+                    the `chardet` library used by the `requests`)
 
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
@@ -641,6 +649,11 @@ class Connection(object):
         except ssl.SSLError as e:
             self.reset_context()
             raise ssl.SSLError(str(e))
+
+        if autodetect_response_encoding:
+            # Handle problem: https://github.com/psf/requests/issues/2359
+            self.connection.response.encoding = cchardet.detect(
+                self.connection.response.content)['encoding']
 
         if raw:
             responseCls = self.rawResponseCls

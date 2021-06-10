@@ -175,6 +175,7 @@ SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 # Reference: https://hynek.me/articles/conditional-python-dependencies/
 INSTALL_REQUIREMENTS = [
     'requests>=2.5.0',
+    'cchardet==2.1.7',
 ]
 
 setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
