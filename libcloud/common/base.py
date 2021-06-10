@@ -25,6 +25,8 @@ import copy
 import binascii
 import time
 
+import cchardet
+
 from libcloud.utils.py3 import ET
 
 import libcloud
@@ -540,6 +542,7 @@ class Connection(object):
         stream=False,
         json=None,
         retry_failed=None,
+        autodetect_response_encoding=True,
     ):
         """
         Request a given `action`.
@@ -578,6 +581,11 @@ class Connection(object):
         :param retry_failed: True if failed requests should be retried. This
                               argument can override module level constant and
                               environment variable value on per-request basis.
+
+        :type autodetect_response_encoding: ``bool``
+        :param autodetect_response_encoding: True to set the response encoding
+                    automatically using the `cchardet` (faster alternative of
+                    the `chardet` library used by the `requests`)
 
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
@@ -657,7 +665,13 @@ class Connection(object):
             request_to_be_executed = retry_request(self._retryable_request)
 
         return request_to_be_executed(
-            url=url, method=method, raw=raw, stream=stream, headers=headers, data=data
+            url=url,
+            method=method,
+            raw=raw,
+            stream=stream,
+            headers=headers,
+            data=data,
+            autodetect_response_encoding=autodetect_response_encoding,
         )
 
     def _retryable_request(
@@ -668,6 +682,7 @@ class Connection(object):
         method: str,
         raw: bool,
         stream: bool,
+        autodetect_response_encoding: bool,
     ) -> Union[RawResponse, Response]:
         try:
             # @TODO: Should we just pass File object as body to request method
@@ -709,6 +724,12 @@ class Connection(object):
         except ssl.SSLError as e:
             self.reset_context()
             raise ssl.SSLError(str(e))
+
+        if autodetect_response_encoding:
+            # Handle problem: https://github.com/psf/requests/issues/2359
+            self.connection.response.encoding = cchardet.detect(
+                self.connection.response.content
+            )["encoding"]
 
         if raw:
             responseCls = self.rawResponseCls
