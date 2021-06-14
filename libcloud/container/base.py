@@ -45,6 +45,7 @@ class Container(object):
         ip_addresses,  # type: List[str]
         driver,  # type: ContainerDriver
         extra=None,  # type: dict
+        created_at=None,  # type: str
     ):
         """
         :param id: Container id.
@@ -75,6 +76,7 @@ class Container(object):
         self.ip_addresses = ip_addresses
         self.driver = driver
         self.extra = extra or {}
+        self.created_at = created_at
 
     def start(self):
         # type: () -> Container

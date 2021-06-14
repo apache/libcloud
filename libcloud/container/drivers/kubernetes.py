@@ -352,6 +352,13 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         Convert container in Container instances
         """
+        state = container_status.get('state')
+        created_at = None
+        if state:
+            started_at = list(state.values())[0].get('startedAt')
+            if started_at:
+                created_at = datetime.datetime.strptime(
+                    started_at, '%Y-%m-%dT%H:%M:%SZ')
         return Container(
             id=container_status.get("containerID") or data["name"],
             name=data["name"],
@@ -367,6 +374,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                 ContainerState.RUNNING if container_status else ContainerState.UNKNOWN
             ),
             driver=self.connection.driver,
+            created_at=created_at,
             extra={
                 "pod": pod_data["metadata"]["name"],
                 "namespace": pod_data["metadata"]["namespace"],
