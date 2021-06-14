@@ -38,16 +38,16 @@ from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
 from libcloud.compute.base import NodeLocation
 
-__all__ = [
-    'KubernetesContainerDriver'
-]
+__all__ = ["KubernetesContainerDriver"]
 
 
 ROOT_URL = "/api/"
 
 
 class KubernetesPod(object):
-    def __init__(self, id, name, containers, namespace, state, ip_addresses):
+    def __init__(
+        self, id, name, containers, namespace, state, ip_addresses, created_at
+    ):
         """
         A Kubernetes pod
         """
@@ -57,6 +57,7 @@ class KubernetesPod(object):
         self.namespace = namespace
         self.state = state
         self.ip_addresses = ip_addresses
+        self.created_at = created_at
 
 
 class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
@@ -231,60 +232,73 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``list`` of :class:`.Node`
         """
         result = self.connection.request(ROOT_URL + "v1/nodes").object
-        return [self._to_node(node) for node in result['items']]
+        return [self._to_node(node) for node in result["items"]]
 
     def _to_node(self, node):
         """
         Convert an API node to a `Node` object
         """
-        ID = node['metadata']['uid']
-        name = node['metadata']['name']
+        ID = node["metadata"]["uid"]
+        name = node["metadata"]["name"]
         driver = self.connection.driver
-        namespace = 'undefined'
-        memory = node['status'].get('capacity', {}).get('memory', 0)
+        namespace = "undefined"
+        memory = node["status"].get("capacity", {}).get("memory", 0)
         if not isinstance(memory, int):
-            if 'Ki' in memory:
-                memory = memory.rstrip('Ki')
+            if "Ki" in memory:
+                memory = memory.rstrip("Ki")
                 memory = int(memory) * 1024
-            elif 'K' in memory:
-                memory = memory.rstrip('K')
+            elif "K" in memory:
+                memory = memory.rstrip("K")
                 memory = int(memory) * 1000
-            elif 'M' in memory or 'Mi' in memory:
-                memory = memory.rstrip('M')
-                memory = memory.rstrip('Mi')
+            elif "M" in memory or "Mi" in memory:
+                memory = memory.rstrip("M")
+                memory = memory.rstrip("Mi")
                 memory = int(memory)
-            elif 'Gi' in memory:
-                memory = memory.rstrip('Gi')
+            elif "Gi" in memory:
+                memory = memory.rstrip("Gi")
                 memory = int(memory) // 1024
-            elif 'G' in memory:
-                memory = memory.rstrip('G')
+            elif "G" in memory:
+                memory = memory.rstrip("G")
                 memory = int(memory) // 1000
-        cpu = node['status'].get('capacity', {}).get('cpu', 1)
+        cpu = node["status"].get("capacity", {}).get("cpu", 1)
         if not isinstance(cpu, int):
-            cpu = int(cpu.rstrip('m'))
-        extra_size = {'cpus': cpu}
-        size_name = f'{cpu} vCPUs, {memory}MB Ram'
+            cpu = int(cpu.rstrip("m"))
+        extra_size = {"cpus": cpu}
+        size_name = f"{cpu} vCPUs, {memory}MB Ram"
         size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
-        size = NodeSize(id=size_id, name=size_name, ram=memory,
-                        disk=0, bandwidth=0, price=0,
-                        driver=driver, extra=extra_size)
-        extra = {'memory': memory, 'cpu': cpu}
+        size = NodeSize(
+            id=size_id,
+            name=size_name,
+            ram=memory,
+            disk=0,
+            bandwidth=0,
+            price=0,
+            driver=driver,
+            extra=extra_size,
+        )
+        extra = {"memory": memory, "cpu": cpu}
         # TODO: Find state
         state = NodeState.UNKNOWN
         public_ips, private_ips = [], []
-        for address in node['status']['addresses']:
-            if address['type'] == 'InternalIP':
-                private_ips.append(address['address'])
-            elif address['type'] == 'ExternalIP':
-                public_ips.append(address['address'])
+        for address in node["status"]["addresses"]:
+            if address["type"] == "InternalIP":
+                private_ips.append(address["address"])
+            elif address["type"] == "ExternalIP":
+                public_ips.append(address["address"])
         created_at = datetime.datetime.strptime(
-            node['metadata']['creationTimestamp'],
-            '%Y-%m-%dT%H:%M:%SZ')
-        return Node(id=ID, name=name, state=state,
-                    public_ips=public_ips,
-                    private_ips=private_ips,
-                    driver=driver, size=size,
-                    extra=extra, created_at=created_at)
+            node["metadata"]["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ"
+        )
+        return Node(
+            id=ID,
+            name=name,
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=driver,
+            size=size,
+            extra=extra,
+            created_at=created_at,
+        )
 
     def ex_list_pods(self):
         """
@@ -321,6 +335,9 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                 spec = container_statuses
             containers.append(self._to_container(container, spec, data))
         ip_addresses = [ip_dict["ip"] for ip_dict in data["status"].get("podIPs", [])]
+        created_at = datetime.datetime.strptime(
+            data["metadata"]["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ"
+        )
         return KubernetesPod(
             id=data["metadata"]["uid"],
             name=data["metadata"]["name"],
@@ -328,6 +345,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             state=data["status"]["phase"].lower(),
             ip_addresses=ip_addresses,
             containers=containers,
+            created_at=created_at,
         )
 
     def _to_container(self, data, container_status, pod_data):
