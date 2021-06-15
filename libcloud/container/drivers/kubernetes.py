@@ -248,15 +248,15 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         result = self.connection.request(ROOT_URL + "v1/nodes").object
         return [self._to_node(node) for node in result['items']]
 
-    def _to_node(self, node):
+    def _to_node(self, data):
         """
-        Convert an API node to a `Node` object
+        Convert an API node data object to a `Node` object
         """
-        ID = node['metadata']['uid']
-        name = node['metadata']['name']
+        ID = data['metadata']['uid']
+        name = data['metadata']['name']
         driver = self.connection.driver
         namespace = 'undefined'
-        memory = node['status'].get('capacity', {}).get('memory', 0)
+        memory = data['status'].get('capacity', {}).get('memory', 0)
         if not isinstance(memory, int):
             if 'Ki' in memory:
                 memory = memory.rstrip('Ki')
@@ -274,7 +274,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             elif 'G' in memory:
                 memory = memory.rstrip('G')
                 memory = int(memory) // 1000
-        cpu = node['status'].get('capacity', {}).get('cpu', 1)
+        cpu = data['status'].get('capacity', {}).get('cpu', 1)
         if not isinstance(cpu, int):
             cpu = int(cpu.rstrip('m'))
         extra_size = {'cpus': cpu}
@@ -287,13 +287,13 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         # TODO: Find state
         state = NodeState.UNKNOWN
         public_ips, private_ips = [], []
-        for address in node['status']['addresses']:
+        for address in data['status']['addresses']:
             if address['type'] == 'InternalIP':
                 private_ips.append(address['address'])
             elif address['type'] == 'ExternalIP':
                 public_ips.append(address['address'])
         created_at = datetime.datetime.strptime(
-            node['metadata']['creationTimestamp'],
+            data['metadata']['creationTimestamp'],
             '%Y-%m-%dT%H:%M:%SZ')
         return Node(id=ID, name=name, state=state,
                     public_ips=public_ips,
