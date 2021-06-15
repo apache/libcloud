@@ -45,8 +45,17 @@ ROOT_URL = "/api/"
 
 
 class KubernetesPod(object):
-    def __init__(self, id, name, containers, namespace, state, ip_addresses,
-                 created_at, node_name):
+    def __init__(
+        self,
+        id,
+        name,
+        containers,
+        namespace,
+        state,
+        ip_addresses,
+        created_at,
+        node_name,
+    ):
         """
         A Kubernetes pod
         """
@@ -346,19 +355,28 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             ip_addresses=ip_addresses,
             containers=containers,
             created_at=created_at,
-            node_name=data['spec'].get('nodeName'))
+            node_name=data["spec"].get("nodeName"),
+        )
 
     def _to_container(self, data, container_status, pod_data):
         """
         Convert container in Container instances
         """
-        state = container_status.get('state')
+        state = container_status.get("state")
         created_at = None
         if state:
-            started_at = list(state.values())[0].get('startedAt')
+            started_at = list(state.values())[0].get("startedAt")
             if started_at:
                 created_at = datetime.datetime.strptime(
-                    started_at, '%Y-%m-%dT%H:%M:%SZ')
+                    started_at, "%Y-%m-%dT%H:%M:%SZ"
+                )
+        extra = {
+            "pod": pod_data["metadata"]["name"],
+            "namespace": pod_data["metadata"]["namespace"],
+        }
+        resources = data.get("resources")
+        if resources:
+            extra["resources"] = resources
         return Container(
             id=container_status.get("containerID") or data["name"],
             name=data["name"],
@@ -375,10 +393,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             ),
             driver=self.connection.driver,
             created_at=created_at,
-            extra={
-                "pod": pod_data["metadata"]["name"],
-                "namespace": pod_data["metadata"]["namespace"],
-            },
+            extra=extra,
         )
 
     def _to_cluster(self, data):
