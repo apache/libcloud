@@ -44,7 +44,7 @@ ROOT_URL = '/api/'
 
 class KubernetesPod(object):
     def __init__(self, id, name, containers, namespace, state, ip_addresses,
-                 created_at):
+                 created_at, node_name):
         """
         A Kubernetes pod
         """
@@ -55,6 +55,7 @@ class KubernetesPod(object):
         self.state = state
         self.ip_addresses = ip_addresses
         self.created_at = created_at
+        self.node_name = node_name
 
 
 class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
@@ -347,7 +348,8 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             state=data['status']['phase'].lower(),
             ip_addresses=ip_addresses,
             containers=containers,
-            created_at=created_at)
+            created_at=created_at,
+            node_name=data['spec'].get('nodeName'))
 
     def _to_container(self, data, container_status, pod_data):
         """
