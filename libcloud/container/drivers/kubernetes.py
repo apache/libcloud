@@ -272,9 +272,12 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         cpu = data["status"].get("capacity", {}).get("cpu", 1)
         if not isinstance(cpu, int):
             cpu = int(cpu.rstrip("m"))
-        extra_size = {"cpus": cpu}
+        # TODO: Find image
+        image_name = "undefined"
+        image = NodeImage(image_name, image_name, driver)
         size_name = f"{cpu} vCPUs, {memory}MB Ram"
         size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
+        extra_size = {"cpus": cpu}
         size = NodeSize(
             id=size_id,
             name=size_name,
@@ -304,6 +307,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             public_ips=public_ips,
             private_ips=private_ips,
             driver=driver,
+            image=image,
             size=size,
             extra=extra,
             created_at=created_at,
