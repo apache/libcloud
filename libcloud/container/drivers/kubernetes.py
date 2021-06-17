@@ -287,6 +287,11 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                         disk=0, bandwidth=0, price=0,
                         driver=driver, extra=extra_size)
         extra = {'memory': memory, 'cpu': cpu}
+        labels = data['metadata']['labels']
+        os = labels.get('beta.kubernetes.io/os') or labels.get(
+            'kubernetes.io/os')
+        if os:
+            extra['os'] = os
         # TODO: Find state
         state = NodeState.UNKNOWN
         public_ips, private_ips = [], []
