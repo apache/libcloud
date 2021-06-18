@@ -283,7 +283,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         # TODO: Find image
         image_name = "undefined"
         image = NodeImage(image_name, image_name, driver)
-        size_name = f"{cpu} vCPUs, {memory}MB Ram"
+        size_name = f"{cpu} vCPUs, {memory} Ram"
         size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
         extra_size = {"cpus": cpu}
         size = NodeSize(
