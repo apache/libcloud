@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from typing import List
+from collections import OrderedDict
 
 import os
 import binascii
@@ -30,7 +31,6 @@ from libcloud.utils.retry import DEFAULT_BACKOFF  # noqa: F401
 from libcloud.utils.retry import TRANSIENT_SSL_ERROR  # noqa: F401
 from libcloud.utils.retry import TransientSSLError  # noqa: F401
 
-
 __all__ = [
     "find",
     "get_driver",
@@ -42,8 +42,56 @@ __all__ = [
     "reverse_dict",
     "lowercase_keys",
     "get_secure_random_string",
+    "retry",
     "ReprMixin",
 ]
+
+K8S_UNIT_MAP = OrderedDict(
+    {
+        "K": 1000,
+        "Ki": 1024,
+        "M": 1000 * 1000,
+        "Mi": 1024 * 1024,
+        "G": 1000 * 1000 * 1000,
+        "Gi": 1024 * 1024 * 1024,
+    }
+)
+
+
+def to_n_bytes_from_k8s_memory_size_str(k8s_memory_size_str):
+    """Convert k8s memory string to number of bytes
+    (e.g. '1234Mi'-> 1293942784)
+    """
+    if k8s_memory_size_str.startswith("0"):
+        return 0
+    for unit, multiplier in K8S_UNIT_MAP.items():
+        if k8s_memory_size_str.endswith(unit):
+            return int(k8s_memory_size_str.strip(unit)) * multiplier
+
+
+def to_k8s_memory_size_str_from_n_bytes(n_bytes, unit=None):
+    """Convert number of bytes to k8s memory string
+    (e.g. 1293942784 -> '1234Mi')
+    """
+    if n_bytes == 0:
+        return "0K"
+    n_bytes = int(n_bytes)
+    k8s_memory_size_str = None
+    if unit is None:
+        for unit, multiplier in reversed(K8S_UNIT_MAP.items()):
+            converted_n_bytes_float = n_bytes / multiplier
+            converted_n_bytes = n_bytes // multiplier
+            k8s_memory_size_str = f"{converted_n_bytes}{unit}"
+            if converted_n_bytes_float % 1 == 0:
+                break
+    elif K8S_UNIT_MAP.get(unit):
+        k8s_memory_size_str = f"{n_bytes // K8S_UNIT_MAP[unit]}{unit}"
+    return k8s_memory_size_str
+
+
+# Error message which indicates a transient SSL error upon which request
+# can be retried
+TRANSIENT_SSL_ERROR = "The read operation timed out"
 
 
 def find(value, predicate):
