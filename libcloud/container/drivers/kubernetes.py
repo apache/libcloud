@@ -34,7 +34,8 @@ from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
 from libcloud.compute.base import NodeLocation
 
-from libcloud.utils import misc
+from libcloud.utils.misc import to_k8s_memory_size_str_from_n_bytes
+from libcloud.utils.misc import to_n_bytes_from_k8s_memory_size_str
 
 __all__ = [
     'KubernetesContainerDriver'
@@ -44,9 +45,27 @@ __all__ = [
 ROOT_URL = '/api/'
 
 
+def sum_resources(self, *resource_dicts):
+    total_cpu = 0
+    total_memory = 0
+    for rd in resource_dicts:
+        cpu = rd.get('cpu', '0')
+        is_in_milli_format = 'm' in cpu
+        if is_in_milli_format:
+            total_cpu += int(cpu.strip('m'))
+        else:
+            total_cpu += int(cpu) * 1000
+        total_memory += to_n_bytes_from_k8s_memory_size_str(
+            rd.get('memory', '0K'))
+    return {
+        'cpu': f'{total_cpu}m',
+        'memory': to_k8s_memory_size_str_from_n_bytes(total_memory)
+    }
+
+
 class KubernetesPod(object):
     def __init__(self, id, name, containers, namespace, state, ip_addresses,
-                 created_at, node_name):
+                 created_at, node_name, extra):
         """
         A Kubernetes pod
         """
@@ -58,6 +77,7 @@ class KubernetesPod(object):
         self.ip_addresses = ip_addresses
         self.created_at = created_at
         self.node_name = node_name
+        self.extra = extra
 
 
 class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
@@ -323,6 +343,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         container_statuses = data['status'].get('containerStatuses', {})
         containers = []
+        extra = {'resources': {}}
         # response contains the status of the containers in a separate field
         for container in data['spec']['containers']:
             if container_statuses:
@@ -330,9 +351,19 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                                    container_statuses))[0]
             else:
                 spec = container_statuses
-            containers.append(
-                self._to_container(container, spec, data)
+            container_obj = self._to_container(container, spec, data)
+            # Calculate new resources
+            resources = extra['resources']
+            container_resources = container_obj.extra.get('resources', {})
+            resources['limits'] = sum_resources(
+                resources.get('limits', {}),
+                container_resources.get('limits', {})
             )
+            extra['resources']['requests'] = sum_resources(
+                resources.get('requests', {}),
+                container_resources.get('requests', {})
+            )
+            containers.append(container_obj)
         ip_addresses = [ip_dict['ip'] for ip_dict in data[
             'status'].get('podIPs', [])]
         created_at = datetime.datetime.strptime(
@@ -346,7 +377,8 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             ip_addresses=ip_addresses,
             containers=containers,
             created_at=created_at,
-            node_name=data['spec'].get('nodeName'))
+            node_name=data['spec'].get('nodeName'),
+            extra=extra)
 
     def _to_container(self, data, container_status, pod_data):
         """
