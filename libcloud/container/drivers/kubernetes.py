@@ -38,6 +38,8 @@ from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
 from libcloud.compute.base import NodeLocation
 
+from libcloud.utils import misc
+
 __all__ = ["KubernetesContainerDriver"]
 
 
@@ -251,24 +253,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         name = data["metadata"]["name"]
         driver = self.connection.driver
         namespace = "undefined"
-        memory = data["status"].get("capacity", {}).get("memory", 0)
-        if not isinstance(memory, int):
-            if "Ki" in memory:
-                memory = memory.rstrip("Ki")
-                memory = int(memory) * 1024
-            elif "K" in memory:
-                memory = memory.rstrip("K")
-                memory = int(memory) * 1000
-            elif "M" in memory or "Mi" in memory:
-                memory = memory.rstrip("M")
-                memory = memory.rstrip("Mi")
-                memory = int(memory)
-            elif "Gi" in memory:
-                memory = memory.rstrip("Gi")
-                memory = int(memory) // 1024
-            elif "G" in memory:
-                memory = memory.rstrip("G")
-                memory = int(memory) // 1000
+        memory = data["status"].get("capacity", {}).get("memory", "0K")
         cpu = data["status"].get("capacity", {}).get("cpu", 1)
         cpu_is_not_int = not isinstance(cpu, int)
         if cpu_is_not_int and cpu.endswith("m"):
