@@ -201,6 +201,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                                          data=json.dumps(request)).object
         return self._to_cluster(result)
 
+    def list_nodes_metrics(self):
+        return self.connection.request(
+            "/apis/metrics.k8s.io/v1beta1/nodes").object['items']
+
     def deploy_container(self, name, image, cluster=None,
                          parameters=None, start=True):
         """
