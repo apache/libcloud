@@ -80,6 +80,12 @@ class KubernetesPod(object):
         self.extra = extra
 
 
+class KubernetesNamespace(ContainerCluster):
+    """
+    A Kubernetes namespace
+    """
+
+
 class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     type = Provider.KUBERNETES
     name = 'Kubernetes'
@@ -130,14 +136,11 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         match = [container for container in containers if container.id == id]
         return match[0]
 
-    def list_clusters(self):
+    def list_namespaces(self):
         """
         Get a list of namespaces that pods can be deployed into
 
-        :param  location: The location to search in
-        :type   location: :class:`libcloud.container.base.ClusterLocation`
-
-        :rtype: ``list`` of :class:`libcloud.container.base.ContainerCluster`
+        :rtype: ``list`` of :class:`.KubernetesNamespace`
         """
         try:
             result = self.connection.request(
@@ -151,45 +154,45 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                     'and the API port is correct')
             raise
 
-        clusters = [self._to_cluster(value) for value in result['items']]
-        return clusters
+        namespaces = [self._to_namespace(value) for value in result['items']]
+        return namespaces
 
-    def get_cluster(self, id):
+    def get_namespace(self, id):
         """
-        Get a cluster by ID
+        Get a namespace by ID
 
-        :param id: The ID of the cluster to get
+        :param id: The ID of the namespace to get
         :type  id: ``str``
 
-        :rtype: :class:`libcloud.container.base.ContainerCluster`
+        :rtype: :class:`.KubernetesNamespace`
         """
         result = self.connection.request(ROOT_URL + "v1/namespaces/%s" %
                                          id).object
 
-        return self._to_cluster(result)
+        return self._to_namespace(result)
 
-    def destroy_cluster(self, cluster):
+    def delete_namespace(self, namespace):
         """
-        Delete a cluster (namespace)
+        Delete a namespace
 
         :return: ``True`` if the destroy was successful, otherwise ``False``.
         :rtype: ``bool``
         """
         self.connection.request(ROOT_URL + "v1/namespaces/%s" %
-                                cluster.id, method='DELETE').object
+                                namespace.id, method='DELETE').object
         return True
 
-    def create_cluster(self, name, location=None):
+    def create_namespace(self, name, location=None):
         """
-        Create a container cluster (a namespace)
+        Create a namespace
 
-        :param  name: The name of the cluster
+        :param  name: The name of the namespace
         :type   name: ``str``
 
-        :param  location: The location to create the cluster in
+        :param  location: The location to create the namespace in
         :type   location: :class:`.ClusterLocation`
 
-        :rtype: :class:`.ContainerCluster`
+        :rtype: :class:`.KubernetesNamespace`
         """
         request = {
             'metadata': {
@@ -199,13 +202,13 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         result = self.connection.request(ROOT_URL + "v1/namespaces",
                                          method='POST',
                                          data=json.dumps(request)).object
-        return self._to_cluster(result)
+        return self._to_namespace(result)
 
     def list_nodes_metrics(self):
         return self.connection.request(
             "/apis/metrics.k8s.io/v1beta1/nodes").object['items']
 
-    def deploy_container(self, name, image, cluster=None,
+    def deploy_container(self, name, image, namespace=None,
                          parameters=None, start=True):
         """
         Deploy an installed container image.
@@ -218,8 +221,8 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :param image: The container image to deploy
         :type  image: :class:`.ContainerImage`
 
-        :param cluster: The cluster to deploy to, None is default
-        :type  cluster: :class:`.ContainerCluster`
+        :param namespace: The namespace to deploy to, None is default
+        :type  namespace: :class:`.KubernetesNamespace`
 
         :param parameters: Container Image parameters
         :type  parameters: ``str``
@@ -229,10 +232,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: :class:`.Container`
         """
-        if cluster is None:
+        if namespace is None:
             namespace = 'default'
         else:
-            namespace = cluster.id
+            namespace = namespace.id
         request = {
             "metadata": {
                 "name": name
@@ -250,7 +253,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                                          % namespace,
                                          method='POST',
                                          data=json.dumps(request)).object
-        return self._to_cluster(result)
+        return self._to_namespace(result)
 
     def destroy_container(self, container):
         """
@@ -418,17 +421,15 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             created_at=created_at,
             extra=extra)
 
-    def _to_cluster(self, data):
+    def _to_namespace(self, data):
         """
-        Convert namespace to a cluster
+        Convert an API node data object to a `KubernetesNamespace` object
         """
-        metadata = data['metadata']
-        status = data['status']
-        return ContainerCluster(
-            id=metadata['name'],
-            name=metadata['name'],
+        return KubernetesNamespace(
+            id=data['metadata']['name'],
+            name=data['metadata']['name'],
             driver=self.connection.driver,
-            extra={'phase': status['phase']})
+            extra={'phase': data['status']['phase']})
 
 
 def ts_to_str(timestamp):
