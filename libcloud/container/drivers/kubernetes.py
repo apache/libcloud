@@ -214,6 +214,11 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             "items"
         ]
 
+    def list_pods_metrics(self):
+        return self.connection.request("/apis/metrics.k8s.io/v1beta1/pods").object[
+            "items"
+        ]
+
     def deploy_container(
         self, name, image, namespace=None, parameters=None, start=True
     ):
