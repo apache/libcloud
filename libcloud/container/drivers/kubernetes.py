@@ -35,8 +35,8 @@ from libcloud.compute.base import NodeImage
 from libcloud.compute.base import NodeLocation
 
 from libcloud.utils.misc import to_n_cpus_from_cpu_str
-from libcloud.utils.misc import to_k8s_memory_size_str_from_n_bytes
-from libcloud.utils.misc import to_n_bytes_from_k8s_memory_size_str
+from libcloud.utils.misc import to_memory_str_from_n_bytes
+from libcloud.utils.misc import to_n_bytes_from_memory_str
 
 __all__ = [
     'KubernetesContainerDriver'
@@ -56,11 +56,11 @@ def sum_resources(self, *resource_dicts):
             total_cpu += int(cpu.strip('m'))
         else:
             total_cpu += int(cpu) * 1000
-        total_memory += to_n_bytes_from_k8s_memory_size_str(
+        total_memory += to_n_bytes_from_memory_str(
             rd.get('memory', '0K'))
     return {
         'cpu': f'{total_cpu}m',
-        'memory': to_k8s_memory_size_str_from_n_bytes(total_memory)
+        'memory': to_memory_str_from_n_bytes(total_memory)
     }
 
 

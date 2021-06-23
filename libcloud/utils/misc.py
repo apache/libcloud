@@ -54,35 +54,35 @@ K8S_UNIT_MAP = OrderedDict({
     'Gi': 1024 * 1024 * 1024
 })
 
-def to_n_bytes_from_k8s_memory_size_str(k8s_memory_size_str):
-    """Convert k8s memory string to number of bytes
+def to_n_bytes_from_memory_str(memory_str):
+    """Convert memory string to number of bytes
     (e.g. '1234Mi'-> 1293942784)
     """
-    if k8s_memory_size_str.startswith('0'):
+    if memory_str.startswith('0'):
         return 0
     for unit, multiplier in K8S_UNIT_MAP.items():
-        if k8s_memory_size_str.endswith(unit):
-            return int(k8s_memory_size_str.strip(unit)) * multiplier
+        if memory_str.endswith(unit):
+            return int(memory_str.strip(unit)) * multiplier
 
 
-def to_k8s_memory_size_str_from_n_bytes(n_bytes, unit=None):
+def to_memory_str_from_n_bytes(n_bytes, unit=None):
     """Convert number of bytes to k8s memory string
     (e.g. 1293942784 -> '1234Mi')
     """
     if n_bytes == 0:
         return '0K'
     n_bytes = int(n_bytes)
-    k8s_memory_size_str = None
+    memory_str = None
     if unit is None:
         for unit, multiplier in reversed(K8S_UNIT_MAP.items()):
             converted_n_bytes_float = n_bytes / multiplier
             converted_n_bytes = n_bytes // multiplier
-            k8s_memory_size_str = f'{converted_n_bytes}{unit}'
+            memory_str = f'{converted_n_bytes}{unit}'
             if converted_n_bytes_float % 1 == 0:
                 break
     elif K8S_UNIT_MAP.get(unit):
-        k8s_memory_size_str = f'{n_bytes // K8S_UNIT_MAP[unit]}{unit}'
-    return k8s_memory_size_str
+        memory_str = f'{n_bytes // K8S_UNIT_MAP[unit]}{unit}'
+    return memory_str
 
 def to_cpu_str(n_cpus):
     """Convert number of cpus to cpu string
