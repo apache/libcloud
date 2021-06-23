@@ -89,6 +89,33 @@ def to_k8s_memory_size_str_from_n_bytes(n_bytes, unit=None):
     return k8s_memory_size_str
 
 
+def to_cpu_str(n_cpus):
+    """Convert number of cpus to cpu string
+    (e.g. 0.5 -> '500m')
+    """
+    millicores = int(n_cpus * 1000)
+    if millicores % 1 == 0:
+        return f"{millicores}m"
+    nanocores = int(n_cpus * 1000000000)
+    return f"{nanocores}n"
+
+
+def to_n_cpus_from_cpu_str(cpu_str):
+    """Convert cpu string to number of cpus
+    (e.g. '500m' -> 0.5, '2000000000n' -> 2)
+    """
+    if cpu_str.endswith("n"):
+        return int(cpu_str.strip("n")) / 1000000000
+    elif cpu_str.endswith("u"):
+        return int(cpu_str.strip("u")) / 1000000
+    elif cpu_str.endswith("m"):
+        return int(cpu_str.strip("m")) / 1000
+    elif cpu_str.isnumeric():
+        return int(cpu_str)
+    else:
+        return 0
+
+
 # Error message which indicates a transient SSL error upon which request
 # can be retried
 TRANSIENT_SSL_ERROR = "The read operation timed out"
