@@ -213,6 +213,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         return self.connection.request(
             "/apis/metrics.k8s.io/v1beta1/pods").object['items']
 
+    def list_services(self):
+        return self.connection.request(
+            ROOT_URL + "v1/services").object['items']
+
     def deploy_container(self, name, image, namespace=None,
                          parameters=None, start=True):
         """
