@@ -217,6 +217,9 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             "items"
         ]
 
+    def list_services(self):
+        return self.connection.request(ROOT_URL + "v1/services").object["items"]
+
     def deploy_container(
         self, name, image, namespace=None, parameters=None, start=True
     ):
