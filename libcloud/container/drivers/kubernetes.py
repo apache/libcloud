@@ -38,6 +38,7 @@ from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
 from libcloud.compute.base import NodeLocation
 
+from libcloud.utils.misc import to_n_cpus_from_cpu_str
 from libcloud.utils.misc import to_k8s_memory_size_str_from_n_bytes
 from libcloud.utils.misc import to_n_bytes_from_k8s_memory_size_str
 
@@ -289,12 +290,9 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         driver = self.connection.driver
         namespace = "undefined"
         memory = data["status"].get("capacity", {}).get("memory", "0K")
-        cpu = data["status"].get("capacity", {}).get("cpu", 1)
-        cpu_is_not_int = not isinstance(cpu, int)
-        if cpu_is_not_int and cpu.endswith("m"):
-            cpu = int(cpu.strip("m")) / 1000
-        elif cpu_is_not_int:
-            cpu = int(cpu)
+        cpu = data["status"].get("capacity", {}).get("cpu", "1")
+        if isinstance(cpu, str) and not cpu.isnumeric():
+            cpu = to_n_cpus_from_cpu_str(cpu)
         # TODO: Find image
         image_name = "undefined"
         image = NodeImage(image_name, image_name, driver)
