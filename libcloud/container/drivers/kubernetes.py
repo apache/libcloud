@@ -310,6 +310,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         )
         extra = {"memory": memory, "cpu": cpu}
         extra["os"] = data["status"]["nodeInfo"]["operatingSystem"]
+        extra["kubeletVersion"] = data["status"]["nodeInfo"]["kubeletVersion"]
         # TODO: Find state
         state = NodeState.UNKNOWN
         public_ips, private_ips = [], []
