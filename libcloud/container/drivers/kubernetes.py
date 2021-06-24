@@ -313,8 +313,12 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         extra = {'memory': memory, 'cpu': cpu}
         extra['os'] = data['status']['nodeInfo']['operatingSystem']
         extra['kubeletVersion'] = data['status']['nodeInfo']['kubeletVersion']
-        # TODO: Find state
-        state = NodeState.UNKNOWN
+        for condition in data['status']['conditions']:
+            if condition['type'] == 'Ready' and condition['status'] == 'True':
+                state = NodeState.RUNNING
+                break
+        else:
+            state = NodeState.UNKNOWN
         public_ips, private_ips = [], []
         for address in data['status']['addresses']:
             if address['type'] == 'InternalIP':
