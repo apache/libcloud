@@ -102,6 +102,10 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
 
+    def get_version(self):
+        """Get Kubernetes version"""
+        return self.connection.request("/version").object['gitVersion']
+
     def list_containers(self, image=None, all=True):
         """
         List the deployed container images
