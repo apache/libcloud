@@ -25,8 +25,6 @@ import copy
 import binascii
 import time
 
-import cchardet
-
 from libcloud.utils.py3 import ET
 
 import libcloud
@@ -503,7 +501,7 @@ class Connection(object):
 
     def request(self, action, params=None, data=None, headers=None,
                 method='GET', raw=False, stream=False, json=None,
-                autodetect_response_encoding=True):
+                enforce_unicode_response=False):
         """
         Request a given `action`.
 
@@ -538,10 +536,9 @@ class Connection(object):
                     and allow streaming of the response data
                     (for downloading large files)
 
-        :type autodetect_response_encoding: ``bool``
-        :param autodetect_response_encoding: True to set the response encoding
-                    automatically using the `cchardet` (faster alternative of
-                    the `chardet` library used by the `requests`)
+        :type enforce_unicode_response: ``bool``
+        :param enforce_unicode_response: True to set the response encoding
+                    to utf-8
 
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
@@ -650,10 +647,9 @@ class Connection(object):
             self.reset_context()
             raise ssl.SSLError(str(e))
 
-        if autodetect_response_encoding:
+        if enforce_unicode_response:
             # Handle problem: https://github.com/psf/requests/issues/2359
-            self.connection.response.encoding = cchardet.detect(
-                self.connection.response.content)['encoding']
+            self.connection.response.encoding = 'utf-8'
 
         if raw:
             responseCls = self.rawResponseCls

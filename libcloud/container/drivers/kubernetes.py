@@ -112,7 +112,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         try:
             result = self.connection.request(
-                ROOT_URL + "v1/pods").object
+                ROOT_URL + "v1/pods", enforce_unicode_response=True).object
         except Exception as exc:
             errno = getattr(exc, 'errno', None)
             if errno == 111:
@@ -211,15 +211,18 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
     def list_nodes_metrics(self):
         return self.connection.request(
-            "/apis/metrics.k8s.io/v1beta1/nodes").object['items']
+            "/apis/metrics.k8s.io/v1beta1/nodes",
+            enforce_unicode_response=True).object['items']
 
     def list_pods_metrics(self):
         return self.connection.request(
-            "/apis/metrics.k8s.io/v1beta1/pods").object['items']
+            "/apis/metrics.k8s.io/v1beta1/pods",
+            enforce_unicode_response=True).object['items']
 
     def list_services(self):
         return self.connection.request(
-            ROOT_URL + "v1/services").object['items']
+            ROOT_URL + "v1/services",
+            enforce_unicode_response=True).object['items']
 
     def deploy_container(self, name, image, namespace=None,
                          parameters=None, start=True):
@@ -287,7 +290,9 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``list`` of :class:`.Node`
         """
-        result = self.connection.request(ROOT_URL + "v1/nodes").object
+        result = self.connection.request(
+            ROOT_URL + "v1/nodes",
+            enforce_unicode_response=True).object
         return [self._to_node(node) for node in result['items']]
 
     def _to_node(self, data):
@@ -341,7 +346,9 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``list`` of :class:`.KubernetesPod`
         """
-        result = self.connection.request(ROOT_URL + "v1/pods").object
+        result = self.connection.request(
+            ROOT_URL + "v1/pods",
+            enforce_unicode_response=True).object
         return [self._to_pod(value) for value in result['items']]
 
     def ex_destroy_pod(self, namespace, pod_name):
