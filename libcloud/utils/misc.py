@@ -64,6 +64,8 @@ def to_n_bytes_from_memory_str(memory_str):
     """
     if memory_str.startswith("0"):
         return 0
+    if memory_str.isnumeric():
+        return int(memory_str)
     for unit, multiplier in K8S_UNIT_MAP.items():
         if memory_str.endswith(unit):
             return int(memory_str.strip(unit)) * multiplier
