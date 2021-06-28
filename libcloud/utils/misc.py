@@ -90,11 +90,16 @@ def to_cpu_str(n_cpus):
     """Convert number of cpus to cpu string
     (e.g. 0.5 -> '500m')
     """
-    millicores = int(n_cpus * 1000)
+    if n_cpus == 0:
+        return '0'
+    millicores = n_cpus * 1000
     if millicores % 1 == 0:
-        return f'{millicores}m'
-    nanocores = int(n_cpus * 1000000000)
-    return f'{nanocores}n'
+        return f'{int(millicores)}m'
+    microcores = n_cpus * 1000000
+    if microcores % 1 == 0:
+        return f'{int(microcores)}u'
+    nanocores = n_cpus * 1000000000
+    return f'{int(nanocores)}n'
 
 def to_n_cpus_from_cpu_str(cpu_str):
     """Convert cpu string to number of cpus
