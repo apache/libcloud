@@ -102,7 +102,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
 
-    def get_version(self):
+    def ex_get_version(self):
         """Get Kubernetes version"""
         return self.connection.request("/version").object["gitVersion"]
 
@@ -213,17 +213,17 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         ).object
         return self._to_namespace(result)
 
-    def list_nodes_metrics(self):
+    def ex_list_nodes_metrics(self):
         return self.connection.request(
             "/apis/metrics.k8s.io/v1beta1/nodes", enforce_unicode_response=True
         ).object["items"]
 
-    def list_pods_metrics(self):
+    def ex_list_pods_metrics(self):
         return self.connection.request(
             "/apis/metrics.k8s.io/v1beta1/pods", enforce_unicode_response=True
         ).object["items"]
 
-    def list_services(self):
+    def ex_list_services(self):
         return self.connection.request(
             ROOT_URL + "v1/services", enforce_unicode_response=True
         ).object["items"]
