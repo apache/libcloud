@@ -50,12 +50,7 @@ def sum_resources(self, *resource_dicts):
     total_cpu = 0
     total_memory = 0
     for rd in resource_dicts:
-        cpu = rd.get('cpu', '0')
-        is_in_milli_format = 'm' in cpu
-        if is_in_milli_format:
-            total_cpu += int(cpu.strip('m'))
-        else:
-            total_cpu += int(cpu) * 1000
+        total_cpu += to_n_cpus_from_cpu_str(rd.get('cpu', '0m'))
         total_memory += to_n_bytes_from_memory_str(
             rd.get('memory', '0K'))
     return {
