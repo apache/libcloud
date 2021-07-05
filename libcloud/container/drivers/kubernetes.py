@@ -33,10 +33,8 @@ from libcloud.container.types import ContainerState
 
 from libcloud.compute.types import NodeState
 from libcloud.compute.base import Node
-from libcloud.compute.base import NodeDriver
 from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
-from libcloud.compute.base import NodeLocation
 
 from libcloud.utils.misc import to_n_cpus_from_cpu_str
 from libcloud.utils.misc import to_memory_str_from_n_bytes
