@@ -36,10 +36,10 @@ from libcloud.compute.base import Node
 from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
 
-from libcloud.utils.misc import to_n_cpus_from_cpu_str
+from libcloud.utils.misc import to_n_cpus
 from libcloud.utils.mist import to_cpu_str
-from libcloud.utils.misc import to_memory_str_from_n_bytes
-from libcloud.utils.misc import to_n_bytes_from_memory_str
+from libcloud.utils.misc import to_memory_str
+from libcloud.utils.misc import to_n_bytes
 
 __all__ = ["KubernetesContainerDriver"]
 
@@ -51,12 +51,9 @@ def sum_resources(self, *resource_dicts):
     total_cpu = 0
     total_memory = 0
     for rd in resource_dicts:
-        total_cpu += to_n_cpus_from_cpu_str(rd.get("cpu", "0m"))
-        total_memory += to_n_bytes_from_memory_str(rd.get("memory", "0K"))
-    return {
-        "cpu": to_cpu_str(total_cpu),
-        "memory": to_memory_str_from_n_bytes(total_memory),
-    }
+        total_cpu += to_n_cpus(rd.get("cpu", "0m"))
+        total_memory += to_n_bytes(rd.get("memory", "0K"))
+    return {"cpu": to_cpu_str(total_cpu), "memory": to_memory_str(total_memory)}
 
 
 class KubernetesPod(object):
@@ -319,7 +316,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         memory = data["status"].get("capacity", {}).get("memory", "0K")
         cpu = data["status"].get("capacity", {}).get("cpu", "1")
         if isinstance(cpu, str) and not cpu.isnumeric():
-            cpu = to_n_cpus_from_cpu_str(cpu)
+            cpu = to_n_cpus(cpu)
         image_name = data["status"]["nodeInfo"]["osImage"]
         image = NodeImage(image_name, image_name, driver)
         size_name = f"{cpu} vCPUs, {memory} Ram"

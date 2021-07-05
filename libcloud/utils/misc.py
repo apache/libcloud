@@ -58,7 +58,7 @@ K8S_UNIT_MAP = OrderedDict(
 )
 
 
-def to_n_bytes_from_memory_str(memory_str):
+def to_n_bytes(memory_str):
     """Convert memory string to number of bytes
     (e.g. '1234Mi'-> 1293942784)
     """
@@ -71,7 +71,7 @@ def to_n_bytes_from_memory_str(memory_str):
             return int(memory_str.strip(unit)) * multiplier
 
 
-def to_memory_str_from_n_bytes(n_bytes, unit=None):
+def to_memory_str(n_bytes, unit=None):
     """Convert number of bytes to k8s memory string
     (e.g. 1293942784 -> '1234Mi')
     """
@@ -107,7 +107,7 @@ def to_cpu_str(n_cpus):
     return f"{int(nanocores)}n"
 
 
-def to_n_cpus_from_cpu_str(cpu_str):
+def to_n_cpus(cpu_str):
     """Convert cpu string to number of cpus
     (e.g. '500m' -> 0.5, '2000000000n' -> 2)
     """
