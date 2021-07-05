@@ -291,7 +291,6 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         ID = data["metadata"]["uid"]
         name = data["metadata"]["name"]
         driver = self.connection.driver
-        namespace = "undefined"
         memory = data["status"].get("capacity", {}).get("memory", "0K")
         cpu = data["status"].get("capacity", {}).get("cpu", "1")
         if isinstance(cpu, str) and not cpu.isnumeric():
