@@ -95,10 +95,6 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
 
-    def ex_get_version(self):
-        """Get Kubernetes version"""
-        return self.connection.request("/version").object["gitVersion"]
-
     def list_containers(self, image=None, all=True):
         """
         List the deployed container images
@@ -206,21 +202,6 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         ).object
         return self._to_namespace(result)
 
-    def ex_list_nodes_metrics(self):
-        return self.connection.request(
-            "/apis/metrics.k8s.io/v1beta1/nodes", enforce_unicode_response=True
-        ).object["items"]
-
-    def ex_list_pods_metrics(self):
-        return self.connection.request(
-            "/apis/metrics.k8s.io/v1beta1/pods", enforce_unicode_response=True
-        ).object["items"]
-
-    def ex_list_services(self):
-        return self.connection.request(
-            ROOT_URL + "v1/services", enforce_unicode_response=True
-        ).object["items"]
-
     def deploy_container(
         self, name, image, namespace=None, parameters=None, start=True
     ):
@@ -273,6 +254,27 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         return self.ex_destroy_pod(container.extra["namespace"], container.extra["pod"])
 
+    def ex_list_pods(self):
+        """
+        List available Pods
+
+        :rtype: ``list`` of :class:`.KubernetesPod`
+        """
+        result = self.connection.request(
+            ROOT_URL + "v1/pods", enforce_unicode_response=True
+        ).object
+        return [self._to_pod(value) for value in result["items"]]
+
+    def ex_destroy_pod(self, namespace, pod_name):
+        """
+        Delete a pod and the containers within it.
+        """
+        self.connection.request(
+            ROOT_URL + "v1/namespaces/%s/pods/%s" % (namespace, pod_name),
+            method="DELETE",
+        ).object
+        return True
+
     def ex_list_nodes(self):
         """
         List available Nodes
@@ -283,6 +285,25 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             ROOT_URL + "v1/nodes", enforce_unicode_response=True
         ).object
         return [self._to_node(node) for node in result["items"]]
+
+    def ex_get_version(self):
+        """Get Kubernetes version"""
+        return self.connection.request("/version").object["gitVersion"]
+
+    def ex_list_nodes_metrics(self):
+        return self.connection.request(
+            "/apis/metrics.k8s.io/v1beta1/nodes", enforce_unicode_response=True
+        ).object["items"]
+
+    def ex_list_pods_metrics(self):
+        return self.connection.request(
+            "/apis/metrics.k8s.io/v1beta1/pods", enforce_unicode_response=True
+        ).object["items"]
+
+    def ex_list_services(self):
+        return self.connection.request(
+            ROOT_URL + "v1/services", enforce_unicode_response=True
+        ).object["items"]
 
     def _to_node(self, data):
         """
@@ -340,27 +361,6 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             extra=extra,
             created_at=created_at,
         )
-
-    def ex_list_pods(self):
-        """
-        List available Pods
-
-        :rtype: ``list`` of :class:`.KubernetesPod`
-        """
-        result = self.connection.request(
-            ROOT_URL + "v1/pods", enforce_unicode_response=True
-        ).object
-        return [self._to_pod(value) for value in result["items"]]
-
-    def ex_destroy_pod(self, namespace, pod_name):
-        """
-        Delete a pod and the containers within it.
-        """
-        self.connection.request(
-            ROOT_URL + "v1/namespaces/%s/pods/%s" % (namespace, pod_name),
-            method="DELETE",
-        ).object
-        return True
 
     def _to_pod(self, data):
         """
