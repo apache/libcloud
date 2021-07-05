@@ -33,6 +33,7 @@ from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
 
 from libcloud.utils.misc import to_n_cpus_from_cpu_str
+from libcloud.utils.mist import to_cpu_str
 from libcloud.utils.misc import to_memory_str_from_n_bytes
 from libcloud.utils.misc import to_n_bytes_from_memory_str
 
@@ -52,7 +53,7 @@ def sum_resources(self, *resource_dicts):
         total_memory += to_n_bytes_from_memory_str(
             rd.get('memory', '0K'))
     return {
-        'cpu': f'{total_cpu}m',
+        'cpu': to_cpu_str(total_cpu),
         'memory': to_memory_str_from_n_bytes(total_memory)
     }
 
