@@ -37,7 +37,7 @@ from libcloud.compute.base import NodeSize
 from libcloud.compute.base import NodeImage
 
 from libcloud.utils.misc import to_n_cpus
-from libcloud.utils.mist import to_cpu_str
+from libcloud.utils.misc import to_cpu_str
 from libcloud.utils.misc import to_memory_str
 from libcloud.utils.misc import to_n_bytes
 
