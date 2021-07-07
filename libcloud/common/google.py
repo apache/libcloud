@@ -726,7 +726,7 @@ class GoogleOAuth2Credential(object):
                      filename, str(e))
 
 
-class GoogleBaseConnection(ConnectionUserAndKey, PollingConnection):
+class GoogleBaseConnection(GoogleBaseAuthConnection, PollingConnection):
     """Base connection class for interacting with Google APIs."""
 
     driver = GoogleBaseDriver
