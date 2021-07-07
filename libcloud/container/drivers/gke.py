@@ -100,8 +100,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
     AUTH_URL = "https://container.googleapis.com/auth/"
 
     def __init__(self, user_id, key=None, datacenter=None, project=None,
-                 auth_type=None, scopes=None, credential_file=None,
-                 host=None, port=443, **kwargs):
+                 auth_type=None, scopes=None, redirect_uri=None,
+                 credential_file=None, host=None, port=443, **kwargs):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -144,6 +144,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
+        self.redirect_uri = redirect_uri
         self.zone = None
         if datacenter is not None:
             self.zone = datacenter
@@ -161,6 +162,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         return {'auth_type': self.auth_type,
                 'project': self.project,
                 'scopes': self.scopes,
+                'redirect_uri': self.redirect_uri,
                 'credential_file': self.credential_file}
 
     def list_clusters(self, ex_zone=None):
