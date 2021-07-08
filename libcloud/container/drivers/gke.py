@@ -213,6 +213,20 @@ class GKEContainerDriver(KubernetesContainerDriver):
         ).object
         return response
 
+    def ex_delete_cluster(self, zone, name):
+        """
+        Delete cluster in the given zone
+
+        :keyword  zone:  Zone name
+        :type     zone:  ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation`
+        :keyword  name:  Cluster name
+        :type     name:  ``str``
+        """
+        request = "/zones/%s/clusters/%s" % (zone, name)
+        response = self.connection.request(request, method='DELETE').object
+        return response
+
     def list_clusters(self, ex_zone='-'):
         """
         Return a list of cluster information in the current zone or all zones.
