@@ -177,17 +177,14 @@ class GKEContainerDriver(KubernetesContainerDriver):
         response = self.connection.request(request, method='GET').object
         return response['clusters']
 
-    def get_server_config(self, ex_zone=None):
+    def get_server_config(self, ex_zone):
         """
         Return configuration info about the Container Engine service.
 
-        :keyword  ex_zone:  Optional zone name or None
+        :keyword  ex_zone:  Zone name
         :type     ex_zone:  ``str`` or :class:`GCEZone` or
-                            :class:`NodeLocation` or ``None``
+                            :class:`NodeLocation`
         """
-        if ex_zone is None:
-            ex_zone = self.zone
         request = "/zones/%s/serverconfig" % (ex_zone)
-
         response = self.connection.request(request, method='GET').object
         return response
