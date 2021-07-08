@@ -180,6 +180,39 @@ class GKEContainerDriver(KubernetesContainerDriver):
         response = self.connection.request(request, method='GET').object
         return response
 
+    def ex_create_cluster(self, zone, name, initial_node_count=1):
+        """
+        Create cluster in the given zone
+
+        :keyword  zone:  Zone name
+        :type     zone:  ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation`
+
+        :keyword  name:  Cluster name
+        :type     name:  ``str``
+
+        :keyword  initial_node_count:  The number of nodes to create
+        :type     initial_node_count:  ``int``
+        """
+        request = "/zones/%s/clusters" % (zone)
+        body = {
+            "cluster":  {
+                "name": name,
+                "nodePools": [
+                    {
+                        "name": "default-pool",
+                        "initialNodeCount": initial_node_count
+                    }
+                ]
+            }
+        }
+        response = self.connection.request(
+            request,
+            method='POST',
+            data=body
+        ).object
+        return response
+
     def list_clusters(self, ex_zone='-'):
         """
         Return a list of cluster information in the current zone or all zones.
