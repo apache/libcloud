@@ -165,6 +165,21 @@ class GKEContainerDriver(KubernetesContainerDriver):
                 'redirect_uri': self.redirect_uri,
                 'credential_file': self.credential_file}
 
+    def ex_get_cluster(self, zone, name):
+        """
+        Return cluster information in the given zone
+
+        :keyword  zone:  Zone name
+        :type     zone:  ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation`
+
+        :keyword  name:  Cluster name
+        :type     name:  ``str``
+        """
+        request = "/zones/%s/clusters/%s" % (zone, name)
+        response = self.connection.request(request, method='GET').object
+        return response
+
     def list_clusters(self, ex_zone='-'):
         """
         Return a list of cluster information in the current zone or all zones.
