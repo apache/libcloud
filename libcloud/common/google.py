@@ -626,6 +626,13 @@ class GoogleAuthType(object):
 
 class GoogleOAuth2Credential(object):
     default_credential_file = '~/.google_libcloud_auth'
+    # Default scopes for cloud-platform, compute, storage, and dns
+    default_scopes = [
+        'https://www.googleapis.com/auth/cloud-platform',
+        'https://www.googleapis.com/auth/compute',
+        'https://www.googleapis.com/auth/devstorage.full_control',
+        'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+    ]
 
     def __init__(self, user_id, key, auth_type=None, credential_file=None,
                  scopes=None, **kwargs):
@@ -641,13 +648,7 @@ class GoogleOAuth2Credential(object):
         default_credential_file = '.'.join([self.default_credential_file,
                                             user_id])
         self.credential_file = credential_file or default_credential_file
-        # Default scopes to read/write for compute, storage, and dns.
-        self.scopes = scopes or [
-            'https://www.googleapis.com/auth/compute',
-            'https://www.googleapis.com/auth/devstorage.full_control',
-            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-        ]
-
+        self.scopes = scopes or self.default_scopes
 
         self.token = self._get_token_from_file()
 
@@ -763,7 +764,7 @@ class GoogleBaseConnection(GoogleBaseAuthConnection, PollingConnection):
         :type     credential_file: ``str``
 
         :keyword  scopes: List of OAuth2 scope URLs. The empty default sets
-                          read/write access to Compute, Storage, and DNS.
+                          access to Cloud Platform, Compute, Storage, and DNS.
         :type     scopes: ``list``
         """
         super(GoogleBaseConnection, self).__init__(user_id, key, **kwargs)
