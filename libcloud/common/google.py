@@ -516,7 +516,7 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
         # Construct a claim set
         claim_set = {'iss': self.user_id,
                      'scope': self.scopes,
-                     'aud': 'https://accounts.google.com/o/oauth2/token',
+                     'aud': 'https://oauth2.googleapis.com/token',
                      'exp': int(time.time()) + 3600,
                      'iat': int(time.time())}
         claim_set_enc = base64.urlsafe_b64encode(b(json.dumps(claim_set)))
@@ -647,6 +647,7 @@ class GoogleOAuth2Credential(object):
             'https://www.googleapis.com/auth/devstorage.full_control',
             'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
         ]
+
 
         self.token = self._get_token_from_file()
 
