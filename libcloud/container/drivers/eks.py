@@ -114,6 +114,20 @@ class ElasticKubernetesDriver(ContainerDriver):
         ).object
         return self._to_cluster(response['cluster'])
 
+    def delete_cluster(self, name):
+        """
+        Delete a cluster
+
+        :param  name: The name of the cluster
+        :type   name: ``str``
+
+        :return: ``True`` if the destroy was successful, otherwise ``False``
+        :rtype: ``bool``
+        """
+        endpoint = f'{CLUSTERS_ENDPOINT}{name}'
+        data = self.connection.request(endpoint, method='DELETE').object
+        return data['cluster']['status'] == 'DELETING'
+
     def _to_clusters(self, data):
         return [self._to_cluster(cluster) for cluster in data]
 
