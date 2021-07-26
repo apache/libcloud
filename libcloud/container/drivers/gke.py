@@ -196,7 +196,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         """
         request = "/zones/%s/clusters" % (zone)
         body = {
-            "cluster":  {
+            "cluster": {
                 "name": name,
                 "nodePools": [
                     {
