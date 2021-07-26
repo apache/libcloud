@@ -73,6 +73,47 @@ class ElasticKubernetesDriver(ContainerDriver):
         ]
         return self._to_clusters(data)
 
+    def create_cluster(self, name, role_arn, vpc_id, subnet_ids,
+                       security_group_ids):
+        """
+        Create a cluster
+
+        :param  name: The name of the cluster
+        :type   name: ``str``
+
+        :param role_arn: The Amazon Resource Name (ARN) of the IAM role that
+                         provides permissions for the Kubernetes control plane
+                         to make calls to AWS API operations on your behalf
+        :type role_arn: ``str``
+
+        :param vpc_id: The VPC associated with the cluster
+        :type vpc_id: ``str``
+
+        :param subnet_ids: The subnets associated with the cluster
+        :type subnet_ids: ``list`` of ``str``
+
+        :param subnet_ids: The security groups associated with the
+                           cross-account elastic network interfaces that are
+                           used to allow communication between your nodes and
+                           the Kubernetes control plane
+        :type subnet_ids: ``list`` of ``str``
+        """
+        request = {
+            'name': name,
+            'roleArn': role_arn,
+            'resourcesVpcConfig': {
+                'vpcId': vpc_id,
+                'subnetIds': subnet_ids,
+                'securityGroudIds': security_group_ids,
+            }
+        }
+        response = self.connection.request(
+            CLUSTERS_ENDPOINT,
+            method='POST',
+            data=json.dumps(request)
+        ).object
+        return self._to_cluster(response['cluster'])
+
     def _to_clusters(self, data):
         return [self._to_cluster(cluster) for cluster in data]
 
