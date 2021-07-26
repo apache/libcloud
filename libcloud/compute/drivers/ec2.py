@@ -1179,7 +1179,7 @@ VOLUME_MODIFICATION_ATTRIBUTE_MAP = {
 }
 
 VALID_EC2_REGIONS = REGION_DETAILS_PARTIAL.keys()
-VALID_VOLUME_TYPES = ['standard', 'io1', 'gp2', 'st1', 'sc1']
+VALID_VOLUME_TYPES = ['standard', 'io1', 'io2', 'gp2', 'gp3', 'st1', 'sc1']
 
 
 class EC2NodeLocation(NodeLocation):
@@ -2081,7 +2081,8 @@ class BaseEC2NodeDriver(NodeDriver):
 
     def create_volume(self, size, name, location=None, snapshot=None,
                       ex_volume_type='standard', ex_iops=None,
-                      ex_encrypted=False, ex_kms_key_id=None):
+                      ex_encrypted=False, ex_kms_key_id=None,
+                      ex_throughput=None):
         """
         Create a new volume.
 
@@ -2106,10 +2107,10 @@ class BaseEC2NodeDriver(NodeDriver):
         :param ex_volume_type: Type of volume to create.
         :type ex_volume_type: ``str``
 
-        :param iops: The number of I/O operations per second (IOPS)
+        :param ex_iops: The number of I/O operations per second (IOPS)
                      that the volume supports. Only used if ex_volume_type
-                     is io1.
-        :type iops: ``int``
+                     is io1, io2 or gp3.
+        :type ex_iops: ``int``
 
         :param ex_encrypted: Specifies whether the volume should be encrypted.
         :type ex_encrypted: ``bool``
@@ -2122,6 +2123,11 @@ class BaseEC2NodeDriver(NodeDriver):
                             -456a-a12b-a123b4cd56ef.
                             Only used if encrypted is set to True.
         :type ex_kms_key_id: ``str``
+
+        :param ex_throughput: The throughput to provision for a volume, with a
+                            maximum of 1,000 MiB/s. Only used if ex_volume_type
+                            is gp3.
+        :type ex_throughput: ``int``
 
         :return: The newly created volume.
         :rtype: :class:`StorageVolume`
@@ -2148,7 +2154,7 @@ class BaseEC2NodeDriver(NodeDriver):
         if ex_volume_type:
             params['VolumeType'] = ex_volume_type
 
-        if ex_volume_type == 'io1' and ex_iops:
+        if ex_volume_type in ['io1', 'io2', 'gp3'] and ex_iops:
             params['Iops'] = ex_iops
 
         if ex_encrypted:
@@ -2156,6 +2162,9 @@ class BaseEC2NodeDriver(NodeDriver):
 
             if ex_kms_key_id is not None:
                 params['KmsKeyId'] = ex_kms_key_id
+
+        if ex_volume_type == 'gp3' and ex_throughput:
+            params['Throughput'] = ex_throughput
 
         volume = self._to_volume(
             self.connection.request(self.path, params=params).object,
