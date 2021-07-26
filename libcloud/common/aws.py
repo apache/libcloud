@@ -432,10 +432,13 @@ class AWSJsonResponse(JsonResponse):
     Amazon ECS response class.
     ECS API uses JSON unlike the s3, elb drivers
     """
+
     def parse_error(self):
         response = json.loads(self.body)
-        code = response['__type']
+        code = response.get('__type')
         message = response.get('Message', response['message'])
+        if code is None:
+            return message
         return ('%s: %s' % (code, message))
 
 
