@@ -58,3 +58,28 @@ class ElasticKubernetesDriver(ContainerDriver):
 
     def _ex_connection_class_kwargs(self):
         return {'signature_version': '4'}
+
+    def list_clusters(self):
+        """
+        Get a list of clusters
+
+        :rtype: ``list`` of :class:`libcloud.container.base.ContainerCluster`
+        """
+        names = self.connection.request(
+            CLUSTERS_ENDPOINT).object['clusters']
+        data = [self.connection.request(
+            f'{CLUSTERS_ENDPOINT}{name}').object['cluster']
+            for name in names
+        ]
+        return self._to_clusters(data)
+
+    def _to_clusters(self, data):
+        return [self._to_cluster(cluster) for cluster in data]
+
+    def _to_cluster(self, data):
+        return ContainerCluster(
+            id=data['arn'],
+            name=data['name'],
+            driver=self.connection.driver,
+            extra=data
+        )
