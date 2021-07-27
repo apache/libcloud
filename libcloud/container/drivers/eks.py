@@ -30,8 +30,6 @@ EKS_VERSION = '2017-11-01'
 EKS_HOST = 'eks.%s.amazonaws.com'
 ROOT = '/'
 CLUSTERS_ENDPOINT = f'{ROOT}clusters/'
-EKS_TARGET_BASE = 'AmazonEC2ContainerServiceV%s' % \
-                  (EKS_VERSION.replace('-', ''))
 
 
 class EKSJsonConnection(SignedAWSConnection):
@@ -39,10 +37,6 @@ class EKSJsonConnection(SignedAWSConnection):
     host = EKS_HOST
     responseCls = AWSJsonResponse
     service_name = 'eks'
-
-    def set_host(self, value):
-        self.host = value
-        self.connection.host = value
 
 
 class ElasticKubernetesDriver(ContainerDriver):
