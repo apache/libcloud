@@ -67,11 +67,22 @@ class ElasticKubernetesDriver(ContainerDriver):
         """
         names = self.connection.request(
             CLUSTERS_ENDPOINT).object['clusters']
-        data = [self.connection.request(
-            f'{CLUSTERS_ENDPOINT}{name}').object['cluster']
-            for name in names
-        ]
-        return self._to_clusters(data)
+        clusters = [self.get_cluster(name) for name in names]
+        return clusters
+
+    def get_cluster(self, name):
+        """
+        Get a cluster description
+
+        :param  name: The name of the cluster
+        :type   name: ``str``
+
+        :rtype: ``list`` of :class:`libcloud.container.base.ContainerCluster`
+        """
+        endpoint = f'{CLUSTERS_ENDPOINT}{name}'
+        data = self.connection.request(
+            endpoint).object
+        return self._to_cluster(data['cluster'])
 
     def create_cluster(self, name, role_arn, vpc_id, subnet_ids,
                        security_group_ids):
@@ -127,9 +138,6 @@ class ElasticKubernetesDriver(ContainerDriver):
         endpoint = f'{CLUSTERS_ENDPOINT}{name}'
         data = self.connection.request(endpoint, method='DELETE').object
         return data['cluster']['status'] == 'DELETING'
-
-    def _to_clusters(self, data):
-        return [self._to_cluster(cluster) for cluster in data]
 
     def _to_cluster(self, data):
         return ContainerCluster(
