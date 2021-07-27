@@ -103,11 +103,12 @@ class ElasticKubernetesDriver(ContainerDriver):
         :param subnet_ids: The subnets associated with the cluster
         :type subnet_ids: ``list`` of ``str``
 
-        :param subnet_ids: The security groups associated with the
-                           cross-account elastic network interfaces that are
-                           used to allow communication between your nodes and
-                           the Kubernetes control plane
-        :type subnet_ids: ``list`` of ``str``
+        :param security_group_ids: The security groups associated with the
+                                   cross-account elastic network interfaces
+                                   that are used to allow communication
+                                   between your nodes and the Kubernetes
+                                   control plane
+        :type security_group_ids: ``list`` of ``str``
         """
         request = {
             'name': name,
