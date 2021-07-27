@@ -35,6 +35,8 @@ DRIVERS = {
     ('libcloud.container.drivers.joyent', 'JoyentContainerDriver'),
     Provider.ECS:
     ('libcloud.container.drivers.ecs', 'ElasticContainerDriver'),
+    Provider.EKS:
+    ('libcloud.container.drivers.eks', 'ElasticKubernetesDriver'),
     Provider.KUBERNETES:
     ('libcloud.container.drivers.kubernetes', 'KubernetesContainerDriver'),
     Provider.LXD:
