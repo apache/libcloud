@@ -32,6 +32,12 @@ ROOT = '/'
 CLUSTERS_ENDPOINT = f'{ROOT}clusters/'
 
 
+class EKSCluster(ContainerCluster):
+    def __init__(self, id, name, driver, config, extra):
+        super().__init__(id, name, driver, extra)
+        self.config = config
+
+
 class EKSJsonConnection(SignedAWSConnection):
     version = EKS_VERSION
     host = EKS_HOST
@@ -135,9 +141,11 @@ class ElasticKubernetesDriver(ContainerDriver):
         return data['cluster']['status'] == 'DELETING'
 
     def _to_cluster(self, data):
-        return ContainerCluster(
-            id=data['arn'],
-            name=data['name'],
+        return EKSCluster(
+            id=data.pop('arn'),
+            name=data.pop('name'),
             driver=self.connection.driver,
+            config={k: data.pop(k)
+                    for k in list(data) if k.endswith('Config')},
             extra=data
         )
