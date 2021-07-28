@@ -33,8 +33,9 @@ CLUSTERS_ENDPOINT = f'{ROOT}clusters/'
 
 
 class EKSCluster(ContainerCluster):
-    def __init__(self, id, name, driver, config, extra):
+    def __init__(self, id, name, location, driver, config, extra):
         super().__init__(id, name, driver, extra)
+        self.location = location
         self.config = config
 
 
@@ -144,6 +145,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         return EKSCluster(
             id=data.pop('arn'),
             name=data.pop('name'),
+            location=self.region,
             driver=self.connection.driver,
             config={k: data.pop(k)
                     for k in list(data) if k.endswith('Config')},
