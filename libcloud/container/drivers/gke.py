@@ -14,11 +14,20 @@
 # limitations under the License.
 
 from libcloud.common.google import GoogleOAuth2Credential
+from libcloud.container.base import ContainerCluster
 from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
 API_VERSION = 'v1'
+
+
+class GKECluster(ContainerCluster):
+    def __init__(self, id, name, node_count, location, driver, config, extra):
+        super().__init__(id, name, driver, extra)
+        self.node_count = node_count
+        self.location = location
+        self.config = config
 
 
 class GKEResponse(GoogleResponse):
@@ -260,8 +269,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
                             :class:`NodeLocation` or '-'
         """
         request = "/zones/%s/clusters" % (ex_zone)
-        response = self.connection.request(request, method='GET').object
-        return response['clusters']
+        data = self.connection.request(request, method='GET').object
+        return self._to_clusters(data)
 
     def get_server_config(self, ex_zone):
         """
@@ -274,3 +283,37 @@ class GKEContainerDriver(KubernetesContainerDriver):
         request = "/zones/%s/serverconfig" % (ex_zone)
         response = self.connection.request(request, method='GET').object
         return response
+
+    def _to_clusters(self, data):
+        return [self._to_cluster(c) for c in data['clusters']]
+
+    def _to_cluster(self, data):
+        return GKECluster(
+            id=data.pop('id'),
+            name=data.pop('name'),
+            node_count=data.pop('currentNodeCount'),
+            location=data.pop('location'),
+            driver=self.connection.driver,
+            config={k: data.pop(k)
+                    for k in list(data)
+                    if k in [
+                'initialNodeCount',
+                'nodeConfig',
+                'addonsConfig',
+                'legacyAbac',
+                'networkPolicy',
+                'ipAllocationPolicy',
+                'masterAuthorizedNetworksConfig',
+                'binaryAuthorization',
+                'autoscaling',
+                'networkConfig',
+                'resourceUsageExportConfig',
+                'authenticatorGroupsConfig',
+                'privateClusterConfig',
+                'databaseEncryption',
+                'verticalPodAutoscaling',
+                'shieldedNodes',
+                'workloadIdentityConfig',
+            ]},
+            extra=data
+        )
