@@ -291,6 +291,15 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             enforce_unicode_response=True).object
         return [self._to_node(node) for node in result['items']]
 
+    def ex_destroy_node(self, node_name):
+        """
+        Destroy a node.
+        """
+        self.connection.request(
+            ROOT_URL + f"v1/nodes/{node_name}",
+            method='DELETE').object
+        return True
+
     def ex_get_version(self):
         """Get Kubernetes version"""
         return self.connection.request("/version").object['gitVersion']
