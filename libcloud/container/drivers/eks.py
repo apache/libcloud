@@ -127,9 +127,9 @@ class ElasticKubernetesDriver(ContainerDriver):
         ).object
         return self._to_cluster(response['cluster'])
 
-    def delete_cluster(self, name):
+    def destroy_cluster(self, name):
         """
-        Delete a cluster
+        Destroy a cluster
 
         :param  name: The name of the cluster
         :type   name: ``str``

@@ -246,9 +246,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
         ).object
         return response
 
-    def ex_delete_cluster(self, zone, name):
+    def ex_destroy_cluster(self, zone, name):
         """
-        Delete cluster in the given zone
+        Destroy cluster in the given zone
 
         :keyword  zone:  Zone name
         :type     zone:  ``str`` or :class:`GCEZone` or
