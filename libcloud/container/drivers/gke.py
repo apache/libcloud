@@ -285,7 +285,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         return response
 
     def _to_clusters(self, data):
-        return [self._to_cluster(c) for c in data['clusters']]
+        return [self._to_cluster(c) for c in data.get('clusters', [])]
 
     def _to_cluster(self, data):
         return GKECluster(
