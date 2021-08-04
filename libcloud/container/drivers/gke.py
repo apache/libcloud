@@ -186,8 +186,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     name:  ``str``
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
-        response = self.connection.request(request, method='GET').object
-        return response
+        data = self.connection.request(request, method='GET').object
+        return self._to_cluster(data)
 
     def ex_create_cluster(self, zone, name, initial_node_count=1):
         """
@@ -215,12 +215,12 @@ class GKEContainerDriver(KubernetesContainerDriver):
                 ]
             }
         }
-        response = self.connection.request(
+        data = self.connection.request(
             request,
             method='POST',
             data=body
         ).object
-        return response
+        return self._to_cluster(data)
 
     def ex_update_cluster(self, zone, name, update_dict):
         """
@@ -239,12 +239,12 @@ class GKEContainerDriver(KubernetesContainerDriver):
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
         body = {"update": update_dict}
-        response = self.connection.request(
+        data = self.connection.request(
             request,
             method='PUT',
             data=body
         ).object
-        return response
+        return self._to_cluster(data)
 
     def ex_destroy_cluster(self, zone, name):
         """
@@ -257,8 +257,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     name:  ``str``
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
-        response = self.connection.request(request, method='DELETE').object
-        return response
+        data = self.connection.request(request, method='DELETE').object
+        return self._to_cluster(data)
 
     def list_clusters(self, ex_zone='-'):
         """
