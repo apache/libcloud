@@ -184,6 +184,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
 
         :keyword  name:  Cluster name
         :type     name:  ``str``
+
+        :rtype: :class:`GKECluster`
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
         data = self.connection.request(request, method='GET').object
@@ -202,6 +204,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
 
         :keyword  initial_node_count:  The number of nodes to create
         :type     initial_node_count:  ``int``
+
+        :rtype: :class:`GKECluster`
         """
         request = "/zones/%s/clusters" % (zone)
         body = {
@@ -236,6 +240,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :keyword  update_dict:  Cluster update object:
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/ClusterUpdate 
         :type     update_dict:  ``str``
+
+        :rtype: :class:`GKECluster`
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
         body = {"update": update_dict}
@@ -255,6 +261,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
                             :class:`NodeLocation`
         :keyword  name:  Cluster name
         :type     name:  ``str``
+
+        :rtype: :class:`GKECluster`
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
         data = self.connection.request(request, method='DELETE').object
@@ -267,6 +275,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :keyword  ex_zone:  Optional zone name or '-'
         :type     ex_zone:  ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation` or '-'
+
+        :rtype: ``list`` of :class:`GKECluster`
         """
         request = "/zones/%s/clusters" % (ex_zone)
         data = self.connection.request(request, method='GET').object
