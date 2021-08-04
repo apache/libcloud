@@ -64,7 +64,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         """
         Get a list of clusters
 
-        :rtype: ``list`` of :class:`libcloud.container.base.ContainerCluster`
+        :rtype: ``list`` of :class:`EKSCluster`
         """
         names = self.connection.request(
             CLUSTERS_ENDPOINT).object['clusters']
@@ -78,7 +78,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         :param  name: The name of the cluster
         :type   name: ``str``
 
-        :rtype: ``list`` of :class:`libcloud.container.base.ContainerCluster`
+        :rtype: :class:`EKSCluster`
         """
         endpoint = f'{CLUSTERS_ENDPOINT}{name}'
         data = self.connection.request(
@@ -110,6 +110,8 @@ class ElasticKubernetesDriver(ContainerDriver):
                                    between your nodes and the Kubernetes
                                    control plane
         :type security_group_ids: ``list`` of ``str``
+
+        :rtype: :class:`EKSCluster`
         """
         request = {
             'name': name,
