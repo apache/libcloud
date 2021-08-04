@@ -282,6 +282,25 @@ class GKEContainerDriver(KubernetesContainerDriver):
         data = self.connection.request(request, method='GET').object
         return self._to_clusters(data)
 
+    def get_cluster_credentials(self, zone, name):
+        """
+        Return cluster kubernetes credentials
+
+        :keyword  zone:  Zone name
+        :type     zone:  ``str`` or :class:`GCEZone` or
+                            :class:`NodeLocation`
+
+        :keyword  name:  Cluster name
+        :type     name:  ``str``
+
+        :rtype: ``dict``
+        """
+        cluster = self.ex_get_cluster(zone, name)
+        host, port = cluster.extra['endpoint'], '6443'
+        token = self.connection.oauth2_credential.access_token
+        credentials = dict(host=host, port=port, token=token)
+        return credentials
+
     def get_server_config(self, ex_zone):
         """
         Return configuration info about the Container Engine service.
