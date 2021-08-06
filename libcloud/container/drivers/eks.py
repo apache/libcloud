@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+import base64
+
 try:
     import simplejson as json
 except ImportError:
@@ -28,6 +31,7 @@ __all__ = [
 
 EKS_VERSION = '2017-11-01'
 EKS_HOST = 'eks.%s.amazonaws.com'
+STS_HOST = 'sts.%s.amazonaws.com'
 ROOT = '/'
 CLUSTERS_ENDPOINT = f'{ROOT}clusters/'
 
@@ -142,6 +146,40 @@ class ElasticKubernetesDriver(ContainerDriver):
         endpoint = f'{CLUSTERS_ENDPOINT}{name}'
         data = self.connection.request(endpoint, method='DELETE').object
         return data['cluster']['status'] == 'DELETING'
+
+    def get_cluster_credentials(self, name):
+        """
+        Return cluster kubernetes credentials
+
+        :keyword  name:  Cluster name
+        :type     name:  ``str``
+
+        :rtype: ``dict``
+        """
+        cluster = self.get_cluster(name)
+        host, port = cluster.extra['endpoint'], '6443'
+        token = self._get_cluster_token(name)
+        credentials = dict(host=host, port=port, token=token)
+        return credentials
+
+    def _get_cluster_token(self, cluster_name):
+        host = STS_HOST % (self.region)
+        url = f'https://{host}/?Action=GetCallerIdentity&Version=2011-06-15'
+        params = {
+            'method': 'GET',
+            'url': url,
+            'body': {},
+            'headers': {
+                'x-k8s-aws-id': cluster_name
+            },
+            'context': {}
+        }
+        signed_url = self.connection.signer.generate_sts_presigned_url(
+            params=params,
+            host=host)
+        base64_url = base64.urlsafe_b64encode(
+            signed_url.encode('utf-8')).decode('utf-8')
+        return 'k8s-aws-v1.' + re.sub(r'=*', '', base64_url)
 
     def _to_cluster(self, data):
         return EKSCluster(
