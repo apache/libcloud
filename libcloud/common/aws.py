@@ -23,6 +23,8 @@ import hashlib
 import hmac
 import time
 from hashlib import sha256
+from urllib.parse import urlencode
+from urllib.parse import urlsplit
 
 try:
     import simplejson as json
@@ -263,6 +265,9 @@ class AWSRequestSignerAlgorithmV2(AWSRequestSigner):
 
 
 class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
+
+    STS_SERVICE_NAME = 'sts'
+
     def get_request_params(self, params, method='GET', path='/'):
         if method == 'GET':
             params['Version'] = self.version
@@ -296,40 +301,53 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                    's': signature
                }
 
-    def _get_signature(self, params, headers, dt, method, path, data):
-        key = self._get_key_to_sign_with(dt)
-        string_to_sign = self._get_string_to_sign(params=params,
-                                                  headers=headers, dt=dt,
-                                                  method=method, path=path,
-                                                  data=data)
+    def _get_signature(self, params, headers, dt, method, path, data,
+                       for_sts_service=False):
+        key = self._get_key_to_sign_with(dt, for_sts_service=for_sts_service)
+        string_to_sign = self._get_string_to_sign(
+            params=params,
+            headers=headers, dt=dt,
+            method=method, path=path,
+            data=data,
+            for_sts_service=for_sts_service)
         return _sign(key=key, msg=string_to_sign, hex=True)
 
-    def _get_key_to_sign_with(self, dt):
+    def _get_key_to_sign_with(self, dt, for_sts_service=False):
+        service_name = (
+            self.STS_SERVICE_NAME
+            if for_sts_service else self.connection.service_name)
         return _sign(
             _sign(
                 _sign(
                     _sign(('AWS4' + self.access_secret),
                           dt.strftime('%Y%m%d')),
                     self.connection.driver.region_name),
-                self.connection.service_name),
+                service_name),
             'aws4_request')
 
-    def _get_string_to_sign(self, params, headers, dt, method, path, data):
-        canonical_request = self._get_canonical_request(params=params,
-                                                        headers=headers,
-                                                        method=method,
-                                                        path=path,
-                                                        data=data)
-
+    def _get_string_to_sign(self, params, headers, dt, method, path, data,
+                            for_sts_service=False):
+        canonical_request = self._get_canonical_request(
+            params=params,
+            headers=headers,
+            method=method,
+            path=path,
+            data=data,
+            use_canonical_query_string=for_sts_service)
         return '\n'.join(['AWS4-HMAC-SHA256',
                           dt.strftime('%Y%m%dT%H%M%SZ'),
-                          self._get_credential_scope(dt),
+                          self._get_credential_scope(
+                              dt,
+                              for_sts_service=for_sts_service),
                           _hash(canonical_request)])
 
-    def _get_credential_scope(self, dt):
+    def _get_credential_scope(self, dt, for_sts_service=False):
+        service_name = (
+            self.STS_SERVICE_NAME
+            if for_sts_service else self.connection.service_name)
         return '/'.join([dt.strftime('%Y%m%d'),
                          self.connection.driver.region_name,
-                         self.connection.service_name,
+                         service_name,
                          'aws4_request'])
 
     def _get_signed_headers(self, headers):
@@ -359,15 +377,71 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                          (urlquote(k, safe=''), urlquote(str(v), safe='~'))
                          for k, v in sorted(params.items())])
 
-    def _get_canonical_request(self, params, headers, method, path, data):
+    def _get_canonical_query_string(self, url):
+        parts = urlsplit(url)
+        canonical_query_string = ''
+        if parts.query:
+            # [(key, value), (key2, value2)]
+            key_val_pairs = []
+            for pair in parts.query.split('&'):
+                key, _, value = pair.partition('=')
+                key_val_pairs.append((key, value))
+            sorted_key_vals = []
+            # Sort by the URI-encoded key names, and in the case of
+            # repeated keys, then sort by the value.
+            for key, value in sorted(key_val_pairs):
+                sorted_key_vals.append('%s=%s' % (key, value))
+            canonical_query_string = '&'.join(sorted_key_vals)
+        return canonical_query_string
+
+    def _get_canonical_request(self, params, headers, method, path, data,
+                               use_canonical_query_string=False):
+        if use_canonical_query_string:
+            request_params = self._get_canonical_query_string(params['url'])
+        else:
+            request_params = self._get_request_params(params)
         return '\n'.join([
             method,
             path,
-            self._get_request_params(params),
+            request_params,
             self._get_canonical_headers(headers),
             self._get_signed_headers(headers),
             self._get_payload_hash(method, data)
         ])
+
+    def generate_sts_presigned_url(self, params, host):
+        query = {}
+        # TODO replace with constant
+        query['X-Amz-Algorithm'] = 'AWS4-HMAC-SHA256'
+        dt = datetime.utcnow()
+        credential_scope = self._get_credential_scope(
+            dt=dt,
+            for_sts_service=True)
+        query['X-Amz-Credential'] = f'{self.access_key}/{credential_scope}'
+        # TODO replace with constant
+        query['X-Amz-Date'] = dt.strftime('%Y%m%dT%H%M%SZ')
+        # TODO replace with constant
+        token_expires_in = 60
+        query['X-Amz-Expires'] = token_expires_in
+        headers = {
+            'host': host,
+            'x-k8s-aws-id': params['headers']['x-k8s-aws-id']
+        }
+        signed_headers = self._get_signed_headers(headers)
+        query['X-Amz-SignedHeaders'] = signed_headers
+        url_no_query_params = params['url']
+        params['url'] = f"{params['url']}&{urlencode(query)}"
+        signature = self._get_signature(
+            params=params,
+            headers=headers,
+            dt=dt,
+            method=params['method'],
+            path='/',
+            data=None,
+            for_sts_service=True)
+        query['X-Amz-Signature'] = signature
+        presigned_url = f"{url_no_query_params}&{urlencode(query)}"
+        return presigned_url
 
 
 class UnsignedPayloadSentinel:
