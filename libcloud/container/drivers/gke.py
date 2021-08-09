@@ -23,11 +23,13 @@ API_VERSION = 'v1'
 
 
 class GKECluster(ContainerCluster):
-    def __init__(self, id, name, node_count, location, driver, config, extra):
+    def __init__(self, id, name, node_count, location, driver, config, extra,
+                 credentials=None):
         super().__init__(id, name, driver, extra)
         self.node_count = node_count
         self.location = location
         self.config = config
+        self.credentials = credentials
 
 
 class GKEResponse(GoogleResponse):
@@ -189,7 +191,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
         data = self.connection.request(request, method='GET').object
-        return self._to_cluster(data)
+        cluster = self._to_cluster(data)
+        cluster.credentials = self.get_cluster_credentials(cluster)
+        return cluster
 
     def ex_create_cluster(self, zone, name, initial_node_count=1):
         """
@@ -282,20 +286,21 @@ class GKEContainerDriver(KubernetesContainerDriver):
         data = self.connection.request(request, method='GET').object
         return self._to_clusters(data)
 
-    def get_cluster_credentials(self, zone, name):
+    def get_cluster_credentials(self, cluster, zone=None):
         """
         Return cluster kubernetes credentials
 
-        :keyword  zone:  Zone name
+        :keyword  zone:  Zone name (required if cluster is ``str``)
         :type     zone:  ``str`` or :class:`GCEZone` or
                             :class:`NodeLocation`
 
-        :keyword  name:  Cluster name
-        :type     name:  ``str``
+        :keyword  name:  Cluster name or object
+        :type     name:  ``str`` or :class:`GKECluster`
 
         :rtype: ``dict``
         """
-        cluster = self.ex_get_cluster(zone, name)
+        if isinstance(cluster, str):
+            cluster = self.ex_get_cluster(zone, cluster)
         host, port = cluster.extra['endpoint'], '6443'
         token = self.connection.oauth2_credential.access_token
         credentials = dict(host=host, port=port, token=token)
@@ -314,7 +319,12 @@ class GKEContainerDriver(KubernetesContainerDriver):
         return response
 
     def _to_clusters(self, data):
-        return [self._to_cluster(c) for c in data.get('clusters', [])]
+        clusters = []
+        for c in data.get('clusters', []):
+            cluster = self._to_cluster(c)
+            cluster.credentials = self.get_cluster_credentials(cluster)
+            clusters.append(cluster)
+        return clusters
 
     def _to_cluster(self, data):
         return GKECluster(
