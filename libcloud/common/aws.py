@@ -266,6 +266,9 @@ class AWSRequestSignerAlgorithmV2(AWSRequestSigner):
 
 class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
 
+    ALGORITHM = 'AWS4-HMAC-SHA256'
+    TIMESTAMP = '%Y%m%dT%H%M%SZ'
+    TOKEN_EXPIRES_IN = 60
     STS_SERVICE_NAME = 'sts'
 
     def get_request_params(self, params, method='GET', path='/'):
@@ -276,7 +279,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
     def get_request_headers(self, params, headers, method='GET', path='/',
                             data=None):
         now = datetime.utcnow()
-        headers['X-AMZ-Date'] = now.strftime('%Y%m%dT%H%M%SZ')
+        headers['X-AMZ-Date'] = now.strftime(self.TIMESTAMP)
         headers['X-AMZ-Content-SHA256'] = self._get_payload_hash(method, data)
         headers['Authorization'] = \
             self._get_authorization_v4_header(params=params, headers=headers,
@@ -293,8 +296,9 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
                                         dt=dt, method=method, path=path,
                                         data=data)
 
-        return 'AWS4-HMAC-SHA256 Credential=%(u)s/%(c)s, ' \
+        return '%(a)s Credential=%(u)s/%(c)s, ' \
                'SignedHeaders=%(sh)s, Signature=%(s)s' % {
+                   'a': self.ALGORITHM,
                    'u': self.access_key,
                    'c': credentials_scope,
                    'sh': signed_headers,
@@ -334,8 +338,8 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
             path=path,
             data=data,
             use_canonical_query_string=for_sts_service)
-        return '\n'.join(['AWS4-HMAC-SHA256',
-                          dt.strftime('%Y%m%dT%H%M%SZ'),
+        return '\n'.join([self.ALGORITHM,
+                          dt.strftime(self.TIMESTAMP),
                           self._get_credential_scope(
                               dt,
                               for_sts_service=for_sts_service),
@@ -410,19 +414,14 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         ])
 
     def generate_sts_presigned_url(self, params, host):
-        query = {}
-        # TODO replace with constant
-        query['X-Amz-Algorithm'] = 'AWS4-HMAC-SHA256'
+        query = {'X-Amz-Algorithm': self.ALGORITHM}
         dt = datetime.utcnow()
         credential_scope = self._get_credential_scope(
             dt=dt,
             for_sts_service=True)
         query['X-Amz-Credential'] = f'{self.access_key}/{credential_scope}'
-        # TODO replace with constant
-        query['X-Amz-Date'] = dt.strftime('%Y%m%dT%H%M%SZ')
-        # TODO replace with constant
-        token_expires_in = 60
-        query['X-Amz-Expires'] = token_expires_in
+        query['X-Amz-Date'] = dt.strftime(self.TIMESTAMP)
+        query['X-Amz-Expires'] = self.TOKEN_EXPIRES_IN
         headers = {
             'host': host,
             'x-k8s-aws-id': params['headers']['x-k8s-aws-id']
