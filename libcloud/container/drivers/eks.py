@@ -37,10 +37,12 @@ CLUSTERS_ENDPOINT = f'{ROOT}clusters/'
 
 
 class EKSCluster(ContainerCluster):
-    def __init__(self, id, name, location, driver, config, extra):
+    def __init__(self, id, name, location, driver, config, extra,
+                 credentials=None):
         super().__init__(id, name, driver, extra)
         self.location = location
         self.config = config
+        self.credentials = credentials
 
 
 class EKSJsonConnection(SignedAWSConnection):
@@ -87,7 +89,9 @@ class ElasticKubernetesDriver(ContainerDriver):
         endpoint = f'{CLUSTERS_ENDPOINT}{name}'
         data = self.connection.request(
             endpoint).object
-        return self._to_cluster(data['cluster'])
+        cluster = self._to_cluster(data['cluster'])
+        cluster.credentials = self.get_cluster_credentials(cluster)
+        return cluster
 
     def create_cluster(self, name, role_arn, vpc_id, subnet_ids,
                        security_group_ids):
@@ -147,18 +151,19 @@ class ElasticKubernetesDriver(ContainerDriver):
         data = self.connection.request(endpoint, method='DELETE').object
         return data['cluster']['status'] == 'DELETING'
 
-    def get_cluster_credentials(self, name):
+    def get_cluster_credentials(self, cluster):
         """
         Return cluster kubernetes credentials
 
-        :keyword  name:  Cluster name
-        :type     name:  ``str``
+        :keyword  name:  Cluster name or object
+        :type     name:  ``str`` or :class:`EKSCluster`
 
         :rtype: ``dict``
         """
-        cluster = self.get_cluster(name)
+        if isinstance(cluster, str):
+            cluster = self.get_cluster(cluster)
         host, port = cluster.extra['endpoint'], '6443'
-        token = self._get_cluster_token(name)
+        token = self._get_cluster_token(cluster.name)
         credentials = dict(host=host, port=port, token=token)
         return credentials
 
