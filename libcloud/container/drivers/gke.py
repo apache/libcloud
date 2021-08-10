@@ -301,7 +301,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         """
         if isinstance(cluster, str):
             cluster = self.ex_get_cluster(zone, cluster)
-        host, port = cluster.extra['endpoint'], '6443'
+        host, port = cluster.extra['endpoint'], '443'
         token = self.connection.oauth2_credential.access_token
         credentials = dict(host=host, port=port, token=token)
         return credentials

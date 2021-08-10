@@ -162,7 +162,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         """
         if isinstance(cluster, str):
             cluster = self.get_cluster(cluster)
-        host, port = cluster.extra['endpoint'], '6443'
+        host, port = cluster.extra['endpoint'], '443'
         token = self._get_cluster_token(cluster.name)
         credentials = dict(host=host, port=port, token=token)
         return credentials
