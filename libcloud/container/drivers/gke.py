@@ -191,9 +191,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
         data = self.connection.request(request, method='GET').object
-        cluster = self._to_cluster(data)
-        cluster.credentials = self.get_cluster_credentials(cluster)
-        return cluster
+        return self._to_cluster(data)
 
     def ex_create_cluster(self, zone, name, initial_node_count=1):
         """
@@ -319,15 +317,10 @@ class GKEContainerDriver(KubernetesContainerDriver):
         return response
 
     def _to_clusters(self, data):
-        clusters = []
-        for c in data.get('clusters', []):
-            cluster = self._to_cluster(c)
-            cluster.credentials = self.get_cluster_credentials(cluster)
-            clusters.append(cluster)
-        return clusters
+        return [self._to_cluster(c) for c in data.get('clusters', [])]
 
     def _to_cluster(self, data):
-        return GKECluster(
+        cluster = GKECluster(
             id=data.pop('id'),
             name=data.pop('name'),
             node_count=data.pop('currentNodeCount'),
@@ -356,3 +349,5 @@ class GKEContainerDriver(KubernetesContainerDriver):
             ]},
             extra=data
         )
+        cluster.credentials = self.get_cluster_credentials(cluster)
+        return cluster
