@@ -19,17 +19,22 @@ from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
+from libcloud.utils.misc import to_memory_str
+from libcloud.utils.misc import to_n_bytes
+
 API_VERSION = 'v1'
 
 
 class GKECluster(ContainerCluster):
     def __init__(self, id, name, node_count, location, driver, config, extra,
-                 credentials=None):
+                 credentials=None, total_cpus=None, total_memory=None):
         super().__init__(id, name, driver, extra)
         self.node_count = node_count
         self.location = location
         self.config = config
         self.credentials = credentials
+        self.total_cpus = total_cpus
+        self.total_memory = total_memory
 
 
 class GKEResponse(GoogleResponse):
@@ -168,6 +173,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
 
         self.base_path = '/%s/projects/%s' % (API_VERSION, self.project)
         self.website = GKEContainerDriver.website
+        self.cluster_driver_map = {}  # cluster id -> k8s driver
 
     def _ex_connection_class_kwargs(self):
         return {'auth_type': self.auth_type,
@@ -240,7 +246,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     name:  ``str``
 
         :keyword  update_dict:  Cluster update object:
-            https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/ClusterUpdate 
+            https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/ClusterUpdate
         :type     update_dict:  ``str``
 
         :rtype: :class:`GKECluster`
@@ -324,6 +330,8 @@ class GKEContainerDriver(KubernetesContainerDriver):
             id=data.pop('id'),
             name=data.pop('name'),
             node_count=data.pop('currentNodeCount'),
+            total_cpus=0,
+            total_memory=0,
             location=data.pop('location'),
             driver=self.connection.driver,
             config={k: data.pop(k)
@@ -347,7 +355,19 @@ class GKEContainerDriver(KubernetesContainerDriver):
                 'shieldedNodes',
                 'workloadIdentityConfig',
             ]},
-            extra=data
+            extra=data,
         )
         cluster.credentials = self.get_cluster_credentials(cluster)
+        cluster_driver = self.cluster_driver_map.setdefault(
+            cluster.id,
+            KubernetesContainerDriver(
+                host=cluster.credentials['host'],
+                port=cluster.credentials['port'],
+                key=cluster.credentials['token'],
+                ex_token_bearer_auth=True))
+        cluster_nodes = cluster_driver.ex_list_nodes()
+        for n in cluster_nodes:
+            cluster.total_cpus += int(n.extra['cpu'])
+            cluster.total_memory += int(to_memory_str(to_n_bytes(
+                n.extra['memory']), unit='G').strip('G'))
         return cluster
