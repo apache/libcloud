@@ -22,7 +22,10 @@ except ImportError:
     import json
 
 from libcloud.container.base import ContainerDriver, ContainerCluster
+from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.aws import SignedAWSConnection, AWSJsonResponse
+from libcloud.utils.misc import to_memory_str
+from libcloud.utils.misc import to_n_bytes
 
 __all__ = [
     'ElasticKubernetesDriver'
@@ -38,11 +41,13 @@ CLUSTERS_ENDPOINT = f'{ROOT}clusters/'
 
 class EKSCluster(ContainerCluster):
     def __init__(self, id, name, location, driver, config, extra,
-                 credentials=None):
+                 credentials=None, total_cpus=None, total_memory=None):
         super().__init__(id, name, driver, extra)
         self.location = location
         self.config = config
         self.credentials = credentials
+        self.total_cpus = total_cpus
+        self.total_memory = total_memory
 
 
 class EKSJsonConnection(SignedAWSConnection):
@@ -62,6 +67,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         super().__init__(access_id, secret, host=EKS_HOST % (region))
         self.region = region
         self.region_name = region
+        self.cluster_driver_map = {}  # cluster id -> k8s driver
 
     def _ex_connection_class_kwargs(self):
         return {'signature_version': '4'}
@@ -89,9 +95,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         endpoint = f'{CLUSTERS_ENDPOINT}{name}'
         data = self.connection.request(
             endpoint).object
-        cluster = self._to_cluster(data['cluster'])
-        cluster.credentials = self.get_cluster_credentials(cluster)
-        return cluster
+        return self._to_cluster(data['cluster'])
 
     def create_cluster(self, name, role_arn, vpc_id, subnet_ids,
                        security_group_ids):
@@ -187,7 +191,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         return 'k8s-aws-v1.' + re.sub(r'=*', '', base64_url)
 
     def _to_cluster(self, data):
-        return EKSCluster(
+        cluster = EKSCluster(
             id=data.pop('arn'),
             name=data.pop('name'),
             location=self.region,
@@ -196,3 +200,17 @@ class ElasticKubernetesDriver(ContainerDriver):
                     for k in list(data) if k.endswith('Config')},
             extra=data
         )
+        cluster.credentials = self.get_cluster_credentials(cluster)
+        cluster_driver = self.cluster_driver_map.setdefault(
+            cluster.id,
+            KubernetesContainerDriver(
+                host=cluster.credentials['host'],
+                port=cluster.credentials['port'],
+                key=cluster.credentials['token'],
+                ex_token_bearer_auth=True))
+        cluster_nodes = cluster_driver.ex_list_nodes()
+        for n in cluster_nodes:
+            cluster.total_cpus += int(n.extra['cpu'])
+            cluster.total_memory += int(to_memory_str(to_n_bytes(
+                n.extra['memory']), unit='G').strip('G'))
+        return cluster
