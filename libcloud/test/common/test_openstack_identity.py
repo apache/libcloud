@@ -31,6 +31,7 @@ from libcloud.common.openstack_identity import get_class_for_auth_version
 from libcloud.common.openstack_identity import OpenStackServiceCatalog
 from libcloud.common.openstack_identity import OpenStackIdentity_2_0_Connection
 from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection
+from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection_AppCred
 from libcloud.common.openstack_identity import OpenStackIdentity_3_0_Connection_OIDC_access_token
 from libcloud.common.openstack_identity import OpenStackIdentityUser
 from libcloud.compute.drivers.openstack import OpenStack_1_0_NodeDriver
@@ -57,6 +58,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             ('2.0_apikey', OpenStack_2_0_MockHttp, {}),
             ('2.0_password', OpenStack_2_0_MockHttp, {}),
             ('3.x_password', OpenStackIdentity_3_0_MockHttp, {'tenant_name': 'tenant-name'}),
+            ('3.x_appcred', OpenStackIdentity_3_0_MockHttp, {}),
             ('3.x_oidc_access_token', OpenStackIdentity_3_0_MockHttp, {'tenant_name': 'tenant-name'})
         ]
 
@@ -77,6 +79,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             '2.0_apikey': '/v2.0/tokens',
             '2.0_password': '/v2.0/tokens',
             '3.x_password': '/v3/auth/tokens',
+            '3.x_appcred': '/v3/auth/tokens',
             '3.x_oidc_access_token': '/v3/OS-FEDERATION/identity_providers/user_name/protocols/tenant-name/auth',
         }
 
@@ -118,6 +121,7 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
                                                               'token_scope': 'project', 'tenant_name': 'test_tenant',
                                                               'tenant_domain_id': 'test_tenant_domain_id',
                                                               'domain_name': 'test_domain'}),
+            ('3.x_appcred', OpenStackIdentity_3_0_MockHttp, {'user_id': 'appcred_id', 'key': 'appcred_secret'}),
             ('3.x_oidc_access_token', OpenStackIdentity_3_0_MockHttp, {'user_id': 'test_user_id', 'key': 'test_key',
                                                               'token_scope': 'domain', 'tenant_name': 'test_tenant',
                                                               'tenant_domain_id': 'test_tenant_domain_id',
@@ -148,11 +152,11 @@ class OpenStackIdentityConnectionTestCase(unittest.TestCase):
             self.assertTrue(osa.auth_token is not None)
 
             if auth_version in ['1.1', '2.0', '2.0_apikey', '2.0_password',
-                                '3.x_password', '3.x_oidc_access_token']:
+                                '3.x_password', '3.x_appcred', '3.x_oidc_access_token']:
                 self.assertTrue(osa.auth_token_expires is not None)
 
             if auth_version in ['2.0', '2.0_apikey', '2.0_password',
-                                '3.x_password', '3.x_oidc_access_token']:
+                                '3.x_password', '3.x_appcred', '3.x_oidc_access_token']:
                 self.assertTrue(osa.auth_user_info is not None)
 
     def test_token_expiration_and_force_reauthentication(self):
@@ -470,6 +474,29 @@ class OpenStackIdentity_3_0_ConnectionTests(unittest.TestCase):
                                                                   role=role,
                                                                   user=user)
         self.assertTrue(result)
+
+
+class OpenStackIdentity_3_0_Connection_AppCredTests(
+        unittest.TestCase):
+    def setUp(self):
+        mock_cls = OpenStackIdentity_3_0_AppCred_MockHttp
+        mock_cls.type = None
+        OpenStackIdentity_3_0_Connection_AppCred.conn_class = mock_cls
+
+        self.auth_instance = OpenStackIdentity_3_0_Connection_AppCred(auth_url='http://none',
+                                                                                user_id='appcred_id',
+                                                                                key='appcred_secret',
+                                                                                proxy_url='http://proxy:8080',
+                                                                                timeout=10)
+        self.auth_instance.auth_token = 'mock'
+
+    def test_authenticate(self):
+        auth = OpenStackIdentity_3_0_Connection_AppCred(auth_url='http://none',
+                                                        user_id='appcred_id',
+                                                        key='appcred_secret',
+                                                        proxy_url='http://proxy:8080',
+                                                        timeout=10)
+        auth.authenticate()
 
 
 class OpenStackIdentity_3_0_Connection_OIDC_access_token_federation_projectsTests(
@@ -884,6 +911,25 @@ class OpenStackIdentity_3_0_MockHttp(MockHttp):
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
         raise NotImplementedError()
 
+
+class OpenStackIdentity_3_0_AppCred_MockHttp(OpenStackIdentity_3_0_MockHttp):
+    
+    def _v3_auth_tokens(self, method, url, body, headers):
+        if method == 'POST':
+            status = httplib.OK
+            data = json.loads(body)
+            if 'application_credential' not in data['auth']['identity']['methods']:
+                status = httplib.UNAUTHORIZED
+            else:
+                appcred = data['auth']['identity']['application_credential']
+                if appcred['id'] != 'appcred_id' or appcred['secret'] != 'appcred_secret':
+                    status = httplib.UNAUTHORIZED
+
+            body = ComputeFileFixtures('openstack').load('_v3__auth.json')
+            headers = self.json_content_headers.copy()
+            headers['x-subject-token'] = '00000000000000000000000000000000'
+            return (status, body, headers, httplib.responses[httplib.OK])
+        raise NotImplementedError()
 
 class OpenStackIdentity_3_0_federation_projects_MockHttp(OpenStackIdentity_3_0_MockHttp):
     fixtures = ComputeFileFixtures('openstack_identity/v3')
