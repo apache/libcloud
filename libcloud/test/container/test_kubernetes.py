@@ -45,6 +45,22 @@ class KubernetesContainerDriverTestCase(unittest.TestCase, KubernetesAuthTestCas
         )
         self.assertEqual(containers[0].name, "hello-world")
 
+    def test_deploy_container(self):
+        image = ContainerImage(
+            id=None, name="hello-world", path=None, driver=self.driver, version=None
+        )
+        container = self.driver.deploy_container("hello-world", image=image)
+        self.assertEqual(container.name, "hello-world")
+
+    def test_get_container(self):
+        container = self.driver.get_container(
+            "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+        )
+        assert (
+            container.id
+            == "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+        )
+
     def test_list_namespaces(self):
         namespaces = self.driver.list_namespaces()
         self.assertEqual(len(namespaces), 2)
@@ -66,21 +82,56 @@ class KubernetesContainerDriverTestCase(unittest.TestCase, KubernetesAuthTestCas
         result = self.driver.delete_namespace(namespace)
         self.assertTrue(result)
 
-    def test_deploy_container(self):
-        image = ContainerImage(
-            id=None, name="hello-world", path=None, driver=self.driver, version=None
-        )
-        container = self.driver.deploy_container("hello-world", image=image)
-        self.assertEqual(container.name, "hello-world")
+    def test_list_pods(self):
+        pods = self.driver.ex_list_pods()
+        self.assertEqual(len(pods), 1)
+        self.assertEqual(pods[0].id, "1fad5411-b9af-11e5-8701-0050568157ec")
+        self.assertEqual(pods[0].name, "hello-world")
 
-    def test_get_container(self):
-        container = self.driver.get_container(
-            "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+    def test_destroy_pod(self):
+        result = self.driver.ex_destroy_pod("default", "default")
+        self.assertTrue(result)
+
+    def test_list_nodes(self):
+        nodes = self.driver.ex_list_nodes()
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0].id, "45949cbb-b99d-11e5-8d53-0050568157ec")
+        self.assertEqual(nodes[0].name, "127.0.0.1")
+
+    def test_destroy_node(self):
+        result = self.driver.ex_destroy_node("127.0.0.1")
+        self.assertTrue(result)
+
+    def test_get_version(self):
+        version = self.driver.ex_get_version()
+        self.assertEqual(version, "v1.20.8-gke.900")
+
+    def test_list_nodes_metrics(self):
+        nodes_metrics = self.driver.ex_list_nodes_metrics()
+        self.assertEqual(len(nodes_metrics), 1)
+        self.assertEqual(
+            nodes_metrics[0]["metadata"]["name"],
+            "gke-cluster-3-default-pool-76fd57f7-l83v",
         )
-        assert (
-            container.id
-            == "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+
+    def test_list_pods_metrics(self):
+        pods_metrics = self.driver.ex_list_pods_metrics()
+        self.assertEqual(len(pods_metrics), 10)
+        self.assertEqual(pods_metrics[0]["metadata"]["name"], "gke-metrics-agent-sfjzj")
+        self.assertEqual(
+            pods_metrics[1]["metadata"]["name"],
+            "stackdriver-metadata-agent-cluster-level-849ff68b6d-fphxl",
         )
+        self.assertEqual(
+            pods_metrics[2]["metadata"]["name"], "event-exporter-gke-67986489c8-g47rz"
+        )
+
+    def test_list_services(self):
+        services = self.driver.ex_list_services()
+        self.assertEqual(len(services), 4)
+        self.assertEqual(services[0]["metadata"]["name"], "kubernetes")
+        self.assertEqual(services[1]["metadata"]["name"], "default-http-backend")
+        self.assertEqual(services[2]["metadata"]["name"], "kube-dns")
 
 
 class KubernetesMockHttp(MockHttp):
@@ -116,6 +167,55 @@ class KubernetesMockHttp(MockHttp):
             body = self.fixtures.load("_api_v1_namespaces_default_pods.json")
         elif method == "POST":
             body = self.fixtures.load("_api_v1_namespaces_default_pods_POST.json")
+        else:
+            raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_namespaces_default_pods_default(self, method, url, body, headers):
+        if method == "DELETE":
+            body = None
+        else:
+            raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_nodes(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_api_v1_nodes.json")
+        else:
+            raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_nodes_127_0_0_1(self, method, url, body, headers):
+        if method == "DELETE":
+            body = None
+        else:
+            raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_services(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_api_v1_services.json")
+        else:
+            raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _version(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_version.json")
+        else:
+            raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _apis_metrics_k8s_io_v1beta1_nodes(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_apis_metrics_k8s_io_v1beta1_nodes.json")
+        else:
+            raise AssertionError("Unsupported method")
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _apis_metrics_k8s_io_v1beta1_pods(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_apis_metrics_k8s_io_v1beta1_pods.json")
         else:
             raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
