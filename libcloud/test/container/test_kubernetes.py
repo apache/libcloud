@@ -45,25 +45,25 @@ class KubernetesContainerDriverTestCase(unittest.TestCase, KubernetesAuthTestCas
         )
         self.assertEqual(containers[0].name, "hello-world")
 
-    def test_list_clusters(self):
-        clusters = self.driver.list_clusters()
-        self.assertEqual(len(clusters), 2)
-        self.assertEqual(clusters[0].id, "default")
-        self.assertEqual(clusters[0].name, "default")
+    def test_list_namespaces(self):
+        namespaces = self.driver.list_namespaces()
+        self.assertEqual(len(namespaces), 2)
+        self.assertEqual(namespaces[0].id, "default")
+        self.assertEqual(namespaces[0].name, "default")
 
-    def test_get_cluster(self):
-        cluster = self.driver.get_cluster("default")
-        self.assertEqual(cluster.id, "default")
-        self.assertEqual(cluster.name, "default")
+    def test_get_namespace(self):
+        namespace = self.driver.get_namespace("default")
+        self.assertEqual(namespace.id, "default")
+        self.assertEqual(namespace.name, "default")
 
-    def test_create_cluster(self):
-        cluster = self.driver.create_cluster("test")
-        self.assertEqual(cluster.id, "test")
-        self.assertEqual(cluster.name, "test")
+    def test_create_namespace(self):
+        namespace = self.driver.create_namespace("test")
+        self.assertEqual(namespace.id, "test")
+        self.assertEqual(namespace.name, "test")
 
-    def test_destroy_cluster(self):
-        cluster = self.driver.get_cluster("default")
-        result = self.driver.destroy_cluster(cluster)
+    def test_delete_namespace(self):
+        namespace = self.driver.get_namespace("default")
+        result = self.driver.delete_namespace(namespace)
         self.assertTrue(result)
 
     def test_deploy_container(self):
