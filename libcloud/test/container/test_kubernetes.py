@@ -44,6 +44,22 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
                          'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36')
         self.assertEqual(containers[0].name, 'hello-world')
 
+    def test_deploy_container(self):
+        image = ContainerImage(
+            id=None,
+            name='hello-world',
+            path=None,
+            driver=self.driver,
+            version=None
+        )
+        container = self.driver.deploy_container('hello-world', image=image)
+        self.assertEqual(container.name, 'hello-world')
+
+    def test_get_container(self):
+        container = self.driver.get_container(
+            'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36')
+        assert container.id == 'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36'
+
     def test_list_namespaces(self):
         namespaces = self.driver.list_namespaces()
         self.assertEqual(len(namespaces), 2)
@@ -67,22 +83,6 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
         namespace = self.driver.get_namespace('default')
         result = self.driver.delete_namespace(namespace)
         self.assertTrue(result)
-
-    def test_deploy_container(self):
-        image = ContainerImage(
-            id=None,
-            name='hello-world',
-            path=None,
-            driver=self.driver,
-            version=None
-        )
-        container = self.driver.deploy_container('hello-world', image=image)
-        self.assertEqual(container.name, 'hello-world')
-
-    def test_get_container(self):
-        container = self.driver.get_container(
-            'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36')
-        assert container.id == 'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36'
 
 
 class KubernetesMockHttp(MockHttp):
