@@ -90,6 +90,10 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
         self.assertEqual(pods[0].id, '1fad5411-b9af-11e5-8701-0050568157ec')
         self.assertEqual(pods[0].name, 'hello-world')
 
+    def test_destroy_pod(self):
+        result = self.driver.ex_destroy_pod('default', 'default')
+        self.assertTrue(result)
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
@@ -132,6 +136,12 @@ class KubernetesMockHttp(MockHttp):
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_namespaces_default_pods_default(
+            self, method, url, body, headers):
+        if method != 'DELETE':
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, None, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
