@@ -84,6 +84,12 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
         result = self.driver.delete_namespace(namespace)
         self.assertTrue(result)
 
+    def test_list_pods(self):
+        pods = self.driver.ex_list_pods()
+        self.assertEqual(len(pods), 1)
+        self.assertEqual(pods[0].id, '1fad5411-b9af-11e5-8701-0050568157ec')
+        self.assertEqual(pods[0].name, 'hello-world')
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
