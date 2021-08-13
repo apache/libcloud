@@ -249,32 +249,6 @@ class GKEContainerDriver(KubernetesContainerDriver):
         ).object
         return self._to_cluster(data)
 
-    def ex_update_cluster(self, zone, name, update_dict):
-        """
-        Rename cluster in the given zone
-
-        :keyword  zone:  Zone name
-        :type     zone:  ``str`` or :class:`GCEZone` or
-                            :class:`NodeLocation`
-
-        :keyword  name:  Cluster name
-        :type     name:  ``str``
-
-        :keyword  update_dict:  Cluster update object:
-            https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/ClusterUpdate
-        :type     update_dict:  ``str``
-
-        :rtype: :class:`GKECluster`
-        """
-        request = "/zones/%s/clusters/%s" % (zone, name)
-        body = {"update": update_dict}
-        data = self.connection.request(
-            request,
-            method='PUT',
-            data=body
-        ).object
-        return self._to_cluster(data)
-
     def ex_destroy_cluster(self, zone, name):
         """
         Destroy cluster in the given zone
