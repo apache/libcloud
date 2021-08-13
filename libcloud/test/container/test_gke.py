@@ -55,6 +55,14 @@ class GKEContainerDriverTestCase(GoogleTestCase):
         self.assertEqual(clusters[0].name, 'cluster-1')
         self.assertEqual(clusters[0].location, 'us-central1-a')
 
+    def test_get_cluster(self):
+        cluster = self.driver.ex_get_cluster('us-central1-a', 'default')
+        self.assertEqual(
+            cluster.id,
+            'e16b714412e546488a36281cce5acd6e595901c0624346c5904e986371f9d993')
+        self.assertEqual(cluster.name, 'default')
+        self.assertEqual(cluster.location, 'us-central1-a')
+
     def test_get_server_config(self):
         config = self.driver.get_server_config('us-central1-a')
         self.assertEqual(config['defaultClusterVersion'], '1.6.4')
@@ -88,6 +96,12 @@ class GKEMockHttp(MockHttp):
     def _zones___clusters(self, method, url, body, headers):
         body = self.fixtures.load(
             'zones_-_clusters.json')
+        return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
+
+    def _zones_us_central1_a_clusters_default(
+            self, method, url, body, headers):
+        body = self.fixtures.load(
+            'zones_us-central1-a_clusters_default.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
 
