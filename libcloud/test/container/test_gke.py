@@ -71,6 +71,14 @@ class GKEContainerDriverTestCase(GoogleTestCase):
         self.assertEqual(cluster.name, 'default')
         self.assertEqual(cluster.location, 'us-central1-a')
 
+    def test_destroy_cluster(self):
+        cluster = self.driver.ex_destroy_cluster('us-central1-a', 'default')
+        self.assertEqual(
+            cluster.id,
+            'e16b714412e546488a36281cce5acd6e595901c0624346c5904e986371f9d993')
+        self.assertEqual(cluster.name, 'default')
+        self.assertEqual(cluster.location, 'us-central1-a')
+
     def test_get_server_config(self):
         config = self.driver.get_server_config('us-central1-a')
         self.assertEqual(config['defaultClusterVersion'], '1.6.4')
