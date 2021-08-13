@@ -42,7 +42,7 @@ class GKEContainerDriverTestCase(GoogleTestCase):
         GKEContainerDriver.connectionCls.conn_class = GKEMockHttp
         GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GKEMockHttp.type = None
-        GKEContainerDriver.clusterDriverCls = MagicMock()
+        GKEContainerDriver.containerDriverCls = MagicMock()
         kwargs = GKE_KEYWORD_PARAMS.copy()
         kwargs['auth_type'] = 'IA'
         self.driver = GKEContainerDriver(*GKE_PARAMS, **kwargs)

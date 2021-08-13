@@ -107,7 +107,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
     will result in additional GKE API calls.
     """
     connectionCls = GKEConnection
-    clusterDriverCls = KubernetesContainerDriver
+    containerDriverCls = KubernetesContainerDriver
     api_name = 'google'
     name = "Google Container Engine"
     type = Provider.GKE
@@ -335,7 +335,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         cluster.credentials = self.get_cluster_credentials(cluster)
         cluster_driver = self.cluster_driver_map.setdefault(
             cluster.id,
-            self.clusterDriverCls(
+            self.containerDriverCls(
                 host=cluster.credentials['host'],
                 port=cluster.credentials['port'],
                 key=cluster.credentials['token'],
