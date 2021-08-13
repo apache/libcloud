@@ -125,6 +125,14 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
         self.assertEqual(pods_metrics[2]['metadata']['name'],
                          'event-exporter-gke-67986489c8-g47rz')
 
+    def test_list_services(self):
+        services = self.driver.ex_list_services()
+        self.assertEqual(len(services), 4)
+        self.assertEqual(services[0]['metadata']['name'], 'kubernetes')
+        self.assertEqual(services[1]['metadata']['name'],
+                         'default-http-backend')
+        self.assertEqual(services[2]['metadata']['name'], 'kube-dns')
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
@@ -186,6 +194,13 @@ class KubernetesMockHttp(MockHttp):
     def _api_v1_nodes_127_0_0_1(self, method, url, body, headers):
         if method == 'DELETE':
             body = None
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_services(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_api_v1_services.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
