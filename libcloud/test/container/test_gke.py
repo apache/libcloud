@@ -79,6 +79,15 @@ class GKEContainerDriverTestCase(GoogleTestCase):
         self.assertEqual(cluster.name, 'default')
         self.assertEqual(cluster.location, 'us-central1-a')
 
+    def test_cluster_credentials(self):
+        cluster = self.driver.ex_get_cluster('us-central1-a', 'default')
+        self.driver.connection.oauth2_credential = MagicMock()
+        self.driver.connection.oauth2_credential.access_token = '12345'
+        credentials = self.driver.get_cluster_credentials(cluster)
+        self.assertEqual(credentials['host'], '34.122.208.135')
+        self.assertEqual(credentials['port'], '443')
+        self.assertEqual(credentials['token'], '12345')
+
     def test_get_server_config(self):
         config = self.driver.get_server_config('us-central1-a')
         self.assertEqual(config['defaultClusterVersion'], '1.6.4')
