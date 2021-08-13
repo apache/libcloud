@@ -108,6 +108,12 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
         version = self.driver.ex_get_version()
         self.assertEqual(version, 'v1.20.8-gke.900')
 
+    def test_list_nodes_metrics(self):
+        nodes_metrics = self.driver.ex_list_nodes_metrics()
+        self.assertEqual(len(nodes_metrics), 1)
+        self.assertEqual(nodes_metrics[0]['metadata']['name'],
+                         'gke-cluster-3-default-pool-76fd57f7-l83v')
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
@@ -176,6 +182,14 @@ class KubernetesMockHttp(MockHttp):
     def _version(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_version.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _apis_metrics_k8s_io_v1beta1_nodes(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load(
+                '_apis_metrics_k8s_io_v1beta1_nodes.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
