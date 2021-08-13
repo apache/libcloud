@@ -114,6 +114,17 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
         self.assertEqual(nodes_metrics[0]['metadata']['name'],
                          'gke-cluster-3-default-pool-76fd57f7-l83v')
 
+    def test_list_pods_metrics(self):
+        pods_metrics = self.driver.ex_list_pods_metrics()
+        self.assertEqual(len(pods_metrics), 10)
+        self.assertEqual(pods_metrics[0]['metadata']['name'],
+                         'gke-metrics-agent-sfjzj')
+        self.assertEqual(
+            pods_metrics[1]['metadata']['name'],
+            'stackdriver-metadata-agent-cluster-level-849ff68b6d-fphxl')
+        self.assertEqual(pods_metrics[2]['metadata']['name'],
+                         'event-exporter-gke-67986489c8-g47rz')
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
@@ -190,6 +201,14 @@ class KubernetesMockHttp(MockHttp):
         if method == 'GET':
             body = self.fixtures.load(
                 '_apis_metrics_k8s_io_v1beta1_nodes.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _apis_metrics_k8s_io_v1beta1_pods(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load(
+                '_apis_metrics_k8s_io_v1beta1_pods.json')
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
