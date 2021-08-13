@@ -19,44 +19,46 @@ Tests for Google Container Engine Driver
 import sys
 import unittest
 
+from unittest.mock import MagicMock
+
 from libcloud.utils.py3 import httplib
 from libcloud.container.drivers.gke import GKEContainerDriver, API_VERSION
 from libcloud.common.google import (GoogleBaseAuthConnection)
 from libcloud.test.common.test_google import GoogleAuthMockHttp, GoogleTestCase
 
 from libcloud.test import MockHttp
-from libcloud.test.container import TestCaseMixin
 from libcloud.test.file_fixtures import ContainerFileFixtures
 
 from libcloud.test.secrets import GKE_PARAMS, GKE_KEYWORD_PARAMS
 
 
-class GKEContainerDriverTestCase(GoogleTestCase, TestCaseMixin):
+class GKEContainerDriverTestCase(GoogleTestCase):
     """
     Google Compute Engine Test Class.
     """
-    # Mock out a few specific calls that interact with the user, system or
-    # environment.
-    datacenter = 'us-central1-a'
 
     def setUp(self):
         GKEMockHttp.test = self
         GKEContainerDriver.connectionCls.conn_class = GKEMockHttp
         GoogleBaseAuthConnection.conn_class = GoogleAuthMockHttp
         GKEMockHttp.type = None
+        GKEContainerDriver.clusterDriverCls = MagicMock()
         kwargs = GKE_KEYWORD_PARAMS.copy()
         kwargs['auth_type'] = 'IA'
-        kwargs['datacenter'] = self.datacenter
         self.driver = GKEContainerDriver(*GKE_PARAMS, **kwargs)
 
-    def test_list_images_response(self):
-        config = self.driver.list_clusters(ex_zone="us-central1-a")
-        assert "clusters" in config
-        assert config["clusters"][0]["zone"] == "us-central1-a"
+    def test_list_clusters(self):
+        clusters = self.driver.list_clusters()
+        self.assertEqual(
+            clusters[0].id,
+            'f7ff4c8cf47b48e9b13640d687fcef3d0a36cdb8ca2c4960b28e164eb52ae52b')
+        self.assertEqual(clusters[0].name, 'cluster-1')
+        self.assertEqual(clusters[0].location, 'us-central1-a')
 
-    def test_server_config(self):
-        config = self.driver.get_server_config()
-        assert "validImageTypes" in config
+    def test_get_server_config(self):
+        config = self.driver.get_server_config('us-central1-a')
+        self.assertEqual(config['defaultClusterVersion'], '1.6.4')
+        self.assertEqual(config['defaultImageType'], 'COS')
 
 
 class GKEMockHttp(MockHttp):
@@ -80,12 +82,12 @@ class GKEMockHttp(MockHttp):
 
     def _zones_us_central1_a_serverconfig(self, method, url, body, headers):
         body = self.fixtures.load(
-            'zones_us-central1-a_instance_serverconfig.json')
+            'zones_us-central1-a_serverconfig.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
-    def _zones_us_central1_a_clusters(self, method, url, body, headers):
+    def _zones___clusters(self, method, url, body, headers):
         body = self.fixtures.load(
-            'zones_us-central1-a_list.json')
+            'zones_-_clusters.json')
         return (httplib.OK, body, self.json_hdr, httplib.responses[httplib.OK])
 
 
