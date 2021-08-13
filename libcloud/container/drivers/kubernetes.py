@@ -330,7 +330,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         cpu = data['status'].get('capacity', {}).get('cpu', '1')
         if isinstance(cpu, str) and not cpu.isnumeric():
             cpu = to_n_cpus(cpu)
-        image_name = data['status']['nodeInfo']['osImage']
+        image_name = data['status']['nodeInfo'].get('osImage')
         image = NodeImage(image_name, image_name, driver)
         size_name = f'{cpu} vCPUs, {memory} Ram'
         size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
@@ -339,7 +339,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
                         disk=0, bandwidth=0, price=0,
                         driver=driver, extra=extra_size)
         extra = {'memory': memory, 'cpu': cpu}
-        extra['os'] = data['status']['nodeInfo']['operatingSystem']
+        extra['os'] = data['status']['nodeInfo'].get('operatingSystem')
         extra['kubeletVersion'] = data['status']['nodeInfo']['kubeletVersion']
         for condition in data['status']['conditions']:
             if condition['type'] == 'Ready' and condition['status'] == 'True':
