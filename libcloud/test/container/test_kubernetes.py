@@ -145,9 +145,11 @@ class KubernetesMockHttp(MockHttp):
 
     def _api_v1_namespaces_default_pods_default(
             self, method, url, body, headers):
-        if method != 'DELETE':
+        if method == 'DELETE':
+            body = None
+        else:
             raise AssertionError('Unsupported method')
-        return (httplib.OK, None, {}, httplib.responses[httplib.OK])
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_v1_nodes(self, method, url, body, headers):
         if method == 'GET':
