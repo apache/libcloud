@@ -100,6 +100,10 @@ class KubernetesContainerDriverTestCase(unittest.TestCase,
         self.assertEqual(nodes[0].id, '45949cbb-b99d-11e5-8d53-0050568157ec')
         self.assertEqual(nodes[0].name, '127.0.0.1')
 
+    def test_destroy_node(self):
+        result = self.driver.ex_destroy_node('127.0.0.1')
+        self.assertTrue(result)
+
 
 class KubernetesMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('kubernetes')
@@ -154,6 +158,13 @@ class KubernetesMockHttp(MockHttp):
     def _api_v1_nodes(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_api_v1_nodes.json')
+        else:
+            raise AssertionError('Unsupported method')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_v1_nodes_127_0_0_1(self, method, url, body, headers):
+        if method == 'DELETE':
+            body = None
         else:
             raise AssertionError('Unsupported method')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
