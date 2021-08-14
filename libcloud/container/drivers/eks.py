@@ -61,6 +61,7 @@ class ElasticKubernetesDriver(ContainerDriver):
     name = 'Amazon Elastic Kubernetes Service'
     website = 'https://aws.amazon.com/eks/'
     connectionCls = EKSJsonConnection
+    containerDriverCls = KubernetesContainerDriver
     supports_clusters = True
 
     def __init__(self, access_id, secret, region):
@@ -203,7 +204,7 @@ class ElasticKubernetesDriver(ContainerDriver):
         cluster.credentials = self.get_cluster_credentials(cluster)
         cluster_driver = self.cluster_driver_map.setdefault(
             cluster.id,
-            KubernetesContainerDriver(
+            self.containerDriverCls(
                 host=cluster.credentials['host'],
                 port=cluster.credentials['port'],
                 key=cluster.credentials['token'],
