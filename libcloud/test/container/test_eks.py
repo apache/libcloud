@@ -70,6 +70,10 @@ class ElasticKubernetesDriverTestCase(unittest.TestCase):
         self.assertEqual(cluster.id,
                          'arn:aws:eks:us-east-2:532769602413:cluster/default')
 
+    def test_destroy_cluster(self):
+        result = self.driver.destroy_cluster('default')
+        self.assertTrue(result)
+
 
 class EKSMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('eks')
@@ -82,7 +86,10 @@ class EKSMockHttp(MockHttp):
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _clusters_default(self, method, url, body, headers):
-        body = self.fixtures.load('clusters_default.json')
+        if method == 'GET':
+            body = self.fixtures.load('clusters_default.json')
+        if method == 'DELETE':
+            body = self.fixtures.load('clusters_default_DELETE.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
