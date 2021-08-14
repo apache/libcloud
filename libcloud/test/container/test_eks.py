@@ -55,12 +55,30 @@ class ElasticKubernetesDriverTestCase(unittest.TestCase):
         self.assertEqual(cluster.id,
                          'arn:aws:eks:us-east-2:532769602413:cluster/default')
 
+    def test_create_cluster(self):
+        cluster = self.driver.create_cluster(
+            name='default',
+            role_arn='arn:aws:iam::532769602413:role/AmazonEKSClusterRole',
+            vpc_id='vpc-e6782c8e',
+            subnet_ids=[
+                'subnet-0f4c23bae0d4f6b77',
+                'subnet-044e2bb5e0c457418',
+                'subnet-0d300601beef852af'
+            ],
+            security_group_ids=['sg-030fd1d39c9195c33'])
+        self.assertEqual(cluster.name, 'default')
+        self.assertEqual(cluster.id,
+                         'arn:aws:eks:us-east-2:532769602413:cluster/default')
+
 
 class EKSMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('eks')
 
     def _clusters(self, method, url, body, headers):
-        body = self.fixtures.load('clusters.json')
+        if method == 'GET':
+            body = self.fixtures.load('clusters.json')
+        elif method == 'POST':
+            body = self.fixtures.load('clusters_default.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _clusters_default(self, method, url, body, headers):
