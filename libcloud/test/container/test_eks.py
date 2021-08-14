@@ -74,6 +74,16 @@ class ElasticKubernetesDriverTestCase(unittest.TestCase):
         result = self.driver.destroy_cluster('default')
         self.assertTrue(result)
 
+    def test_get_cluster_credentials(self):
+        cluster = cluster = self.driver.get_cluster('default')
+        self.driver._get_cluster_token = MagicMock(return_value='12345')
+        credentials = self.driver.get_cluster_credentials(cluster)
+        self.assertEqual(credentials['host'],
+                         'https://35775E0FC8373FF2DD1902FAD2BD6674.gr7.'
+                         'us-east-2.eks.amazonaws.com')
+        self.assertEqual(credentials['port'], '443')
+        self.assertEqual(credentials['token'], '12345')
+
 
 class EKSMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('eks')
