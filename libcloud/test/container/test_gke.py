@@ -79,7 +79,7 @@ class GKEContainerDriverTestCase(GoogleTestCase):
         self.assertEqual(cluster.name, 'default')
         self.assertEqual(cluster.location, 'us-central1-a')
 
-    def test_cluster_credentials(self):
+    def test_get_cluster_credentials(self):
         cluster = self.driver.ex_get_cluster('us-central1-a', 'default')
         self.driver.connection.oauth2_credential = MagicMock()
         self.driver.connection.oauth2_credential.access_token = '12345'
