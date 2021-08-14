@@ -28,6 +28,8 @@ from libcloud.test.file_fixtures import ContainerFileFixtures
 
 from libcloud.test.secrets import CONTAINER_PARAMS_EKS
 
+from libcloud.utils.py3 import httplib
+
 
 class ElasticKubernetesDriverTestCase(unittest.TestCase):
     """
@@ -41,9 +43,23 @@ class ElasticKubernetesDriverTestCase(unittest.TestCase):
         ElasticKubernetesDriver.containerDriverCls = MagicMock()
         self.driver = ElasticKubernetesDriver(*CONTAINER_PARAMS_EKS)
 
+    def test_list_clusters(self):
+        clusters = self.driver.list_clusters()
+        self.assertEqual(clusters[0].name, 'default')
+        self.assertEqual(clusters[0].id,
+                         'arn:aws:eks:us-east-2:532769602413:cluster/default')
+
 
 class EKSMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('eks')
+
+    def _clusters(self, method, url, body, headers):
+        body = self.fixtures.load('clusters.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _clusters_default(self, method, url, body, headers):
+        body = self.fixtures.load('clusters_default.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
 if __name__ == '__main__':
