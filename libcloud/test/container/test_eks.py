@@ -49,6 +49,12 @@ class ElasticKubernetesDriverTestCase(unittest.TestCase):
         self.assertEqual(clusters[0].id,
                          'arn:aws:eks:us-east-2:532769602413:cluster/default')
 
+    def test_get_cluster(self):
+        cluster = self.driver.get_cluster('default')
+        self.assertEqual(cluster.name, 'default')
+        self.assertEqual(cluster.id,
+                         'arn:aws:eks:us-east-2:532769602413:cluster/default')
+
 
 class EKSMockHttp(MockHttp):
     fixtures = ContainerFileFixtures('eks')
