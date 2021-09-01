@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from typing import List
 from collections import OrderedDict
 
@@ -80,11 +79,13 @@ def to_memory_str(n_bytes, unit=None):
         for unit, multiplier in reversed(K8S_UNIT_MAP.items()):
             converted_n_bytes_float = n_bytes / multiplier
             converted_n_bytes = n_bytes // multiplier
-            memory_str = f'{converted_n_bytes}{unit}'
+            memory_str = '{bytes}{unit}'.format(
+                bytes=converted_n_bytes, unit=unit)
             if converted_n_bytes_float % 1 == 0:
                 break
     elif K8S_UNIT_MAP.get(unit.upper()):
-        memory_str = f'{n_bytes // K8S_UNIT_MAP[unit]}{unit}'
+        converted_n_bytes = n_bytes // K8S_UNIT_MAP[unit]
+        memory_str = '{bytes}{unit}'.format(bytes=converted_n_bytes, unit=unit)
     return memory_str
 
 
@@ -96,12 +97,12 @@ def to_cpu_str(n_cpus):
         return '0'
     millicores = n_cpus * 1000
     if millicores % 1 == 0:
-        return f'{int(millicores)}m'
+        return '{value}m'.format(value=int(millicores))
     microcores = n_cpus * 1000000
     if microcores % 1 == 0:
-        return f'{int(microcores)}u'
+        return '{value}u'.format(value=int(microcores))
     nanocores = n_cpus * 1000000000
-    return f'{int(nanocores)}n'
+    return '{value}n'.format(value=int(nanocores))
 
 
 def to_n_cpus(cpu_str):
@@ -118,6 +119,7 @@ def to_n_cpus(cpu_str):
         return int(cpu_str)
     else:
         return 0
+
 
 # Error message which indicates a transient SSL error upon which request
 # can be retried

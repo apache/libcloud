@@ -419,7 +419,8 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         credential_scope = self._get_credential_scope(
             dt=dt,
             for_sts_service=True)
-        query['X-Amz-Credential'] = f'{self.access_key}/{credential_scope}'
+        query['X-Amz-Credential'] = '{key}/{credential_scope}'.format(
+            key=self.access_key, credential_scope=credential_scope)
         query['X-Amz-Date'] = dt.strftime(self.TIMESTAMP)
         query['X-Amz-Expires'] = self.TOKEN_EXPIRES_IN
         headers = {
@@ -429,7 +430,8 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         signed_headers = self._get_signed_headers(headers)
         query['X-Amz-SignedHeaders'] = signed_headers
         url_no_query_params = params['url']
-        params['url'] = f"{params['url']}&{urlencode(query)}"
+        params['url'] = '{url}&{encoded_query}'.format(
+            url=params['url'], encoded_query=urlencode(query))
         signature = self._get_signature(
             params=params,
             headers=headers,
@@ -439,7 +441,8 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
             data=None,
             for_sts_service=True)
         query['X-Amz-Signature'] = signature
-        presigned_url = f"{url_no_query_params}&{urlencode(query)}"
+        presigned_url = '{url}&{encoded_query}'.format(
+            url=url_no_query_params, encoded_query=urlencode(query))
         return presigned_url
 
 

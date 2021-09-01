@@ -36,7 +36,7 @@ EKS_VERSION = '2017-11-01'
 EKS_HOST = 'eks.%s.amazonaws.com'
 STS_HOST = 'sts.%s.amazonaws.com'
 ROOT = '/'
-CLUSTERS_ENDPOINT = f'{ROOT}clusters/'
+CLUSTERS_ENDPOINT = ROOT + 'clusters/'
 
 
 class EKSCluster(ContainerCluster):
@@ -93,7 +93,8 @@ class ElasticKubernetesDriver(ContainerDriver):
 
         :rtype: :class:`EKSCluster`
         """
-        endpoint = f'{CLUSTERS_ENDPOINT}{name}'
+        endpoint = '{endpoint}{name}'.format(
+            endpoint=CLUSTERS_ENDPOINT, name=name)
         data = self.connection.request(
             endpoint).object
         return self._to_cluster(data['cluster'])
@@ -152,7 +153,8 @@ class ElasticKubernetesDriver(ContainerDriver):
         :return: ``True`` if the destroy was successful, otherwise ``False``
         :rtype: ``bool``
         """
-        endpoint = f'{CLUSTERS_ENDPOINT}{name}'
+        endpoint = '{endpoint}{name}'.format(
+            endpoint=CLUSTERS_ENDPOINT, name=name)
         data = self.connection.request(endpoint, method='DELETE').object
         return data['cluster']['status'] == 'DELETING'
 
@@ -174,7 +176,8 @@ class ElasticKubernetesDriver(ContainerDriver):
 
     def _get_cluster_token(self, cluster_name):
         host = STS_HOST % (self.region)
-        url = f'https://{host}/?Action=GetCallerIdentity&Version=2011-06-15'
+        url = 'https://{host}'.format(host=host) + \
+            '/?Action=GetCallerIdentity&Version=2011-06-15'
         params = {
             'method': 'GET',
             'url': url,

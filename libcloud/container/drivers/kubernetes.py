@@ -296,7 +296,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         Destroy a node.
         """
         self.connection.request(
-            ROOT_URL + f"v1/nodes/{node_name}",
+            ROOT_URL + 'v1/nodes/{}'.format(node_name),
             method='DELETE').object
         return True
 
@@ -332,7 +332,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             cpu = to_n_cpus(cpu)
         image_name = data['status']['nodeInfo'].get('osImage')
         image = NodeImage(image_name, image_name, driver)
-        size_name = f'{cpu} vCPUs, {memory} Ram'
+        size_name = '{cpu} vCPUs, {memory} Ram'.format(cpu=cpu, memory=memory)
         size_id = hashlib.md5(size_name.encode("utf-8")).hexdigest()
         extra_size = {'cpus': cpu}
         size = NodeSize(id=size_id, name=size_name, ram=memory,
