@@ -24,6 +24,7 @@ except ImportError:
 from libcloud.container.base import ContainerDriver, ContainerCluster
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.aws import SignedAWSConnection, AWSJsonResponse
+from libcloud.common.exceptions import BaseHTTPError
 from libcloud.utils.misc import to_memory_str
 from libcloud.utils.misc import to_n_bytes
 
@@ -155,7 +156,10 @@ class ElasticKubernetesDriver(ContainerDriver):
         """
         endpoint = '{endpoint}{name}'.format(
             endpoint=CLUSTERS_ENDPOINT, name=name)
-        data = self.connection.request(endpoint, method='DELETE').object
+        try:
+            data = self.connection.request(endpoint, method='DELETE').object
+        except BaseHTTPError:
+            return False
         return data['cluster']['status'] == 'DELETING'
 
     def get_cluster_credentials(self, cluster):
