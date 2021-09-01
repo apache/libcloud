@@ -25,7 +25,7 @@ from libcloud.utils.py3 import httplib
 
 from libcloud.common.types import ServiceUnavailableError
 
-from libcloud.compute.drivers.vultr import VultrNodeDriver
+from libcloud.compute.drivers.vultr import VultrNodeDriver, VultrNodeDriverV1
 from libcloud.compute.base import NodeImage, NodeSize
 
 from libcloud.test import LibcloudTestCase, MockHttp
@@ -39,7 +39,11 @@ class VultrTests(LibcloudTestCase):
     def setUp(self):
         VultrNodeDriver.connectionCls.conn_class = VultrMockHttp
         VultrMockHttp.type = None
-        self.driver = VultrNodeDriver(*VULTR_PARAMS)
+        self.driver = VultrNodeDriver(*VULTR_PARAMS,
+                                      api_version='1')
+
+    def test_correct_class_is_used(self):
+        self.assertIsInstance(self.driver, VultrNodeDriverV1)
 
     def test_list_images_dont_require_api_key(self):
         self.driver.list_images()

@@ -16,17 +16,25 @@
 from typing import Dict
 
 from libcloud.common.base import ConnectionKey, JsonResponse
-
+from libcloud.compute.base import VolumeSnapshot
+from libcloud.utils.py3 import httplib
 
 __all__ = [
     'API_HOST',
     'VultrConnection',
     'VultrException',
     'VultrResponse',
+    'DEFAULT_API_VERSION',
+    'VultrResponseV2',
+    'VultrConnectionV2',
+    'VultrNetwork',
+    'VultrNodeSnapshot',
 ]
 
 # Endpoint for the Vultr API
 API_HOST = 'api.vultr.com'
+
+DEFAULT_API_VERSION = '2'
 
 
 class VultrResponse(JsonResponse):
@@ -122,10 +130,57 @@ class VultrConnection(ConnectionKey):
         return self.path
 
 
+class VultrResponseV2(JsonResponse):
+    valid_response_codes = [
+        httplib.OK,
+        httplib.CREATED,
+        httplib.ACCEPTED,
+        httplib.NO_CONTENT
+    ]
+
+    def parse_error(self):
+        """
+        Parse the error body and raise the appropriate exception
+        """
+        status = self.status
+        data = self.parse_body()
+        error_msg = data.get('error', '')
+
+        raise VultrException(
+            code=status,
+            message=error_msg
+        )
+
+    def success(self):
+        """Check the response for success
+
+        :return: ``bool`` indicating a successful request
+        """
+        return self.status in self.valid_response_codes
+
+
+class VultrConnectionV2(ConnectionKey):
+    """
+    A connection to the Vultr API v2
+    """
+    host = API_HOST
+    responseCls = VultrResponseV2
+
+    def add_default_headers(self, headers):
+        headers['Authorization'] = 'Bearer %s' % (self.key)
+        headers['Content-Type'] = 'application/json'
+        return headers
+
+    def add_default_params(self, params):
+        params['per_page'] = 500
+        return params
+
+
 class VultrException(Exception):
     """
     Error originating from the Vultr API
     """
+
     def __init__(self, code, message):
         self.code = code
         self.message = message
@@ -136,3 +191,25 @@ class VultrException(Exception):
 
     def __repr__(self):
         return "VultrException code %u '%s'" % (self.code, self.message)
+
+
+class VultrNetwork:
+    """
+    Represents information about a Vultr private network.
+    """
+
+    def __init__(self, id, cidr_block, location, extra=None):
+        self.id = id
+        self.cidr_block = cidr_block
+        self.location = location
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<Vultrnetwork: id=%s cidr_block=%s location=%s>' %
+                (self.id, self.cidr_block, self.location))
+
+
+class VultrNodeSnapshot(VolumeSnapshot):
+    def __repr__(self):
+        return ('<VultrNodeSnapshot id=%s size=%s driver=%s state=%s>' %
+                (self.id, self.size, self.driver.name, self.state))
