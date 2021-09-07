@@ -1,0 +1,19 @@
+{
+    "domains": [
+        {
+            "domain": "example.com",
+            "date_created": "2021-09-07T09:52:18+00:00"
+        },
+        {
+            "domain": "example2.com",
+            "date_created": "2021-09-07T09:52:50+00:00"
+        }
+    ],
+    "meta": {
+        "total": 2,
+        "links": {
+            "next": "",
+            "prev": ""
+        }
+    }
+}
