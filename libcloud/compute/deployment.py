@@ -212,7 +212,7 @@ class ScriptDeployment(Deployment):
         if self.name and (self.name[0] not in ['/', '\\'] and
                           not re.match(r"^\w\:.*$", file_path)):
             base_path = os.path.dirname(file_path)
-            name = os.path.join(base_path, self.name)
+            name = os.path.join(base_path, self.name).replace("\\", "/")
         elif self.name and (self.name[0] == '\\' or
                             re.match(r"^\w\:.*$", file_path)):
             # Absolute Windows path

@@ -688,7 +688,7 @@ class ParamikoSSHClient(BaseSSHClient):
                 # Windows path
                 file_path = cwd + '\\' + file_path
             else:
-                file_path = pjoin(cwd, file_path)
+                file_path = pjoin(cwd, file_path).replace("\\", "/")
 
         return file_path
 
