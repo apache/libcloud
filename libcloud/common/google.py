@@ -256,16 +256,22 @@ class GoogleResponse(JsonResponse):
                 raise JsonParseError(body, self.status, None)
             elif 'error' in body:
                 (code, message) = self._get_error(body)
-                if code == 'QUOTA_EXCEEDED':
-                    raise QuotaExceededError(message, self.status, code)
-                elif code == 'RESOURCE_ALREADY_EXISTS':
-                    raise ResourceExistsError(message, self.status, code)
-                elif code == 'alreadyExists':
-                    raise ResourceExistsError(message, self.status, code)
-                elif code.startswith('RESOURCE_IN_USE'):
-                    raise ResourceInUseError(message, self.status, code)
+                if isinstance(code, int):
+                    if code == 409:
+                        raise ResourceExistsError(message, self.status, code)
+                    else:
+                        raise GoogleBaseError(message, self.status, code)
                 else:
-                    raise GoogleBaseError(message, self.status, code)
+                    if code == 'QUOTA_EXCEEDED':
+                        raise QuotaExceededError(message, self.status, code)
+                    elif code == 'RESOURCE_ALREADY_EXISTS':
+                        raise ResourceExistsError(message, self.status, code)
+                    elif code == 'alreadyExists':
+                        raise ResourceExistsError(message, self.status, code)
+                    elif code.startswith('RESOURCE_IN_USE'):
+                        raise ResourceInUseError(message, self.status, code)
+                    else:
+                        raise GoogleBaseError(message, self.status, code)
             else:
                 return body
 
