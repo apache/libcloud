@@ -19,6 +19,7 @@ from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
+from libcloud.common.google import GoogleBaseError
 from libcloud.utils.misc import to_memory_str
 from libcloud.utils.misc import to_n_bytes
 
@@ -242,12 +243,15 @@ class GKEContainerDriver(KubernetesContainerDriver):
                 ]
             }
         }
-        data = self.connection.request(
-            request,
-            method='POST',
-            data=body
-        ).object
-        return self._to_cluster(data)
+        try:
+            self.connection.request(
+                request,
+                method='POST',
+                data=body
+            ).object
+        except GoogleBaseError:
+            return False
+        return True
 
     def ex_destroy_cluster(self, zone, name):
         """
@@ -262,8 +266,11 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :rtype: :class:`GKECluster`
         """
         request = "/zones/%s/clusters/%s" % (zone, name)
-        data = self.connection.request(request, method='DELETE').object
-        return self._to_cluster(data)
+        try:
+            self.connection.request(request, method='DELETE').object
+        except GoogleBaseError:
+            return False
+        return True
 
     def get_cluster_credentials(self, cluster, zone=None):
         """

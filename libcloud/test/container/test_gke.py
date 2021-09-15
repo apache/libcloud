@@ -56,12 +56,8 @@ class GKEContainerDriverTestCase(GoogleTestCase):
         self.assertEqual(clusters[0].location, 'us-central1-a')
 
     def test_create_cluster(self):
-        cluster = self.driver.ex_create_cluster('us-central1-a', 'default')
-        self.assertEqual(
-            cluster.id,
-            'e16b714412e546488a36281cce5acd6e595901c0624346c5904e986371f9d993')
-        self.assertEqual(cluster.name, 'default')
-        self.assertEqual(cluster.location, 'us-central1-a')
+        success = self.driver.ex_create_cluster('us-central1-a', 'default')
+        self.assertTrue(success)
 
     def test_get_cluster(self):
         cluster = self.driver.ex_get_cluster('us-central1-a', 'default')
@@ -72,12 +68,8 @@ class GKEContainerDriverTestCase(GoogleTestCase):
         self.assertEqual(cluster.location, 'us-central1-a')
 
     def test_destroy_cluster(self):
-        cluster = self.driver.ex_destroy_cluster('us-central1-a', 'default')
-        self.assertEqual(
-            cluster.id,
-            'e16b714412e546488a36281cce5acd6e595901c0624346c5904e986371f9d993')
-        self.assertEqual(cluster.name, 'default')
-        self.assertEqual(cluster.location, 'us-central1-a')
+        success = self.driver.ex_destroy_cluster('us-central1-a', 'default')
+        self.assertTrue(success)
 
     def test_get_cluster_credentials(self):
         cluster = self.driver.ex_get_cluster('us-central1-a', 'default')
