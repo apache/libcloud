@@ -44,7 +44,7 @@ class MinIOConnectionAWS4(SignedAWSConnection, BaseS3Connection):
 
 class MinIOStorageDriver(BaseS3StorageDriver):
     name = 'MinIO Storage Driver'
-    website = 'http://cloud.google.com/storage'
+    website = 'https://min.io/'
     connectionCls = MinIOConnectionAWS4
     region_name = ""
 
