@@ -2897,7 +2897,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
                 admin_state_up=element['admin_state_up'],
                 allowed_address_pairs=element['allowed_address_pairs'],
                 binding_vnic_type=element['binding:vnic_type'],
-                binding_host_id=element.get(['binding:host_id'], None),
+                binding_host_id=element.get('binding:host_id', None),
                 device_id=element['device_id'],
                 description=element.get('description', None),
                 device_owner=element['device_owner'],
