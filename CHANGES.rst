@@ -56,6 +56,11 @@ Compute
   (GITHUB-1569)
   [@dpeschman]
 
+- [OpenStack] Enable to get Volume Quota details in OpenStack driver.
+
+  (GITHUB-1586)
+  [Miguel Caballer - @micafer]
+
 DNS
 ~~~
 
