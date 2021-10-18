@@ -891,7 +891,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                     "policy_class": "standard_flavor",
                     "class": "standard1",
                     "disk_io_index": "2",
-                    "number_of_data_disks": "0"
+                    "number_of_data_disks": "0",
+                    "disabled": False
                 })
 
         self.assertEqual(sizes[0].vcpus, 8)
