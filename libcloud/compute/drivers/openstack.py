@@ -1509,6 +1509,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
                 serverId=server.get('id'),
                 minDisk=min_disk,
                 minRam=min_ram,
+                disabled=api_image.get('OS-FLV-DISABLED:disabled')
             )
         )
 
