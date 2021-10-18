@@ -5,8 +5,8 @@ on:
     branches: [ trunk ]
   pull_request:
     branches: [ trunk ]
-#  schedule:
-#    - cron: '0 3 * * *'
+  schedule:
+    - cron: '0 3 * * *'
 
 jobs:
   analyze:
