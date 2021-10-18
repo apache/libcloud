@@ -2476,6 +2476,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             price = self._get_size_price(str(api_flavor['id']))
 
         extra = api_flavor.get('OS-FLV-WITH-EXT-SPECS:extra_specs', {})
+        extra['disabled'] = api_flavor.get('OS-FLV-DISABLED:disabled', None)
         return OpenStackNodeSize(
             id=api_flavor['id'],
             name=api_flavor['name'],
@@ -3408,7 +3409,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     def ex_update_port(self, port, description=None,
                        admin_state_up=None, name=None,
                        port_security_enabled=None,
-                       qos_policy_id=None, security_groups=None):
+                       qos_policy_id=None, security_groups=None,
+                       allowed_address_pairs=None):
         """
         Update a OpenStack_2_PortInterface
 
@@ -3434,6 +3436,13 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      security_groups: The IDs of security groups applied
         :type       security_groups: ``list`` of ``str``
 
+        :param      allowed_address_pairs: IP and MAC address that the port
+                    can use when sending packets if port_security_enabled is
+                    true
+        :type       allowed_address_pairs: ``list`` of ``dict`` containing
+                    ip_address and mac_address; mac_address is optional, taken
+                    from the port if not specified
+
         :rtype: :class:`OpenStack_2_PortInterface`
         """
         data = {'port': {}}
@@ -3449,6 +3458,8 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             data['port']['qos_policy_id'] = qos_policy_id
         if security_groups is not None:
             data['port']['security_groups'] = security_groups
+        if allowed_address_pairs is not None:
+            data['port']['allowed_address_pairs'] = allowed_address_pairs
         response = self.network_connection.request(
             '/v2.0/ports/{}'.format(port.id), method='PUT', data=data
         )

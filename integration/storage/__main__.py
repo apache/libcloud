@@ -13,21 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
-from bottle import route
-
-from integration.api.data import NODES, REPORT_DATA
-from integration.api.util import secure
+import os
+import sys
+import unittest
 
 
-@route('/compute/nodes', method='GET')
-@secure
-def list_nodes():
-    return json.dumps(NODES)
-
-
-@route('/compute/report_data', method='GET')
-@secure
-def ex_report_data():
-    return REPORT_DATA
+if __name__ == '__main__':
+    loader = unittest.TestLoader()
+    tests = loader.discover(os.path.dirname(__file__))
+    runner = unittest.runner.TextTestRunner(verbosity=3)
+    result = runner.run(tests)
+    sys.exit(len(result.errors))

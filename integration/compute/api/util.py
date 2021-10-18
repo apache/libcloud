@@ -16,7 +16,7 @@
 from bottle import request
 from functools import wraps
 
-from integration.config import EXPECTED_AUTH
+from integration.compute.config import EXPECTED_AUTH
 
 
 def secure(f):
