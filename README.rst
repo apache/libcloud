@@ -15,6 +15,9 @@ through a unified and easy to use API.
 .. image:: https://github.com/apache/libcloud/workflows/CI/badge.svg?branch=trunk
         :target: https://github.com/apache/libcloud/actions?query=workflow%3ACI
 
+.. image:: https://github.com/apache/libcloud/actions/workflows/integration-tests.yml/badge.svg?branch=trunk
+        :target: https://github.com/apache/libcloud/actions/workflows/integration-tests.yml
+
 .. image:: https://github.com/apache/libcloud/workflows/Publish%20pricing.json%20to%20S3%20bucket/badge.svg?branch=trunk
         :target: https://github.com/apache/libcloud/actions?query=workflow%3A%22Publish+pricing.json+to+S3+bucket%22
 

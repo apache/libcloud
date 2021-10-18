@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud 3.3.2
---------------------------------
+Changes in Apache Libcloud 3.3.2 (in development)
+-------------------------------------------------
 
 Storage
 ~~~~~~~
@@ -23,7 +23,7 @@ Storage
 Compute
 ~~~~~~~
 
-- [Equinix Metal] Various improvements to the driver. 
+- [Equinix Metal] Various improvements to the driver.
 
   (GITHUB-1548)
   [Dimitris Galanis - @dimgal1]
@@ -51,11 +51,22 @@ Compute
   (GITHUB-1565)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Support updating ``allowed_address_pairs`` on OpenStack ports
+  using ``ex_update_port`` method.
+  (GITHUB-1569)
+  [@dpeschman]
+
 DNS
 ~~~
 
 - [CloudFlare] Enable authentication via API Tokens.
   [Clemens Wolff - @c-w]
+
+- [DigitalOcean] Fix ``create_record()`` and ``update_record()`` method and
+  pass ``None`` instead of string value ``null`` for priority, port and weight
+  parameters if they are not provided as method arguments.
+  (GITHUB-1570)
+  [Gasper Vozel - @karantan]
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------
