@@ -164,7 +164,10 @@ class StorageTest(Integration.TestBase):
                 tags={
                     'test': cls.__name__,
                     'create_ts': str(now_ts),
-                    'run': os.getenv('GITHUB_RUN_ID', '-'),
+                    'gh_run_id': os.getenv('GITHUB_RUN_ID', 'unknown'),
+                    'gh_job_id': os.getenv('GITHUB_JOB_ID', 'unknown'),
+                    'gh_sha': os.getenv('GITHUB_SHA', 'unknown'),
+                    'gh_ref': os.getenv('GITHUB_REF', 'unknown'),
                 },
             ),
             timeout=timeout,
