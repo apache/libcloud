@@ -51,7 +51,7 @@ class CloudSigmaAPI10BaseTestCase(object):
 
     def test_list_sizes(self):
         images = self.driver.list_sizes()
-        self.assertEqual(len(images), 9)
+        self.assertEqual(len(images), 10)
 
     def test_list_images(self):
         sizes = self.driver.list_images()

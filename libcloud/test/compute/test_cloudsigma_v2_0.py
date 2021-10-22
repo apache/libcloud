@@ -67,7 +67,7 @@ class CloudSigmaAPI20BaseTestCase(object):
         sizes = self.driver.list_sizes()
 
         size = sizes[0]
-        self.assertEqual(size.id, 'micro-regular')
+        self.assertEqual(size.id, 'small-1')
 
     def test_list_images(self):
         images = self.driver.list_images()
@@ -148,6 +148,20 @@ class CloudSigmaAPI20BaseTestCase(object):
         assertRaisesRegex(self, CloudSigmaError, expected_msg,
                           self.driver.ex_stop_node, node=self.node)
 
+    def test_reboot_node(self):
+        status = self.driver.reboot_node(node=self.node)
+        self.assertTrue(status)
+
+    def test_ex_get_node(self):
+        node_id = '3df825cb-9c1b-470d-acbd-03e1a966c046'
+        node = self.driver.ex_get_node(node_id)
+
+        self.assertEqual(node.id, '3df825cb-9c1b-470d-acbd-03e1a966c046')
+        self.assertEqual(node.name, 'test_server')
+        self.assertEqual(node.state, NodeState.RUNNING)
+        self.assertEqual(node.public_ips, ['162.213.38.202'])
+        self.assertEqual(node.private_ips, [])
+
     def test_ex_clone_node(self):
         node_to_clone = self.driver.list_nodes()[0]
 
@@ -170,7 +184,7 @@ class CloudSigmaAPI20BaseTestCase(object):
 
         drive = drives[0]
         self.assertEqual(drive.name, 'IPCop 2.0.2')
-        self.assertEqual(drive.size, 1000000000)
+        self.assertEqual(drive.size, 1)
         self.assertEqual(drive.media, 'cdrom')
         self.assertEqual(drive.status, 'unmounted')
 
@@ -179,7 +193,7 @@ class CloudSigmaAPI20BaseTestCase(object):
 
         drive = drives[0]
         self.assertEqual(drive.name, 'test node 2-drive')
-        self.assertEqual(drive.size, 13958643712)
+        self.assertEqual(drive.size, 13)
         self.assertEqual(drive.media, 'disk')
         self.assertEqual(drive.status, 'unmounted')
 
@@ -203,7 +217,7 @@ class CloudSigmaAPI20BaseTestCase(object):
     def test_ex_resize_drive(self):
         drive = self.driver.ex_list_user_drives()[0]
 
-        size = 1111 * 1024 * 1024
+        size = 10
 
         resized_drive = self.driver.ex_resize_drive(drive=drive, size=size)
         self.assertEqual(resized_drive.name, 'test drive 5')
@@ -413,6 +427,22 @@ class CloudSigmaAPI20BaseTestCase(object):
         self.assertEqual(len(groups), 1)
         self.assertEqual(len(groups[0]), 11)
 
+    def test_ex_attach_drive(self):
+        node_id = '3df825cb-9c1b-470d-acbd-03e1a966c046'
+        node = self.driver.ex_get_node(node_id)
+        drives = self.driver.ex_list_user_drives()
+        drive = drives[0]
+        response = self.driver.ex_attach_drive(node, drive)
+        self.assertTrue(response)
+
+    def test_ex_detach_drive(self):
+        node_id = '3df825cb-9c1b-470d-acbd-03e1a966c046'
+        node = self.driver.ex_get_node(node_id)
+        drives = self.driver.ex_list_user_drives()
+        drive = drives[0]
+        response = self.driver.ex_detach_drive(node, drive)
+        self.assertTrue(response)
+
     def test_wait_for_drive_state_transition_timeout(self):
         drive = self.driver.ex_list_user_drives()[0]
         state = 'timeout'
@@ -431,6 +461,34 @@ class CloudSigmaAPI20BaseTestCase(object):
                                                              state=state,
                                                              timeout=0.5)
         self.assertEqual(drive.status, state)
+
+    def test_list_key_pairs(self):
+        keys = self.driver.list_key_pairs()
+
+        key = keys[0]
+        self.assertEqual(len(keys), 2)
+        self.assertEqual(key.name, 'ala')
+        self.assertEqual(key.fingerprint, '8c:71:a2:f0:bc:a4:45:66:a8:59:77:6d:80:d5:a0:89')
+        self.assertEqual(key.extra['uuid'], '186106ac-afb5-40e5-a0de-6f0feba5a3d5')
+
+    def test_import_key_pair_from_string(self):
+        public_key = self.driver.list_key_pairs()[0].public_key
+        key = self.driver.import_key_pair_from_string('test_key', public_key)
+        self.assertEqual(key.name, 'test_key')
+        self.assertIsNone(key.private_key)
+        self.assertEqual(key.extra['uuid'], '6d7db550-d1c5-4e3b-9c0a-e83f6a2b8244')
+        self.assertEqual(key.public_key, public_key)
+
+    def test_get_key_pair(self):
+        uuid = self.driver.list_key_pairs()[0].extra['uuid']
+        key = self.driver.get_key_pair(uuid)
+        self.assertEqual(key.name, 'ala')
+        self.assertEqual(key.extra['uuid'], '186106ac-afb5-40e5-a0de-6f0feba5a3d5')
+
+    def test_delete_key_pair(self):
+        key = self.driver.list_key_pairs()[0]
+        response = self.driver.delete_key_pair(key)
+        self.assertTrue(response)
 
 
 class CloudSigmaAPI20DirectTestCase(CloudSigmaAPI20BaseTestCase,
@@ -514,6 +572,14 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
     def _api_2_0_servers_9de75ed6_fd33_45e2_963f_d405f31fd911_action_close_vnc(self, method, url, body, headers):
         body = self.fixtures.load('servers_close_vnc.json')
         return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
+
+    def _api_2_0_servers_3df825cb_9c1b_470d_acbd_03e1a966c046(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('servers_get.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        elif method == 'PUT':
+            body = ''
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_2_0_drives_detail(self, method, url, body, headers):
         body = self.fixtures.load('drives_detail.json')
@@ -646,6 +712,23 @@ class CloudSigmaMockHttp(MockHttp, unittest.TestCase):
     def _api_2_0_drives_availability_groups(self, method, url, body, headers):
         body = self.fixtures.load('drives_avail_groups.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _api_2_0_keypairs(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('keypairs_list.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        elif method == 'POST':
+            body = self.fixtures.load('keypairs_import.json')
+            return (httplib.CREATED, body, {}, httplib.responses[httplib.CREATED])
+
+    def _api_2_0_keypairs_186106ac_afb5_40e5_a0de_6f0feba5a3d5(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('keypairs_get.json')
+            return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+        if method == 'DELETE':
+            body = ''
+            return (httplib.NO_CONTENT, body, {},
+                    httplib.responses[httplib.NO_CONTENT])
 
 
 if __name__ == '__main__':
