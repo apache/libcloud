@@ -30,6 +30,11 @@ Storage
   Reported by Melissa Kersh - @mkcello96
   (GITHUB-1551)
 
+- [Local Storage] Optimize ``iterate_container_objects`` method to perform
+  early filtering if ``prefix`` argument is provided.
+  (GITHUB-1584)
+  [@Ido-Levi]
+
 Compute
 ~~~~~~~
 
