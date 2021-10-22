@@ -14,6 +14,8 @@ Common
   (GITHUB-1575, GITHUB-1576)
   [Dimitris Galanis - @dimgal1]
 
+- Update setup.py metadata and indicate we also support Python 3.10.
+
 Storage
 ~~~~~~~
 
