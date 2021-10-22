@@ -48,7 +48,7 @@ Provider                      list containers list objects create container dele
 .. _`Google Cloud Storage`: http://cloud.google.com/storage
 .. _`KTUCloud Storage`: http://www.rackspace.com/
 .. _`Local Storage`: http://example.com
-.. _`MinIO Storage Driver`: http://cloud.google.com/storage
+.. _`MinIO Storage Driver`: https://min.io/
 .. _`Nimbus.io`: https://nimbus.io/
 .. _`Ninefold`: http://ninefold.com/
 .. _`OpenStack Swift`: http://www.rackspace.com/
