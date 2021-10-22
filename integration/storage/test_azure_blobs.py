@@ -18,6 +18,7 @@ import os
 import string
 import sys
 import unittest
+import time
 
 try:
     from azure import identity
@@ -128,12 +129,35 @@ class StorageTest(Integration.TestBase):
         name += random_string(MAX_STORAGE_ACCOUNT_NAME_LENGTH - len(name))
         timeout = float(os.getenv('AZURE_TIMEOUT_SECONDS', DEFAULT_TIMEOUT_SECONDS))
 
+        # We clean up any left over resource groups from previous runs on setUpClass. If tests on
+        # CI get terminated non-gracefully, old resources will be left laying around and we want
+        # to clean those up to ensure we dont hit any limits.
+        # To avoid deleting groups from concurrent runs, we only delete resources older than a
+        # couple (6) of hours
+        resource_groups = resource_client.resource_groups.list()
+        now_ts = int(time.time())
+        delete_threshold_ts = now_ts - (6 * 60 * 60)
+
+        for resource_group in resource_groups:
+            resource_create_ts = resource_groups.tags.get('create_ts', now_ts)
+
+            if resource_group.name.startswith(name) and resource_group.location == location and \
+               'test' in resource_groups.tags and resource_create_ts <= delete_threshold_ts:
+               #'test' in resource_groups.tags and resource_create_ts <= delete_threshold_ts:
+                print("Deleting old stray resource group: %s..." % (resource_group.name))
+
+                try:
+                    resource_client.resource_groups.begin_delete(resource_group.name)
+                except Exception as e:
+                    print("Failed to delete resource group: %s" % (str(e)))
+
         group = resource_client.resource_groups.create_or_update(
             resource_group_name=name,
             parameters=resource_models.ResourceGroup(
                 location=location,
                 tags={
                     'test': cls.__name__,
+                    'create_ts': now_ts,
                     'run': os.getenv('GITHUB_RUN_ID', '-'),
                 },
             ),
