@@ -73,6 +73,10 @@ DNS
   (GITHUB-1570)
   [Gasper Vozel - @karantan]
 
+- [NSOne] Fix MX records and root domain handling.
+  (GITHUB-1571)
+  [Gasper Vozel - @karantan]
+
 Other
 ~~~~~
 
