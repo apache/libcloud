@@ -138,6 +138,19 @@ Compute
   (GITHUB-1597, GITHUB-1598)
   [Daniela Bauer - @marianne013]
 
+- [OpenStack] Add support for using optional external cache for auth tokens
+
+  This cache can be shared by multiple processes which results in much less
+  tokens being allocated when many different instances / processes 
+  are utilizing the same set of credentials.
+
+  This functionality can be used by implementing a custom cache class with 
+  caching logic (e.g. storing cache context on a local filesystem, external
+  system such as Redis or similar) + using ``ex_auth_cache`` driver constructor
+  argument.
+  (GITHUB-1460, GITHUB-1557)
+  [@dpeschman]
+
 DNS
 ~~~
 
