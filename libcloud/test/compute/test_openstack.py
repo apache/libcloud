@@ -2168,6 +2168,12 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(quota_set.floatingip.in_use, 1)
         self.assertEqual(quota_set.floatingip.reserved, 0)
 
+    def test_ex_get_volume_quota(self):
+        quota_set = self.driver.ex_get_volume_quotas("tenant_id")
+        self.assertEqual(quota_set.gigabytes.limit, 1000)
+        self.assertEqual(quota_set.gigabytes.in_use, 10)
+        self.assertEqual(quota_set.gigabytes.reserved, 0)
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
     should_list_volumes = True
@@ -2848,6 +2854,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v2_1337_v2_0_quotas_tenant_id_details_json(self, method, url, body, headers):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__network_quota.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v3_1337_os_quota_sets_tenant_id(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v3_0__volume_quota.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.

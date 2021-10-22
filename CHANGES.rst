@@ -71,6 +71,11 @@ Compute
   (GITHUB-1569)
   [@dpeschman]
 
+- [OpenStack] Enable to get Volume Quota details in OpenStack driver.
+
+  (GITHUB-1586)
+  [Miguel Caballer - @micafer]
+
 - [OpenStack] Add disabled property to OpenStack images.
 
   (GITHUB-1615)

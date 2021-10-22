@@ -4012,11 +4012,36 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :param      project_id: The ID of the project.
         :type       project_id: ``str``
 
-        :rtype: :class:`OpenStack_2_QuotaSet`
+        :rtype: :class:`OpenStack_2_NetworkQuota`
         """
         url = '/v2.0/quotas/%s/details.json' % project_id
         return self._to_network_quota(
             self.network_connection.request(url).object['quota'])
+
+    def _to_volume_quota(self, obj):
+        res = OpenStack_2_VolumeQuota(
+            backup_gigabytes=obj.get('backup_gigabytes', None),
+            gigabytes=obj.get('gigabytes', None),
+            per_volume_gigabytes=obj.get('per_volume_gigabytes', None),
+            backups=obj.get('backups', None),
+            snapshots=obj.get('snapshots', None),
+            volumes=obj.get('volumes', None),
+            driver=self.connection.driver)
+
+        return res
+
+    def ex_get_volume_quotas(self, project_id):
+        """
+        Get the volume quotas for a project
+
+        :param      project_id: The ID of the project.
+        :type       project_id: ``str``
+
+        :rtype: :class:`OpenStack_2_VolumeQuota`
+        """
+        url = '/os-quota-sets/%s?usage=True' % project_id
+        return self._to_volume_quota(
+            self._get_volume_connection().request(url).object['quota_set'])
 
 
 class OpenStack_1_1_FloatingIpPool(object):
@@ -4430,7 +4455,7 @@ class OpenStack_2_QuotaSet(object):
 
 class OpenStack_2_NetworkQuota(object):
     """
-    Network Quota info. To get the informatio about quotas and used resources.
+    Network Quota info. To get the information about quotas and used resources.
 
     See:
     https://docs.openstack.org/api-ref/network/v2/?expanded=show-quota-details-for-a-tenant-detail,list-quotas-for-a-project-detail#show-quota-details-for-a-tenant
@@ -4487,3 +4512,60 @@ class OpenStack_2_NetworkQuota(object):
                 ' SGs="%s", SGRs="%s">' % (self.floatingip, self.network,
                                            self.security_group,
                                            self.security_group_rule))
+
+
+class OpenStack_2_VolumeQuota(object):
+    """
+    Volume Quota info. To get the information about quotas and used resources.
+
+    See:
+    https://docs.openstack.org/api-ref/block-storage/v2/index.html?expanded=show-quotas-detail
+    https://docs.openstack.org/api-ref/block-storage/v3/index.html?expanded=show-quota-usage-for-a-project-detail
+    """
+
+    def __init__(self, backup_gigabytes, gigabytes, per_volume_gigabytes,
+                 backups, snapshots, volumes, driver=None):
+        """
+        :param backup_gigabytes: Quota of backup size in gigabytes.
+        :type backup_gigabytes: :class:`.OpenStack_2_QuotaSetItem` or ``int``
+        :param gigabytes: Quota of volume size in gigabytes.
+        :type gigabytes: :class:`.OpenStack_2_QuotaSetItem` or ``int``
+        :param per_volume_gigabytes: Quota of per volume gigabytes.
+        :type per_volume_gigabytes: :class:`.OpenStack_2_QuotaSetItem`
+                                    or ``int``
+        :param backups: Quota of backups.
+        :type backups: :class:`.OpenStack_2_QuotaSetItem` or ``int``
+        :param snapshots: Quota of snapshots.
+        :type snapshots: :class:`.OpenStack_2_QuotaSetItem` or ``int``
+        :param volumes: Quota of security volumes.
+        :type volumes: :class:`.OpenStack_2_QuotaSetItem` or ``int``
+        """
+        self.backup_gigabytes = self._to_quota_set_item(backup_gigabytes)
+        self.gigabytes = self._to_quota_set_item(gigabytes)
+        self.per_volume_gigabytes = self._to_quota_set_item(
+            per_volume_gigabytes)
+        self.backups = self._to_quota_set_item(backups)
+        self.snapshots = self._to_quota_set_item(snapshots)
+        self.volumes = self._to_quota_set_item(volumes)
+        self.driver = driver
+
+    def _to_quota_set_item(self, obj):
+        if obj:
+            if isinstance(obj, OpenStack_2_QuotaSetItem):
+                return obj
+            elif isinstance(obj, dict):
+                return OpenStack_2_QuotaSetItem(obj['in_use'], obj['limit'],
+                                                obj['reserved'])
+            elif isinstance(obj, int):
+                return OpenStack_2_QuotaSetItem(0, obj, 0)
+            else:
+                return None
+        else:
+            return None
+
+    def __repr__(self):
+        return ('<OpenStack_2_VolumeQuota Volumes="%s", gigabytes="%s",'
+                ' snapshots="%s", backups="%s">' % (self.volumes,
+                                                    self.gigabytes,
+                                                    self.snapshots,
+                                                    self.backups))
