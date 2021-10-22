@@ -125,6 +125,7 @@ class StorageTest(Integration.TestBase):
         )
 
         location = os.getenv('AZURE_LOCATION', DEFAULT_AZURE_LOCATION)
+        name = 'libcloud-itests-'
         name = 'libcloud'
         name += random_string(MAX_STORAGE_ACCOUNT_NAME_LENGTH - len(name))
         timeout = float(os.getenv('AZURE_TIMEOUT_SECONDS', DEFAULT_TIMEOUT_SECONDS))
@@ -142,8 +143,8 @@ class StorageTest(Integration.TestBase):
             resource_create_ts = resource_groups.tags.get('create_ts', now_ts)
 
             if resource_group.name.startswith(name) and resource_group.location == location and \
-               'test' in resource_groups.tags and resource_create_ts <= delete_threshold_ts:
-               #'test' in resource_groups.tags and resource_create_ts <= delete_threshold_ts:
+               'test' in resource_group.tags:
+               #'test' in resource_group.tags and resource_create_ts <= delete_threshold_ts:
                 print("Deleting old stray resource group: %s..." % (resource_group.name))
 
                 try:
