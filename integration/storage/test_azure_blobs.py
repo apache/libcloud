@@ -138,6 +138,8 @@ class StorageTest(Integration.TestBase):
         # to clean those up to ensure we dont hit any limits.
         # To avoid deleting groups from concurrent runs, we only delete resources older than a
         # couple (6) of hours
+        print("Checking and cleaning up any old stray resource groups...")
+
         resource_groups = resource_client.resource_groups.list()
         now_ts = int(time.time())
         delete_threshold_ts = now_ts - int(datetime.timedelta(hours=6).total_seconds())
@@ -150,6 +152,7 @@ class StorageTest(Integration.TestBase):
             if resource_group.name.startswith(RESOURCE_GROUP_NAME_PREFIX) and \
                resource_group.location.lower() == location.lower() and \
                'test' in resource_group.tags and resource_create_ts <= delete_threshold_ts:
+                assert resource_group.name.startswith(RESOURCE_GROUP_NAME_PREFIX)
                 print("Deleting old stray resource group: %s..." % (resource_group.name))
 
                 try:
