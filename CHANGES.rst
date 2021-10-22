@@ -61,6 +61,11 @@ Compute
   (GITHUB-1586)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Add disabled property to OpenStack images.
+
+  (GITHUB-1615)
+  [Miguel Caballer - @micafer]
+
 DNS
 ~~~
 
@@ -72,6 +77,17 @@ DNS
   parameters if they are not provided as method arguments.
   (GITHUB-1570)
   [Gasper Vozel - @karantan]
+
+- [NSOne] Fix MX records and root domain handling.
+  (GITHUB-1571)
+  [Gasper Vozel - @karantan]
+
+Other
+~~~~~
+
+- Fix ``python_requires`` setup.py metadata item value.
+  (GITHUB-1606)
+  [Michał Górny - @mgorny]
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------
