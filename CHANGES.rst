@@ -68,6 +68,13 @@ DNS
   (GITHUB-1570)
   [Gasper Vozel - @karantan]
 
+Other
+~~~~~
+
+- Fix ``python_requires`` setup.py metadata item value.
+  (GITHUB-1606)
+  [Michał Górny - @mgorny]
+
 Changes in Apache Libcloud 3.3.1
 --------------------------------
 
