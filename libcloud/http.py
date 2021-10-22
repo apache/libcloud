@@ -35,6 +35,9 @@ __all__ = [
 
 ALLOW_REDIRECTS = 1
 
+# Default timeout for HTTP requests in seconds
+DEFAULT_REQUEST_TIMEOUT = 60
+
 HTTP_PROXY_ENV_VARIABLE_NAME = 'http_proxy'
 HTTPS_PROXY_ENV_VARIABLE_NAME = 'https_proxy'
 
@@ -202,7 +205,7 @@ class LibcloudConnection(LibcloudBaseConnection):
 
         LibcloudBaseConnection.__init__(self)
 
-        self.session.timeout = kwargs.pop('timeout', 60)
+        self.session.timeout = kwargs.pop('timeout', DEFAULT_REQUEST_TIMEOUT)
 
         if 'cert_file' in kwargs or 'key_file' in kwargs:
             self._setup_signing(**kwargs)
