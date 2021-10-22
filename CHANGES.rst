@@ -72,6 +72,11 @@ Compute
   (GITHUB-1492)
   [Miguel Caballer - @micafer]
 
+- [EC2] Add support for ``gp3`` and ``io2`` volume types. Also add
+  ``ex_throughput`` argument to the ``create_volume`` method.
+  (GITHUB-1596)
+  [Palash Gandhi - @palashgandhi]
+
 DNS
 ~~~
 
