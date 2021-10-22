@@ -322,7 +322,7 @@ class Integration:
         container = None
         verbose = False
 
-        container_ready_timeout = 30
+        container_ready_timeout = 20
 
         @classmethod
         def setUpClass(cls):
@@ -350,7 +350,6 @@ class Integration:
 
             # We register atexit handler to ensure container is always killed, even if for some
             # reason tearDownClass is sometimes not called (happened locally a couple of times)
-
             atexit.register(cls._kill_container)
 
             wait_for(cls.port, cls.host)

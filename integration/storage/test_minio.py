@@ -30,7 +30,7 @@ class MinioTest(Integration.ContainerTestBase):
     port = 9000
     environment = {'MINIO_ROOT_USER': account, 'MINIO_ROOT_PASSWORD': secret}
     command = ['server', '/data']
-    ready_message = b'IAM initialization complete'
+    ready_message = b'Console endpoint is listening on a dynamic port'
 
     def test_cdn_url(self):
         self.skipTest('Not implemented in driver')
