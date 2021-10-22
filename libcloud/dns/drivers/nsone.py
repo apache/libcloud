@@ -114,7 +114,7 @@ class NsOneDNSDriver(DNSDriver):
             else:
                 raise e
 
-        zone = self._to_zone(response.objects[0])
+        zone = self._to_zone(response.object)
 
         return zone
 
@@ -220,17 +220,18 @@ class NsOneDNSDriver(DNSDriver):
         :type extra: ``dict``
         :return: :class:`Record`
         """
-        action = '/v1/zones/%s/%s/%s' % (zone.domain, '%s.%s' %
-                                         (name, zone.domain), type)
+        record_name = '%s.%s' % (name, zone.domain) if name != '' else zone.domain  # noqa
+
+        action = '/v1/zones/%s/%s/%s' % (zone.domain, record_name, type)
+        if type == RecordType.MX:
+            answer = [extra.get('priority', 10), data]
+        else:
+            answer = [data]
+
         raw_data = {
-            "answers": [
-                {
-                    "answer": [
-                        data
-                    ], }
-            ],
+            "answers": [{"answer": answer}],
             "type": type,
-            "domain": '%s.%s' % (name, zone.domain),
+            "domain": record_name,
             "zone": zone.domain
         }
         if extra is not None and extra.get('answers'):

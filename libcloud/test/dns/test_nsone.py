@@ -21,10 +21,10 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_NSONE
 from libcloud.dns.drivers.nsone import NsOneDNSDriver
 from libcloud.utils.py3 import httplib
+from libcloud.common.nsone import NsOneException
 from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError,\
-    RecordDoesNotExistError, RecordType
+    RecordDoesNotExistError, RecordType, RecordAlreadyExistsError
 from libcloud.dns.base import Zone, Record
-
 
 class NsOneTests(unittest.TestCase):
     def setUp(self):
@@ -150,6 +150,50 @@ class NsOneTests(unittest.TestCase):
         self.assertEqual(arecord.type, RecordType.A)
         self.assertEqual(arecord.data, ['1.2.3.4'])
 
+    def test_create_record_success(self):
+        NsOneMockHttp.type = 'CREATE_RECORD_SUCCESS'
+        arecord = self.driver.create_record(
+            self.test_record.name,
+            self.test_record.zone,
+            self.test_record.type,
+            self.test_record.data,
+            self.test_record.extra,
+        )
+        self.assertEqual(arecord.id, '608f9619ebe68600ac9f807d')
+        self.assertEqual(arecord.name, 'test.com')
+        self.assertEqual(arecord.type, RecordType.A)
+        self.assertEqual(arecord.data, ['127.0.0.1'])
+
+    def test_create_record_already_exists(self):
+        NsOneMockHttp.type = 'CREATE_RECORD_ALREADY_EXISTS'
+        try:
+            arecord = self.driver.create_record(
+                self.test_record.name,
+                self.test_record.zone,
+                self.test_record.type,
+                self.test_record.data,
+                self.test_record.extra,
+            )
+        except RecordAlreadyExistsError as err:
+            self.assertEqual(err.value, 'record already exists')
+        else:
+            self.fail('Exception was not thrown')
+
+    def test_create_record_zone_not_found(self):
+        NsOneMockHttp.type = 'CREATE_RECORD_ZONE_NOT_FOUND'
+        try:
+            arecord = self.driver.create_record(
+                self.test_record.name,
+                self.test_record.zone,
+                self.test_record.type,
+                self.test_record.data,
+                self.test_record.extra,
+            )
+        except NsOneException as err:
+            self.assertEqual(err.message, 'zone not found')
+        else:
+            self.fail('Exception was not thrown')
+
     def test_delete_record_record_does_not_exist(self):
         NsOneMockHttp.type = 'DELETE_RECORD_RECORD_DOES_NOT_EXIST'
 
@@ -263,6 +307,24 @@ class NsOneMockHttp(MockHttp):
         body = self.fixtures.load('record_does_not_exist.json')
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _v1_zones_test_com_example_com_test_com_A_CREATE_RECORD_SUCCESS(
+            self, method, url, body, headers):
+        body = self.fixtures.load('create_record_success.json')
+
+        return httplib.OK, body, {}, httplib.responses[httplib.OK]
+
+    def _v1_zones_test_com_example_com_test_com_A_CREATE_RECORD_ALREADY_EXISTS(
+            self, method, url, body, headers):
+        body = self.fixtures.load('create_record_already_exists.json')
+
+        return 404, body, {}, httplib.responses[httplib.OK]
+
+    def _v1_zones_test_com_example_com_test_com_A_CREATE_RECORD_ZONE_NOT_FOUND(
+            self, method, url, body, headers):
+        body = self.fixtures.load('create_record_zone_not_found.json')
+
+        return 404, body, {}, httplib.responses[httplib.OK]
 
 if __name__ == '__main__':
     sys.exit(unittest.main())
