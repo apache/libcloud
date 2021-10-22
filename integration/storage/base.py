@@ -155,7 +155,9 @@ class Integration:
             self.assertEqual([blob.name for blob in blobs], [blob_name])
 
             # check that the file can be read back
-            self.assertEqual(do_download(obj), content)
+            downloaded_content = do_download(obj)
+            self.assertEqual(len(downloaded_content), size)
+            self.assertEqual(downloaded_content, content)
 
             # delete the file
             self.driver.delete_object(obj)
