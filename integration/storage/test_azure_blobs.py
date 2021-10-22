@@ -18,6 +18,8 @@ import os
 import string
 import sys
 import unittest
+import time
+import datetime
 
 try:
     from azure import identity
@@ -31,6 +33,8 @@ except ImportError as e:
 
 from integration.storage.base import Integration, random_string
 
+# Prefix which is added to all the groups created by tests
+RESOURCE_GROUP_NAME_PREFIX = 'libclouditests'
 DEFAULT_TIMEOUT_SECONDS = 300
 DEFAULT_AZURE_LOCATION = 'EastUS2'
 MAX_STORAGE_ACCOUNT_NAME_LENGTH = 24
@@ -124,9 +128,34 @@ class StorageTest(Integration.TestBase):
         )
 
         location = os.getenv('AZURE_LOCATION', DEFAULT_AZURE_LOCATION)
-        name = 'libcloud'
+        name = RESOURCE_GROUP_NAME_PREFIX
         name += random_string(MAX_STORAGE_ACCOUNT_NAME_LENGTH - len(name))
         timeout = float(os.getenv('AZURE_TIMEOUT_SECONDS', DEFAULT_TIMEOUT_SECONDS))
+
+        # We clean up any left over resource groups from previous runs on setUpClass. If tests on
+        # CI get terminated non-gracefully, old resources will be left laying around and we want
+        # to clean those up to ensure we dont hit any limits.
+        # To avoid deleting groups from concurrent runs, we only delete resources older than a
+        # couple (6) of hours
+        print("Checking and cleaning up any old stray resource groups...")
+
+        resource_groups = resource_client.resource_groups.list()
+        now_ts = int(time.time())
+        delete_threshold_ts = now_ts - int(datetime.timedelta(hours=6).total_seconds())
+
+        for resource_group in resource_groups:
+            resource_create_ts = int(resource_group.tags.get('create_ts', now_ts))
+
+            if resource_group.name.startswith(RESOURCE_GROUP_NAME_PREFIX) and \
+               resource_group.location.lower() == location.lower() and \
+               'test' in resource_group.tags and resource_create_ts <= delete_threshold_ts:
+                assert resource_group.name.startswith(RESOURCE_GROUP_NAME_PREFIX)
+                print("Deleting old stray resource group: %s..." % (resource_group.name))
+
+                try:
+                    resource_client.resource_groups.begin_delete(resource_group.name)
+                except Exception as e:
+                    print("Failed to delete resource group: %s" % (str(e)), file=sys.stderr)
 
         group = resource_client.resource_groups.create_or_update(
             resource_group_name=name,
@@ -134,7 +163,11 @@ class StorageTest(Integration.TestBase):
                 location=location,
                 tags={
                     'test': cls.__name__,
-                    'run': os.getenv('GITHUB_RUN_ID', '-'),
+                    'create_ts': str(now_ts),
+                    'gh_run_id': os.getenv('GITHUB_RUN_ID', 'unknown'),
+                    'gh_job_id': os.getenv('GITHUB_JOB_ID', 'unknown'),
+                    'gh_sha': os.getenv('GITHUB_SHA', 'unknown'),
+                    'gh_ref': os.getenv('GITHUB_REF', 'unknown'),
                 },
             ),
             timeout=timeout,

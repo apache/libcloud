@@ -44,6 +44,19 @@ libcloud.http.DEFAULT_REQUEST_TIMEOUT = 10
 MB = 1024 * 1024
 
 
+def get_content_iter_with_chunk_size(content, chunk_size=1024):
+    """
+    Return iterator for the provided content which will return chunks of the specified size.
+
+    For performance reasons, larger chunks should be used with very large content to speed up the
+    tests (since in some cases each iteration may result in an TCP send).
+    """
+    # Ensure we still use multiple chunks and iterations
+    assert (len(content) / chunk_size) >= 10
+    content = iter([content[i:i + chunk_size] for i in range(0, len(content), chunk_size)])
+    return content
+
+
 class Integration:
     class TestBase(unittest.TestCase):
         provider = None
@@ -142,7 +155,9 @@ class Integration:
             self.assertEqual([blob.name for blob in blobs], [blob_name])
 
             # check that the file can be read back
-            self.assertEqual(do_download(obj), content)
+            downloaded_content = do_download(obj)
+            self.assertEqual(len(downloaded_content), size)
+            self.assertEqual(downloaded_content, content)
 
             # delete the file
             self.driver.delete_object(obj)
@@ -257,7 +272,10 @@ class Integration:
 
         def test_objects_stream_iterable(self):
             def do_upload(container, blob_name, content):
-                content = iter([content[i:i + 1] for i in range(len(content))])
+                # NOTE: We originally used a chunk size of 1 which resulted in many requests and as
+                # such, very slow tests. To speed things up, we use a longer chunk size.
+                assert (len(content) / 1024) >= 500
+                content = get_content_iter_with_chunk_size(content, 1024)
                 return self.driver.upload_object_via_stream(content, container, blob_name)
 
             def do_download(obj):
@@ -270,7 +288,7 @@ class Integration:
             content = gzip.compress(os.urandom(MB // 100))
             container = self.driver.create_container(self._random_container_name())
             self.driver.upload_object_via_stream(
-                iter(content),
+                get_content_iter_with_chunk_size(content, 500),
                 container,
                 object_name,
                 headers={'Content-Encoding': 'gzip'},
@@ -283,7 +301,8 @@ class Integration:
         def test_cdn_url(self):
             content = os.urandom(MB // 100)
             container = self.driver.create_container(self._random_container_name())
-            obj = self.driver.upload_object_via_stream(iter(content), container, 'cdn')
+            content_iter = get_content_iter_with_chunk_size(content, 500)
+            obj = self.driver.upload_object_via_stream(content_iter, container, 'cdn')
 
             response = requests.get(self.driver.get_object_cdn_url(obj))
             response.raise_for_status()
@@ -292,8 +311,12 @@ class Integration:
 
         def _create_tempfile(self, prefix='', content=b''):
             fobj, path = tempfile.mkstemp(prefix=prefix, text=False)
-            os.write(fobj, content)
-            os.close(fobj)
+
+            try:
+                os.write(fobj, content)
+            finally:
+                os.close(fobj)
+
             self.addCleanup(os.remove, path)
             return path
 
