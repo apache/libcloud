@@ -19,6 +19,7 @@ import string
 import sys
 import unittest
 import time
+import datetime
 
 try:
     from azure import identity
@@ -137,20 +138,21 @@ class StorageTest(Integration.TestBase):
         # couple (6) of hours
         resource_groups = resource_client.resource_groups.list()
         now_ts = int(time.time())
-        delete_threshold_ts = now_ts - (6 * 60 * 60)
+        delete_threshold_ts = now_ts - int(datetime.timedelta(hours=6).total_seconds())
 
         for resource_group in resource_groups:
-            resource_create_ts = resource_groups.tags.get('create_ts', now_ts)
+            resource_create_ts = resource_group.tags.get('create_ts', now_ts)
+            resource_create_ts = int(resource_group.tags.get('create_ts',
+                                                             delete_threshold_ts - 100))
 
             if resource_group.name.startswith(name) and resource_group.location == location and \
-               'test' in resource_group.tags:
-               #'test' in resource_group.tags and resource_create_ts <= delete_threshold_ts:
+               'test' in resource_group.tags and resource_create_ts <= delete_threshold_ts:
                 print("Deleting old stray resource group: %s..." % (resource_group.name))
 
                 try:
                     resource_client.resource_groups.begin_delete(resource_group.name)
                 except Exception as e:
-                    print("Failed to delete resource group: %s" % (str(e)))
+                    print("Failed to delete resource group: %s" % (str(e)), file=sys.stderr)
 
         group = resource_client.resource_groups.create_or_update(
             resource_group_name=name,
@@ -158,7 +160,7 @@ class StorageTest(Integration.TestBase):
                 location=location,
                 tags={
                     'test': cls.__name__,
-                    'create_ts': now_ts,
+                    'create_ts': str(now_ts),
                     'run': os.getenv('GITHUB_RUN_ID', '-'),
                 },
             ),
