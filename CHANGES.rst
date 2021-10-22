@@ -61,6 +61,13 @@ Compute
   (GITHUB-1615)
   [Miguel Caballer - @micafer]
 
+- [CloudSigma] Various updates, improvements and new functionality in the 
+  driver (support for new regions, instance types, additional standard API an 
+  extension methods, etc.).
+
+  (GITHUB-1558)
+  [Dimitris Galanis - @dimgal1]
+
 DNS
 ~~~
 
