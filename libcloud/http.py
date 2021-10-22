@@ -229,7 +229,8 @@ class LibcloudConnection(LibcloudBaseConnection):
             headers=headers,
             allow_redirects=ALLOW_REDIRECTS,
             stream=stream,
-            verify=self.verification
+            verify=self.verification,
+            timeout=self.session.timeout,
         )
 
     def prepared_request(self, method, url, body=None,
