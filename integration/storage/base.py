@@ -24,6 +24,7 @@ import sys
 import tempfile
 import time
 import unittest
+import atexit
 
 import requests
 
@@ -32,8 +33,12 @@ try:
 except ImportError:
     docker = None
 
+import libcloud.http
+
 from libcloud.common.types import LibcloudError
 from libcloud.storage import providers, types
+
+libcloud.http.DEFAULT_REQUEST_TIMEOUT = 10
 
 
 MB = 1024 * 1024
@@ -317,6 +322,8 @@ class Integration:
         container = None
         verbose = False
 
+        container_ready_timeout = 30
+
         @classmethod
         def setUpClass(cls):
             if docker is None:
@@ -341,9 +348,17 @@ class Integration:
                 environment=cls.environment,
             )
 
+            # We register atexit handler to ensure container is always killed, even if for some
+            # reason tearDownClass is sometimes not called (happened locally a couple of times)
+
+            atexit.register(cls._kill_container)
+
             wait_for(cls.port, cls.host)
 
             container_ready = cls.ready_message is None
+
+            start_ts = int(time.time())
+            timeout_ts = start_ts + cls.container_ready_timeout
 
             while not container_ready:
                 time.sleep(1)
@@ -353,8 +368,26 @@ class Integration:
                     for line in cls.container.logs().splitlines()
                 )
 
+                now_ts = int(time.time())
+
+                if now_ts >= timeout_ts:
+                    raise ValueError("Container %s failed to start and become ready in %s seconds "
+                                     "(did not find \"%s\" message in container logs).\n\n"
+                                     "Container Logs:\n%s" %
+                                     (cls.container.short_id, cls.container_ready_timeout,
+                                      cls.ready_message.decode("utf-8"),
+                                      cls.container.logs().decode("utf-8")))
+
         @classmethod
         def tearDownClass(cls):
+            cls._kill_container()
+            atexit.unregister(cls._kill_container)
+
+        @classmethod
+        def _kill_container(cls):
+            if cls.verbose:
+                print("Killing / stopping container with id %s..." % (cls.container.short_id))
+
             if cls.verbose:
                 for line in cls.container.logs().splitlines():
                     print(line)
