@@ -34,8 +34,7 @@ except ImportError as e:
 from integration.storage.base import Integration, random_string
 
 # Prefix which is added to all the groups created by tests
-RESOURCE_GROUP_NAME_PREFIX = 'libcloud'
-# RESOURCE_GROUP_NAME_PREFIX = 'libcloud-tests-'
+RESOURCE_GROUP_NAME_PREFIX = 'libcloud-itests-'
 DEFAULT_TIMEOUT_SECONDS = 300
 DEFAULT_AZURE_LOCATION = 'EastUS2'
 MAX_STORAGE_ACCOUNT_NAME_LENGTH = 24
@@ -146,8 +145,6 @@ class StorageTest(Integration.TestBase):
 
         for resource_group in resource_groups:
             resource_create_ts = resource_group.tags.get('create_ts', now_ts)
-            resource_create_ts = int(resource_group.tags.get('create_ts',
-                                                             delete_threshold_ts - 100))
 
             if resource_group.name.startswith(RESOURCE_GROUP_NAME_PREFIX) and \
                resource_group.location.lower() == location.lower() and \
