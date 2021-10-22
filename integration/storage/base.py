@@ -292,8 +292,12 @@ class Integration:
 
         def _create_tempfile(self, prefix='', content=b''):
             fobj, path = tempfile.mkstemp(prefix=prefix, text=False)
-            os.write(fobj, content)
-            os.close(fobj)
+
+            try:
+                os.write(fobj, content)
+            finally:
+                os.close(fobj)
+
             self.addCleanup(os.remove, path)
             return path
 
