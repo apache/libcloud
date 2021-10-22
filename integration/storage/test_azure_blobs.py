@@ -33,6 +33,9 @@ except ImportError as e:
 
 from integration.storage.base import Integration, random_string
 
+# Prefix which is added to all the groups created by tests
+RESOURCE_GROUP_NAME_PREFIX = 'libcloud'
+# RESOURCE_GROUP_NAME_PREFIX = 'libcloud-tests-'
 DEFAULT_TIMEOUT_SECONDS = 300
 DEFAULT_AZURE_LOCATION = 'EastUS2'
 MAX_STORAGE_ACCOUNT_NAME_LENGTH = 24
@@ -126,8 +129,7 @@ class StorageTest(Integration.TestBase):
         )
 
         location = os.getenv('AZURE_LOCATION', DEFAULT_AZURE_LOCATION)
-        name = 'libcloud-itests-'
-        name = 'libcloud'
+        name = RESOURCE_GROUP_NAME_PREFIX
         name += random_string(MAX_STORAGE_ACCOUNT_NAME_LENGTH - len(name))
         timeout = float(os.getenv('AZURE_TIMEOUT_SECONDS', DEFAULT_TIMEOUT_SECONDS))
 
@@ -145,7 +147,8 @@ class StorageTest(Integration.TestBase):
             resource_create_ts = int(resource_group.tags.get('create_ts',
                                                              delete_threshold_ts - 100))
 
-            if resource_group.name.startswith(name) and resource_group.location == location and \
+            if resource_group.name.startswith(RESOURCE_GROUP_NAME_PREFIX) and \
+               resource_group.location.lower() == location.lower() and \
                'test' in resource_group.tags and resource_create_ts <= delete_threshold_ts:
                 print("Deleting old stray resource group: %s..." % (resource_group.name))
 
