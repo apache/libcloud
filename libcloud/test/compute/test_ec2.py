@@ -929,13 +929,17 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
 
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
-        vol = self.driver.create_volume(10, 'vol', location)
+        vol = self.driver.create_volume(10, 'vol', location=location)
 
         self.assertEqual(10, vol.size)
         self.assertEqual('vol', vol.name)
         self.assertEqual('creating', vol.extra['state'])
         self.assertTrue(isinstance(vol.extra['create_time'], datetime))
         self.assertEqual(False, vol.extra['encrypted'])
+
+        expected_msg = "Invalid volume type specified: invalid-type"
+        self.assertRaisesRegex(ValueError, expected_msg, self.driver.create_volume,
+                          10, 'invalid-vol', location=location, ex_volume_type='invalid-type')
 
     def test_create_encrypted_volume(self):
         location = self.driver.list_locations()[0]
