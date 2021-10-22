@@ -257,7 +257,13 @@ class Integration:
 
         def test_objects_stream_iterable(self):
             def do_upload(container, blob_name, content):
-                content = iter([content[i:i + 1] for i in range(len(content))])
+                # NOTE: We originally used a chunk size of 1 which resulted in many requests and as
+                # such, very slow tests. To speed things up, we use a longer chunk size.
+                chunk_size = 1024
+                # Ensure we still use multiple chunks and iterations
+                assert (len(content) / chunk_size) >= 500
+                content = iter([content[i:i + chunk_size] for i in
+                                range(0, len(content), chunk_size)])
                 return self.driver.upload_object_via_stream(content, container, blob_name)
 
             def do_download(obj):
