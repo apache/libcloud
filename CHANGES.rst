@@ -56,6 +56,11 @@ Compute
   (GITHUB-1569)
   [@dpeschman]
 
+- [OpenStack] Add disabled property to OpenStack images.
+
+  (GITHUB-1615)
+  [Miguel Caballer - @micafer]
+
 DNS
 ~~~
 

@@ -2476,6 +2476,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             price = self._get_size_price(str(api_flavor['id']))
 
         extra = api_flavor.get('OS-FLV-WITH-EXT-SPECS:extra_specs', {})
+        extra['disabled'] = api_flavor.get('OS-FLV-DISABLED:disabled', None)
         return OpenStackNodeSize(
             id=api_flavor['id'],
             name=api_flavor['name'],
