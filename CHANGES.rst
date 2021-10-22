@@ -68,6 +68,10 @@ Compute
   (GITHUB-1558)
   [Dimitris Galanis - @dimgal1]
 
+- [OpenStack] Add binding:host_id value to the OpenStack port information.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
 DNS
 ~~~
 
