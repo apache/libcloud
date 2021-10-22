@@ -4,6 +4,16 @@
 Changes in Apache Libcloud 3.3.2 (in development)
 -------------------------------------------------
 
+Common
+~~~~~~
+
+- Fix how we set HTTP request timeout on the underlying requests session
+  object. requests library has changed how timeout is set so our old
+  code had no affect.
+
+  (GITHUB-1575, GITHUB-1576)
+  [Dimitris Galanis - @dimgal1]
+
 Storage
 ~~~~~~~
 
