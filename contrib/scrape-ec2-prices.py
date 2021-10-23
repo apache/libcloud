@@ -172,8 +172,10 @@ def scrape_ec2_pricing():
 
         if re.match(r'.*?\.json$', url):
             data = response.json()
+            print("Sample response: %s..." % (str(data)[:100]))
         elif re.match(r'.*?\.js$', url):
-            data = response.content.decode()
+            data = response.content.decode('utf-8')
+            print("Sample response: %s..." % (data[:100]))
             match = re.match(r'^.*callback\((.*?)\);?$', data,
                              re.MULTILINE | re.DOTALL)
             data = match.group(1)
