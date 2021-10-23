@@ -208,8 +208,11 @@ def scrape_ec2_pricing():
         res[os_map[OS]] = {}
         for region in EC2_REGIONS:
             res[os_map[OS]][region] = {}
-            response = requests.get(url.format(region, OS))
+            full_url = url.format(region, OS)
+            response = requests.get(full_url)
             if response.status_code != 200:
+                print("Skipping URL %s which returned non 200-status code (%s)" %
+                      (full_url, response.status_code))
                 continue
             data = response.json()
 
