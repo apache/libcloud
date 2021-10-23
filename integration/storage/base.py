@@ -288,7 +288,7 @@ class Integration:
             content = gzip.compress(os.urandom(MB // 100))
             container = self.driver.create_container(self._random_container_name())
             self.driver.upload_object_via_stream(
-                get_content_iter_with_chunk_size(content, 500),
+                get_content_iter_with_chunk_size(content, 1000),
                 container,
                 object_name,
                 headers={'Content-Encoding': 'gzip'},
@@ -301,7 +301,7 @@ class Integration:
         def test_cdn_url(self):
             content = os.urandom(MB // 100)
             container = self.driver.create_container(self._random_container_name())
-            content_iter = get_content_iter_with_chunk_size(content, 500)
+            content_iter = get_content_iter_with_chunk_size(content, 1000)
             obj = self.driver.upload_object_via_stream(content_iter, container, 'cdn')
 
             response = requests.get(self.driver.get_object_cdn_url(obj))
