@@ -5,7 +5,8 @@ pylint==2.4.4
 mock==3.0.5
 codecov==2.1.10
 coverage==4.5.4
-requests
+requests>=2.25.0; python_version <= '3.5'
+requests>=2.26.0; python_version >= '3.6'
 requests_mock
 # 5.3.2 is latest version which still supports Python 3.5, >= 6.2.5 is needed for Python 3.10
 pytest==5.3.2; python_version <= '3.5'
