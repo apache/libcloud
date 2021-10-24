@@ -73,6 +73,7 @@ Available arguments:
     password
   * ``2.0_voms`` - 2.0 VOMS key
   * ``3.x_password`` - 3.x keystone password
+  * ``3.x_appcred`` - 3.x keystone with application credential
   * ``3.x_oidc_access_token`` - OIDC access token
 
 

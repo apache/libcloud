@@ -44,6 +44,7 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '2.0_voms',
     '3.0',
     '3.x_password',
+    '3.x_appcred',
     '3.x_oidc_access_token'
 ]
 
@@ -72,6 +73,7 @@ __all__ = [
     'OpenStackIdentity_2_0_Connection',
     'OpenStackIdentity_2_0_Connection_VOMS',
     'OpenStackIdentity_3_0_Connection',
+    'OpenStackIdentity_3_0_Connection_AppCred',
     'OpenStackIdentity_3_0_Connection_OIDC_access_token',
 
     'get_class_for_auth_version'
@@ -982,46 +984,7 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         if not self._is_authentication_needed(force=force):
             return self
 
-        data = {
-            'auth': {
-                'identity': {
-                    'methods': ['password'],
-                    'password': {
-                        'user': {
-                            'domain': {
-                                'name': self.domain_name
-                            },
-                            'name': self.user_id,
-                            'password': self.key
-                        }
-                    }
-                }
-            }
-        }
-
-        if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
-            # Scope token to project (tenant)
-            data['auth']['scope'] = {
-                'project': {
-                    'domain': {
-                        'id': self.tenant_domain_id
-                    },
-                    'name': self.tenant_name
-                }
-            }
-        elif self.token_scope == OpenStackIdentityTokenScope.DOMAIN:
-            # Scope token to domain
-            data['auth']['scope'] = {
-                'domain': {
-                    'name': self.domain_name
-                }
-            }
-        elif self.token_scope == OpenStackIdentityTokenScope.UNSCOPED:
-            pass
-        else:
-            raise ValueError('Token needs to be scoped either to project or '
-                             'a domain')
-
+        data = self._get_auth_data()
         data = json.dumps(data)
         response = self.request('/v3/auth/tokens', data=data,
                                 headers={'Content-Type': 'application/json'},
@@ -1350,6 +1313,49 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         user = self._to_user(data=response.object['user'])
         return user
 
+    def _get_auth_data(self):
+        data = {
+            'auth': {
+                'identity': {
+                    'methods': ['password'],
+                    'password': {
+                        'user': {
+                            'domain': {
+                                'name': self.domain_name
+                            },
+                            'name': self.user_id,
+                            'password': self.key
+                        }
+                    }
+                }
+            }
+        }
+
+        if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
+            # Scope token to project (tenant)
+            data['auth']['scope'] = {
+                'project': {
+                    'domain': {
+                        'id': self.tenant_domain_id
+                    },
+                    'name': self.tenant_name
+                }
+            }
+        elif self.token_scope == OpenStackIdentityTokenScope.DOMAIN:
+            # Scope token to domain
+            data['auth']['scope'] = {
+                'domain': {
+                    'name': self.domain_name
+                }
+            }
+        elif self.token_scope == OpenStackIdentityTokenScope.UNSCOPED:
+            pass
+        else:
+            raise ValueError('Token needs to be scoped either to project or '
+                             'a domain')
+
+        return data
+
     def _to_domains(self, data):
         result = []
         for item in data:
@@ -1397,6 +1403,49 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                                                           None),
                                      enabled=data.get('enabled', True))
         return role
+
+
+class OpenStackIdentity_3_0_Connection_AppCred(
+        OpenStackIdentity_3_0_Connection):
+    """
+    Connection class for Keystone API v3.x using Application Credentials.
+
+    'user_id' is the application credential id and 'key' is the application
+    credential secret.
+    """
+    name = 'OpenStack Identity API v3.x with Application Credentials'
+
+    def __init__(self, auth_url, user_id, key, tenant_name=None,
+                 domain_name=None, tenant_domain_id=None, token_scope=None,
+                 timeout=None, proxy_url=None, parent_conn=None):
+        """
+        Tenant, domain and scope options are ignored as they are contained
+        within the app credential itself and can't be changed.
+        """
+        super(OpenStackIdentity_3_0_Connection,
+              self).__init__(auth_url=auth_url,
+                             user_id=user_id,
+                             key=key,
+                             tenant_name=tenant_name,
+                             domain_name=domain_name,
+                             token_scope=OpenStackIdentityTokenScope.UNSCOPED,
+                             timeout=timeout,
+                             proxy_url=proxy_url,
+                             parent_conn=parent_conn)
+
+    def _get_auth_data(self):
+        data = {
+            'auth': {
+                'identity': {
+                    'methods': ['application_credential'],
+                    'application_credential': {
+                        'id': self.user_id,
+                        'secret': self.key
+                    }
+                }
+            }
+        }
+        return data
 
 
 class OpenStackIdentity_3_0_Connection_OIDC_access_token(
@@ -1727,6 +1776,8 @@ def get_class_for_auth_version(auth_version):
         cls = OpenStackIdentity_2_0_Connection_VOMS
     elif auth_version == '3.x_password':
         cls = OpenStackIdentity_3_0_Connection
+    elif auth_version == '3.x_appcred':
+        cls = OpenStackIdentity_3_0_Connection_AppCred
     elif auth_version == '3.x_oidc_access_token':
         cls = OpenStackIdentity_3_0_Connection_OIDC_access_token
     else:
