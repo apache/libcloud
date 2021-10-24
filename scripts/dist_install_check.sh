@@ -19,6 +19,11 @@
 # Verify library installs without any dependencies when using python setup.py
 # install
 echo "Running dist checks"
+
+python --version
+
+# Ensure those packages are not installed. If they are, it indicates unclean
+# environment so those checks won't work correctly
 pip show requests && exit 1
 pip show typing && exit 1
 pip show enum34 && exit 1
