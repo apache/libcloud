@@ -18,7 +18,8 @@
 
 # Verify library installs without any dependencies when using built wheel
 
-echo "Running dist wheel checks"
+echo "Running dist wheel install checks"
+python --version
 
 # Ensure those packages are not installed. If they are, it indicates unclean
 # environment so those checks won't work correctly

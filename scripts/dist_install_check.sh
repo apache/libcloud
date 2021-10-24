@@ -18,8 +18,7 @@
 
 # Verify library installs without any dependencies when using python setup.py
 # install
-echo "Running dist checks"
-
+echo "Running dist install checks"
 python --version
 
 # Ensure those packages are not installed. If they are, it indicates unclean
