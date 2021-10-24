@@ -84,6 +84,54 @@ jobs:
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}"
 
+  dist_install_checks:
+    name: Dist Install Checks
+    runs-on: ${{ matrix.os }}
+
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version:
+          - 3.5
+          - 3.6
+          - 3.7
+        os:
+          - ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install OS / deb dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
+
+      - name: Cache Python Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-tests.txt', '') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python Dependencies
+        run: |
+          pip install "tox==3.24.4"
+
+      - name: Run tox target
+        run: |
+         script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
+
   code_coverage:
     name: Generate Code Coverage
     runs-on: ubuntu-latest
