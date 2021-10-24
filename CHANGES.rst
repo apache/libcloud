@@ -99,6 +99,10 @@ Compute
   (GITHUB-1596)
   [Palash Gandhi - @palashgandhi]
 
+- [OpenStack] Add support for authenticating using application credentials.
+  (GITHUB-1597, GITHUB-1598)
+  [Daniela Bauer - @marianne013]
+
 DNS
 ~~~
 
