@@ -84,7 +84,7 @@ jobs:
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}"
 
-      - name: Run dist installchecks tox target
+      - name: Run dist install checks tox target
         if: ${{ matrix.python_version != 'pypy3' }}
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
