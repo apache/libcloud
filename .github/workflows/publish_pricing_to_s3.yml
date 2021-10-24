@@ -2,6 +2,10 @@
 name: Publish pricing.json to S3 bucket
 
 on:
+  push:
+    branches:
+      - trunk
+      - fix_pricing_job
   schedule:
     - cron: '0 13 * * *'
     - cron: '0 2 * * *'
