@@ -25,7 +25,7 @@ import time
 from collections import defaultdict, OrderedDict
 
 import requests
-import demjson  # pylint: disable=import-error
+import _jsonnet  # pylint: disable=import-error
 
 LINUX_PRICING_URLS = [
     # Deprecated instances (JSON format)
@@ -179,8 +179,10 @@ def scrape_ec2_pricing():
             match = re.match(r'^.*callback\((.*?)\);?$', data,
                              re.MULTILINE | re.DOTALL)
             data = match.group(1)
+            # NOTE: We used to use demjson, but it's not working under Python 3 and new version of
+            # setuptools anymore so we use jsonnet
             # demjson supports non-strict mode and can parse unquoted objects
-            data = demjson.decode(data)
+            data = json.loads(_jsonnet.evaluate_snippet('snippet', data))
         regions = data['config']['regions']
 
         for region_data in regions:
