@@ -1422,7 +1422,7 @@ class OpenStackIdentity_3_0_Connection_AppCred(
         Tenant, domain and scope options are ignored as they are contained
         within the app credential itself and can't be changed.
         """
-        super(OpenStackIdentity_3_0_Connection,
+        super(OpenStackIdentity_3_0_Connection_AppCred,
               self).__init__(auth_url=auth_url,
                              user_id=user_id,
                              key=key,
