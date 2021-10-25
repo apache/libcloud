@@ -102,9 +102,10 @@ def _init_once():
 
         if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
             import logging
-            # paramiko always tries to open file path in append mode which won't work with
-            # /dev/{stdout, stderr} so we just ignore those errors
 
+            # paramiko always tries to open file path in append mode which
+            # won't work with /dev/{stdout, stderr} so we just ignore those
+            # errors
             try:
                 paramiko.util.log_to_file(filename=path, level=logging.DEBUG)
             except OSError as e:
