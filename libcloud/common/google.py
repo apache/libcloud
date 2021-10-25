@@ -67,6 +67,8 @@ Please remember to secure your keys and access tokens.
 
 from __future__ import with_statement
 
+from typing import Optional
+
 try:
     import simplejson as json
 except ImportError:
@@ -124,7 +126,7 @@ def _from_utc_timestamp(timestamp):
     return datetime.datetime.strptime(timestamp, UTC_TIMESTAMP_FORMAT)
 
 
-def _get_gce_metadata(path='', retry_failed: bool = None):
+def _get_gce_metadata(path='', retry_failed: Optional[bool] = None):
     try:
         url = 'http://metadata/computeMetadata/v1/' + path.lstrip('/')
         headers = {'Metadata-Flavor': 'Google'}
