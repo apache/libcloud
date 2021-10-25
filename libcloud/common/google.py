@@ -124,11 +124,12 @@ def _from_utc_timestamp(timestamp):
     return datetime.datetime.strptime(timestamp, UTC_TIMESTAMP_FORMAT)
 
 
-def _get_gce_metadata(path=''):
+def _get_gce_metadata(path='', retry_failed: bool = None):
     try:
         url = 'http://metadata/computeMetadata/v1/' + path.lstrip('/')
         headers = {'Metadata-Flavor': 'Google'}
-        response = get_response_object(url, headers=headers)
+        response = get_response_object(url, headers=headers,
+                                       retry_failed=retry_failed)
         return response.status, '', response.body
     except Exception as e:
         return -1, str(e), None
@@ -607,7 +608,11 @@ class GoogleAuthType(object):
         Checks if we can access the GCE metadata server.
         Mocked in libcloud.test.common.google.GoogleTestCase.
         """
-        http_code, http_reason, body = _get_gce_metadata()
+        # When using oAuth credentials we check for metadata server first, so
+        # if server is unavailable and we retry many times before timing out,
+        # this will slow down the driver instantiation when retrying failed
+        # requests is enabled globally.
+        http_code, http_reason, body = _get_gce_metadata(retry_failed=False)
         if http_code == httplib.OK and body:
             return True
         return False

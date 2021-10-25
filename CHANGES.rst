@@ -16,6 +16,19 @@ Common
 
 - Update setup.py metadata and indicate we also support Python 3.10.
 
+- [Google] Update Google authentication code so we don't try to retry failed
+  request when trying to determine if GCE metadata server is available when
+  retrying is enabled globally (either via module level constant or via
+  environment variable value).
+
+  This will speed up scenarios when trying is enabled globally, but GCE
+  metadata server is not available and different type of credentials are used
+  (e.g. oAuth 2).
+
+  (GITHUB-1591)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
 Storage
 ~~~~~~~
 
