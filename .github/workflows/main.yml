@@ -35,6 +35,7 @@ jobs:
   unit_tests:
     name: Run Unit Tests And Install Checks
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}

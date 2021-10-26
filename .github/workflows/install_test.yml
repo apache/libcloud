@@ -17,7 +17,7 @@ jobs:
   install_and_verify:
     name: Install latest stable version
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 2
 
     strategy:
       fail-fast: false
@@ -42,6 +42,7 @@ jobs:
 
       - name: Install Libcloud
         run: |
+          python --version
           pip show apache-libcloud && exit 1
           pip install apache-libcloud
           pip show apache-libcloud
