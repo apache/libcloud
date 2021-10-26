@@ -12,7 +12,7 @@ Provider                              list key pairs get key pair create key pai
 `Brightbox`_                          no             no           no              no                            no                          no             
 `BSNL`_                               no             no           no              no                            no                          no             
 `Cloudscale`_                         no             no           no              no                            no                          no             
-`CloudSigma (API v2.0)`_              no             no           no              no                            no                          no             
+`CloudSigma (API v2.0)`_              yes            yes          yes             yes                           no                          yes            
 `CloudStack`_                         yes            yes          yes             yes                           no                          yes            
 `Cloudwatt`_                          yes            yes          yes             yes                           no                          yes            
 `DigitalOcean`_                       yes            yes          yes             no                            no                          yes            
