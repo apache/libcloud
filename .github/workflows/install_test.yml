@@ -3,12 +3,6 @@
 name: Install stable version using pip
 
 on:
-  push:
-    branches:
-      - requests_changes
-  pull_request:
-    branches:
-      - requests_changes
   schedule:
     - cron: '0 13 * * *'
     - cron: '0 2 * * *'
