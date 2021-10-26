@@ -595,14 +595,24 @@ class GoogleAuthType(object):
             return cls.SA
         elif cls._is_gcs_s3(user_id):
             return cls.GCS_S3
+        elif cls._is_installed_application(user_id):
+            # NOTE: This should be before "_is_gce()" call so we avoid
+            # querying GCE metadata service if that's not necessary
+            return cls.IA
         elif cls._is_gce():
             return cls.GCE
         else:
+            # TODO: It's probably safe to throw here, but we return cls.IA
+            # for backward compatibility reasons
             return cls.IA
 
     @classmethod
     def is_oauth2(cls, auth_type):
         return auth_type in cls.OAUTH2_TYPES
+
+    @staticmethod
+    def _is_installed_application(user_id):
+        return user_id.endswith('apps.googleusercontent.com')
 
     @staticmethod
     def _is_gce():
