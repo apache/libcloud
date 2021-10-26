@@ -1,0 +1,47 @@
+# Workflow which verifies that the latest stable version can be installed from
+# pip on all the supported Python versions
+name: Install stable version using pip
+
+on:
+  push:
+    branches:
+      - requests_changes
+  pull_request:
+    branches:
+      - requests_changes
+  schedule:
+    - cron: '0 13 * * *'
+    - cron: '0 2 * * *'
+
+jobs:
+  install_and_verify:
+    name: Install latest stable version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - pypy3
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Use Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install Libcloud
+        run: |
+          pip show apache-libcloud && exit 1
+          pip install apache-libcloud
+          pip show apache-libcloud
