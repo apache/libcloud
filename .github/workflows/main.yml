@@ -33,8 +33,9 @@ jobs:
           github_token: ${{ github.token }}
 
   unit_tests:
-    name: Run Unit Tests
+    name: Run Unit Tests And Install Checks
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
@@ -80,9 +81,14 @@ jobs:
         run: |
           pip install "tox==3.24.4"
 
-      - name: Run tox target
+      - name: Run unit tests tox target
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}"
+
+      - name: Run dist install checks tox target
+        if: ${{ matrix.python_version != 'pypy3' }}
+        run: |
+         script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
 
   code_coverage:
     name: Generate Code Coverage

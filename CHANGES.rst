@@ -16,6 +16,20 @@ Common
 
 - Update setup.py metadata and indicate we also support Python 3.10.
 
+- Update minimum ``requests`` version we require as part for install_requires
+  in setup.py to ``2.26.0`` when using Python >= 3.6.
+
+  This was done to avoid licensing issue with transitive dependency
+  (``chardet``).
+
+  NOTE: requests ``>=2.25.1`` will be used when using Python 3.5 since 2.26.0
+  doesn't support Python 3.5 anymore.
+
+  For more context, see https://github.com/psf/requests/pull/5797.
+  (GITHUB-1594)
+
+  Reported by Jarek Potiuk - @potiuk.
+
 Storage
 ~~~~~~~
 
