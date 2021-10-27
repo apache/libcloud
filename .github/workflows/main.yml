@@ -219,7 +219,7 @@ jobs:
 
       - name: Build Docs
         run: |
-          script -e -c "tox -e docs-travis"
+          script -e -c "tox -e docs-ci"
 
       - name: Trigger ReadTheDocs build
         env:
