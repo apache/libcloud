@@ -500,7 +500,8 @@ class Connection(object):
         self.ua.append(token)
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, stream=False, json=None):
+                method='GET', raw=False, stream=False, json=None,
+                retry_failed=None):
         """
         Request a given `action`.
 
@@ -535,6 +536,10 @@ class Connection(object):
                     and allow streaming of the response data
                     (for downloading large files)
 
+        :param retry_failed: True if failed requests should be retried. This
+                              argument can override module level constant and
+                              environment variable value on per-request basis.
+
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
 
@@ -551,6 +556,11 @@ class Connection(object):
 
         retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS',
                                        False) or RETRY_FAILED_HTTP_REQUESTS
+
+        # Method level argument has precedence over module level constant and
+        # environment variable
+        if retry_failed is not None:
+            retry_enabled = retry_failed
 
         action = self.morph_action_hook(action)
         self.action = action
