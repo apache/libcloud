@@ -509,7 +509,7 @@ class SoftLayerNodeDriver(NodeDriver):
         res = self.connection.request(
             'SoftLayer_Virtual_Guest', 'getCreateObjectOptions'
         ).object
-        return [self._to_loc(l) for l in res['datacenters']]
+        return [self._to_loc(loc) for loc in res['datacenters']]
 
     def list_nodes(self):
         mask = {

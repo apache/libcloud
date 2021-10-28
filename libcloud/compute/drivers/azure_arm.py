@@ -234,7 +234,8 @@ class AzureNodeDriver(NodeDriver):
 
         for rt in r.object["resourceTypes"]:
             if rt["resourceType"] == "virtualMachines":
-                return [self._to_location(l) for l in rt["locations"]]
+                return [self._to_location(location)
+                        for location in rt["locations"]]
 
         return []
 
