@@ -8,7 +8,7 @@ images = conn.list_images()
 image = [i for i in images if i.id == '20014110'][0]
 
 locations = conn.list_locations()
-location = [l for l in locations if l.id == '82'][0]
+location = [loc for loc in locations if loc.id == '82'][0]
 
 sizes = conn.list_sizes()
 size = [s for s in sizes if s.id == 'COP32.1/2048/60'][0]

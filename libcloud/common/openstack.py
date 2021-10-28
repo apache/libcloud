@@ -335,7 +335,9 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
             else:
                 kwargs = {}
 
+            # pylint: disable=unexpected-keyword-arg
             osa = osa.authenticate(**kwargs)  # may throw InvalidCreds
+            # pylint: enable=unexpected-keyword-arg
 
             self.auth_token = osa.auth_token
             self.auth_token_expires = osa.auth_token_expires

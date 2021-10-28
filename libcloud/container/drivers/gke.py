@@ -44,7 +44,7 @@ class GKEConnection(GoogleBaseConnection):
             user_id, key, secure=secure, auth_type=auth_type,
             credential_file=credential_file, **kwargs)
         self.request_path = '/%s/projects/%s' % (API_VERSION, project)
-        self.gke_params = None
+        self.gke_params = {}
 
     def pre_connect_hook(self, params, headers):
         """
