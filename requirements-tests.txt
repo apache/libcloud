@@ -1,5 +1,6 @@
 pep8==1.7.1
-flake8==4.0.1
+flake8==3.9.2; python <= '3.5'
+flake8==4.0.1; python >= '3.6'
 astroid==2.8.4
 pylint==2.11.1
 mock==4.0.3
