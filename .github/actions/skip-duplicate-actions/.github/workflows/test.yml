@@ -1,0 +1,65 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 12 18 * *'
+
+jobs:
+  pre_job:
+    # continue-on-error: true # Uncomment once integration is finished
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          # All of these options are optional, so you can remove them if you are happy with the defaults
+          concurrent_skipping: 'never'
+          skip_after_successful_duplicate: 'true'
+          paths_ignore: '["**/README.md", "**/docs/**"]'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
+  main_job:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Running slow tests..." && sleep 30
+
+
+  skip_individual_steps_job:
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          cancel_others: 'false'
+          paths: '["src/**", "dist/**"]'
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        run: |
+          echo "Run only if src/ or dist/ changed..." && sleep 30
+          echo "Do other stuff..."
+
+
+
+  private_action:
+    runs-on: ubuntu-latest
+    steps:
+      # To use the Action from the current branch, we checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+      - id: skip_check
+        uses: ./ # Uses this Action in the root directory
+        with:
+          github_token: ${{ github.token }}
+          paths_ignore: '["**/*.md"]'
+          cancel_others: 'true'
+          concurrent_skipping: 'outdated_runs'
+          skip_after_successful_duplicate: 'true'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+      - if: ${{ steps.skip_check.outputs.should_skip == 'false' }}
+        run: |
+          echo "Do stuff..." && sleep 30
