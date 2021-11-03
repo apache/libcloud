@@ -119,8 +119,7 @@ class MinimalRetry:
                         time.sleep(current_delay)
                         current_delay *= self.backoff
 
-            if last_exc and datetime.now() >= end:
-                raise last_exc
+            raise last_exc
 
         return retry_loop
 

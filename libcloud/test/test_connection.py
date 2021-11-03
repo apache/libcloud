@@ -470,6 +470,33 @@ class ConnectionClassTestCase(unittest.TestCase):
             self.assertEqual(mock_connect.call_count, 2,
                             'Retry logic failed')
 
+    def test_retry_rate_limit_error_success_on_second_attempt(self):
+        con = Connection()
+        con.connection = Mock()
+        connect_method = 'libcloud.common.base.Connection.request'
+
+        self.retry_counter = 0
+
+        def mock_connect_side_effect(*args, **kwargs):
+            self.retry_counter += 1
+
+            if self.retry_counter < 2:
+                headers = {'retry-after': 0.2}
+                raise RateLimitReachedError(headers=headers)
+
+            return 'success'
+
+        with patch(connect_method) as mock_connect:
+            mock_connect.__name__ = 'mock_connect'
+            mock_connect.side_effect = mock_connect_side_effect
+            retry_request = Retry(timeout=0.6, retry_delay=0.1,
+                                  backoff=1)
+            result = retry_request(con.request)(action='/')
+            self.assertEqual(result, "success")
+
+            self.assertEqual(mock_connect.call_count, 2,
+                            'Retry logic failed')
+
 
 class CertificateConnectionClassTestCase(unittest.TestCase):
     def setUp(self):
