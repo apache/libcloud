@@ -27,6 +27,7 @@ import libcloud.common.base
 
 from libcloud.test import unittest
 from libcloud.common.base import Connection, CertificateConnection
+from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.http import LibcloudBaseConnection
 from libcloud.http import LibcloudConnection
 from libcloud.http import SignedHTTPSAdapter
@@ -451,6 +452,23 @@ class ConnectionClassTestCase(unittest.TestCase):
 
             self.assertGreater(mock_connect.call_count, 1,
                                'Retry logic failed')
+
+    def test_retry_rate_limit_error_timeout(self):
+        con = Connection()
+        con.connection = Mock()
+        connect_method = 'libcloud.common.base.Connection.request'
+
+        with patch(connect_method) as mock_connect:
+            mock_connect.__name__ = 'mock_connect'
+            with self.assertRaises(RateLimitReachedError):
+                headers = {'retry-after': 0.2}
+                mock_connect.side_effect = RateLimitReachedError(headers=headers)
+                retry_request = Retry(timeout=0.4, retry_delay=0.1,
+                                      backoff=1)
+                retry_request(con.request)(action='/')
+
+            self.assertEqual(mock_connect.call_count, 2,
+                            'Retry logic failed')
 
 
 class CertificateConnectionClassTestCase(unittest.TestCase):
