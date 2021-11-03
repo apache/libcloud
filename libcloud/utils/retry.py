@@ -18,6 +18,7 @@ import ssl
 import time
 from datetime import datetime, timedelta
 from functools import wraps
+import logging
 
 from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError
@@ -26,7 +27,7 @@ __all__ = [
     'Retry'
 ]
 
-
+_logger = logging.getLogger(__name__)
 # Error message which indicates a transient SSL error upon which request
 # can be retried
 TRANSIENT_SSL_ERROR = 'The read operation timed out'
@@ -42,6 +43,7 @@ class TransientSSLError(ssl.SSLError):
 DEFAULT_TIMEOUT = 30  # default retry timeout
 DEFAULT_DELAY = 1  # default sleep delay used in each iterator
 DEFAULT_BACKOFF = 1  # retry backup multiplier
+DEFAULT_MAX_RATE_LIMIT_RETRIES = float("inf")  # default max number of times to retry on rate limit
 RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
                     httplib.NotConnected, httplib.ImproperConnectionState,
                     TransientSSLError)
@@ -50,15 +52,18 @@ RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
 class MinimalRetry:
 
     def __init__(self, retry_delay=DEFAULT_DELAY,
-                 timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
+                 timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF,
+                 max_rate_limit_retries=DEFAULT_MAX_RATE_LIMIT_RETRIES):
         """
         Wrapper around retrying that helps to handle common transient exceptions.
         This minimalistic version only retries SSL errors and rate limiting.
-        :param retry_exceptions: types of exceptions to retry on.
 
         :param retry_delay: retry delay between the attempts.
         :param timeout: maximum time to wait.
         :param backoff: multiplier added to delay between attempts.
+        :param max_rate_limit_retries: The maximum number of retries to do when being rate limited by the server.
+                                       Set to `float("inf")` if retrying forever is desired.
+                                       Being rate limited does not count towards the timeout.
 
         :Example:
 
@@ -72,12 +77,15 @@ class MinimalRetry:
             timeout = DEFAULT_TIMEOUT
         if backoff is None:
             backoff = DEFAULT_BACKOFF
+        if max_rate_limit_retries is None:
+            max_rate_limit_retries = DEFAULT_MAX_RATE_LIMIT_RETRIES
 
         timeout = max(timeout, 0)
 
         self.retry_delay = retry_delay
         self.timeout = timeout
         self.backoff = backoff
+        self.max_rate_limit_retries = max_rate_limit_retries
 
     def __call__(self, func):
         def transform_ssl_error(function, *args, **kwargs):
@@ -93,19 +101,21 @@ class MinimalRetry:
         def retry_loop(*args, **kwargs):
             current_delay = self.retry_delay
             end = datetime.now() + timedelta(seconds=self.timeout)
+            number_rate_limited_retries = 0
 
             while True:
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
                 except Exception as exc:
-                    if isinstance(exc, RateLimitReachedError):
+                    if isinstance(exc, RateLimitReachedError) and number_rate_limited_retries <= self.max_rate_limit_retries:
+                        _logger.debug("You are being rate limited, backing off...")
                         time.sleep(exc.retry_after)
-
                         # Reset retries if we're told to wait due to rate
                         # limiting
                         current_delay = self.retry_delay
                         end = datetime.now() + timedelta(
                             seconds=exc.retry_after + self.timeout)
+                        number_rate_limited_retries += 1
                     elif datetime.now() >= end:
                         raise
                     elif self.should_retry(exc):
