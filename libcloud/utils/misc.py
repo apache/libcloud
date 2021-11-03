@@ -22,9 +22,12 @@ from libcloud.common.providers import get_driver as _get_driver
 from libcloud.common.providers import set_driver as _set_driver
 # Imported for backward compatibility
 # noinspection PyProtectedMember
-from libcloud.utils.retry import (Retry,
-                                  DEFAULT_DELAY, DEFAULT_TIMEOUT, DEFAULT_BACKOFF,
-                                  TRANSIENT_SSL_ERROR, TransientSSLError)
+from libcloud.utils.retry import Retry  # flake8: noqa
+from libcloud.utils.retry import DEFAULT_DELAY  # noqa: F401
+from libcloud.utils.retry import DEFAULT_TIMEOUT  # noqa: F401
+from libcloud.utils.retry import DEFAULT_BACKOFF  # noqa: F401
+from libcloud.utils.retry import TRANSIENT_SSL_ERROR  # noqa: F401
+from libcloud.utils.retry import TransientSSLError  # noqa: F401
 
 
 __all__ = [
@@ -51,8 +54,8 @@ def find(l, predicate):
 # been moved to "libcloud.common.providers" module
 get_driver = _get_driver
 set_driver = _set_driver
-# Note: This is an alias for backward-compatibility for a function which has been
-# moved to "libcloud.util.retry" module
+# Note: This is an alias for backward-compatibility for a function which has
+# been moved to "libcloud.util.retry" module
 retry = Retry
 
 
@@ -254,6 +257,3 @@ class ReprMixin(object):
 
     def __str__(self):
         return str(self.__repr__())
-
-
-
