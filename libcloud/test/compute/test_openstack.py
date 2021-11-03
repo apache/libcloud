@@ -37,6 +37,8 @@ from libcloud.utils.py3 import method_type
 from libcloud.utils.py3 import u
 
 from libcloud.common.base import LibcloudConnection
+from libcloud.common.exceptions import BaseHTTPError
+from libcloud.common.openstack_identity import OpenStackAuthenticationCache
 from libcloud.common.types import InvalidCredsError, MalformedResponseError, \
     LibcloudError
 from libcloud.compute.types import Provider, KeyPairDoesNotExistError, StorageVolumeState, \
@@ -218,6 +220,34 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
             self.assertEqual(True, isinstance(e, MalformedResponseError))
         else:
             self.fail('test should have thrown')
+
+    def test_ex_auth_cache_passed_to_identity_connection(self):
+        kwargs = self.driver_kwargs.copy()
+        kwargs['ex_auth_cache'] = OpenStackMockAuthCache()
+        driver = self.driver_type(*self.driver_args, **kwargs)
+        driver.list_nodes()
+        self.assertEqual(kwargs['ex_auth_cache'],
+                         driver.connection.get_auth_class().auth_cache)
+
+    def test_unauthorized_clears_cached_auth_context(self):
+        auth_cache = OpenStackMockAuthCache()
+        self.assertEqual(len(auth_cache), 0)
+
+        kwargs = self.driver_kwargs.copy()
+        kwargs['ex_auth_cache'] = auth_cache
+        driver = self.driver_type(*self.driver_args, **kwargs)
+        driver.list_nodes()
+
+        # Token was cached
+        self.assertEqual(len(auth_cache), 1)
+
+        # Simulate token being revoked
+        self.driver_klass.connectionCls.conn_class.type = 'UNAUTHORIZED'
+        with pytest.raises(BaseHTTPError) as ex:
+            driver.list_nodes()
+
+        # Token was evicted
+        self.assertEqual(len(auth_cache), 0)
 
     def test_error_parsing_when_body_is_missing_message(self):
         OpenStackMockHttp.type = 'NO_MESSAGE_IN_ERROR_BODY'
@@ -516,6 +546,9 @@ class OpenStackMockHttp(MockHttp, unittest.TestCase):
         body = self.fixtures.load('v1_slug_servers_detail_metadata.xml')
         return (httplib.OK, body, XML_HEADERS, httplib.responses[httplib.OK])
 
+    def _v1_0_slug_servers_detail_UNAUTHORIZED(self, method, url, body, headers):
+        return (httplib.UNAUTHORIZED, "", {}, httplib.responses[httplib.UNAUTHORIZED])
+
     def _v1_0_slug_images_333111(self, method, url, body, headers):
         if method != "DELETE":
             raise NotImplementedError()
@@ -675,7 +708,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
     def _force_reauthentication(self):
         """
-        Trash current auth token so driver will be forced to re-authentication
+        Trash current auth token so driver will be forced to re-authenticate
         on next request.
         """
         self.driver.connection._ex_force_base_url = 'http://ex_force_base_url.com:666/forced_url'
@@ -765,6 +798,35 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                          driver.connection.host)
         self.assertEqual('/v1.1/slug', driver.connection.request_path)
         self.assertEqual(443, driver.connection.port)
+
+    def test_ex_auth_cache_passed_to_identity_connection(self):
+        kwargs = self.driver_kwargs.copy()
+        kwargs['ex_auth_cache'] = OpenStackMockAuthCache()
+        driver = self.driver_type(*self.driver_args, **kwargs)
+        osa = driver.connection.get_auth_class()
+        driver.list_nodes()
+        self.assertEqual(kwargs['ex_auth_cache'],
+                         driver.connection.get_auth_class().auth_cache)
+
+    def test_unauthorized_clears_cached_auth_context(self):
+        auth_cache = OpenStackMockAuthCache()
+        self.assertEqual(len(auth_cache), 0)
+
+        kwargs = self.driver_kwargs.copy()
+        kwargs['ex_auth_cache'] = auth_cache
+        driver = self.driver_type(*self.driver_args, **kwargs)
+        driver.list_nodes()
+
+        # Token was cached
+        self.assertEqual(len(auth_cache), 1)
+
+        # Simulate token being revoked
+        self.driver_klass.connectionCls.conn_class.type = 'UNAUTHORIZED'
+        with pytest.raises(BaseHTTPError) as ex:
+            driver.list_nodes()
+
+        # Token was evicted
+        self.assertEqual(len(auth_cache), 0)
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -891,7 +953,8 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
                     "policy_class": "standard_flavor",
                     "class": "standard1",
                     "disk_io_index": "2",
-                    "number_of_data_disks": "0"
+                    "number_of_data_disks": "0",
+                    "disabled": False
                 })
 
         self.assertEqual(sizes[0].vcpus, 8)
@@ -2167,6 +2230,12 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(quota_set.floatingip.in_use, 1)
         self.assertEqual(quota_set.floatingip.reserved, 0)
 
+    def test_ex_get_volume_quota(self):
+        quota_set = self.driver.ex_get_volume_quotas("tenant_id")
+        self.assertEqual(quota_set.gigabytes.limit, 1000)
+        self.assertEqual(quota_set.gigabytes.in_use, 10)
+        self.assertEqual(quota_set.gigabytes.reserved, 0)
+
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
     should_list_volumes = True
@@ -2200,6 +2269,9 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v1_1_slug_servers_detail_ERROR_STATE_NO_IMAGE_ID(self, method, url, body, headers):
         body = self.fixtures.load('_servers_detail_ERROR_STATE.json')
         return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v2_1337_servers_detail_UNAUTHORIZED(self, method, url, body, headers):
+        return (httplib.UNAUTHORIZED, "", {}, httplib.responses[httplib.UNAUTHORIZED])
 
     def _v2_1337_servers_does_not_exist(self, *args, **kwargs):
         return httplib.NOT_FOUND, None, {}, httplib.responses[httplib.NOT_FOUND]
@@ -2848,6 +2920,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
         if method == 'GET':
             body = self.fixtures.load('_v2_0__network_quota.json')
             return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
+
+    def _v3_1337_os_quota_sets_tenant_id(self, method, url, body, headers):
+        if method == 'GET':
+            body = self.fixtures.load('_v3_0__volume_quota.json')
+            return (httplib.OK, body, self.json_content_headers, httplib.responses[httplib.OK])
 # This exists because the nova compute url in devstack has v2 in there but the v1.1 fixtures
 # work fine.
 
@@ -2866,6 +2943,9 @@ class OpenStack_2_0_MockHttp(OpenStack_1_1_MockHttp):
             new_name = name.replace('_v1_1_slug_', '_v2_1337_')
             setattr(self, new_name, method_type(method, self,
                                                 OpenStack_2_0_MockHttp))
+
+    def _v2_0_tenants_UNAUTHORIZED(self, method, url, body, headers):
+        return (httplib.UNAUTHORIZED, "", {}, httplib.responses[httplib.UNAUTHORIZED])
 
 
 class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
@@ -2892,6 +2972,27 @@ class OpenStack_1_1_Auth_2_0_Tests(OpenStack_1_1_Tests):
             'roles': [{'description': 'Default Role.',
                        'id': 'identity:default',
                        'name': 'identity:default'}]})
+
+
+class OpenStackMockAuthCache(OpenStackAuthenticationCache):
+    def __init__(self):
+        self.reset()
+
+    def get(self, key):
+        return self.store.get(key)
+
+    def put(self, key, context):
+        self.store[key] = context
+
+    def clear(self, key):
+        if key in self.store:
+            del self.store[key]
+
+    def reset(self):
+        self.store = {}
+
+    def __len__(self):
+        return len(self.store)
 
 
 if __name__ == '__main__':

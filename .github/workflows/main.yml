@@ -28,13 +28,14 @@ jobs:
       - id: skip_check
         # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
         # actions
-        uses: ./.github/actions/skip-duplicate-actions # v3.4.0
+        uses: ./.github/actions/skip-duplicate-actions # v3.4.1
         with:
           github_token: ${{ github.token }}
 
   unit_tests:
-    name: Run Unit Tests
+    name: Run Unit Tests And Install Checks
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
@@ -48,6 +49,7 @@ jobs:
           - 3.7
           - 3.8
           - 3.9
+          - "3.10"
           - pypy3
         os:
           - ubuntu-latest
@@ -77,11 +79,16 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
-      - name: Run tox target
+      - name: Run unit tests tox target
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}"
+
+      - name: Run dist install checks tox target
+        if: ${{ matrix.python_version != 'pypy3' }}
+        run: |
+         script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
 
   code_coverage:
     name: Generate Code Coverage
@@ -119,7 +126,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
       - name: Run Checks
         run: |
@@ -161,7 +168,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
       - name: Run Checks
         run: |
@@ -208,11 +215,11 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
       - name: Build Docs
         run: |
-          script -e -c "tox -e docs-travis"
+          script -e -c "tox -e docs-ci"
 
       - name: Trigger ReadTheDocs build
         env:

@@ -159,6 +159,11 @@ class LocalTests(unittest.TestCase):
         objects = self.driver.list_container_objects(container=container)
         self.assertEqual(len(objects), 5)
 
+        prefix = os.path.join('path', 'invalid')
+        objects = self.driver.list_container_objects(container=container,
+                                                     prefix=prefix)
+        self.assertEqual(len(objects), 0)
+
         prefix = os.path.join('path', 'to')
         objects = self.driver.list_container_objects(container=container,
                                                      prefix=prefix)

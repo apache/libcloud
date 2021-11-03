@@ -10,6 +10,7 @@ jobs:
   generate_and_publish_pricing_data:
     name: Generate and Publish Pricing file to S3
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     strategy:
       matrix:
@@ -32,7 +33,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
       - name: Generate and publish pricing data
         env:

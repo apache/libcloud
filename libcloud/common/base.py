@@ -502,7 +502,8 @@ class Connection(object):
         self.ua.append(token)
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, stream=False, json=None):
+                method='GET', raw=False, stream=False, json=None,
+                retry_failed=None):
         """
         Request a given `action`.
 
@@ -537,6 +538,10 @@ class Connection(object):
                     and allow streaming of the response data
                     (for downloading large files)
 
+        :param retry_failed: True if failed requests should be retried. This
+                              argument can override module level constant and
+                              environment variable value on per-request basis.
+
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
 
@@ -553,6 +558,11 @@ class Connection(object):
 
         retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS',
                                        False) or RETRY_FAILED_HTTP_REQUESTS
+
+        # Method level argument has precedence over module level constant and
+        # environment variable
+        if retry_failed is not None:
+            retry_enabled = retry_failed
 
         action = self.morph_action_hook(action)
         self.action = action
@@ -629,7 +639,7 @@ class Connection(object):
 
             if errno == -5:
                 # Throw a more-friendly exception on "no address associated
-                # with hostname" error. This error could simpli indicate that
+                # with hostname" error. This error could simply indicate that
                 # "host" Connection class attribute is set to an incorrect
                 # value
                 class_name = self.__class__.__name__

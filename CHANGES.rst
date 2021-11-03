@@ -7,6 +7,50 @@ Changes in Apache Libcloud 3.3.2 (in development)
 Common
 ~~~~~~
 
+- Fix how we set HTTP request timeout on the underlying requests session
+  object. requests library has changed how timeout is set so our old
+  code had no affect.
+
+  (GITHUB-1575, GITHUB-1576)
+  [Dimitris Galanis - @dimgal1]
+
+- Update setup.py metadata and indicate we also support Python 3.10.
+
+- [Google] Update Google authentication code so so we don't try to contact
+  GCE metadata server when determining auth credentials type when oAuth 2.0 /
+  installed app type of credentials are used.
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- [Google] Update Google authentication code so we don't try to retry failed
+  request when trying to determine if GCE metadata server is available when
+  retrying is enabled globally (either via module level constant or via
+  environment variable value).
+
+  This will speed up scenarios when trying is enabled globally, but GCE
+  metadata server is not available and different type of credentials are used
+  (e.g. oAuth 2).
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- Update minimum ``requests`` version we require as part for install_requires
+  in setup.py to ``2.26.0`` when using Python >= 3.6.
+
+  This was done to avoid licensing issue with transitive dependency
+  (``chardet``).
+
+  NOTE: requests ``>=2.25.1`` will be used when using Python 3.5 since 2.26.0
+  doesn't support Python 3.5 anymore.
+
+  For more context, see https://github.com/psf/requests/pull/5797.
+  (GITHUB-1594)
+
+  Reported by Jarek Potiuk - @potiuk.
+
 - Update HTTP connection and request retry code to be more flexible so user
   can specify and utilize custom retry logic which can be configured via
   connection retryCls attribute
@@ -35,6 +79,11 @@ Storage
 
   Reported by Melissa Kersh - @mkcello96
   (GITHUB-1551)
+
+- [Local Storage] Optimize ``iterate_container_objects`` method to perform
+  early filtering if ``prefix`` argument is provided.
+  (GITHUB-1584)
+  [@Ido-Levi]
 
 Compute
 ~~~~~~~
@@ -72,6 +121,49 @@ Compute
   (GITHUB-1569)
   [@dpeschman]
 
+- [OpenStack] Enable to get Volume Quota details in OpenStack driver.
+
+  (GITHUB-1586)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Add disabled property to OpenStack images.
+
+  (GITHUB-1615)
+  [Miguel Caballer - @micafer]
+
+- [CloudSigma] Various updates, improvements and new functionality in the 
+  driver (support for new regions, instance types, additional standard API an 
+  extension methods, etc.).
+
+  (GITHUB-1558)
+  [Dimitris Galanis - @dimgal1]
+
+- [OpenStack] Add binding:host_id value to the OpenStack port information.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Add support for ``gp3`` and ``io2`` volume types. Also add
+  ``ex_throughput`` argument to the ``create_volume`` method.
+  (GITHUB-1596)
+  [Palash Gandhi - @palashgandhi]
+
+- [OpenStack] Add support for authenticating using application credentials.
+  (GITHUB-1597, GITHUB-1598)
+  [Daniela Bauer - @marianne013]
+
+- [OpenStack] Add support for using optional external cache for auth tokens
+
+  This cache can be shared by multiple processes which results in much less
+  tokens being allocated when many different instances / processes 
+  are utilizing the same set of credentials.
+
+  This functionality can be used by implementing a custom cache class with 
+  caching logic (e.g. storing cache context on a local filesystem, external
+  system such as Redis or similar) + using ``ex_auth_cache`` driver constructor
+  argument.
+  (GITHUB-1460, GITHUB-1557)
+  [@dpeschman]
+
 DNS
 ~~~
 
@@ -83,6 +175,17 @@ DNS
   parameters if they are not provided as method arguments.
   (GITHUB-1570)
   [Gasper Vozel - @karantan]
+
+- [NSOne] Fix MX records and root domain handling.
+  (GITHUB-1571)
+  [Gasper Vozel - @karantan]
+
+Other
+~~~~~
+
+- Fix ``python_requires`` setup.py metadata item value.
+  (GITHUB-1606)
+  [Michał Górny - @mgorny]
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------

@@ -83,6 +83,8 @@ class BaseTestCase(unittest.TestCase):
         self.driver.list_records = Mock()
         self.driver.list_records.return_value = mock_records
 
+        now = datetime.datetime.utcnow()
+
         result = self.driver.export_zone_to_bind_format(zone=zone)
         self.driver.export_zone_to_bind_zone_file(zone=zone,
                                                   file_path=self.tmp_path)
@@ -93,7 +95,6 @@ class BaseTestCase(unittest.TestCase):
         lines1 = result.split('\n')
         lines2 = content.split('\n')
 
-        now = datetime.datetime.utcnow()
         date_str = "%s-%s-%s %s:%s:%s" % (now.year, zero_pad(now.month),
                                           zero_pad(now.day),
                                           zero_pad(now.hour),

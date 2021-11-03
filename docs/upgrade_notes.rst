@@ -5,6 +5,16 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.3.2
+--------------
+
+* Exception message changed in OpenStack drivers
+
+  Attempting to use an identity API that requires authentication without an
+  authentication token raises a ValueError.  The exception message used to be
+  "Not to be authenticated to perform this request", but has now been changed
+  to "Need to be authenticated to perform this request".
+
 Libcloud 3.3.0
 --------------
 

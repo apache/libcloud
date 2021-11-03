@@ -173,9 +173,16 @@ SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 # setuptools >= 36.2
 # For installation, minimum required pip version is 1.4
 # Reference: https://hynek.me/articles/conditional-python-dependencies/
-INSTALL_REQUIREMENTS = [
-    'requests>=2.5.0',
-]
+# We rely on >= 2.26.0 to avoid issues with LGL transitive dependecy
+# See https://github.com/apache/libcloud/issues/1594 for more context
+INSTALL_REQUIREMENTS = []
+
+if sys.version_info < (3, 6, 0):
+    # requests 2.26.0 doesn't support Python 3.5 anymore
+    INSTALL_REQUIREMENTS.append('requests>=2.25.1')
+else:
+    INSTALL_REQUIREMENTS.append('requests>=2.26.0')
+
 
 setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
 setuptools_version = tuple([int(c) for c in setuptools_version])
@@ -271,7 +278,7 @@ setup(
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     install_requires=INSTALL_REQUIREMENTS,
-    python_requires=">=3.5.*, <4",
+    python_requires=">=3.5, <4",
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
@@ -302,6 +309,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ]

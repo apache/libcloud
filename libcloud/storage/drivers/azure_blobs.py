@@ -1100,4 +1100,5 @@ class AzureBlobsStorageDriver(StorageDriver):
                                            headers=headers)
 
         if response.status != httplib.OK:
+            # pylint: disable=too-many-function-args
             response.parse_error('Setting metadata')

@@ -12,7 +12,7 @@ Provider                              list nodes create node reboot node destroy
 `Brightbox`_                          yes        yes         no          yes          no         no        yes         yes        no         
 `BSNL`_                               yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `Cloudscale`_                         yes        yes         yes         yes          yes        yes       yes         yes        no         
-`CloudSigma (API v2.0)`_              yes        yes         no          yes          yes        yes       yes         yes        no         
+`CloudSigma (API v2.0)`_              yes        yes         yes         yes          yes        yes       yes         yes        no         
 `CloudStack`_                         yes        yes         yes         yes          no         no        yes         yes        yes        
 `Cloudwatt`_                          yes        yes         yes         yes          yes        yes       yes         yes        yes        
 `DigitalOcean`_                       yes        yes         yes         yes          no         no        yes         yes        no         

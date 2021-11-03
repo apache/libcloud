@@ -20,6 +20,7 @@ import random
 import platform
 import warnings
 import threading
+import time
 
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
@@ -138,10 +139,43 @@ class HttpLayerTestCase(unittest.TestCase):
         self.assertEqual(connection.response.status_code, httplib.OK)
         self.assertEqual(connection.response.content, b'/test/prepared-request-3')
 
+    def test_request_custom_timeout_no_timeout(self):
+        def response_hook(*args, **kwargs):
+            # Assert timeout has been passed correctly
+            self.assertEqual(kwargs['timeout'], 5)
+
+        hooks = {
+            'response': response_hook
+        }
+
+        connection = LibcloudConnection(host=self.listen_host, port=self.listen_port, timeout=5)
+        connection.request(method='GET', url='/test', hooks=hooks)
+
+    def test_request_custom_timeout_timeout(self):
+        def response_hook(*args, **kwargs):
+            # Assert timeout has been passed correctly
+            self.assertEqual(kwargs['timeout'], 0.5)
+
+        hooks = {
+            'response': response_hook
+        }
+
+        connection = LibcloudConnection(host=self.listen_host, port=self.listen_port, timeout=0.5)
+        self.assertRaisesRegex(requests.exceptions.ReadTimeout, 'Read timed out',
+                               connection.request,
+                               method='GET', url='/test-timeout', hooks=hooks)
+
 
 class MockHTTPServerRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path in ['/test/prepared-request-1', '/test/prepared-request-2']:
+        if self.path in ['/test']:
+            self.send_response(requests.codes.ok)
+            self.end_headers()
+        if self.path in ['/test-timeout']:
+            time.sleep(1)
+            self.send_response(requests.codes.ok)
+            self.end_headers()
+        elif self.path in ['/test/prepared-request-1', '/test/prepared-request-2']:
             # Verify that chunked encoding is not used for prepared requests
             # with empty body
             # See https://github.com/apache/libcloud/issues/1487

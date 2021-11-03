@@ -59,6 +59,7 @@ GCE_PARAMS_PEM_KEY = ('email@developer.gserviceaccount.com', PEM_KEY)
 GCE_PARAMS_JSON_KEY = ('email@developer.gserviceaccount.com', JSON_KEY)
 GCE_PARAMS_KEY = ('email@developer.gserviceaccount.com', KEY_STR)
 GCE_PARAMS_IA = ('client_id', 'client_secret')
+GCE_PARAMS_IA_2 = ('client_id@test.apps.googleusercontent.com', 'client_secret')
 GCE_PARAMS_GCE = ('foo', 'bar')
 # GOOG + 16 alphanumeric chars
 GCS_S3_PARAMS_20 = ('GOOG0123456789ABCXYZ',
@@ -252,6 +253,15 @@ class GoogleAuthTypeTest(GoogleTestCase):
                 GoogleAuthType.GCS_S3)
             self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS_GCE[0]),
                              GoogleAuthType.GCE)
+
+    def test_guess_gce_metadata_server_not_called_for_ia(self):
+        # Verify that we don't try to contact GCE metadata server in case IA
+        # credentials are used
+        with mock.patch.object(GoogleAuthType, '_is_gce', return_value=False):
+            self.assertEqual(GoogleAuthType._is_gce.call_count, 0)
+            self.assertEqual(GoogleAuthType.guess_type(GCE_PARAMS_IA_2[0]),
+                            GoogleAuthType.IA)
+            self.assertEqual(GoogleAuthType._is_gce.call_count, 0)
 
 
 class GoogleOAuth2CredentialTest(GoogleTestCase):

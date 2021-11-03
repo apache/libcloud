@@ -140,7 +140,7 @@ class BaseRackspaceNovaTestCase(object):
         clear_pricing_data()
         self.node = self.driver.list_nodes()[1]
 
-    def test_service_catalog_contais_right_endpoint(self):
+    def test_service_catalog_contains_right_endpoint(self):
         self.assertEqual(self.driver.connection.get_endpoint(),
                          self.expected_endpoint)
 

@@ -67,6 +67,8 @@ Please remember to secure your keys and access tokens.
 
 from __future__ import with_statement
 
+from typing import Optional
+
 try:
     import simplejson as json
 except ImportError:
@@ -124,11 +126,12 @@ def _from_utc_timestamp(timestamp):
     return datetime.datetime.strptime(timestamp, UTC_TIMESTAMP_FORMAT)
 
 
-def _get_gce_metadata(path=''):
+def _get_gce_metadata(path='', retry_failed: Optional[bool] = None):
     try:
         url = 'http://metadata/computeMetadata/v1/' + path.lstrip('/')
         headers = {'Metadata-Flavor': 'Google'}
-        response = get_response_object(url, headers=headers)
+        response = get_response_object(url, headers=headers,
+                                       retry_failed=retry_failed)
         return response.status, '', response.body
     except Exception as e:
         return -1, str(e), None
@@ -592,9 +595,15 @@ class GoogleAuthType(object):
             return cls.SA
         elif cls._is_gcs_s3(user_id):
             return cls.GCS_S3
+        elif cls._is_installed_application(user_id):
+            # NOTE: This should be before "_is_gce()" call so we avoid
+            # querying GCE metadata service if that's not necessary
+            return cls.IA
         elif cls._is_gce():
             return cls.GCE
         else:
+            # TODO: It's probably safe to throw here, but we return cls.IA
+            # for backward compatibility reasons
             return cls.IA
 
     @classmethod
@@ -602,12 +611,20 @@ class GoogleAuthType(object):
         return auth_type in cls.OAUTH2_TYPES
 
     @staticmethod
+    def _is_installed_application(user_id):
+        return user_id.endswith('apps.googleusercontent.com')
+
+    @staticmethod
     def _is_gce():
         """
         Checks if we can access the GCE metadata server.
         Mocked in libcloud.test.common.google.GoogleTestCase.
         """
-        http_code, http_reason, body = _get_gce_metadata()
+        # When using oAuth credentials we check for metadata server first, so
+        # if server is unavailable and we retry many times before timing out,
+        # this will slow down the driver instantiation when retrying failed
+        # requests is enabled globally.
+        http_code, http_reason, body = _get_gce_metadata(retry_failed=False)
         if http_code == httplib.OK and body:
             return True
         return False

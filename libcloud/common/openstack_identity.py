@@ -18,6 +18,7 @@ Common / shared code for handling authentication against OpenStack identity
 service (Keystone).
 """
 
+from collections import namedtuple
 import datetime
 
 from libcloud.utils.py3 import httplib
@@ -34,6 +35,7 @@ except ImportError:
     import json  # type: ignore
 
 AUTH_API_VERSION = '1.1'
+AUTH_TOKEN_HEADER = 'X-Auth-Token'
 
 # Auth versions which contain token expiration information.
 AUTH_VERSIONS_WITH_EXPIRES = [
@@ -44,6 +46,7 @@ AUTH_VERSIONS_WITH_EXPIRES = [
     '2.0_voms',
     '3.0',
     '3.x_password',
+    '3.x_appcred',
     '3.x_oidc_access_token'
 ]
 
@@ -55,6 +58,10 @@ AUTH_TOKEN_EXPIRES_GRACE_SECONDS = 5
 
 
 __all__ = [
+    'OpenStackAuthenticationCache',
+    'OpenStackAuthenticationCacheKey',
+    'OpenStackAuthenticationContext',
+
     'OpenStackIdentityVersion',
     'OpenStackIdentityDomain',
     'OpenStackIdentityProject',
@@ -72,10 +79,77 @@ __all__ = [
     'OpenStackIdentity_2_0_Connection',
     'OpenStackIdentity_2_0_Connection_VOMS',
     'OpenStackIdentity_3_0_Connection',
+    'OpenStackIdentity_3_0_Connection_AppCred',
     'OpenStackIdentity_3_0_Connection_OIDC_access_token',
 
     'get_class_for_auth_version'
 ]
+
+
+class OpenStackAuthenticationCache:
+    """
+    Base class for external OpenStack authentication caches.
+
+    Authentication tokens are always cached in memory in
+    :class:`OpenStackIdentityConnection`.auth_token and related fields.  These
+    tokens are lost when the driver is garbage collected.  To share tokens
+    among multiple drivers, processes, or systems, use an
+    :class:`OpenStackAuthenticationCache` in
+    OpenStackIdentityConnection.auth_cache.
+
+    Cache implementors should inherit this class and define the methods below.
+    """
+    def get(self, key):
+        """
+        Get an authentication context from the cache.
+
+        :param key: Key to fetch.
+        :type key: :class:`.OpenStackAuthenticationCacheKey`
+
+        :return: The cached context for the given key, if present; None if not.
+        :rtype: :class:`OpenStackAuthenticationContext`
+        """
+        raise NotImplementedError
+
+    def put(self, key, context):
+        """
+        Put an authentication context into the cache.
+
+        :param key: Key where the context will be stored.
+        :type key: :class:`.OpenStackAuthenticationCacheKey`
+
+        :param context: The context to cache.
+        :type context: :class:`.OpenStackAuthenticationContext`
+        """
+        raise NotImplementedError
+
+    def clear(self, key):
+        """
+        Clear an authentication context from the cache.
+
+        :param key: Key to clear.
+        :type key: :class:`.OpenStackAuthenticationCacheKey`
+        """
+        raise NotImplementedError
+
+
+OpenStackAuthenticationCacheKey = namedtuple(
+    'OpenStackAuthenticationCacheKey',
+    ['auth_url', 'user_id', 'token_scope', 'tenant_name', 'domain_name',
+     'tenant_domain_id'])
+
+
+class OpenStackAuthenticationContext:
+    """
+    An authentication token and related context.
+    """
+    def __init__(self, token, expiration=None, user=None, roles=None,
+                 urls=None):
+        self.token = token
+        self.expiration = expiration
+        self.user = user
+        self.roles = roles
+        self.urls = urls
 
 
 class OpenStackIdentityEndpointType(object):
@@ -578,7 +652,8 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  tenant_domain_id='default', domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, proxy_url=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None,
+                 auth_cache=None):
         super(OpenStackIdentityConnection, self).__init__(user_id=user_id,
                                                           key=key,
                                                           url=auth_url,
@@ -597,13 +672,16 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         self.auth_url = auth_url
         self.tenant_name = tenant_name
         self.domain_name = domain_name
+        self.tenant_domain_id = tenant_domain_id
         self.token_scope = token_scope
         self.timeout = timeout
+        self.auth_cache = auth_cache
 
         self.urls = {}
         self.auth_token = None
         self.auth_token_expires = None
         self.auth_user_info = None
+        self.auth_user_roles = None
 
     def authenticated_request(self, action, params=None, data=None,
                               headers=None, method='GET', raw=False):
@@ -611,13 +689,18 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         Perform an authenticated request against the identity API.
         """
         if not self.auth_token:
-            raise ValueError('Not to be authenticated to perform this request')
+            raise ValueError(
+                'Need to be authenticated to perform this request')
 
         headers = headers or {}
-        headers['X-Auth-Token'] = self.auth_token
+        headers[AUTH_TOKEN_HEADER] = self.auth_token
 
-        return self.request(action=action, params=params, data=data,
-                            headers=headers, method=method, raw=raw)
+        response = self.request(action=action, params=params, data=data,
+                                headers=headers, method=method, raw=raw)
+        # Evict cached auth token if we receive Unauthorized while using it
+        if response.status == httplib.UNAUTHORIZED:
+            self.clear_cached_auth_context()
+        return response
 
     def morph_action_hook(self, action):
         (_, _, _, request_path) = self._tuple_from_url(self.auth_url)
@@ -668,6 +751,22 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         :type force: ``bool``
         """
         raise NotImplementedError('authenticate not implemented')
+
+    def clear_cached_auth_context(self):
+        """
+        Clear the cached authentication context.
+
+        The context is cleared from fields on this connection and from the
+        external cache, if one is configured.
+        """
+        self.auth_token = None
+        self.auth_token_expires = None
+        self.auth_user_info = None
+        self.auth_user_roles = None
+        self.urls = {}
+
+        if self.auth_cache is not None:
+            self.auth_cache.clear(self._cache_key)
 
     def list_supported_versions(self):
         """
@@ -720,6 +819,14 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
         if self.is_token_valid():
             return False
 
+        # See if there's a new token in the cache
+        self._load_auth_context_from_cache()
+
+        # If there was a token in the cache, it is now stored in our local
+        # auth_token and related fields.  Ensure it is still valid.
+        if self.is_token_valid():
+            return False
+
         return True
 
     def _to_projects(self, data):
@@ -738,6 +845,53 @@ class OpenStackIdentityConnection(ConnectionUserAndKey):
                                            domain_id=data.get('domain_id',
                                                               None))
         return project
+
+    @property
+    def _cache_key(self):
+        """
+        The key where this connection's authentication context will be cached.
+
+        :rtype: :class:`OpenStackAuthenticationCacheKey`
+        """
+        return OpenStackAuthenticationCacheKey(
+            self.auth_url, self.user_id, self.token_scope, self.tenant_name,
+            self.domain_name, self.tenant_domain_id)
+
+    def _cache_auth_context(self, context):
+        """
+        Store an authentication context in memory and the cache.
+
+        :param context: Authentication context to cache.
+        :type key: :class:`.OpenStackAuthenticationContext`
+        """
+        self.urls = context.urls
+        self.auth_token = context.token
+        self.auth_token_expires = context.expiration
+        self.auth_user_info = context.user
+        self.auth_user_roles = context.roles
+
+        if self.auth_cache is not None:
+            self.auth_cache.put(self._cache_key, context)
+
+    def _load_auth_context_from_cache(self):
+        """
+        Fetch an authentication context for this connection from the cache.
+
+        :rtype: :class:`OpenStackAuthenticationContext`
+        """
+        if self.auth_cache is None:
+            return None
+
+        context = self.auth_cache.get(self._cache_key)
+        if context is None:
+            return None
+
+        self.urls = context.urls
+        self.auth_token = context.token
+        self.auth_token_expires = context.expiration
+        self.auth_user_info = context.user
+        self.auth_user_roles = context.roles
+        return context
 
 
 class OpenStackIdentity_1_0_Connection(OpenStackIdentityConnection):
@@ -822,11 +976,11 @@ class OpenStackIdentity_1_1_Connection(OpenStackIdentityConnection):
 
             try:
                 expires = body['auth']['token']['expires']
-
-                self.auth_token = body['auth']['token']['id']
-                self.auth_token_expires = parse_date(expires)
-                self.urls = body['auth']['serviceCatalog']
-                self.auth_user_info = None
+                self._cache_auth_context(
+                    OpenStackAuthenticationContext(
+                        body['auth']['token']['id'],
+                        expiration=parse_date(expires),
+                        urls=body['auth']['serviceCatalog']))
             except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
@@ -895,11 +1049,12 @@ class OpenStackIdentity_2_0_Connection(OpenStackIdentityConnection):
             try:
                 access = body['access']
                 expires = access['token']['expires']
-
-                self.auth_token = access['token']['id']
-                self.auth_token_expires = parse_date(expires)
-                self.urls = access['serviceCatalog']
-                self.auth_user_info = access.get('user', {})
+                self._cache_auth_context(
+                    OpenStackAuthenticationContext(
+                        access['token']['id'],
+                        expiration=parse_date(expires),
+                        urls=access['serviceCatalog'],
+                        user=access.get('user', {})))
             except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
@@ -933,14 +1088,15 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default', tenant_domain_id='default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, proxy_url=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None,
+                 auth_cache=None):
         """
         :param tenant_name: Name of the project this user belongs to. Note:
                             When token_scope is set to project, this argument
                             control to which project to scope the token to.
         :type tenant_name: ``str``
 
-        :param domain_name: Domain the user belongs to. Note: Then token_scope
+        :param domain_name: Domain the user belongs to. Note: When token_scope
                             is set to token, this argument controls to which
                             domain to scope the token to.
         :type domain_name: ``str``
@@ -948,6 +1104,9 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         :param token_scope: Whether to scope a token to a "project", a
                             "domain" or "unscoped"
         :type token_scope: ``str``
+
+        :param auth_cache: Where to cache authentication tokens.
+        :type auth_cache: :class:`OpenStackAuthenticationCache`
         """
         super(OpenStackIdentity_3_0_Connection,
               self).__init__(auth_url=auth_url,
@@ -955,10 +1114,12 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                              key=key,
                              tenant_name=tenant_name,
                              domain_name=domain_name,
+                             tenant_domain_id=tenant_domain_id,
                              token_scope=token_scope,
                              timeout=timeout,
                              proxy_url=proxy_url,
-                             parent_conn=parent_conn)
+                             parent_conn=parent_conn,
+                             auth_cache=auth_cache)
 
         if self.token_scope not in self.VALID_TOKEN_SCOPES:
             raise ValueError('Invalid value for "token_scope" argument: %s' %
@@ -972,9 +1133,6 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                 not self.domain_name):
             raise ValueError('Must provide domain_name argument')
 
-        self.auth_user_roles = None
-        self.tenant_domain_id = tenant_domain_id
-
     def authenticate(self, force=False):
         """
         Perform authentication.
@@ -982,91 +1140,12 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         if not self._is_authentication_needed(force=force):
             return self
 
-        data = {
-            'auth': {
-                'identity': {
-                    'methods': ['password'],
-                    'password': {
-                        'user': {
-                            'domain': {
-                                'name': self.domain_name
-                            },
-                            'name': self.user_id,
-                            'password': self.key
-                        }
-                    }
-                }
-            }
-        }
-
-        if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
-            # Scope token to project (tenant)
-            data['auth']['scope'] = {
-                'project': {
-                    'domain': {
-                        'id': self.tenant_domain_id
-                    },
-                    'name': self.tenant_name
-                }
-            }
-        elif self.token_scope == OpenStackIdentityTokenScope.DOMAIN:
-            # Scope token to domain
-            data['auth']['scope'] = {
-                'domain': {
-                    'name': self.domain_name
-                }
-            }
-        elif self.token_scope == OpenStackIdentityTokenScope.UNSCOPED:
-            pass
-        else:
-            raise ValueError('Token needs to be scoped either to project or '
-                             'a domain')
-
+        data = self._get_auth_data()
         data = json.dumps(data)
         response = self.request('/v3/auth/tokens', data=data,
                                 headers={'Content-Type': 'application/json'},
                                 method='POST')
-
-        if response.status == httplib.UNAUTHORIZED:
-            # Invalid credentials
-            raise InvalidCredsError()
-        elif response.status in [httplib.OK, httplib.CREATED]:
-            headers = response.headers
-
-            try:
-                body = json.loads(response.body)
-            except Exception as e:
-                raise MalformedResponseError('Failed to parse JSON', e)
-
-            try:
-                roles = self._to_roles(body['token']['roles'])
-            except Exception:
-                roles = []
-
-            try:
-                expires = body['token']['expires_at']
-
-                self.auth_token = headers['x-subject-token']
-                self.auth_token_expires = parse_date(expires)
-                # Note: catalog is not returned for unscoped tokens
-                self.urls = body['token'].get('catalog', None)
-                self.auth_user_info = body['token'].get('user', None)
-                self.auth_user_roles = roles
-            except KeyError as e:
-                raise MalformedResponseError('Auth JSON response is \
-                                             missing required elements', e)
-            body = 'code: %s body:%s' % (response.status, response.body)
-        elif response.status == 300:
-            # ambiguous version request
-            raise LibcloudError(
-                'Auth request returned ambiguous version error, try'
-                'using the version specific URL to connect,'
-                ' e.g. identity/v3/auth/tokens')
-        else:
-            body = 'code: %s body:%s' % (response.status, response.body)
-            raise MalformedResponseError('Malformed response', body=body,
-                                         driver=self.driver)
-
+        self._parse_token_response(response, cache_it=True)
         return self
 
     def list_domains(self):
@@ -1350,6 +1429,137 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
         user = self._to_user(data=response.object['user'])
         return user
 
+    def _get_auth_data(self):
+        data = {
+            'auth': {
+                'identity': {
+                    'methods': ['password'],
+                    'password': {
+                        'user': {
+                            'domain': {
+                                'name': self.domain_name
+                            },
+                            'name': self.user_id,
+                            'password': self.key
+                        }
+                    }
+                }
+            }
+        }
+
+        if self.token_scope == OpenStackIdentityTokenScope.PROJECT:
+            # Scope token to project (tenant)
+            data['auth']['scope'] = {
+                'project': {
+                    'domain': {
+                        'id': self.tenant_domain_id
+                    },
+                    'name': self.tenant_name
+                }
+            }
+        elif self.token_scope == OpenStackIdentityTokenScope.DOMAIN:
+            # Scope token to domain
+            data['auth']['scope'] = {
+                'domain': {
+                    'name': self.domain_name
+                }
+            }
+        elif self.token_scope == OpenStackIdentityTokenScope.UNSCOPED:
+            pass
+        else:
+            raise ValueError('Token needs to be scoped either to project or '
+                             'a domain')
+
+        return data
+
+    def _load_auth_context_from_cache(self):
+        context = super()._load_auth_context_from_cache()
+        if context is None:
+            return None
+
+        # Since v3 only caches the token and expiration, fetch the
+        # service catalog and other bits of the authentication context
+        # from Keystone.
+        try:
+            self._fetch_auth_token()
+        except InvalidCredsError:
+            # Unauthorized; cached auth context was cleared as part of
+            # _fetch_auth_token
+            return None
+
+        # Local auth context variables set in _fetch_auth_token
+        return context
+
+    def _parse_token_response(self, response, cache_it=False,
+                              raise_ambiguous_version_error=True):
+        """
+        Parse a response from /v3/auth/tokens.
+
+        :param cache_it: Should we cache the authentication context?
+        :type cache_it: ``bool``
+
+        :param raise_ambiguous_version_error: Should an ambiguous version
+            error be raised on a 300 response?
+        :type raise_ambiguous_version_error: ``bool``
+        """
+        if response.status == httplib.UNAUTHORIZED:
+            raise InvalidCredsError()
+        elif response.status in [httplib.OK, httplib.CREATED]:
+            headers = response.headers
+
+            try:
+                body = json.loads(response.body)
+            except Exception as e:
+                raise MalformedResponseError('Failed to parse JSON', e)
+
+            try:
+                roles = self._to_roles(body['token']['roles'])
+            except Exception:
+                roles = []
+
+            try:
+                expires = parse_date(body['token']['expires_at'])
+                token = headers['x-subject-token']
+
+                # Cache the fewest fields required for token reuse to minimize
+                # cache size. Other fields, especially the service catalog, can
+                # be quite large. Fetch these from Keystone when the token is
+                # first loaded from cache.
+                if cache_it:
+                    self._cache_auth_context(
+                        OpenStackAuthenticationContext(
+                            token, expiration=expires))
+
+                self.auth_token = token
+                self.auth_token_expires = expires
+                # Note: catalog is not returned for unscoped tokens
+                self.urls = body['token'].get('catalog', None)
+                self.auth_user_info = body['token'].get('user', None)
+                self.auth_user_roles = roles
+            except KeyError as e:
+                raise MalformedResponseError('Auth JSON response is \
+                                             missing required elements', e)
+        elif raise_ambiguous_version_error and response.status == 300:
+            # ambiguous version request
+            raise LibcloudError(
+                'Auth request returned ambiguous version error, try'
+                'using the version specific URL to connect,'
+                ' e.g. identity/v3/auth/tokens')
+        else:
+            body = 'code: %s body:%s' % (response.status, response.body)
+            raise MalformedResponseError('Malformed response', body=body,
+                                         driver=self.driver)
+
+    def _fetch_auth_token(self):
+        """
+        Fetch our authentication token and service catalog.
+        """
+        headers = {'X-Subject-Token': self.auth_token}
+        response = self.authenticated_request('/v3/auth/tokens',
+                                              headers=headers)
+        self._parse_token_response(response)
+        return self
+
     def _to_domains(self, data):
         result = []
         for item in data:
@@ -1397,6 +1607,49 @@ class OpenStackIdentity_3_0_Connection(OpenStackIdentityConnection):
                                                           None),
                                      enabled=data.get('enabled', True))
         return role
+
+
+class OpenStackIdentity_3_0_Connection_AppCred(
+        OpenStackIdentity_3_0_Connection):
+    """
+    Connection class for Keystone API v3.x using Application Credentials.
+
+    'user_id' is the application credential id and 'key' is the application
+    credential secret.
+    """
+    name = 'OpenStack Identity API v3.x with Application Credentials'
+
+    def __init__(self, auth_url, user_id, key, tenant_name=None,
+                 domain_name=None, tenant_domain_id=None, token_scope=None,
+                 timeout=None, proxy_url=None, parent_conn=None):
+        """
+        Tenant, domain and scope options are ignored as they are contained
+        within the app credential itself and can't be changed.
+        """
+        super(OpenStackIdentity_3_0_Connection_AppCred,
+              self).__init__(auth_url=auth_url,
+                             user_id=user_id,
+                             key=key,
+                             tenant_name=tenant_name,
+                             domain_name=domain_name,
+                             token_scope=OpenStackIdentityTokenScope.UNSCOPED,
+                             timeout=timeout,
+                             proxy_url=proxy_url,
+                             parent_conn=parent_conn)
+
+    def _get_auth_data(self):
+        data = {
+            'auth': {
+                'identity': {
+                    'methods': ['application_credential'],
+                    'application_credential': {
+                        'id': self.user_id,
+                        'secret': self.key
+                    }
+                }
+            }
+        }
+        return data
 
 
 class OpenStackIdentity_3_0_Connection_OIDC_access_token(
@@ -1466,41 +1719,8 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
         response = self.request('/v3/auth/tokens', data=data,
                                 headers={'Content-Type': 'application/json'},
                                 method='POST')
-
-        if response.status == httplib.UNAUTHORIZED:
-            # Invalid credentials
-            raise InvalidCredsError()
-        elif response.status in [httplib.OK, httplib.CREATED]:
-            headers = response.headers
-
-            try:
-                body = json.loads(response.body)
-            except Exception as e:
-                raise MalformedResponseError('Failed to parse JSON', e)
-
-            try:
-                roles = self._to_roles(body['token']['roles'])
-            except Exception:
-                roles = []
-
-            try:
-                expires = body['token']['expires_at']
-
-                self.auth_token = headers['x-subject-token']
-                self.auth_token_expires = parse_date(expires)
-                # Note: catalog is not returned for unscoped tokens
-                self.urls = body['token'].get('catalog', None)
-                self.auth_user_info = body['token'].get('user', None)
-                self.auth_user_roles = roles
-            except KeyError as e:
-                raise MalformedResponseError('Auth JSON response is \
-                                             missing required elements', e)
-            body = 'code: %s body:%s' % (response.status, response.body)
-        else:
-            body = 'code: %s body:%s' % (response.status, response.body)
-            raise MalformedResponseError('Malformed response', body=body,
-                                         driver=self.driver)
-
+        self._parse_token_response(response, cache_it=True,
+                                   raise_ambiguous_version_error=False)
         return self
 
     def _get_unscoped_token_from_oidc_token(self):
@@ -1537,7 +1757,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
         path = '/v3/auth/projects'
         response = self.request(path,
                                 headers={'Content-Type': 'application/json',
-                                         'X-Auth-Token': token},
+                                         AUTH_TOKEN_HEADER: token},
                                 method='GET')
 
         if response.status not in [httplib.UNAUTHORIZED, httplib.OK,
@@ -1547,7 +1767,7 @@ class OpenStackIdentity_3_0_Connection_OIDC_access_token(
             response = self.request(path,
                                     headers={'Content-Type':
                                              'application/json',
-                                             'X-Auth-Token': token},
+                                             AUTH_TOKEN_HEADER: token},
                                     method='GET')
 
         if response.status == httplib.UNAUTHORIZED:
@@ -1591,7 +1811,8 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
     def __init__(self, auth_url, user_id, key, tenant_name=None,
                  domain_name='Default',
                  token_scope=OpenStackIdentityTokenScope.PROJECT,
-                 timeout=None, proxy_url=None, parent_conn=None):
+                 timeout=None, proxy_url=None, parent_conn=None,
+                 auth_cache=None):
         CertificateConnection.__init__(self, cert_file=key,
                                        url=auth_url,
                                        proxy_url=proxy_url,
@@ -1612,6 +1833,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
         self.token_scope = token_scope
         self.timeout = timeout
         self.proxy_url = proxy_url
+        self.auth_cache = auth_cache
 
         self.urls = {}
         self.auth_token = None
@@ -1664,7 +1886,7 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
         """
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json',
-                   'X-Auth-Token': token}
+                   AUTH_TOKEN_HEADER: token}
         response = self.request('/v2.0/tenants', headers=headers, method='GET')
 
         if response.status == httplib.UNAUTHORIZED:
@@ -1699,15 +1921,15 @@ class OpenStackIdentity_2_0_Connection_VOMS(OpenStackIdentityConnection,
             try:
                 access = body['access']
                 expires = access['token']['expires']
-
-                self.auth_token = access['token']['id']
-                self.auth_token_expires = parse_date(expires)
-                self.urls = access['serviceCatalog']
-                self.auth_user_info = access.get('user', {})
+                self._cache_auth_context(
+                    OpenStackAuthenticationContext(
+                        access['token']['id'],
+                        expiration=parse_date(expires),
+                        urls=access['serviceCatalog'],
+                        user=access.get('user', {})))
             except KeyError as e:
                 raise MalformedResponseError('Auth JSON response is \
                                              missing required elements', e)
-
         return self
 
 
@@ -1727,6 +1949,8 @@ def get_class_for_auth_version(auth_version):
         cls = OpenStackIdentity_2_0_Connection_VOMS
     elif auth_version == '3.x_password':
         cls = OpenStackIdentity_3_0_Connection
+    elif auth_version == '3.x_appcred':
+        cls = OpenStackIdentity_3_0_Connection_AppCred
     elif auth_version == '3.x_oidc_access_token':
         cls = OpenStackIdentity_3_0_Connection_OIDC_access_token
     else:

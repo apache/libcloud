@@ -25,7 +25,7 @@ import time
 from collections import defaultdict, OrderedDict
 
 import requests
-import demjson  # pylint: disable=import-error
+import _jsonnet  # pylint: disable=import-error
 
 LINUX_PRICING_URLS = [
     # Deprecated instances (JSON format)
@@ -172,13 +172,17 @@ def scrape_ec2_pricing():
 
         if re.match(r'.*?\.json$', url):
             data = response.json()
+            print("Sample response: %s..." % (str(data)[:100]))
         elif re.match(r'.*?\.js$', url):
-            data = response.content.decode()
+            data = response.content.decode('utf-8')
+            print("Sample response: %s..." % (data[:100]))
             match = re.match(r'^.*callback\((.*?)\);?$', data,
                              re.MULTILINE | re.DOTALL)
             data = match.group(1)
+            # NOTE: We used to use demjson, but it's not working under Python 3 and new version of
+            # setuptools anymore so we use jsonnet
             # demjson supports non-strict mode and can parse unquoted objects
-            data = demjson.decode(data)
+            data = json.loads(_jsonnet.evaluate_snippet('snippet', data))
         regions = data['config']['regions']
 
         for region_data in regions:
@@ -206,8 +210,11 @@ def scrape_ec2_pricing():
         res[os_map[OS]] = {}
         for region in EC2_REGIONS:
             res[os_map[OS]][region] = {}
-            response = requests.get(url.format(region, OS))
+            full_url = url.format(region, OS)
+            response = requests.get(full_url)
             if response.status_code != 200:
+                print("Skipping URL %s which returned non 200-status code (%s)" %
+                      (full_url, response.status_code))
                 continue
             data = response.json()
 

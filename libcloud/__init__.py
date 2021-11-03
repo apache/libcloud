@@ -102,7 +102,15 @@ def _init_once():
 
         if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
             import logging
-            paramiko.util.log_to_file(filename=path, level=logging.DEBUG)
+
+            # paramiko always tries to open file path in append mode which
+            # won't work with /dev/{stdout, stderr} so we just ignore those
+            # errors
+            try:
+                paramiko.util.log_to_file(filename=path, level=logging.DEBUG)
+            except OSError as e:
+                if "illegal seek" not in str(e).lower():
+                    raise e
 
     # check for broken `yum install python-requests`
     if have_requests and requests.__version__ == '2.6.0':
