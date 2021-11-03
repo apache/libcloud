@@ -4,6 +4,22 @@
 Changes in Apache Libcloud 3.3.2 (in development)
 -------------------------------------------------
 
+Common
+~~~~~~
+
+- Update HTTP connection and request retry code to be more flexible so user
+  can specify and utilize custom retry logic which can be configured via
+  connection retryCls attribute
+  (``driver.connection.retryCls = MyRetryClass``).
+
+  (GITHUB-1558)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+- HTTP connection and request retry logic has been updated so we still respect
+  ``timeout`` argument when retrying requests due to rate limit being reached
+  errors. Previously, we would try to retry indefinitely on
+  ``RateLimitReachedError`` exceptions.
+
 Storage
 ~~~~~~~
 
