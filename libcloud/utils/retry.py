@@ -93,17 +93,15 @@ class MinimalRetry:
         def retry_loop(*args, **kwargs):
             current_delay = self.retry_delay
             end = datetime.now() + timedelta(seconds=self.timeout)
+            last_exc = None
 
-            while True:
+            while datetime.now() < end:
                 try:
                     return transform_ssl_error(func, *args, **kwargs)
                 except Exception as exc:
-                    if isinstance(exc, RateLimitReachedError):
-                        if datetime.now() >= end:
-                            # We have exhausted retry timeout so we abort
-                            # retrying
-                            raise
+                    last_exc = exc
 
+                    if isinstance(exc, RateLimitReachedError):
                         _logger.debug("You are being rate limited, backing off...")
 
                         # NOTE: Retry after defaults to 0 in the
@@ -117,13 +115,12 @@ class MinimalRetry:
                         # Reset retries if we're told to wait due to rate
                         # limiting
                         current_delay = self.retry_delay
-                    elif datetime.now() >= end:
-                        raise
                     elif self.should_retry(exc):
                         time.sleep(current_delay)
                         current_delay *= self.backoff
-                    else:
-                        raise
+
+            if last_exc and datetime.now() >= end:
+                raise last_exc
 
         return retry_loop
 
