@@ -273,13 +273,13 @@ compute = {
         },
     },
     "gce_disks": {
-        "Standard": {"description": "storage pd capacity", "on_demand": {},},
-        "SSD": {"description": "ssd backed pd", "on_demand": {},},
+        "Standard": {"description": "storage pd capacity", "on_demand": {}},
+        "SSD": {"description": "ssd backed pd", "on_demand": {}},
         "Regional Standard": {
             "description": "regional storage pd capacity",
             "on_demand": {},
         },
-        "Regional SSD": {"description": "ssd backed pd capacity", "on_demand": {},},
+        "Regional SSD": {"description": "ssd backed pd capacity", "on_demand": {}},
         "Local SSD": {
             "description": "ssd backed local storage",
             "on_demand": {},

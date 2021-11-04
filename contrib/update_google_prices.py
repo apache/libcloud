@@ -71,7 +71,7 @@ def main(argv):
     for name, prices in gcp_price_list.iteritems():
         if not name.startswith(gce_vm_prefix):
             continue
-        short_name = name[len(gce_vm_prefix) :]
+        short_name = name[len(gce_vm_prefix):]
         machine_type = short_name.lower()
         for key, price in prices.iteritems():
             if key in pricing_to_region:
