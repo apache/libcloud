@@ -20,3 +20,4 @@ cryptography==35.0.0; python_version >= '3.6'
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==20.0.1; python_version <= '3.5'
 pyopenssl==21.0.0; python_version >= '3.6'
+black==19.10b0
