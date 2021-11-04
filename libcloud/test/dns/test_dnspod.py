@@ -22,8 +22,13 @@ from libcloud.test.file_fixtures import DNSFileFixtures
 from libcloud.test.secrets import DNS_PARAMS_DNSPOD
 from libcloud.dns.drivers.dnspod import DNSPodDNSDriver
 from libcloud.utils.py3 import httplib
-from libcloud.dns.types import ZoneDoesNotExistError, ZoneAlreadyExistsError,\
-    RecordType, RecordDoesNotExistError, RecordAlreadyExistsError
+from libcloud.dns.types import (
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordType,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
 from libcloud.dns.base import Zone, Record
 
 
@@ -32,245 +37,263 @@ class DNSPodDNSTests(unittest.TestCase):
         DNSPodMockHttp.type = None
         DNSPodDNSDriver.connectionCls.conn_class = DNSPodMockHttp
         self.driver = DNSPodDNSDriver(*DNS_PARAMS_DNSPOD)
-        self.test_zone = Zone(id='11', type='master', ttl=None,
-                              domain='test.com', extra={}, driver=self.driver)
-        self.test_record = Record(id='13', type=RecordType.A,
-                                  name='example.com', zone=self.test_zone,
-                                  data='127.0.0.1', driver=self, extra={})
+        self.test_zone = Zone(
+            id="11",
+            type="master",
+            ttl=None,
+            domain="test.com",
+            extra={},
+            driver=self.driver,
+        )
+        self.test_record = Record(
+            id="13",
+            type=RecordType.A,
+            name="example.com",
+            zone=self.test_zone,
+            data="127.0.0.1",
+            driver=self,
+            extra={},
+        )
 
     def test_one_equals_one(self):
         self.assertEqual(1, 1)
 
     def test_list_zones_empty(self):
-        DNSPodMockHttp.type = 'EMPTY_ZONES_LIST'
+        DNSPodMockHttp.type = "EMPTY_ZONES_LIST"
         zones = self.driver.list_zones()
 
         self.assertEqual(zones, [])
 
     def test_list_zones_success(self):
-        DNSPodMockHttp.type = 'LIST_ZONES'
+        DNSPodMockHttp.type = "LIST_ZONES"
         zones = self.driver.list_zones()
 
         self.assertEqual(len(zones), 1)
 
         zone = zones[0]
-        self.assertEqual(zone.id, '6')
-        self.assertEqual(zone.domain, 'dnspod.com')
+        self.assertEqual(zone.id, "6")
+        self.assertEqual(zone.domain, "dnspod.com")
         self.assertIsNone(zone.type)
         self.assertEqual(zone.driver, self.driver)
-        self.assertEqual(zone.ttl, '600')
+        self.assertEqual(zone.ttl, "600")
 
     def test_get_zone_zone_does_not_exist(self):
-        DNSPodMockHttp.type = 'ZONE_DOES_NOT_EXIST'
+        DNSPodMockHttp.type = "ZONE_DOES_NOT_EXIST"
         try:
-            self.driver.get_zone(zone_id='13')
+            self.driver.get_zone(zone_id="13")
         except ZoneDoesNotExistError as e:
-            self.assertEqual(e.zone_id, '13')
+            self.assertEqual(e.zone_id, "13")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_get_zone_success(self):
-        DNSPodMockHttp.type = 'GET_ZONE_SUCCESS'
-        zone = self.driver.get_zone(zone_id='6')
+        DNSPodMockHttp.type = "GET_ZONE_SUCCESS"
+        zone = self.driver.get_zone(zone_id="6")
 
-        self.assertEqual(zone.id, '6')
-        self.assertEqual(zone.domain, 'dnspod.com')
+        self.assertEqual(zone.id, "6")
+        self.assertEqual(zone.domain, "dnspod.com")
         self.assertIsNone(zone.type)
-        self.assertEqual(zone.ttl, '600')
+        self.assertEqual(zone.ttl, "600")
         self.assertEqual(zone.driver, self.driver)
 
     def test_delete_zone_success(self):
-        DNSPodMockHttp.type = 'DELETE_ZONE_SUCCESS'
+        DNSPodMockHttp.type = "DELETE_ZONE_SUCCESS"
         zone = self.test_zone
         status = self.driver.delete_zone(zone=zone)
 
         self.assertEqual(status, True)
 
     def test_delete_zone_zone_does_not_exist(self):
-        DNSPodMockHttp.type = 'DELETE_ZONE_ZONE_DOES_NOT_EXIST'
+        DNSPodMockHttp.type = "DELETE_ZONE_ZONE_DOES_NOT_EXIST"
         zone = self.test_zone
         try:
             self.driver.delete_zone(zone=zone)
         except ZoneDoesNotExistError as e:
-            self.assertEqual(e.zone_id, '11')
+            self.assertEqual(e.zone_id, "11")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_create_zone_success(self):
-        DNSPodMockHttp.type = 'CREATE_ZONE_SUCCESS'
-        zone = self.driver.create_zone(domain='example.org')
+        DNSPodMockHttp.type = "CREATE_ZONE_SUCCESS"
+        zone = self.driver.create_zone(domain="example.org")
 
-        self.assertEqual(zone.id, '3')
-        self.assertEqual(zone.domain, 'api2.com')
+        self.assertEqual(zone.id, "3")
+        self.assertEqual(zone.domain, "api2.com")
         self.assertIsNone(zone.type)
         self.assertIsNone(zone.ttl)
         self.assertEqual(zone.driver, self.driver)
 
     def test_create_zone_zone_zone_already_exists(self):
-        DNSPodMockHttp.type = 'CREATE_ZONE_ZONE_ALREADY_EXISTS'
+        DNSPodMockHttp.type = "CREATE_ZONE_ZONE_ALREADY_EXISTS"
         try:
-            self.driver.create_zone(domain='test.com')
+            self.driver.create_zone(domain="test.com")
         except ZoneAlreadyExistsError as e:
-            self.assertEqual(e.zone_id, 'test.com')
+            self.assertEqual(e.zone_id, "test.com")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_list_records_success(self):
-        DNSPodMockHttp.type = 'LIST_RECORDS_SUCCESS'
+        DNSPodMockHttp.type = "LIST_RECORDS_SUCCESS"
         zone = self.test_zone
         records = self.driver.list_records(zone=zone)
         first_record = records[0]
 
         self.assertEqual(len(records), 5)
         self.assertEqual(first_record.zone, zone)
-        self.assertEqual(first_record.type, 'A')
-        self.assertEqual(first_record.name, '@')
-        self.assertEqual(first_record.id, '50')
+        self.assertEqual(first_record.type, "A")
+        self.assertEqual(first_record.name, "@")
+        self.assertEqual(first_record.id, "50")
 
     def test_get_record_success(self):
-        DNSPodMockHttp.type = 'GET_RECORD_SUCCESS'
-        record = self.driver.get_record(zone_id='31', record_id='31')
+        DNSPodMockHttp.type = "GET_RECORD_SUCCESS"
+        record = self.driver.get_record(zone_id="31", record_id="31")
 
-        self.assertEqual(record.id, '50')
-        self.assertEqual(record.type, 'A')
-        self.assertEqual(record.name, '@')
-        self.assertEqual(record.data, '96.126.115.73')
+        self.assertEqual(record.id, "50")
+        self.assertEqual(record.type, "A")
+        self.assertEqual(record.name, "@")
+        self.assertEqual(record.data, "96.126.115.73")
 
     def test_delete_record_success(self):
-        DNSPodMockHttp.type = 'DELETE_RECORD_SUCCESS'
+        DNSPodMockHttp.type = "DELETE_RECORD_SUCCESS"
         record = self.test_record
         status = self.driver.delete_record(record=record)
 
         self.assertEqual(status, True)
 
     def test_delete_record_RECORD_DOES_NOT_EXIST_ERROR(self):
-        DNSPodMockHttp.type = 'DELETE_RECORD_RECORD_DOES_NOT_EXIST'
+        DNSPodMockHttp.type = "DELETE_RECORD_RECORD_DOES_NOT_EXIST"
         record = self.test_record
         try:
             self.driver.delete_record(record=record)
         except RecordDoesNotExistError as e:
-            self.assertEqual(e.record_id, '13')
+            self.assertEqual(e.record_id, "13")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_create_record_success(self):
-        DNSPodMockHttp.type = 'CREATE_RECORD_SUCCESS'
-        record = self.driver.create_record(name='@', zone=self.test_zone,
-                                           type='A', data='96.126.115.73',
-                                           extra={'ttl': 13,
-                                                  'record_line': 'default'})
-        self.assertEqual(record.id, '50')
-        self.assertEqual(record.name, '@')
-        self.assertEqual(record.data, '96.126.115.73')
+        DNSPodMockHttp.type = "CREATE_RECORD_SUCCESS"
+        record = self.driver.create_record(
+            name="@",
+            zone=self.test_zone,
+            type="A",
+            data="96.126.115.73",
+            extra={"ttl": 13, "record_line": "default"},
+        )
+        self.assertEqual(record.id, "50")
+        self.assertEqual(record.name, "@")
+        self.assertEqual(record.data, "96.126.115.73")
         self.assertIsNone(record.ttl)
 
     def test_create_record_already_exists_error(self):
-        DNSPodMockHttp.type = 'RECORD_EXISTS'
+        DNSPodMockHttp.type = "RECORD_EXISTS"
         try:
-            self.driver.create_record(name='@', zone=self.test_zone,
-                                      type='A', data='92.126.115.73',
-                                      extra={'ttl': 13,
-                                             'record_line': 'default'})
+            self.driver.create_record(
+                name="@",
+                zone=self.test_zone,
+                type="A",
+                data="92.126.115.73",
+                extra={"ttl": 13, "record_line": "default"},
+            )
         except RecordAlreadyExistsError as e:
-            self.assertEqual(e.value, '@')
+            self.assertEqual(e.value, "@")
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
 
 class DNSPodMockHttp(MockHttp):
-    fixtures = DNSFileFixtures('dnspod')
+    fixtures = DNSFileFixtures("dnspod")
 
     def _Domain_List_EMPTY_ZONES_LIST(self, method, url, body, headers):
-        body = self.fixtures.load('empty_zones_list.json')
+        body = self.fixtures.load("empty_zones_list.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_List_LIST_ZONES(self, method, url, body, headers):
-        body = self.fixtures.load('list_zones.json')
+        body = self.fixtures.load("list_zones.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_Info_ZONE_DOES_NOT_EXIST(self, method, url, body, headers):
-        body = self.fixtures.load('zone_does_not_exist.json')
+        body = self.fixtures.load("zone_does_not_exist.json")
 
         return 404, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_Info_GET_ZONE_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone_success.json')
+        body = self.fixtures.load("get_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _Domain_Remove_DELETE_ZONE_SUCCESS(self, method, url,
-                                           body, headers):
-        body = self.fixtures.load('delete_zone_success.json')
+    def _Domain_Remove_DELETE_ZONE_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("delete_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_Remove_DELETE_ZONE_ZONE_DOES_NOT_EXIST(
-            self, method, url, body, headers):
-        body = self.fixtures.load('zone_does_not_exist.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("zone_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_Create_CREATE_ZONE_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load('create_zone_success.json')
+        body = self.fixtures.load("create_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_Create_CREATE_ZONE_ZONE_ALREADY_EXISTS(
-            self, method, url, body, headers):
-        body = self.fixtures.load('zone_already_exists.json')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("zone_already_exists.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Record_List_LIST_RECORDS_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load('list_records.json')
+        body = self.fixtures.load("list_records.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Record_Info_GET_RECORD_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load('get_record.json')
+        body = self.fixtures.load("get_record.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_Info_GET_RECORD_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone_success.json')
+        body = self.fixtures.load("get_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Record_Remove_DELETE_RECORD_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load('delete_record_success.json')
+        body = self.fixtures.load("delete_record_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _Record_Remove_DELETE_RECORD_RECORD_DOES_NOT_EXIST(self, method,
-                                                           url, body, headers):
-        body = self.fixtures.load('delete_record_record_does_not_exist.json')
+    def _Record_Remove_DELETE_RECORD_RECORD_DOES_NOT_EXIST(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("delete_record_record_does_not_exist.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _Record_Create_CREATE_RECORD_SUCCESS(self, method,
-                                             url, body, headers):
-        body = self.fixtures.load('get_record.json')
+    def _Record_Create_CREATE_RECORD_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("get_record.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Domain_Info_CREATE_RECORD_SUCCESS(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone_success.json')
+        body = self.fixtures.load("get_zone_success.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
-    def _Record_Info_CREATE_RECORD_SUCCESS(self, method,
-                                           url, body, headers):
-        body = self.fixtures.load('get_record.json')
+    def _Record_Info_CREATE_RECORD_SUCCESS(self, method, url, body, headers):
+        body = self.fixtures.load("get_record.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
     def _Record_Create_RECORD_EXISTS(self, method, url, body, headers):
-        body = self.fixtures.load('record_already_exists.json')
+        body = self.fixtures.load("record_already_exists.json")
 
         return httplib.OK, body, {}, httplib.responses[httplib.OK]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

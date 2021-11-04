@@ -39,8 +39,11 @@ __all__ = ["parse_date", "ParseError"]
 ISO8601_REGEX = re.compile(
     r"(?P<year>[0-9]{4})(-(?P<month>[0-9]{1,2})(-(?P<day>[0-9]{1,2})"
     r"((?P<separator>.)(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2})(:(?P<second>[0-9]{2})(\.(?P<fraction>[0-9]+))?)?"  # NOQA
-    r"(?P<timezone>Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?")
-TIMEZONE_REGEX = re.compile("(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-9]{2})")  # NOQA
+    r"(?P<timezone>Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?"
+)
+TIMEZONE_REGEX = re.compile(
+    "(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-9]{2})"
+)  # NOQA
 
 
 class ParseError(Exception):
@@ -55,6 +58,7 @@ class Utc(tzinfo):
     """UTC
 
     """
+
     def utcoffset(self, dt):
         return ZERO
 
@@ -72,6 +76,7 @@ class FixedOffset(tzinfo):
     """Fixed offset in hours and minutes from UTC
 
     """
+
     def __init__(self, offset_hours, offset_minutes, name):
         self.__offset = timedelta(hours=offset_hours, minutes=offset_minutes)
         self.__name = name
@@ -118,7 +123,7 @@ def parse_date(datestring, default_timezone=UTC):
     default.
     """
     if not datestring:
-        raise ValueError('datestring must be valid date string and not None')
+        raise ValueError("datestring must be valid date string and not None")
 
     m = ISO8601_REGEX.match(datestring)
     if not m:
@@ -129,7 +134,13 @@ def parse_date(datestring, default_timezone=UTC):
         groups["fraction"] = 0
     else:
         groups["fraction"] = int(float("0.%s" % groups["fraction"]) * 1e6)
-    return datetime(int(groups["year"]), int(groups["month"]),
-                    int(groups["day"]), int(groups["hour"]),
-                    int(groups["minute"]), int(groups["second"]),
-                    int(groups["fraction"]), tz)
+    return datetime(
+        int(groups["year"]),
+        int(groups["month"]),
+        int(groups["day"]),
+        int(groups["hour"]),
+        int(groups["minute"]),
+        int(groups["second"]),
+        int(groups["fraction"]),
+        tz,
+    )

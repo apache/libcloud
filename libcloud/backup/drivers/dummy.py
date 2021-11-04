@@ -26,8 +26,8 @@ class DummyBackupDriver(BackupDriver):
     'Dummy Backup Provider'
     """
 
-    name = 'Dummy Backup Provider'
-    website = 'http://example.com'
+    name = "Dummy Backup Provider"
+    website = "http://example.com"
 
     def __init__(self, api_key, api_secret):
         """

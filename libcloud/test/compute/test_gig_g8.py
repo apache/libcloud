@@ -38,21 +38,26 @@ def mock_is_jwt_expired(jwt):
 
 class G8MockHttp(MockHttp):
     """Fixtures needed for tests related to rating model"""
-    fixtures = ComputeFileFixtures('gig_g8')
+
+    fixtures = ComputeFileFixtures("gig_g8")
 
     def __getattr__(self, key):
         def method(method, path, params, headers):
-            response = self.fixtures.load('{}_{}.json'.format(method, key.lstrip("_")))
+            response = self.fixtures.load("{}_{}.json".format(method, key.lstrip("_")))
             return (httplib.OK, response, {}, httplib.responses[httplib.OK])
 
         return method
 
 
-@mock.patch('libcloud.common.gig_g8.is_jwt_expired', mock_is_jwt_expired)
+@mock.patch("libcloud.common.gig_g8.is_jwt_expired", mock_is_jwt_expired)
 class G8Tests(unittest.TestCase):
     def setUp(self):
         G8NodeDriver.connectionCls.conn_class = G8MockHttp
-        self.driver = G8NodeDriver(1, "header.eyJhenAiOiJkZndlcmdyZWdyZSIsImV4cCI6MTU5MDUyMzEwNSwiaXNzIjoiaXRzeW91b25saW5lIiwicmVmcmVzaF90b2tlbiI6Inh4eHh4eHgiLCJzY29wZSI6WyJ1c2VyOmFkbWluIl0sInVzZXJuYW1lIjoiZXhhbXBsZSJ9.signature", "https://myg8.example.com")
+        self.driver = G8NodeDriver(
+            1,
+            "header.eyJhenAiOiJkZndlcmdyZWdyZSIsImV4cCI6MTU5MDUyMzEwNSwiaXNzIjoiaXRzeW91b25saW5lIiwicmVmcmVzaF90b2tlbiI6Inh4eHh4eHgiLCJzY29wZSI6WyJ1c2VyOmFkbWluIl0sInVzZXJuYW1lIjoiZXhhbXBsZSJ9.signature",
+            "https://myg8.example.com",
+        )
 
     def test_list_networks(self):
         networks = self.driver.ex_list_networks()
@@ -82,7 +87,9 @@ class G8Tests(unittest.TestCase):
         image = self.driver.list_images()[0]
         size = self.driver.list_sizes()[0]
         network = self.driver.ex_list_networks()[0]
-        node = self.driver.create_node("my test", image, network, "my description", size)
+        node = self.driver.create_node(
+            "my test", image, network, "my description", size
+        )
         self.assertIsInstance(node, Node)
 
     def test_stop_node(self):
@@ -161,12 +168,14 @@ class G8Tests(unittest.TestCase):
         self.assertTrue(res)
 
     def test_is_jwt_expired(self):
-        data = {"azp": "example",
-                "exp": int(time.time()),
-                "iss": "itsyouonline",
-                "refresh_token": "xxxxxxx",
-                "scope": ["user:admin"],
-                "username": "example"}
+        data = {
+            "azp": "example",
+            "exp": int(time.time()),
+            "iss": "itsyouonline",
+            "refresh_token": "xxxxxxx",
+            "scope": ["user:admin"],
+            "username": "example",
+        }
 
         def contruct_jwt(data):
             jsondata = json.dumps(data).encode()
@@ -179,5 +188,5 @@ class G8Tests(unittest.TestCase):
         self.assertFalse(libcloud.common.gig_g8.is_jwt_expired(contruct_jwt(data)))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

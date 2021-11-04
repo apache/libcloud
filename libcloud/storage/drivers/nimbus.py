@@ -31,8 +31,12 @@ from libcloud.storage.base import Container, StorageDriver
 
 
 class NimbusResponse(JsonResponse):
-    valid_response_codes = [httplib.OK, httplib.NOT_FOUND, httplib.CONFLICT,
-                            httplib.BAD_REQUEST]
+    valid_response_codes = [
+        httplib.OK,
+        httplib.NOT_FOUND,
+        httplib.CONFLICT,
+        httplib.BAD_REQUEST,
+    ]
 
     def success(self):
         return self.status in self.valid_response_codes
@@ -40,64 +44,65 @@ class NimbusResponse(JsonResponse):
     def parse_error(self):
         if self.status in [httplib.UNAUTHORIZED]:
             raise InvalidCredsError(self.body)
-        raise LibcloudError('Unknown error. Status code: %d' % (self.status),
-                            driver=self.connection.driver)
+        raise LibcloudError(
+            "Unknown error. Status code: %d" % (self.status),
+            driver=self.connection.driver,
+        )
 
 
 class NimbusConnection(ConnectionUserAndKey):
-    host = 'nimbus.io'
+    host = "nimbus.io"
     responseCls = NimbusResponse
 
     def __init__(self, *args, **kwargs):
-        self.id = kwargs.pop('id')
+        self.id = kwargs.pop("id")
         super(NimbusConnection, self).__init__(*args, **kwargs)
 
     def pre_connect_hook(self, params, headers):
         timestamp = str(int(time.time()))
-        signature = self._calculate_signature(user_id=self.user_id,
-                                              method=self.method,
-                                              params=params,
-                                              path=self.action,
-                                              timestamp=timestamp,
-                                              key=self.key)
-        headers['X-NIMBUS-IO-Timestamp'] = timestamp
-        headers['Authorization'] = 'NIMBUS.IO %s:%s' % (self.id, signature)
+        signature = self._calculate_signature(
+            user_id=self.user_id,
+            method=self.method,
+            params=params,
+            path=self.action,
+            timestamp=timestamp,
+            key=self.key,
+        )
+        headers["X-NIMBUS-IO-Timestamp"] = timestamp
+        headers["Authorization"] = "NIMBUS.IO %s:%s" % (self.id, signature)
         return params, headers
 
-    def _calculate_signature(self, user_id, method, params, path, timestamp,
-                             key):
+    def _calculate_signature(self, user_id, method, params, path, timestamp, key):
         if params:
-            uri_path = path + '?' + urlencode(params)
+            uri_path = path + "?" + urlencode(params)
         else:
             uri_path = path
 
         string_to_sign = [user_id, method, str(timestamp), uri_path]
-        string_to_sign = '\n'.join(string_to_sign)
+        string_to_sign = "\n".join(string_to_sign)
 
         hmac_value = hmac.new(key, string_to_sign, hashlib.sha256)
         return hmac_value.hexdigest()
 
 
 class NimbusStorageDriver(StorageDriver):
-    name = 'Nimbus.io'
-    website = 'https://nimbus.io/'
+    name = "Nimbus.io"
+    website = "https://nimbus.io/"
     connectionCls = NimbusConnection
 
     def __init__(self, *args, **kwargs):
-        self.user_id = kwargs['user_id']
+        self.user_id = kwargs["user_id"]
         super(NimbusStorageDriver, self).__init__(*args, **kwargs)
 
     def iterate_containers(self):
-        response = self.connection.request('/customers/%s/collections' %
-                                           (self.user_id))
+        response = self.connection.request("/customers/%s/collections" % (self.user_id))
         return self._to_containers(response.object)
 
     def create_container(self, container_name):
-        params = {'action': 'create', 'name': container_name}
-        response = self.connection.request('/customers/%s/collections' %
-                                           (self.user_id),
-                                           params=params,
-                                           method='POST')
+        params = {"action": "create", "name": container_name}
+        response = self.connection.request(
+            "/customers/%s/collections" % (self.user_id), params=params, method="POST"
+        )
         return self._to_container(response.object)
 
     def _to_containers(self, data):
@@ -106,9 +111,9 @@ class NimbusStorageDriver(StorageDriver):
 
     def _to_container(self, data):
         name = data[0]
-        extra = {'date_created': data[2]}
+        extra = {"date_created": data[2]}
         return Container(name=name, extra=extra, driver=self)
 
     def _ex_connection_class_kwargs(self):
-        result = {'id': self.user_id}
+        result = {"id": self.user_id}
         return result

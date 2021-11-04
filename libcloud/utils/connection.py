@@ -16,12 +16,10 @@
 from libcloud.utils.py3 import urlparse, parse_qs
 from libcloud.common.base import Connection
 
-__all__ = [
-    'get_response_object'
-]
+__all__ = ["get_response_object"]
 
 
-def get_response_object(url, method='GET', headers=None, retry_failed=None):
+def get_response_object(url, method="GET", headers=None, retry_failed=None):
     """
     Utility function which uses libcloud's connection class to issue an HTTP
     request.
@@ -42,13 +40,17 @@ def get_response_object(url, method='GET', headers=None, retry_failed=None):
     """
     parsed_url = urlparse.urlparse(url)
     parsed_qs = parse_qs(parsed_url.query)
-    secure = parsed_url.scheme == 'https'
+    secure = parsed_url.scheme == "https"
 
     headers = headers or {}
     method = method.upper()
 
     con = Connection(secure=secure, host=parsed_url.netloc)
-    response = con.request(action=parsed_url.path, params=parsed_qs,
-                           headers=headers, method=method,
-                           retry_failed=retry_failed)
+    response = con.request(
+        action=parsed_url.path,
+        params=parsed_qs,
+        headers=headers,
+        method=method,
+        retry_failed=retry_failed,
+    )
     return response

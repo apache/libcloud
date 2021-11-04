@@ -10,14 +10,16 @@ def create_ssl_profile(lbdriver):
     # Retrieve the domain certificate to be used int the profile
     domain_cert = lbdriver.ex_list_ssl_domain_certs(name="alice")[0]
     result = lbdriver.ex_create_ssl_offload_profile(
-        net_domain_id, name, domain_cert.id, ciphers="!ECDHE+AES-GCM:")
+        net_domain_id, name, domain_cert.id, ciphers="!ECDHE+AES-GCM:"
+    )
     assert result is True
 
 
 def lbdriver():
-    cls = libcloud.get_driver(libcloud.DriverType.LOADBALANCER,
-                              libcloud.DriverType.LOADBALANCER.NTTCIS)
-    driver = cls('mitchgeo-test', 'Snmpv2c!', region='eu')
+    cls = libcloud.get_driver(
+        libcloud.DriverType.LOADBALANCER, libcloud.DriverType.LOADBALANCER.NTTCIS
+    )
+    driver = cls("mitchgeo-test", "Snmpv2c!", region="eu")
     return driver
 
 

@@ -32,16 +32,14 @@ try:
     # requests are made but it's necessary for detecting bad version of
     # requests
     import requests  # NOQA
+
     have_requests = True
 except ImportError:
     have_requests = False
 
-__all__ = [
-    '__version__',
-    'enable_debug'
-]
+__all__ = ["__version__", "enable_debug"]
 
-__version__ = '3.3.2-dev'
+__version__ = "3.3.2-dev"
 
 
 def enable_debug(fo):
@@ -76,10 +74,10 @@ def _init_once():
 
     This also checks for known environment/dependency incompatibilities.
     """
-    path = os.getenv('LIBCLOUD_DEBUG')
+    path = os.getenv("LIBCLOUD_DEBUG")
 
     if path:
-        mode = 'a'
+        mode = "a"
 
         # Special case for /dev/stderr and /dev/stdout on Python 3.
         from libcloud.utils.py3 import PY3
@@ -87,20 +85,21 @@ def _init_once():
         # Opening those files in append mode will throw "illegal seek"
         # exception there.
         # Late import to avoid setup.py related side affects
-        if path in ['/dev/stderr', '/dev/stdout'] and PY3:
-            mode = 'w'
+        if path in ["/dev/stderr", "/dev/stdout"] and PY3:
+            mode = "w"
 
-        fo = codecs.open(path, mode, encoding='utf8')
+        fo = codecs.open(path, mode, encoding="utf8")
         enable_debug(fo)
 
         # NOTE: We use lazy import to avoid unnecessary import time overhead
         try:
             import paramiko  # NOQA
+
             have_paramiko = True
         except ImportError:
             have_paramiko = False
 
-        if have_paramiko and hasattr(paramiko.util, 'log_to_file'):
+        if have_paramiko and hasattr(paramiko.util, "log_to_file"):
             import logging
 
             # paramiko always tries to open file path in append mode which
@@ -113,15 +112,15 @@ def _init_once():
                     raise e
 
     # check for broken `yum install python-requests`
-    if have_requests and requests.__version__ == '2.6.0':
+    if have_requests and requests.__version__ == "2.6.0":
         chardet_version = requests.packages.chardet.__version__
-        required_chardet_version = '2.3.0'
+        required_chardet_version = "2.3.0"
         assert chardet_version == required_chardet_version, (
-            'Known bad version of requests detected! This can happen when '
-            'requests was installed from a source other than PyPI, e.g. via '
-            'a package manager such as yum. Please either install requests '
-            'from PyPI or run `pip install chardet==%s` to resolve this '
-            'issue.' % required_chardet_version
+            "Known bad version of requests detected! This can happen when "
+            "requests was installed from a source other than PyPI, e.g. via "
+            "a package manager such as yum. Please either install requests "
+            "from PyPI or run `pip install chardet==%s` to resolve this "
+            "issue." % required_chardet_version
         )
 
 

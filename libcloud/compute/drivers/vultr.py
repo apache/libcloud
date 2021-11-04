@@ -37,7 +37,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "NJ",
-        "regioncode": "EWR"
+        "regioncode": "EWR",
     },
     "2": {
         "DCID": "2",
@@ -45,7 +45,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "IL",
-        "regioncode": "ORD"
+        "regioncode": "ORD",
     },
     "3": {
         "DCID": "3",
@@ -53,7 +53,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "TX",
-        "regioncode": "DFW"
+        "regioncode": "DFW",
     },
     "4": {
         "DCID": "4",
@@ -61,7 +61,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "WA",
-        "regioncode": "SEA"
+        "regioncode": "SEA",
     },
     "5": {
         "DCID": "5",
@@ -69,7 +69,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "CA",
-        "regioncode": "LAX"
+        "regioncode": "LAX",
     },
     "6": {
         "DCID": "6",
@@ -77,7 +77,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "GA",
-        "regioncode": "ATL"
+        "regioncode": "ATL",
     },
     "7": {
         "DCID": "7",
@@ -85,7 +85,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "NL",
         "continent": "Europe",
         "state": "",
-        "regioncode": "AMS"
+        "regioncode": "AMS",
     },
     "8": {
         "DCID": "8",
@@ -93,7 +93,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "GB",
         "continent": "Europe",
         "state": "",
-        "regioncode": "LHR"
+        "regioncode": "LHR",
     },
     "9": {
         "DCID": "9",
@@ -101,7 +101,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "DE",
         "continent": "Europe",
         "state": "",
-        "regioncode": "FRA"
+        "regioncode": "FRA",
     },
     "12": {
         "DCID": "12",
@@ -109,7 +109,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "CA",
-        "regioncode": "SJC"
+        "regioncode": "SJC",
     },
     "19": {
         "DCID": "19",
@@ -117,7 +117,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "AU",
         "continent": "Australia",
         "state": "",
-        "regioncode": "SYD"
+        "regioncode": "SYD",
     },
     "22": {
         "DCID": "22",
@@ -125,7 +125,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "CA",
         "continent": "North America",
         "state": "",
-        "regioncode": "YTO"
+        "regioncode": "YTO",
     },
     "24": {
         "DCID": "24",
@@ -133,7 +133,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "FR",
         "continent": "Europe",
         "state": "",
-        "regioncode": "CDG"
+        "regioncode": "CDG",
     },
     "25": {
         "DCID": "25",
@@ -141,7 +141,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "JP",
         "continent": "Asia",
         "state": "",
-        "regioncode": "NRT"
+        "regioncode": "NRT",
     },
     "34": {
         "DCID": "34",
@@ -149,7 +149,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "KR",
         "continent": "Asia",
         "state": "",
-        "regioncode": "ICN"
+        "regioncode": "ICN",
     },
     "39": {
         "DCID": "39",
@@ -157,7 +157,7 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "US",
         "continent": "North America",
         "state": "FL",
-        "regioncode": "MIA"
+        "regioncode": "MIA",
     },
     "40": {
         "DCID": "40",
@@ -165,8 +165,8 @@ VULTR_COMPUTE_INSTANCE_LOCATIONS = {
         "country": "SG",
         "continent": "Asia",
         "state": "",
-        "regioncode": "SGP"
-    }
+        "regioncode": "SGP",
+    },
 }
 # For matching image by id
 VULTR_COMPUTE_INSTANCE_IMAGES = {
@@ -175,183 +175,183 @@ VULTR_COMPUTE_INSTANCE_IMAGES = {
         "name": "CentOS 6 x64",
         "arch": "x64",
         "family": "centos",
-        "windows": False
+        "windows": False,
     },
     "147": {
         "OSID": 147,
         "name": "CentOS 6 i386",
         "arch": "i386",
         "family": "centos",
-        "windows": False
+        "windows": False,
     },
     "167": {
         "OSID": 167,
         "name": "CentOS 7 x64",
         "arch": "x64",
         "family": "centos",
-        "windows": False
+        "windows": False,
     },
     "381": {
         "OSID": 381,
         "name": "CentOS 7 SELinux x64",
         "arch": "x64",
         "family": "centos",
-        "windows": False
+        "windows": False,
     },
     "362": {
         "OSID": 362,
         "name": "CentOS 8 x64",
         "arch": "x64",
         "family": "centos",
-        "windows": False
+        "windows": False,
     },
     "401": {
         "OSID": 401,
         "name": "CentOS 8 Stream x64",
         "arch": "x64",
         "family": "centos",
-        "windows": False
+        "windows": False,
     },
     "215": {
         "OSID": 215,
         "name": "Ubuntu 16.04 x64",
         "arch": "x64",
         "family": "ubuntu",
-        "windows": False
+        "windows": False,
     },
     "216": {
         "OSID": 216,
         "name": "Ubuntu 16.04 i386",
         "arch": "i386",
         "family": "ubuntu",
-        "windows": False
+        "windows": False,
     },
     "270": {
         "OSID": 270,
         "name": "Ubuntu 18.04 x64",
         "arch": "x64",
         "family": "ubuntu",
-        "windows": False
+        "windows": False,
     },
     "387": {
         "OSID": 387,
         "name": "Ubuntu 20.04 x64",
         "arch": "x64",
         "family": "ubuntu",
-        "windows": False
+        "windows": False,
     },
     "194": {
         "OSID": 194,
         "name": "Debian 8 i386 (jessie)",
         "arch": "i386",
         "family": "debian",
-        "windows": False
+        "windows": False,
     },
     "244": {
         "OSID": 244,
         "name": "Debian 9 x64 (stretch)",
         "arch": "x64",
         "family": "debian",
-        "windows": False
+        "windows": False,
     },
     "352": {
         "OSID": 352,
         "name": "Debian 10 x64 (buster)",
         "arch": "x64",
         "family": "debian",
-        "windows": False
+        "windows": False,
     },
     "230": {
         "OSID": 230,
         "name": "FreeBSD 11 x64",
         "arch": "x64",
         "family": "freebsd",
-        "windows": False
+        "windows": False,
     },
     "327": {
         "OSID": 327,
         "name": "FreeBSD 12 x64",
         "arch": "x64",
         "family": "freebsd",
-        "windows": False
+        "windows": False,
     },
     "366": {
         "OSID": 366,
         "name": "OpenBSD 6.6 x64",
         "arch": "x64",
         "family": "openbsd",
-        "windows": False
+        "windows": False,
     },
     "394": {
         "OSID": 394,
         "name": "OpenBSD 6.7 x64",
         "arch": "x64",
         "family": "openbsd",
-        "windows": False
+        "windows": False,
     },
     "391": {
         "OSID": 391,
         "name": "Fedora CoreOS",
         "arch": "x64",
         "family": "fedora-coreos",
-        "windows": False
+        "windows": False,
     },
     "367": {
         "OSID": 367,
         "name": "Fedora 31 x64",
         "arch": "x64",
         "family": "fedora",
-        "windows": False
+        "windows": False,
     },
     "389": {
         "OSID": 389,
         "name": "Fedora 32 x64",
         "arch": "x64",
         "family": "fedora",
-        "windows": False
+        "windows": False,
     },
     "124": {
         "OSID": 124,
         "name": "Windows 2012 R2 x64",
         "arch": "x64",
         "family": "windows",
-        "windows": False
+        "windows": False,
     },
     "240": {
         "OSID": 240,
         "name": "Windows 2016 x64",
         "arch": "x64",
         "family": "windows",
-        "windows": False
+        "windows": False,
     },
     "159": {
         "OSID": 159,
         "name": "Custom",
         "arch": "x64",
         "family": "iso",
-        "windows": False
+        "windows": False,
     },
     "164": {
         "OSID": 164,
         "name": "Snapshot",
         "arch": "x64",
         "family": "snapshot",
-        "windows": False
+        "windows": False,
     },
     "180": {
         "OSID": 180,
         "name": "Backup",
         "arch": "x64",
         "family": "backup",
-        "windows": False
+        "windows": False,
     },
     "186": {
         "OSID": 186,
         "name": "Application",
         "arch": "x64",
         "family": "application",
-        "windows": False
-    }
+        "windows": False,
+    },
 }
 VULTR_COMPUTE_INSTANCE_SIZES = {
     "201": {
@@ -581,7 +581,7 @@ VULTR_COMPUTE_INSTANCE_SIZES = {
         "price_per_month": "256.00",
         "plan_type": "HIGHFREQUENCY",
         "windows": False,
-    }
+    },
 }
 
 
@@ -644,8 +644,11 @@ class SSHKey(object):
         self.pub_key = pub_key
 
     def __repr__(self):
-        return (('<SSHKey: id=%s, name=%s, pub_key=%s>') %
-                (self.id, self.name, self.pub_key))
+        return ("<SSHKey: id=%s, name=%s, pub_key=%s>") % (
+            self.id,
+            self.name,
+            self.pub_key,
+        )
 
 
 class VultrConnection(ConnectionKey):
@@ -653,16 +656,16 @@ class VultrConnection(ConnectionKey):
     Connection class for the Vultr driver.
     """
 
-    host = 'api.vultr.com'
+    host = "api.vultr.com"
     responseCls = VultrResponse
     unauthenticated_endpoints = {  # {action: methods}
-        '/v1/app/list': ['GET'],
-        '/v1/os/list': ['GET'],
-        '/v1/plans/list': ['GET'],
-        '/v1/plans/list_vc2': ['GET'],
-        '/v1/plans/list_vdc2': ['GET'],
-        '/v1/regions/availability': ['GET'],
-        '/v1/regions/list': ['GET']
+        "/v1/app/list": ["GET"],
+        "/v1/os/list": ["GET"],
+        "/v1/plans/list": ["GET"],
+        "/v1/plans/list_vc2": ["GET"],
+        "/v1/plans/list_vdc2": ["GET"],
+        "/v1/regions/availability": ["GET"],
+        "/v1/regions/list": ["GET"],
     }
 
     def add_default_headers(self, headers):
@@ -674,7 +677,7 @@ class VultrConnection(ConnectionKey):
         """
 
         if self.require_api_key():
-            headers.update({'API-Key': self.key})
+            headers.update({"API-Key": self.key})
         return headers
 
     def encode_data(self, data):
@@ -686,8 +689,8 @@ class VultrConnection(ConnectionKey):
 
     @rate_limited()
     def post(self, url, data):
-        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        return self.request(url, data=data, headers=headers, method='POST')
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        return self.request(url, data=data, headers=headers, method="POST")
 
     def require_api_key(self):
         """
@@ -698,8 +701,7 @@ class VultrConnection(ConnectionKey):
         """
 
         try:
-            return self.method \
-                not in self.unauthenticated_endpoints[self.action]
+            return self.method not in self.unauthenticated_endpoints[self.action]
         except KeyError:
             return True
 
@@ -725,29 +727,34 @@ class VultrNodeDriver(NodeDriver):
     connectionCls = VultrConnection
 
     type = Provider.VULTR
-    name = 'Vultr'
-    website = 'https://www.vultr.com'
+    name = "Vultr"
+    website = "https://www.vultr.com"
 
-    NODE_STATE_MAP = {'pending': NodeState.PENDING,
-                      'active': NodeState.RUNNING}
+    NODE_STATE_MAP = {"pending": NodeState.PENDING, "active": NodeState.RUNNING}
 
-    EX_CREATE_YES_NO_ATTRIBUTES = ['enable_ipv6',
-                                   'enable_private_network',
-                                   'auto_backups',
-                                   'notify_activate',
-                                   'ddos_protection']
+    EX_CREATE_YES_NO_ATTRIBUTES = [
+        "enable_ipv6",
+        "enable_private_network",
+        "auto_backups",
+        "notify_activate",
+        "ddos_protection",
+    ]
 
-    EX_CREATE_ID_ATTRIBUTES = {'iso_id': 'ISOID',
-                               'script_id': 'SCRIPTID',
-                               'snapshot_id': 'SNAPSHOTID',
-                               'app_id': 'APPID'}
+    EX_CREATE_ID_ATTRIBUTES = {
+        "iso_id": "ISOID",
+        "script_id": "SCRIPTID",
+        "snapshot_id": "SNAPSHOTID",
+        "app_id": "APPID",
+    }
 
-    EX_CREATE_ATTRIBUTES = ['ipxe_chain_url',
-                            'label',
-                            'userdata',
-                            'reserved_ip_v4',
-                            'hostname',
-                            'tag']
+    EX_CREATE_ATTRIBUTES = [
+        "ipxe_chain_url",
+        "label",
+        "userdata",
+        "reserved_ip_v4",
+        "hostname",
+        "tag",
+    ]
     EX_CREATE_ATTRIBUTES.extend(EX_CREATE_YES_NO_ATTRIBUTES)
     EX_CREATE_ATTRIBUTES.extend(EX_CREATE_ID_ATTRIBUTES.keys())
 
@@ -756,7 +763,7 @@ class VultrNodeDriver(NodeDriver):
         self._helper = VultrNodeDriverHelper()
 
     def list_nodes(self):
-        return self._list_resources('/v1/server/list', self._to_node)
+        return self._list_resources("/v1/server/list", self._to_node)
 
     def list_key_pairs(self):
         """
@@ -764,9 +771,9 @@ class VultrNodeDriver(NodeDriver):
         :return: Available SSH keys.
         :rtype: ``list`` of :class:`SSHKey`
         """
-        return self._list_resources('/v1/sshkey/list', self._to_ssh_key)
+        return self._list_resources("/v1/sshkey/list", self._to_ssh_key)
 
-    def create_key_pair(self, name, public_key=''):
+    def create_key_pair(self, name, public_key=""):
         """
         Create a new SSH key.
         :param name: Name of the new SSH key
@@ -778,8 +785,8 @@ class VultrNodeDriver(NodeDriver):
         :return: True on success
         :rtype: ``bool``
         """
-        params = {'name': name, 'ssh_key': public_key}
-        res = self.connection.post('/v1/sshkey/create', params)
+        params = {"name": name, "ssh_key": public_key}
+        res = self.connection.post("/v1/sshkey/create", params)
         return res.status == httplib.OK
 
     def delete_key_pair(self, key_pair):
@@ -791,22 +798,23 @@ class VultrNodeDriver(NodeDriver):
         :return: True on success
         :rtype: ``bool``
         """
-        params = {'SSHKEYID': key_pair.id}
-        res = self.connection.post('/v1/sshkey/destroy', params)
+        params = {"SSHKEYID": key_pair.id}
+        res = self.connection.post("/v1/sshkey/destroy", params)
         return res.status == httplib.OK
 
     def list_locations(self):
-        return self._list_resources('/v1/regions/list', self._to_location)
+        return self._list_resources("/v1/regions/list", self._to_location)
 
     def list_sizes(self):
-        return self._list_resources('/v1/plans/list', self._to_size)
+        return self._list_resources("/v1/plans/list", self._to_size)
 
     def list_images(self):
-        return self._list_resources('/v1/os/list', self._to_image)
+        return self._list_resources("/v1/os/list", self._to_image)
 
     # pylint: disable=too-many-locals
-    def create_node(self, name, size, image, location, ex_ssh_key_ids=None,
-                    ex_create_attr=None):
+    def create_node(
+        self, name, size, image, location, ex_ssh_key_ids=None, ex_create_attr=None
+    ):
         """
         Create a node
 
@@ -858,27 +866,31 @@ class VultrNodeDriver(NodeDriver):
         :rtype: :class:`Node`
 
         """
-        params = {'DCID': location.id, 'VPSPLANID': size.id,
-                  'OSID': image.id, 'label': name}
+        params = {
+            "DCID": location.id,
+            "VPSPLANID": size.id,
+            "OSID": image.id,
+            "label": name,
+        }
 
         if ex_ssh_key_ids is not None:
-            params['SSHKEYID'] = ','.join(ex_ssh_key_ids)
+            params["SSHKEYID"] = ",".join(ex_ssh_key_ids)
 
         ex_create_attr = ex_create_attr or {}
         for key, value in ex_create_attr.items():
             if key in self.EX_CREATE_ATTRIBUTES:
                 if key in self.EX_CREATE_YES_NO_ATTRIBUTES:
-                    params[key] = 'yes' if value else 'no'
+                    params[key] = "yes" if value else "no"
                 else:
                     if key in self.EX_CREATE_ID_ATTRIBUTES:
                         key = self.EX_CREATE_ID_ATTRIBUTES[key]
                     params[key] = value
 
-        result = self.connection.post('/v1/server/create', params)
+        result = self.connection.post("/v1/server/create", params)
         if result.status != httplib.OK:
             return False
 
-        subid = result.object['SUBID']
+        subid = result.object["SUBID"]
 
         retry_count = 3
         created_node = None
@@ -895,14 +907,14 @@ class VultrNodeDriver(NodeDriver):
         return created_node
 
     def reboot_node(self, node):
-        params = {'SUBID': node.id}
-        res = self.connection.post('/v1/server/reboot', params)
+        params = {"SUBID": node.id}
+        res = self.connection.post("/v1/server/reboot", params)
 
         return res.status == httplib.OK
 
     def destroy_node(self, node):
-        params = {'SUBID': node.id}
-        res = self.connection.post('/v1/server/destroy', params)
+        params = {"SUBID": node.id}
+        res = self.connection.post("/v1/server/destroy", params)
 
         return res.status == httplib.OK
 
@@ -912,37 +924,44 @@ class VultrNodeDriver(NodeDriver):
         return [tranform_func(data[key]) for key in sorted_key]
 
     def _to_node(self, data):
-        if 'status' in data:
-            state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
-            if state == NodeState.RUNNING and \
-                    data['power_status'] != 'running':
+        if "status" in data:
+            state = self.NODE_STATE_MAP.get(data["status"], NodeState.UNKNOWN)
+            if state == NodeState.RUNNING and data["power_status"] != "running":
                 state = NodeState.STOPPED
         else:
             state = NodeState.UNKNOWN
 
-        if 'main_ip' in data and data['main_ip'] is not None:
-            public_ips = [data['main_ip']]
+        if "main_ip" in data and data["main_ip"] is not None:
+            public_ips = [data["main_ip"]]
         else:
             public_ips = []
         # simple check that we have ip address in value
-        if len(data['internal_ip']) > 0:
-            private_ips = [data['internal_ip']]
+        if len(data["internal_ip"]) > 0:
+            private_ips = [data["internal_ip"]]
         else:
             private_ips = []
-        created_at = parse_date(data['date_created'])
+        created_at = parse_date(data["date_created"])
 
         # response ordering
         extra_keys = [
             "location",  # Location name
-            "default_password", "pending_charges", "cost_per_month",
-            "current_bandwidth_gb", "allowed_bandwidth_gb", "netmask_v4",
-            "gateway_v4", "power_status", "server_state",
+            "default_password",
+            "pending_charges",
+            "cost_per_month",
+            "current_bandwidth_gb",
+            "allowed_bandwidth_gb",
+            "netmask_v4",
+            "gateway_v4",
+            "power_status",
+            "server_state",
             "v6_networks",
             # TODO: Does we really need kvm_url?
             "kvm_url",
-            "auto_backups", "tag",
+            "auto_backups",
+            "tag",
             # "OSID",  # Operating system to use. See v1/os/list.
-            "APPID", "FIREWALLGROUPID"
+            "APPID",
+            "FIREWALLGROUPID",
         ]
         extra = self._helper.handle_extra(extra_keys, data)
 
@@ -964,8 +983,8 @@ class VultrNodeDriver(NodeDriver):
         # extra['location'] = location
 
         node = Node(
-            id=data['SUBID'],
-            name=data['label'],
+            id=data["SUBID"],
+            name=data["label"],
             state=state,
             public_ips=public_ips,
             private_ips=private_ips,
@@ -973,44 +992,61 @@ class VultrNodeDriver(NodeDriver):
             size=size,
             extra=extra,
             created_at=created_at,
-            driver=self)
+            driver=self,
+        )
 
         return node
 
     def _to_location(self, data):
-        extra_keys = ['continent', 'state', 'ddos_protection',
-                      'block_storage', 'regioncode']
+        extra_keys = [
+            "continent",
+            "state",
+            "ddos_protection",
+            "block_storage",
+            "regioncode",
+        ]
         extra = self._helper.handle_extra(extra_keys, data)
 
-        return NodeLocation(id=data['DCID'], name=data['name'],
-                            country=data['country'], extra=extra, driver=self)
+        return NodeLocation(
+            id=data["DCID"],
+            name=data["name"],
+            country=data["country"],
+            extra=extra,
+            driver=self,
+        )
 
     def _to_size(self, data):
         extra_keys = [
-            'vcpu_count', 'plan_type', 'available_locations',
+            "vcpu_count",
+            "plan_type",
+            "available_locations",
         ]
         extra = self._helper.handle_extra(extra_keys, data)
 
         # backward compatibility
-        if extra.get('vcpu_count').isdigit():
-            extra['vcpu_count'] = int(extra['vcpu_count'])
+        if extra.get("vcpu_count").isdigit():
+            extra["vcpu_count"] = int(extra["vcpu_count"])
 
-        ram = int(data['ram'])
-        disk = int(data['disk'])
+        ram = int(data["ram"])
+        disk = int(data["disk"])
         # NodeSize accepted int instead float
-        bandwidth = int(float(data['bandwidth']))
-        price = float(data['price_per_month'])
-        return NodeSize(id=data['VPSPLANID'], name=data['name'],
-                        ram=ram, disk=disk,
-                        bandwidth=bandwidth, price=price,
-                        extra=extra, driver=self)
+        bandwidth = int(float(data["bandwidth"]))
+        price = float(data["price_per_month"])
+        return NodeSize(
+            id=data["VPSPLANID"],
+            name=data["name"],
+            ram=ram,
+            disk=disk,
+            bandwidth=bandwidth,
+            price=price,
+            extra=extra,
+            driver=self,
+        )
 
     def _to_image(self, data):
-        extra_keys = ['arch', 'family']
+        extra_keys = ["arch", "family"]
         extra = self._helper.handle_extra(extra_keys, data)
-        return NodeImage(id=data['OSID'], name=data['name'], extra=extra,
-                         driver=self)
+        return NodeImage(id=data["OSID"], name=data["name"], extra=extra, driver=self)
 
     def _to_ssh_key(self, data):
-        return SSHKey(id=data['SSHKEYID'], name=data['name'],
-                      pub_key=data['ssh_key'])
+        return SSHKey(id=data["SSHKEYID"], name=data["name"], pub_key=data["ssh_key"])

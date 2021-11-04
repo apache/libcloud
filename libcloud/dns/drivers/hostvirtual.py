@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'HostVirtualDNSDriver'
-]
+__all__ = ["HostVirtualDNSDriver"]
 
 try:
     import simplejson as json
@@ -30,7 +28,7 @@ from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import ZoneDoesNotExistError, RecordDoesNotExistError
 from libcloud.dns.base import DNSDriver, Zone, Record
 
-VALID_RECORD_EXTRA_PARAMS = ['prio', 'ttl']
+VALID_RECORD_EXTRA_PARAMS = ["prio", "ttl"]
 
 
 class HostVirtualDNSResponse(HostVirtualResponse):
@@ -39,14 +37,18 @@ class HostVirtualDNSResponse(HostVirtualResponse):
         status = int(self.status)
 
         if status == httplib.NOT_FOUND:
-            if context['resource'] == 'zone':
+            if context["resource"] == "zone":
                 raise ZoneDoesNotExistError(
-                    value=self.parse_body()['error']['message'],
-                    driver=self, zone_id=context['id'])
-            elif context['resource'] == 'record':
+                    value=self.parse_body()["error"]["message"],
+                    driver=self,
+                    zone_id=context["id"],
+                )
+            elif context["resource"] == "record":
                 raise RecordDoesNotExistError(
-                    value=self.parse_body()['error']['message'],
-                    driver=self, record_id=context['id'])
+                    value=self.parse_body()["error"]["message"],
+                    driver=self,
+                    record_id=context["id"],
+                )
 
         super(HostVirtualDNSResponse, self).parse_error()
         return self.body
@@ -58,23 +60,24 @@ class HostVirtualDNSConnection(HostVirtualConnection):
 
 class HostVirtualDNSDriver(DNSDriver):
     type = Provider.HOSTVIRTUAL
-    name = 'Host Virtual DNS'
-    website = 'https://www.hostvirtual.com/'
+    name = "Host Virtual DNS"
+    website = "https://www.hostvirtual.com/"
     connectionCls = HostVirtualDNSConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.NS: 'SPF',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT',
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.NS: "SPF",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
     }
 
     def __init__(self, key, secure=True, host=None, port=None):
-        super(HostVirtualDNSDriver, self).__init__(key=key, secure=secure,
-                                                   host=host, port=port)
+        super(HostVirtualDNSDriver, self).__init__(
+            key=key, secure=secure, host=host, port=port
+        )
 
     def _to_zones(self, items):
         zones = []
@@ -84,13 +87,18 @@ class HostVirtualDNSDriver(DNSDriver):
 
     def _to_zone(self, item):
         extra = {}
-        if 'records' in item:
-            extra['records'] = item['records']
-        if item['type'] == 'NATIVE':
-            item['type'] = 'master'
-        zone = Zone(id=item['id'], domain=item['name'],
-                    type=item['type'], ttl=item['ttl'],
-                    driver=self, extra=extra)
+        if "records" in item:
+            extra["records"] = item["records"]
+        if item["type"] == "NATIVE":
+            item["type"] = "master"
+        zone = Zone(
+            id=item["id"],
+            domain=item["name"],
+            type=item["type"],
+            ttl=item["ttl"],
+            driver=self,
+            extra=extra,
+        )
         return zone
 
     def _to_records(self, items, zone=None):
@@ -101,154 +109,154 @@ class HostVirtualDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, item, zone=None):
-        extra = {'ttl': item['ttl']}
-        type = self._string_to_record_type(item['type'])
-        name = item['name'][:-len(zone.domain) - 1]
-        record = Record(id=item['id'], name=name,
-                        type=type, data=item['content'],
-                        zone=zone, driver=self, ttl=item['ttl'],
-                        extra=extra)
+        extra = {"ttl": item["ttl"]}
+        type = self._string_to_record_type(item["type"])
+        name = item["name"][: -len(zone.domain) - 1]
+        record = Record(
+            id=item["id"],
+            name=name,
+            type=type,
+            data=item["content"],
+            zone=zone,
+            driver=self,
+            ttl=item["ttl"],
+            extra=extra,
+        )
         return record
 
     def list_zones(self):
-        result = self.connection.request(
-            API_ROOT + '/dns/zones/').object
+        result = self.connection.request(API_ROOT + "/dns/zones/").object
         zones = self._to_zones(result)
         return zones
 
     def list_records(self, zone):
-        params = {'id': zone.id}
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
+        params = {"id": zone.id}
+        self.connection.set_context({"resource": "zone", "id": zone.id})
         try:
             result = self.connection.request(
-                API_ROOT + '/dns/records/', params=params).object
+                API_ROOT + "/dns/records/", params=params
+            ).object
         except ZoneDoesNotExistError as e:
-            if 'Not Found: No Records Found' in e.value:
+            if "Not Found: No Records Found" in e.value:
                 return []
             raise e
         records = self._to_records(items=result, zone=zone)
         return records
 
     def get_zone(self, zone_id):
-        params = {'id': zone_id}
-        self.connection.set_context({'resource': 'zone', 'id': zone_id})
-        result = self.connection.request(
-            API_ROOT + '/dns/zone/', params=params).object
-        if 'id' not in result:
-            raise ZoneDoesNotExistError(value='', driver=self, zone_id=zone_id)
+        params = {"id": zone_id}
+        self.connection.set_context({"resource": "zone", "id": zone_id})
+        result = self.connection.request(API_ROOT + "/dns/zone/", params=params).object
+        if "id" not in result:
+            raise ZoneDoesNotExistError(value="", driver=self, zone_id=zone_id)
         zone = self._to_zone(result)
         return zone
 
     def get_record(self, zone_id, record_id):
         zone = self.get_zone(zone_id=zone_id)
-        params = {'id': record_id}
-        self.connection.set_context({'resource': 'record', 'id': record_id})
+        params = {"id": record_id}
+        self.connection.set_context({"resource": "record", "id": record_id})
         result = self.connection.request(
-            API_ROOT + '/dns/record/', params=params).object
-        if 'id' not in result:
-            raise RecordDoesNotExistError(value='',
-                                          driver=self, record_id=record_id)
+            API_ROOT + "/dns/record/", params=params
+        ).object
+        if "id" not in result:
+            raise RecordDoesNotExistError(value="", driver=self, record_id=record_id)
         record = self._to_record(item=result, zone=zone)
         return record
 
     def delete_zone(self, zone):
-        params = {'id': zone.id}
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
+        params = {"id": zone.id}
+        self.connection.set_context({"resource": "zone", "id": zone.id})
         result = self.connection.request(
-            API_ROOT + '/dns/zone/', params=params, method='DELETE').object
+            API_ROOT + "/dns/zone/", params=params, method="DELETE"
+        ).object
         return bool(result)
 
     def delete_record(self, record):
-        params = {'id': record.id}
-        self.connection.set_context({'resource': 'record', 'id': record.id})
+        params = {"id": record.id}
+        self.connection.set_context({"resource": "record", "id": record.id})
         result = self.connection.request(
-            API_ROOT + '/dns/record/', params=params, method='DELETE').object
+            API_ROOT + "/dns/record/", params=params, method="DELETE"
+        ).object
 
         return bool(result)
 
-    def create_zone(self, domain, type='NATIVE', ttl=None, extra=None):
-        if type == 'master':
-            type = 'NATIVE'
-        elif type == 'slave':
-            type = 'SLAVE'
-        params = {'name': domain, 'type': type, 'ttl': ttl}
+    def create_zone(self, domain, type="NATIVE", ttl=None, extra=None):
+        if type == "master":
+            type = "NATIVE"
+        elif type == "slave":
+            type = "SLAVE"
+        params = {"name": domain, "type": type, "ttl": ttl}
         result = self.connection.request(
-            API_ROOT + '/dns/zone/',
-            data=json.dumps(params), method='POST').object
-        extra = {
-            'soa': result['soa'],
-            'ns': result['ns']
-        }
-        zone = Zone(id=result['id'], domain=domain,
-                    type=type, ttl=ttl, extra=extra, driver=self)
+            API_ROOT + "/dns/zone/", data=json.dumps(params), method="POST"
+        ).object
+        extra = {"soa": result["soa"], "ns": result["ns"]}
+        zone = Zone(
+            id=result["id"], domain=domain, type=type, ttl=ttl, extra=extra, driver=self
+        )
         return zone
 
     def update_zone(self, zone, domain=None, type=None, ttl=None, extra=None):
-        params = {'id': zone.id}
+        params = {"id": zone.id}
         if domain:
-            params['name'] = domain
+            params["name"] = domain
         if type:
-            params['type'] = type
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        self.connection.request(API_ROOT + '/dns/zone/',
-                                data=json.dumps(params), method='PUT').object
+            params["type"] = type
+        self.connection.set_context({"resource": "zone", "id": zone.id})
+        self.connection.request(
+            API_ROOT + "/dns/zone/", data=json.dumps(params), method="PUT"
+        ).object
         updated_zone = get_new_obj(
-            obj=zone, klass=Zone,
-            attributes={
-                'domain': domain,
-                'type': type,
-                'ttl': ttl,
-                'extra': extra
-            })
+            obj=zone,
+            klass=Zone,
+            attributes={"domain": domain, "type": type, "ttl": ttl, "extra": extra},
+        )
         return updated_zone
 
     def create_record(self, name, zone, type, data, extra=None):
         params = {
-            'name': name,
-            'type': self.RECORD_TYPE_MAP[type],
-            'domain_id': zone.id,
-            'content': data
+            "name": name,
+            "type": self.RECORD_TYPE_MAP[type],
+            "domain_id": zone.id,
+            "content": data,
         }
         merged = merge_valid_keys(
-            params=params,
-            valid_keys=VALID_RECORD_EXTRA_PARAMS,
-            extra=extra
+            params=params, valid_keys=VALID_RECORD_EXTRA_PARAMS, extra=extra
         )
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
+        self.connection.set_context({"resource": "zone", "id": zone.id})
         result = self.connection.request(
-            API_ROOT + '/dns/record/',
-            data=json.dumps(params), method='POST').object
-        record = Record(id=result['id'], name=name,
-                        type=type, data=data,
-                        extra=merged, zone=zone,
-                        ttl=merged.get('ttl', None),
-                        driver=self)
+            API_ROOT + "/dns/record/", data=json.dumps(params), method="POST"
+        ).object
+        record = Record(
+            id=result["id"],
+            name=name,
+            type=type,
+            data=data,
+            extra=merged,
+            zone=zone,
+            ttl=merged.get("ttl", None),
+            driver=self,
+        )
         return record
 
-    def update_record(self, record, name=None, type=None,
-                      data=None, extra=None):
-        params = {
-            'domain_id': record.zone.id,
-            'record_id': record.id
-        }
+    def update_record(self, record, name=None, type=None, data=None, extra=None):
+        params = {"domain_id": record.zone.id, "record_id": record.id}
         if name:
-            params['name'] = name
+            params["name"] = name
         if data:
-            params['content'] = data
+            params["content"] = data
         if type is not None:
-            params['type'] = self.RECORD_TYPE_MAP[type]
+            params["type"] = self.RECORD_TYPE_MAP[type]
             merged = merge_valid_keys(
-                params=params,
-                valid_keys=VALID_RECORD_EXTRA_PARAMS,
-                extra=extra
+                params=params, valid_keys=VALID_RECORD_EXTRA_PARAMS, extra=extra
             )
-        self.connection.set_context({'resource': 'record', 'id': record.id})
-        self.connection.request(API_ROOT + '/dns/record/',
-                                data=json.dumps(params), method='PUT').object
+        self.connection.set_context({"resource": "record", "id": record.id})
+        self.connection.request(
+            API_ROOT + "/dns/record/", data=json.dumps(params), method="PUT"
+        ).object
         updated_record = get_new_obj(
-            obj=record, klass=Record, attributes={
-                'name': name, 'data': data,
-                'type': type,
-                'extra': merged
-            })
+            obj=record,
+            klass=Record,
+            attributes={"name": name, "data": data, "type": type, "extra": merged},
+        )
         return updated_record

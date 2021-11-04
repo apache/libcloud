@@ -22,18 +22,22 @@ from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.rackspace import RackspaceFirstGenNodeDriver
 from libcloud.compute.drivers.rackspace import RackspaceNodeDriver
 from libcloud.test.compute.test_openstack import OpenStack_1_0_Tests
-from libcloud.test.compute.test_openstack import OpenStack_1_1_Tests, \
-    OpenStack_1_1_MockHttp
+from libcloud.test.compute.test_openstack import (
+    OpenStack_1_1_Tests,
+    OpenStack_1_1_MockHttp,
+)
 from libcloud.pricing import clear_pricing_data
 
 from libcloud.test.secrets import RACKSPACE_NOVA_PARAMS
 from libcloud.test.secrets import RACKSPACE_PARAMS
 
-DEPRECATED_RACKSPACE_PROVIDERS = [Provider.RACKSPACE_UK,
-                                  Provider.RACKSPACE_NOVA_BETA,
-                                  Provider.RACKSPACE_NOVA_DFW,
-                                  Provider.RACKSPACE_NOVA_LON,
-                                  Provider.RACKSPACE_NOVA_ORD]
+DEPRECATED_RACKSPACE_PROVIDERS = [
+    Provider.RACKSPACE_UK,
+    Provider.RACKSPACE_NOVA_BETA,
+    Provider.RACKSPACE_NOVA_DFW,
+    Provider.RACKSPACE_NOVA_LON,
+    Provider.RACKSPACE_NOVA_ORD,
+]
 
 
 class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
@@ -43,16 +47,16 @@ class RackspaceusFirstGenUsTests(OpenStack_1_0_Tests):
     driver_klass = RackspaceFirstGenNodeDriver
     driver_type = RackspaceFirstGenNodeDriver
     driver_args = RACKSPACE_PARAMS
-    driver_kwargs = {'region': 'us'}
+    driver_kwargs = {"region": "us"}
 
     def test_error_is_thrown_on_accessing_old_constant(self):
         for provider in DEPRECATED_RACKSPACE_PROVIDERS:
             try:
                 get_driver(provider)
             except Exception as e:
-                self.assertTrue(str(e).find('has been removed') != -1)
+                self.assertTrue(str(e).find("has been removed") != -1)
             else:
-                self.fail('Exception was not thrown')
+                self.fail("Exception was not thrown")
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()
@@ -68,7 +72,7 @@ class RackspaceusFirstGenUkTests(OpenStack_1_0_Tests):
     driver_klass = RackspaceFirstGenNodeDriver
     driver_type = RackspaceFirstGenNodeDriver
     driver_args = RACKSPACE_PARAMS
-    driver_kwargs = {'region': 'uk'}
+    driver_kwargs = {"region": "uk"}
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()
@@ -78,54 +82,66 @@ class RackspaceusFirstGenUkTests(OpenStack_1_0_Tests):
 
 
 class RackspaceNovaMockHttp(OpenStack_1_1_MockHttp):
-
     def __init__(self, *args, **kwargs):
         super(RackspaceNovaMockHttp, self).__init__(*args, **kwargs)
 
         methods1 = OpenStack_1_1_MockHttp.__dict__
 
-        names1 = [m for m in methods1 if m.find('_v1_1') == 0]
+        names1 = [m for m in methods1 if m.find("_v1_1") == 0]
 
         for name in names1:
             method = methods1[name]
-            new_name = name.replace('_v1_1_slug_', '_v2_1337_')
-            setattr(self, new_name, method_type(method, self,
-                                                RackspaceNovaMockHttp))
+            new_name = name.replace("_v1_1_slug_", "_v2_1337_")
+            setattr(self, new_name, method_type(method, self, RackspaceNovaMockHttp))
 
     def _v2_1337_os_networksv2(self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('_os_networks.json')
-            return (httplib.OK, body, self.json_content_headers,
-                    httplib.responses[httplib.OK])
-        elif method == 'POST':
-            body = self.fixtures.load('_os_networks_POST.json')
-            return (httplib.ACCEPTED, body, self.json_content_headers,
-                    httplib.responses[httplib.OK])
+        if method == "GET":
+            body = self.fixtures.load("_os_networks.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+        elif method == "POST":
+            body = self.fixtures.load("_os_networks_POST.json")
+            return (
+                httplib.ACCEPTED,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
         raise NotImplementedError()
 
-    def _v2_1337_os_networksv2_f13e5051_feea_416b_827a_1a0acc2dad14(self,
-                                                                    method,
-                                                                    url, body,
-                                                                    headers):
-        if method == 'DELETE':
-            body = ''
-            return (httplib.ACCEPTED, body, self.json_content_headers,
-                    httplib.responses[httplib.OK])
+    def _v2_1337_os_networksv2_f13e5051_feea_416b_827a_1a0acc2dad14(
+        self, method, url, body, headers
+    ):
+        if method == "DELETE":
+            body = ""
+            return (
+                httplib.ACCEPTED,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
         raise NotImplementedError()
 
 
 class RackspaceNovaLonMockHttp(RackspaceNovaMockHttp):
-
     def _v2_0_tokens(self, method, url, body, headers):
-        body = self.auth_fixtures.load('_v2_0__auth_lon.json')
-        return (httplib.OK, body, self.json_content_headers,
-                httplib.responses[httplib.OK])
+        body = self.auth_fixtures.load("_v2_0__auth_lon.json")
+        return (
+            httplib.OK,
+            body,
+            self.json_content_headers,
+            httplib.responses[httplib.OK],
+        )
 
 
 # Does not derive from TestCase because it should not be used by setup.py test
 class BaseRackspaceNovaTestCase(object):
     conn_class = RackspaceNovaMockHttp
-    auth_url = 'https://auth.api.example.com'
+    auth_url = "https://auth.api.example.com"
 
     def create_driver(self):
         return self.driver_type(*self.driver_args, **self.driver_kwargs)
@@ -141,8 +157,7 @@ class BaseRackspaceNovaTestCase(object):
         self.node = self.driver.list_nodes()[1]
 
     def test_service_catalog_contains_right_endpoint(self):
-        self.assertEqual(self.driver.connection.get_endpoint(),
-                         self.expected_endpoint)
+        self.assertEqual(self.driver.connection.get_endpoint(), self.expected_endpoint)
 
     def test_list_sizes_pricing(self):
         sizes = self.driver.list_sizes()
@@ -157,9 +172,9 @@ class RackspaceNovaDfwTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'dfw'}
+    driver_kwargs = {"region": "dfw"}
 
-    expected_endpoint = 'https://dfw.servers.api.rackspacecloud.com/v2/1337'
+    expected_endpoint = "https://dfw.servers.api.rackspacecloud.com/v2/1337"
 
 
 class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
@@ -167,9 +182,9 @@ class RackspaceNovaOrdTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'ord'}
+    driver_kwargs = {"region": "ord"}
 
-    expected_endpoint = 'https://ord.servers.api.rackspacecloud.com/v2/1337'
+    expected_endpoint = "https://ord.servers.api.rackspacecloud.com/v2/1337"
 
 
 class RackspaceNovaIadTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
@@ -177,9 +192,9 @@ class RackspaceNovaIadTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'iad'}
+    driver_kwargs = {"region": "iad"}
 
-    expected_endpoint = 'https://iad.servers.api.rackspacecloud.com/v2/1337'
+    expected_endpoint = "https://iad.servers.api.rackspacecloud.com/v2/1337"
 
 
 class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
@@ -187,12 +202,12 @@ class RackspaceNovaLonTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'lon'}
+    driver_kwargs = {"region": "lon"}
 
     conn_class = RackspaceNovaLonMockHttp
-    auth_url = 'https://lon.auth.api.example.com'
+    auth_url = "https://lon.auth.api.example.com"
 
-    expected_endpoint = 'https://lon.servers.api.rackspacecloud.com/v2/1337'
+    expected_endpoint = "https://lon.servers.api.rackspacecloud.com/v2/1337"
 
 
 class RackspaceNovaSydTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
@@ -200,9 +215,9 @@ class RackspaceNovaSydTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'syd'}
+    driver_kwargs = {"region": "syd"}
 
-    expected_endpoint = 'https://syd.servers.api.rackspacecloud.com/v2/1337'
+    expected_endpoint = "https://syd.servers.api.rackspacecloud.com/v2/1337"
 
 
 class RackspaceNovaHkgTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
@@ -210,9 +225,10 @@ class RackspaceNovaHkgTests(BaseRackspaceNovaTestCase, OpenStack_1_1_Tests):
     driver_klass = RackspaceNodeDriver
     driver_type = RackspaceNodeDriver
     driver_args = RACKSPACE_NOVA_PARAMS
-    driver_kwargs = {'region': 'hkg'}
+    driver_kwargs = {"region": "hkg"}
 
-    expected_endpoint = 'https://hkg.servers.api.rackspacecloud.com/v2/1337'
+    expected_endpoint = "https://hkg.servers.api.rackspacecloud.com/v2/1337"
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

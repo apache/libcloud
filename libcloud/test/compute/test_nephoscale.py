@@ -28,10 +28,9 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class NephoScaleTest(unittest.TestCase, TestCaseMixin):
-
     def setUp(self):
         NephoscaleNodeDriver.connectionCls.conn_class = NephoscaleMockHttp
-        self.driver = NephoscaleNodeDriver('user', 'password')
+        self.driver = NephoscaleNodeDriver("user", "password")
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -44,8 +43,8 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         self.assertEqual(len(images), 18)
         for image in images:
-            arch = image.extra.get('architecture')
-            self.assertTrue(arch.startswith('x86'))
+            arch = image.extra.get("architecture")
+            self.assertTrue(arch.startswith("x86"))
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
@@ -55,25 +54,26 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 2)
-        self.assertEqual(nodes[0].extra.get('zone'), 'RIC-1')
-        self.assertEqual(nodes[0].name, 'mongodb-staging')
-        self.assertEqual(nodes[0].extra.get('service_type'),
-                         'CS05 - 0.5GB, 1Core, 25GB')
+        self.assertEqual(nodes[0].extra.get("zone"), "RIC-1")
+        self.assertEqual(nodes[0].name, "mongodb-staging")
+        self.assertEqual(
+            nodes[0].extra.get("service_type"), "CS05 - 0.5GB, 1Core, 25GB"
+        )
 
     def test_list_keys(self):
         keys = self.driver.ex_list_keypairs()
         self.assertEqual(len(keys), 2)
-        self.assertEqual(keys[0].name, 'mistio-ssh')
+        self.assertEqual(keys[0].name, "mistio-ssh")
 
     def test_list_ssh_keys(self):
         ssh_keys = self.driver.ex_list_keypairs(ssh=True)
         self.assertEqual(len(ssh_keys), 1)
-        self.assertTrue(ssh_keys[0].public_key.startswith('ssh-rsa'))
+        self.assertTrue(ssh_keys[0].public_key.startswith("ssh-rsa"))
 
     def test_list_password_keys(self):
         password_keys = self.driver.ex_list_keypairs(password=True)
         self.assertEqual(len(password_keys), 1)
-        self.assertEqual(password_keys[0].password, '23d493j5')
+        self.assertEqual(password_keys[0].password, "23d493j5")
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
@@ -97,24 +97,20 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
 
     def test_rename_node(self):
         node = self.driver.list_nodes()[0]
-        result = self.driver.rename_node(node, 'new-name')
+        result = self.driver.rename_node(node, "new-name")
         self.assertTrue(result)
 
     def test_create_node(self):
-        name = 'mongodb-staging'
+        name = "mongodb-staging"
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[3]
-        node = self.driver.create_node(name=name,
-                                       size=size,
-                                       nowait=True,
-                                       image=image)
-        self.assertEqual(node.name, 'mongodb-staging')
+        node = self.driver.create_node(name=name, size=size, nowait=True, image=image)
+        self.assertEqual(node.name, "mongodb-staging")
 
     def test_create_node_no_name(self):
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[3]
-        self.assertRaises(TypeError, self.driver.create_node, size=size,
-                          image=image)
+        self.assertRaises(TypeError, self.driver.create_node, size=size, image=image)
 
     def test_delete_ssh_keys(self):
         self.assertTrue(self.driver.ex_delete_keypair(key_id=72209, ssh=True))
@@ -124,64 +120,63 @@ class NephoScaleTest(unittest.TestCase, TestCaseMixin):
 
 
 class NephoscaleMockHttp(MockHttp):
-    fixtures = ComputeFileFixtures('nephoscale')
+    fixtures = ComputeFileFixtures("nephoscale")
 
     def _server_type_cloud(self, method, url, body, headers):
-        body = self.fixtures.load('list_sizes.json')
+        body = self.fixtures.load("list_sizes.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _server_cloud(self, method, url, body, headers):
-        if method == 'POST':
-            body = self.fixtures.load('success_action.json')
+        if method == "POST":
+            body = self.fixtures.load("success_action.json")
         else:
-            body = self.fixtures.load('list_nodes.json')
+            body = self.fixtures.load("list_nodes.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _image_server(self, method, url, body, headers):
-        body = self.fixtures.load('list_images.json')
+        body = self.fixtures.load("list_images.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _datacenter_zone(self, method, url, body, headers):
-        body = self.fixtures.load('list_locations.json')
+        body = self.fixtures.load("list_locations.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _key(self, method, url, body, headers):
-        body = self.fixtures.load('list_keys.json')
+        body = self.fixtures.load("list_keys.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _key_sshrsa(self, method, url, body, headers):
-        body = self.fixtures.load('list_ssh_keys.json')
+        body = self.fixtures.load("list_ssh_keys.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _key_password(self, method, url, body, headers):
-        body = self.fixtures.load('list_password_keys.json')
+        body = self.fixtures.load("list_password_keys.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _server_cloud_88241(self, method, url, body, headers):
-        body = self.fixtures.load('success_action.json')
+        body = self.fixtures.load("success_action.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _server_cloud_88241_initiator_restart(self, method, url, body,
-                                              headers):
-        body = self.fixtures.load('success_action.json')
+    def _server_cloud_88241_initiator_restart(self, method, url, body, headers):
+        body = self.fixtures.load("success_action.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _server_cloud_88241_initiator_start(self, method, url, body, headers):
-        body = self.fixtures.load('success_action.json')
+        body = self.fixtures.load("success_action.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _server_cloud_88241_initiator_stop(self, method, url, body, headers):
-        body = self.fixtures.load('success_action.json')
+        body = self.fixtures.load("success_action.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _key_password_72211(self, method, url, body, headers):
-        body = self.fixtures.load('success_action.json')
+        body = self.fixtures.load("success_action.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _key_sshrsa_72209(self, method, url, body, headers):
-        body = self.fixtures.load('success_action.json')
+        body = self.fixtures.load("success_action.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

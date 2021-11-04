@@ -13,15 +13,18 @@ libcloud.security.VERIFY_SSL_CERT = False
 
 OpenStack = get_driver(Provider.OPENSTACK)
 
-driver = OpenStack('your username', 'your password',
-                   ex_force_auth_url='https://nova-api.trystack.org:5443',
-                   ex_force_auth_version='2.0_password')
+driver = OpenStack(
+    "your username",
+    "your password",
+    ex_force_auth_url="https://nova-api.trystack.org:5443",
+    ex_force_auth_version="2.0_password",
+)
 
 nodes = driver.list_nodes()
 
 images = driver.list_images()
 sizes = driver.list_sizes()
 size = [s for s in sizes if s.ram == 512][0]
-image = [i for i in images if i.name == 'natty-server-cloudimg-amd64'][0]
+image = [i for i in images if i.name == "natty-server-cloudimg-amd64"][0]
 
-node = driver.create_node(name='test node', image=image, size=size)
+node = driver.create_node(name="test node", image=image, size=size)

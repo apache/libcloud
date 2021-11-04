@@ -21,22 +21,23 @@ import os
 import fnmatch
 
 # Names that are excluded from globbing results:
-EXCLUDE_NAMES = ['{arch}', 'CVS', '.cvsignore', '_darcs',
-                 'RCS', 'SCCS', '.svn']
-EXCLUDE_PATTERNS = ['*.py[cdo]', '*.s[ol]', '.#*', '*~', '*.py']
+EXCLUDE_NAMES = ["{arch}", "CVS", ".cvsignore", "_darcs", "RCS", "SCCS", ".svn"]
+EXCLUDE_PATTERNS = ["*.py[cdo]", "*.s[ol]", ".#*", "*~", "*.py"]
 
 
 def _filter_names(names):
     """
     Given a list of file names, return those names that should be copied.
     """
-    names = [n for n in names
-             if n not in EXCLUDE_NAMES]
+    names = [n for n in names if n not in EXCLUDE_NAMES]
     # This is needed when building a distro from a working
     # copy (likely a checkout) rather than a pristine export:
     for pattern in EXCLUDE_PATTERNS:
-        names = [n for n in names
-                 if not fnmatch.fnmatch(n, pattern) and not n.endswith('.py')]
+        names = [
+            n
+            for n in names
+            if not fnmatch.fnmatch(n, pattern) and not n.endswith(".py")
+        ]
     return names
 
 
@@ -56,7 +57,7 @@ def relative_to(base, relativee):
     basepath = os.path.abspath(base)
     relativee = os.path.abspath(relativee)
     if relativee.startswith(basepath):
-        relative = relativee[len(basepath):]
+        relative = relativee[len(basepath) :]
         if relative.startswith(os.sep):
             relative = relative[1:]
         return os.path.join(base, relative)
@@ -84,13 +85,17 @@ def get_packages(dname, pkgname=None, results=None, ignore=None, parent=None):
     subfiles = os.listdir(dname)
     abssubfiles = [os.path.join(dname, x) for x in subfiles]
 
-    if '__init__.py' in subfiles:
+    if "__init__.py" in subfiles:
         results.append(prefix + pkgname + [bname])
         for subdir in filter(os.path.isdir, abssubfiles):
-            get_packages(subdir, pkgname=pkgname + [bname],
-                         results=results, ignore=ignore,
-                         parent=parent)
-    res = ['.'.join(result) for result in results]
+            get_packages(
+                subdir,
+                pkgname=pkgname + [bname],
+                results=results,
+                ignore=ignore,
+                parent=parent,
+            )
+    res = [".".join(result) for result in results]
     return res
 
 
@@ -129,7 +134,7 @@ def get_data_files(dname, ignore=None, parent=None):
             for filename in resultfiles:
                 file_path = os.path.join(directory, filename)
                 if parent:
-                    file_path = file_path.replace(parent + os.sep, '')
+                    file_path = file_path.replace(parent + os.sep, "")
                 result.append(file_path)
 
     return result

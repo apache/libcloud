@@ -65,7 +65,7 @@ class DummyNodeDriver(NodeDriver):
     """
 
     name = "Dummy Node Provider"
-    website = 'http://example.com'
+    website = "http://example.com"
     type = Provider.DUMMY
 
     def __init__(self, creds):
@@ -82,34 +82,40 @@ class DummyNodeDriver(NodeDriver):
             num = None
         if num:
             self.nl = []
-            startip = _ip_to_int('127.0.0.1')
+            startip = _ip_to_int("127.0.0.1")
             for i in range(num):
                 ip = _int_to_ip(startip + i)
                 self.nl.append(
-                    Node(id=i,
-                         name='dummy-%d' % (i),
-                         state=NodeState.RUNNING,
-                         public_ips=[ip],
-                         private_ips=[],
-                         driver=self,
-                         extra={'foo': 'bar'})
+                    Node(
+                        id=i,
+                        name="dummy-%d" % (i),
+                        state=NodeState.RUNNING,
+                        public_ips=[ip],
+                        private_ips=[],
+                        driver=self,
+                        extra={"foo": "bar"},
+                    )
                 )
         else:
             self.nl = [
-                Node(id=1,
-                     name='dummy-1',
-                     state=NodeState.RUNNING,
-                     public_ips=['127.0.0.1'],
-                     private_ips=[],
-                     driver=self,
-                     extra={'foo': 'bar'}),
-                Node(id=2,
-                     name='dummy-2',
-                     state=NodeState.RUNNING,
-                     public_ips=['127.0.0.1'],
-                     private_ips=[],
-                     driver=self,
-                     extra={'foo': 'bar'}),
+                Node(
+                    id=1,
+                    name="dummy-1",
+                    state=NodeState.RUNNING,
+                    public_ips=["127.0.0.1"],
+                    private_ips=[],
+                    driver=self,
+                    extra={"foo": "bar"},
+                ),
+                Node(
+                    id=2,
+                    name="dummy-2",
+                    state=NodeState.RUNNING,
+                    public_ips=["127.0.0.1"],
+                    private_ips=[],
+                    driver=self,
+                    extra={"foo": "bar"},
+                ),
             ]
         self.connection = DummyConnection(self.creds)
 
@@ -234,34 +240,36 @@ class DummyNodeDriver(NodeDriver):
         """
 
         return [
-            NodeSize(id=1,
-                     name="Small",
-                     ram=128,
-                     disk=4,
-                     bandwidth=500,
-                     price=4,
-                     driver=self),
-            NodeSize(id=2,
-                     name="Medium",
-                     ram=512,
-                     disk=16,
-                     bandwidth=1500,
-                     price=8,
-                     driver=self),
-            NodeSize(id=3,
-                     name="Big",
-                     ram=4096,
-                     disk=32,
-                     bandwidth=2500,
-                     price=32,
-                     driver=self),
-            NodeSize(id=4,
-                     name="XXL Big",
-                     ram=4096 * 2,
-                     disk=32 * 4,
-                     bandwidth=2500 * 3,
-                     price=32 * 2,
-                     driver=self),
+            NodeSize(
+                id=1, name="Small", ram=128, disk=4, bandwidth=500, price=4, driver=self
+            ),
+            NodeSize(
+                id=2,
+                name="Medium",
+                ram=512,
+                disk=16,
+                bandwidth=1500,
+                price=8,
+                driver=self,
+            ),
+            NodeSize(
+                id=3,
+                name="Big",
+                ram=4096,
+                disk=32,
+                bandwidth=2500,
+                price=32,
+                driver=self,
+            ),
+            NodeSize(
+                id=4,
+                name="XXL Big",
+                ram=4096 * 2,
+                disk=32 * 4,
+                bandwidth=2500 * 3,
+                price=32 * 2,
+                driver=self,
+            ),
         ]
 
     def list_locations(self):
@@ -277,18 +285,9 @@ class DummyNodeDriver(NodeDriver):
         @inherits: :class:`NodeDriver.list_locations`
         """
         return [
-            NodeLocation(id=1,
-                         name="Paul's Room",
-                         country='US',
-                         driver=self),
-            NodeLocation(id=2,
-                         name="London Loft",
-                         country='GB',
-                         driver=self),
-            NodeLocation(id=3,
-                         name="Island Datacenter",
-                         country='FJ',
-                         driver=self),
+            NodeLocation(id=1, name="Paul's Room", country="US", driver=self),
+            NodeLocation(id=2, name="London Loft", country="GB", driver=self),
+            NodeLocation(id=3, name="Island Datacenter", country="FJ", driver=self),
         ]
 
     def create_node(self, name, size, image):
@@ -313,35 +312,45 @@ class DummyNodeDriver(NodeDriver):
         @inherits: :class:`NodeDriver.create_node`
         """
         num = len(self.nl) + 1
-        n = Node(id=num,
-                 name='dummy-%d' % (num),
-                 state=NodeState.RUNNING,
-                 public_ips=['127.0.0.%d' % (num)],
-                 private_ips=[],
-                 driver=self,
-                 size=NodeSize(id='s1', name='foo', ram=2048,
-                               disk=160, bandwidth=None, price=0.0,
-                               driver=self),
-                 image=NodeImage(id='i2', name='image', driver=self),
-                 extra={'foo': 'bar'})
+        n = Node(
+            id=num,
+            name="dummy-%d" % (num),
+            state=NodeState.RUNNING,
+            public_ips=["127.0.0.%d" % (num)],
+            private_ips=[],
+            driver=self,
+            size=NodeSize(
+                id="s1",
+                name="foo",
+                ram=2048,
+                disk=160,
+                bandwidth=None,
+                price=0.0,
+                driver=self,
+            ),
+            image=NodeImage(id="i2", name="image", driver=self),
+            extra={"foo": "bar"},
+        )
         self.nl.append(n)
         return n
 
     def import_key_pair_from_string(self, name, key_material):
-        key_pair = KeyPair(name=name,
-                           public_key=key_material,
-                           fingerprint='fingerprint',
-                           private_key='private_key',
-                           driver=self)
+        key_pair = KeyPair(
+            name=name,
+            public_key=key_material,
+            fingerprint="fingerprint",
+            private_key="private_key",
+            driver=self,
+        )
         return key_pair
 
 
 def _ip_to_int(ip):
-    return socket.htonl(struct.unpack('I', socket.inet_aton(ip))[0])
+    return socket.htonl(struct.unpack("I", socket.inet_aton(ip))[0])
 
 
 def _int_to_ip(ip):
-    return socket.inet_ntoa(struct.pack('I', socket.ntohl(ip)))
+    return socket.inet_ntoa(struct.pack("I", socket.ntohl(ip)))
 
 
 if __name__ == "__main__":

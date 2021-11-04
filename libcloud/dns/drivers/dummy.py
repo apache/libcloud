@@ -30,8 +30,8 @@ class DummyDNSDriver(DNSDriver):
     'Dummy DNS Provider'
     """
 
-    name = 'Dummy DNS Provider'
-    website = 'http://example.com'
+    name = "Dummy DNS Provider"
+    website = "http://example.com"
 
     def __init__(self, api_key, api_secret):
         """
@@ -64,7 +64,7 @@ class DummyDNSDriver(DNSDriver):
         @inherits: :class:`DNSDriver.list_zones`
         """
 
-        return [zone['zone'] for zone in list(self._zones.values())]
+        return [zone["zone"] for zone in list(self._zones.values())]
 
     def list_records(self, zone):
         """
@@ -78,7 +78,7 @@ class DummyDNSDriver(DNSDriver):
         >>> list(zone.list_records()) #doctest: +ELLIPSIS
         [<Record: zone=apache.org, name=libcloud, type=A...>]
         """
-        return self._zones[zone.id]['records'].values()
+        return self._zones[zone.id]["records"].values()
 
     def get_zone(self, zone_id):
         """
@@ -92,10 +92,9 @@ class DummyDNSDriver(DNSDriver):
         """
 
         if zone_id not in self._zones:
-            raise ZoneDoesNotExistError(driver=self, value=None,
-                                        zone_id=zone_id)
+            raise ZoneDoesNotExistError(driver=self, value=None, zone_id=zone_id)
 
-        return self._zones[zone_id]['zone']
+        return self._zones[zone_id]["zone"]
 
     def get_record(self, zone_id, record_id):
         """
@@ -109,15 +108,14 @@ class DummyDNSDriver(DNSDriver):
         """
 
         self.get_zone(zone_id=zone_id)
-        zone_records = self._zones[zone_id]['records']
+        zone_records = self._zones[zone_id]["records"]
 
         if record_id not in zone_records:
-            raise RecordDoesNotExistError(record_id=record_id, value=None,
-                                          driver=self)
+            raise RecordDoesNotExistError(record_id=record_id, value=None, driver=self)
 
         return zone_records[record_id]
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         >>> driver = DummyDNSDriver('key', 'secret')
         >>> zone = driver.create_zone(domain='apache.org', type='master',
@@ -133,15 +131,13 @@ class DummyDNSDriver(DNSDriver):
         @inherits: :class:`DNSDriver.create_zone`
         """
 
-        id = 'id-%s' % (domain)
+        id = "id-%s" % (domain)
 
         if id in self._zones:
             raise ZoneAlreadyExistsError(zone_id=id, value=None, driver=self)
 
-        zone = Zone(id=id, domain=domain, type=type, ttl=ttl, extra={},
-                    driver=self)
-        self._zones[id] = {'zone': zone,
-                           'records': {}}
+        zone = Zone(id=id, domain=domain, type=type, ttl=ttl, extra={}, driver=self)
+        self._zones[id] = {"zone": zone, "records": {}}
         return zone
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -161,17 +157,17 @@ class DummyDNSDriver(DNSDriver):
 
         @inherits: :class:`DNSDriver.create_record`
         """
-        id = 'id-%s' % (name)
+        id = "id-%s" % (name)
 
         zone = self.get_zone(zone_id=zone.id)
 
-        if id in self._zones[zone.id]['records']:
-            raise RecordAlreadyExistsError(record_id=id, value=None,
-                                           driver=self)
+        if id in self._zones[zone.id]["records"]:
+            raise RecordAlreadyExistsError(record_id=id, value=None, driver=self)
 
-        record = Record(id=id, name=name, type=type, data=data, extra=extra,
-                        zone=zone, driver=self)
-        self._zones[zone.id]['records'][id] = record
+        record = Record(
+            id=id, name=name, type=type, data=data, extra=extra, zone=zone, driver=self
+        )
+        self._zones[zone.id]["records"][id] = record
         return record
 
     def delete_zone(self, zone):
@@ -209,10 +205,11 @@ class DummyDNSDriver(DNSDriver):
         """
         self.get_record(zone_id=record.zone.id, record_id=record.id)
 
-        del self._zones[record.zone.id]['records'][record.id]
+        del self._zones[record.zone.id]["records"][record.id]
         return True
 
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

@@ -16,8 +16,12 @@
 import datetime
 import json
 
-from libcloud.container.base import (Container, ContainerDriver,
-                                     ContainerImage, ContainerCluster)
+from libcloud.container.base import (
+    Container,
+    ContainerDriver,
+    ContainerImage,
+    ContainerCluster,
+)
 
 from libcloud.common.kubernetes import KubernetesException
 from libcloud.common.kubernetes import KubernetesBasicAuthConnection
@@ -26,12 +30,10 @@ from libcloud.common.kubernetes import KubernetesDriverMixin
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
-__all__ = [
-    'KubernetesContainerDriver'
-]
+__all__ = ["KubernetesContainerDriver"]
 
 
-ROOT_URL = '/api/'
+ROOT_URL = "/api/"
 
 
 class KubernetesPod(object):
@@ -46,8 +48,8 @@ class KubernetesPod(object):
 
 class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
     type = Provider.KUBERNETES
-    name = 'Kubernetes'
-    website = 'http://kubernetes.io'
+    name = "Kubernetes"
+    website = "http://kubernetes.io"
     connectionCls = KubernetesBasicAuthConnection
     supports_clusters = True
 
@@ -64,18 +66,17 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``list`` of :class:`libcloud.container.base.Container`
         """
         try:
-            result = self.connection.request(
-                ROOT_URL + "v1/pods").object
+            result = self.connection.request(ROOT_URL + "v1/pods").object
         except Exception as exc:
-            errno = getattr(exc, 'errno', None)
+            errno = getattr(exc, "errno", None)
             if errno == 111:
                 raise KubernetesException(
                     errno,
-                    'Make sure kube host is accessible'
-                    'and the API port is correct')
+                    "Make sure kube host is accessible" "and the API port is correct",
+                )
             raise
 
-        pods = [self._to_pod(value) for value in result['items']]
+        pods = [self._to_pod(value) for value in result["items"]]
         containers = []
         for pod in pods:
             containers.extend(pod.containers)
@@ -104,18 +105,17 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``list`` of :class:`libcloud.container.base.ContainerCluster`
         """
         try:
-            result = self.connection.request(
-                ROOT_URL + "v1/namespaces/").object
+            result = self.connection.request(ROOT_URL + "v1/namespaces/").object
         except Exception as exc:
-            errno = getattr(exc, 'errno', None)
+            errno = getattr(exc, "errno", None)
             if errno == 111:
                 raise KubernetesException(
                     errno,
-                    'Make sure kube host is accessible'
-                    'and the API port is correct')
+                    "Make sure kube host is accessible" "and the API port is correct",
+                )
             raise
 
-        clusters = [self._to_cluster(value) for value in result['items']]
+        clusters = [self._to_cluster(value) for value in result["items"]]
         return clusters
 
     def get_cluster(self, id):
@@ -127,8 +127,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.ContainerCluster`
         """
-        result = self.connection.request(ROOT_URL + "v1/namespaces/%s" %
-                                         id).object
+        result = self.connection.request(ROOT_URL + "v1/namespaces/%s" % id).object
 
         return self._to_cluster(result)
 
@@ -139,8 +138,9 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :return: ``True`` if the destroy was successful, otherwise ``False``.
         :rtype: ``bool``
         """
-        self.connection.request(ROOT_URL + "v1/namespaces/%s" %
-                                cluster.id, method='DELETE').object
+        self.connection.request(
+            ROOT_URL + "v1/namespaces/%s" % cluster.id, method="DELETE"
+        ).object
         return True
 
     def create_cluster(self, name, location=None):
@@ -155,18 +155,13 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: :class:`.ContainerCluster`
         """
-        request = {
-            'metadata': {
-                'name': name
-            }
-        }
-        result = self.connection.request(ROOT_URL + "v1/namespaces",
-                                         method='POST',
-                                         data=json.dumps(request)).object
+        request = {"metadata": {"name": name}}
+        result = self.connection.request(
+            ROOT_URL + "v1/namespaces", method="POST", data=json.dumps(request)
+        ).object
         return self._to_cluster(result)
 
-    def deploy_container(self, name, image, cluster=None,
-                         parameters=None, start=True):
+    def deploy_container(self, name, image, cluster=None, parameters=None, start=True):
         """
         Deploy an installed container image.
         In kubernetes this deploys a single container Pod.
@@ -190,26 +185,18 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: :class:`.Container`
         """
         if cluster is None:
-            namespace = 'default'
+            namespace = "default"
         else:
             namespace = cluster.id
         request = {
-            "metadata": {
-                "name": name
-            },
-            "spec": {
-                "containers": [
-                    {
-                        "name": name,
-                        "image": image.name
-                    }
-                ]
-            }
+            "metadata": {"name": name},
+            "spec": {"containers": [{"name": name, "image": image.name}]},
         }
-        result = self.connection.request(ROOT_URL + "v1/namespaces/%s/pods"
-                                         % namespace,
-                                         method='POST',
-                                         data=json.dumps(request)).object
+        result = self.connection.request(
+            ROOT_URL + "v1/namespaces/%s/pods" % namespace,
+            method="POST",
+            data=json.dumps(request),
+        ).object
         return self._to_cluster(result)
 
     def destroy_container(self, container):
@@ -222,8 +209,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
 
         :rtype: ``bool``
         """
-        return self.ex_destroy_pod(container.extra['namespace'],
-                                   container.extra['pod'])
+        return self.ex_destroy_pod(container.extra["namespace"], container.extra["pod"])
 
     def ex_list_pods(self):
         """
@@ -232,68 +218,71 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         :rtype: ``list`` of :class:`.KubernetesPod`
         """
         result = self.connection.request(ROOT_URL + "v1/pods").object
-        return [self._to_pod(value) for value in result['items']]
+        return [self._to_pod(value) for value in result["items"]]
 
     def ex_destroy_pod(self, namespace, pod_name):
         """
         Delete a pod and the containers within it.
         """
         self.connection.request(
-            ROOT_URL + "v1/namespaces/%s/pods/%s" % (
-                namespace, pod_name),
-            method='DELETE').object
+            ROOT_URL + "v1/namespaces/%s/pods/%s" % (namespace, pod_name),
+            method="DELETE",
+        ).object
         return True
 
     def _to_pod(self, data):
         """
         Convert an API response to a Pod object
         """
-        container_statuses = data['status']['containerStatuses']
+        container_statuses = data["status"]["containerStatuses"]
         containers = []
         # response contains the status of the containers in a separate field
-        for container in data['spec']['containers']:
-            spec = list(filter(lambda i: i['name'] == container['name'],
-                               container_statuses))[0]
-            containers.append(
-                self._to_container(container, spec, data)
-            )
+        for container in data["spec"]["containers"]:
+            spec = list(
+                filter(lambda i: i["name"] == container["name"], container_statuses)
+            )[0]
+            containers.append(self._to_container(container, spec, data))
         return KubernetesPod(
-            name=data['metadata']['name'],
-            namespace=data['metadata']['namespace'],
-            containers=containers)
+            name=data["metadata"]["name"],
+            namespace=data["metadata"]["namespace"],
+            containers=containers,
+        )
 
     def _to_container(self, data, container_status, pod_data):
         """
         Convert container in Container instances
         """
         return Container(
-            id=container_status['containerID'],
-            name=data['name'],
+            id=container_status["containerID"],
+            name=data["name"],
             image=ContainerImage(
-                id=container_status['imageID'],
-                name=data['image'],
+                id=container_status["imageID"],
+                name=data["image"],
                 path=None,
                 version=None,
-                driver=self.connection.driver),
+                driver=self.connection.driver,
+            ),
             ip_addresses=None,
             state=ContainerState.RUNNING,
             driver=self.connection.driver,
             extra={
-                'pod': pod_data['metadata']['name'],
-                'namespace': pod_data['metadata']['namespace']
-            })
+                "pod": pod_data["metadata"]["name"],
+                "namespace": pod_data["metadata"]["namespace"],
+            },
+        )
 
     def _to_cluster(self, data):
         """
         Convert namespace to a cluster
         """
-        metadata = data['metadata']
-        status = data['status']
+        metadata = data["metadata"]
+        status = data["status"]
         return ContainerCluster(
-            id=metadata['name'],
-            name=metadata['name'],
+            id=metadata["name"],
+            name=metadata["name"],
             driver=self.connection.driver,
-            extra={'phase': status['phase']})
+            extra={"phase": status["phase"]},
+        )
 
 
 def ts_to_str(timestamp):

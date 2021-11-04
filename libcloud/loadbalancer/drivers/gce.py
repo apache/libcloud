@@ -29,18 +29,16 @@ DEFAULT_ALGORITHM = Algorithm.RANDOM
 
 class GCELBDriver(Driver):
     connectionCls = GCEConnection
-    apiname = 'googleapis'
-    name = 'Google Compute Engine Load Balancer'
-    website = 'https://cloud.google.com/'
+    apiname = "googleapis"
+    name = "Google Compute Engine Load Balancer"
+    website = "https://cloud.google.com/"
 
-    _VALUE_TO_ALGORITHM_MAP = {
-        'RANDOM': Algorithm.RANDOM
-    }
+    _VALUE_TO_ALGORITHM_MAP = {"RANDOM": Algorithm.RANDOM}
 
     def __init__(self, *args, **kwargs):
 
-        if kwargs.get('gce_driver'):
-            self.gce = kwargs['gce_driver']
+        if kwargs.get("gce_driver"):
+            self.gce = kwargs["gce_driver"]
         else:
             self.gce = GCENodeDriver(*args, **kwargs)
 
@@ -56,7 +54,7 @@ class GCELBDriver(Driver):
         :return:  Node object that has the given IP, or None if not found.
         :rtype:   :class:`Node` or None
         """
-        all_nodes = self.gce.list_nodes(ex_zone='all')
+        all_nodes = self.gce.list_nodes(ex_zone="all")
         for node in all_nodes:
             if ip in node.public_ips:
                 return node
@@ -70,7 +68,7 @@ class GCELBDriver(Driver):
 
         :rtype: ``list`` of ``str``
         """
-        return ['TCP', 'UDP']
+        return ["TCP", "UDP"]
 
     def list_balancers(self, ex_region=None):
         """
@@ -88,9 +86,18 @@ class GCELBDriver(Driver):
             balancers.append(self._forwarding_rule_to_loadbalancer(fwr))
         return balancers
 
-    def create_balancer(self, name, port, protocol, algorithm, members,
-                        ex_region=None, ex_healthchecks=None, ex_address=None,
-                        ex_session_affinity=None):
+    def create_balancer(
+        self,
+        name,
+        port,
+        protocol,
+        algorithm,
+        members,
+        ex_region=None,
+        ex_healthchecks=None,
+        ex_address=None,
+        ex_session_affinity=None,
+    ):
         """
         Create a new load balancer instance.
 
@@ -145,29 +152,38 @@ class GCELBDriver(Driver):
         node_list = []
         for member in members:
             # Member object
-            if hasattr(member, 'ip'):
-                if member.extra.get('node'):
-                    node_list.append(member.extra['node'])
+            if hasattr(member, "ip"):
+                if member.extra.get("node"):
+                    node_list.append(member.extra["node"])
                 else:
                     node_list.append(self._get_node_from_ip(member.ip))
             # Node object
-            elif hasattr(member, 'name'):
+            elif hasattr(member, "name"):
                 node_list.append(member)
             # Assume it's a node name otherwise
             else:
-                node_list.append(self.gce.ex_get_node(member, 'all'))
+                node_list.append(self.gce.ex_get_node(member, "all"))
 
         # Create Target Pool
-        tp_name = '%s-tp' % name
+        tp_name = "%s-tp" % name
         targetpool = self.gce.ex_create_targetpool(
-            tp_name, region=ex_region, healthchecks=ex_healthchecks,
-            nodes=node_list, session_affinity=ex_session_affinity)
+            tp_name,
+            region=ex_region,
+            healthchecks=ex_healthchecks,
+            nodes=node_list,
+            session_affinity=ex_session_affinity,
+        )
 
         # Create the Forwarding rule, but if it fails, delete the target pool.
         try:
             forwarding_rule = self.gce.ex_create_forwarding_rule(
-                name, targetpool, region=ex_region, protocol=protocol,
-                port_range=port, address=ex_address)
+                name,
+                targetpool,
+                region=ex_region,
+                protocol=protocol,
+                port_range=port,
+                address=ex_address,
+            )
         except Exception:
             targetpool.destroy()
             raise
@@ -188,9 +204,9 @@ class GCELBDriver(Driver):
         :return:  True if successful
         :rtype:   ``bool``
         """
-        destroy = balancer.extra['forwarding_rule'].destroy()
+        destroy = balancer.extra["forwarding_rule"].destroy()
         if destroy:
-            tp_destroy = balancer.extra['targetpool'].destroy()
+            tp_destroy = balancer.extra["targetpool"].destroy()
             return tp_destroy
         else:
             return destroy
@@ -222,7 +238,7 @@ class GCELBDriver(Driver):
         :return: Member after joining the balancer.
         :rtype: :class:`Member`
         """
-        add_node = balancer.extra['targetpool'].add_node(node)
+        add_node = balancer.extra["targetpool"].add_node(node)
         if add_node:
             return self._node_to_member(node, balancer)
 
@@ -239,8 +255,8 @@ class GCELBDriver(Driver):
         :return: Member after joining the balancer.
         :rtype: :class:`Member`
         """
-        node = member.extra.get('node') or self._get_node_from_ip(member.ip)
-        add_node = balancer.extra['targetpool'].add_node(node)
+        node = member.extra.get("node") or self._get_node_from_ip(member.ip)
+        add_node = balancer.extra["targetpool"].add_node(node)
         if add_node:
             return self._node_to_member(node, balancer)
 
@@ -257,8 +273,8 @@ class GCELBDriver(Driver):
         :return: True if member detach was successful, otherwise False
         :rtype: ``bool``
         """
-        node = member.extra.get('node') or self._get_node_from_ip(member.ip)
-        remove_node = balancer.extra['targetpool'].remove_node(node)
+        node = member.extra.get("node") or self._get_node_from_ip(member.ip)
+        remove_node = balancer.extra["targetpool"].remove_node(node)
         return remove_node
 
     def balancer_list_members(self, balancer):
@@ -270,8 +286,10 @@ class GCELBDriver(Driver):
 
         :rtype: ``list`` of :class:`Member`
         """
-        return [self._node_to_member(n, balancer) for n in
-                balancer.extra['targetpool'].nodes]
+        return [
+            self._node_to_member(n, balancer)
+            for n in balancer.extra["targetpool"].nodes
+        ]
 
     def ex_create_healthcheck(self, *args, **kwargs):
         return self.gce.ex_create_healthcheck(*args, **kwargs)
@@ -292,7 +310,7 @@ class GCELBDriver(Driver):
         :return: True if successful
         :rtype:  ``bool``
         """
-        return balancer.extra['targetpool'].add_healthcheck(healthcheck)
+        return balancer.extra["targetpool"].add_healthcheck(healthcheck)
 
     def ex_balancer_detach_healthcheck(self, balancer, healthcheck):
         """
@@ -307,7 +325,7 @@ class GCELBDriver(Driver):
         :return: True if successful
         :rtype: ``bool``
         """
-        return balancer.extra['targetpool'].remove_healthcheck(healthcheck)
+        return balancer.extra["targetpool"].remove_healthcheck(healthcheck)
 
     def ex_balancer_list_healthchecks(self, balancer):
         """
@@ -318,7 +336,7 @@ class GCELBDriver(Driver):
 
         :rtype: ``list`` of :class:`HealthChecks`
         """
-        return balancer.extra['healthchecks']
+        return balancer.extra["healthchecks"]
 
     def _node_to_member(self, node, balancer):
         """
@@ -336,19 +354,24 @@ class GCELBDriver(Driver):
         # A balancer can have a node as a member, even if the node doesn't
         # exist.  In this case, 'node' is simply a string to where the resource
         # would be found if it was there.
-        if hasattr(node, 'name'):
+        if hasattr(node, "name"):
             member_id = node.name
         else:
             member_id = node
 
-        if hasattr(node, 'public_ips') and len(node.public_ips) > 0:
+        if hasattr(node, "public_ips") and len(node.public_ips) > 0:
             member_ip = node.public_ips[0]
         else:
             member_ip = None
 
-        extra = {'node': node}
-        return Member(id=member_id, ip=member_ip, port=balancer.port,
-                      balancer=balancer, extra=extra)
+        extra = {"node": node}
+        return Member(
+            id=member_id,
+            ip=member_ip,
+            port=balancer.port,
+            balancer=balancer,
+            extra=extra,
+        )
 
     def _forwarding_rule_to_loadbalancer(self, forwarding_rule):
         """
@@ -361,12 +384,16 @@ class GCELBDriver(Driver):
         :rtype:   :class:`LoadBalancer`
         """
         extra = {}
-        extra['forwarding_rule'] = forwarding_rule
-        extra['targetpool'] = forwarding_rule.targetpool
-        extra['healthchecks'] = forwarding_rule.targetpool.healthchecks
+        extra["forwarding_rule"] = forwarding_rule
+        extra["targetpool"] = forwarding_rule.targetpool
+        extra["healthchecks"] = forwarding_rule.targetpool.healthchecks
 
-        return LoadBalancer(id=forwarding_rule.id,
-                            name=forwarding_rule.name, state=None,
-                            ip=forwarding_rule.address,
-                            port=forwarding_rule.extra['portRange'],
-                            driver=self, extra=extra)
+        return LoadBalancer(
+            id=forwarding_rule.id,
+            name=forwarding_rule.name,
+            state=None,
+            ip=forwarding_rule.address,
+            port=forwarding_rule.extra["portRange"],
+            driver=self,
+            extra=extra,
+        )

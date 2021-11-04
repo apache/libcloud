@@ -16,16 +16,14 @@
 from libcloud.compute.providers import Provider
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
-__all__ = [
-    'IkoulaNodeDriver'
-]
+__all__ = ["IkoulaNodeDriver"]
 
 
 class IkoulaNodeDriver(CloudStackNodeDriver):
     type = Provider.IKOULA
-    name = 'Ikoula'
-    website = 'http://express.ikoula.co.uk/cloudstack'
+    name = "Ikoula"
+    website = "http://express.ikoula.co.uk/cloudstack"
 
     # API endpoint info
-    host = 'cloudstack.ikoula.com'
-    path = '/client/api'
+    host = "cloudstack.ikoula.com"
+    path = "/client/api"

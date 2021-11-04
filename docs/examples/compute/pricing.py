@@ -1,8 +1,8 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
-EC2_ACCESS_ID = 'your access id'
-EC2_SECRET_KEY = 'your secret key'
+EC2_ACCESS_ID = "your access id"
+EC2_SECRET_KEY = "your secret key"
 
 cls = get_driver(Provider.EC2)
 driver = cls(EC2_ACCESS_ID, EC2_SECRET_KEY)

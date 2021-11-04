@@ -24,24 +24,25 @@ from libcloud.common.types import ProviderError
 from libcloud.utils.py3 import httplib
 
 __all__ = [
-    'API_HOST',
-    'GandiLiveBaseError',
-    'JsonParseError',
-    'ResourceNotFoundError',
-    'InvalidRequestError',
-    'ResourceConflictError',
-    'GandiLiveResponse',
-    'GandiLiveConnection',
-    'BaseGandiLiveDriver',
+    "API_HOST",
+    "GandiLiveBaseError",
+    "JsonParseError",
+    "ResourceNotFoundError",
+    "InvalidRequestError",
+    "ResourceConflictError",
+    "GandiLiveResponse",
+    "GandiLiveConnection",
+    "BaseGandiLiveDriver",
 ]
 
-API_HOST = 'dns.api.gandi.net'
+API_HOST = "dns.api.gandi.net"
 
 
 class GandiLiveBaseError(ProviderError):
     """
     Exception class for Gandi Live driver
     """
+
     pass
 
 
@@ -205,14 +206,16 @@ class GandiLiveResponse(JsonResponse):
         :return:  String containing error message
         :rtype:   ``str``
         """
-        if not json_error and 'cause' in body:
-            message = '%s: %s' % (body['cause'], body['message'])
-            if 'errors' in body:
-                err = body['errors'][0]
-                message = '%s (%s in %s: %s)' % (message,
-                                                 err.get('location'),
-                                                 err.get('name'),
-                                                 err.get('description'))
+        if not json_error and "cause" in body:
+            message = "%s: %s" % (body["cause"], body["message"])
+            if "errors" in body:
+                err = body["errors"][0]
+                message = "%s (%s in %s: %s)" % (
+                    message,
+                    err.get("location"),
+                    err.get("name"),
+                    err.get("description"),
+                )
         else:
             message = body
 
@@ -231,7 +234,7 @@ class GandiLiveConnection(ConnectionKey):
         """
         Returns default headers as a dictionary.
         """
-        headers["Content-Type"] = 'application/json'
+        headers["Content-Type"] = "application/json"
         headers["X-Api-Key"] = self.key
         return headers
 
@@ -244,5 +247,6 @@ class BaseGandiLiveDriver(object):
     """
     Gandi Live base driver
     """
+
     connectionCls = GandiLiveConnection
-    name = 'GandiLive'
+    name = "GandiLive"

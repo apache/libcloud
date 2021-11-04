@@ -27,39 +27,52 @@ from libcloud.test.secrets import JOYENT_PARAMS
 
 
 class JoyentTestCase(unittest.TestCase):
-
     def setUp(self):
         JoyentNodeDriver.connectionCls.conn_class = JoyentHttp
         self.driver = JoyentNodeDriver(*JOYENT_PARAMS)
 
     def test_instantiate_multiple_drivers_with_different_region(self):
-        kwargs1 = {'region': 'us-east-1'}
-        kwargs2 = {'region': 'us-west-1'}
+        kwargs1 = {"region": "us-east-1"}
+        kwargs2 = {"region": "us-west-1"}
         driver1 = JoyentNodeDriver(*JOYENT_PARAMS, **kwargs1)
         driver2 = JoyentNodeDriver(*JOYENT_PARAMS, **kwargs2)
 
-        self.assertTrue(driver1.connection.host.startswith(kwargs1['region']))
-        self.assertTrue(driver2.connection.host.startswith(kwargs2['region']))
+        self.assertTrue(driver1.connection.host.startswith(kwargs1["region"]))
+        self.assertTrue(driver2.connection.host.startswith(kwargs2["region"]))
 
         driver1.list_nodes()
         driver2.list_nodes()
         driver1.list_nodes()
 
-        self.assertTrue(driver1.connection.host.startswith(kwargs1['region']))
-        self.assertTrue(driver2.connection.host.startswith(kwargs2['region']))
+        self.assertTrue(driver1.connection.host.startswith(kwargs1["region"]))
+        self.assertTrue(driver2.connection.host.startswith(kwargs2["region"]))
 
     def test_location_backward_compatibility(self):
-        kwargs = {'location': 'us-west-1'}
+        kwargs = {"location": "us-west-1"}
         driver = JoyentNodeDriver(*JOYENT_PARAMS, **kwargs)
-        self.assertTrue(driver.connection.host.startswith(kwargs['location']))
+        self.assertTrue(driver.connection.host.startswith(kwargs["location"]))
 
     def test_instantiate_invalid_region(self):
-        expected_msg = 'Invalid region.+'
+        expected_msg = "Invalid region.+"
 
-        assertRaisesRegex(self, LibcloudError, expected_msg, JoyentNodeDriver,
-                          'user', 'key', location='invalid')
-        assertRaisesRegex(self, LibcloudError, expected_msg, JoyentNodeDriver,
-                          'user', 'key', region='invalid')
+        assertRaisesRegex(
+            self,
+            LibcloudError,
+            expected_msg,
+            JoyentNodeDriver,
+            "user",
+            "key",
+            location="invalid",
+        )
+        assertRaisesRegex(
+            self,
+            LibcloudError,
+            expected_msg,
+            JoyentNodeDriver,
+            "user",
+            "key",
+            region="invalid",
+        )
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -69,29 +82,29 @@ class JoyentTestCase(unittest.TestCase):
     def test_list_images(self):
         images = self.driver.list_images()
 
-        self.assertEqual(images[0].name, 'nodejs')
+        self.assertEqual(images[0].name, "nodejs")
 
     def test_list_nodes_with_and_without_credentials(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 2)
 
         node = nodes[0]
-        self.assertEqual(node.public_ips[0], '165.225.129.129')
-        self.assertEqual(node.private_ips[0], '10.112.1.130')
+        self.assertEqual(node.public_ips[0], "165.225.129.129")
+        self.assertEqual(node.private_ips[0], "10.112.1.130")
         self.assertEqual(node.state, NodeState.RUNNING)
 
         node = nodes[1]
-        self.assertEqual(node.public_ips[0], '165.225.129.128')
-        self.assertEqual(node.private_ips[0], '10.112.1.131')
+        self.assertEqual(node.public_ips[0], "165.225.129.128")
+        self.assertEqual(node.private_ips[0], "10.112.1.131")
         self.assertEqual(node.state, NodeState.RUNNING)
-        self.assertEqual(node.extra['password'], 'abc')
+        self.assertEqual(node.extra["password"], "abc")
 
     def test_create_node(self):
         image = self.driver.list_images()[0]
         size = self.driver.list_sizes()[0]
-        node = self.driver.create_node(image=image, size=size, name='testlc')
+        node = self.driver.create_node(image=image, size=size, name="testlc")
 
-        self.assertEqual(node.name, 'testlc')
+        self.assertEqual(node.name, "testlc")
 
     def test_ex_stop_node(self):
         node = self.driver.list_nodes()[0]
@@ -102,38 +115,38 @@ class JoyentTestCase(unittest.TestCase):
         self.assertTrue(self.driver.ex_start_node(node))
 
     def test_ex_get_node(self):
-        node_id = '2fb67f5f-53f2-40ab-9d99-b9ff68cfb2ab'
+        node_id = "2fb67f5f-53f2-40ab-9d99-b9ff68cfb2ab"
         node = self.driver.ex_get_node(node_id)
-        self.assertEqual(node.name, 'testlc')
+        self.assertEqual(node.name, "testlc")
 
-        missing_node = 'dummy-node'
-        self.assertRaises(Exception, self.driver.ex_get_node,
-                          missing_node, 'all')
+        missing_node = "dummy-node"
+        self.assertRaises(Exception, self.driver.ex_get_node, missing_node, "all")
 
 
 class JoyentHttp(MockHttp):
-    fixtures = ComputeFileFixtures('joyent')
+    fixtures = ComputeFileFixtures("joyent")
 
     def _my_packages(self, method, url, body, headers):
-        body = self.fixtures.load('my_packages.json')
+        body = self.fixtures.load("my_packages.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _my_datasets(self, method, url, body, headers):
-        body = self.fixtures.load('my_datasets.json')
+        body = self.fixtures.load("my_datasets.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _my_machines(self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('my_machines.json')
-        elif method == 'POST':
-            body = self.fixtures.load('my_machines_create.json')
+        if method == "GET":
+            body = self.fixtures.load("my_machines.json")
+        elif method == "POST":
+            body = self.fixtures.load("my_machines_create.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _my_machines_2fb67f5f_53f2_40ab_9d99_b9ff68cfb2ab(self, method, url,
-                                                          body, headers):
-        body = self.fixtures.load('my_machines_create.json')
+    def _my_machines_2fb67f5f_53f2_40ab_9d99_b9ff68cfb2ab(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("my_machines_create.json")
         return (httplib.ACCEPTED, body, {}, httplib.responses[httplib.ACCEPTED])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

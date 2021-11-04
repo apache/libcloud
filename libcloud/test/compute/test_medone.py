@@ -16,13 +16,15 @@
 import unittest
 
 from libcloud.compute.drivers.medone import MedOneNodeDriver
-from libcloud.test.compute.test_dimensiondata_v2_3 import DimensionDataMockHttp, DimensionData_v2_3_Tests
+from libcloud.test.compute.test_dimensiondata_v2_3 import (
+    DimensionDataMockHttp,
+    DimensionData_v2_3_Tests,
+)
 
 
 class MedOneTests(DimensionData_v2_3_Tests, unittest.TestCase):
-
     def setUp(self):
         MedOneNodeDriver.connectionCls.conn_class = DimensionDataMockHttp
-        MedOneNodeDriver.connectionCls.active_api_version = '2.3'
+        MedOneNodeDriver.connectionCls.active_api_version = "2.3"
         DimensionDataMockHttp.type = None
-        self.driver = MedOneNodeDriver('user', 'password')
+        self.driver = MedOneNodeDriver("user", "password")

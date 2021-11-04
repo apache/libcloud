@@ -36,26 +36,27 @@ from libcloud.dns.types import RecordType, ZoneDoesNotExistError
 from libcloud.dns.types import ZoneAlreadyExistsError, RecordDoesNotExistError
 
 
-API_HOST = 'api.auroradns.eu'
+API_HOST = "api.auroradns.eu"
 
 # Default TTL required by libcloud, but doesn't do anything in AuroraDNS
 DEFAULT_ZONE_TTL = 3600
-DEFAULT_ZONE_TYPE = 'master'
+DEFAULT_ZONE_TYPE = "master"
 
-VALID_RECORD_PARAMS_EXTRA = ['ttl', 'prio', 'health_check_id', 'disabled']
+VALID_RECORD_PARAMS_EXTRA = ["ttl", "prio", "health_check_id", "disabled"]
 
 
 class AuroraDNSHealthCheckType(object):
     """
     Healthcheck type.
     """
-    HTTP = 'HTTP'
-    HTTPS = 'HTTPS'
-    TCP = 'TCP'
+
+    HTTP = "HTTP"
+    HTTPS = "HTTPS"
+    TCP = "TCP"
 
 
 class HealthCheckError(LibcloudError):
-    error_type = 'HealthCheckError'
+    error_type = "HealthCheckError"
 
     def __init__(self, value, driver, health_check_id):
         self.health_check_id = health_check_id
@@ -65,13 +66,16 @@ class HealthCheckError(LibcloudError):
         return self.__repr__()
 
     def __repr__(self):
-        return ('<%s in %s, health_check_id=%s, value=%s>' %
-                (self.error_type, repr(self.driver),
-                 self.health_check_id, self.value))
+        return "<%s in %s, health_check_id=%s, value=%s>" % (
+            self.error_type,
+            repr(self.driver),
+            self.health_check_id,
+            self.value,
+        )
 
 
 class HealthCheckDoesNotExistError(HealthCheckError):
-    error_type = 'HealthCheckDoesNotExistError'
+    error_type = "HealthCheckDoesNotExistError"
 
 
 class AuroraDNSHealthCheck(object):
@@ -79,8 +83,22 @@ class AuroraDNSHealthCheck(object):
     AuroraDNS Healthcheck resource.
     """
 
-    def __init__(self, id, type, hostname, ipaddress, port, interval, path,
-                 threshold, health, enabled, zone, driver, extra=None):
+    def __init__(
+        self,
+        id,
+        type,
+        hostname,
+        ipaddress,
+        port,
+        interval,
+        path,
+        threshold,
+        health,
+        enabled,
+        zone,
+        driver,
+        extra=None,
+    ):
         """
         :param id: Healthcheck id
         :type id: ``str``
@@ -132,27 +150,51 @@ class AuroraDNSHealthCheck(object):
         self.driver = driver
         self.extra = extra or {}
 
-    def update(self, type=None, hostname=None, ipaddress=None, port=None,
-               interval=None, path=None, threshold=None, enabled=None,
-               extra=None):
-        return self.driver.ex_update_healthcheck(healthcheck=self, type=type,
-                                                 hostname=hostname,
-                                                 ipaddress=ipaddress,
-                                                 port=port, path=path,
-                                                 interval=interval,
-                                                 threshold=threshold,
-                                                 enabled=enabled, extra=extra)
+    def update(
+        self,
+        type=None,
+        hostname=None,
+        ipaddress=None,
+        port=None,
+        interval=None,
+        path=None,
+        threshold=None,
+        enabled=None,
+        extra=None,
+    ):
+        return self.driver.ex_update_healthcheck(
+            healthcheck=self,
+            type=type,
+            hostname=hostname,
+            ipaddress=ipaddress,
+            port=port,
+            path=path,
+            interval=interval,
+            threshold=threshold,
+            enabled=enabled,
+            extra=extra,
+        )
 
     def delete(self):
         return self.driver.ex_delete_healthcheck(healthcheck=self)
 
     def __repr__(self):
-        return ('<AuroraDNSHealthCheck: zone=%s, id=%s, type=%s, hostname=%s, '
-                'ipaddress=%s, port=%d, interval=%d, health=%s, provider=%s'
-                '...>' %
-                (self.zone.id, self.id, self.type, self.hostname,
-                 self.ipaddress, self.port, self.interval, self.health,
-                 self.driver.name))
+        return (
+            "<AuroraDNSHealthCheck: zone=%s, id=%s, type=%s, hostname=%s, "
+            "ipaddress=%s, port=%d, interval=%d, health=%s, provider=%s"
+            "...>"
+            % (
+                self.zone.id,
+                self.id,
+                self.type,
+                self.hostname,
+                self.ipaddress,
+                self.port,
+                self.interval,
+                self.health,
+                self.driver.name,
+            )
+        )
 
 
 class AuroraDNSResponse(JsonResponse):
@@ -161,36 +203,35 @@ class AuroraDNSResponse(JsonResponse):
 
     def parse_error(self):
         status = int(self.status)
-        error = {'driver': self, 'value': ''}
+        error = {"driver": self, "value": ""}
 
         if status == httplib.UNAUTHORIZED:
-            error['value'] = 'Authentication failed'
+            error["value"] = "Authentication failed"
             raise InvalidCredsError(**error)
         elif status == httplib.FORBIDDEN:
-            error['value'] = 'Authorization failed'
-            error['http_code'] = status
+            error["value"] = "Authorization failed"
+            error["http_code"] = status
             raise ProviderError(**error)
         elif status == httplib.NOT_FOUND:
             context = self.connection.context
-            if context['resource'] == 'zone':
-                error['zone_id'] = context['id']
+            if context["resource"] == "zone":
+                error["zone_id"] = context["id"]
                 raise ZoneDoesNotExistError(**error)
-            elif context['resource'] == 'record':
-                error['record_id'] = context['id']
+            elif context["resource"] == "record":
+                error["record_id"] = context["id"]
                 raise RecordDoesNotExistError(**error)
-            elif context['resource'] == 'healthcheck':
-                error['health_check_id'] = context['id']
+            elif context["resource"] == "healthcheck":
+                error["health_check_id"] = context["id"]
                 raise HealthCheckDoesNotExistError(**error)
         elif status == httplib.CONFLICT:
             context = self.connection.context
-            if context['resource'] == 'zone':
-                error['zone_id'] = context['id']
+            if context["resource"] == "zone":
+                error["zone_id"] = context["id"]
                 raise ZoneAlreadyExistsError(**error)
         elif status == httplib.BAD_REQUEST:
             context = self.connection.context
             body = self.parse_body()
-            raise ProviderError(value=body['errormsg'],
-                                http_code=status, driver=self)
+            raise ProviderError(value=body["errormsg"], http_code=status, driver=self)
 
 
 class AuroraDNSConnection(ConnectionUserAndKey):
@@ -199,103 +240,99 @@ class AuroraDNSConnection(ConnectionUserAndKey):
 
     def calculate_auth_signature(self, secret_key, method, url, timestamp):
         b64_hmac = base64.b64encode(
-            hmac.new(b(secret_key),
-                     b(method) + b(url) + b(timestamp),
-                     digestmod=sha256).digest()
+            hmac.new(
+                b(secret_key), b(method) + b(url) + b(timestamp), digestmod=sha256
+            ).digest()
         )
 
-        return b64_hmac.decode('utf-8')
+        return b64_hmac.decode("utf-8")
 
     def gen_auth_header(self, api_key, secret_key, method, url, timestamp):
-        signature = self.calculate_auth_signature(secret_key, method, url,
-                                                  timestamp)
+        signature = self.calculate_auth_signature(secret_key, method, url, timestamp)
 
-        auth_b64 = base64.b64encode(b('%s:%s' % (api_key, signature)))
-        return 'AuroraDNSv1 %s' % (auth_b64.decode('utf-8'))
+        auth_b64 = base64.b64encode(b("%s:%s" % (api_key, signature)))
+        return "AuroraDNSv1 %s" % (auth_b64.decode("utf-8"))
 
-    def request(self, action, params=None, data='', headers=None,
-                method='GET'):
+    def request(self, action, params=None, data="", headers=None, method="GET"):
         if not headers:
             headers = {}
         if not params:
             params = {}
 
         if method in ("POST", "PUT"):
-            headers = {'Content-Type': 'application/json; charset=UTF-8'}
+            headers = {"Content-Type": "application/json; charset=UTF-8"}
 
         t = datetime.datetime.utcnow()
-        timestamp = t.strftime('%Y%m%dT%H%M%SZ')
+        timestamp = t.strftime("%Y%m%dT%H%M%SZ")
 
-        headers['X-AuroraDNS-Date'] = timestamp
-        headers['Authorization'] = self.gen_auth_header(self.user_id, self.key,
-                                                        method, action,
-                                                        timestamp)
+        headers["X-AuroraDNS-Date"] = timestamp
+        headers["Authorization"] = self.gen_auth_header(
+            self.user_id, self.key, method, action, timestamp
+        )
 
-        return super(AuroraDNSConnection, self).request(action=action,
-                                                        params=params,
-                                                        data=data,
-                                                        method=method,
-                                                        headers=headers)
+        return super(AuroraDNSConnection, self).request(
+            action=action, params=params, data=data, method=method, headers=headers
+        )
 
 
 class AuroraDNSDriver(DNSDriver):
-    name = 'AuroraDNS'
-    website = 'https://www.pcextreme.nl/en/aurora/dns'
+    name = "AuroraDNS"
+    website = "https://www.pcextreme.nl/en/aurora/dns"
     connectionCls = AuroraDNSConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.NS: 'NS',
-        RecordType.SOA: 'SOA',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT',
-        RecordType.DS: 'DS',
-        RecordType.PTR: 'PTR',
-        RecordType.SSHFP: 'SSHFP',
-        RecordType.TLSA: 'TLSA'
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.NS: "NS",
+        RecordType.SOA: "SOA",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
+        RecordType.DS: "DS",
+        RecordType.PTR: "PTR",
+        RecordType.SSHFP: "SSHFP",
+        RecordType.TLSA: "TLSA",
     }
 
     HEALTHCHECK_TYPE_MAP = {
-        AuroraDNSHealthCheckType.HTTP: 'HTTP',
-        AuroraDNSHealthCheckType.HTTPS: 'HTTPS',
-        AuroraDNSHealthCheckType.TCP: 'TCP'
+        AuroraDNSHealthCheckType.HTTP: "HTTP",
+        AuroraDNSHealthCheckType.HTTPS: "HTTPS",
+        AuroraDNSHealthCheckType.TCP: "TCP",
     }
 
     def iterate_zones(self):
-        res = self.connection.request('/zones')
+        res = self.connection.request("/zones")
         for zone in res.parse_body():
             yield self.__res_to_zone(zone)
 
     def iterate_records(self, zone):
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        res = self.connection.request('/zones/%s/records' % zone.id)
+        self.connection.set_context({"resource": "zone", "id": zone.id})
+        res = self.connection.request("/zones/%s/records" % zone.id)
 
         for record in res.parse_body():
             yield self.__res_to_record(zone, record)
 
     def get_zone(self, zone_id):
-        self.connection.set_context({'resource': 'zone', 'id': zone_id})
-        res = self.connection.request('/zones/%s' % zone_id)
+        self.connection.set_context({"resource": "zone", "id": zone_id})
+        res = self.connection.request("/zones/%s" % zone_id)
         zone = res.parse_body()
         return self.__res_to_zone(zone)
 
     def get_record(self, zone_id, record_id):
-        self.connection.set_context({'resource': 'record', 'id': record_id})
-        res = self.connection.request('/zones/%s/records/%s' % (zone_id,
-                                                                record_id))
+        self.connection.set_context({"resource": "record", "id": record_id})
+        res = self.connection.request("/zones/%s/records/%s" % (zone_id, record_id))
         record = res.parse_body()
 
         zone = self.get_zone(zone_id)
 
         return self.__res_to_record(zone, record)
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
-        self.connection.set_context({'resource': 'zone', 'id': domain})
-        res = self.connection.request('/zones', method='POST',
-                                      data=json.dumps({'name': domain}))
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
+        self.connection.set_context({"resource": "zone", "id": domain})
+        res = self.connection.request(
+            "/zones", method="POST", data=json.dumps({"name": domain})
+        )
         zone = res.parse_body()
         return self.__res_to_zone(zone)
 
@@ -303,35 +340,31 @@ class AuroraDNSDriver(DNSDriver):
         if name is None:
             name = ""
 
-        rdata = {
-            'name': name,
-            'type': self.RECORD_TYPE_MAP[type],
-            'content': data
-        }
+        rdata = {"name": name, "type": self.RECORD_TYPE_MAP[type], "content": data}
 
         rdata = self.__merge_extra_data(rdata, extra)
 
-        if 'ttl' not in rdata:
-            rdata['ttl'] = DEFAULT_ZONE_TTL
+        if "ttl" not in rdata:
+            rdata["ttl"] = DEFAULT_ZONE_TTL
 
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        res = self.connection.request('/zones/%s/records' % zone.id,
-                                      method='POST',
-                                      data=json.dumps(rdata))
+        self.connection.set_context({"resource": "zone", "id": zone.id})
+        res = self.connection.request(
+            "/zones/%s/records" % zone.id, method="POST", data=json.dumps(rdata)
+        )
 
         record = res.parse_body()
         return self.__res_to_record(zone, record)
 
     def delete_zone(self, zone):
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        self.connection.request('/zones/%s' % zone.id, method='DELETE')
+        self.connection.set_context({"resource": "zone", "id": zone.id})
+        self.connection.request("/zones/%s" % zone.id, method="DELETE")
         return True
 
     def delete_record(self, record):
-        self.connection.set_context({'resource': 'record', 'id': record.id})
-        self.connection.request('/zones/%s/records/%s' % (record.zone.id,
-                                                          record.id),
-                                method='DELETE')
+        self.connection.set_context({"resource": "record", "id": record.id})
+        self.connection.request(
+            "/zones/%s/records/%s" % (record.zone.id, record.id), method="DELETE"
+        )
         return True
 
     def list_record_types(self):
@@ -345,21 +378,22 @@ class AuroraDNSDriver(DNSDriver):
         rdata = {}
 
         if name is not None:
-            rdata['name'] = name
+            rdata["name"] = name
 
         if type is not None:
-            rdata['type'] = self.RECORD_TYPE_MAP[type]
+            rdata["type"] = self.RECORD_TYPE_MAP[type]
 
         if data is not None:
-            rdata['content'] = data
+            rdata["content"] = data
 
         rdata = self.__merge_extra_data(rdata, extra)
 
-        self.connection.set_context({'resource': 'record', 'id': record.id})
-        self.connection.request('/zones/%s/records/%s' % (record.zone.id,
-                                                          record.id),
-                                method='PUT',
-                                data=json.dumps(rdata))
+        self.connection.set_context({"resource": "record", "id": record.id})
+        self.connection.request(
+            "/zones/%s/records/%s" % (record.zone.id, record.id),
+            method="PUT",
+            data=json.dumps(rdata),
+        )
 
         return self.get_record(record.zone.id, record.id)
 
@@ -373,8 +407,8 @@ class AuroraDNSDriver(DNSDriver):
         :return: ``list`` of :class:`AuroraDNSHealthCheck`
         """
         healthchecks = []
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        res = self.connection.request('/zones/%s/health_checks' % zone.id)
+        self.connection.set_context({"resource": "zone", "id": zone.id})
+        res = self.connection.request("/zones/%s/health_checks" % zone.id)
 
         for healthcheck in res.parse_body():
             healthchecks.append(self.__res_to_healthcheck(zone, healthcheck))
@@ -393,17 +427,27 @@ class AuroraDNSDriver(DNSDriver):
 
         :return: :class:`AuroraDNSHealthCheck`
         """
-        self.connection.set_context({'resource': 'healthcheck',
-                                     'id': health_check_id})
-        res = self.connection.request('/zones/%s/health_checks/%s'
-                                      % (zone.id, health_check_id))
+        self.connection.set_context({"resource": "healthcheck", "id": health_check_id})
+        res = self.connection.request(
+            "/zones/%s/health_checks/%s" % (zone.id, health_check_id)
+        )
         check = res.parse_body()
 
         return self.__res_to_healthcheck(zone, check)
 
-    def ex_create_healthcheck(self, zone, type, hostname, port, path,
-                              interval, threshold, ipaddress=None,
-                              enabled=True, extra=None):
+    def ex_create_healthcheck(
+        self,
+        zone,
+        type,
+        hostname,
+        port,
+        path,
+        interval,
+        threshold,
+        ipaddress=None,
+        enabled=True,
+        extra=None,
+    ):
         """
         Create a new Health Check in a zone
 
@@ -443,28 +487,37 @@ class AuroraDNSDriver(DNSDriver):
         :return: :class:`AuroraDNSHealthCheck`
         """
         cdata = {
-            'type': self.HEALTHCHECK_TYPE_MAP[type],
-            'hostname': hostname,
-            'ipaddress': ipaddress,
-            'port': int(port),
-            'interval': int(interval),
-            'path': path,
-            'threshold': int(threshold),
-            'enabled': enabled
+            "type": self.HEALTHCHECK_TYPE_MAP[type],
+            "hostname": hostname,
+            "ipaddress": ipaddress,
+            "port": int(port),
+            "interval": int(interval),
+            "path": path,
+            "threshold": int(threshold),
+            "enabled": enabled,
         }
 
-        self.connection.set_context({'resource': 'zone', 'id': zone.id})
-        res = self.connection.request('/zones/%s/health_checks' % zone.id,
-                                      method='POST',
-                                      data=json.dumps(cdata))
+        self.connection.set_context({"resource": "zone", "id": zone.id})
+        res = self.connection.request(
+            "/zones/%s/health_checks" % zone.id, method="POST", data=json.dumps(cdata)
+        )
 
         healthcheck = res.parse_body()
         return self.__res_to_healthcheck(zone, healthcheck)
 
-    def ex_update_healthcheck(self, healthcheck, type=None,
-                              hostname=None, ipaddress=None, port=None,
-                              path=None, interval=None, threshold=None,
-                              enabled=None, extra=None):
+    def ex_update_healthcheck(
+        self,
+        healthcheck,
+        type=None,
+        hostname=None,
+        ipaddress=None,
+        port=None,
+        path=None,
+        interval=None,
+        threshold=None,
+        enabled=None,
+        extra=None,
+    ):
         """
         Update an existing Health Check
 
@@ -508,43 +561,41 @@ class AuroraDNSDriver(DNSDriver):
         cdata = {}
 
         if type is not None:
-            cdata['type'] = self.HEALTHCHECK_TYPE_MAP[type]
+            cdata["type"] = self.HEALTHCHECK_TYPE_MAP[type]
 
         if hostname is not None:
-            cdata['hostname'] = hostname
+            cdata["hostname"] = hostname
 
         if ipaddress is not None:
             if len(ipaddress) == 0:
-                cdata['ipaddress'] = None
+                cdata["ipaddress"] = None
             else:
-                cdata['ipaddress'] = ipaddress
+                cdata["ipaddress"] = ipaddress
 
         if port is not None:
-            cdata['port'] = int(port)
+            cdata["port"] = int(port)
 
         if path is not None:
-            cdata['path'] = path
+            cdata["path"] = path
 
         if interval is not None:
-            cdata['interval'] = int(interval)
+            cdata["interval"] = int(interval)
 
         if threshold is not None:
-            cdata['threshold'] = threshold
+            cdata["threshold"] = threshold
 
         if enabled is not None:
-            cdata['enabled'] = bool(enabled)
+            cdata["enabled"] = bool(enabled)
 
-        self.connection.set_context({'resource': 'healthcheck',
-                                     'id': healthcheck.id})
+        self.connection.set_context({"resource": "healthcheck", "id": healthcheck.id})
 
-        self.connection.request('/zones/%s/health_checks/%s'
-                                % (healthcheck.zone.id,
-                                   healthcheck.id),
-                                method='PUT',
-                                data=json.dumps(cdata))
+        self.connection.request(
+            "/zones/%s/health_checks/%s" % (healthcheck.zone.id, healthcheck.id),
+            method="PUT",
+            data=json.dumps(cdata),
+        )
 
-        return self.ex_get_healthcheck(healthcheck.zone,
-                                       healthcheck.id)
+        return self.ex_get_healthcheck(healthcheck.zone, healthcheck.id)
 
     def ex_delete_healthcheck(self, healthcheck):
         """
@@ -553,55 +604,68 @@ class AuroraDNSDriver(DNSDriver):
         :param zone: The healthcheck which has to be removed
         :type zone: :class:`AuroraDNSHealthCheck`
         """
-        self.connection.set_context({'resource': 'healthcheck',
-                                     'id': healthcheck.id})
+        self.connection.set_context({"resource": "healthcheck", "id": healthcheck.id})
 
-        self.connection.request('/zones/%s/health_checks/%s'
-                                % (healthcheck.zone.id,
-                                   healthcheck.id),
-                                method='DELETE')
+        self.connection.request(
+            "/zones/%s/health_checks/%s" % (healthcheck.zone.id, healthcheck.id),
+            method="DELETE",
+        )
         return True
 
     def __res_to_record(self, zone, record):
-        if len(record['name']) == 0:
+        if len(record["name"]) == 0:
             name = None
         else:
-            name = record['name']
+            name = record["name"]
 
         extra = {}
-        extra['created'] = record['created']
-        extra['modified'] = record['modified']
-        extra['disabled'] = record['disabled']
-        extra['ttl'] = record['ttl']
-        extra['priority'] = record['prio']
+        extra["created"] = record["created"]
+        extra["modified"] = record["modified"]
+        extra["disabled"] = record["disabled"]
+        extra["ttl"] = record["ttl"]
+        extra["priority"] = record["prio"]
 
-        return Record(id=record['id'], name=name,
-                      type=record['type'],
-                      data=record['content'], zone=zone,
-                      driver=self.connection.driver, ttl=record['ttl'],
-                      extra=extra)
+        return Record(
+            id=record["id"],
+            name=name,
+            type=record["type"],
+            data=record["content"],
+            zone=zone,
+            driver=self.connection.driver,
+            ttl=record["ttl"],
+            extra=extra,
+        )
 
     def __res_to_zone(self, zone):
-        return Zone(id=zone['id'], domain=zone['name'],
-                    type=DEFAULT_ZONE_TYPE,
-                    ttl=DEFAULT_ZONE_TTL, driver=self.connection.driver,
-                    extra={'created': zone['created'],
-                           'servers': zone['servers'],
-                           'account_id': zone['account_id'],
-                           'cluster_id': zone['cluster_id']})
+        return Zone(
+            id=zone["id"],
+            domain=zone["name"],
+            type=DEFAULT_ZONE_TYPE,
+            ttl=DEFAULT_ZONE_TTL,
+            driver=self.connection.driver,
+            extra={
+                "created": zone["created"],
+                "servers": zone["servers"],
+                "account_id": zone["account_id"],
+                "cluster_id": zone["cluster_id"],
+            },
+        )
 
     def __res_to_healthcheck(self, zone, healthcheck):
-        return AuroraDNSHealthCheck(id=healthcheck['id'],
-                                    type=healthcheck['type'],
-                                    hostname=healthcheck['hostname'],
-                                    ipaddress=healthcheck['ipaddress'],
-                                    health=healthcheck['health'],
-                                    threshold=healthcheck['threshold'],
-                                    path=healthcheck['path'],
-                                    interval=healthcheck['interval'],
-                                    port=healthcheck['port'],
-                                    enabled=healthcheck['enabled'],
-                                    zone=zone, driver=self.connection.driver)
+        return AuroraDNSHealthCheck(
+            id=healthcheck["id"],
+            type=healthcheck["type"],
+            hostname=healthcheck["hostname"],
+            ipaddress=healthcheck["ipaddress"],
+            health=healthcheck["health"],
+            threshold=healthcheck["threshold"],
+            path=healthcheck["path"],
+            interval=healthcheck["interval"],
+            port=healthcheck["port"],
+            enabled=healthcheck["enabled"],
+            zone=zone,
+            driver=self.connection.driver,
+        )
 
     def __merge_extra_data(self, rdata, extra):
         if extra is not None:

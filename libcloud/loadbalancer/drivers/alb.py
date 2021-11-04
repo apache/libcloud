@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'ApplicationLBDriver'
-]
+__all__ = ["ApplicationLBDriver"]
 
 from libcloud.utils.xml import findtext, findall
 from libcloud.loadbalancer.types import State
@@ -23,26 +21,27 @@ from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
 from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 
 
-VERSION = '2015-12-01'
-HOST = 'elasticloadbalancing.%s.amazonaws.com'
-ROOT = '/%s/' % (VERSION)
-NS = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (VERSION, )
+VERSION = "2015-12-01"
+HOST = "elasticloadbalancing.%s.amazonaws.com"
+ROOT = "/%s/" % (VERSION)
+NS = "http://elasticloadbalancing.amazonaws.com/doc/%s/" % (VERSION,)
 
 
 class ALBResponse(AWSGenericResponse):
     """
     Amazon ALB response class.
     """
+
     namespace = NS
     exceptions = {}
-    xpath = 'Error'
+    xpath = "Error"
 
 
 class ALBConnection(SignedAWSConnection):
     version = VERSION
     host = HOST
     responseCls = ALBResponse
-    service_name = 'elasticloadbalancing'
+    service_name = "elasticloadbalancing"
 
 
 class ALBTargetGroup(object):
@@ -51,12 +50,25 @@ class ALBTargetGroup(object):
     http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html
     """
 
-    def __init__(self, target_group_id, name, protocol, port, vpc, driver,
-                 health_check_timeout=5, health_check_port="traffic-port",
-                 health_check_path="/", health_check_proto="HTTP",
-                 health_check_matcher="200", health_check_interval=30,
-                 healthy_threshold=5, unhealthy_threshold=2, balancers=[],
-                 members=[]):
+    def __init__(
+        self,
+        target_group_id,
+        name,
+        protocol,
+        port,
+        vpc,
+        driver,
+        health_check_timeout=5,
+        health_check_port="traffic-port",
+        health_check_path="/",
+        health_check_proto="HTTP",
+        health_check_matcher="200",
+        health_check_interval=30,
+        healthy_threshold=5,
+        unhealthy_threshold=2,
+        balancers=[],
+        members=[],
+    ):
 
         self.id = target_group_id
         self.name = name
@@ -83,9 +95,7 @@ class ALBTargetGroup(object):
         if not self._balancers and self._balancers_arns:
             self._balancers = []
             for balancer_arn in self._balancers_arns:
-                self._balancers.append(
-                    self._driver.get_balancer(balancer_arn)
-                )
+                self._balancers.append(self._driver.get_balancer(balancer_arn))
         return self._balancers
 
     @balancers.setter
@@ -114,8 +124,18 @@ class ALBListener(object):
     http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html
     """
 
-    def __init__(self, listener_id, protocol, port, balancer, driver,
-                 action="", ssl_policy="", ssl_certificate="", rules=[]):
+    def __init__(
+        self,
+        listener_id,
+        protocol,
+        port,
+        balancer,
+        driver,
+        action="",
+        ssl_policy="",
+        ssl_certificate="",
+        rules=[],
+    ):
 
         self.id = listener_id
         self.protocol = protocol
@@ -157,8 +177,16 @@ class ALBRule(object):
     http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#listener-rules
     """
 
-    def __init__(self, rule_id, is_default, priority, target_group, driver,
-                 conditions={}, listener=None):
+    def __init__(
+        self,
+        rule_id,
+        is_default,
+        priority,
+        target_group,
+        driver,
+        conditions={},
+        listener=None,
+    ):
 
         self.id = rule_id
         self.is_default = is_default
@@ -197,10 +225,10 @@ class ALBRule(object):
 
 
 class ApplicationLBDriver(Driver):
-    name = 'Amazon Application Load Balancing'
-    website = 'http://aws.amazon.com/elasticloadbalancing/'
+    name = "Amazon Application Load Balancing"
+    website = "http://aws.amazon.com/elasticloadbalancing/"
     connectionCls = ALBConnection
-    signature_version = '4'
+    signature_version = "4"
 
     def __init__(self, access_id, secret, region, token=None):
         self.token = token
@@ -216,7 +244,7 @@ class ApplicationLBDriver(Driver):
 
         :rtype: ``list`` of ``strings``
         """
-        return ['http', 'https']
+        return ["http", "https"]
 
     def list_balancers(self):
         """
@@ -224,7 +252,7 @@ class ApplicationLBDriver(Driver):
 
         :rtype: ``list`` of :class:`LoadBalancer`
         """
-        params = {'Action': 'DescribeLoadBalancers'}
+        params = {"Action": "DescribeLoadBalancers"}
         data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)
 
@@ -238,15 +266,25 @@ class ApplicationLBDriver(Driver):
         :rtype: :class:`LoadBalancer`
         """
         params = {
-            'Action': 'DescribeLoadBalancers',
-            'LoadBalancerArns.member.1': balancer_id
+            "Action": "DescribeLoadBalancers",
+            "LoadBalancerArns.member.1": balancer_id,
         }
         data = self.connection.request(ROOT, params=params).object
         return self._to_balancers(data)[0]
 
-    def create_balancer(self, name, port, protocol, algorithm, members,
-                        ex_scheme=None, ex_security_groups=None,
-                        ex_subnets=None, ex_tags=None, ex_ssl_cert_arn=None):
+    def create_balancer(
+        self,
+        name,
+        port,
+        protocol,
+        algorithm,
+        members,
+        ex_scheme=None,
+        ex_security_groups=None,
+        ex_subnets=None,
+        ex_tags=None,
+        ex_ssl_cert_arn=None,
+    ):
         """
         Create a new load balancer instance.
 
@@ -303,26 +341,39 @@ class ApplicationLBDriver(Driver):
         ex_tags = ex_tags or {}
         ex_ssl_cert_arn = ex_ssl_cert_arn or ""
 
-        balancer = self.ex_create_balancer(name, scheme=ex_scheme,
-                                           security_groups=ex_security_groups,
-                                           subnets=ex_subnets, tags=ex_tags)
+        balancer = self.ex_create_balancer(
+            name,
+            scheme=ex_scheme,
+            security_groups=ex_security_groups,
+            subnets=ex_subnets,
+            tags=ex_tags,
+        )
 
         target_group = self.ex_create_target_group(
-            name + "-tg", port, protocol, balancer.extra.get('vpc'),
-            health_check_proto=protocol
+            name + "-tg",
+            port,
+            protocol,
+            balancer.extra.get("vpc"),
+            health_check_proto=protocol,
         )
         self.ex_register_targets(target_group, members)
-        listener = self.ex_create_listener(balancer, port, protocol,
-                                           target_group,
-                                           ssl_cert_arn=ex_ssl_cert_arn)
+        listener = self.ex_create_listener(
+            balancer, port, protocol, target_group, ssl_cert_arn=ex_ssl_cert_arn
+        )
 
-        balancer.extra['listener'] = listener
+        balancer.extra["listener"] = listener
 
         return balancer
 
-    def ex_create_balancer(self, name, addr_type="ipv4",
-                           scheme="internet-facing", security_groups=None,
-                           subnets=None, tags=None):
+    def ex_create_balancer(
+        self,
+        name,
+        addr_type="ipv4",
+        scheme="internet-facing",
+        security_groups=None,
+        subnets=None,
+        tags=None,
+    ):
         """
         AWS-specific method to create a new load balancer. Since ALB is a
         composite object (load balancer, target group, listener etc) - extra
@@ -356,50 +407,55 @@ class ApplicationLBDriver(Driver):
         tags = tags or {}
 
         # mandatory params
-        params = {
-            'Action': 'CreateLoadBalancer',
-            'Name': name
-        }
+        params = {"Action": "CreateLoadBalancer", "Name": name}
 
         idx = 0
         for subnet in subnets:
             idx += 1
-            params['Subnets.member.' + str(idx)] = subnet
+            params["Subnets.member." + str(idx)] = subnet
 
         # optional params
         params.update(
             {
-                'IpAddressType': addr_type,  # Valid Values: ipv4 | dualstack
-                'Scheme': scheme  # Valid Values: internet-facing | internal
+                "IpAddressType": addr_type,  # Valid Values: ipv4 | dualstack
+                "Scheme": scheme,  # Valid Values: internet-facing | internal
             }
         )
 
         idx = 0
         for sg in security_groups:
             idx += 1
-            params['SecurityGroups.member.' + str(idx)] = sg
+            params["SecurityGroups.member." + str(idx)] = sg
 
         idx = 0
         for k, v in tags.items():
             idx += 1
-            params['Tags.member.' + str(idx) + '.Key'] = k
-            params['Tags.member.' + str(idx) + '.Value'] = v
+            params["Tags.member." + str(idx) + ".Key"] = k
+            params["Tags.member." + str(idx) + ".Value"] = v
 
         data = self.connection.request(ROOT, params=params).object
 
-        xpath = 'CreateLoadBalancerResult/LoadBalancers/member'
+        xpath = "CreateLoadBalancerResult/LoadBalancers/member"
         for el in findall(element=data, xpath=xpath, namespace=NS):
             balancer = self._to_balancer(el)
 
         return balancer
 
-    def ex_create_target_group(self, name, port, proto, vpc,
-                               health_check_interval=30, health_check_path="/",
-                               health_check_port="traffic-port",
-                               health_check_proto="HTTP",
-                               health_check_timeout=5,
-                               health_check_matcher="200", healthy_threshold=5,
-                               unhealthy_threshold=2):
+    def ex_create_target_group(
+        self,
+        name,
+        port,
+        proto,
+        vpc,
+        health_check_interval=30,
+        health_check_path="/",
+        health_check_port="traffic-port",
+        health_check_proto="HTTP",
+        health_check_timeout=5,
+        health_check_matcher="200",
+        healthy_threshold=5,
+        unhealthy_threshold=2,
+    ):
         """
         Create a target group for AWS ALB load balancer.
 
@@ -466,36 +522,36 @@ class ApplicationLBDriver(Driver):
 
         # mandatory params
         params = {
-            'Action': 'CreateTargetGroup',
-            'Name': name,
-            'Protocol': proto,
-            'Port': port,
-            'VpcId': vpc
+            "Action": "CreateTargetGroup",
+            "Name": name,
+            "Protocol": proto,
+            "Port": port,
+            "VpcId": vpc,
         }
 
         # optional params
         params.update(
             {
                 # Valid Values: Min value of 5. Max value of 300.
-                'HealthCheckIntervalSeconds': health_check_interval,
-                'HealthCheckPath': health_check_path,
-                'HealthCheckPort': health_check_port,
+                "HealthCheckIntervalSeconds": health_check_interval,
+                "HealthCheckPath": health_check_path,
+                "HealthCheckPort": health_check_port,
                 # Valid Values: HTTP | HTTPS
-                'HealthCheckProtocol': health_check_proto,
+                "HealthCheckProtocol": health_check_proto,
                 # Valid Range: Min value of 2. Max value of 60.
-                'HealthCheckTimeoutSeconds': health_check_timeout,
+                "HealthCheckTimeoutSeconds": health_check_timeout,
                 # Valid Range: Minimum value of 2. Maximum value of 10.
-                'HealthyThresholdCount': healthy_threshold,
+                "HealthyThresholdCount": healthy_threshold,
                 # Valid Range: Minimum value of 2. Maximum value of 10.
-                'UnhealthyThresholdCount': unhealthy_threshold,
+                "UnhealthyThresholdCount": unhealthy_threshold,
                 # Valid values: "200", "200,202", "200-299"
-                'Matcher.HttpCode': health_check_matcher
+                "Matcher.HttpCode": health_check_matcher,
             }
         )
 
         data = self.connection.request(ROOT, params=params).object
 
-        xpath = 'CreateTargetGroupResult/TargetGroups/member'
+        xpath = "CreateTargetGroupResult/TargetGroups/member"
         for el in findall(element=data, xpath=xpath, namespace=NS):
             target_group = self._to_target_group(el)
 
@@ -521,10 +577,7 @@ class ApplicationLBDriver(Driver):
         members = members or []
 
         # mandatory params
-        params = {
-            'Action': 'RegisterTargets',
-            'TargetGroupArn': target_group.id
-        }
+        params = {"Action": "RegisterTargets", "TargetGroupArn": target_group.id}
 
         if not members:
             return False
@@ -532,9 +585,9 @@ class ApplicationLBDriver(Driver):
         idx = 0
         for member in members:
             idx += 1
-            params['Targets.member.' + str(idx) + '.Id'] = member.id
+            params["Targets.member." + str(idx) + ".Id"] = member.id
             if member.port:
-                params['Targets.member.' + str(idx) + '.Port'] = member.port
+                params["Targets.member." + str(idx) + ".Port"] = member.port
 
         # RegisterTargets doesn't return any useful data
         self.connection.request(ROOT, params=params)
@@ -543,9 +596,16 @@ class ApplicationLBDriver(Driver):
 
         return True
 
-    def ex_create_listener(self, balancer, port, proto, target_group,
-                           action="forward", ssl_cert_arn=None,
-                           ssl_policy=None):
+    def ex_create_listener(
+        self,
+        balancer,
+        port,
+        proto,
+        target_group,
+        action="forward",
+        ssl_cert_arn=None,
+        ssl_policy=None,
+    ):
         """
         Create a listener for application load balancer
 
@@ -584,32 +644,38 @@ class ApplicationLBDriver(Driver):
 
         # mandatory params
         params = {
-            'Action': 'CreateListener',
-            'LoadBalancerArn': balancer.id,
-            'Protocol': proto,  # Valid Values: HTTP | HTTPS
-            'Port': port,  # Valid Range: Min value of 1. Max value of 65535.
-            'DefaultActions.member.1.Type': action,
-            'DefaultActions.member.1.TargetGroupArn': target_group.id
+            "Action": "CreateListener",
+            "LoadBalancerArn": balancer.id,
+            "Protocol": proto,  # Valid Values: HTTP | HTTPS
+            "Port": port,  # Valid Range: Min value of 1. Max value of 65535.
+            "DefaultActions.member.1.Type": action,
+            "DefaultActions.member.1.TargetGroupArn": target_group.id,
         }
 
         # optional params
         if proto == "HTTPS":
-            params['Certificates.member.1.CertificateArn'] = ssl_cert_arn
+            params["Certificates.member.1.CertificateArn"] = ssl_cert_arn
             if ssl_policy:
-                params['SslPolicy'] = ssl_policy
+                params["SslPolicy"] = ssl_policy
 
         data = self.connection.request(ROOT, params=params).object
 
-        xpath = 'CreateListenerResult/Listeners/member'
+        xpath = "CreateListenerResult/Listeners/member"
         for el in findall(element=data, xpath=xpath, namespace=NS):
             listener = self._to_listener(el)
             listener.balancer = balancer
 
         return listener
 
-    def ex_create_listener_rule(self, listener, priority, target_group,
-                                action="forward", condition_field=None,
-                                condition_value=None):
+    def ex_create_listener_rule(
+        self,
+        listener,
+        priority,
+        target_group,
+        action="forward",
+        condition_field=None,
+        condition_value=None,
+    ):
         """
         Create a rule for listener.
 
@@ -642,19 +708,19 @@ class ApplicationLBDriver(Driver):
 
         # mandatory params
         params = {
-            'Action': 'CreateRule',
-            'ListenerArn': listener.id,
-            'Priority': priority,  # Valid Range: Min value of 1. Max: 99999.
-            'Actions.member.1.Type': action,
-            'Actions.member.1.TargetGroupArn': target_group.id,
+            "Action": "CreateRule",
+            "ListenerArn": listener.id,
+            "Priority": priority,  # Valid Range: Min value of 1. Max: 99999.
+            "Actions.member.1.Type": action,
+            "Actions.member.1.TargetGroupArn": target_group.id,
             # Valid values are host-header and path-pattern.
-            'Conditions.member.1.Field': condition_field,
-            'Conditions.member.1.Values.member.1': condition_value
+            "Conditions.member.1.Field": condition_field,
+            "Conditions.member.1.Values.member.1": condition_value,
         }
 
         data = self.connection.request(ROOT, params=params).object
 
-        xpath = 'CreateRuleResult/Rules/member'
+        xpath = "CreateRuleResult/Rules/member"
         for el in findall(element=data, xpath=xpath, namespace=NS):
             rule = self._to_rule(el)
             rule.listener = listener
@@ -674,8 +740,8 @@ class ApplicationLBDriver(Driver):
 
         # mandatory params
         params = {
-            'Action': 'DescribeTargetGroups',
-            'TargetGroupArns.member.1': target_group_id
+            "Action": "DescribeTargetGroups",
+            "TargetGroupArns.member.1": target_group_id,
         }
 
         data = self.connection.request(ROOT, params=params).object
@@ -694,10 +760,7 @@ class ApplicationLBDriver(Driver):
         """
 
         # mandatory params
-        params = {
-            'Action': 'DescribeListeners',
-            'ListenerArns.member.1': listener_id
-        }
+        params = {"Action": "DescribeListeners", "ListenerArns.member.1": listener_id}
 
         data = self.connection.request(ROOT, params=params).object
         return self._to_listeners(data)[0]
@@ -713,80 +776,80 @@ class ApplicationLBDriver(Driver):
         :rtype: :class:`ALBRule`
         """
 
-        params = {
-            'Action': 'DescribeRules',
-            'RuleArns.member.1': rule_id
-        }
+        params = {"Action": "DescribeRules", "RuleArns.member.1": rule_id}
 
         data = self.connection.request(ROOT, params=params).object
         return self._to_rules(data)[0]
 
     def _to_listeners(self, data):
-        xpath = 'DescribeListenersResult/Listeners/member'
-        return [self._to_listener(el) for el in findall(
-            element=data, xpath=xpath, namespace=NS
-        )]
+        xpath = "DescribeListenersResult/Listeners/member"
+        return [
+            self._to_listener(el)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_listener(self, el):
         listener = ALBListener(
-            listener_id=findtext(element=el, xpath='ListenerArn',
-                                 namespace=NS),
-            protocol=findtext(element=el, xpath='Protocol', namespace=NS),
-            port=int(findtext(element=el, xpath='Port', namespace=NS)),
+            listener_id=findtext(element=el, xpath="ListenerArn", namespace=NS),
+            protocol=findtext(element=el, xpath="Protocol", namespace=NS),
+            port=int(findtext(element=el, xpath="Port", namespace=NS)),
             balancer=None,
             driver=self.connection.driver,
-            action=findtext(element=el, xpath='DefaultActions/member/Type',
-                            namespace=NS),
-            ssl_policy=findtext(element=el, xpath='SslPolicy', namespace=NS),
+            action=findtext(
+                element=el, xpath="DefaultActions/member/Type", namespace=NS
+            ),
+            ssl_policy=findtext(element=el, xpath="SslPolicy", namespace=NS),
             ssl_certificate=findtext(
-                element=el, xpath='Certificates/member/CertificateArn',
-                namespace=NS
+                element=el, xpath="Certificates/member/CertificateArn", namespace=NS
             ),
         )
 
-        listener._balancer_arn = findtext(element=el, xpath='LoadBalancerArn',
-                                          namespace=NS)
+        listener._balancer_arn = findtext(
+            element=el, xpath="LoadBalancerArn", namespace=NS
+        )
 
         return listener
 
     def _to_balancer(self, el):
         balancer = LoadBalancer(
-            id=findtext(element=el, xpath='LoadBalancerArn', namespace=NS),
-            name=findtext(element=el, xpath='LoadBalancerName', namespace=NS),
+            id=findtext(element=el, xpath="LoadBalancerArn", namespace=NS),
+            name=findtext(element=el, xpath="LoadBalancerName", namespace=NS),
             state=State.UNKNOWN,
-            ip=findtext(el, xpath='DNSName', namespace=NS),
+            ip=findtext(el, xpath="DNSName", namespace=NS),
             port=None,
-            driver=self.connection.driver
+            driver=self.connection.driver,
         )
 
         balancer.extra = {
-            'listeners': self._ex_get_balancer_listeners(balancer),
-            'tags': self._ex_get_balancer_tags(balancer),
-            'vpc': findtext(el, xpath='VpcId', namespace=NS)
+            "listeners": self._ex_get_balancer_listeners(balancer),
+            "tags": self._ex_get_balancer_tags(balancer),
+            "vpc": findtext(el, xpath="VpcId", namespace=NS),
         }
 
-        if len(balancer.extra['listeners']) > 0:
-            balancer.port = balancer.extra['listeners'][0].port
+        if len(balancer.extra["listeners"]) > 0:
+            balancer.port = balancer.extra["listeners"][0].port
         else:
             balancer.port = None
 
         return balancer
 
     def _to_balancers(self, data):
-        xpath = 'DescribeLoadBalancersResult/LoadBalancers/member'
-        return [self._to_balancer(el)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeLoadBalancersResult/LoadBalancers/member"
+        return [
+            self._to_balancer(el)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_tags(self, data):
         """
         return tags dict
         """
         tags = {}
-        xpath = 'DescribeTagsResult/TagDescriptions/member/Tags/member'
+        xpath = "DescribeTagsResult/TagDescriptions/member/Tags/member"
 
         for el in findall(element=data, xpath=xpath, namespace=NS):
-            key = findtext(element=el, xpath='Key', namespace=NS)
-            value = findtext(element=el, xpath='Value', namespace=NS)
+            key = findtext(element=el, xpath="Key", namespace=NS)
+            value = findtext(element=el, xpath="Value", namespace=NS)
             if key:
                 tags[key] = value
 
@@ -797,105 +860,105 @@ class ApplicationLBDriver(Driver):
             return val.lower() in ("yes", "true", "t", "1")
 
         conditions = {}
-        cond_members = findall(
-            element=el, xpath='Conditions/member', namespace=NS
-        )
+        cond_members = findall(element=el, xpath="Conditions/member", namespace=NS)
         for cond_member in cond_members:
-            field = findtext(element=cond_member, xpath='Field', namespace=NS)
+            field = findtext(element=cond_member, xpath="Field", namespace=NS)
             conditions[field] = []
             value_members = findall(
-                element=cond_member, xpath='Values/member', namespace=NS
+                element=cond_member, xpath="Values/member", namespace=NS
             )
             for value_member in value_members:
                 conditions[field].append(value_member.text)
 
         rule = ALBRule(
-            rule_id=findtext(element=el, xpath='RuleArn', namespace=NS),
+            rule_id=findtext(element=el, xpath="RuleArn", namespace=NS),
             is_default=__to_bool__(
-                findtext(element=el, xpath='IsDefault', namespace=NS)
+                findtext(element=el, xpath="IsDefault", namespace=NS)
             ),
             # CreateRule API method accepts only int for priority, however
             # DescribeRules method returns 'default' string for default
             # listener rule. So leaving it as string.
-            priority=findtext(element=el, xpath='Priority', namespace=NS),
+            priority=findtext(element=el, xpath="Priority", namespace=NS),
             target_group=None,
             driver=self.connection.driver,
-            conditions=conditions
+            conditions=conditions,
         )
 
         rule._target_group_arn = findtext(
-            element=el, xpath='Actions/member/TargetGroupArn', namespace=NS
+            element=el, xpath="Actions/member/TargetGroupArn", namespace=NS
         )
 
         return rule
 
     def _to_rules(self, data):
-        xpath = 'DescribeRulesResult/Rules/member'
-        return [self._to_rule(el)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeRulesResult/Rules/member"
+        return [
+            self._to_rule(el) for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_target_groups(self, data):
-        xpath = 'DescribeTargetGroupsResult/TargetGroups/member'
-        return [self._to_target_group(el)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeTargetGroupsResult/TargetGroups/member"
+        return [
+            self._to_target_group(el)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_target_group(self, el):
 
         target_group = ALBTargetGroup(
-            target_group_id=findtext(element=el, xpath='TargetGroupArn',
-                                     namespace=NS),
-            name=findtext(element=el, xpath='TargetGroupName', namespace=NS),
-            protocol=findtext(element=el, xpath='Protocol', namespace=NS),
-            port=int(findtext(element=el, xpath='Port', namespace=NS)),
-            vpc=findtext(element=el, xpath='VpcId', namespace=NS),
+            target_group_id=findtext(element=el, xpath="TargetGroupArn", namespace=NS),
+            name=findtext(element=el, xpath="TargetGroupName", namespace=NS),
+            protocol=findtext(element=el, xpath="Protocol", namespace=NS),
+            port=int(findtext(element=el, xpath="Port", namespace=NS)),
+            vpc=findtext(element=el, xpath="VpcId", namespace=NS),
             driver=self.connection.driver,
             health_check_timeout=int(
-                findtext(element=el, xpath='HealthCheckTimeoutSeconds',
-                         namespace=NS)
+                findtext(element=el, xpath="HealthCheckTimeoutSeconds", namespace=NS)
             ),
-            health_check_port=findtext(element=el, xpath='HealthCheckPort',
-                                       namespace=NS),
-            health_check_path=findtext(element=el, xpath='HealthCheckPath',
-                                       namespace=NS),
-            health_check_proto=findtext(element=el,
-                                        xpath='HealthCheckProtocol',
-                                        namespace=NS),
-            health_check_interval=int(findtext(
-                element=el, xpath='HealthCheckIntervalSeconds', namespace=NS)
+            health_check_port=findtext(
+                element=el, xpath="HealthCheckPort", namespace=NS
             ),
-            healthy_threshold=int(findtext(
-                element=el, xpath='HealthyThresholdCount', namespace=NS)
+            health_check_path=findtext(
+                element=el, xpath="HealthCheckPath", namespace=NS
             ),
-            unhealthy_threshold=int(findtext(element=el,
-                                             xpath='UnhealthyThresholdCount',
-                                             namespace=NS)
-                                    ),
-            health_check_matcher=findtext(element=el,
-                                          xpath='Matcher/HttpCode',
-                                          namespace=NS)
+            health_check_proto=findtext(
+                element=el, xpath="HealthCheckProtocol", namespace=NS
+            ),
+            health_check_interval=int(
+                findtext(element=el, xpath="HealthCheckIntervalSeconds", namespace=NS)
+            ),
+            healthy_threshold=int(
+                findtext(element=el, xpath="HealthyThresholdCount", namespace=NS)
+            ),
+            unhealthy_threshold=int(
+                findtext(element=el, xpath="UnhealthyThresholdCount", namespace=NS)
+            ),
+            health_check_matcher=findtext(
+                element=el, xpath="Matcher/HttpCode", namespace=NS
+            ),
         )
 
-        lbs = findall(element=el, xpath='LoadBalancerArns/member',
-                      namespace=NS)
+        lbs = findall(element=el, xpath="LoadBalancerArns/member", namespace=NS)
         target_group._balancers_arns = [lb_arn.text for lb_arn in lbs]
 
         return target_group
 
     def _to_target_group_members(self, data):
-        xpath = 'DescribeTargetHealthResult/TargetHealthDescriptions/member'
-        return [self._to_target_group_member(el)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeTargetHealthResult/TargetHealthDescriptions/member"
+        return [
+            self._to_target_group_member(el)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_target_group_member(self, el):
         member = Member(
-            id=findtext(element=el, xpath='Target/Id', namespace=NS),
+            id=findtext(element=el, xpath="Target/Id", namespace=NS),
             ip=None,
-            port=findtext(element=el, xpath='Target/Port', namespace=NS),
+            port=findtext(element=el, xpath="Target/Port", namespace=NS),
             balancer=None,
             extra={
-                'health': findtext(element=el, xpath='TargetHealth/State',
-                                   namespace=NS)
-            }
+                "health": findtext(element=el, xpath="TargetHealth/State", namespace=NS)
+            },
         )
         return member
 
@@ -910,15 +973,12 @@ class ApplicationLBDriver(Driver):
         :rtype: ``list`` of :class:`Member`
         """
 
-        params = {
-            'Action': 'DescribeTargetHealth',
-            'TargetGroupArn': target_group.id
-        }
+        params = {"Action": "DescribeTargetHealth", "TargetGroupArn": target_group.id}
 
         data = self.connection.request(ROOT, params=params).object
         target_group_members = []
         for tg_member in self._to_target_group_members(data):
-            tg_member.extra['target_group'] = target_group
+            tg_member.extra["target_group"] = target_group
             target_group_members.append(tg_member)
 
         return target_group_members
@@ -933,10 +993,7 @@ class ApplicationLBDriver(Driver):
         :return: list of listener objects
         :rtype: ``list`` of :class:`ALBListener`
         """
-        params = {
-            'Action': 'DescribeListeners',
-            'LoadBalancerArn': balancer.id
-        }
+        params = {"Action": "DescribeListeners", "LoadBalancerArn": balancer.id}
 
         data = self.connection.request(ROOT, params=params).object
 
@@ -953,10 +1010,7 @@ class ApplicationLBDriver(Driver):
         :rtype: ``list`` of :class:`ALBListener`
         """
 
-        params = {
-            'Action': 'DescribeRules',
-            'ListenerArn': listener.id
-        }
+        params = {"Action": "DescribeRules", "ListenerArn": listener.id}
 
         data = self.connection.request(ROOT, params=params).object
         rules = self._to_rules(data)
@@ -975,23 +1029,21 @@ class ApplicationLBDriver(Driver):
         :return: Dictionary of tags (name/value) for load balancer
         :rtype: ``dict``
         """
-        params = {
-            'Action': 'DescribeTags',
-            'ResourceArns.member.1': balancer.id
-        }
+        params = {"Action": "DescribeTags", "ResourceArns.member.1": balancer.id}
         data = self.connection.request(ROOT, params=params).object
         return self._to_tags(data)
 
     def _ex_connection_class_kwargs(self):
         pdriver = super(ApplicationLBDriver, self)
         kwargs = pdriver._ex_connection_class_kwargs()
-        if hasattr(self, 'token') and self.token is not None:
-            kwargs['token'] = self.token
-            kwargs['signature_version'] = '4'
+        if hasattr(self, "token") and self.token is not None:
+            kwargs["token"] = self.token
+            kwargs["signature_version"] = "4"
         else:
-            kwargs['signature_version'] = self.signature_version
+            kwargs["signature_version"] = self.signature_version
 
         return kwargs
+
 
 # Commented out to avoid confusion. In AWS ALB relation between load balancer
 # and target group/members is indirect. So it's better to go through full chain

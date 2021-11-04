@@ -13,44 +13,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'EBSBackupDriver'
-]
+__all__ = ["EBSBackupDriver"]
 
 
 from libcloud.utils.xml import findtext, findall
 from libcloud.utils.iso8601 import parse_date
-from libcloud.backup.base import BackupDriver, BackupTargetRecoveryPoint,\
-    BackupTargetJob, BackupTarget
+from libcloud.backup.base import (
+    BackupDriver,
+    BackupTargetRecoveryPoint,
+    BackupTargetJob,
+    BackupTarget,
+)
 from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
 from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 
 
-VERSION = '2015-10-01'
-HOST = 'ec2.amazonaws.com'
-ROOT = '/%s/' % (VERSION)
-NS = 'http://ec2.amazonaws.com/doc/%s/' % (VERSION, )
+VERSION = "2015-10-01"
+HOST = "ec2.amazonaws.com"
+ROOT = "/%s/" % (VERSION)
+NS = "http://ec2.amazonaws.com/doc/%s/" % (VERSION,)
 
 
 class EBSResponse(AWSGenericResponse):
     """
     Amazon EBS response class.
     """
+
     namespace = NS
     exceptions = {}
-    xpath = 'Error'
+    xpath = "Error"
 
 
 class EBSConnection(SignedAWSConnection):
     version = VERSION
     host = HOST
     responseCls = EBSResponse
-    service_name = 'backup'
+    service_name = "backup"
 
 
 class EBSBackupDriver(BackupDriver):
-    name = 'Amazon EBS Backup Driver'
-    website = 'http://aws.amazon.com/ebs/'
+    name = "Amazon EBS Backup Driver"
+    website = "http://aws.amazon.com/ebs/"
     connectionCls = EBSConnection
 
     def __init__(self, access_id, secret, region):
@@ -72,11 +75,9 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: ``list`` of :class:`BackupTarget`
         """
-        raise NotImplementedError(
-            'list_targets not implemented for this driver')
+        raise NotImplementedError("list_targets not implemented for this driver")
 
-    def create_target(self, name, address,
-                      type=BackupTargetType.VOLUME, extra=None):
+    def create_target(self, name, address, type=BackupTargetType.VOLUME, extra=None):
         """
         Creates a new backup target
 
@@ -97,8 +98,7 @@ class EBSBackupDriver(BackupDriver):
         # Does nothing since any volume can be snapped at anytime.
         return self.ex_get_target_by_volume_id(address)
 
-    def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL,
-                                extra=None):
+    def create_target_from_node(self, node, type=BackupTargetType.VIRTUAL, extra=None):
         """
         Creates a new backup target from an existing node
 
@@ -114,19 +114,20 @@ class EBSBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTarget`
         """
         # Get the first EBS volume.
-        device_mapping = node.extra['block_device_mapping']
+        device_mapping = node.extra["block_device_mapping"]
         if device_mapping is not None:
             return self.create_target(
                 name=node.name,
-                address=device_mapping['ebs'][0]['volume_id'],
+                address=device_mapping["ebs"][0]["volume_id"],
                 type=BackupTargetType.VOLUME,
-                extra=None)
+                extra=None,
+            )
         else:
             raise RuntimeError("Node does not have any block devices")
 
-    def create_target_from_container(self, container,
-                                     type=BackupTargetType.OBJECT,
-                                     extra=None):
+    def create_target_from_container(
+        self, container, type=BackupTargetType.OBJECT, extra=None
+    ):
         """
         Creates a new backup target from an existing storage container
 
@@ -142,7 +143,8 @@ class EBSBackupDriver(BackupDriver):
         :rtype: Instance of :class:`BackupTarget`
         """
         raise NotImplementedError(
-            'create_target_from_container not implemented for this driver')
+            "create_target_from_container not implemented for this driver"
+        )
 
     def update_target(self, target, name, address, extra):
         """
@@ -172,8 +174,7 @@ class EBSBackupDriver(BackupDriver):
         :param target: Backup target to delete
         :type  target: Instance of :class:`BackupTarget`
         """
-        raise NotImplementedError(
-            'delete_target not implemented for this driver')
+        raise NotImplementedError("delete_target not implemented for this driver")
 
     def list_recovery_points(self, target, start_date=None, end_date=None):
         """
@@ -191,9 +192,9 @@ class EBSBackupDriver(BackupDriver):
         :rtype: ``list`` of :class:`BackupTargetRecoveryPoint`
         """
         params = {
-            'Action': 'DescribeSnapshots',
-            'Filter.1.Name': 'volume-id',
-            'Filter.1.Value': target.extra['volume-id']
+            "Action": "DescribeSnapshots",
+            "Filter.1.Name": "volume-id",
+            "Filter.1.Value": target.extra["volume-id"],
         }
         data = self.connection.request(ROOT, params=params).object
         return self._to_recovery_points(data, target)
@@ -213,11 +214,11 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            'delete_target not implemented for this driver')
+        raise NotImplementedError("delete_target not implemented for this driver")
 
-    def recover_target_out_of_place(self, target, recovery_point,
-                                    recovery_target, path=None):
+    def recover_target_out_of_place(
+        self, target, recovery_point, recovery_target, path=None
+    ):
         """
         Recover a backup target to a recovery point out-of-place
 
@@ -235,8 +236,7 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        raise NotImplementedError(
-            'delete_target not implemented for this driver')
+        raise NotImplementedError("delete_target not implemented for this driver")
 
     def get_target_job(self, target, id):
         """
@@ -263,11 +263,11 @@ class EBSBackupDriver(BackupDriver):
         :rtype: ``list`` of :class:`BackupTargetJob`
         """
         params = {
-            'Action': 'DescribeSnapshots',
-            'Filter.1.Name': 'volume-id',
-            'Filter.1.Value': target.extra['volume-id'],
-            'Filter.2.Name': 'status',
-            'Filter.2.Value': 'pending'
+            "Action": "DescribeSnapshots",
+            "Filter.1.Name": "volume-id",
+            "Filter.1.Value": target.extra["volume-id"],
+            "Filter.2.Name": "status",
+            "Filter.2.Value": "pending",
         }
         data = self.connection.request(ROOT, params=params).object
         return self._to_jobs(data)
@@ -284,14 +284,10 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: Instance of :class:`BackupTargetJob`
         """
-        params = {
-            'Action': 'CreateSnapshot',
-            'VolumeId': target.extra['volume-id']
-        }
+        params = {"Action": "CreateSnapshot", "VolumeId": target.extra["volume-id"]}
         data = self.connection.request(ROOT, params=params).object
-        xpath = 'CreateSnapshotResponse'
-        return self._to_job(findall(element=data,
-                                    xpath=xpath, namespace=NS)[0])
+        xpath = "CreateSnapshotResponse"
+        return self._to_job(findall(element=data, xpath=xpath, namespace=NS)[0])
 
     def resume_target_job(self, job):
         """
@@ -302,8 +298,7 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'resume_target_job not supported for this driver')
+        raise NotImplementedError("resume_target_job not supported for this driver")
 
     def suspend_target_job(self, job):
         """
@@ -314,8 +309,7 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'suspend_target_job not supported for this driver')
+        raise NotImplementedError("suspend_target_job not supported for this driver")
 
     def cancel_target_job(self, job):
         """
@@ -326,41 +320,38 @@ class EBSBackupDriver(BackupDriver):
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'cancel_target_job not supported for this driver')
+        raise NotImplementedError("cancel_target_job not supported for this driver")
 
     def _to_recovery_points(self, data, target):
-        xpath = 'DescribeSnapshotsResponse/snapshotSet/item'
-        return [self._to_recovery_point(el, target)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeSnapshotsResponse/snapshotSet/item"
+        return [
+            self._to_recovery_point(el, target)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_recovery_point(self, el, target):
-        id = findtext(element=el, xpath='snapshotId', namespace=NS)
-        date = parse_date(
-            findtext(element=el, xpath='startTime', namespace=NS))
+        id = findtext(element=el, xpath="snapshotId", namespace=NS)
+        date = parse_date(findtext(element=el, xpath="startTime", namespace=NS))
         tags = self._get_resource_tags(el)
         point = BackupTargetRecoveryPoint(
             id=id,
             date=date,
             target=target,
             driver=self.connection.driver,
-            extra={
-                'snapshot-id': id,
-                'tags': tags
-            },
+            extra={"snapshot-id": id, "tags": tags},
         )
         return point
 
     def _to_jobs(self, data):
-        xpath = 'DescribeSnapshotsResponse/snapshotSet/item'
-        return [self._to_job(el)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeSnapshotsResponse/snapshotSet/item"
+        return [
+            self._to_job(el) for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_job(self, el):
-        id = findtext(element=el, xpath='snapshotId', namespace=NS)
-        progress = findtext(element=el, xpath='progress', namespace=NS)\
-            .replace('%', '')
-        volume_id = findtext(element=el, xpath='volumeId', namespace=NS)
+        id = findtext(element=el, xpath="snapshotId", namespace=NS)
+        progress = findtext(element=el, xpath="progress", namespace=NS).replace("%", "")
+        volume_id = findtext(element=el, xpath="volumeId", namespace=NS)
         target = self.ex_get_target_by_volume_id(volume_id)
         job = BackupTargetJob(
             id=id,
@@ -368,8 +359,7 @@ class EBSBackupDriver(BackupDriver):
             progress=int(progress),
             target=target,
             driver=self.connection.driver,
-            extra={
-            },
+            extra={},
         )
         return job
 
@@ -380,9 +370,7 @@ class EBSBackupDriver(BackupDriver):
             address=volume_id,
             type=BackupTargetType.VOLUME,
             driver=self.connection.driver,
-            extra={
-                "volume-id": volume_id
-            }
+            extra={"volume-id": volume_id},
         )
 
     def _get_resource_tags(self, element):
@@ -395,18 +383,12 @@ class EBSBackupDriver(BackupDriver):
         tags = {}
 
         # Get our tag set by parsing the element
-        tag_set = findall(element=element,
-                          xpath='tagSet/item',
-                          namespace=NS)
+        tag_set = findall(element=element, xpath="tagSet/item", namespace=NS)
 
         for tag in tag_set:
-            key = findtext(element=tag,
-                           xpath='key',
-                           namespace=NS)
+            key = findtext(element=tag, xpath="key", namespace=NS)
 
-            value = findtext(element=tag,
-                             xpath='value',
-                             namespace=NS)
+            value = findtext(element=tag, xpath="value", namespace=NS)
 
             tags[key] = value
 

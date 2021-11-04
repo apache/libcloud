@@ -25,43 +25,43 @@ from libcloud.common.gogrid import GoGridIpAddress
 from libcloud.compute.drivers.gogrid import GoGridNodeDriver
 from libcloud.compute.base import Node, NodeImage, NodeSize
 
-from libcloud.test import MockHttp               # pylint: disable-msg=E0611
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test.compute import TestCaseMixin  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import ComputeFileFixtures  # pylint: disable-msg=E0611
 
 
 class GoGridTests(unittest.TestCase, TestCaseMixin):
-
     def setUp(self):
         GoGridNodeDriver.connectionCls.conn_class = GoGridMockHttp
         GoGridMockHttp.type = None
         self.driver = GoGridNodeDriver("foo", "bar")
 
     def _get_test_512Mb_node_size(self):
-        return NodeSize(id='512Mb',
-                        name=None,
-                        ram=None,
-                        disk=None,
-                        bandwidth=None,
-                        price=None,
-                        driver=self.driver)
+        return NodeSize(
+            id="512Mb",
+            name=None,
+            ram=None,
+            disk=None,
+            bandwidth=None,
+            price=None,
+            driver=self.driver,
+        )
 
     def test_create_node(self):
         image = NodeImage(1531, None, self.driver)
         node = self.driver.create_node(
-            name='test1',
-            image=image,
-            size=self._get_test_512Mb_node_size())
-        self.assertEqual(node.name, 'test1')
+            name="test1", image=image, size=self._get_test_512Mb_node_size()
+        )
+        self.assertEqual(node.name, "test1")
         self.assertTrue(node.id is not None)
-        self.assertEqual(node.extra['password'], 'bebebe')
+        self.assertEqual(node.extra["password"], "bebebe")
 
     def test_list_nodes(self):
         node = self.driver.list_nodes()[0]
 
-        self.assertEqual(node.id, '90967')
-        self.assertEqual(node.extra['password'], 'bebebe')
-        self.assertEqual(node.extra['description'], 'test server')
+        self.assertEqual(node.id, "90967")
+        self.assertEqual(node.extra["password"], "bebebe")
+        self.assertEqual(node.extra["description"], "test server")
 
     def test_reboot_node(self):
         node = Node(90967, None, None, None, None, self.driver)
@@ -69,7 +69,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         self.assertTrue(ret)
 
     def test_reboot_node_not_successful(self):
-        GoGridMockHttp.type = 'FAIL'
+        GoGridMockHttp.type = "FAIL"
         node = Node(90967, None, None, None, None, self.driver)
 
         try:
@@ -77,7 +77,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         except Exception:
             pass
         else:
-            self.fail('Exception was not thrown')
+            self.fail("Exception was not thrown")
 
     def test_destroy_node(self):
         node = Node(90967, None, None, None, None, self.driver)
@@ -88,21 +88,23 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         image = images[0]
         self.assertEqual(len(images), 4)
-        self.assertEqual(image.name, 'CentOS 5.3 (32-bit) w/ None')
-        self.assertEqual(image.id, '1531')
+        self.assertEqual(image.name, "CentOS 5.3 (32-bit) w/ None")
+        self.assertEqual(image.id, "1531")
 
         location = NodeLocation(
-            id='gogrid/GSI-939ef909-84b8-4a2f-ad56-02ccd7da05ff.img',
-            name='test location', country='Slovenia',
-            driver=self.driver)
+            id="gogrid/GSI-939ef909-84b8-4a2f-ad56-02ccd7da05ff.img",
+            name="test location",
+            country="Slovenia",
+            driver=self.driver,
+        )
         images = self.driver.list_images(location=location)
         image = images[0]
         self.assertEqual(len(images), 4)
-        self.assertEqual(image.name, 'CentOS 5.3 (32-bit) w/ None')
-        self.assertEqual(image.id, '1531')
+        self.assertEqual(image.name, "CentOS 5.3 (32-bit) w/ None")
+        self.assertEqual(image.id, "1531")
 
     def test_malformed_reply(self):
-        GoGridMockHttp.type = 'FAIL'
+        GoGridMockHttp.type = "FAIL"
         try:
             self.driver.list_images()
         except LibcloudError as e:
@@ -111,7 +113,7 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
             self.fail("test should have thrown")
 
     def test_invalid_creds(self):
-        GoGridMockHttp.type = 'FAIL'
+        GoGridMockHttp.type = "FAIL"
         try:
             self.driver.list_nodes()
         except InvalidCredsError as e:
@@ -121,13 +123,12 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
             self.fail("test should have thrown")
 
     def test_node_creation_without_free_public_ips(self):
-        GoGridMockHttp.type = 'NOPUBIPS'
+        GoGridMockHttp.type = "NOPUBIPS"
         try:
             image = NodeImage(1531, None, self.driver)
             self.driver.create_node(
-                name='test1',
-                image=image,
-                size=self._get_test_512Mb_node_size())
+                name="test1", image=image, size=self._get_test_512Mb_node_size()
+            )
         except LibcloudError as e:
             self.assertTrue(isinstance(e, LibcloudError))
             self.assertTrue(e.driver is not None)
@@ -152,31 +153,51 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
 
     def test_ex_edit_image(self):
         image = self.driver.list_images()[0]
-        ret = self.driver.ex_edit_image(image=image, public=False,
-                                        ex_description="test", name="testname")
+        ret = self.driver.ex_edit_image(
+            image=image, public=False, ex_description="test", name="testname"
+        )
 
         self.assertTrue(isinstance(ret, NodeImage))
 
     def test_ex_edit_node(self):
-        node = Node(id=90967, name=None, state=None,
-                    public_ips=None, private_ips=None, driver=self.driver)
-        ret = self.driver.ex_edit_node(node=node,
-                                       size=self._get_test_512Mb_node_size())
+        node = Node(
+            id=90967,
+            name=None,
+            state=None,
+            public_ips=None,
+            private_ips=None,
+            driver=self.driver,
+        )
+        ret = self.driver.ex_edit_node(node=node, size=self._get_test_512Mb_node_size())
 
         self.assertTrue(isinstance(ret, Node))
 
     def test_ex_list_ips(self):
         ips = self.driver.ex_list_ips()
 
-        expected_ips = {"192.168.75.66": GoGridIpAddress(id="5348099",
-                                                         ip="192.168.75.66", public=True, state="Unassigned",
-                                                         subnet="192.168.75.64/255.255.255.240"),
-                        "192.168.75.67": GoGridIpAddress(id="5348100",
-                                                         ip="192.168.75.67", public=True, state="Assigned",
-                                                         subnet="192.168.75.64/255.255.255.240"),
-                        "192.168.75.68": GoGridIpAddress(id="5348101",
-                                                         ip="192.168.75.68", public=False, state="Unassigned",
-                                                         subnet="192.168.75.64/255.255.255.240")}
+        expected_ips = {
+            "192.168.75.66": GoGridIpAddress(
+                id="5348099",
+                ip="192.168.75.66",
+                public=True,
+                state="Unassigned",
+                subnet="192.168.75.64/255.255.255.240",
+            ),
+            "192.168.75.67": GoGridIpAddress(
+                id="5348100",
+                ip="192.168.75.67",
+                public=True,
+                state="Assigned",
+                subnet="192.168.75.64/255.255.255.240",
+            ),
+            "192.168.75.68": GoGridIpAddress(
+                id="5348101",
+                ip="192.168.75.68",
+                public=False,
+                state="Unassigned",
+                subnet="192.168.75.64/255.255.255.240",
+            ),
+        }
 
         self.assertEqual(len(expected_ips), 3)
 
@@ -191,77 +212,80 @@ class GoGridTests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(len(expected_ips), 0)
 
     def test_get_state_invalid(self):
-        state = self.driver._get_state('invalid')
+        state = self.driver._get_state("invalid")
         self.assertEqual(state, NodeState.UNKNOWN)
 
 
 class GoGridMockHttp(MockHttp):
 
-    fixtures = ComputeFileFixtures('gogrid')
+    fixtures = ComputeFileFixtures("gogrid")
 
     def _api_grid_image_list(self, method, url, body, headers):
-        body = self.fixtures.load('image_list.json')
+        body = self.fixtures.load("image_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_image_list_FAIL(self, method, url, body, headers):
         body = "<h3>some non valid json here</h3>"
-        return (httplib.SERVICE_UNAVAILABLE, body, {},
-                httplib.responses[httplib.SERVICE_UNAVAILABLE])
+        return (
+            httplib.SERVICE_UNAVAILABLE,
+            body,
+            {},
+            httplib.responses[httplib.SERVICE_UNAVAILABLE],
+        )
 
     def _api_grid_server_list(self, method, url, body, headers):
-        body = self.fixtures.load('server_list.json')
+        body = self.fixtures.load("server_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     _api_grid_server_list_NOPUBIPS = _api_grid_server_list
 
     def _api_grid_server_list_FAIL(self, method, url, body, headers):
-        return (httplib.FORBIDDEN,
-                "123", {}, httplib.responses[httplib.FORBIDDEN])
+        return (httplib.FORBIDDEN, "123", {}, httplib.responses[httplib.FORBIDDEN])
 
     def _api_grid_ip_list(self, method, url, body, headers):
-        body = self.fixtures.load('ip_list.json')
+        body = self.fixtures.load("ip_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_ip_list_NOPUBIPS(self, method, url, body, headers):
-        body = self.fixtures.load('ip_list_empty.json')
+        body = self.fixtures.load("ip_list_empty.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_server_power(self, method, url, body, headers):
-        body = self.fixtures.load('server_power.json')
+        body = self.fixtures.load("server_power.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_server_power_FAIL(self, method, url, body, headers):
-        body = self.fixtures.load('server_power_fail.json')
+        body = self.fixtures.load("server_power_fail.json")
         return (httplib.NOT_FOUND, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_server_add(self, method, url, body, headers):
-        body = self.fixtures.load('server_add.json')
+        body = self.fixtures.load("server_add.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     _api_grid_server_add_NOPUBIPS = _api_grid_server_add
 
     def _api_grid_server_delete(self, method, url, body, headers):
-        body = self.fixtures.load('server_delete.json')
+        body = self.fixtures.load("server_delete.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_server_edit(self, method, url, body, headers):
-        body = self.fixtures.load('server_edit.json')
+        body = self.fixtures.load("server_edit.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_support_password_list(self, method, url, body, headers):
-        body = self.fixtures.load('password_list.json')
+        body = self.fixtures.load("password_list.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     _api_support_password_list_NOPUBIPS = _api_support_password_list
 
     def _api_grid_image_save(self, method, url, body, headers):
-        body = self.fixtures.load('image_save.json')
+        body = self.fixtures.load("image_save.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_grid_image_edit(self, method, url, body, headers):
         # edit method is quite similar to save method from the response
         # perspective
-        body = self.fixtures.load('image_save.json')
+        body = self.fixtures.load("image_save.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _api_common_lookup_list(self, method, url, body, headers):
@@ -269,12 +293,12 @@ class GoGridMockHttp(MockHttp):
 
         lookup = parse_qs(urlparse.urlparse(url).query)["lookup"][0]
         if lookup in _valid_lookups:
-            fixture_path = "lookup_list_%s.json" % \
-                (lookup.replace(".", "_"))
+            fixture_path = "lookup_list_%s.json" % (lookup.replace(".", "_"))
         else:
             raise NotImplementedError
         body = self.fixtures.load(fixture_path)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

@@ -25,7 +25,7 @@ from libcloud.dns.types import Provider, RecordType
 
 
 __all__ = [
-    'ZonomiDNSDriver',
+    "ZonomiDNSDriver",
 ]
 
 
@@ -39,15 +39,11 @@ class ZonomiDNSConnection(ZonomiConnection):
 
 class ZonomiDNSDriver(DNSDriver):
     type = Provider.ZONOMI
-    name = 'Zonomi DNS'
-    website = 'https://zonomi.com'
+    name = "Zonomi DNS"
+    website = "https://zonomi.com"
     connectionCls = ZonomiDNSConnection
 
-    RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.MX: 'MX',
-        RecordType.TXT: 'TXT'
-    }
+    RECORD_TYPE_MAP = {RecordType.A: "A", RecordType.MX: "MX", RecordType.TXT: "TXT"}
 
     def list_zones(self):
         """
@@ -55,8 +51,8 @@ class ZonomiDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        action = '/app/dns/dyndns.jsp?'
-        params = {'action': 'QUERYZONES', 'api_key': self.key}
+        action = "/app/dns/dyndns.jsp?"
+        params = {"action": "QUERYZONES", "api_key": self.key}
 
         response = self.connection.request(action=action, params=params)
         zones = self._to_zones(response.objects)
@@ -72,14 +68,15 @@ class ZonomiDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        action = '/app/dns/dyndns.jsp?'
-        params = {'action': 'QUERY', 'name': '**.' + zone.id}
+        action = "/app/dns/dyndns.jsp?"
+        params = {"action": "QUERY", "name": "**." + zone.id}
         try:
             response = self.connection.request(action=action, params=params)
         except ZonomiException as e:
-            if e.code == '404':
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+            if e.code == "404":
+                raise ZoneDoesNotExistError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
             raise e
 
         records = self._to_records(response.objects, zone)
@@ -102,7 +99,7 @@ class ZonomiDNSDriver(DNSDriver):
                 zone = z
 
         if zone is None:
-            raise ZoneDoesNotExistError(zone_id=zone_id, driver=self, value='')
+            raise ZoneDoesNotExistError(zone_id=zone_id, driver=self, value="")
 
         return zone
 
@@ -127,12 +124,11 @@ class ZonomiDNSDriver(DNSDriver):
                 record = r
 
         if record is None:
-            raise RecordDoesNotExistError(record_id=record_id, driver=self,
-                                          value='')
+            raise RecordDoesNotExistError(record_id=record_id, driver=self, value="")
 
         return record
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         Create a new zone.
 
@@ -141,18 +137,20 @@ class ZonomiDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = '/app/dns/addzone.jsp?'
-        params = {'name': domain}
+        action = "/app/dns/addzone.jsp?"
+        params = {"name": domain}
         try:
             self.connection.request(action=action, params=params)
         except ZonomiException as e:
-            if e.message == 'ERROR: This zone is already in your zone list.':
-                raise ZoneAlreadyExistsError(zone_id=domain, driver=self,
-                                             value=e.message)
+            if e.message == "ERROR: This zone is already in your zone list.":
+                raise ZoneAlreadyExistsError(
+                    zone_id=domain, driver=self, value=e.message
+                )
             raise e
 
-        zone = Zone(id=domain, domain=domain, type='master', ttl=ttl,
-                    driver=self, extra=extra)
+        zone = Zone(
+            id=domain, domain=domain, type="master", ttl=ttl, driver=self, extra=extra
+        )
         return zone
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -180,36 +178,37 @@ class ZonomiDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = '/app/dns/dyndns.jsp?'
+        action = "/app/dns/dyndns.jsp?"
         if name:
-            record_name = name + '.' + zone.domain
+            record_name = name + "." + zone.domain
         else:
             record_name = zone.domain
-        params = {'action': 'SET', 'name': record_name, 'value': data,
-                  'type': type}
+        params = {"action": "SET", "name": record_name, "value": data, "type": type}
 
-        if type == 'MX' and extra is not None:
-            params['prio'] = extra.get('prio')
+        if type == "MX" and extra is not None:
+            params["prio"] = extra.get("prio")
         try:
             response = self.connection.request(action=action, params=params)
         except ZonomiException as e:
-            if ('ERROR: No zone found for %s' % record_name) in e.message:
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+            if ("ERROR: No zone found for %s" % record_name) in e.message:
+                raise ZoneDoesNotExistError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
             raise e
 
         # we determine if an A or MX record already exists
         # by looking at the response.If the key 'skipped' is present in the
         # response, it means record already exists. If this is True,
         # then raise RecordAlreadyExistsError
-        if len(response.objects) != 0 and \
-           response.objects[0].get('skipped') == 'unchanged':
-            raise RecordAlreadyExistsError(record_id=name, driver=self,
-                                           value='')
+        if (
+            len(response.objects) != 0
+            and response.objects[0].get("skipped") == "unchanged"
+        ):
+            raise RecordAlreadyExistsError(record_id=name, driver=self, value="")
 
-        if 'DELETED' in response.objects:
+        if "DELETED" in response.objects:
             for el in response.objects[:2]:
-                if el.get('content') == data:
+                if el.get("content") == data:
                     response.objects = [el]
         records = self._to_records(response.objects, zone=zone)
         return records[0]
@@ -225,17 +224,18 @@ class ZonomiDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = '/app/dns/dyndns.jsp?'
-        params = {'action': 'DELETEZONE', 'name': zone.id}
+        action = "/app/dns/dyndns.jsp?"
+        params = {"action": "DELETEZONE", "name": zone.id}
         try:
             response = self.connection.request(action=action, params=params)
         except ZonomiException as e:
-            if e.code == '404':
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+            if e.code == "404":
+                raise ZoneDoesNotExistError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
             raise e
 
-        return 'DELETED' in response.objects
+        return "DELETED" in response.objects
 
     def delete_record(self, record):
         """
@@ -246,17 +246,18 @@ class ZonomiDNSDriver(DNSDriver):
 
         :rtype: Bool
         """
-        action = '/app/dns/dyndns.jsp?'
-        params = {'action': 'DELETE', 'name': record.name, 'type': record.type}
+        action = "/app/dns/dyndns.jsp?"
+        params = {"action": "DELETE", "name": record.name, "type": record.type}
         try:
             response = self.connection.request(action=action, params=params)
         except ZonomiException as e:
-            if e.message == 'Record not deleted.':
-                raise RecordDoesNotExistError(record_id=record.id, driver=self,
-                                              value=e.message)
+            if e.message == "Record not deleted.":
+                raise RecordDoesNotExistError(
+                    record_id=record.id, driver=self, value=e.message
+                )
             raise e
 
-        return 'DELETED' in response.objects
+        return "DELETED" in response.objects
 
     def ex_convert_to_secondary(self, zone, master):
         """
@@ -270,14 +271,15 @@ class ZonomiDNSDriver(DNSDriver):
 
         :rtype: Bool
         """
-        action = '/app/dns/converttosecondary.jsp?'
-        params = {'name': zone.domain, 'master': master}
+        action = "/app/dns/converttosecondary.jsp?"
+        params = {"name": zone.domain, "master": master}
         try:
             self.connection.request(action=action, params=params)
         except ZonomiException as e:
-            if 'ERROR: Could not find' in e.message:
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+            if "ERROR: Could not find" in e.message:
+                raise ZoneDoesNotExistError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
         return True
 
     def ex_convert_to_master(self, zone):
@@ -289,23 +291,30 @@ class ZonomiDNSDriver(DNSDriver):
 
         :rtype: Bool
         """
-        action = '/app/dns/converttomaster.jsp?'
-        params = {'name': zone.domain}
+        action = "/app/dns/converttomaster.jsp?"
+        params = {"name": zone.domain}
         try:
             self.connection.request(action=action, params=params)
         except ZonomiException as e:
-            if 'ERROR: Could not find' in e.message:
-                raise ZoneDoesNotExistError(zone_id=zone.id, driver=self,
-                                            value=e.message)
+            if "ERROR: Could not find" in e.message:
+                raise ZoneDoesNotExistError(
+                    zone_id=zone.id, driver=self, value=e.message
+                )
         return True
 
     def _to_zone(self, item):
-        if item['type'] == 'NATIVE':
-            type = 'master'
-        elif item['type'] == 'SLAVE':
-            type = 'slave'
-        zone = Zone(id=item['name'], domain=item['name'], type=type,
-                    driver=self, extra={}, ttl=None)
+        if item["type"] == "NATIVE":
+            type = "master"
+        elif item["type"] == "SLAVE":
+            type = "slave"
+        zone = Zone(
+            id=item["name"],
+            domain=item["name"],
+            type=type,
+            driver=self,
+            extra={},
+            ttl=None,
+        )
 
         return zone
 
@@ -317,21 +326,27 @@ class ZonomiDNSDriver(DNSDriver):
         return zones
 
     def _to_record(self, item, zone):
-        if len(item.get('ttl')) > 0:
-            ttl = item.get('ttl').split(' ')[0]
+        if len(item.get("ttl")) > 0:
+            ttl = item.get("ttl").split(" ")[0]
         else:
             ttl = None
-        extra = {'ttl': ttl,
-                 'prio': item.get('prio')}
-        if len(item['name']) > len(zone.domain):
-            full_domain = item['name']
-            index = full_domain.index('.' + zone.domain)
+        extra = {"ttl": ttl, "prio": item.get("prio")}
+        if len(item["name"]) > len(zone.domain):
+            full_domain = item["name"]
+            index = full_domain.index("." + zone.domain)
             record_name = full_domain[:index]
         else:
             record_name = zone.domain
-        record = Record(id=record_name, name=record_name,
-                        data=item['content'], type=item['type'], zone=zone,
-                        driver=self, ttl=ttl, extra=extra)
+        record = Record(
+            id=record_name,
+            name=record_name,
+            data=item["content"],
+            type=item["type"],
+            zone=zone,
+            driver=self,
+            ttl=ttl,
+            extra=extra,
+        )
 
         return record
 

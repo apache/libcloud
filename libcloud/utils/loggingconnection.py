@@ -25,8 +25,7 @@ from xml.dom.minidom import parseString
 
 import os
 
-from libcloud.common.base import (LibcloudConnection,
-                                  HttpLibResponseProxy)
+from libcloud.common.base import LibcloudConnection, HttpLibResponseProxy
 from libcloud.utils.py3 import _real_unicode as u
 from libcloud.utils.py3 import ensure_string
 
@@ -41,7 +40,7 @@ class LoggingConnection(LibcloudConnection):
     :cvar log: file-like object that logs entries are written to.
     """
 
-    protocol = 'https'
+    protocol = "https"
 
     log = None
     http_proxy_used = False
@@ -62,21 +61,20 @@ class LoggingConnection(LibcloudConnection):
 
         headers = lowercase_keys(dict(r.getheaders()))
 
-        content_type = headers.get('content-type', None)
+        content_type = headers.get("content-type", None)
 
-        pretty_print = os.environ.get('LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE',
-                                      False)
+        pretty_print = os.environ.get("LIBCLOUD_DEBUG_PRETTY_PRINT_RESPONSE", False)
 
-        if pretty_print and content_type == 'application/json':
+        if pretty_print and content_type == "application/json":
             try:
                 body = json.loads(ensure_string(body))
                 body = json.dumps(body, sort_keys=True, indent=4)
             except Exception:
                 # Invalid JSON or server is lying about content-type
                 pass
-        elif pretty_print and content_type in ['text/xml', 'application/xml']:
+        elif pretty_print and content_type in ["text/xml", "application/xml"]:
             try:
-                elem = parseString(body.decode('utf-8'))
+                elem = parseString(body.decode("utf-8"))
                 body = elem.toprettyxml()
             except Exception:
                 # Invalid XML
@@ -85,8 +83,7 @@ class LoggingConnection(LibcloudConnection):
         ht += ensure_string(body)
 
         rv += ht
-        rv += ("\n# -------- end %d:%d response ----------\n"
-               % (id(self), id(r)))
+        rv += "\n# -------- end %d:%d response ----------\n" % (id(self), id(r))
 
         return rv
 
@@ -95,21 +92,25 @@ class LoggingConnection(LibcloudConnection):
 
         if self.http_proxy_used:
             if self.proxy_username and self.proxy_password:
-                proxy_url = '%s://%s:%s@%s:%s' % (self.proxy_scheme,
-                                                  self.proxy_username,
-                                                  self.proxy_password,
-                                                  self.proxy_host,
-                                                  self.proxy_port)
+                proxy_url = "%s://%s:%s@%s:%s" % (
+                    self.proxy_scheme,
+                    self.proxy_username,
+                    self.proxy_password,
+                    self.proxy_host,
+                    self.proxy_port,
+                )
             else:
-                proxy_url = '%s://%s:%s' % (self.proxy_scheme,
-                                            self.proxy_host,
-                                            self.proxy_port)
+                proxy_url = "%s://%s:%s" % (
+                    self.proxy_scheme,
+                    self.proxy_host,
+                    self.proxy_port,
+                )
             proxy_url = pquote(proxy_url)
-            cmd.extend(['--proxy', proxy_url])
+            cmd.extend(["--proxy", proxy_url])
 
-        cmd.extend(['-i'])
+        cmd.extend(["-i"])
 
-        if method.lower() == 'head':
+        if method.lower() == "head":
             # HEAD method need special handling
             cmd.extend(["--head"])
         else:
@@ -118,7 +119,7 @@ class LoggingConnection(LibcloudConnection):
         for h in headers:
             cmd.extend(["-H", pquote("%s: %s" % (h, headers[h]))])
 
-        cert_file = getattr(self, 'cert_file', None)
+        cert_file = getattr(self, "cert_file", None)
 
         if cert_file:
             cmd.extend(["--cert", pquote(cert_file)])
@@ -126,7 +127,7 @@ class LoggingConnection(LibcloudConnection):
         # TODO: in python 2.6, body can be a file-like object.
         if body is not None and len(body) > 0:
             if isinstance(body, (bytearray, bytes)):
-                body = body.decode('utf-8')
+                body = body.decode("utf-8")
 
             cmd.extend(["--data-binary", pquote(body)])
 
@@ -143,12 +144,9 @@ class LoggingConnection(LibcloudConnection):
         return original_response
 
     def request(self, method, url, body=None, headers=None, **kwargs):
-        headers.update({'X-LC-Request-ID': str(id(self))})
+        headers.update({"X-LC-Request-ID": str(id(self))})
         if self.log is not None:
             pre = "# -------- begin %d request ----------\n" % id(self)
-            self.log.write(u(pre +
-                             self._log_curl(method, url, body, headers) +
-                             "\n"))
+            self.log.write(u(pre + self._log_curl(method, url, body, headers) + "\n"))
             self.log.flush()
-        return LibcloudConnection.request(self, method, url, body,
-                                          headers)
+        return LibcloudConnection.request(self, method, url, body, headers)

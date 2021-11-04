@@ -21,15 +21,10 @@ import base64
 from libcloud.common.base import ConnectionUserAndKey, JsonResponse
 from libcloud.utils.py3 import b
 
-__all__ = [
-    'API_HOST',
-    'LuadnsException',
-    'LuadnsResponse',
-    'LuadnsConnection'
-]
+__all__ = ["API_HOST", "LuadnsException", "LuadnsResponse", "LuadnsConnection"]
 
 # Endpoint for luadns api
-API_HOST = 'api.luadns.com'
+API_HOST = "api.luadns.com"
 
 
 class LuadnsResponse(JsonResponse):
@@ -37,16 +32,16 @@ class LuadnsResponse(JsonResponse):
     objects = []  # type: List[Dict]
 
     def __init__(self, response, connection):
-        super(LuadnsResponse, self).__init__(response=response,
-                                             connection=connection)
+        super(LuadnsResponse, self).__init__(response=response, connection=connection)
         self.errors, self.objects = self.parse_body_and_errors()
         if not self.success():
-            raise LuadnsException(code=self.status,
-                                  message=self.errors.pop()['message'])
+            raise LuadnsException(
+                code=self.status, message=self.errors.pop()["message"]
+            )
 
     def parse_body_and_errors(self):
         js = super(LuadnsResponse, self).parse_body()
-        if 'message' in js:
+        if "message" in js:
             self.errors.append(js)
         else:
             self.objects.append(js)
@@ -62,18 +57,17 @@ class LuadnsConnection(ConnectionUserAndKey):
     responseCls = LuadnsResponse
 
     def add_default_headers(self, headers):
-        b64string = b('%s:%s' % (self.user_id, self.key))
-        encoded = base64.b64encode(b64string).decode('utf-8')
-        authorization = 'Basic ' + encoded
+        b64string = b("%s:%s" % (self.user_id, self.key))
+        encoded = base64.b64encode(b64string).decode("utf-8")
+        authorization = "Basic " + encoded
 
-        headers['Accept'] = 'application/json'
-        headers['Authorization'] = authorization
+        headers["Accept"] = "application/json"
+        headers["Authorization"] = authorization
 
         return headers
 
 
 class LuadnsException(Exception):
-
     def __init__(self, code, message):
         self.code = code
         self.message = message

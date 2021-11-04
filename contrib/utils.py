@@ -27,7 +27,7 @@ def splitStringWithNumbers(string):
 
     E.g., 'abc-123-def' => ['abc-', 123, '-def']
     """
-    rawParts = re.split(r'(\d+)', string)
+    rawParts = re.split(r"(\d+)", string)
 
     # Filter out empty strings.
     nonEmptyParts = filter(None, rawParts)
@@ -35,7 +35,7 @@ def splitStringWithNumbers(string):
     # Convert any numeric strings to numbers.
     def splitHelper(nonEmptyParts):
         for part in nonEmptyParts:
-            if re.match(r'\d+', part):
+            if re.match(r"\d+", part):
                 yield int(part)
             else:
                 yield part

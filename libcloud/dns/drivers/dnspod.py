@@ -13,24 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.dns.types import Provider, ZoneDoesNotExistError, \
-    ZoneAlreadyExistsError, RecordDoesNotExistError, RecordAlreadyExistsError
+from libcloud.dns.types import (
+    Provider,
+    ZoneDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordDoesNotExistError,
+    RecordAlreadyExistsError,
+)
 from libcloud.dns.base import DNSDriver, Zone, Record, RecordType
-from libcloud.common.dnspod import DNSPodConnection, DNSPodResponse, \
-    DNSPodException
+from libcloud.common.dnspod import DNSPodConnection, DNSPodResponse, DNSPodException
 from libcloud.utils.py3 import urlencode
 
-__all__ = [
-    'DNSPodDNSDriver'
+__all__ = ["DNSPodDNSDriver"]
+
+ZONE_ALREADY_EXISTS_ERROR_MSGS = [
+    "Domain is exists",
+    "Domain already exists as " "an alias of another domain",
+]
+ZONE_DOES_NOT_EXIST_ERROR_MSGS = [
+    "Domain not under you or your user",
+    "Domain id invalid",
 ]
 
-ZONE_ALREADY_EXISTS_ERROR_MSGS = ['Domain is exists',
-                                  'Domain already exists as '
-                                  'an alias of another domain']
-ZONE_DOES_NOT_EXIST_ERROR_MSGS = ['Domain not under you or your user',
-                                  'Domain id invalid']
-
-RECORD_DOES_NOT_EXIST_ERRORS_MSGS = ['Record id invalid']
+RECORD_DOES_NOT_EXIST_ERRORS_MSGS = ["Record id invalid"]
 
 
 class DNSPodDNSResponse(DNSPodResponse):
@@ -42,43 +47,41 @@ class DNSPodDNSConnection(DNSPodConnection):
 
 
 class DNSPodDNSDriver(DNSDriver):
-    name = 'DNSPod'
-    website = 'https://dnspod.com'
+    name = "DNSPod"
+    website = "https://dnspod.com"
     type = Provider.DNSPOD
     connectionCls = DNSPodDNSConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.NS: 'NS',
-        RecordType.PTR: 'PTR',
-        RecordType.SOA: 'SOA',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT'
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.NS: "NS",
+        RecordType.PTR: "PTR",
+        RecordType.SOA: "SOA",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
     }
 
     def _make_request(self, action, method, data=None):
         data = data or {}
-        if not data.get('user_token'):
-            data['user_token'] = self.key
-        if not data.get('format'):
-            data['format'] = 'json'
+        if not data.get("user_token"):
+            data["user_token"] = self.key
+        if not data.get("format"):
+            data["format"] = "json"
         data = urlencode(data)
-        r = self.connection.request(action=action, method=method,
-                                    data=data)
+        r = self.connection.request(action=action, method=method, data=data)
         return r
 
     def list_zones(self):
-        action = '/Domain.List'
+        action = "/Domain.List"
         try:
-            response = self._make_request(action=action,
-                                          method='POST')
+            response = self._make_request(action=action, method="POST")
         except DNSPodException as e:
-            if e.message == 'No domains':
+            if e.message == "No domains":
                 return []
-        zones = self._to_zones(items=response.object['domains'])
+        zones = self._to_zones(items=response.object["domains"])
 
         return zones
 
@@ -89,15 +92,15 @@ class DNSPodDNSDriver(DNSDriver):
 
         :return: Boolean
         """
-        action = '/Domain.Remove'
-        data = {'domain_id': zone.id}
+        action = "/Domain.Remove"
+        data = {"domain_id": zone.id}
         try:
-            self._make_request(action=action, method='POST',
-                               data=data)
+            self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(value=e.message, driver=self,
-                                            zone_id=zone.id)
+                raise ZoneDoesNotExistError(
+                    value=e.message, driver=self, zone_id=zone.id
+                )
             else:
                 raise e
 
@@ -108,22 +111,22 @@ class DNSPodDNSDriver(DNSDriver):
         :param zone_id: Zone domain name (e.g. example.com)
         :return: :class:`Zone`
         """
-        action = '/Domain.Info'
-        data = {'domain_id': zone_id}
+        action = "/Domain.Info"
+        data = {"domain_id": zone_id}
         try:
-            response = self._make_request(action=action, method='POST',
-                                          data=data)
+            response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(value=e.message, driver=self,
-                                            zone_id=zone_id)
+                raise ZoneDoesNotExistError(
+                    value=e.message, driver=self, zone_id=zone_id
+                )
             else:
                 raise e
-        zone = self._to_zone(response.object['domain'])
+        zone = self._to_zone(response.object["domain"])
 
         return zone
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         :param domain: Zone domain name (e.g. example.com)
         :type domain: ``str``
@@ -141,21 +144,21 @@ class DNSPodDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = '/Domain.Create'
-        data = {'domain': domain}
+        action = "/Domain.Create"
+        data = {"domain": domain}
         if extra is not None:
             data.update(extra)
         try:
-            response = self._make_request(action=action, method='POST',
-                                          data=data)
+            response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in ZONE_ALREADY_EXISTS_ERROR_MSGS:
-                raise ZoneAlreadyExistsError(value=e.message, driver=self,
-                                             zone_id=domain)
+                raise ZoneAlreadyExistsError(
+                    value=e.message, driver=self, zone_id=domain
+                )
             else:
                 raise e
 
-        zone = self._to_zone(response.object['domain'])
+        zone = self._to_zone(response.object["domain"])
 
         return zone
 
@@ -168,18 +171,16 @@ class DNSPodDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        action = '/Record.List'
-        data = {'domain_id': zone.id}
+        action = "/Record.List"
+        data = {"domain_id": zone.id}
         try:
-            response = self._make_request(action=action, data=data,
-                                          method='POST')
+            response = self._make_request(action=action, data=data, method="POST")
         except DNSPodException as e:
             if e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(value='', driver=self,
-                                            zone_id=zone.id)
+                raise ZoneDoesNotExistError(value="", driver=self, zone_id=zone.id)
             else:
                 raise e
-        records = self._to_records(response.object['records'], zone=zone)
+        records = self._to_records(response.object["records"], zone=zone)
 
         return records
 
@@ -192,19 +193,19 @@ class DNSPodDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = '/Record.Remove'
-        data = {'domain_id': record.zone.id,
-                'record_id': record.id}
+        action = "/Record.Remove"
+        data = {"domain_id": record.zone.id, "record_id": record.id}
         try:
-            self._make_request(action=action, method='POST',
-                               data=data)
+            self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in RECORD_DOES_NOT_EXIST_ERRORS_MSGS:
-                raise RecordDoesNotExistError(record_id=record.id, driver=self,
-                                              value='')
+                raise RecordDoesNotExistError(
+                    record_id=record.id, driver=self, value=""
+                )
             elif e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(zone_id=record.zone.id,
-                                            driver=self, value='')
+                raise ZoneDoesNotExistError(
+                    zone_id=record.zone.id, driver=self, value=""
+                )
             else:
                 raise e
 
@@ -223,22 +224,21 @@ class DNSPodDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         zone = self.get_zone(zone_id=zone_id)
-        action = '/Record.Info'
-        data = {'domain_id': zone_id, 'record_id': record_id}
+        action = "/Record.Info"
+        data = {"domain_id": zone_id, "record_id": record_id}
         try:
-            response = self._make_request(action=action, method='POST',
-                                          data=data)
+            response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
             if e.message in RECORD_DOES_NOT_EXIST_ERRORS_MSGS:
-                raise RecordDoesNotExistError(record_id=record_id, driver=self,
-                                              value='')
+                raise RecordDoesNotExistError(
+                    record_id=record_id, driver=self, value=""
+                )
             elif e.message in ZONE_DOES_NOT_EXIST_ERROR_MSGS:
-                raise ZoneDoesNotExistError(zone_id=zone_id, driver=self,
-                                            value='')
+                raise ZoneDoesNotExistError(zone_id=zone_id, driver=self, value="")
             else:
                 raise e
 
-        record = self._to_record(response.object['record'], zone=zone)
+        record = self._to_record(response.object["record"], zone=zone)
 
         return record
 
@@ -267,9 +267,13 @@ class DNSPodDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = '/Record.Create'
-        data = {'sub_domain': name, 'value': data,
-                'record_type': type, 'domain_id': zone.id}
+        action = "/Record.Create"
+        data = {
+            "sub_domain": name,
+            "value": data,
+            "record_type": type,
+            "domain_id": zone.id,
+        }
         # ttl is optional
         # pass it through extra like this: extra={'ttl':ttl}
         # record_line is a required parameter
@@ -280,31 +284,34 @@ class DNSPodDNSDriver(DNSDriver):
         if extra is not None:
             data.update(extra)
         try:
-            response = self._make_request(action=action,
-                                          method='POST',
-                                          data=data)
+            response = self._make_request(action=action, method="POST", data=data)
         except DNSPodException as e:
-            if e.message == ('Record impacted, same record exists '
-                             'or CNAME/URL impacted'):
-                raise RecordAlreadyExistsError(record_id='', driver=self,
-                                               value=name)
+            if e.message == (
+                "Record impacted, same record exists " "or CNAME/URL impacted"
+            ):
+                raise RecordAlreadyExistsError(record_id="", driver=self, value=name)
             raise e
 
-        record_id = response.object['record'].get('id')
+        record_id = response.object["record"].get("id")
         record = self.get_record(zone_id=zone.id, record_id=record_id)
 
         return record
 
     def _to_zone(self, item):
-        common_attr = ['name', 'id', 'ttl']
+        common_attr = ["name", "id", "ttl"]
         extra = {}
         for key in item.keys():
             if key not in common_attr:
                 extra[key] = item.get(key)
 
-        zone = Zone(domain=item.get('name') or item.get('domain'),
-                    id=item.get('id'), type=None, extra=extra,
-                    ttl=item.get('ttl'), driver=self)
+        zone = Zone(
+            domain=item.get("name") or item.get("domain"),
+            id=item.get("id"),
+            type=None,
+            extra=extra,
+            ttl=item.get("ttl"),
+            driver=self,
+        )
 
         return zone
 
@@ -316,16 +323,20 @@ class DNSPodDNSDriver(DNSDriver):
         return zones
 
     def _to_record(self, item, zone):
-        common_attr = ['id', 'value', 'name', 'type']
+        common_attr = ["id", "value", "name", "type"]
         extra = {}
         for key in item:
             if key not in common_attr:
                 extra[key] = item.get(key)
-        record = Record(id=item.get('id'),
-                        name=item.get('name') or item.get('sub_domain'),
-                        type=item.get('type') or item.get('record_type'),
-                        data=item.get('value'), zone=zone, driver=self,
-                        extra=extra)
+        record = Record(
+            id=item.get("id"),
+            name=item.get("name") or item.get("sub_domain"),
+            type=item.get("type") or item.get("record_type"),
+            data=item.get("value"),
+            zone=zone,
+            driver=self,
+            extra=extra,
+        )
 
         return record
 

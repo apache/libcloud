@@ -22,15 +22,15 @@ from libcloud.common.types import ProviderError
 
 
 __all__ = [
-    'API_HOST',
-    'LiquidWebException',
-    'LiquidWebResponse',
-    'LiquidWebConnection',
+    "API_HOST",
+    "LiquidWebException",
+    "LiquidWebResponse",
+    "LiquidWebConnection",
 ]
 
 
 # Endpoint for liquidweb api.
-API_HOST = 'api.stormondemand.com'
+API_HOST = "api.stormondemand.com"
 
 
 class LiquidWebException(ProviderError):
@@ -58,7 +58,6 @@ class LiquidWebException(ProviderError):
 
 
 class APIException(LiquidWebException):
-
     def __init__(self, error_class, full_msg, http_code, extra=None):
         self.error_class = error_class
         super(APIException, self).__init__(full_msg, http_code, extra=extra)
@@ -71,90 +70,36 @@ class APIException(LiquidWebException):
 
 
 EXCEPTIONS_FIELDS = {
-    'LW::Exception::API::Internal': {
-        'fields': []
+    "LW::Exception::API::Internal": {"fields": []},
+    "LW::Exception::API::InvalidEncoding": {"fields": ["encoding"]},
+    "LW::Exception::API::InvalidMethod": {"fields": ["method"]},
+    "LW::Exception::API::Maintenance": {"fields": []},
+    "LW::Exception::API::RateLimit": {"fields": ["account", "ip", "method"]},
+    "LW::Exception::Authorization": {"fields": ["username"]},
+    "LW::Exception::DNS::NoResponse": {"fields": ["nameservers"]},
+    "LW::Exception::DNS::Servfail": {"fields": ["nameservers"]},
+    "LW::Exception::Deserialize": {"fields": ["data", "encoding"]},
+    "LW::Exception::DuplicateRecord": {"fields": ["field", "input", "statement"]},
+    "LW::Exception::Forbidden": {"fields": []},
+    "LW::Exception::Incapable": {"fields": ["capability", "thing"]},
+    "LW::Exception::Input": {"fields": ["field"]},
+    "LW::Exception::Input::Disallowed": {"fields": ["field"]},
+    "LW::Exception::Input::Multiple": {"fields": ["errors", "field", "type"]},
+    "LW::Exception::Input::NotInRealm": {"fields": ["field", "valid", "value"]},
+    "LW::Exception::Input::OutOfBounds": {"fields": ["field", "max", "min", "value"]},
+    "LW::Exception::Input::Required": {"fields": ["field", "position"]},
+    "LW::Exception::Input::Unknown": {"fields": ["field", "value"]},
+    "LW::Exception::Input::Validation": {"fields": ["field", "type", "value"]},
+    "LW::Exception::Permission": {"fields": ["account", "identifier"]},
+    "LW::Exception::RecordNotFound": {"fields": ["field", "input"]},
+    "LW::Exception::RemoteService::Authorization": {"fields": ["url"]},
+    "LW::Exception::Resource": {"fields": ["resource"]},
+    "LW::Exception::Resource::Insufficient": {
+        "fields": ["available", "requested", "resource"]
     },
-    'LW::Exception::API::InvalidEncoding': {
-        'fields': ['encoding']
-    },
-    'LW::Exception::API::InvalidMethod': {
-        'fields': ['method']
-    },
-    'LW::Exception::API::Maintenance': {
-        'fields': []
-    },
-    'LW::Exception::API::RateLimit': {
-        'fields': ['account', 'ip', 'method']
-    },
-    'LW::Exception::Authorization': {
-        'fields': ['username']
-    },
-    'LW::Exception::DNS::NoResponse': {
-        'fields': ['nameservers']
-    },
-    'LW::Exception::DNS::Servfail': {
-        'fields': ['nameservers']
-    },
-    'LW::Exception::Deserialize': {
-        'fields': ['data', 'encoding']
-    },
-    'LW::Exception::DuplicateRecord': {
-        'fields': ['field', 'input', 'statement']
-    },
-    'LW::Exception::Forbidden': {
-        'fields': []
-    },
-    'LW::Exception::Incapable': {
-        'fields': ['capability', 'thing']
-    },
-    'LW::Exception::Input': {
-        'fields': ['field']
-    },
-    'LW::Exception::Input::Disallowed': {
-        'fields': ['field']
-    },
-    'LW::Exception::Input::Multiple': {
-        'fields': ['errors', 'field', 'type']
-    },
-    'LW::Exception::Input::NotInRealm': {
-        'fields': ['field', 'valid', 'value']
-    },
-    'LW::Exception::Input::OutOfBounds': {
-        'fields': ['field', 'max', 'min', 'value']
-    },
-    'LW::Exception::Input::Required': {
-        'fields': ['field', 'position']
-    },
-    'LW::Exception::Input::Unknown': {
-        'fields': ['field', 'value']
-    },
-    'LW::Exception::Input::Validation': {
-        'fields': ['field', 'type', 'value']
-    },
-    'LW::Exception::Permission': {
-        'fields': ['account', 'identifier']
-    },
-    'LW::Exception::RecordNotFound': {
-        'fields': ['field', 'input']
-    },
-    'LW::Exception::RemoteService::Authorization': {
-        'fields': ['url']
-    },
-    'LW::Exception::Resource': {
-        'fields': ['resource']
-    },
-    'LW::Exception::Resource::Insufficient': {
-        'fields': ['available', 'requested', 'resource']
-    },
-    'LW::Exception::Resource::Unavailable': {
-        'fields': ['resource']
-    },
-    'LW::Exception::Serialize': {
-        'fields': ['data', 'encoding']
-    },
-    'LW::Exception::Workflow::Conflict': {
-        'fields': ['conflict', 'workflow']
-    }
+    "LW::Exception::Resource::Unavailable": {"fields": ["resource"]},
+    "LW::Exception::Serialize": {"fields": ["data", "encoding"]},
+    "LW::Exception::Workflow::Conflict": {"fields": ["conflict", "workflow"]},
 }
 
 
@@ -164,8 +109,9 @@ class LiquidWebResponse(JsonResponse):
 
     def __init__(self, response, connection):
         self.errors = []
-        super(LiquidWebResponse, self).__init__(response=response,
-                                                connection=connection)
+        super(LiquidWebResponse, self).__init__(
+            response=response, connection=connection
+        )
         self.objects, self.errors = self.parse_body_and_errors()
         if self.errors:
             error = self.errors.pop()
@@ -175,16 +121,16 @@ class LiquidWebResponse(JsonResponse):
         data = []
         errors = []
         js = super(LiquidWebResponse, self).parse_body()
-        if 'items' in js:
-            data.append(js['items'])
+        if "items" in js:
+            data.append(js["items"])
 
-        if 'name' in js:
+        if "name" in js:
             data.append(js)
 
-        if 'deleted' in js:
-            data.append(js['deleted'])
+        if "deleted" in js:
+            data.append(js["deleted"])
 
-        if 'error_class' in js:
+        if "error_class" in js:
             errors.append(js)
 
         return (data, errors)
@@ -193,17 +139,17 @@ class LiquidWebResponse(JsonResponse):
         """
         Returns ``True`` if our request is successful.
         """
-        return (len(self.errors) == 0)
+        return len(self.errors) == 0
 
     def _make_excp(self, error, status):
         """
         Raise LiquidWebException.
         """
-        exc_type = error.get('error_class')
-        message = error.get('full_message')
+        exc_type = error.get("error_class")
+        message = error.get("full_message")
         try:
             _type = EXCEPTIONS_FIELDS[exc_type]
-            fields = _type.get('fields')
+            fields = _type.get("fields")
             extra = {}
         except KeyError:
             fields = []
@@ -218,11 +164,11 @@ class LiquidWebConnection(ConnectionUserAndKey):
     responseCls = LiquidWebResponse
 
     def add_default_headers(self, headers):
-        b64string = b('%s:%s' % (self.user_id, self.key))
-        encoded = base64.b64encode(b64string).decode('utf-8')
-        authorization = 'Basic ' + encoded
+        b64string = b("%s:%s" % (self.user_id, self.key))
+        encoded = base64.b64encode(b64string).decode("utf-8")
+        authorization = "Basic " + encoded
 
-        headers['Authorization'] = authorization
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = authorization
+        headers["Content-Type"] = "application/json"
 
         return headers

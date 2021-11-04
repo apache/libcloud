@@ -32,16 +32,16 @@ class KTUCloudStorageConnection(CloudFilesConnection):
     _auth_version = KTUCLOUDSTORAGE_API_VERSION
 
     def get_endpoint(self):
-        eps = self.service_catalog.get_endpoints(name='cloudFiles')
+        eps = self.service_catalog.get_endpoints(name="cloudFiles")
 
         if len(eps) == 0:
-            raise LibcloudError('Could not find specified endpoint')
+            raise LibcloudError("Could not find specified endpoint")
 
         ep = eps[0]
         public_url = ep.url
 
         if not public_url:
-            raise LibcloudError('Could not find specified endpoint')
+            raise LibcloudError("Could not find specified endpoint")
 
         return public_url
 
@@ -52,5 +52,5 @@ class KTUCloudStorageDriver(CloudFilesStorageDriver):
     """
 
     type = Provider.KTUCLOUD
-    name = 'KTUCloud Storage'
+    name = "KTUCloud Storage"
     connectionCls = KTUCloudStorageConnection

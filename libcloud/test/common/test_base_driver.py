@@ -29,40 +29,40 @@ class BaseDriverTestCase(unittest.TestCase):
 
         # 1. No timeout provided
         DummyDriver1.connectionCls = Mock()
-        DummyDriver1(key='foo')
+        DummyDriver1(key="foo")
         call_kwargs = DummyDriver1.connectionCls.call_args[1]
-        self.assertIsNone(call_kwargs['timeout'])
-        self.assertIsNone(call_kwargs['retry_delay'])
+        self.assertIsNone(call_kwargs["timeout"])
+        self.assertIsNone(call_kwargs["retry_delay"])
 
         # 2. Timeout provided as constructor argument
         class DummyDriver1(BaseDriver):
             pass
 
         DummyDriver1.connectionCls = Mock()
-        DummyDriver1(key='foo', timeout=12)
+        DummyDriver1(key="foo", timeout=12)
         call_kwargs = DummyDriver1.connectionCls.call_args[1]
-        self.assertEqual(call_kwargs['timeout'], 12)
-        self.assertIsNone(call_kwargs['retry_delay'])
+        self.assertEqual(call_kwargs["timeout"], 12)
+        self.assertIsNone(call_kwargs["retry_delay"])
 
         # 3. timeout provided via "_ex_connection_class_kwargs" method
         class DummyDriver2(BaseDriver):
             def _ex_connection_class_kwargs(self):
                 result = {}
-                result['timeout'] = 13
+                result["timeout"] = 13
                 return result
 
         DummyDriver2.connectionCls = Mock()
-        DummyDriver2(key='foo')
+        DummyDriver2(key="foo")
         call_kwargs = DummyDriver2.connectionCls.call_args[1]
 
         # 4. Value provided via "_ex_connection_class_kwargs" and constructor,
         # constructor should win
         DummyDriver2.connectionCls = Mock()
-        DummyDriver2(key='foo', timeout=14, retry_delay=10)
+        DummyDriver2(key="foo", timeout=14, retry_delay=10)
         call_kwargs = DummyDriver2.connectionCls.call_args[1]
-        self.assertEqual(call_kwargs['timeout'], 14)
-        self.assertEqual(call_kwargs['retry_delay'], 10)
+        self.assertEqual(call_kwargs["timeout"], 14)
+        self.assertEqual(call_kwargs["retry_delay"], 10)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

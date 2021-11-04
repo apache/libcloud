@@ -16,8 +16,7 @@
 
 from libcloud.container.providers import Provider
 
-from libcloud.container.drivers.docker import (DockerContainerDriver,
-                                               DockerConnection)
+from libcloud.container.drivers.docker import DockerContainerDriver, DockerConnection
 
 
 class JoyentContainerDriver(DockerContainerDriver):
@@ -31,24 +30,36 @@ class JoyentContainerDriver(DockerContainerDriver):
     """
 
     type = Provider.JOYENT
-    name = 'Joyent Triton'
-    website = 'http://joyent.com'
+    name = "Joyent Triton"
+    website = "http://joyent.com"
     connectionCls = DockerConnection
     supports_clusters = False
 
-    def __init__(self, key=None, secret=None, secure=False, host='localhost',
-                 port=2376, key_file=None, cert_file=None):
+    def __init__(
+        self,
+        key=None,
+        secret=None,
+        secure=False,
+        host="localhost",
+        port=2376,
+        key_file=None,
+        cert_file=None,
+    ):
 
-        super(JoyentContainerDriver, self).__init__(key=key, secret=secret,
-                                                    secure=secure, host=host,
-                                                    port=port,
-                                                    key_file=key_file,
-                                                    cert_file=cert_file)
-        if host.startswith('https://'):
+        super(JoyentContainerDriver, self).__init__(
+            key=key,
+            secret=secret,
+            secure=secure,
+            host=host,
+            port=port,
+            key_file=key_file,
+            cert_file=cert_file,
+        )
+        if host.startswith("https://"):
             secure = True
 
         # strip the prefix
-        prefixes = ['http://', 'https://']
+        prefixes = ["http://", "https://"]
         for prefix in prefixes:
             if host.startswith(prefix):
                 host = host.strip(prefix)
@@ -61,8 +72,9 @@ class JoyentContainerDriver(DockerContainerDriver):
             # libcloud will handle them through LibcloudHTTPSConnection
             if not (key_file and cert_file):
                 raise Exception(
-                    'Needs both private key file and '
-                    'certificate file for tls authentication')
+                    "Needs both private key file and "
+                    "certificate file for tls authentication"
+                )
             self.connection.key_file = key_file
             self.connection.cert_file = cert_file
             self.connection.secure = True

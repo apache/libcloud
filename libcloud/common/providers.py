@@ -17,14 +17,10 @@
 Common methods for obtaining a reference to the provider driver class.
 """
 
-__all__ = [
-    'get_driver',
-    'set_driver'
-]
+__all__ = ["get_driver", "set_driver"]
 
 
-def get_driver(drivers, provider, deprecated_providers=None,
-               deprecated_constants=None):
+def get_driver(drivers, provider, deprecated_providers=None, deprecated_constants=None):
     """
     Get a driver.
 
@@ -45,10 +41,9 @@ def get_driver(drivers, provider, deprecated_providers=None,
     # Those providers have been shut down or similar.
     deprecated_providers = deprecated_providers or {}
     if provider in deprecated_providers:
-        url = deprecated_providers[provider]['url']
-        reason = deprecated_providers[provider]['reason']
-        msg = ('Provider no longer supported: %s, please visit: %s' %
-               (url, reason))
+        url = deprecated_providers[provider]["url"]
+        reason = deprecated_providers[provider]["reason"]
+        msg = "Provider no longer supported: %s, please visit: %s" % (url, reason)
         raise Exception(msg)
 
     # Those drivers have moved to "region" constructor argument model
@@ -57,12 +52,13 @@ def get_driver(drivers, provider, deprecated_providers=None,
         old_name = provider.upper()
         new_name = deprecated_constants[provider].upper()
 
-        url = 'https://s.apache.org/lc0140un'
-        msg = ('Provider constant "%s" has been removed. New constant '
-               'is now called "%s".\n'
-               'For more information on this change and how to modify your '
-               'code to work with it, please visit: %s' %
-               (old_name, new_name, url))
+        url = "https://s.apache.org/lc0140un"
+        msg = (
+            'Provider constant "%s" has been removed. New constant '
+            'is now called "%s".\n'
+            "For more information on this change and how to modify your "
+            "code to work with it, please visit: %s" % (old_name, new_name, url)
+        )
         raise Exception(msg)
 
     if provider in drivers:
@@ -79,7 +75,7 @@ def get_driver(drivers, provider, deprecated_providers=None,
             _mod = __import__(mod_name, globals(), locals(), [driver_name])
             return getattr(_mod, driver_name)
 
-    raise AttributeError('Provider %s does not exist' % (provider))
+    raise AttributeError("Provider %s does not exist" % (provider))
 
 
 def set_driver(drivers, provider, module, klass):
@@ -99,7 +95,7 @@ def set_driver(drivers, provider, module, klass):
     """
 
     if provider in drivers:
-        raise AttributeError('Provider %s already registered' % (provider))
+        raise AttributeError("Provider %s already registered" % (provider))
 
     drivers[provider] = (module, klass)
 

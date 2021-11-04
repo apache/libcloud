@@ -13,22 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'fixxpath',
-    'findtext',
-    'findattr',
-    'findall'
-]
+__all__ = ["fixxpath", "findtext", "findattr", "findall"]
 
 
 def fixxpath(xpath, namespace=None):
     # ElementTree wants namespaces in its xpaths, so here we add them.
     if not namespace:
         return xpath
-    return '/'.join(['{%s}%s' % (namespace, e) for e in xpath.split('/')])
+    return "/".join(["{%s}%s" % (namespace, e) for e in xpath.split("/")])
 
 
-def findtext(element, xpath, namespace=None, no_text_value=''):
+def findtext(element, xpath, namespace=None, no_text_value=""):
     """
     :param no_text_value: Value to return if the provided element has no text
                           value.
@@ -36,7 +31,7 @@ def findtext(element, xpath, namespace=None, no_text_value=''):
     """
     value = element.findtext(fixxpath(xpath=xpath, namespace=namespace))
 
-    if value == '':
+    if value == "":
         return no_text_value
     return value
 

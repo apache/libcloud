@@ -18,9 +18,9 @@ from libcloud.storage.drivers.atmos import AtmosDriver
 
 
 class NinefoldStorageDriver(AtmosDriver):
-    host = 'api.ninefold.com'
-    path = '/storage/v1.0'
+    host = "api.ninefold.com"
+    path = "/storage/v1.0"
 
     type = Provider.NINEFOLD
-    name = 'Ninefold'
-    website = 'http://ninefold.com/'
+    name = "Ninefold"
+    website = "http://ninefold.com/"
