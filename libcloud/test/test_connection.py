@@ -428,75 +428,66 @@ class ConnectionClassTestCase(unittest.TestCase):
     def _raise_socket_error(self):
         raise socket.gaierror('')
 
-    def test_retry_with_sleep(self):
+    @patch('libcloud.common.base.Connection.request')
+    def test_retry_with_sleep(self, mock_connect):
         con = Connection()
         con.connection = Mock()
-        connect_method = 'libcloud.common.base.Connection.request'
 
-        with patch(connect_method) as mock_connect:
-            mock_connect.__name__ = 'mock_connect'
-            with self.assertRaises(socket.gaierror):
-                mock_connect.side_effect = socket.gaierror('')
-                retry_request = Retry(timeout=0.2, retry_delay=0.1,
-                                      backoff=1)
-                retry_request(con.request)(action='/')
+        mock_connect.side_effect = socket.gaierror('')
+        retry_request = Retry(timeout=0.2, retry_delay=0.1,
+                                backoff=1)
+        self.assertRaises(socket.gaierror,
+                          retry_request(con.request), action='/')
 
-            self.assertGreater(mock_connect.call_count, 1,
-                               'Retry logic failed')
-
-    def test_retry_with_timeout(self):
-        con = Connection()
-        con.connection = Mock()
-        connect_method = 'libcloud.common.base.Connection.request'
-
-        with patch(connect_method) as mock_connect:
-            mock_connect.__name__ = 'mock_connect'
-            with self.assertRaises(socket.gaierror):
-                mock_connect.side_effect = socket.gaierror('')
-                retry_request = Retry(timeout=0.2, retry_delay=0.1,
-                                      backoff=1)
-                retry_request(con.request)(action='/')
-
-            self.assertGreater(mock_connect.call_count, 1,
-                               'Retry logic failed')
-
-    def test_retry_with_backoff(self):
-        con = Connection()
-        con.connection = Mock()
-        connect_method = 'libcloud.common.base.Connection.request'
-
-        with patch(connect_method) as mock_connect:
-            mock_connect.__name__ = 'mock_connect'
-            with self.assertRaises(socket.gaierror):
-                mock_connect.side_effect = socket.gaierror('')
-                retry_request = Retry(timeout=0.2, retry_delay=0.1,
-                                      backoff=1)
-                retry_request(con.request)(action='/')
-
-            self.assertGreater(mock_connect.call_count, 1,
-                               'Retry logic failed')
-
-    def test_retry_rate_limit_error_timeout(self):
-        con = Connection()
-        con.connection = Mock()
-        connect_method = 'libcloud.common.base.Connection.request'
-
-        with patch(connect_method) as mock_connect:
-            mock_connect.__name__ = 'mock_connect'
-            with self.assertRaises(RateLimitReachedError):
-                headers = {'retry-after': 0.2}
-                mock_connect.side_effect = RateLimitReachedError(headers=headers)
-                retry_request = Retry(timeout=0.4, retry_delay=0.1,
-                                      backoff=1)
-                retry_request(con.request)(action='/')
-
-            self.assertEqual(mock_connect.call_count, 2,
+        self.assertGreater(mock_connect.call_count, 1,
                             'Retry logic failed')
 
-    def test_retry_rate_limit_error_forever_with_old_retry_class(self):
+    @patch('libcloud.common.base.Connection.request')
+    def test_retry_with_timeout(self, mock_connect):
         con = Connection()
         con.connection = Mock()
-        connect_method = 'libcloud.common.base.Connection.request'
+
+        mock_connect.side_effect = socket.gaierror('')
+        retry_request = Retry(timeout=0.2, retry_delay=0.1,
+                                backoff=1)
+        self.assertRaises(socket.gaierror,
+                          retry_request(con.request), action='/')
+
+        self.assertGreater(mock_connect.call_count, 1,
+                            'Retry logic failed')
+
+    @patch('libcloud.common.base.Connection.request')
+    def test_retry_with_backoff(self, mock_connect):
+        con = Connection()
+        con.connection = Mock()
+
+        mock_connect.side_effect = socket.gaierror('')
+        retry_request = Retry(timeout=0.2, retry_delay=0.1,
+                                backoff=1)
+        self.assertRaises(socket.gaierror,
+                          retry_request(con.request), action='/')
+        self.assertGreater(mock_connect.call_count, 1,
+                            'Retry logic failed')
+
+    @patch('libcloud.common.base.Connection.request')
+    def test_retry_rate_limit_error_timeout(self, mock_connect):
+        con = Connection()
+        con.connection = Mock()
+
+        mock_connect.__name__ = 'mock_connect'
+        headers = {'retry-after': 0.2}
+        mock_connect.side_effect = RateLimitReachedError(headers=headers)
+        retry_request = Retry(timeout=0.4, retry_delay=0.1,
+                                backoff=1)
+        self.assertRaises(RateLimitReachedError,
+                          retry_request(con.request), action='/')
+        self.assertEqual(mock_connect.call_count, 2,
+                        'Retry logic failed')
+
+    @patch('libcloud.common.base.Connection.request')
+    def test_retry_rate_limit_error_forever_with_old_retry_class(self, mock_connect):
+        con = Connection()
+        con.connection = Mock()
 
         self.retry_counter = 0
 
@@ -509,43 +500,40 @@ class ConnectionClassTestCase(unittest.TestCase):
 
             return 'success'
 
-        with patch(connect_method) as mock_connect:
-            mock_connect.__name__ = 'mock_connect'
-            headers = {'retry-after': 0.2}
-            mock_connect.side_effect = mock_connect_side_effect
-            retry_request = RetryForeverOnRateLimitError(timeout=0.1, retry_delay=0.1,
-                                    backoff=1)
-            retry_request(con.request)(action='/')
+        mock_connect.__name__ = 'mock_connect'
+        headers = {'retry-after': 0.2}
+        mock_connect.side_effect = mock_connect_side_effect
+        retry_request = RetryForeverOnRateLimitError(timeout=0.1, retry_delay=0.1,
+                                backoff=1)
+        retry_request(con.request)(action='/')
 
-            # We have waited longer the timeout but continue to retry
-            result = retry_request(con.request)(action='/')
-            self.assertEqual(result, "success")
+        # We have waited longer the timeout but continue to retry
+        result = retry_request(con.request)(action='/')
+        self.assertEqual(result, "success")
 
-            self.assertEqual(mock_connect.call_count, 5,
-                            'Retry logic failed')
+        self.assertEqual(mock_connect.call_count, 5,
+                        'Retry logic failed')
 
-    def test_retry_should_not_retry_on_non_defined_exception(self):
+    @patch('libcloud.common.base.Connection.request')
+    def test_retry_should_not_retry_on_non_defined_exception(self, mock_connect):
         con = Connection()
         con.connection = Mock()
         connect_method = 'libcloud.common.base.Connection.request'
 
         self.retry_counter = 0
 
-        with patch(connect_method) as mock_connect:
-            mock_connect.__name__ = 'mock_connect'
-            with self.assertRaises(ValueError):
-                headers = {'retry-after': 0.2}
-                mock_connect.side_effect = ValueError('should not retry this '
-                                                    'error')
-                retry_request = Retry(timeout=5, retry_delay=0.1, backoff=1)
-                retry_request(con.request)(action='/')
+        mock_connect.__name__ = 'mock_connect'
+        headers = {'retry-after': 0.2}
+        mock_connect.side_effect = ValueError('should not retry this '
+                                            'error')
+        retry_request = Retry(timeout=5, retry_delay=0.1, backoff=1)
 
-                retry_request(con.request)(action='/')
+        self.assertRaisesRegex(ValueError, 'should not retry this error',
+                               retry_request(con.request), action='/')
+        self.assertEqual(mock_connect.call_count, 1, 'Retry logic failed')
 
-            self.assertEqual(mock_connect.call_count, 1,
-                            'Retry logic failed')
-
-    def test_retry_rate_limit_error_success_on_second_attempt(self):
+    @patch('libcloud.common.base.Connection.request')
+    def test_retry_rate_limit_error_success_on_second_attempt(self, mock_connect):
         con = Connection()
         con.connection = Mock()
         connect_method = 'libcloud.common.base.Connection.request'
@@ -561,16 +549,15 @@ class ConnectionClassTestCase(unittest.TestCase):
 
             return 'success'
 
-        with patch(connect_method) as mock_connect:
-            mock_connect.__name__ = 'mock_connect'
-            mock_connect.side_effect = mock_connect_side_effect
-            retry_request = Retry(timeout=0.6, retry_delay=0.1,
-                                  backoff=1)
-            result = retry_request(con.request)(action='/')
-            self.assertEqual(result, "success")
+        mock_connect.__name__ = 'mock_connect'
+        mock_connect.side_effect = mock_connect_side_effect
+        retry_request = Retry(timeout=0.6, retry_delay=0.1,
+                                backoff=1)
+        result = retry_request(con.request)(action='/')
+        self.assertEqual(result, "success")
 
-            self.assertEqual(mock_connect.call_count, 2,
-                            'Retry logic failed')
+        self.assertEqual(mock_connect.call_count, 2,
+                        'Retry logic failed')
 
 
 class CertificateConnectionClassTestCase(unittest.TestCase):
