@@ -106,7 +106,10 @@ class VSphereNodeDriver(NodeDriver):
         try:
             if ca_cert is None:
                 self.connection = connect.SmartConnect(
-                    host=host, port=port, user=username, pwd=password,
+                    host=host,
+                    port=port,
+                    user=username,
+                    pwd=password,
                 )
             else:
                 context = ssl.create_default_context(cafile=ca_cert)
@@ -736,28 +739,24 @@ class VSphereNodeDriver(NodeDriver):
         return node
 
     def reboot_node(self, node):
-        """
-        """
+        """ """
         vm = self.find_by_uuid(node.id)
         return self.wait_for_task(vm.RebootGuest())
 
     def destroy_node(self, node):
-        """
-        """
+        """ """
         vm = self.find_by_uuid(node.id)
         if node.state != NodeState.STOPPED:
             self.stop_node(node)
         return self.wait_for_task(vm.Destroy())
 
     def stop_node(self, node):
-        """
-        """
+        """ """
         vm = self.find_by_uuid(node.id)
         return self.wait_for_task(vm.PowerOff())
 
     def start_node(self, node):
-        """
-        """
+        """ """
         vm = self.find_by_uuid(node.id)
         return self.wait_for_task(vm.PowerOn())
 
@@ -867,8 +866,7 @@ class VSphereNodeDriver(NodeDriver):
         return vm
 
     def find_custom_field_key(self, key_id):
-        """Return custom field key name, provided it's id
-        """
+        """Return custom field key name, provided it's id"""
         if not hasattr(self, "custom_fields"):
             content = self.connection.RetrieveContent()
             if content.customFieldsManager:
@@ -901,7 +899,7 @@ class VSphereNodeDriver(NodeDriver):
         return obj
 
     def wait_for_task(self, task, timeout=1800, interval=10):
-        """ wait for a vCenter task to finish """
+        """wait for a vCenter task to finish"""
         start_time = time.time()
         task_done = False
         while not task_done:
@@ -1519,8 +1517,8 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
     def _to_node(self, vm_id_host, interfaces):
         """
-         id, name, state, public_ips, private_ips,
-                 driver, size=None, image=None, extra=None, created_at=None)
+        id, name, state, public_ips, private_ips,
+                driver, size=None, image=None, extra=None, created_at=None)
         """
         vm_id = vm_id_host[0]
         req = "/rest/vcenter/vm/" + vm_id

@@ -270,7 +270,9 @@ class DimensionData_v2_3_Tests(unittest.TestCase):
         self.assertEqual(node.name, "myProductionNode.1")
         self.assertEqual(node.id, "9e6b496d-5261-4542-91aa-b50c7f569c54")
 
-    def test_ex_create_pool(self,):
+    def test_ex_create_pool(
+        self,
+    ):
         pool = self.driver.ex_create_pool(
             network_domain_id="1234",
             name="test",

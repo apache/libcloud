@@ -1342,7 +1342,9 @@ class AzureNodeDriver(NodeDriver):
         if not isinstance(resource, basestring):
             resource = resource.id
         r = self.connection.request(
-            resource, method="DELETE", params={"api-version": RESOURCE_API_VERSION},
+            resource,
+            method="DELETE",
+            params={"api-version": RESOURCE_API_VERSION},
         )
         return r.status in [200, 202, 204]
 
@@ -1896,7 +1898,9 @@ class AzureNodeDriver(NodeDriver):
         # "ex_delete_resource" won't for for deleting an IP address
         resource = public_ip.id
         r = self.connection.request(
-            resource, method="DELETE", params={"api-version": "2019-06-01"},
+            resource,
+            method="DELETE",
+            params={"api-version": "2019-06-01"},
         )
 
         return r.status in [200, 202, 204]

@@ -79,7 +79,7 @@ class DimensionDataBackupDriver(BackupDriver):
 
     def _ex_connection_class_kwargs(self):
         """
-            Add the region to the kwargs before the connection is instantiated
+        Add the region to the kwargs before the connection is instantiated
         """
 
         kwargs = super(DimensionDataBackupDriver, self)._ex_connection_class_kwargs()

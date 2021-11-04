@@ -276,7 +276,9 @@ def test_ex_create_node(driver):
     assert node.id == "9e6b496d-5261-4542-91aa-b50c7f569c54"
 
 
-def test_ex_create_pool(driver,):
+def test_ex_create_pool(
+    driver,
+):
     pool = driver.ex_create_pool(
         network_domain_id="1234",
         name="test",

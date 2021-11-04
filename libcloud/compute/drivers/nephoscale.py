@@ -290,8 +290,8 @@ get all keys call with no arguments"
 
     def ex_create_keypair(self, name, public_key=None, password=None, key_group=None):
         """Creates a key, ssh or password, for server or console
-           The group for the key (key_group) is 1 for Server and 4 for Console
-           Returns the id of the created key
+        The group for the key (key_group) is 1 for Server and 4 for Console
+        Returns the id of the created key
         """
         if public_key:
             if not key_group:
@@ -314,8 +314,7 @@ get all keys call with no arguments"
         return result.get("data", {}).get("id", "")
 
     def ex_delete_keypair(self, key_id, ssh=False):
-        """Delete an ssh key or password given it's id
-        """
+        """Delete an ssh key or password given it's id"""
         if ssh:
             result = self.connection.request(
                 "/key/sshrsa/%s/" % key_id, method="DELETE"
@@ -424,8 +423,7 @@ get all keys call with no arguments"
             return node
 
     def _to_node(self, data):
-        """Convert node in Node instances
-        """
+        """Convert node in Node instances"""
 
         state = NODE_STATE_MAP.get(data.get("power_status"), "4")
         public_ips = []

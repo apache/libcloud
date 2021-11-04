@@ -107,7 +107,7 @@ class NttCisLBDriver(Driver):
 
     def _ex_connection_class_kwargs(self):
         """
-            Add the region to the kwargs before the connection is instantiated
+        Add the region to the kwargs before the connection is instantiated
         """
 
         kwargs = super(NttCisLBDriver, self)._ex_connection_class_kwargs()
@@ -1413,23 +1413,23 @@ class NttCisLBDriver(Driver):
     @get_params
     def ex_list_ssl_offload_profiles(self, params={}):
         """
-       Functions takes a named parameter that can be one or none of the
-       following to filter returned items
+        Functions takes a named parameter that can be one or none of the
+        following to filter returned items
 
-       :param params: A sequence of comma separated keyword arguments
-       and a value
-           * id=
-           * network_domain_id=
-           * datacenter_id=
-           * name=
-           * state=
-           * ssl_domain_certificate_id=
-           * ssl_domain_certificate_name=
-           * ssl_certificate_chain_id=
-           * ssl_certificate_chain_name=
-           * create_time=
-       :return: `list` of :class: `NttCisSslssloffloadprofile`
-       """
+        :param params: A sequence of comma separated keyword arguments
+        and a value
+            * id=
+            * network_domain_id=
+            * datacenter_id=
+            * name=
+            * state=
+            * ssl_domain_certificate_id=
+            * ssl_domain_certificate_name=
+            * ssl_certificate_chain_id=
+            * ssl_certificate_chain_name=
+            * create_time=
+        :return: `list` of :class: `NttCisSslssloffloadprofile`
+        """
         result = self.connection.request_with_orgId_api_2(
             action="networkDomainVip/sslOffloadProfile", params=params, method="GET"
         ).object

@@ -48,20 +48,20 @@ class NFSNConnectionTestCase(LibcloudTestCase):
         self.assertNotEqual(s1, s2)
 
     def test_salt_characters(self):
-        """ salt must be alphanumeric """
+        """salt must be alphanumeric"""
         salt_characters = string.ascii_letters + string.digits
         for c in self.driver._salt():
             self.assertIn(c, salt_characters)
 
     @patch("time.time", mock_time)
     def test_timestamp(self):
-        """ Check that timestamp uses time.time """
+        """Check that timestamp uses time.time"""
         self.assertEqual("1000000", self.driver._timestamp())
 
     @patch("time.time", mock_time)
     @patch("libcloud.common.nfsn.NFSNConnection._salt", mock_salt)
     def test_auth_header(self):
-        """ Check that X-NFSN-Authentication is set """
+        """Check that X-NFSN-Authentication is set"""
         response = self.driver.request(action="/testing")
         self.assertEqual(httplib.OK, response.status)
 

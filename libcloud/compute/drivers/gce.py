@@ -805,7 +805,7 @@ class GCENodeImage(NodeImage):
 
 
 class GCESslCertificate(UuidMixin):
-    """ GCESslCertificate represents the SslCertificate resource. """
+    """GCESslCertificate represents the SslCertificate resource."""
 
     def __init__(
         self, id, name, certificate, driver, extra, private_key=None, description=None
@@ -1098,7 +1098,7 @@ class GCETargetHttpProxy(UuidMixin):
 
 
 class GCETargetHttpsProxy(UuidMixin):
-    """ GCETargetHttpsProxy represents the TargetHttpsProxy resource. """
+    """GCETargetHttpsProxy represents the TargetHttpsProxy resource."""
 
     def __init__(
         self,
@@ -1297,7 +1297,7 @@ class GCEInstanceTemplate(UuidMixin):
 
 
 class GCEInstanceGroup(UuidMixin):
-    """ GCEInstanceGroup represents the InstanceGroup resource. """
+    """GCEInstanceGroup represents the InstanceGroup resource."""
 
     def __init__(
         self,
@@ -5200,25 +5200,25 @@ class GCENodeDriver(NodeDriver):
         default_scope="devstorage.read_only",
     ):
         """
-        Helper to create Service Account dict.  Use
-        _build_service_accounts_gce_list to create a list ready for the
-        GCE API.
+         Helper to create Service Account dict.  Use
+         _build_service_accounts_gce_list to create a list ready for the
+         GCE API.
 
-        :param: service_account: dictionarie containing email
-                                 and list of scopes, e.g.
-                                 [{'email':'default',
-                                 'scopes':['compute', ...]}, ...]
-                                 Scopes can either be full URLs or short
-                                 names. If not provided, use the
-                                 'default' service account email and a
-                                 scope of 'devstorage.read_only'. Also
-                                 accepts the aliases defined in
-                                 'gcloud compute'.
-       :type    service_account: ``dict`` or None
+         :param: service_account: dictionarie containing email
+                                  and list of scopes, e.g.
+                                  [{'email':'default',
+                                  'scopes':['compute', ...]}, ...]
+                                  Scopes can either be full URLs or short
+                                  names. If not provided, use the
+                                  'default' service account email and a
+                                  scope of 'devstorage.read_only'. Also
+                                  accepts the aliases defined in
+                                  'gcloud compute'.
+        :type    service_account: ``dict`` or None
 
-       :return: dict usable in GCE API call.
-       :rtype:  ``dict``
-       """
+        :return: dict usable in GCE API call.
+        :rtype:  ``dict``
+        """
         if not isinstance(service_account, dict):
             raise ValueError(
                 "service_account not in the correct format,"

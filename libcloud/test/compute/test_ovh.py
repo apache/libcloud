@@ -170,8 +170,10 @@ class OvhMockHttp(BaseOvhMockHttp):
     def _json_1_0_cloud_subsidiaryPrice_ovhSubsidiary_US_flavorId_foo_id_get(
         self, method, url, body, headers
     ):
-        return self._json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(
-            method, url, body, headers
+        return (
+            self._json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(
+                method, url, body, headers
+            )
         )
 
     def _json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(

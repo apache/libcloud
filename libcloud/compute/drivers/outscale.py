@@ -138,7 +138,7 @@ class OutscaleNodeDriver(NodeDriver):
 
         :return: the created public ip
         :rtype: ``dict``
-            """
+        """
         action = "CreatePublicIp"
         data = json.dumps({"DryRun": dry_run})
         response = self._call_api(action, data)
@@ -1172,7 +1172,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_image_export_tasks(
-        self, dry_run: bool = False, task_ids: List[str] = None,
+        self,
+        dry_run: bool = False,
+        task_ids: List[str] = None,
     ):
         """
         Lists one or more image export tasks.
@@ -1582,7 +1584,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_snapshot_export_tasks(
-        self, dry_run: bool = False, task_ids: List[str] = None,
+        self,
+        dry_run: bool = False,
+        task_ids: List[str] = None,
     ):
         """
         Lists one or more image export tasks.
@@ -1828,7 +1832,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_check_account(
-        self, login: str, password: str, dry_run: bool = False,
+        self,
+        login: str,
+        password: str,
+        dry_run: bool = False,
     ):
         """
         Validates the authenticity of the account.
@@ -2117,7 +2124,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_reset_account_password(
-        self, password: str = "", token: str = "", dry_run: bool = False,
+        self,
+        password: str = "",
+        token: str = "",
+        dry_run: bool = False,
     ):
         """
         Sends an email to the email address provided for the account with a
@@ -2145,7 +2155,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_send_reset_password_email(
-        self, email: str, dry_run: bool = False,
+        self,
+        email: str,
+        dry_run: bool = False,
     ):
         """
         Replaces the account password with the new one you provide.
@@ -2210,7 +2222,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_create_tags(
-        self, resource_ids: list, tags: list = None, dry_run: bool = False,
+        self,
+        resource_ids: list,
+        tags: list = None,
+        dry_run: bool = False,
     ):
         """
         Adds one or more tags to the specified resources.
@@ -2240,7 +2255,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_tags(
-        self, resource_ids: list, tags: list = None, dry_run: bool = False,
+        self,
+        resource_ids: list,
+        tags: list = None,
+        dry_run: bool = False,
     ):
         """
         Deletes one or more tags from the specified resources.
@@ -2312,7 +2330,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_create_access_key(
-        self, expiration_date: datetime = None, dry_run: bool = False,
+        self,
+        expiration_date: datetime = None,
+        dry_run: bool = False,
     ):
         """
         Creates a new secret access key and the corresponding access key ID
@@ -2341,7 +2361,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_access_key(
-        self, access_key_id: str, dry_run: bool = False,
+        self,
+        access_key_id: str,
+        dry_run: bool = False,
     ):
         """
         Deletes the specified access key associated with the account
@@ -2368,7 +2390,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_access_keys(
-        self, access_key_ids: list = None, states: list = None, dry_run: bool = False,
+        self,
+        access_key_ids: list = None,
+        states: list = None,
+        dry_run: bool = False,
     ):
         """
         Returns information about the access key IDs of a specified user.
@@ -2400,7 +2425,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_secret_access_key(
-        self, access_key_id: str = None, dry_run: bool = False,
+        self,
+        access_key_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Gets information about the secret access key associated with
@@ -2426,7 +2453,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_update_access_key(
-        self, access_key_id: str = None, state: str = None, dry_run: bool = False,
+        self,
+        access_key_id: str = None,
+        state: str = None,
+        dry_run: bool = False,
     ):
         """
         Modifies the status of the specified access key associated with
@@ -2591,7 +2621,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_client_gateway(
-        self, client_gateway_id: str = None, dry_run: bool = False,
+        self,
+        client_gateway_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a client gateway.
@@ -2662,7 +2694,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_dhcp_options(
-        self, dhcp_options_set_id: str = None, dry_run: bool = False,
+        self,
+        dhcp_options_set_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified DHCP options set.
@@ -2813,7 +2847,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_direct_link(
-        self, direct_link_id: str = None, dry_run: bool = False,
+        self,
+        direct_link_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified DirectLink.
@@ -2841,7 +2877,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_direct_links(
-        self, direct_link_ids: list = None, dry_run: bool = False,
+        self,
+        direct_link_ids: list = None,
+        dry_run: bool = False,
     ):
         """
         Lists all DirectLinks in the Region.
@@ -2949,7 +2987,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_direct_link_interface(
-        self, direct_link_interface_id: str = None, dry_run: bool = False,
+        self,
+        direct_link_interface_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified DirectLink interface.
@@ -3064,7 +3104,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_flexible_gpu(
-        self, flexible_gpu_id: str = None, dry_run: bool = False,
+        self,
+        flexible_gpu_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Releases a flexible GPU (fGPU) from your account.
@@ -3091,7 +3133,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_unlink_flexible_gpu(
-        self, flexible_gpu_id: str = None, dry_run: bool = False,
+        self,
+        flexible_gpu_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Detaches a flexible GPU (fGPU) from a virtual machine (VM).
@@ -3119,7 +3163,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_link_flexible_gpu(
-        self, flexible_gpu_id: str = None, vm_id: str = None, dry_run: bool = False,
+        self,
+        flexible_gpu_id: str = None,
+        vm_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Attaches one of your allocated flexible GPUs (fGPUs) to one of your
@@ -3154,7 +3201,8 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_flexible_gpu_catalog(
-        self, dry_run: bool = False,
+        self,
+        dry_run: bool = False,
     ):
         """
         Lists all flexible GPUs available in the public catalog.
@@ -3278,7 +3326,8 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_create_internet_service(
-        self, dry_run: bool = False,
+        self,
+        dry_run: bool = False,
     ):
         """
         Creates an Internet service you can use with a Net.
@@ -3303,7 +3352,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_internet_service(
-        self, internet_service_id: str = None, dry_run: bool = False,
+        self,
+        internet_service_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes an Internet service.
@@ -3633,7 +3684,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_listener_rule(
-        self, listener_rule_name: str = None, dry_run: bool = False,
+        self,
+        listener_rule_name: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a listener rule.
@@ -3925,7 +3978,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_load_balancer(
-        self, load_balancer_name: str = None, dry_run: bool = False,
+        self,
+        load_balancer_name: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified load balancer.
@@ -4021,7 +4076,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_load_balancer_tags(
-        self, load_balancer_names: List[str] = None, dry_run: bool = False,
+        self,
+        load_balancer_names: List[str] = None,
+        dry_run: bool = False,
     ):
         """
         Describes the tags associated with one or more specified load
@@ -4048,7 +4105,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_load_balancers(
-        self, load_balancer_names: List[str] = None, dry_run: bool = False,
+        self,
+        load_balancer_names: List[str] = None,
+        dry_run: bool = False,
     ):
         """
         Lists one or more load balancers and their attributes.
@@ -4403,7 +4462,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_create_nat_service(
-        self, public_ip: str = None, subnet_id: str = None, dry_run: bool = False,
+        self,
+        public_ip: str = None,
+        subnet_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Creates a network address translation (NAT) service in the specified
@@ -4447,7 +4509,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_nat_service(
-        self, nat_service_id: str = None, dry_run: bool = False,
+        self,
+        nat_service_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified network address translation (NAT) service.
@@ -4544,7 +4608,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_create_net(
-        self, ip_range: str = None, tenancy: str = None, dry_run: bool = False,
+        self,
+        ip_range: str = None,
+        tenancy: str = None,
+        dry_run: bool = False,
     ):
         """
         Creates a Net with a specified IP range.
@@ -4580,7 +4647,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_net(
-        self, net_id: str = None, dry_run: bool = False,
+        self,
+        net_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified Net.
@@ -4776,7 +4845,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_net_access_point(
-        self, net_access_point_id: str = None, dry_run: bool = False,
+        self,
+        net_access_point_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes one or more Net access point.
@@ -4997,7 +5068,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_accept_net_peering(
-        self, net_peering_id: List[str] = None, dry_run: bool = False,
+        self,
+        net_peering_id: List[str] = None,
+        dry_run: bool = False,
     ):
         """
         Accepts a Net peering connection request.
@@ -5026,7 +5099,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_net_peering(
-        self, net_peering_id: List[str] = None, dry_run: bool = False,
+        self,
+        net_peering_id: List[str] = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a Net peering connection.
@@ -5161,7 +5236,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_reject_net_peering(
-        self, net_peering_id: List[str] = None, dry_run: bool = False,
+        self,
+        net_peering_id: List[str] = None,
+        dry_run: bool = False,
     ):
         """
         Rejects a Net peering connection request.
@@ -5286,7 +5363,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_unlink_nic(
-        self, link_nic_id: str = None, dry_run: bool = False,
+        self,
+        link_nic_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Detaches a network interface card (NIC) from a virtual machine (VM).
@@ -5313,7 +5392,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_nic(
-        self, nic_id: str = None, dry_run: bool = False,
+        self,
+        nic_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes the specified network interface card (NIC).
@@ -5453,7 +5534,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_unlink_private_ips(
-        self, nic_id: str = None, private_ips: List[str] = None, dry_run: bool = False,
+        self,
+        nic_id: str = None,
+        private_ips: List[str] = None,
+        dry_run: bool = False,
     ):
         """
         Unassigns one or more secondary private IPs from a network interface
@@ -5541,7 +5625,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_product_types(
-        self, product_type_ids: List[str] = None, dry_run: bool = False,
+        self,
+        product_type_ids: List[str] = None,
+        dry_run: bool = False,
     ):
         """
         Describes one or more product types.
@@ -5803,7 +5889,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_create_route_table(
-        self, net_id: str = None, dry_run: bool = False,
+        self,
+        net_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Creates a route table for a specified Net.
@@ -5831,7 +5919,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_route_table(
-        self, route_table_id: str = None, dry_run: bool = False,
+        self,
+        route_table_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified route table.
@@ -5859,7 +5949,10 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_link_route_table(
-        self, route_table_id: str = None, subnet_id: str = None, dry_run: bool = False,
+        self,
+        route_table_id: str = None,
+        subnet_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Associates a Subnet with a route table.
@@ -6043,7 +6136,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_unlink_route_table(
-        self, link_route_table_id: str = None, dry_run: bool = False,
+        self,
+        link_route_table_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Disassociates a Subnet from a route table.
@@ -6829,7 +6924,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_subnet(
-        self, subnet_id: str = None, dry_run: bool = False,
+        self,
+        subnet_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified Subnet.
@@ -7029,7 +7126,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_export_task(
-        self, export_task_id: str = None, dry_run: bool = False,
+        self,
+        export_task_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes an export task.
@@ -7150,7 +7249,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_vpn_connection(
-        self, vpn_connection_id: str = None, dry_run: bool = False,
+        self,
+        vpn_connection_id: str = None,
+        dry_run: bool = False,
     ):
         """
         Deletes a specified VPN connection.
@@ -7481,7 +7582,9 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_api_access_rule(
-        self, api_access_rule_id: str, dry_run: bool = False,
+        self,
+        api_access_rule_id: str,
+        dry_run: bool = False,
     ):
         """
         Delete an API access rule.

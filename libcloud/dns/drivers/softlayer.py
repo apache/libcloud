@@ -158,12 +158,17 @@ class SoftLayerDNSDriver(DNSDriver):
                 params["mxPriority"] = extra["priority"]
 
         response = self.connection.request(
-            "SoftLayer_Dns_Domain_ResourceRecord", "editObject", params, id=record.id,
+            "SoftLayer_Dns_Domain_ResourceRecord",
+            "editObject",
+            params,
+            id=record.id,
         ).object
 
         if response:
             changed_record = self.connection.request(
-                "SoftLayer_Dns_Domain_ResourceRecord", "getObject", id=record.id,
+                "SoftLayer_Dns_Domain_ResourceRecord",
+                "getObject",
+                id=record.id,
             ).object
             return self._to_record(changed_record, zone=record.zone)
         else:

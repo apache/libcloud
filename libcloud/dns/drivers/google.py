@@ -334,7 +334,11 @@ class GoogleDNSDriver(DNSDriver):
             transform_func = self._to_records
             r_key = "rrsets"
 
-        response = self.connection.request(request, method="GET", params=params,)
+        response = self.connection.request(
+            request,
+            method="GET",
+            params=params,
+        )
 
         if response.success():
             nextpage = response.object.get("nextPageToken", None)

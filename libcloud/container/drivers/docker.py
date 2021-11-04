@@ -685,18 +685,18 @@ class DockerContainerDriver(ContainerDriver):
 
     def ex_search_images(self, term):
         """Search for an image on Docker.io.
-           Returns a list of ContainerImage objects
+        Returns a list of ContainerImage objects
 
-           >>> images = conn.ex_search_images(term='mistio')
-           >>> images
-           [<ContainerImage: id=rolikeusch/docker-mistio...>,
-            <ContainerImage: id=mist/mistio, name=mist/mistio,
-                driver=Docker  ...>]
+        >>> images = conn.ex_search_images(term='mistio')
+        >>> images
+        [<ContainerImage: id=rolikeusch/docker-mistio...>,
+         <ContainerImage: id=mist/mistio, name=mist/mistio,
+             driver=Docker  ...>]
 
-            :param term: The search term
-            :type  term: ``str``
+         :param term: The search term
+         :type  term: ``str``
 
-            :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
+         :rtype: ``list`` of :class:`libcloud.container.base.ContainerImage`
         """
 
         term = term.replace(" ", "+")

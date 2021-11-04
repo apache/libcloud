@@ -1095,7 +1095,7 @@ class NttCisFirewallAddress(object):
     The source or destination model in a firewall rule
     9/4/18: Editing Class to use with ex_create_firewall_rtule method.
     Will haved to circle back and test for any other uses.
-   """
+    """
 
     def __init__(
         self,
@@ -1883,7 +1883,7 @@ class NttCisIpAddressList(object):
         create_time,
         child_ip_address_lists=None,
     ):
-        """"
+        """ "
         Initialize an instance of :class:`NttCisIpAddressList`
 
         :param id: GUID of the IP Address List key
@@ -1944,7 +1944,7 @@ class NttCisChildIpAddressList(object):
     """
 
     def __init__(self, id, name):
-        """"
+        """ "
         Initialize an instance of :class:`NttCisDataChildIpAddressList`
 
         :param id: GUID of the IP Address List key
@@ -1993,7 +1993,7 @@ class NttCisIpAddress(object):
 
 class NttCisPortList(object):
     """
-   NttCis Port list
+    NttCis Port list
     """
 
     def __init__(
@@ -2006,7 +2006,7 @@ class NttCisPortList(object):
         state,
         create_time,
     ):
-        """"
+        """ "
         Initialize an instance of :class:`DNttCisPortList`
 
         :param id: GUID of the Port List key
@@ -2061,7 +2061,7 @@ class NttCisChildPortList(object):
     """
 
     def __init__(self, id, name):
-        """"
+        """ "
         Initialize an instance of :class:`NttCisChildIpAddressList`
 
         :param id: GUID of the child port list key

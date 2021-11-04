@@ -116,7 +116,7 @@ class OneAndOneConnection(ConnectionKey):
 
 class OneAndOneNodeDriver(NodeDriver):
     """
-      Base OneAndOne node driver.
+    Base OneAndOne node driver.
     """
 
     connectionCls = OneAndOneConnection
@@ -275,7 +275,11 @@ class OneAndOneNodeDriver(NodeDriver):
         if ex_ip is not None:
             body["ip_id"] = ex_ip
 
-        response = self.connection.request(action="servers", data=body, method="POST",)
+        response = self.connection.request(
+            action="servers",
+            data=body,
+            method="POST",
+        )
 
         return self._to_node(response.object)
 
@@ -771,13 +775,15 @@ class OneAndOneNodeDriver(NodeDriver):
             body["rules"] = rules
 
         response = self.connection.request(
-            action="firewall_policies", data=body, method="POST",
+            action="firewall_policies",
+            data=body,
+            method="POST",
         )
 
         return response.object
 
     def ex_list_firewall_policies(self):
-        """"
+        """ "
         List firewall policies
 
         :return: 'dict'
@@ -1450,26 +1456,26 @@ class OneAndOneNodeDriver(NodeDriver):
         subnet_mask=None,
     ):
         """
-       Updates a private network
+        Updates a private network
 
-       :param name: Name of the private network
-       :type name: ``str``
+        :param name: Name of the private network
+        :type name: ``str``
 
-       :param description: Description of the private network
-       :type description: ``str``
+        :param description: Description of the private network
+        :type description: ``str``
 
-       :param datacenter_id: ID of the data center for the private network
-       :type datacenter_id: ``str``
+        :param datacenter_id: ID of the data center for the private network
+        :type datacenter_id: ``str``
 
-       :param network_address: Network address of the private network
-       :type network_address: ``str``
+        :param network_address: Network address of the private network
+        :type network_address: ``str``
 
-       :param subnet_mask: Subnet mask of the private network
-       :type subnet_mask: ``str``
+        :param subnet_mask: Subnet mask of the private network
+        :type subnet_mask: ``str``
 
-       :return: Instance of private network
-       :rtype: ``dict``
-       """
+        :return: Instance of private network
+        :rtype: ``dict``
+        """
         body = {}
 
         if name is not None:

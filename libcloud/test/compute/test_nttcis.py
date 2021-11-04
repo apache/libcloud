@@ -1106,7 +1106,9 @@ def test_ex_list_vlans_ALLFILTERS(driver):
     assert vlans[0].name == "Primary"
 
 
-def test_ex_create_vlan(driver,):
+def test_ex_create_vlan(
+    driver,
+):
     net = driver.ex_get_network_domain("8cdfd607-f429-4df6-9352-162cfc0891be")
     vlan = driver.ex_create_vlan(
         network_domain=net,
@@ -1118,7 +1120,9 @@ def test_ex_create_vlan(driver,):
     assert vlan.id == "0e56433f-d808-4669-821d-812769517ff8"
 
 
-def test_ex_create_vlan_NO_DESCRIPTION(driver,):
+def test_ex_create_vlan_NO_DESCRIPTION(
+    driver,
+):
     net = driver.ex_get_network_domain("8cdfd607-f429-4df6-9352-162cfc0891be")
     vlan = driver.ex_create_vlan(
         network_domain=net,

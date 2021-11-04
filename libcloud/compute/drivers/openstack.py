@@ -804,7 +804,10 @@ class OpenStack_1_0_NodeDriver(OpenStackNodeDriver):
 
         :rtype: ``bool``
         """
-        elm = ET.Element("confirmResize", {"xmlns": self.XML_NAMESPACE},)
+        elm = ET.Element(
+            "confirmResize",
+            {"xmlns": self.XML_NAMESPACE},
+        )
 
         resp = self.connection.request(
             "/servers/%s/action" % (node.id), method="POST", data=ET.tostring(elm)
@@ -1374,16 +1377,13 @@ class OpenStackSecurityGroupRule(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (
-            "<OpenStackSecurityGroupRule id=%s parent_group_id=%s \
-                ip_protocol=%s from_port=%s to_port=%s>"
-            % (
-                self.id,
-                self.parent_group_id,
-                self.ip_protocol,
-                self.from_port,
-                self.to_port,
-            )
+        return "<OpenStackSecurityGroupRule id=%s parent_group_id=%s \
+                ip_protocol=%s from_port=%s to_port=%s>" % (
+            self.id,
+            self.parent_group_id,
+            self.ip_protocol,
+            self.from_port,
+            self.to_port,
         )
 
 
@@ -1603,7 +1603,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             state=api_image_member["status"],
             created=created,
             driver=self,
-            extra=dict(schema=api_image_member.get("schema"), updated=updated,),
+            extra=dict(
+                schema=api_image_member.get("schema"),
+                updated=updated,
+            ),
         )
 
     def _to_nodes(self, obj):
@@ -1840,7 +1843,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :rtype: ``dict``
         """
         return self.connection.request(
-            "/servers/%s/metadata" % (node.id,), method="GET",
+            "/servers/%s/metadata" % (node.id,),
+            method="GET",
         ).object["metadata"]
 
     def ex_set_metadata(self, node, metadata):
@@ -2617,7 +2621,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def _get_size_price(self, size_id):
         try:
             return get_size_price(
-                driver_type="compute", driver_name=self.api_name, size_id=size_id,
+                driver_type="compute",
+                driver_name=self.api_name,
+                size_id=size_id,
             )
         except KeyError:
             return 0.0
@@ -2819,7 +2825,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         return self._post_simple_node_action(node, "resume")
 
     def _post_simple_node_action(self, node, action):
-        """ Post a simple, data-less action to the OS node action endpoint
+        """Post a simple, data-less action to the OS node action endpoint
         :param `Node` node:
         :param str action: the action to call
         :return `bool`: a boolean that indicates success
@@ -3446,7 +3452,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :type       port: :class:`OpenStack_2_PortInterface`
 
         :rtype: ``bool``
-         """
+        """
         response = self.network_connection.request(
             "/v2.0/ports/%s" % port.id, method="DELETE"
         )

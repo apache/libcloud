@@ -18,6 +18,9 @@ new_node = driver.create_node(
     name="hello-darkness-my-old-friend",
     size=sizes[0],
     image=images[0],
-    ex_create_attr=dict(ssh_keys=["ssh-rsa AAAAB3Nza..."], use_private_network=True,),
+    ex_create_attr=dict(
+        ssh_keys=["ssh-rsa AAAAB3Nza..."],
+        use_private_network=True,
+    ),
 )
 pprint(new_node)

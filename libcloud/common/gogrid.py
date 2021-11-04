@@ -78,7 +78,7 @@ class GoGridConnection(ConnectionUserAndKey):
         return params
 
     def get_signature(self, key, secret):
-        """ create sig from md5 of key + secret + time """
+        """create sig from md5 of key + secret + time"""
         m = hashlib.md5(b(key + secret + str(int(time.time()))))
         return m.hexdigest()
 

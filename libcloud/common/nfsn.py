@@ -64,9 +64,9 @@ class NFSNConnection(ConnectionUserAndKey):
     allow_insecure = False
 
     def _header(self, action, data):
-        """ Build the contents of the X-NFSN-Authentication HTTP header. See
+        """Build the contents of the X-NFSN-Authentication HTTP header. See
         https://members.nearlyfreespeech.net/wiki/API/Introduction for
-        more explanation. """
+        more explanation."""
         login = self.user_id
         timestamp = self._timestamp()
         salt = self._salt()
@@ -80,7 +80,7 @@ class NFSNConnection(ConnectionUserAndKey):
         return ";".join((login, timestamp, salt, string_hash))
 
     def request(self, action, params=None, data="", headers=None, method="GET"):
-        """ Add the X-NFSN-Authentication header to an HTTP request. """
+        """Add the X-NFSN-Authentication header to an HTTP request."""
         if not headers:
             headers = {}
         if not params:
@@ -94,18 +94,18 @@ class NFSNConnection(ConnectionUserAndKey):
         return ConnectionUserAndKey.request(self, action, params, data, headers, method)
 
     def encode_data(self, data):
-        """ NFSN expects the body to be regular key-value pairs that are not
-        JSON-encoded. """
+        """NFSN expects the body to be regular key-value pairs that are not
+        JSON-encoded."""
         if data:
             data = urlencode(data)
         return data
 
     def _salt(self):
-        """ Return a 16-character alphanumeric string. """
+        """Return a 16-character alphanumeric string."""
         r = random.SystemRandom()
         return "".join(r.choice(SALT_CHARACTERS) for _ in range(16))
 
     def _timestamp(self):
-        """ Return the current number of seconds since the Unix epoch,
-        as a string. """
+        """Return the current number of seconds since the Unix epoch,
+        as a string."""
         return str(int(time.time()))

@@ -55,9 +55,7 @@ ZERO = timedelta(0)
 
 
 class Utc(tzinfo):
-    """UTC
-
-    """
+    """UTC"""
 
     def utcoffset(self, dt):
         return ZERO
@@ -73,9 +71,7 @@ UTC = Utc()
 
 
 class FixedOffset(tzinfo):
-    """Fixed offset in hours and minutes from UTC
-
-    """
+    """Fixed offset in hours and minutes from UTC"""
 
     def __init__(self, offset_hours, offset_minutes, name):
         self.__offset = timedelta(hours=offset_hours, minutes=offset_minutes)
@@ -95,9 +91,7 @@ class FixedOffset(tzinfo):
 
 
 def parse_timezone(tzstring, default_timezone=UTC):
-    """Parses ISO 8601 time zone specs into tzinfo offsets
-
-    """
+    """Parses ISO 8601 time zone specs into tzinfo offsets"""
     if tzstring == "Z":
         return default_timezone
     # This isn't strictly correct, but it's common to encounter dates without

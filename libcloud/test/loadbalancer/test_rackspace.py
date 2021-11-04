@@ -1457,7 +1457,7 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3130(self, method, url, body, headers):
-        """ update_balancer(b, protocol='HTTPS'), then get_balancer('3130') """
+        """update_balancer(b, protocol='HTTPS'), then get_balancer('3130')"""
         if method == "PUT":
             json_body = json.loads(body)
             self.assertDictEqual(json_body, {"protocol": "HTTPS"})
@@ -1477,7 +1477,7 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3131(self, method, url, body, headers):
-        """ update_balancer(b, port=443), then get_balancer('3131') """
+        """update_balancer(b, port=443), then get_balancer('3131')"""
         if method == "PUT":
             json_body = json.loads(body)
             self.assertDictEqual(json_body, {"port": 1337})
@@ -1497,7 +1497,7 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3132(self, method, url, body, headers):
-        """ update_balancer(b, name='new_lb_name'), then get_balancer('3132') """
+        """update_balancer(b, name='new_lb_name'), then get_balancer('3132')"""
         if method == "PUT":
             json_body = json.loads(body)
             self.assertDictEqual(json_body, {"name": "new_lb_name"})
@@ -1517,7 +1517,7 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3133(self, method, url, body, headers):
-        """ update_balancer(b, algorithm='ROUND_ROBIN'), then get_balancer('3133') """
+        """update_balancer(b, algorithm='ROUND_ROBIN'), then get_balancer('3133')"""
         if method == "PUT":
             json_body = json.loads(body)
             self.assertDictEqual(json_body, {"algorithm": "ROUND_ROBIN"})
@@ -1537,13 +1537,13 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3134(self, method, url, body, headers):
-        """ update.balancer(b, algorithm='HAVE_MERCY_ON_OUR_SERVERS') """
+        """update.balancer(b, algorithm='HAVE_MERCY_ON_OUR_SERVERS')"""
         if method == "PUT":
             return (httplib.BAD_REQUEST, "", {}, httplib.responses[httplib.BAD_REQUEST])
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3135(self, method, url, body, headers):
-        """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3135') """
+        """update_balancer(b, protocol='IMAPv3'), then get_balancer('3135')"""
         if method == "PUT":
             json_body = json.loads(body)
             self.assertDictEqual(json_body, {"protocol": "IMAPv2"})
@@ -1563,7 +1563,7 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3136(self, method, url, body, headers):
-        """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3136') """
+        """update_balancer(b, protocol='IMAPv3'), then get_balancer('3136')"""
         if method == "PUT":
             json_body = json.loads(body)
             self.assertDictEqual(json_body, {"protocol": "IMAPv3"})
@@ -1583,7 +1583,7 @@ class RackspaceLBMockHttp(MockHttp, unittest.TestCase):
         raise NotImplementedError
 
     def _v1_0_11111_loadbalancers_3137(self, method, url, body, headers):
-        """ update_balancer(b, protocol='IMAPv3'), then get_balancer('3137') """
+        """update_balancer(b, protocol='IMAPv3'), then get_balancer('3137')"""
         if method == "PUT":
             json_body = json.loads(body)
             self.assertDictEqual(json_body, {"protocol": "IMAPv4"})

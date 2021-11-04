@@ -953,8 +953,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         return kwargs
 
     def _to_node(self, vm, is_stopped=False):
-        """
-        """
+        """ """
         ID = vm["metadata"]["uid"]
         name = vm["metadata"]["name"]
         driver = self.connection.driver

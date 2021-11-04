@@ -1086,7 +1086,9 @@ class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):
         )
         self.assertEqual(vlans[0].name, "Primary")
 
-    def test_ex_create_vlan(self,):
+    def test_ex_create_vlan(
+        self,
+    ):
         net = self.driver.ex_get_network_domain("8cdfd607-f429-4df6-9352-162cfc0891be")
         vlan = self.driver.ex_create_vlan(
             network_domain=net,
@@ -1097,7 +1099,9 @@ class DimensionData_v2_3_Tests(unittest.TestCase, TestCaseMixin):
         )
         self.assertEqual(vlan.id, "0e56433f-d808-4669-821d-812769517ff8")
 
-    def test_ex_create_vlan_NO_DESCRIPTION(self,):
+    def test_ex_create_vlan_NO_DESCRIPTION(
+        self,
+    ):
         net = self.driver.ex_get_network_domain("8cdfd607-f429-4df6-9352-162cfc0891be")
         vlan = self.driver.ex_create_vlan(
             network_domain=net,

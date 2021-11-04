@@ -35,7 +35,7 @@ from libcloud.storage.providers import get_driver as get_storage_driver
 
 
 class DriverType(object):
-    """ Backup-as-a-service driver """
+    """Backup-as-a-service driver"""
 
     BACKUP = BackupProvider
 

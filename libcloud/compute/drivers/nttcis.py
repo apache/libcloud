@@ -135,7 +135,7 @@ class NttCisNodeDriver(NodeDriver):
 
     def _ex_connection_class_kwargs(self):
         """
-            Add the region to the kwargs before the connection is instantiated
+        Add the region to the kwargs before the connection is instantiated
         """
 
         kwargs = super(NttCisNodeDriver, self)._ex_connection_class_kwargs()
@@ -158,53 +158,53 @@ class NttCisNodeDriver(NodeDriver):
         **kwargs,
     ):
         """
-            Create a new NTTCIS node
+        Create a new NTTCIS node
 
-            :keyword    name:   String with a name for this new node (required)
-            :type       name:   ``str``
+        :keyword    name:   String with a name for this new node (required)
+        :type       name:   ``str``
 
-            :keyword    image:  OS Image to boot on node. (required)
-            :type       image:  :class:`NodeImage` or ``str``
+        :keyword    image:  OS Image to boot on node. (required)
+        :type       image:  :class:`NodeImage` or ``str``
 
-            :keyword    auth:   Initial authentication information for the
-                                node. (If this is a customer LINUX
-                                image auth will be ignored)
-            :type       auth:   :class:`NodeAuthPassword` or ``str`` or
-                                ``None``
+        :keyword    auth:   Initial authentication information for the
+                            node. (If this is a customer LINUX
+                            image auth will be ignored)
+        :type       auth:   :class:`NodeAuthPassword` or ``str`` or
+                            ``None``
 
-            :keyword    ex_description:  description for this node (required)
-            :type       ex_description:  ``str``
+        :keyword    ex_description:  description for this node (required)
+        :type       ex_description:  ``str``
 
-            :keyword    ex_network:  Network to create the node within
-                                     (required unless using ex_network_domain
-                                     or ex_primary_ipv4)
+        :keyword    ex_network:  Network to create the node within
+                                 (required unless using ex_network_domain
+                                 or ex_primary_ipv4)
 
-            :type       ex_network: :class:`NttCisNetwork` or ``str``
+        :type       ex_network: :class:`NttCisNetwork` or ``str``
 
-            :keyword    ex_memory_gb:  The amount of memory in GB for the
-                                       server
-            :type       ex_memory_gb: ``int``
+        :keyword    ex_memory_gb:  The amount of memory in GB for the
+                                   server
+        :type       ex_memory_gb: ``int``
 
-            :keyword    ex_cpu_specification: The spec of CPU to deploy (
-                                              optional)
-            :type       ex_cpu_specification:
-                            :class:`DimensionDataServerCpuSpecification`
+        :keyword    ex_cpu_specification: The spec of CPU to deploy (
+                                          optional)
+        :type       ex_cpu_specification:
+                        :class:`DimensionDataServerCpuSpecification`
 
-            :keyword    ex_is_started:  Start server after creation? default
-                                        true (required)
-            :type       ex_is_started:  ``bool``
+        :keyword    ex_is_started:  Start server after creation? default
+                                    true (required)
+        :type       ex_is_started:  ``bool``
 
-            :keyword    ex_primary_dns: The node's primary DNS
+        :keyword    ex_primary_dns: The node's primary DNS
 
-            :type       ex_primary_dns: ``str``
+        :type       ex_primary_dns: ``str``
 
-            :keyword    ex_secondary_dns: The node's secondary DNS
+        :keyword    ex_secondary_dns: The node's secondary DNS
 
-            :type       ex_secondary_dns: ``str``
+        :type       ex_secondary_dns: ``str``
 
-            :return: The newly created :class:`Node`.
-            :rtype: :class:`Node`
-            """
+        :return: The newly created :class:`Node`.
+        :rtype: :class:`Node`
+        """
 
         password = None
         image_needs_auth = self._image_needs_auth(image)
@@ -755,48 +755,48 @@ class NttCisNodeDriver(NodeDriver):
         ex_snaphots=None,
     ):
         """
-        List nodes deployed for your organization.
+         List nodes deployed for your organization.
 
-        :keyword ex_location: Filters the node list to nodes that are
-                              located in this location
-        :type    ex_location: :class:`NodeLocation` or ``str``
+         :keyword ex_location: Filters the node list to nodes that are
+                               located in this location
+         :type    ex_location: :class:`NodeLocation` or ``str``
 
-        :keyword ex_name: Filters the node list to nodes that have this name
-        :type    ex_name ``str``
+         :keyword ex_name: Filters the node list to nodes that have this name
+         :type    ex_name ``str``
 
-        :keyword ex_ipv6: Filters the node list to nodes that have this
-                          ipv6 address
-        :type    ex_ipv6: ``str``
+         :keyword ex_ipv6: Filters the node list to nodes that have this
+                           ipv6 address
+         :type    ex_ipv6: ``str``
 
-        :keyword ex_ipv4: Filters the node list to nodes that have this
-                          ipv4 address
-        :type    ex_ipv4: ``str``
+         :keyword ex_ipv4: Filters the node list to nodes that have this
+                           ipv4 address
+         :type    ex_ipv4: ``str``
 
-        :keyword ex_vlan: Filters the node list to nodes that are in this VLAN
-        :type    ex_vlan: :class:`DimensionDataVlan` or ``str``
+         :keyword ex_vlan: Filters the node list to nodes that are in this VLAN
+         :type    ex_vlan: :class:`DimensionDataVlan` or ``str``
 
-        :keyword ex_image: Filters the node list to nodes that have this image
-        :type    ex_image: :class:`NodeImage` or ``str``
+         :keyword ex_image: Filters the node list to nodes that have this image
+         :type    ex_image: :class:`NodeImage` or ``str``
 
-        :keyword ex_deployed: Filters the node list to nodes that are
-                              deployed or not
-        :type    ex_deployed: ``bool``
+         :keyword ex_deployed: Filters the node list to nodes that are
+                               deployed or not
+         :type    ex_deployed: ``bool``
 
-        :keyword ex_started: Filters the node list to nodes that are
-                             started or not
-        :type    ex_started: ``bool``
+         :keyword ex_started: Filters the node list to nodes that are
+                              started or not
+         :type    ex_started: ``bool``
 
-        :keyword ex_state: Filters the node list by nodes that are in
-                           this state
-        :type    ex_state: ``str``
+         :keyword ex_state: Filters the node list by nodes that are in
+                            this state
+         :type    ex_state: ``str``
 
-       :keyword ex_network_domain: Filters the node list to nodes in this
-                                   network domain
-        :type    ex_network_domain: :class:`NttCisNetworkDomain`
-                                    or ``str``
+        :keyword ex_network_domain: Filters the node list to nodes in this
+                                    network domain
+         :type    ex_network_domain: :class:`NttCisNetworkDomain`
+                                     or ``str``
 
-        :return: a list of `Node` objects
-        :rtype: ``list`` of :class:`Node`
+         :return: a list of `Node` objects
+         :rtype: ``list`` of :class:`Node`
         """
 
         node_list = []
@@ -3834,7 +3834,10 @@ class NttCisNodeDriver(NodeDriver):
         ET.SubElement(create_ip_address_list, "ipVersion").text = ip_version
 
         for ip in ip_address_collection:
-            ip_address = ET.SubElement(create_ip_address_list, "ipAddress",)
+            ip_address = ET.SubElement(
+                create_ip_address_list,
+                "ipAddress",
+            )
             ip_address.set("begin", ip.begin)
 
             if ip.end:
@@ -3936,7 +3939,10 @@ class NttCisNodeDriver(NodeDriver):
 
         if ip_address_collection is not None:
             for ip in ip_address_collection:
-                ip_address = ET.SubElement(edit_ip_address_list, "ipAddress",)
+                ip_address = ET.SubElement(
+                    edit_ip_address_list,
+                    "ipAddress",
+                )
                 ip_address.set("begin", ip.begin)
 
                 if ip.end:

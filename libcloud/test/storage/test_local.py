@@ -112,12 +112,20 @@ class LocalTests(unittest.TestCase):
         success_2 = multiprocessing.Value("i", 0)
 
         p1 = multiprocessing.Process(
-            target=acquire_lock_in_subprocess, args=(1, success_1,)
+            target=acquire_lock_in_subprocess,
+            args=(
+                1,
+                success_1,
+            ),
         )
         p1.start()
 
         p2 = multiprocessing.Process(
-            target=acquire_lock_in_subprocess, args=(2, success_2,)
+            target=acquire_lock_in_subprocess,
+            args=(
+                2,
+                success_2,
+            ),
         )
         p2.start()
 

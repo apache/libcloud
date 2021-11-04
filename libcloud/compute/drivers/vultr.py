@@ -708,7 +708,7 @@ class VultrConnection(ConnectionKey):
 
 class VultrNodeDriverHelper(object):
     """
-        VultrNode helper class.
+    VultrNode helper class.
     """
 
     def handle_extra(self, extra_keys, data):

@@ -868,7 +868,8 @@ class CloudFilesTests(unittest.TestCase):
 
         # This is mostly to check we didn't discover other errors along the way
         mocked_response = container.upload_object_via_stream(
-            iterator=iter(bytes_blob), object_name="img_or_vid",
+            iterator=iter(bytes_blob),
+            object_name="img_or_vid",
         )
         self.assertEqual(len(bytes_blob), mocked_response.size)
 
@@ -915,7 +916,8 @@ class CloudFilesTests(unittest.TestCase):
 
         container = Container(name="py3", extra={}, driver=self.driver)
         container.upload_object_via_stream(
-            iterator=iter(bytes_blob), object_name="img_or_vid2",
+            iterator=iter(bytes_blob),
+            object_name="img_or_vid2",
         )
         self.assertListEqual(expected, logged_data)
 

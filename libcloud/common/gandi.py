@@ -100,7 +100,7 @@ class BaseGandiDriver(object):
     def _wait_operation(
         self, id, timeout=DEFAULT_TIMEOUT, check_interval=DEFAULT_INTERVAL
     ):
-        """ Wait for an operation to succeed"""
+        """Wait for an operation to succeed"""
 
         for i in range(0, timeout, check_interval):
             try:

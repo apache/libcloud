@@ -4201,7 +4201,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _global_operations_operation_global_instanceTemplates_my_instance_template1_insert(
         self, method, url, body, headers
     ):
-        """ Redirects from _global_instanceTemplates """
+        """Redirects from _global_instanceTemplates"""
         body = self.fixtures.load(
             "operations_operation_global_instanceTemplates_insert.json"
         )
@@ -4258,7 +4258,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_delete(
         self, method, url, body, headers
     ):
-        """ Redirects from _zones_us_central1_a_instanceGroups_myname """
+        """Redirects from _zones_us_central1_a_instanceGroups_myname"""
         body = self.fixtures.load(
             "operations_operation_zones_us_central1_a_instanceGroups_myname_delete.json"
         )
@@ -4286,7 +4286,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_insert(
         self, method, url, body, headers
     ):
-        """ Redirects from _zones_us_central1_a_instanceGroups """
+        """Redirects from _zones_us_central1_a_instanceGroups"""
         body = self.fixtures.load(
             "operations_operation_zones_us_central1_a_instanceGroups_insert.json"
         )
@@ -4313,7 +4313,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_addInstances(
         self, method, url, body, headers
     ):
-        """ Redirects from _zones_us_central1_a_instanceGroups_myname_addInstances """
+        """Redirects from _zones_us_central1_a_instanceGroups_myname_addInstances"""
         body = self.fixtures.load(
             "operations_operation_zones_us_central1_a_instanceGroups_myname_addInstances.json"
         )
@@ -4331,7 +4331,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_removeInstances(
         self, method, url, body, headers
     ):
-        """ Redirects from _zones_us_central1_a_instanceGroups_myname_removeInstances """
+        """Redirects from _zones_us_central1_a_instanceGroups_myname_removeInstances"""
         body = self.fixtures.load(
             "operations_operation_zones_us_central1_a_instanceGroups_myname_removeInstances.json"
         )
@@ -4349,7 +4349,7 @@ class GCEMockHttp(MockHttp, unittest.TestCase):
     def _zones_us_central1_a_operations_operation_zones_us_central1_a_instanceGroups_myname_setNamedPorts(
         self, method, url, body, headers
     ):
-        """ Redirects from _zones_us_central1_a_instanceGroups_myname_setNamedPorts """
+        """Redirects from _zones_us_central1_a_instanceGroups_myname_setNamedPorts"""
         body = self.fixtures.load(
             "operations_operation_zones_us_central1_a_instanceGroups_myname_setNamedPorts.json"
         )

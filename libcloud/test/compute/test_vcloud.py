@@ -1162,8 +1162,10 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_powerOn(
         self, method, url, body, headers
     ):
-        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
-            method, url, body, headers
+        return (
+            self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
+                method, url, body, headers
+            )
         )
 
     # Clone
@@ -1239,8 +1241,10 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6a_power_action_reset(
         self, method, url, body, headers
     ):
-        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
-            method, url, body, headers
+        return (
+            self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
+                method, url, body, headers
+            )
         )
 
     def _api_task_b034df55_fe81_4798_bc81_1f0fd0ead450(
@@ -1372,8 +1376,10 @@ class VCloud_1_5_MockHttp(MockHttp, unittest.TestCase):
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_powerOff(
         self, method, url, body, headers
     ):
-        return self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
-            method, url, body, headers
+        return (
+            self._api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(
+                method, url, body, headers
+            )
         )
 
     def _api_vApp_vapp_8c57a5b6_e61b_48ca_8a78_3b70ee65ef6b_power_action_all(

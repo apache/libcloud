@@ -1773,7 +1773,7 @@ class DimensionDataChildIpAddressList(object):
     """
 
     def __init__(self, id, name):
-        """"
+        """ "
         Initialize an instance of :class:`DimensionDataChildIpAddressList`
 
         :param id: GUID of the IP Address List key
@@ -1838,7 +1838,7 @@ class DimensionDataPortList(object):
         state,
         create_time,
     ):
-        """"
+        """ "
         Initialize an instance of :class:`DimensionDataPortList`
 
         :param id: GUID of the Port List key
@@ -1893,7 +1893,7 @@ class DimensionDataChildPortList(object):
     """
 
     def __init__(self, id, name):
-        """"
+        """ "
         Initialize an instance of :class:`DimensionDataChildIpAddressList`
 
         :param id: GUID of the child port list key

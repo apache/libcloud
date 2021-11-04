@@ -96,7 +96,8 @@ class TestCaseMixin:
         except KeyError:
             self.fail(
                 "No {driver_type!r} pricing info for {driver}.".format(
-                    driver=self.driver.__class__.__name__, driver_type=driver_type,
+                    driver=self.driver.__class__.__name__,
+                    driver_type=driver_type,
                 )
             )
 

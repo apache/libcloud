@@ -1931,9 +1931,7 @@ class BaseEC2NodeDriver(NodeDriver):
         }
 
         if name:
-            params.update(
-                {"Description": name}
-            )
+            params.update({"Description": name})
         if ex_metadata is None:
             ex_metadata = {}
 
@@ -1969,13 +1967,9 @@ class BaseEC2NodeDriver(NodeDriver):
             "Action": "DescribeSnapshots",
         }
         if snapshot:
-            params.update(
-                {"SnapshotId.1": snapshot.id}
-            )
+            params.update({"SnapshotId.1": snapshot.id})
         if owner:
-            params.update(
-                {"Owner.1": owner}
-            )
+            params.update({"Owner.1": owner})
         response = self.connection.request(self.path, params=params).object
         snapshots = self._to_snapshots(response)
         return snapshots

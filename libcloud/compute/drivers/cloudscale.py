@@ -139,7 +139,9 @@ class CloudscaleNodeDriver(NodeDriver):
         ex_create_attr = ex_create_attr or {}
         attr = dict(ex_create_attr)
         attr.update(
-            name=name, image=image.id, flavor=size.id,
+            name=name,
+            image=image.id,
+            flavor=size.id,
         )
         result = self.connection.request(
             "/v1/servers", data=json.dumps(attr), method="POST"
