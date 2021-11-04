@@ -40,7 +40,7 @@ class TransientSSLError(ssl.SSLError):
 
 
 # Constants used by the ``retry`` class
-
+# All the time values (timeout, delay, backoff) are in seconds
 DEFAULT_TIMEOUT = 30  # default retry timeout
 DEFAULT_DELAY = 1  # default sleep delay used in each iterator
 DEFAULT_BACKOFF = 1  # retry backup multiplier
