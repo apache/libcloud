@@ -24,7 +24,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError
 
 __all__ = [
-    'Retry'
+    'Retry',
+    'RetryForeverOnRateLimitError',
 ]
 
 _logger = logging.getLogger(__name__)
@@ -112,15 +113,16 @@ class MinimalRetry:
                         # reasonable default in case that attribute is not
                         # present. This way we prevent busy waiting, etc.
                         retry_after = exc.retry_after if exc.retry_after else 2
-
                         time.sleep(retry_after)
 
-                        # Reset retries if we're told to wait due to rate
+                        # Reset delay if we're told to wait due to rate
                         # limiting
                         current_delay = self.retry_delay
                     elif self.should_retry(exc):
                         time.sleep(current_delay)
                         current_delay *= self.backoff
+                    else:
+                        raise
 
             raise last_exc
 
@@ -162,4 +164,55 @@ class Retry(MinimalRetry):
         self.retry_exceptions = retry_exceptions
 
     def should_retry(self, exception):
-        return type(exception) in self.retry_exceptions
+        return isinstance(exception, tuple(self.retry_exceptions))
+
+
+class RetryForeverOnRateLimitError(Retry):
+    """
+    This class is only here for backward compatibility reasons with
+    pre-Libcloud v3.3.2.
+
+    If works by ignoring timeout argument and retrying forever until API
+    is returning 429 RateLimitReached errors.
+
+    In most cases using this class is not a good idea since it can cause code
+    to hang and retry for ever in case API continues to return retry limit
+    reached.
+    """
+
+    def __call__(self, func):
+        def transform_ssl_error(function, *args, **kwargs):
+            try:
+                return function(*args, **kwargs)
+            except ssl.SSLError as exc:
+                if TRANSIENT_SSL_ERROR in str(exc):
+                    raise TransientSSLError(*exc.args)
+
+                raise exc
+
+        @wraps(func)
+        def retry_loop(*args, **kwargs):
+            current_delay = self.retry_delay
+            end = datetime.now() + timedelta(seconds=self.timeout)
+
+            while True:
+                try:
+                    return transform_ssl_error(func, *args, **kwargs)
+                except Exception as exc:
+                    if isinstance(exc, RateLimitReachedError):
+                        time.sleep(exc.retry_after)
+
+                        # Reset retries if we're told to wait due to rate
+                        # limiting
+                        current_delay = self.retry_delay
+                        end = datetime.now() + timedelta(
+                            seconds=exc.retry_after + self.timeout)
+                    elif datetime.now() >= end:
+                        raise
+                    elif self.should_retry(exc):
+                        time.sleep(current_delay)
+                        current_delay *= self.backoff
+                    else:
+                        raise
+
+        return retry_loop
