@@ -192,7 +192,7 @@ class CloudStackMockHttp(MockHttp, unittest.TestCase):
                     + "response": {"jobstatus": 1, "jobresult": {"fake": "result"}}
                 }
             else:
-                result = {query["command"].lower() + "response": {"jobstatus": 0,}}
+                result = {query["command"].lower() + "response": {"jobstatus": 0}}
                 async_delay -= 1
         else:
             result = {query["command"].lower() + "response": {"jobid": "42"}}

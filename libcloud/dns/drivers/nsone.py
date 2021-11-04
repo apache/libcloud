@@ -281,7 +281,7 @@ class NsOneDNSDriver(DNSDriver):
             "%s.%s" % (name, zone.domain),
             type,
         )
-        raw_data = {"answers": [{"answer": [data],}]}
+        raw_data = {"answers": [{"answer": [data]}]}
         if extra is not None and extra.get("answers"):
             raw_data["answers"] = extra.get("answers")
         post_data = json.dumps(raw_data)

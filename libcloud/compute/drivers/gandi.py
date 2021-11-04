@@ -313,7 +313,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
 
         if login and password:
             vm_spec.update(
-                {"login": login, "password": password,}  # TODO : use NodeAuthPassword
+                {"login": login, "password": password}  # TODO : use NodeAuthPassword
             )
         if keypair_ids:
             vm_spec["keys"] = keypair_ids
@@ -718,7 +718,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
             name = "snap_%s" % (suffix)
         op = self.connection.request(
             "hosting.disk.create_from",
-            {"name": name, "type": "snapshot",},
+            {"name": name, "type": "snapshot"},
             int(disk.id),
         )
         if self._wait_operation(op.object["id"]):

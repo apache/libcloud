@@ -2079,7 +2079,7 @@ def test_start_drs_failover_invalid_status(driver):
     NttCisMockHttp.type = "INVALID_STATUS"
     cg_id = "195a426b-4559-4c79-849e-f22cdf2bfb6e"
     with pytest.raises(NttCisAPIException) as excinfo:
-        result = driver.ex_initiate_drs_failover(cg_id)
+        driver.ex_initiate_drs_failover(cg_id)
     assert "INVALID_STATUS" in excinfo.value.code
 
 
@@ -2094,7 +2094,7 @@ def test_create_drs_fail_not_supported(driver):
     src_id = "032f3967-00e4-4780-b4ef-8587460f9dd4"
     target_id = "aee58575-38e2-495f-89d3-854e6a886411"
     with pytest.raises(NttCisAPIException) as excinfo:
-        result = driver.ex_create_consistency_group(
+        driver.ex_create_consistency_group(
             "sdk_cg", "100", src_id, target_id, description="A test consistency group"
         )
     exception_msg = excinfo.value.msg

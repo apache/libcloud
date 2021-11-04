@@ -651,11 +651,11 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         "iops": {"xpath": "ebs/iops", "transform_func": int},
     },
     "elastic_ip": {
-        "allocation_id": {"xpath": "allocationId", "transform_func": str,},
-        "association_id": {"xpath": "associationId", "transform_func": str,},
-        "interface_id": {"xpath": "networkInterfaceId", "transform_func": str,},
-        "owner_id": {"xpath": "networkInterfaceOwnerId", "transform_func": str,},
-        "private_ip": {"xpath": "privateIp", "transform_func": str,},
+        "allocation_id": {"xpath": "allocationId", "transform_func": str},
+        "association_id": {"xpath": "associationId", "transform_func": str},
+        "interface_id": {"xpath": "networkInterfaceId", "transform_func": str},
+        "owner_id": {"xpath": "networkInterfaceOwnerId", "transform_func": str},
+        "private_ip": {"xpath": "privateIp", "transform_func": str},
     },
     "image": {
         "state": {"xpath": "imageState", "transform_func": str},
@@ -1932,7 +1932,7 @@ class BaseEC2NodeDriver(NodeDriver):
 
         if name:
             params.update(
-                {"Description": name,}
+                {"Description": name}
             )
         if ex_metadata is None:
             ex_metadata = {}
@@ -1970,11 +1970,11 @@ class BaseEC2NodeDriver(NodeDriver):
         }
         if snapshot:
             params.update(
-                {"SnapshotId.1": snapshot.id,}
+                {"SnapshotId.1": snapshot.id}
             )
         if owner:
             params.update(
-                {"Owner.1": owner,}
+                {"Owner.1": owner}
             )
         response = self.connection.request(self.path, params=params).object
         snapshots = self._to_snapshots(response)

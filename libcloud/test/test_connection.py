@@ -120,7 +120,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_port, 3128)
         self.assertEqual(
             conn.session.proxies,
-            {"http": "http://127.0.0.2:3128", "https": "http://127.0.0.2:3128",},
+            {"http": "http://127.0.0.2:3128", "https": "http://127.0.0.2:3128"},
         )
 
         _ = os.environ.pop("http_proxy", None)
@@ -136,7 +136,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_port, 3128)
         self.assertEqual(
             conn.session.proxies,
-            {"http": "http://127.0.0.3:3128", "https": "http://127.0.0.3:3128",},
+            {"http": "http://127.0.0.3:3128", "https": "http://127.0.0.3:3128"},
         )
 
         proxy_url = "http://127.0.0.4:3128"
@@ -146,7 +146,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_port, 3128)
         self.assertEqual(
             conn.session.proxies,
-            {"http": "http://127.0.0.4:3128", "https": "http://127.0.0.4:3128",},
+            {"http": "http://127.0.0.4:3128", "https": "http://127.0.0.4:3128"},
         )
 
         os.environ["http_proxy"] = proxy_url
@@ -157,7 +157,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_port, 3128)
         self.assertEqual(
             conn.session.proxies,
-            {"http": "http://127.0.0.5:3128", "https": "http://127.0.0.5:3128",},
+            {"http": "http://127.0.0.5:3128", "https": "http://127.0.0.5:3128"},
         )
 
         os.environ["http_proxy"] = proxy_url
@@ -168,7 +168,7 @@ class BaseConnectionClassTestCase(unittest.TestCase):
         self.assertEqual(conn.proxy_port, 3129)
         self.assertEqual(
             conn.session.proxies,
-            {"http": "https://127.0.0.6:3129", "https": "https://127.0.0.6:3129",},
+            {"http": "https://127.0.0.6:3129", "https": "https://127.0.0.6:3129"},
         )
 
     def test_connection_to_unusual_port(self):
@@ -484,7 +484,6 @@ class ConnectionClassTestCase(unittest.TestCase):
             return "success"
 
         mock_connect.__name__ = "mock_connect"
-        headers = {"retry-after": 0.2}
         mock_connect.side_effect = mock_connect_side_effect
         retry_request = RetryForeverOnRateLimitError(
             timeout=0.1, retry_delay=0.1, backoff=1
@@ -501,12 +500,10 @@ class ConnectionClassTestCase(unittest.TestCase):
     def test_retry_should_not_retry_on_non_defined_exception(self, mock_connect):
         con = Connection()
         con.connection = Mock()
-        connect_method = "libcloud.common.base.Connection.request"
 
         self.retry_counter = 0
 
         mock_connect.__name__ = "mock_connect"
-        headers = {"retry-after": 0.2}
         mock_connect.side_effect = ValueError("should not retry this " "error")
         retry_request = Retry(timeout=5, retry_delay=0.1, backoff=1)
 
@@ -522,7 +519,6 @@ class ConnectionClassTestCase(unittest.TestCase):
     def test_retry_rate_limit_error_success_on_second_attempt(self, mock_connect):
         con = Connection()
         con.connection = Mock()
-        connect_method = "libcloud.common.base.Connection.request"
 
         self.retry_counter = 0
 
@@ -547,7 +543,6 @@ class ConnectionClassTestCase(unittest.TestCase):
     def test_retry_on_all_default_retry_exception_classes(self, mock_connect):
         con = Connection()
         con.connection = Mock()
-        connect_method = "libcloud.common.base.Connection.request"
 
         self.retry_counter = 0
 

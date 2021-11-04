@@ -49,7 +49,7 @@ TODAY = email.utils.formatdate(usegmt=True)
 def _error_helper(code, headers):
     message = httplib.responses[code]
     body = {
-        "error": {"errors": [{"code": code, "message": message, "reason": message,},],},
+        "error": {"errors": [{"code": code, "message": message, "reason": message}]},
     }
     return code, json.dumps(body), headers, httplib.responses[code]
 

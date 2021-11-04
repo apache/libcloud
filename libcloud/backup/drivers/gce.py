@@ -451,7 +451,7 @@ class GCEBackupDriver(BackupDriver):
             date=date,
             target=target,
             driver=self.connection.driver,
-            extra={"snapshot-id": id,},
+            extra={"snapshot-id": id},
         )
         return point
 

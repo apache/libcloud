@@ -519,7 +519,7 @@ class DimensionDataMockHttp(MockHttp):
         service_plan = request.get("servicePlan")
         if service_plan != DEFAULT_BACKUP_PLAN:
             raise InvalidRequestError(
-                "Expected % backup plan in test" % DEFAULT_BACKUP_PLAN
+                "Expected %s backup plan in test" % DEFAULT_BACKUP_PLAN
             )
         body = self.fixtures.load("_backup_modify.xml")
 

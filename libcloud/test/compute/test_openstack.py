@@ -273,7 +273,7 @@ class OpenStack_1_0_Tests(TestCaseMixin, unittest.TestCase):
 
         # Simulate token being revoked
         self.driver_klass.connectionCls.conn_class.type = "UNAUTHORIZED"
-        with pytest.raises(BaseHTTPError) as ex:
+        with pytest.raises(BaseHTTPError):
             driver.list_nodes()
 
         # Token was evicted
@@ -961,7 +961,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         kwargs = self.driver_kwargs.copy()
         kwargs["ex_auth_cache"] = OpenStackMockAuthCache()
         driver = self.driver_type(*self.driver_args, **kwargs)
-        osa = driver.connection.get_auth_class()
+        driver.connection.get_auth_class()
         driver.list_nodes()
         self.assertEqual(
             kwargs["ex_auth_cache"], driver.connection.get_auth_class().auth_cache
@@ -981,7 +981,7 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
 
         # Simulate token being revoked
         self.driver_klass.connectionCls.conn_class.type = "UNAUTHORIZED"
-        with pytest.raises(BaseHTTPError) as ex:
+        with pytest.raises(BaseHTTPError):
             driver.list_nodes()
 
         # Token was evicted

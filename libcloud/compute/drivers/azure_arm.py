@@ -611,7 +611,7 @@ class AzureNodeDriver(NodeDriver):
                     "caching": "ReadWrite",
                     "createOption": "FromImage",
                     "image": {"uri": image.id},
-                    "vhd": {"uri": instance_vhd,},
+                    "vhd": {"uri": instance_vhd},
                 }
             }
             if ex_use_managed_disks:
@@ -926,7 +926,7 @@ class AzureNodeDriver(NodeDriver):
         response = self.connection.request(
             action,
             method="PUT",
-            params={"api-version": RESOURCE_API_VERSION,},
+            params={"api-version": RESOURCE_API_VERSION},
             data=data,
         )
 
@@ -1070,7 +1070,7 @@ class AzureNodeDriver(NodeDriver):
         }
 
         response = self.connection.request(
-            action, method="PUT", params={"api-version": "2018-06-01",}, data=data
+            action, method="PUT", params={"api-version": "2018-06-01"}, data=data
         )
 
         return self._to_volume(

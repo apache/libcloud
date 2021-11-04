@@ -128,7 +128,7 @@ class OvhConnection(ConnectionUserAndKey):
     def request_consumer_key(self, user_id):
         action = self.request_path + "/auth/credential"
         data = json.dumps(
-            {"accessRules": DEFAULT_ACCESS_RULES, "redirection": "http://ovh.com",}
+            {"accessRules": DEFAULT_ACCESS_RULES, "redirection": "http://ovh.com"}
         )
         headers = {
             "Content-Type": "application/json",

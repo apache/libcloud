@@ -1957,13 +1957,13 @@ class GCENodeDriver(NodeDriver):
 
     # data taken from https://cloud.google.com/compute/docs/images
     IMAGE_PROJECTS = {
-        "centos-cloud": ["centos-6", "centos-7", "centos-8",],
+        "centos-cloud": ["centos-6", "centos-7", "centos-8"],
         "cos-cloud": ["cos-beta", "cos-dev", "cos-stable"],
         "coreos-cloud": ["coreos-alpha", "coreos-beta", "coreos-stable"],
-        "debian-cloud": ["debian-8", "debian-9", "debian-10",],
+        "debian-cloud": ["debian-8", "debian-9", "debian-10"],
         "opensuse-cloud": ["opensuse-leap"],
-        "rhel-cloud": ["rhel-6", "rhel-7", "rhel-8",],
-        "suse-cloud": ["sles-11", "sles-12", "sles-15",],
+        "rhel-cloud": ["rhel-6", "rhel-7", "rhel-8"],
+        "suse-cloud": ["sles-11", "sles-12", "sles-15"],
         "suse-byos-cloud": [
             "sles-11-byos",
             "sles-12-byos",
@@ -3839,7 +3839,7 @@ class GCENodeDriver(NodeDriver):
             "description": description,
             "family": family,
             "sourceType": "RAW",
-            "rawDisk": {"source": url,},
+            "rawDisk": {"source": url},
         }
 
         if guest_os_features:

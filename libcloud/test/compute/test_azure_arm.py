@@ -75,7 +75,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
     def test_locations_returned_successfully(self):
         locations = self.driver.list_locations()
         self.assertEqual(
-            [l.name for l in locations],
+            [loc.name for loc in locations],
             [
                 "East US",
                 "East US 2",
@@ -95,7 +95,7 @@ class AzureNodeDriverTests(LibcloudTestCase):
         location = self.driver.list_locations()[0]
         sizes = self.driver.list_sizes(location=location)
         self.assertEqual(
-            [l.name for l in sizes], ["Standard_A0", "Standard_A1", "Standard_A2"]
+            [size.name for size in sizes], ["Standard_A0", "Standard_A1", "Standard_A2"]
         )
 
     def test_ex_get_ratecard(self):

@@ -480,7 +480,7 @@ class RackspaceLBDriver(Driver, OpenStackDriverMixin):
         )
 
         balancer_attrs.update(
-            {"nodes": [self._member_attributes(member) for member in members],}
+            {"nodes": [self._member_attributes(member) for member in members]}
         )
         # balancer_attrs['nodes'] = ['fu']
         balancer_object = {"loadBalancer": balancer_attrs}

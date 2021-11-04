@@ -17,9 +17,6 @@ import sys
 
 from libcloud.test import unittest
 
-from libcloud.container.types import Provider
-from libcloud.container.providers import get_driver
-
 from libcloud.container.base import ContainerImage
 from libcloud.container.base import Container
 
@@ -134,7 +131,7 @@ class LXDContainerDriverTestCase(unittest.TestCase):
     def test_install_image_no_dict(self):
         with self.assertRaises(LXDAPIException) as exc:
             for driver in self.drivers:
-                container = driver.install_image(path=None)
+                driver.install_image(path=None)
                 self.assertEqual(
                     str(exc),
                     "Install an image for LXD requires specification of image_data",
@@ -162,7 +159,7 @@ class LXDContainerDriverTestCase(unittest.TestCase):
             driver.ex_delete_storage_pool(id="pool1")
 
     def test_delete_storage_pool_fail(self):
-        with self.assertRaises(LXDAPIException) as exc:
+        with self.assertRaises(LXDAPIException):
             for driver in self.drivers:
                 driver.ex_delete_storage_pool(id="pool2")
 
@@ -325,7 +322,6 @@ class LXDMockHttp(MockHttp):
         self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])
 
-    
     def _vlinux_124_containers_a68c1872c74630522c7aa74b85558b06824c5e672cee334296c50fb209825303_start(
         self, method, url, body, headers):
         return (httplib.NO_CONTENT, '', {}, httplib.responses[httplib.OK])

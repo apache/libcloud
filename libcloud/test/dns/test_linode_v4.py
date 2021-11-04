@@ -14,13 +14,10 @@
 
 import sys
 import unittest
-import pdb
 
 from libcloud.utils.py3 import httplib
 
-from libcloud.common.linode import LinodeException
-from libcloud.dns.types import RecordType, ZoneDoesNotExistError
-from libcloud.dns.types import RecordDoesNotExistError
+from libcloud.dns.types import RecordType
 from libcloud.dns.drivers.linode import LinodeDNSDriver, LinodeDNSDriverV4
 
 from libcloud.test import MockHttp

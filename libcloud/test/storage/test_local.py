@@ -36,7 +36,7 @@ from libcloud.utils.files import exhaust_iterator
 try:
     from libcloud.storage.drivers.local import LocalStorageDriver
     from libcloud.storage.drivers.local import LockLocalStorage
-    import fasteners
+    import fasteners  # noqa
 except ImportError:
     print("fasteners library is not available, skipping local_storage tests...")
     LocalStorageDriver = None

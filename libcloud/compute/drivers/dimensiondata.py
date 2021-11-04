@@ -952,7 +952,7 @@ class DimensionDataNodeDriver(NodeDriver):
                 "datacenter_id. Please provide either one"
             )
         else:
-            import_image_elem = ET.Element("urn:importImage", {"xmlns:urn": TYPES_URN,})
+            import_image_elem = ET.Element("urn:importImage", {"xmlns:urn": TYPES_URN})
 
             ET.SubElement(import_image_elem, "urn:ovfPackage").text = ovf_package_name
 
@@ -3761,7 +3761,7 @@ class DimensionDataNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
 
-        exchange_elem = ET.Element("urn:exchangeNicVlans", {"xmlns:urn": TYPES_URN,})
+        exchange_elem = ET.Element("urn:exchangeNicVlans", {"xmlns:urn": TYPES_URN})
 
         ET.SubElement(exchange_elem, "urn:nicId1").text = nic_id_1
         ET.SubElement(exchange_elem, "urn:nicId2").text = nic_id_2

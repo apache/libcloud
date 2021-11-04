@@ -813,7 +813,7 @@ class DigitalOcean_v2_NodeDriver(DigitalOcean_v2_BaseDriver, DigitalOceanNodeDri
             id=obj["ip"],
             ip_address=obj["ip"],
             node_id=obj["droplet"]["id"] if obj["droplet"] else None,
-            extra={"region": obj["region"],},
+            extra={"region": obj["region"]},
             driver=self,
         )
 

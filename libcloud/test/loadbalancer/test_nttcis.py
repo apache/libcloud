@@ -42,7 +42,7 @@ def driver():
 
 def test_invalid_region(driver):
     with pytest.raises(ValueError):
-        driver = NttCisLBDriver(*NTTCIS_PARAMS, region="blah")
+        NttCisLBDriver(*NTTCIS_PARAMS, region="blah")
 
 
 def test_invalid_creds(driver):
@@ -193,7 +193,7 @@ def test_balancer_attach_member_without_port(driver):
     member = Member(id=None, ip="112.12.2.2", port=None, balancer=balancer, extra=None)
     member = driver.balancer_attach_member(balancer, member)
     assert member.id == "3dd806a2-c2c8-4c0c-9a4f-5219ea9266c0"
-    assert member.port == None
+    assert member.port is None
 
 
 def test_balancer_detach_member(driver):
@@ -559,7 +559,7 @@ def test_ex_insert_ssl_certificate_FAIL(driver):
         + "/loadbalancer/fixtures/nttcis/denis.key"
     )
     with pytest.raises(NttCisAPIException) as excinfo:
-        result = driver.ex_import_ssl_domain_certificate(
+        driver.ex_import_ssl_domain_certificate(
             net_dom_id, "denis", cert, key, description="test cert"
         )
     assert (

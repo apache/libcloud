@@ -185,7 +185,7 @@ class NsOneTests(unittest.TestCase):
     def test_create_record_already_exists(self):
         NsOneMockHttp.type = "CREATE_RECORD_ALREADY_EXISTS"
         try:
-            arecord = self.driver.create_record(
+            self.driver.create_record(
                 self.test_record.name,
                 self.test_record.zone,
                 self.test_record.type,
@@ -200,7 +200,7 @@ class NsOneTests(unittest.TestCase):
     def test_create_record_zone_not_found(self):
         NsOneMockHttp.type = "CREATE_RECORD_ZONE_NOT_FOUND"
         try:
-            arecord = self.driver.create_record(
+            self.driver.create_record(
                 self.test_record.name,
                 self.test_record.zone,
                 self.test_record.type,

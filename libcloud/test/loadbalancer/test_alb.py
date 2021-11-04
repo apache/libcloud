@@ -149,7 +149,7 @@ class ApplicationLBTests(unittest.TestCase):
         self.assertEqual(target_group.unhealthy_threshold, 2)
 
     def test_ex_register_targets(self):
-        balancer = self.driver.get_balancer(self.balancer_id)
+        self.driver.get_balancer(self.balancer_id)
         target_group = self.driver.ex_get_target_group(self.target_group_id)
         members = [Member("i-01111111111111111", "10.0.0.0", 443)]
         targets_not_registered = self.driver.ex_register_targets(

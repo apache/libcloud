@@ -320,7 +320,7 @@ class PowerDNSDriver(DNSDriver):
         )
         payload = {
             "rrsets": [
-                {"name": record.name, "type": record.type, "changetype": "DELETE",}
+                {"name": record.name, "type": record.type, "changetype": "DELETE"}
             ]
         }
         try:
@@ -459,7 +459,7 @@ class PowerDNSDriver(DNSDriver):
             }
             payload = {
                 "rrsets": [
-                    {"name": record.name, "type": record.type, "changetype": "DELETE",},
+                    {"name": record.name, "type": record.type, "changetype": "DELETE"},
                     {
                         "name": name,
                         "type": type,

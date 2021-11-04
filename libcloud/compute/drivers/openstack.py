@@ -368,7 +368,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
             "display_name": name,
             "display_description": name,
             "size": size,
-            "metadata": {"contents": name,},
+            "metadata": {"contents": name},
         }
 
         if ex_volume_type:
@@ -400,7 +400,7 @@ class OpenStackNodeDriver(NodeDriver, OpenStackDriverMixin):
         return self.connection.request(
             "/servers/%s/os-volume_attachments" % node.id,
             method="POST",
-            data={"volumeAttachment": {"volumeId": volume.id, "device": device,}},
+            data={"volumeAttachment": {"volumeId": volume.id, "device": device}},
         ).success()
 
     def detach_volume(self, volume, ex_node=None):
@@ -3678,7 +3678,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             "name": name,
             "description": name,
             "size": size,
-            "metadata": {"contents": name,},
+            "metadata": {"contents": name},
         }
 
         if ex_volume_type:

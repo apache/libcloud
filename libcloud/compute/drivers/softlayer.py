@@ -68,19 +68,19 @@ NODE_STATE_MAP = {
 }
 
 SL_BASE_TEMPLATES = [
-    {"name": "1 CPU, 1GB ram, 25GB", "ram": 1024, "disk": 25, "cpus": 1,},
-    {"name": "1 CPU, 1GB ram, 100GB", "ram": 1024, "disk": 100, "cpus": 1,},
-    {"name": "1 CPU, 2GB ram, 100GB", "ram": 2 * 1024, "disk": 100, "cpus": 1,},
-    {"name": "1 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 1,},
-    {"name": "2 CPU, 2GB ram, 100GB", "ram": 2 * 1024, "disk": 100, "cpus": 2,},
-    {"name": "2 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 2,},
-    {"name": "2 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 2,},
-    {"name": "4 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 4,},
-    {"name": "4 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 4,},
-    {"name": "6 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 6,},
-    {"name": "6 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 6,},
-    {"name": "8 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 8,},
-    {"name": "8 CPU, 16GB ram, 100GB", "ram": 16 * 1024, "disk": 100, "cpus": 8,},
+    {"name": "1 CPU, 1GB ram, 25GB", "ram": 1024, "disk": 25, "cpus": 1},
+    {"name": "1 CPU, 1GB ram, 100GB", "ram": 1024, "disk": 100, "cpus": 1},
+    {"name": "1 CPU, 2GB ram, 100GB", "ram": 2 * 1024, "disk": 100, "cpus": 1},
+    {"name": "1 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 1},
+    {"name": "2 CPU, 2GB ram, 100GB", "ram": 2 * 1024, "disk": 100, "cpus": 2},
+    {"name": "2 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 2},
+    {"name": "2 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 2},
+    {"name": "4 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 4},
+    {"name": "4 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 4},
+    {"name": "6 CPU, 4GB ram, 100GB", "ram": 4 * 1024, "disk": 100, "cpus": 6},
+    {"name": "6 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 6},
+    {"name": "8 CPU, 8GB ram, 100GB", "ram": 8 * 1024, "disk": 100, "cpus": 8},
+    {"name": "8 CPU, 16GB ram, 100GB", "ram": 16 * 1024, "disk": 100, "cpus": 8},
 ]
 
 SL_TEMPLATES = {}
@@ -314,7 +314,7 @@ class SoftLayerNodeDriver(NodeDriver):
             "hourlyBillingFlag": hourly,
             "operatingSystemReferenceCode": os,
             "localDiskFlag": local_disk,
-            "blockDevices": [{"device": "0", "diskImage": {"capacity": disk_size,}}],
+            "blockDevices": [{"device": "0", "diskImage": {"capacity": disk_size}}],
         }
 
         if datacenter:

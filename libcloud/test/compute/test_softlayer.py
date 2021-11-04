@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
 import pytest
 
@@ -55,7 +54,7 @@ class SoftLayerTests(unittest.TestCase):
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
-        dal = next(l for l in locations if l.id == "dal05")
+        dal = next(loc for loc in locations if loc.id == "dal05")
         self.assertEqual(dal.country, "US")
         self.assertEqual(dal.id, "dal05")
         self.assertEqual(dal.name, "Dallas - Central U.S.")

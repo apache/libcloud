@@ -599,7 +599,7 @@ class KubeVirtNodeDriver(KubernetesDriverMixin, NodeDriver):
         pv = {
             "apiVersion": "v1",
             "kind": "PersistentVolume",
-            "metadata": {"name": name,},
+            "metadata": {"name": name},
             "spec": {
                 "capacity": {"storage": str(size) + "Gi"},
                 "volumeMode": ex_volume_mode,

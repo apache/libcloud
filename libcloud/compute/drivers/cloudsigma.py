@@ -1304,7 +1304,7 @@ class CloudSigma_2_0_NodeDriver(CloudSigmaNodeDriver):
             data["meta"] = ex_metadata
 
         # Assign 1 public interface (DHCP) to the node
-        nic = {"boot_order": None, "ip_v4_conf": {"conf": "dhcp",}, "ip_v6_conf": None}
+        nic = {"boot_order": None, "ip_v4_conf": {"conf": "dhcp"}, "ip_v6_conf": None}
 
         nics = [nic]
 

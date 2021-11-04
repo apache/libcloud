@@ -48,7 +48,7 @@ from libcloud.storage.drivers.s3 import S3StorageDriver, S3USWestStorageDriver
 from libcloud.storage.drivers.s3 import CHUNK_SIZE
 from libcloud.utils.py3 import b
 
-from libcloud.test import MockHttp  # pylint: disable-msg=E0611
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611  # noqa
 from libcloud.test import unittest, make_response, generate_random_data
 from libcloud.test.file_fixtures import StorageFileFixtures  # pylint: disable-msg=E0611
 from libcloud.test.secrets import STORAGE_S3_PARAMS

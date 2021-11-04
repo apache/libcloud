@@ -229,7 +229,7 @@ class GoogleDNSDriver(DNSDriver):
 
         data = {
             "additions": [
-                {"name": name, "type": type, "ttl": int(ttl), "rrdatas": rrdatas,}
+                {"name": name, "type": type, "ttl": int(ttl), "rrdatas": rrdatas}
             ]
         }
         request = "/managedZones/%s/changes" % (zone.id)

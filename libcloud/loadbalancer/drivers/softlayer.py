@@ -282,7 +282,7 @@ class SoftlayerLBDriver(Driver):
         """
         lb_mask = {
             "virtualServers": {
-                "serviceGroups": {"services": {"ipAddress": "", "groupReferences": "",}}
+                "serviceGroups": {"services": {"ipAddress": "", "groupReferences": ""}}
             }
         }
 
