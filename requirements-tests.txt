@@ -1,3 +1,4 @@
+wheel
 pep8==1.7.1
 flake8==3.9.2; python_version <= '3.5'
 flake8==4.0.1; python_version >= '3.6'
