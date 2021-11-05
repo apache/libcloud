@@ -49,7 +49,7 @@ jobs:
           - 3.8
           - 3.9
           - "3.10"
-          - pypy3
+          - "pypy-3.7"
         os:
           - ubuntu-latest
 
