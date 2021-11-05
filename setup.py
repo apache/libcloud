@@ -278,7 +278,7 @@ setup(
     author='Apache Software Foundation',
     author_email='dev@libcloud.apache.org',
     install_requires=INSTALL_REQUIREMENTS,
-    python_requires=">=3.5, <4",
+    python_requires=">=3.6, <4",
     packages=get_packages('libcloud'),
     package_dir={
         'libcloud': 'libcloud',
@@ -304,7 +304,6 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
