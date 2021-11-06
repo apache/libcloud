@@ -435,8 +435,8 @@ def test_decorator():
 
 def test_get_response_object():
     with requests_mock.mock() as m:
-        m.get('http://test.com/test', text='data')
-        response = get_response_object('http://test.com/test')
+        m.get('https://test.com/test', text='data')
+        response = get_response_object('https://test.com/test')
         assert response.body == 'data'
 
 
