@@ -76,7 +76,6 @@ class LocalTests(unittest.TestCase):
 
     @unittest.skipIf(platform.system().lower() == 'windows', 'Unsupported on Windows')
     def test_lock_local_storage(self):
-        print("aaaa")
         # 1. Acquire succeeds
         lock = LockLocalStorage("/tmp/a")
         with lock:
