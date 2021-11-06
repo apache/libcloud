@@ -76,6 +76,7 @@ class LocalTests(unittest.TestCase):
 
     @unittest.skipIf(platform.system().lower() == 'windows', 'Unsupported on Windows')
     def test_lock_local_storage(self):
+        print("aaaa")
         # 1. Acquire succeeds
         lock = LockLocalStorage("/tmp/a")
         with lock:
@@ -90,11 +91,12 @@ class LocalTests(unittest.TestCase):
         # 3. Multiprocessing scenario where IPC lock is involved
         def acquire_lock_in_subprocess(pid, success):
             # For first process acquire should succeed and for the second it should fail
-
-            lock = LockLocalStorage("/tmp/c", timeout=0.5)
+            lock = LockLocalStorage("/tmp/c", timeout=1.5)
 
             if pid == 1:
                 with lock:
+                    # We use longer sleep when running tests in parallel to avoid
+                    # failures related to slower process spawn
                     time.sleep(2)
 
                 success.value = 1
