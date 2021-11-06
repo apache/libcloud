@@ -1,8 +1,8 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud 3.3.2 (in development)
--------------------------------------------------
+Changes in Apache Libcloud 3.4.0
+--------------------------------
 
 Common
 ~~~~~~
