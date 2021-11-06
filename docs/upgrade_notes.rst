@@ -15,7 +15,6 @@ Libcloud 3.3.2
   "Not to be authenticated to perform this request", but has now been changed
   to "Need to be authenticated to perform this request".
 
-
 * Code which retries HTTP requests on 429 rate limit reached status code has
   been updated to respect ``timeout`` argument and stop retrying if timeout
   has been reached.
