@@ -95,7 +95,7 @@ class LocalTests(unittest.TestCase):
 
             if pid == 1:
                 with lock:
-                    time.sleep(1)
+                    time.sleep(2)
 
                 success.value = 1
             elif pid == 2:
