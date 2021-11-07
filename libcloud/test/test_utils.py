@@ -433,12 +433,5 @@ def test_decorator():
         foo()
 
 
-def test_get_response_object():
-    with requests_mock.mock() as m:
-        m.get('https://test.com/test', text='data')
-        response = get_response_object('https://test.com/test')
-        assert response.body == 'data'
-
-
 if __name__ == '__main__':
     sys.exit(unittest.main())
