@@ -1,0 +1,31 @@
+{
+    "instance": {
+        "id": "123",
+        "os": "Debian 11 x64",
+        "ram": 1024,
+        "disk": 0,
+        "main_ip": "192.248.168.21",
+        "vcpu_count": 1,
+        "region": "lhr",
+        "plan": "vc2-1c-2gb",
+        "date_created": "2021-09-06T17:27:58+00:00",
+        "status": "resizing",
+        "allowed_bandwidth": 1000,
+        "netmask_v4": "255.255.254.0",
+        "gateway_v4": "192.248.168.1",
+        "power_status": "running",
+        "server_status": "locked",
+        "v6_network": "",
+        "v6_main_ip": "",
+        "v6_network_size": 0,
+        "label": "test4",
+        "internal_ip": "",
+        "kvm": "",
+        "tag": "",
+        "os_id": 477,
+        "app_id": 0,
+        "image_id": "",
+        "firewall_group_id": "",
+        "features": []
+    }
+}

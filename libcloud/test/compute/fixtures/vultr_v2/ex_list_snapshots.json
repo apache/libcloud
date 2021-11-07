@@ -1,0 +1,29 @@
+{
+    "snapshots": [
+        {
+            "id": "123",
+            "date_created": "2021-09-02T16:14:10+00:00",
+            "description": "test1",
+            "size": 26843545600,
+            "status": "complete",
+            "os_id": 362,
+            "app_id": 0
+        },
+        {
+            "id": "1234",
+            "date_created": "2021-09-02T16:34:11+00:00",
+            "description": "test2",
+            "size": 0,
+            "status": "pending",
+            "os_id": 362,
+            "app_id": 0
+        }
+    ],
+    "meta": {
+        "total": 2,
+        "links": {
+            "next": "",
+            "prev": ""
+        }
+    }
+}

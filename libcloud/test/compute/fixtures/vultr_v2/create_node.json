@@ -1,0 +1,34 @@
+{
+    "instance": {
+        "id": "123",
+        "os": "Fedora 34 x64",
+        "ram": 1024,
+        "disk": 0,
+        "main_ip": "0.0.0.0",
+        "vcpu_count": 1,
+        "region": "ams",
+        "plan": "vc2-1c-1gb",
+        "date_created": "2021-09-06T13:06:42+00:00",
+        "status": "pending",
+        "allowed_bandwidth": 1000,
+        "netmask_v4": "",
+        "gateway_v4": "0.0.0.0",
+        "power_status": "running",
+        "server_status": "none",
+        "v6_network": "",
+        "v6_main_ip": "",
+        "v6_network_size": 0,
+        "label": "test123",
+        "internal_ip": "10.7.96.6",
+        "kvm": "",
+        "tag": "dimgal1223444",
+        "os_id": 446,
+        "app_id": 0,
+        "image_id": "",
+        "firewall_group_id": "",
+        "features": [
+            "ddos_protection"
+        ],
+        "default_password": "kB1?@aqK3QSk@)-q"
+    }
+}
