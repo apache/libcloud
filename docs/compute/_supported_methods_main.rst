@@ -68,7 +68,7 @@ Provider                              list nodes create node reboot node destroy
 `Voxel VoxCLOUD`_                     yes        yes         yes         yes          no         no        yes         yes        no         
 `vps.net`_                            yes        yes         yes         yes          no         no        yes         yes        no         
 `VMware vSphere`_                     yes        yes         yes         yes          yes        yes       yes         yes        no         
-`Vultr`_                              yes        yes         yes         yes          no         no        yes         yes        no         
+`Vultr`_                              yes        yes         yes         yes          yes        yes       yes         yes        no         
 ===================================== ========== =========== =========== ============ ========== ========= =========== ========== ===========
 
 .. _`Abiquo`: http://www.abiquo.com/
