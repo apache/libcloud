@@ -296,6 +296,14 @@ def generate_providers_table(api):
             from libcloud.dns.drivers.linode import \
                 LinodeDNSDriverV4
             cls = LinodeDNSDriverV4
+        elif name.lower() == 'vultr' and api.startswith('compute'):
+            from libcloud.compute.drivers.vultr import \
+                VultrNodeDriverV2
+            cls = VultrNodeDriverV2
+        elif name.lower() == 'vultr' and api.startswith('dns'):
+            from libcloud.dns.drivers.vultr import \
+                VultrDNSDriverV2
+            cls = VultrDNSDriverV2
 
         if name.lower() in IGNORED_PROVIDERS:
             continue
