@@ -1471,17 +1471,18 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                        method='POST')
         return self._to_key_pair(resp.object['ssh_key'])
 
-    def delete_key_pair(self, key_id):
+    def delete_key_pair(self, key_pair):
         """Delete existing key pair.
 
-        :param key_id: ID of the key pair to delete.
-        :type  key_id: ``str``
+        :param key_pair: The key pair object to delete.
+        :type key_pair: :class:`.KeyPair`
 
         :rtype: ``bool``
         """
 
-        resp = self.connection.request('/v2/ssh-keys/%s' % key_id,
-                                       method='DELETE')
+        resp = self.connection.request(
+            '/v2/ssh-keys/%s' % key_pair.extra['id'],
+            method='DELETE')
 
         return resp.success()
 

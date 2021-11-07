@@ -170,7 +170,7 @@ class VultrTestsV2(unittest.TestCase):
         self.assertEqual(key.name, 'tester')
         self.assertIsNone(key.private_key)
         self.assertEqual(key.extra['id'],
-                         '6d2a787f-4dc5-434e-9ae2-8f54ec5ea5b6')
+                         '123')
 
     def test_list_key_pairs_UNAUTHORIZED(self):
         VultrMockHttpV2.type = 'UNAUTHORIZED'
@@ -193,8 +193,9 @@ class VultrTestsV2(unittest.TestCase):
         self.assertIsNone(key.private_key)
 
     def test_delete_key_pair(self):
-        key_id = '123'
-        response = self.driver.delete_key_pair(key_id)
+        keys = self.driver.list_key_pairs()
+        key = keys[0]
+        response = self.driver.delete_key_pair(key)
         self.assertTrue(response)
 
     def test_list_volumes(self):
