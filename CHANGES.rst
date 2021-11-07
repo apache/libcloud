@@ -1,16 +1,6 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud in development
------------------------------------------
-
-Development
-~~~~~~~~~~~
-
-- Update tox targets for unit tests to utilize ``pytest-xdist`` plugin to run
-  tests in parallel in multiple processes to speed up the test runs.
-  (GITHUB-1625)
-
 Changes in Apache Libcloud 3.4.0
 --------------------------------
 
@@ -206,6 +196,10 @@ Other
 - Fix ``python_requires`` setup.py metadata item value.
   (GITHUB-1606)
   [Michał Górny - @mgorny]
+
+- Update tox targets for unit tests to utilize ``pytest-xdist`` plugin to run
+  tests in parallel in multiple processes to speed up the test runs.
+  (GITHUB-1625)
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------
