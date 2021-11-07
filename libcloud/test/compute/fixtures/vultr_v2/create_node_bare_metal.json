@@ -1,0 +1,27 @@
+{
+    "bare_metal": {
+        "id": "234",
+        "os": "Debian 11 x64 (bullseye)",
+        "ram": "32768 MB",
+        "disk": "2x 240GB SSD",
+        "main_ip": "",
+        "cpu_count": 4,
+        "region": "ams",
+        "date_created": "2021-09-06T16:57:22+00:00",
+        "status": "pending",
+        "netmask_v4": "",
+        "gateway_v4": "",
+        "plan": "vbm-4c-32gb",
+        "v6_network": "",
+        "v6_main_ip": "",
+        "v6_network_size": 0,
+        "label": "test1",
+        "tag": "",
+        "mac_address": 0,
+        "os_id": 477,
+        "app_id": 0,
+        "image_id": "",
+        "features": [],
+        "default_password": ""
+    }
+}

@@ -164,15 +164,20 @@ Compute
 - [OpenStack] Add support for using optional external cache for auth tokens
 
   This cache can be shared by multiple processes which results in much less
-  tokens being allocated when many different instances / processes 
+  tokens being allocated when many different instances / processes
   are utilizing the same set of credentials.
 
-  This functionality can be used by implementing a custom cache class with 
+  This functionality can be used by implementing a custom cache class with
   caching logic (e.g. storing cache context on a local filesystem, external
   system such as Redis or similar) + using ``ex_auth_cache`` driver constructor
   argument.
   (GITHUB-1460, GITHUB-1557)
   [@dpeschman]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
 
 DNS
 ~~~
@@ -189,6 +194,11 @@ DNS
 - [NSOne] Fix MX records and root domain handling.
   (GITHUB-1571)
   [Gasper Vozel - @karantan]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
 
 Other
 ~~~~~

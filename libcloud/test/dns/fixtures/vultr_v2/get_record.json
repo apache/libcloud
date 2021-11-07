@@ -1,0 +1,10 @@
+{
+    "record": {
+        "id": "123",
+        "type": "NS",
+        "name": "",
+        "data": "ns1.vultr.com",
+        "priority": -1,
+        "ttl": 300
+    }
+}
