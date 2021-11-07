@@ -1372,7 +1372,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                        method='POST')
         return self._to_volume(resp.object['block'])
 
-    def attach_volume(self, node, volume, live=True):
+    def attach_volume(self, node, volume, ex_live=True):
         """Attaches volume to node.
 
         :param node: Node to attach volume to.
@@ -1381,15 +1381,15 @@ class VultrNodeDriverV2(VultrNodeDriver):
         :param volume: Volume to attach.
         :type volume: :class:`StorageVolume`
 
-        :param live: Attach the volume without restarting the node.
-        :type live: ``bool``
+        :param ex_live: Attach the volume without restarting the node.
+        :type ex_live: ``bool``
 
         :rytpe: ``bool``
         """
 
         data = {
             'instance_id': node.id,
-            'live': live,
+            'live': ex_live,
         }
         resp = self.connection.request('/v2/blocks/%s/attach' % volume.id,
                                        data=json.dumps(data),
@@ -1397,19 +1397,19 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def detach_volume(self, volume, live=True):
+    def detach_volume(self, volume, ex_live=True):
         """Detaches a volume from a node.
 
         :param volume: Volume to be detached
         :type volume: :class:`StorageVolume`
 
-        :param live: Detach the volume without restarting the node.
-        :type live: ``bool``
+        :param ex_live: Detach the volume without restarting the node.
+        :type ex_live: ``bool``
 
         :rtype: ``bool``
         """
         data = {
-            'live': live
+            'live': ex_live
         }
 
         resp = self.connection.request('/v2/blocks/%s/detach' % volume.id,
