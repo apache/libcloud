@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
+from typing import Dict, Optional, Any
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.compute.base import VolumeSnapshot
@@ -198,7 +198,12 @@ class VultrNetwork:
     Represents information about a Vultr private network.
     """
 
-    def __init__(self, id, cidr_block, location, extra=None):
+    def __init__(self,
+                 id: str,
+                 cidr_block: str,
+                 location: str,
+                 extra: Optional[Dict[str, Any]] = None
+                 ) -> None:
         self.id = id
         self.cidr_block = cidr_block
         self.location = location

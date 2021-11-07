@@ -19,6 +19,7 @@ import time
 import json
 import base64
 from functools import update_wrapper
+from typing import Optional, List, Dict, Union, Any
 
 from libcloud.common.base import ConnectionKey, JsonResponse
 from libcloud.common.types import InvalidCredsError
@@ -1062,7 +1063,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         'pending': VolumeSnapshotState.CREATING,
     }
 
-    def list_nodes(self, ex_list_bare_metals=True):
+    def list_nodes(self, ex_list_bare_metals: bool = True) -> List[Node]:
         """List all nodes.
 
         :keyword ex_list_bare_metals: Whether to fetch bare metal nodes.
@@ -1078,15 +1079,30 @@ class VultrNodeDriverV2(VultrNodeDriver):
             nodes += self.ex_list_bare_metal_nodes()
         return nodes
 
-    def create_node(self, name, size, location, image=None,
-                    ex_ssh_key_ids=None, ex_private_network_ids=None,
-                    ex_snapshot=None, ex_enable_ipv6=False, ex_backups=False,
-                    ex_userdata=None, ex_ddos_protection=False,
-                    ex_enable_private_network=False, ex_ipxe_chain_url=None,
-                    ex_iso_id=None, ex_script_id=None, ex_image_id=None,
-                    ex_activation_email=False, ex_hostname=None, ex_tag=None,
-                    ex_firewall_group_id=None, ex_reserved_ipv4=None,
-                    ex_persistent_pxe=False):
+    def create_node(self,
+                    name: str,
+                    size: NodeSize,
+                    location: NodeLocation,
+                    image: Optional[NodeImage] = None,
+                    ex_ssh_key_ids: Optional[List[str]] = None,
+                    ex_private_network_ids: Optional[List[str]] = None,
+                    ex_snapshot: Union[VultrNodeSnapshot, str, None] = None,
+                    ex_enable_ipv6: bool = False,
+                    ex_backups: bool = False,
+                    ex_userdata: Optional[str] = None,
+                    ex_ddos_protection: bool = False,
+                    ex_enable_private_network: bool = False,
+                    ex_ipxe_chain_url: Optional[str] = None,
+                    ex_iso_id: Optional[str] = None,
+                    ex_script_id: Optional[str] = None,
+                    ex_image_id: Optional[str] = None,
+                    ex_activation_email: bool = False,
+                    ex_hostname: Optional[str] = None,
+                    ex_tag: Optional[str] = None,
+                    ex_firewall_group_id: Optional[str] = None,
+                    ex_reserved_ipv4: Optional[str] = None,
+                    ex_persistent_pxe: bool = False
+                    ) -> Node:
         """Create a new node.
 
         :param name: The new node's name.
@@ -1241,7 +1257,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                            method='POST')
             return self._to_node(resp.object['instance'])
 
-    def reboot_node(self, node):
+    def reboot_node(self, node: Node) -> bool:
         """Reboot the given node.
 
         :param node: The node to be rebooted.
@@ -1257,7 +1273,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def start_node(self, node):
+    def start_node(self, node: Node) -> bool:
         """Start the given node.
 
         :param node: The node to be started.
@@ -1273,7 +1289,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def stop_node(self, node):
+    def stop_node(self, node: Node) -> bool:
         """Stop the given node.
 
         :param node: The node to be stopped.
@@ -1286,7 +1302,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return self.ex_stop_nodes([node])
 
-    def destroy_node(self, node):
+    def destroy_node(self, node: Node) -> bool:
         """Destroy the given node.
 
         :param node: The node to be destroyed.
@@ -1302,7 +1318,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def list_sizes(self, ex_list_bare_metals=True):
+    def list_sizes(self, ex_list_bare_metals: bool = True) -> List[NodeSize]:
         """List available node sizes.
 
         :keyword ex_list_bare_metals: Whether to fetch bare metal sizes.
@@ -1317,7 +1333,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             sizes += self.ex_list_bare_metal_sizes()
         return sizes
 
-    def list_images(self):
+    def list_images(self) -> List[NodeImage]:
         """List available node images.
 
         :rtype: ``list`` of :class: `NodeImage`
@@ -1325,7 +1341,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/os', 'os')
         return [self._to_image(item) for item in data]
 
-    def list_locations(self):
+    def list_locations(self) -> List[NodeLocation]:
         """List available node locations.
 
         :rtype: ``list`` of :class: `NodeLocation`
@@ -1333,7 +1349,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/regions', 'regions')
         return [self._to_location(item) for item in data]
 
-    def list_volumes(self):
+    def list_volumes(self) -> List[StorageVolume]:
         """List storage volumes.
 
         :rtype: ``list`` of :class:`StorageVolume`
@@ -1341,7 +1357,11 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/blocks', 'blocks')
         return [self._to_volume(item) for item in data]
 
-    def create_volume(self, size, name, location):
+    def create_volume(self,
+                      size: int,
+                      name: str,
+                      location: Union[NodeLocation, str],
+                      ) -> StorageVolume:
         """Create a new volume.
 
         :param size: Size of the volume in gigabytes.\
@@ -1372,7 +1392,11 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                        method='POST')
         return self._to_volume(resp.object['block'])
 
-    def attach_volume(self, node, volume, ex_live=True):
+    def attach_volume(self,
+                      node: Node,
+                      volume: StorageVolume,
+                      ex_live: bool = True,
+                      ) -> bool:
         """Attaches volume to node.
 
         :param node: Node to attach volume to.
@@ -1397,7 +1421,10 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def detach_volume(self, volume, ex_live=True):
+    def detach_volume(self,
+                      volume: StorageVolume,
+                      ex_live: bool = True,
+                      ) -> bool:
         """Detaches a volume from a node.
 
         :param volume: Volume to be detached
@@ -1418,7 +1445,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def destroy_volume(self, volume):
+    def destroy_volume(self, volume: StorageVolume) -> bool:
         """Destroys a storage volume.
 
         :param volume: Volume to be destroyed
@@ -1432,7 +1459,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def list_key_pairs(self):
+    def list_key_pairs(self) -> List[KeyPair]:
         """List all the available SSH key pair objects.
 
         :rtype: ``list`` of :class:`KeyPair`
@@ -1440,7 +1467,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/ssh-keys', 'ssh_keys')
         return [self._to_key_pair(item) for item in data]
 
-    def get_key_pair(self, key_id):
+    def get_key_pair(self, key_id: str) -> KeyPair:
         """Retrieve a single key pair.
 
         :param key_id: ID of the key pair to retrieve.
@@ -1451,7 +1478,10 @@ class VultrNodeDriverV2(VultrNodeDriver):
         resp = self.connection.request('/v2/ssh-keys/%s' % key_id)
         return self._to_key_pair(resp.object['ssh_key'])
 
-    def import_key_pair_from_string(self, name, key_material):
+    def import_key_pair_from_string(self,
+                                    name: str,
+                                    key_material: str
+                                    ) -> KeyPair:
         """Import a new public key from string.
 
         :param name: Key pair name.
@@ -1471,7 +1501,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                        method='POST')
         return self._to_key_pair(resp.object['ssh_key'])
 
-    def delete_key_pair(self, key_pair):
+    def delete_key_pair(self, key_pair: KeyPair) -> bool:
         """Delete existing key pair.
 
         :param key_pair: The key pair object to delete.
@@ -1486,7 +1516,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_list_bare_metal_nodes(self):
+    def ex_list_bare_metal_nodes(self) -> List[Node]:
         """List all bare metal nodes.
 
         :return:  list of node objects
@@ -1495,7 +1525,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/bare-metals', 'bare_metals')
         return [self._to_node(item) for item in data]
 
-    def ex_reboot_bare_metal_node(self, node):
+    def ex_reboot_bare_metal_node(self, node: Node) -> bool:
         """Reboot the given bare metal node.
 
         :param node: The bare metal node to be rebooted.
@@ -1508,7 +1538,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_resize_node(self, node, size):
+    def ex_resize_node(self, node: Node, size: NodeSize) -> bool:
         """Change size for the given node, only applicable for VPS nodes.
 
         :param node: The node to be resized.
@@ -1525,7 +1555,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                        method='PATCH')
         return self._to_node(resp.object['instance'])
 
-    def ex_start_bare_metal_node(self, node):
+    def ex_start_bare_metal_node(self, node: Node) -> bool:
         """Start the given bare metal node.
 
         :param node: The bare metal node to be started.
@@ -1538,7 +1568,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_stop_bare_metal_node(self, node):
+    def ex_stop_bare_metal_node(self, node: Node) -> bool:
         """Stop the given bare metal node.
 
         :param node: The bare metal node to be stopped.
@@ -1551,7 +1581,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_destroy_bare_metal_node(self, node):
+    def ex_destroy_bare_metal_node(self, node: Node) -> bool:
         """Destroy the given bare metal node.
 
         :param node: The bare metal node to be destroyed.
@@ -1564,7 +1594,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_get_node(self, node_id):
+    def ex_get_node(self, node_id: str) -> Node:
         """Retrieve a node object.
 
         :param node_id: ID of the node to retrieve.
@@ -1575,7 +1605,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         resp = self.connection.request('/v2/instances/%s' % node_id)
         return self._to_node(resp.object['instance'])
 
-    def ex_stop_nodes(self, nodes):
+    def ex_stop_nodes(self, nodes: List[Node]) -> bool:
         """Stops all the nodes given.
 
         : param nodes: A list of the nodes to stop.
@@ -1593,7 +1623,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_list_bare_metal_sizes(self):
+    def ex_list_bare_metal_sizes(self) -> List[NodeSize]:
         """List bare metal sizes.
 
         :rtype: ``list`` of :class: `NodeSize`
@@ -1601,7 +1631,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/plans-metal', 'plans_metal')
         return [self._to_size(item) for item in data]
 
-    def ex_list_snapshots(self):
+    def ex_list_snapshots(self) -> List[VultrNodeSnapshot]:
         """List node snapshots.
 
         :rtype: ``list`` of :class: `VultrNodeSnapshot`
@@ -1609,7 +1639,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/snapshots', 'snapshots')
         return [self._to_snapshot(item) for item in data]
 
-    def ex_get_snapshot(self, snapshot_id):
+    def ex_get_snapshot(self, snapshot_id: str) -> VultrNodeSnapshot:
         """Retrieve a snapshot.
 
         :param snapshot_id: ID of the snapshot to retrieve.
@@ -1620,7 +1650,10 @@ class VultrNodeDriverV2(VultrNodeDriver):
         resp = self.connection.request('/v2/snapshots/%s' % snapshot_id)
         return self._to_snapshot(resp.object['snapshot'])
 
-    def ex_create_snapshot(self, node, description=None):
+    def ex_create_snapshot(self,
+                           node: Node,
+                           description: Optional[str] = None
+                           ) -> VultrNodeSnapshot:
         """Create snapshot from a node.
 
         :param node: Node to create the snapshot from.
@@ -1643,7 +1676,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return self._to_snapshot(resp.object['snapshot'])
 
-    def ex_delete_snapshot(self, snapshot):
+    def ex_delete_snapshot(self, snapshot: VultrNodeSnapshot) -> bool:
         """Delete the given snapshot.
 
         :param snapshot: The snapshot to delete.
@@ -1657,7 +1690,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_list_networks(self):
+    def ex_list_networks(self) -> List[VultrNetwork]:
         """List all private networks.
 
         :rtype: ``list`` of :class: `VultrNetwork`
@@ -1666,7 +1699,11 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/private-networks', 'networks')
         return [self._to_network(item) for item in data]
 
-    def ex_create_network(self, cidr_block, location, description=None):
+    def ex_create_network(self,
+                          cidr_block: str,
+                          location: Union[NodeLocation, str],
+                          description: Optional[str] = None,
+                          ) -> VultrNetwork:
         """Create a private network.
 
         :param cidr_block: The CIDR block assigned to the network.
@@ -1700,7 +1737,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return self._to_network(resp.object['network'])
 
-    def ex_get_network(self, network_id):
+    def ex_get_network(self, network_id: str) -> VultrNetwork:
         """Retrieve a private network.
 
         :param network_id: ID of the network to retrieve.
@@ -1712,7 +1749,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         resp = self.connection.request('/v2/private-networks/%s' % network_id)
         return self._to_network(resp.object['network'])
 
-    def ex_destroy_network(self, network):
+    def ex_destroy_network(self, network: VultrNetwork) -> bool:
         """Delete a private network.
 
         :param network: The network to destroy.
@@ -1725,7 +1762,9 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return resp.success()
 
-    def ex_list_available_sizes_for_location(self, location):
+    def ex_list_available_sizes_for_location(self,
+                                             location: NodeLocation,
+                                             ) -> List[str]:
         """Get a list of available sizes for the given location.
 
         :param location: The location to get available sizes for.
@@ -1738,7 +1777,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                        % location.id)
         return resp.object['available_plans']
 
-    def ex_get_volume(self, volume_id):
+    def ex_get_volume(self, volume_id: str) -> StorageVolume:
         """Retrieve a single volume.
 
         :param volume_id: The ID of the volume to fetch.
@@ -1751,7 +1790,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return self._to_volume(resp.object['block'])
 
-    def ex_resize_volume(self, volume, size):
+    def ex_resize_volume(self, volume: StorageVolume, size: int) -> bool:
         """Resize a volume.
 
         :param volume: The volume to resize.
@@ -1773,7 +1812,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                        method='PATCH')
         return resp.success()
 
-    def _is_bare_metal(self, size):
+    def _is_bare_metal(self, size: Union[NodeSize, str]) -> bool:
         try:
             size_id = size.id
         except AttributeError:
@@ -1781,7 +1820,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         return size_id.startswith('vbm')
 
-    def _to_node(self, data):
+    def _to_node(self, data: Dict[str, Any]) -> Node:
         id_ = data['id']
         name = data['label']
         public_ips = data['main_ip'].split() + data['v6_main_ip'].split()
@@ -1830,7 +1869,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                     extra=extra,
                     created_at=created_at)
 
-    def _to_volume(self, data):
+    def _to_volume(self, data: Dict[str, Any]) -> StorageVolume:
         id_ = data['id']
         name = data['label']
         size = data['size_gb']
@@ -1852,7 +1891,10 @@ class VultrNodeDriverV2(VultrNodeDriver):
                              state=state,
                              extra=extra)
 
-    def _get_node_state(self, state, power_state=None):
+    def _get_node_state(self,
+                        state: str,
+                        power_state: Optional[str] = None,
+                        ) -> NodeState:
         try:
             state = self.NODE_STATE_MAP[state]
         except KeyError:
@@ -1865,7 +1907,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             state = NodeState.STOPPED
         return state
 
-    def _to_key_pair(self, data):
+    def _to_key_pair(self, data: Dict[str, Any]) -> KeyPair:
         name = data['name']
         public_key = data['ssh_key']
         # requires cryptography module
@@ -1884,7 +1926,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                        extra=extra,
                        )
 
-    def _to_location(self, data):
+    def _to_location(self, data: Dict[str, Any]) -> NodeLocation:
         id_ = data['id']
         name = data['city']
         country = data['country']
@@ -1899,7 +1941,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                             extra=extra
                             )
 
-    def _to_image(self, data):
+    def _to_image(self, data: Dict[str, Any]) -> NodeImage:
         id_ = data['id']
         name = data['name']
         extra = {
@@ -1911,7 +1953,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                          driver=self,
                          extra=extra)
 
-    def _to_size(self, data):
+    def _to_size(self, data: Dict[str, Any]) -> NodeSize:
         id_ = data['id']
         ram = data['ram']
         disk = data['disk']
@@ -1942,7 +1984,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                         driver=self,
                         extra=extra)
 
-    def _to_network(self, data):
+    def _to_network(self, data: Dict[str, Any]) -> VultrNetwork:
         id_ = data['id']
         cidr_block = '%s/%s' % (data['v4_subnet'], data['v4_subnet_mask'])
         location = data['region']
@@ -1955,7 +1997,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
                             location=location,
                             extra=extra)
 
-    def _to_snapshot(self, data):
+    def _to_snapshot(self, data: Dict[str, Any]) -> VultrNodeSnapshot:
         id_ = data['id']
         created = data['date_created']
         # Size is returned in bytes, convert to GBs
@@ -1976,7 +2018,11 @@ class VultrNodeDriverV2(VultrNodeDriver):
                                  extra=extra,
                                  driver=self)
 
-    def _paginated_request(self, url, key, params=None):
+    def _paginated_request(self,
+                           url: str,
+                           key: str,
+                           params: Optional[Dict[str, Any]] = None
+                           ) -> List[Any]:
         """Perform multiple calls to get the full list of items when
         the API responses are paginated.
 

@@ -16,6 +16,7 @@
 Vultr DNS Driver
 """
 import json
+from typing import Optional, List, Dict, Any
 
 from libcloud.utils.py3 import urlencode
 from libcloud.common.vultr import VultrConnection
@@ -431,7 +432,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         RecordType.SSHFP: 'SSHFP',
     }
 
-    def list_zones(self):
+    def list_zones(self) -> List[Zone]:
         """Return a list of zones.
 
         :return: ``list`` of :class:`Zone`
@@ -439,7 +440,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
         data = self._paginated_request('/v2/domains', 'domains')
         return [self._to_zone(item) for item in data]
 
-    def get_zone(self, zone_id):
+    def get_zone(self, zone_id: str) -> Zone:
         """Return a Zone instance.
 
         :param zone_id: ID of the required zone
@@ -450,7 +451,12 @@ class VultrDNSDriverV2(VultrDNSDriver):
         resp = self.connection.request('/v2/domains/%s' % zone_id)
         return self._to_zone(resp.object['domain'])
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self,
+                    domain: str,
+                    type: str = 'master',
+                    ttl: Optional[int] = None,
+                    extra: Optional[Dict[str, Any]] = None,
+                    ) -> Zone:
         """Create a new zone.
 
         :param domain: Zone domain name (e.g. example.com)
@@ -486,7 +492,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
                                        method='POST')
         return self._to_zone(resp.object['domain'])
 
-    def delete_zone(self, zone):
+    def delete_zone(self, zone: Zone) -> bool:
         """Delete a zone.
 
         Note: This will delete all the records belonging to this zone.
@@ -500,7 +506,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
                                        method='DELETE')
         return resp.success()
 
-    def list_records(self, zone):
+    def list_records(self, zone: Zone) -> List[Record]:
         """Return a list of records for the provided zone.
 
         :param zone: Zone to list records for.
@@ -512,7 +518,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
                                        'records')
         return [self._to_record(item, zone) for item in data]
 
-    def get_record(self, zone_id, record_id):
+    def get_record(self, zone_id: str, record_id: str) -> Record:
         """Return a Record instance.
 
         :param zone_id: ID of the required zone
@@ -536,7 +542,13 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         return self._to_record(resp.object['record'], zone)
 
-    def create_record(self, name, zone, type, data, extra=None):
+    def create_record(self,
+                      name: str,
+                      zone: Zone,
+                      type: RecordType,
+                      data: str,
+                      extra: Optional[Dict[str, Any]] = None
+                      ) -> Record:
         """Create a new record.
 
         :param name: Record name without the domain name (e.g. www).
@@ -579,8 +591,13 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         return self._to_record(resp.object['record'], zone)
 
-    def update_record(self, record, name=None, type=None,
-                      data=None, extra=None):
+    def update_record(self,
+                      record: Record,
+                      name: Optional[str] = None,
+                      type: Optional[RecordType] = None,
+                      data: Optional[str] = None,
+                      extra: Optional[Dict[str, Any]] = None
+                      ) -> bool:
         """Update an existing record.
 
         :param record: Record to update.
@@ -626,7 +643,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         return resp.success()
 
-    def delete_record(self, record):
+    def delete_record(self, record: Record) -> bool:
         """Delete a record.
 
         :param record: Record to delete.
@@ -640,7 +657,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         return resp.success()
 
-    def _to_zone(self, data):
+    def _to_zone(self, data: Dict[str, Any]) -> Zone:
         type_ = 'master'
         domain = data['domain']
         extra = {
@@ -653,7 +670,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
                     ttl=None,
                     extra=extra)
 
-    def _to_record(self, data, zone):
+    def _to_record(self, data: Dict[str, Any], zone: Zone) -> Record:
         id_ = data['id']
         name = data['name']
         type_ = self._string_to_record_type(data['type'])
@@ -672,7 +689,11 @@ class VultrDNSDriverV2(VultrDNSDriver):
                       zone=zone,
                       extra=extra)
 
-    def _paginated_request(self, url, key, params=None):
+    def _paginated_request(self,
+                           url: str,
+                           key: str,
+                           params: Optional[Dict[str, Any]] = None,
+                           ) -> List[Any]:
         """Perform multiple calls to get the full list of items when
         the API responses are paginated.
 
