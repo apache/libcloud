@@ -1074,7 +1074,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/instances', 'instances')
         nodes = [self._to_node(item) for item in data]
 
-        if ex_list_bare_metals is True:
+        if ex_list_bare_metals:
             nodes += self.ex_list_bare_metal_nodes()
         return nodes
 
@@ -1249,7 +1249,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        if self._is_bare_metal(node.size) is True:
+        if self._is_bare_metal(node.size):
             return self.ex_reboot_bare_metal_node(node)
 
         resp = self.connection.request('/v2/instances/%s/reboot' % node.id,
@@ -1265,7 +1265,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        if self._is_bare_metal(node.size) is True:
+        if self._is_bare_metal(node.size):
             return self.ex_start_bare_metal_node(node)
 
         resp = self.connection.request('/v2/instances/%s/start' % node.id,
@@ -1281,7 +1281,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        if self._is_bare_metal(node.size) is True:
+        if self._is_bare_metal(node.size):
             return self.ex_stop_bare_metal_node(node)
 
         return self.ex_stop_nodes([node])
@@ -1294,7 +1294,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
 
         :rtype: ``bool``
         """
-        if self._is_bare_metal(node.size) is True:
+        if self._is_bare_metal(node.size):
             return self.ex_destroy_bare_metal_node(node)
 
         resp = self.connection.request('/v2/instances/%s' % node.id,
@@ -1313,7 +1313,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
         data = self._paginated_request('/v2/plans', 'plans')
         sizes = [self._to_size(item) for item in data]
 
-        if ex_list_bare_metals is True:
+        if ex_list_bare_metals:
             sizes += self.ex_list_bare_metal_sizes()
         return sizes
 
@@ -1803,7 +1803,7 @@ class VultrNodeDriverV2(VultrNodeDriver):
             'os': data['os'],
             'is_bare_metal': is_bare_metal,
         }
-        if is_bare_metal is True:
+        if is_bare_metal:
             state = self._get_node_state(data['status'])
             extra['cpu_count'] = data['cpu_count']
             extra['mac_address'] = data['mac_address']
