@@ -26,6 +26,14 @@ Other
 - Also run unit tests under Python 3.10 + Pyjion on CI/CD.
   (GITHUB-1626)
 
+- All the code has been reformatted using black v21.10b0 and we will enforce
+  black code style for all the new code going forward.
+
+  Developers can re-format their code using new ``black`` tox target (``black
+  -etox``) and they can check if there are any violations by running
+  ``black-check`` target (``tox -eblack-check``).
+  (GITHUB-1623, GITHUB-1624)
+
 Changes in Apache Libcloud 3.4.0
 --------------------------------
 
