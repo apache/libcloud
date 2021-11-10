@@ -17,6 +17,7 @@ import sys
 import errno
 import hashlib
 
+from libcloud.common.exceptions import RateLimitReachedError
 from libcloud.utils.py3 import httplib
 from io import BytesIO
 
@@ -274,6 +275,25 @@ class BaseStorageTests(unittest.TestCase):
         result = self.driver1._get_standard_range_str(10, 11, True)
         self.assertEqual(result, 'bytes=10-11')
 
+    @mock.patch('os.environ', {'LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS': True})
+    def test_should_retry_rate_limited_errors(self):
+        count = 0
+
+        def raise_on_second(*_, **__):
+            nonlocal count
+            count += 1
+            if count > 1:
+                raise SecondException()
+            else:
+                raise RateLimitReachedError()
+
+        send_mock = Mock()
+        self.driver1.connection.connection.session.send = send_mock
+        send_mock.side_effect = raise_on_second
+        with self.assertRaises(SecondException):
+            self.driver1._upload_object(object_name="some name", content_type="something", request_path="/",
+                                        stream=iter([]))
+
 
 class BaseRangeDownloadMockHttpTestCase(unittest.TestCase):
     def test_get_start_and_end_bytes_from_range_str(self):
@@ -291,6 +311,12 @@ class BaseRangeDownloadMockHttpTestCase(unittest.TestCase):
         range_str = 'bytes=3-5'
         result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
         self.assertEqual(result, (3, 5))
+
+
+class SecondException(Exception):
+    pass
+
+
 
 
 if __name__ == '__main__':

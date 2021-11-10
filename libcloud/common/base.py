@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
+from typing import Union, Dict, Any
 from typing import Type
 from typing import Optional
 
@@ -248,6 +248,7 @@ class XmlResponse(Response):
                                          body=self.body,
                                          driver=self.connection.driver)
         return body
+
     parse_error = parse_body
 
 
@@ -609,6 +610,21 @@ class Connection(object):
         if self.connection is None:
             self.connect()
 
+        request_to_be_executed = self._retryable_request
+
+        if retry_enabled:
+            retry_request = self.retryCls(retry_delay=self.retry_delay,
+                                          timeout=self.timeout,
+                                          backoff=self.backoff)
+            request_to_be_executed = retry_request(self._retryable_request)
+
+        return request_to_be_executed(url=url, method=method,
+                                      raw=raw, stream=stream,
+                                      headers=headers,
+                                      data=data)
+
+    def _retryable_request(self, url: str, data: bytes, headers: Dict[str, Any],
+                           method: str, raw: bool, stream: bool) -> RawResponse:
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
@@ -621,18 +637,12 @@ class Connection(object):
                     raw=raw,
                     stream=stream)
             else:
-                if retry_enabled:
-                    retry_request = self.retryCls(retry_delay=self.retry_delay,
-                                                  timeout=self.timeout,
-                                                  backoff=self.backoff)
-                    retry_request(self.connection.request)(method=method,
-                                                           url=url,
-                                                           body=data,
-                                                           headers=headers,
-                                                           stream=stream)
-                else:
-                    self.connection.request(method=method, url=url, body=data,
-                                            headers=headers, stream=stream)
+                self.connection.request(method=method,
+                                        url=url,
+                                        body=data,
+                                        headers=headers,
+                                        stream=stream)
+
         except socket.gaierror as e:
             message = str(e)
             errno = getattr(e, 'errno', None)
@@ -875,6 +885,7 @@ class ConnectionKey(Connection):
     """
     Base connection class which accepts a single ``key`` argument.
     """
+
     def __init__(self, key, secure=True, host=None, port=None, url=None,
                  timeout=None, proxy_url=None, backoff=None, retry_delay=None):
         """
@@ -894,6 +905,7 @@ class CertificateConnection(Connection):
     """
     Base connection class which accepts a single ``cert_file`` argument.
     """
+
     def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
                  proxy_url=None, timeout=None, backoff=None, retry_delay=None):
         """
