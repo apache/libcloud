@@ -7,6 +7,13 @@ Changes in Apache Libcloud in development
 Common
 ~~~~~~
 
+- Support for Python 3.5 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.5, you should use an older
+  release which still supports Python 3.5.
+  (GITHUB-1620)
+
 - Update code which retries failed HTTP requests to also retry failed "raw"
   requests and make sure we also wrap and retry piece of code where Response
   class is instantiated and exceptions can be thrown.
