@@ -624,7 +624,7 @@ class Connection(object):
                                       data=data)
 
     def _retryable_request(self, url: str, data: bytes, headers: Dict[str, Any],
-                           method: str, raw: bool, stream: bool) -> RawResponse:
+                           method: str, raw: bool, stream: bool) -> Union[RawResponse, Response]:
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
