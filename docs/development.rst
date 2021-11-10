@@ -31,14 +31,14 @@ General contribution guidelines
 Code style guide
 ----------------
 
-* We follow `PEP8 Python Style Guide`_
+* We follow `The Black code style`_ and automatically enforce it for all the
+  new code using black tool. You can re-format your code using black by
+  running ``black`` tox target (``tox -eblack``).
 * Use 4 spaces for a tab
-* Use 79 characters in a line
+* Use 100 characters in a line
 * Make sure edited file doesn't contain any trailing whitespace
-* You can verify that your modifications don't break any rules by running the
-  ``flake8`` script - e.g. ``flake8 libcloud/edited_file.py`` or
-  ``tox -e lint``.
-  Second command will run flake8 on all the files in the repository.
+* You can verify that your changes don't break any rules by running the
+  following tox targets - ``lint,pylint,black`` - ``tox -elint,pylint,black``.
 
 And most importantly, follow the existing style in the file you are editing and
 **be consistent**.
@@ -392,3 +392,4 @@ code work with multiple versions on the following link -
 .. _`Apache website`: https://www.apache.org/licenses/#clas
 .. _`Lessons learned while porting Libcloud to Python 3`: http://www.tomaz.me/2011/12/03/lessons-learned-while-porting-libcloud-to-python-3.html
 .. _`squashing commits with rebase`: http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html
+.. _`The Black code style`: https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html
