@@ -4,6 +4,17 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+~~~~~~
+
+- Update code which retries failed HTTP requests to also retry failed "raw"
+  requests.
+  [Daniel Draper - @Germandrummer92]
+  (GITHUB-1592)
+
+- Also run unit tests under Python 3.10 + Pyjion on CI/CD.
+  (GITHUB-1626)
+
 Other
 ~~~~~
 
