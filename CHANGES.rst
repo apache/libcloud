@@ -1,8 +1,26 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud 3.3.2 (in development)
--------------------------------------------------
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Common
+~~~~~~
+
+- Update code which retries failed HTTP requests to also retry failed "raw"
+  requests and make sure we also wrap and retry piece of code where Response
+  class is instantiated and exceptions can be thrown.
+  [Daniel Draper - @Germandrummer92]
+  (GITHUB-1592)
+
+Other
+~~~~~
+
+- Also run unit tests under Python 3.10 + Pyjion on CI/CD.
+  (GITHUB-1626)
+
+Changes in Apache Libcloud 3.4.0
+--------------------------------
 
 Common
 ~~~~~~
@@ -15,6 +33,54 @@ Common
   [Dimitris Galanis - @dimgal1]
 
 - Update setup.py metadata and indicate we also support Python 3.10.
+
+- [Google] Update Google authentication code so so we don't try to contact
+  GCE metadata server when determining auth credentials type when oAuth 2.0 /
+  installed app type of credentials are used.
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- [Google] Update Google authentication code so we don't try to retry failed
+  request when trying to determine if GCE metadata server is available when
+  retrying is enabled globally (either via module level constant or via
+  environment variable value).
+
+  This will speed up scenarios when trying is enabled globally, but GCE
+  metadata server is not available and different type of credentials are used
+  (e.g. oAuth 2).
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- Update minimum ``requests`` version we require as part for install_requires
+  in setup.py to ``2.26.0`` when using Python >= 3.6.
+
+  This was done to avoid licensing issue with transitive dependency
+  (``chardet``).
+
+  NOTE: requests ``>=2.25.1`` will be used when using Python 3.5 since 2.26.0
+  doesn't support Python 3.5 anymore.
+
+  For more context, see https://github.com/psf/requests/pull/5797.
+  (GITHUB-1594)
+
+  Reported by Jarek Potiuk - @potiuk.
+
+- Update HTTP connection and request retry code to be more flexible so user
+  can specify and utilize custom retry logic which can be configured via
+  connection retryCls attribute
+  (``driver.connection.retryCls = MyRetryClass``).
+
+  (GITHUB-1558)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+- HTTP connection and request retry logic has been updated so we still respect
+  ``timeout`` argument when retrying requests due to rate limit being reached
+  errors. Previously, we would try to retry indefinitely on
+  ``RateLimitReachedError`` exceptions.
 
 Storage
 ~~~~~~~
@@ -103,6 +169,24 @@ Compute
   (GITHUB-1597, GITHUB-1598)
   [Daniela Bauer - @marianne013]
 
+- [OpenStack] Add support for using optional external cache for auth tokens
+
+  This cache can be shared by multiple processes which results in much less
+  tokens being allocated when many different instances / processes
+  are utilizing the same set of credentials.
+
+  This functionality can be used by implementing a custom cache class with
+  caching logic (e.g. storing cache context on a local filesystem, external
+  system such as Redis or similar) + using ``ex_auth_cache`` driver constructor
+  argument.
+  (GITHUB-1460, GITHUB-1557)
+  [@dpeschman]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
+
 DNS
 ~~~
 
@@ -119,12 +203,21 @@ DNS
   (GITHUB-1571)
   [Gasper Vozel - @karantan]
 
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
+
 Other
 ~~~~~
 
 - Fix ``python_requires`` setup.py metadata item value.
   (GITHUB-1606)
   [Michał Górny - @mgorny]
+
+- Update tox targets for unit tests to utilize ``pytest-xdist`` plugin to run
+  tests in parallel in multiple processes to speed up the test runs.
+  (GITHUB-1625)
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------

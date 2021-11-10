@@ -5,6 +5,36 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
+Libcloud 3.3.2
+--------------
+
+* Exception message changed in OpenStack drivers
+
+  Attempting to use an identity API that requires authentication without an
+  authentication token raises a ValueError.  The exception message used to be
+  "Not to be authenticated to perform this request", but has now been changed
+  to "Need to be authenticated to perform this request".
+
+* Code which retries HTTP requests on 429 rate limit reached status code has
+  been updated to respect ``timeout`` argument and stop retrying if timeout
+  has been reached.
+
+  Previously if API kept returning 429 status code back to the client, the code
+  would try to retry for ever and in some scenarios when Retry-After value is
+  not available in the response headers, also use 0 seconds for the sleep /
+  retry delay which would cause busy waiting.
+
+  If you want to preserve old behavior, you can do that by setting
+  ``retryCls`` variable on the driver connection instance to
+  ``RetryForeverOnRateLimitError`` as shown below.:
+
+  .. sourcecode:: python
+
+    from libcloud.utils.retry import RetryForeverOnRateLimitError
+
+    driver.connection.retryCls = RetryForeverOnRateLimitError
+    ...
+
 Libcloud 3.3.0
 --------------
 

@@ -90,12 +90,13 @@ class LocalTests(unittest.TestCase):
         # 3. Multiprocessing scenario where IPC lock is involved
         def acquire_lock_in_subprocess(pid, success):
             # For first process acquire should succeed and for the second it should fail
-
             lock = LockLocalStorage("/tmp/c", timeout=0.5)
 
             if pid == 1:
                 with lock:
-                    time.sleep(1)
+                    # We use longer sleep when running tests in parallel to avoid
+                    # failures related to slower process spawn
+                    time.sleep(2.5)
 
                 success.value = 1
             elif pid == 2:
@@ -110,6 +111,8 @@ class LocalTests(unittest.TestCase):
 
         p1 = multiprocessing.Process(target=acquire_lock_in_subprocess, args=(1, success_1,))
         p1.start()
+
+        time.sleep(0.2)
 
         p2 = multiprocessing.Process(target=acquire_lock_in_subprocess, args=(2, success_2,))
         p2.start()

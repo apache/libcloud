@@ -68,7 +68,7 @@ class GCEConnection(GoogleBaseConnection):
                                             **kwargs)
         self.request_path = '/compute/%s/projects/%s' % (API_VERSION,
                                                          project)
-        self.gce_params = None
+        self.gce_params = {}
 
     def pre_connect_hook(self, params, headers):
         """

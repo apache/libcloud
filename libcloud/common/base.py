@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
+from typing import Union, Dict, Any
 from typing import Type
 from typing import Optional
 
@@ -33,7 +33,8 @@ from libcloud.utils.py3 import httplib
 from libcloud.utils.py3 import urlparse
 from libcloud.utils.py3 import urlencode
 
-from libcloud.utils.misc import lowercase_keys, retry
+from libcloud.utils.misc import lowercase_keys
+from libcloud.utils.retry import Retry
 from libcloud.common.exceptions import exception_from_message
 from libcloud.common.types import LibcloudError, MalformedResponseError
 from libcloud.http import LibcloudConnection, HttpLibResponseProxy
@@ -247,6 +248,7 @@ class XmlResponse(Response):
                                          body=self.body,
                                          driver=self.connection.driver)
         return body
+
     parse_error = parse_body
 
 
@@ -314,6 +316,7 @@ class Connection(object):
 
     responseCls = Response
     rawResponseCls = RawResponse
+    retryCls = Retry
     connection = None
     host = '127.0.0.1'  # type: str
     port = 443
@@ -500,7 +503,8 @@ class Connection(object):
         self.ua.append(token)
 
     def request(self, action, params=None, data=None, headers=None,
-                method='GET', raw=False, stream=False, json=None):
+                method='GET', raw=False, stream=False, json=None,
+                retry_failed=None):
         """
         Request a given `action`.
 
@@ -535,6 +539,10 @@ class Connection(object):
                     and allow streaming of the response data
                     (for downloading large files)
 
+        :param retry_failed: True if failed requests should be retried. This
+                              argument can override module level constant and
+                              environment variable value on per-request basis.
+
         :return: An :class:`Response` instance.
         :rtype: :class:`Response` instance
 
@@ -551,6 +559,11 @@ class Connection(object):
 
         retry_enabled = os.environ.get('LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS',
                                        False) or RETRY_FAILED_HTTP_REQUESTS
+
+        # Method level argument has precedence over module level constant and
+        # environment variable
+        if retry_failed is not None:
+            retry_enabled = retry_failed
 
         action = self.morph_action_hook(action)
         self.action = action
@@ -597,9 +610,28 @@ class Connection(object):
         if self.connection is None:
             self.connect()
 
+        request_to_be_executed = self._retryable_request
+
+        if retry_enabled:
+            retry_request = self.retryCls(retry_delay=self.retry_delay,
+                                          timeout=self.timeout,
+                                          backoff=self.backoff)
+            request_to_be_executed = retry_request(self._retryable_request)
+
+        return request_to_be_executed(url=url, method=method,
+                                      raw=raw, stream=stream,
+                                      headers=headers,
+                                      data=data)
+
+    def _retryable_request(self, url: str, data: bytes,
+                           headers: Dict[str, Any],
+                           method: str, raw: bool,
+                           stream: bool) -> Union[RawResponse, Response]:
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
+            assert self.connection is not None
+
             if raw:
                 self.connection.prepared_request(
                     method=method,
@@ -609,25 +641,19 @@ class Connection(object):
                     raw=raw,
                     stream=stream)
             else:
-                if retry_enabled:
-                    retry_request = retry(timeout=self.timeout,
-                                          retry_delay=self.retry_delay,
-                                          backoff=self.backoff)
-                    retry_request(self.connection.request)(method=method,
-                                                           url=url,
-                                                           body=data,
-                                                           headers=headers,
-                                                           stream=stream)
-                else:
-                    self.connection.request(method=method, url=url, body=data,
-                                            headers=headers, stream=stream)
+                self.connection.request(method=method,
+                                        url=url,
+                                        body=data,
+                                        headers=headers,
+                                        stream=stream)
+
         except socket.gaierror as e:
             message = str(e)
             errno = getattr(e, 'errno', None)
 
             if errno == -5:
                 # Throw a more-friendly exception on "no address associated
-                # with hostname" error. This error could simpli indicate that
+                # with hostname" error. This error could simply indicate that
                 # "host" Connection class attribute is set to an incorrect
                 # value
                 class_name = self.__class__.__name__
@@ -635,7 +661,7 @@ class Connection(object):
                        '(%s.connection) is set to an invalid, non-hostname '
                        'value (%s)?' %
                        (message, class_name, self.host))
-                raise socket.gaierror(msg)
+                raise socket.gaierror(msg)  # type: ignore
             self.reset_context()
             raise e
         except ssl.SSLError as e:
@@ -863,6 +889,7 @@ class ConnectionKey(Connection):
     """
     Base connection class which accepts a single ``key`` argument.
     """
+
     def __init__(self, key, secure=True, host=None, port=None, url=None,
                  timeout=None, proxy_url=None, backoff=None, retry_delay=None):
         """
@@ -882,6 +909,7 @@ class CertificateConnection(Connection):
     """
     Base connection class which accepts a single ``cert_file`` argument.
     """
+
     def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
                  proxy_url=None, timeout=None, backoff=None, retry_delay=None):
         """

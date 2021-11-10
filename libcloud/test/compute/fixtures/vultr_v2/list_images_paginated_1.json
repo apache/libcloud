@@ -1,0 +1,71 @@
+{
+    "os": [
+        {
+            "id": 124,
+            "name": "Windows 2012 R2 x64",
+            "arch": "x64",
+            "family": "windows"
+        },
+        {
+            "id": 159,
+            "name": "Custom",
+            "arch": "x64",
+            "family": "iso"
+        },
+        {
+            "id": 164,
+            "name": "Snapshot",
+            "arch": "x64",
+            "family": "snapshot"
+        },
+        {
+            "id": 167,
+            "name": "CentOS 7 x64",
+            "arch": "x64",
+            "family": "centos"
+        },
+        {
+            "id": 180,
+            "name": "Backup",
+            "arch": "x64",
+            "family": "backup"
+        },
+        {
+            "id": 186,
+            "name": "Application",
+            "arch": "x64",
+            "family": "application"
+        },
+        {
+            "id": 194,
+            "name": "Debian 8 i386 (jessie)",
+            "arch": "i386",
+            "family": "debian"
+        },
+        {
+            "id": 215,
+            "name": "Ubuntu 16.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 216,
+            "name": "Ubuntu 16.04 i386",
+            "arch": "i386",
+            "family": "ubuntu"
+        },
+        {
+            "id": 230,
+            "name": "FreeBSD 11 x64",
+            "arch": "x64",
+            "family": "freebsd"
+        }
+    ],
+    "meta": {
+        "total": 30,
+        "links": {
+            "next": "bmV4dF9fMjMw",
+            "prev": ""
+        }
+    }
+}

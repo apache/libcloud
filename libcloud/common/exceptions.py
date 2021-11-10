@@ -56,7 +56,7 @@ class RateLimitReachedError(BaseHTTPError):
                                                     self.message,
                                                     headers)
         if self.headers is not None:
-            self.retry_after = int(self.headers.get('retry-after', 0))
+            self.retry_after = float(self.headers.get('retry-after', 0))
         else:
             self.retry_after = 0
 

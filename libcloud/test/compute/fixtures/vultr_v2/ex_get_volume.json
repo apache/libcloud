@@ -1,0 +1,13 @@
+{
+    "block": {
+        "id": "123",
+        "date_created": "2021-09-02T09:21:40+00:00",
+        "cost": 1,
+        "status": "active",
+        "size_gb": 10,
+        "region": "lax",
+        "attached_to_instance": "",
+        "label": "test2",
+        "mount_id": "lax-eabe34f30bc043"
+    }
+}

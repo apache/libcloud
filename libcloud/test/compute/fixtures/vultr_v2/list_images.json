@@ -1,0 +1,191 @@
+{
+    "os": [
+        {
+            "id": 124,
+            "name": "Windows 2012 R2 x64",
+            "arch": "x64",
+            "family": "windows"
+        },
+        {
+            "id": 159,
+            "name": "Custom",
+            "arch": "x64",
+            "family": "iso"
+        },
+        {
+            "id": 164,
+            "name": "Snapshot",
+            "arch": "x64",
+            "family": "snapshot"
+        },
+        {
+            "id": 167,
+            "name": "CentOS 7 x64",
+            "arch": "x64",
+            "family": "centos"
+        },
+        {
+            "id": 180,
+            "name": "Backup",
+            "arch": "x64",
+            "family": "backup"
+        },
+        {
+            "id": 186,
+            "name": "Application",
+            "arch": "x64",
+            "family": "application"
+        },
+        {
+            "id": 194,
+            "name": "Debian 8 i386 (jessie)",
+            "arch": "i386",
+            "family": "debian"
+        },
+        {
+            "id": 215,
+            "name": "Ubuntu 16.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 216,
+            "name": "Ubuntu 16.04 i386",
+            "arch": "i386",
+            "family": "ubuntu"
+        },
+        {
+            "id": 230,
+            "name": "FreeBSD 11 x64",
+            "arch": "x64",
+            "family": "freebsd"
+        },
+        {
+            "id": 240,
+            "name": "Windows 2016 x64",
+            "arch": "x64",
+            "family": "windows"
+        },
+        {
+            "id": 244,
+            "name": "Debian 9 x64 (stretch)",
+            "arch": "x64",
+            "family": "debian"
+        },
+        {
+            "id": 270,
+            "name": "Ubuntu 18.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 327,
+            "name": "FreeBSD 12 x64",
+            "arch": "x64",
+            "family": "freebsd"
+        },
+        {
+            "id": 352,
+            "name": "Debian 10 x64 (buster)",
+            "arch": "x64",
+            "family": "debian"
+        },
+        {
+            "id": 362,
+            "name": "CentOS 8 x64",
+            "arch": "x64",
+            "family": "centos"
+        },
+        {
+            "id": 371,
+            "name": "Windows 2019 x64",
+            "arch": "x64",
+            "family": "windows"
+        },
+        {
+            "id": 381,
+            "name": "CentOS 7 SELinux x64",
+            "arch": "x64",
+            "family": "centos"
+        },
+        {
+            "id": 387,
+            "name": "Ubuntu 20.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 401,
+            "name": "CentOS 8 Stream x64",
+            "arch": "x64",
+            "family": "centos"
+        },
+        {
+            "id": 412,
+            "name": "OpenBSD 6.8 x64",
+            "arch": "x64",
+            "family": "openbsd"
+        },
+        {
+            "id": 413,
+            "name": "Ubuntu 20.10 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 415,
+            "name": "Fedora 33 x64",
+            "arch": "x64",
+            "family": "fedora"
+        },
+        {
+            "id": 445,
+            "name": "Ubuntu 21.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 446,
+            "name": "Fedora 34 x64",
+            "arch": "x64",
+            "family": "fedora"
+        },
+        {
+            "id": 447,
+            "name": "FreeBSD 13 x64",
+            "arch": "x64",
+            "family": "freebsd"
+        },
+        {
+            "id": 448,
+            "name": "Rocky Linux x64",
+            "arch": "x64",
+            "family": "rockylinux"
+        },
+        {
+            "id": 450,
+            "name": "OpenBSD 6.9 x64",
+            "arch": "x64",
+            "family": "openbsd"
+        },
+        {
+            "id": 452,
+            "name": "AlmaLinux x64",
+            "arch": "x64",
+            "family": "almalinux"
+        },
+        {
+            "id": 477,
+            "name": "Debian 11 x64 (bullseye)",
+            "arch": "x64",
+            "family": "debian"
+        }
+    ],
+    "meta": {
+        "total": 30,
+        "links": {
+            "next": "",
+            "prev": ""
+        }
+    }
+}

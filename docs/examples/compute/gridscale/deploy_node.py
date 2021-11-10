@@ -27,7 +27,7 @@ images = driver.list_images()
 image = [i for i in images if i.name == 'Ubuntu 18.04 LTS'][0]
 
 locations = driver.list_locations()
-location = [l for l in locations if l.name == 'de/fra'][0]
+location = [loc for loc in locations if loc.name == 'de/fra'][0]
 
 # Check if a key pair object with the provided name already exists
 # If it already exists, using an existing key, otherwise import a new one

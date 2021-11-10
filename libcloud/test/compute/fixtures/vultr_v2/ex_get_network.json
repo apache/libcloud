@@ -1,0 +1,10 @@
+{
+    "network": {
+        "id": "123",
+        "date_created": "2021-09-02T14:23:48+00:00",
+        "region": "ams",
+        "description": "test1",
+        "v4_subnet": "10.7.96.0",
+        "v4_subnet_mask": 20
+    }
+}

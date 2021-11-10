@@ -444,7 +444,7 @@ class GandiNodeDriver(BaseGandiDriver, NodeDriver):
         :rtype: ``list`` of :class:`NodeLocation`
         """
         res = self.connection.request('hosting.datacenter.list')
-        return [self._to_loc(l) for l in res.object]
+        return [self._to_loc(loc) for loc in res.object]
 
     def list_volumes(self):
         """

@@ -187,7 +187,9 @@ class AbiquoNodeDriver(NodeDriver):
                                                 data=tostring(vm_task),
                                                 headers=headers)
 
+        # pylint: disable=maybe-no-member
         if state == 'NOT_ALLOCATED' or res.async_success():
+            # pylint: enable=maybe-no-member
             self.connection.request(action=node.extra['uri_id'],
                                     method='DELETE')
             return True
@@ -368,7 +370,9 @@ class AbiquoNodeDriver(NodeDriver):
                                                 data=tostring(vm_task),
                                                 headers=headers)
 
+        # pylint: disable=maybe-no-member
         if state == 'NOT_DEPLOYED' or res.async_success():
+            # pylint: enable=maybe-no-member
             # The node is no longer deployed. Unregister it.
             self.connection.request(action=group.uri,
                                     method='DELETE')
@@ -542,7 +546,7 @@ class AbiquoNodeDriver(NodeDriver):
         reboot_hdr = {'Accept': self.AR_MIME_TYPE}
         res = self.connection.async_request(action=reboot_uri,
                                             method='POST', headers=reboot_hdr)
-        return res.async_success()
+        return res.async_success()  # pylint: disable=maybe-no-member
 
     # -------------------------
     # Extenstion methods
@@ -579,7 +583,7 @@ class AbiquoNodeDriver(NodeDriver):
         res = self.connection.async_request(action=link_deploy, method='POST',
                                             data=tostring(vm_task),
                                             headers=headers)
-        if not res.async_success():
+        if not res.async_success():  # pylint: disable=maybe-no-member
             raise LibcloudError('Could not run the node', self)
 
     def _to_location(self, vdc, dc, driver):

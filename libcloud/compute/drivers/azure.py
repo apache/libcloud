@@ -401,7 +401,7 @@ class AzureNodeDriver(NodeDriver):
             Locations
         )
 
-        return [self._to_location(l) for l in data]
+        return [self._to_location(location) for location in data]
 
     def list_nodes(self, ex_cloud_service_name):
         """

@@ -2298,11 +2298,11 @@ class VCloud_1_5_NodeDriver(VCloudNodeDriver):
         # Find the organisation's network href
         res = self.connection.request(self.org)
         links = res.object.findall(fixxpath(res.object, 'Link'))
-        for l in links:
-            if l.attrib['type'] == \
+        for link in links:
+            if link.attrib['type'] == \
                     'application/vnd.vmware.vcloud.orgNetwork+xml' \
-                    and l.attrib['name'] == network_name:
-                network_href = l.attrib['href']
+                    and link.attrib['name'] == network_name:
+                network_href = link.attrib['href']
 
         if network_href is None:
             raise ValueError(

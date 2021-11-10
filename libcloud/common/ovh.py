@@ -226,7 +226,13 @@ def handle_and_rethrow_user_friendly_invalid_region_error(host, e):
     """
     msg = str(e).lower()
 
-    if 'name or service not known' in msg or 'getaddrinfo failed' in msg:
+    error_messages_to_throw = [
+        'name or service not known',
+        'nodename nor servname provided, or not known',
+        'getaddrinfo failed',
+    ]
+
+    if any([value for value in error_messages_to_throw if value in msg]):
         raise ValueError('Received "name or service not known" error '
                          'when sending a request. This likely '
                          'indicates invalid region argument was '
