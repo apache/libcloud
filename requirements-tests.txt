@@ -1,22 +1,15 @@
 pep8==1.7.1
-flake8==3.9.2; python_version <= '3.5'
 flake8==4.0.1; python_version >= '3.6'
-astroid==2.3.3; python_version <= '3.5'
 astroid==2.8.4; python_version >= '3.6'
-pylint==2.4.4; python_version <= '3.5'
 pylint==2.11.1; python_version >= '3.6'
-mock==3.0.5; python_version <= '3.5'
 mock==4.0.3; python_version >= '3.6'
 codecov==2.1.12
 coverage==4.5.4
-requests>=2.25.0; python_version <= '3.5'
 requests>=2.26.0; python_version >= '3.6'
-requests_mock
-# 5.3.2 is latest version which still supports Python 3.5, >= 6.2.5 is needed for Python 3.10
-pytest==5.3.2; python_version <= '3.5'
+requests_mock==1.9.3
 pytest==6.2.5; python_version >= '3.6'
-cryptography==3.2.1; python_version <= '3.5'
+pytest-xdist==2.4.0; python_version >= '3.6'
 cryptography==35.0.0; python_version >= '3.6'
 # NOTE: Only needed by nttcis loadbalancer driver
-pyopenssl==20.0.1; python_version <= '3.5'
 pyopenssl==21.0.0; python_version >= '3.6'
+more-itertools==8.11.0; python_version >= '3.6'

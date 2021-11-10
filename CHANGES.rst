@@ -1,8 +1,33 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud 3.3.2 (in development)
--------------------------------------------------
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Common
+~~~~~~
+
+- Support for Python 3.5 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.5, you should use an older
+  release which still supports Python 3.5.
+  (GITHUB-1620)
+
+- Update code which retries failed HTTP requests to also retry failed "raw"
+  requests and make sure we also wrap and retry piece of code where Response
+  class is instantiated and exceptions can be thrown.
+  [Daniel Draper - @Germandrummer92]
+  (GITHUB-1592)
+
+Other
+~~~~~
+
+- Also run unit tests under Python 3.10 + Pyjion on CI/CD.
+  (GITHUB-1626)
+
+Changes in Apache Libcloud 3.4.0
+--------------------------------
 
 Common
 ~~~~~~
@@ -154,15 +179,20 @@ Compute
 - [OpenStack] Add support for using optional external cache for auth tokens
 
   This cache can be shared by multiple processes which results in much less
-  tokens being allocated when many different instances / processes 
+  tokens being allocated when many different instances / processes
   are utilizing the same set of credentials.
 
-  This functionality can be used by implementing a custom cache class with 
+  This functionality can be used by implementing a custom cache class with
   caching logic (e.g. storing cache context on a local filesystem, external
   system such as Redis or similar) + using ``ex_auth_cache`` driver constructor
   argument.
   (GITHUB-1460, GITHUB-1557)
   [@dpeschman]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
 
 DNS
 ~~~
@@ -180,12 +210,21 @@ DNS
   (GITHUB-1571)
   [Gasper Vozel - @karantan]
 
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
+
 Other
 ~~~~~
 
 - Fix ``python_requires`` setup.py metadata item value.
   (GITHUB-1606)
   [Michał Górny - @mgorny]
+
+- Update tox targets for unit tests to utilize ``pytest-xdist`` plugin to run
+  tests in parallel in multiple processes to speed up the test runs.
+  (GITHUB-1625)
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------

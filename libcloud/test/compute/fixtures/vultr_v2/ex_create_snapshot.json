@@ -1,0 +1,11 @@
+{
+    "snapshot": {
+        "id": "123",
+        "date_created": "2021-09-02T17:12:26+00:00",
+        "description": "Test Snapshot",
+        "size": 0,
+        "status": "pending",
+        "os_id": 362,
+        "app_id": 0
+    }
+}

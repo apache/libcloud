@@ -5,7 +5,16 @@ This page describes how to upgrade from a previous version to a new version
 which contains backward incompatible or semi-incompatible changes and how to
 preserve the old behavior when this is possible.
 
-Libcloud 3.3.2
+Libcloud 3.5.0
+--------------
+
+* Support for Python 3.5 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.5, you should use an older
+  release which still supports Python 3.5.
+
+Libcloud 3.4.0
 --------------
 
 * Exception message changed in OpenStack drivers
@@ -14,7 +23,6 @@ Libcloud 3.3.2
   authentication token raises a ValueError.  The exception message used to be
   "Not to be authenticated to perform this request", but has now been changed
   to "Need to be authenticated to perform this request".
-
 
 * Code which retries HTTP requests on 429 rate limit reached status code has
   been updated to respect ``timeout`` argument and stop retrying if timeout

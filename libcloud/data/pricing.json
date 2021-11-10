@@ -35848,7 +35848,7 @@
                 "ca-central-1": 0.0372,
                 "eu-central-1": 0.0388,
                 "eu-north-1": 0.0365,
-                "eu-west-1": 0.0384,
+                "eu-west-1": 0.0365,
                 "eu-west-2": 0.0404,
                 "eu-west-3": 0.0405,
                 "sa-east-1": 0.0524,
@@ -35867,7 +35867,7 @@
                 "ca-central-1": 0.0744,
                 "eu-central-1": 0.0776,
                 "eu-north-1": 0.073,
-                "eu-west-1": 0.0768,
+                "eu-west-1": 0.073,
                 "eu-west-2": 0.0808,
                 "eu-west-3": 0.081,
                 "sa-east-1": 0.1048,
@@ -35886,7 +35886,7 @@
                 "ca-central-1": 0.1488,
                 "eu-central-1": 0.1552,
                 "eu-north-1": 0.146,
-                "eu-west-1": 0.1536,
+                "eu-west-1": 0.1459,
                 "eu-west-2": 0.1616,
                 "eu-west-3": 0.162,
                 "sa-east-1": 0.2096,
@@ -35905,7 +35905,7 @@
                 "ca-central-1": 2.3808,
                 "eu-central-1": 2.4832,
                 "eu-north-1": 2.336,
-                "eu-west-1": 2.4576,
+                "eu-west-1": 2.3347,
                 "eu-west-2": 2.5856,
                 "eu-west-3": 2.592,
                 "sa-east-1": 3.3536,
@@ -35924,7 +35924,7 @@
                 "ca-central-1": 0.2976,
                 "eu-central-1": 0.3104,
                 "eu-north-1": 0.292,
-                "eu-west-1": 0.3072,
+                "eu-west-1": 0.2918,
                 "eu-west-2": 0.3232,
                 "eu-west-3": 0.324,
                 "sa-east-1": 0.4192,
@@ -35943,7 +35943,7 @@
                 "ca-central-1": 0.5952,
                 "eu-central-1": 0.6208,
                 "eu-north-1": 0.584,
-                "eu-west-1": 0.6144,
+                "eu-west-1": 0.5837,
                 "eu-west-2": 0.6464,
                 "eu-west-3": 0.648,
                 "sa-east-1": 0.8384,
@@ -35962,7 +35962,7 @@
                 "ca-central-1": 1.1904,
                 "eu-central-1": 1.2416,
                 "eu-north-1": 1.168,
-                "eu-west-1": 1.2288,
+                "eu-west-1": 1.1674,
                 "eu-west-2": 1.2928,
                 "eu-west-3": 1.296,
                 "sa-east-1": 1.6768,
@@ -35981,7 +35981,7 @@
                 "ca-central-1": 1.7856,
                 "eu-central-1": 1.8624,
                 "eu-north-1": 1.752,
-                "eu-west-1": 1.8432,
+                "eu-west-1": 1.751,
                 "eu-west-2": 1.9392,
                 "eu-west-3": 1.944,
                 "sa-east-1": 2.5152,
@@ -36000,7 +36000,7 @@
                 "ca-central-1": 2.3808,
                 "eu-central-1": 2.4832,
                 "eu-north-1": 2.336,
-                "eu-west-1": 2.4576,
+                "eu-west-1": 2.3347,
                 "eu-west-2": 2.5856,
                 "eu-west-3": 2.592,
                 "sa-east-1": 3.3536,
@@ -36164,6 +36164,60 @@
                 "us-east-1": 2.7648,
                 "us-east-2": 2.7648,
                 "us-west-2": 2.7648
+            },
+            "c6i.large": {
+                "eu-west-1": 0.0912,
+                "us-east-1": 0.085,
+                "us-east-2": 0.085,
+                "us-west-2": 0.085
+            },
+            "c6i.xlarge": {
+                "eu-west-1": 0.1824,
+                "us-east-1": 0.17,
+                "us-east-2": 0.17,
+                "us-west-2": 0.17
+            },
+            "c6i.2xlarge": {
+                "eu-west-1": 0.3648,
+                "us-east-1": 0.34,
+                "us-east-2": 0.34,
+                "us-west-2": 0.34
+            },
+            "c6i.4xlarge": {
+                "eu-west-1": 0.7296,
+                "us-east-1": 0.68,
+                "us-east-2": 0.68,
+                "us-west-2": 0.68
+            },
+            "c6i.8xlarge": {
+                "eu-west-1": 1.4592,
+                "us-east-1": 1.36,
+                "us-east-2": 1.36,
+                "us-west-2": 1.36
+            },
+            "c6i.12xlarge": {
+                "eu-west-1": 2.1888,
+                "us-east-1": 2.04,
+                "us-east-2": 2.04,
+                "us-west-2": 2.04
+            },
+            "c6i.16xlarge": {
+                "eu-west-1": 2.9184,
+                "us-east-1": 2.72,
+                "us-east-2": 2.72,
+                "us-west-2": 2.72
+            },
+            "c6i.24xlarge": {
+                "eu-west-1": 4.3776,
+                "us-east-1": 4.08,
+                "us-east-2": 4.08,
+                "us-west-2": 4.08
+            },
+            "c6i.32xlarge": {
+                "eu-west-1": 5.8368,
+                "us-east-1": 5.44,
+                "us-east-2": 5.44,
+                "us-west-2": 5.44
             },
             "cc2.8xlarge": {
                 "ap-northeast-1": 2.349,
@@ -36331,6 +36385,10 @@
                 "eu-west-1": 7.69656,
                 "us-east-1": 6.30864,
                 "us-west-2": 6.30864
+            },
+            "dl1.24xlarge": {
+                "us-east-1": 13.10904,
+                "us-west-2": 13.10904
             },
             "f1.2xlarge": {
                 "ap-southeast-2": 1.981,
@@ -40500,6 +40558,7 @@
                 "sa-east-1": 0.0134,
                 "us-east-1": 0.0084,
                 "us-east-2": 0.0084,
+                "us-gov-west-1": 0.0098,
                 "us-west-1": 0.01,
                 "us-west-2": 0.0084
             },
@@ -40518,6 +40577,7 @@
                 "sa-east-1": 0.0268,
                 "us-east-1": 0.0168,
                 "us-east-2": 0.0168,
+                "us-gov-west-1": 0.0196,
                 "us-west-1": 0.02,
                 "us-west-2": 0.0168
             },
@@ -40536,6 +40596,7 @@
                 "sa-east-1": 0.0536,
                 "us-east-1": 0.0336,
                 "us-east-2": 0.0336,
+                "us-gov-west-1": 0.0392,
                 "us-west-1": 0.04,
                 "us-west-2": 0.0336
             },
@@ -40554,6 +40615,7 @@
                 "sa-east-1": 0.1072,
                 "us-east-1": 0.0672,
                 "us-east-2": 0.0672,
+                "us-gov-west-1": 0.0784,
                 "us-west-1": 0.08,
                 "us-west-2": 0.0672
             },
@@ -40572,6 +40634,7 @@
                 "sa-east-1": 0.2144,
                 "us-east-1": 0.1344,
                 "us-east-2": 0.1344,
+                "us-gov-west-1": 0.1568,
                 "us-west-1": 0.16,
                 "us-west-2": 0.1344
             },
@@ -40590,6 +40653,7 @@
                 "sa-east-1": 0.0067,
                 "us-east-1": 0.0042,
                 "us-east-2": 0.0042,
+                "us-gov-west-1": 0.0049,
                 "us-west-1": 0.005,
                 "us-west-2": 0.0042
             },
@@ -40608,6 +40672,7 @@
                 "sa-east-1": 0.4288,
                 "us-east-1": 0.2688,
                 "us-east-2": 0.2688,
+                "us-gov-west-1": 0.3136,
                 "us-west-1": 0.32,
                 "us-west-2": 0.2688
             },
@@ -42330,6 +42395,60 @@
             "c6gn.8xlarge": {},
             "c6gn.12xlarge": {},
             "c6gn.16xlarge": {},
+            "c6i.large": {
+                "eu-west-1": 0.6632,
+                "us-east-1": 0.657,
+                "us-east-2": 0.657,
+                "us-west-2": 0.657
+            },
+            "c6i.xlarge": {
+                "eu-west-1": 0.8464,
+                "us-east-1": 0.834,
+                "us-east-2": 0.834,
+                "us-west-2": 0.834
+            },
+            "c6i.2xlarge": {
+                "eu-west-1": 1.6928,
+                "us-east-1": 1.668,
+                "us-east-2": 1.668,
+                "us-west-2": 1.668
+            },
+            "c6i.4xlarge": {
+                "eu-west-1": 3.3856,
+                "us-east-1": 3.336,
+                "us-east-2": 3.336,
+                "us-west-2": 3.336
+            },
+            "c6i.8xlarge": {
+                "eu-west-1": 6.7712,
+                "us-east-1": 6.672,
+                "us-east-2": 6.672,
+                "us-west-2": 6.672
+            },
+            "c6i.12xlarge": {
+                "eu-west-1": 10.1568,
+                "us-east-1": 10.008,
+                "us-east-2": 10.008,
+                "us-west-2": 10.008
+            },
+            "c6i.16xlarge": {
+                "eu-west-1": 13.5424,
+                "us-east-1": 13.344,
+                "us-east-2": 13.344,
+                "us-west-2": 13.344
+            },
+            "c6i.24xlarge": {
+                "eu-west-1": 20.3136,
+                "us-east-1": 20.016,
+                "us-east-2": 20.016,
+                "us-west-2": 20.016
+            },
+            "c6i.32xlarge": {
+                "eu-west-1": 27.0848,
+                "us-east-1": 26.688,
+                "us-east-2": 26.688,
+                "us-west-2": 26.688
+            },
             "d2.xlarge": {},
             "d2.2xlarge": {},
             "d2.4xlarge": {},
@@ -42416,6 +42535,7 @@
                 "us-east-1": 14.27664,
                 "us-west-2": 14.27664
             },
+            "dl1.24xlarge": {},
             "f1.2xlarge": {},
             "f1.4xlarge": {},
             "f1.16xlarge": {},
@@ -51212,5 +51332,5 @@
         }
     },
     "storage": {},
-    "updated": 1635099165
+    "updated": 1636233182
 }

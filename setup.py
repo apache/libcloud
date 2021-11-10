@@ -153,7 +153,7 @@ def get_data_files(dname, ignore=None, parent=None):
 # Different versions of python have different requirements.  We can't use
 # libcloud.utils.py3 here because it relies on backports dependency being
 # installed / available
-PY_pre_35 = sys.version_info < (3, 5, 0)
+PY_pre_36 = sys.version_info < (3, 6, 0)
 
 HTML_VIEWSOURCE_BASE = 'https://svn.apache.org/viewvc/libcloud/trunk'
 PROJECT_BASE_DIR = 'https://libcloud.apache.org'
@@ -167,21 +167,16 @@ DOC_TEST_MODULES = ['libcloud.compute.drivers.dummy',
                     'libcloud.container.drivers.dummy',
                     'libcloud.backup.drivers.dummy']
 
-SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
+SUPPORTED_VERSIONS = ['PyPy 3.6+', 'Python 3.6+']
 
 # NOTE: python_version syntax is only supported when build system has
 # setuptools >= 36.2
 # For installation, minimum required pip version is 1.4
 # Reference: https://hynek.me/articles/conditional-python-dependencies/
-# We rely on >= 2.26.0 to avoid issues with LGL transitive dependecy
+# We rely on >= 2.26.0 to avoid issues with LGPL transitive dependency
 # See https://github.com/apache/libcloud/issues/1594 for more context
 INSTALL_REQUIREMENTS = []
-
-if sys.version_info < (3, 6, 0):
-    # requests 2.26.0 doesn't support Python 3.5 anymore
-    INSTALL_REQUIREMENTS.append('requests>=2.25.1')
-else:
-    INSTALL_REQUIREMENTS.append('requests>=2.26.0')
+INSTALL_REQUIREMENTS.append('requests>=2.26.0')
 
 
 setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
@@ -201,11 +196,12 @@ TEST_REQUIREMENTS = [
     'pytest-runner'
 ] + INSTALL_REQUIREMENTS
 
-if PY_pre_35:
+if PY_pre_36:
     version = '.'.join([str(x) for x in sys.version_info[:3]])
-    print('Version ' + version + ' is not supported. Supported versions are: %s. '
+    print('Python version %s is not supported. Supported versions are: %s. '
           'Latest version which supports Python 2.7 and Python 3 < 3.5.0 is '
-          'Libcloud v2.8.2' % ', '.join(SUPPORTED_VERSIONS))
+          'Libcloud v2.8.2 and Libcloud v3.4.0 for Python 3.5.' %
+          (version, ', '.join(SUPPORTED_VERSIONS)))
     sys.exit(1)
 
 

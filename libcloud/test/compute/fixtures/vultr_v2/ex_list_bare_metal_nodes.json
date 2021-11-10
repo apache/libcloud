@@ -1,0 +1,59 @@
+{
+    "bare_metals": [
+        {
+            "id": "56386bca-5070-4ff1-ad80-2a6e1e7bd1f3",
+            "os": "Debian 11 x64 (bullseye)",
+            "ram": "32768 MB",
+            "disk": "2x 960GB SSD",
+            "main_ip": "140.82.58.195",
+            "cpu_count": 6,
+            "region": "ams",
+            "date_created": "2021-09-06T08:56:10+00:00",
+            "status": "pending",
+            "netmask_v4": "255.255.254.0",
+            "gateway_v4": "140.82.58.1",
+            "plan": "vbm-6c-32gb",
+            "v6_network": "",
+            "v6_main_ip": "",
+            "v6_network_size": 0,
+            "label": "test1",
+            "tag": "",
+            "mac_address": 66988322868494,
+            "os_id": 477,
+            "app_id": 0,
+            "image_id": "",
+            "features": []
+        },
+        {
+            "id": "234",
+            "os": "Debian 11 x64 (bullseye)",
+            "ram": "131072 MB",
+            "disk": "2x 2000GB NVMe",
+            "main_ip": "149.28.106.211",
+            "cpu_count": 8,
+            "region": "mia",
+            "date_created": "2021-09-06T08:56:36+00:00",
+            "status": "pending",
+            "netmask_v4": "255.255.254.0",
+            "gateway_v4": "149.28.106.1",
+            "plan": "vbm-8c-132gb",
+            "v6_network": "",
+            "v6_main_ip": "",
+            "v6_network_size": 0,
+            "label": "test2",
+            "tag": "",
+            "mac_address": 189250955239968,
+            "os_id": 477,
+            "app_id": 0,
+            "image_id": "",
+            "features": []
+        }
+    ],
+    "meta": {
+        "total": 2,
+        "links": {
+            "next": "",
+            "prev": ""
+        }
+    }
+}

@@ -26,7 +26,7 @@ Provider            list zones list records create zone update zone create recor
 `RcodeZero DNS`_    yes        yes          yes         yes         yes           yes           yes         yes          
 `Route53 DNS`_      yes        yes          yes         no          yes           yes           yes         yes          
 `Softlayer DNS`_    yes        yes          yes         no          yes           yes           yes         yes          
-`Vultr DNS`_        yes        yes          yes         no          yes           no            yes         yes          
+`Vultr DNS`_        yes        yes          yes         no          yes           yes           yes         yes          
 `World Wide DNS`_   yes        yes          yes         yes         yes           yes           yes         yes          
 `Zerigo DNS`_       yes        yes          yes         yes         yes           yes           yes         yes          
 `Zonomi DNS`_       yes        yes          yes         no          yes           no            yes         yes          
@@ -55,7 +55,7 @@ Provider            list zones list records create zone update zone create recor
 .. _`RcodeZero DNS`: https://www.rcodezero.at/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
 .. _`Softlayer DNS`: https://www.softlayer.com
-.. _`Vultr DNS`: http://www.vultr.com/
+.. _`Vultr DNS`: https://www.vultr.com
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/
 .. _`Zonomi DNS`: https://zonomi.com

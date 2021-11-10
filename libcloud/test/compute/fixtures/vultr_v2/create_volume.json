@@ -1,0 +1,13 @@
+{
+    "block": {
+        "id": "ec6d1ecc-aa70-4f18-8edd-887a258b1b45",
+        "date_created": "2021-09-02T09:58:24+00:00",
+        "cost": 1.5,
+        "status": "pending",
+        "size_gb": 15,
+        "region": "ewr",
+        "attached_to_instance": "",
+        "label": "test4",
+        "mount_id": "ewr-ec6d1eccaa704f"
+    }
+}
