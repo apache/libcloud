@@ -277,6 +277,9 @@ class BaseStorageTests(unittest.TestCase):
 
     @mock.patch('os.environ', {'LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS': True})
     def test_should_retry_rate_limited_errors(self):
+        class SecondException(Exception):
+            pass
+
         count = 0
 
         def raise_on_second(*_, **__):
@@ -311,12 +314,6 @@ class BaseRangeDownloadMockHttpTestCase(unittest.TestCase):
         range_str = 'bytes=3-5'
         result = mock_http._get_start_and_end_bytes_from_range_str(range_str, body)
         self.assertEqual(result, (3, 5))
-
-
-class SecondException(Exception):
-    pass
-
-
 
 
 if __name__ == '__main__':
