@@ -8,12 +8,10 @@ Common
 ~~~~~~
 
 - Update code which retries failed HTTP requests to also retry failed "raw"
-  requests.
+  requests and make sure we also wrap and retry piece of code where Response
+  class is instantiated and exceptions can be thrown.
   [Daniel Draper - @Germandrummer92]
   (GITHUB-1592)
-
-- Also run unit tests under Python 3.10 + Pyjion on CI/CD.
-  (GITHUB-1626)
 
 Other
 ~~~~~
