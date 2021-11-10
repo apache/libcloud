@@ -630,6 +630,8 @@ class Connection(object):
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
+            assert self.connection is not None
+
             if raw:
                 self.connection.prepared_request(
                     method=method,
@@ -659,7 +661,7 @@ class Connection(object):
                        '(%s.connection) is set to an invalid, non-hostname '
                        'value (%s)?' %
                        (message, class_name, self.host))
-                raise socket.gaierror(msg)
+                raise socket.gaierror(msg)  # type: ignore
             self.reset_context()
             raise e
         except ssl.SSLError as e:
