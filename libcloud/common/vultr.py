@@ -20,21 +20,21 @@ from libcloud.compute.base import VolumeSnapshot
 from libcloud.utils.py3 import httplib
 
 __all__ = [
-    'API_HOST',
-    'VultrConnection',
-    'VultrException',
-    'VultrResponse',
-    'DEFAULT_API_VERSION',
-    'VultrResponseV2',
-    'VultrConnectionV2',
-    'VultrNetwork',
-    'VultrNodeSnapshot',
+    "API_HOST",
+    "VultrConnection",
+    "VultrException",
+    "VultrResponse",
+    "DEFAULT_API_VERSION",
+    "VultrResponseV2",
+    "VultrConnectionV2",
+    "VultrNetwork",
+    "VultrNodeSnapshot",
 ]
 
 # Endpoint for the Vultr API
 API_HOST = "api.vultr.com"
 
-DEFAULT_API_VERSION = '2'
+DEFAULT_API_VERSION = "2"
 
 
 class VultrResponse(JsonResponse):
@@ -133,7 +133,7 @@ class VultrResponseV2(JsonResponse):
         httplib.OK,
         httplib.CREATED,
         httplib.ACCEPTED,
-        httplib.NO_CONTENT
+        httplib.NO_CONTENT,
     ]
 
     def parse_error(self):
@@ -142,12 +142,9 @@ class VultrResponseV2(JsonResponse):
         """
         status = self.status
         data = self.parse_body()
-        error_msg = data.get('error', '')
+        error_msg = data.get("error", "")
 
-        raise VultrException(
-            code=status,
-            message=error_msg
-        )
+        raise VultrException(code=status, message=error_msg)
 
     def success(self):
         """Check the response for success
@@ -161,16 +158,17 @@ class VultrConnectionV2(ConnectionKey):
     """
     A connection to the Vultr API v2
     """
+
     host = API_HOST
     responseCls = VultrResponseV2
 
     def add_default_headers(self, headers):
-        headers['Authorization'] = 'Bearer %s' % (self.key)
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = "Bearer %s" % (self.key)
+        headers["Content-Type"] = "application/json"
         return headers
 
     def add_default_params(self, params):
-        params['per_page'] = 500
+        params["per_page"] = 500
         return params
 
 
@@ -196,23 +194,31 @@ class VultrNetwork:
     Represents information about a Vultr private network.
     """
 
-    def __init__(self,
-                 id: str,
-                 cidr_block: str,
-                 location: str,
-                 extra: Optional[Dict[str, Any]] = None
-                 ) -> None:
+    def __init__(
+        self,
+        id: str,
+        cidr_block: str,
+        location: str,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> None:
         self.id = id
         self.cidr_block = cidr_block
         self.location = location
         self.extra = extra or {}
 
     def __repr__(self):
-        return ('<Vultrnetwork: id=%s cidr_block=%s location=%s>' %
-                (self.id, self.cidr_block, self.location))
+        return "<Vultrnetwork: id=%s cidr_block=%s location=%s>" % (
+            self.id,
+            self.cidr_block,
+            self.location,
+        )
 
 
 class VultrNodeSnapshot(VolumeSnapshot):
     def __repr__(self):
-        return ('<VultrNodeSnapshot id=%s size=%s driver=%s state=%s>' %
-                (self.id, self.size, self.driver.name, self.state))
+        return "<VultrNodeSnapshot id=%s size=%s driver=%s state=%s>" % (
+            self.id,
+            self.size,
+            self.driver.name,
+            self.state,
+        )

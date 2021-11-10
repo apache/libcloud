@@ -648,7 +648,7 @@ REGION_DETAILS = {
         "endpoint": "ec2.ap-northeast-3.amazonaws.com",
         "id": "ap-northeast-3",
         "instance_types": [],
-        "signature_version": "4"
+        "signature_version": "4",
     },
     "ap-south-1": {
         "api_name": "ec2_ap_south_1",
@@ -2332,7 +2332,7 @@ REGION_DETAILS = {
             "t4g.small",
             "t4g.xlarge",
             "u-6tb1.112xlarge",
-            "u-6tb1.56xlarge"
+            "u-6tb1.56xlarge",
         ],
         "signature_version": "4",
     },

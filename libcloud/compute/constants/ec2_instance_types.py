@@ -42,7 +42,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "a1.2xlarge",
         "name": "a1.2xlarge",
@@ -74,7 +74,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "a1.4xlarge",
         "name": "a1.4xlarge",
@@ -107,7 +107,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "a1.large",
         "name": "a1.large",
@@ -140,7 +140,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "a1.medium",
         "name": "a1.medium",
@@ -173,7 +173,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "a1.xlarge",
         "name": "a1.xlarge",
@@ -203,7 +203,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 350 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c1.medium",
         "name": "c1.medium",
@@ -233,7 +233,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 420 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c1.xlarge",
         "name": "c1.xlarge",
@@ -266,7 +266,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 80 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c3.2xlarge",
         "name": "c3.2xlarge",
@@ -299,7 +299,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 160 SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c3.4xlarge",
         "name": "c3.4xlarge",
@@ -332,7 +332,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 320 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c3.8xlarge",
         "name": "c3.8xlarge",
@@ -364,7 +364,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 16 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c3.large",
         "name": "c3.large",
@@ -397,7 +397,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 40 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c3.xlarge",
         "name": "c3.xlarge",
@@ -431,7 +431,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c4.2xlarge",
         "name": "c4.2xlarge",
@@ -465,7 +465,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c4.4xlarge",
         "name": "c4.4xlarge",
@@ -499,7 +499,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "36",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c4.8xlarge",
         "name": "c4.8xlarge",
@@ -533,7 +533,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c4.large",
         "name": "c4.large",
@@ -566,7 +566,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c4.xlarge",
         "name": "c4.xlarge",
@@ -600,7 +600,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.12xlarge",
         "name": "c5.12xlarge",
@@ -634,7 +634,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "72",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.18xlarge",
         "name": "c5.18xlarge",
@@ -668,7 +668,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.24xlarge",
         "name": "c5.24xlarge",
@@ -701,7 +701,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.2xlarge",
         "name": "c5.2xlarge",
@@ -734,7 +734,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.4xlarge",
         "name": "c5.4xlarge",
@@ -767,7 +767,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "36",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.9xlarge",
         "name": "c5.9xlarge",
@@ -801,7 +801,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.large",
         "name": "c5.large",
@@ -835,7 +835,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5.xlarge",
         "name": "c5.xlarge",
@@ -868,7 +868,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.12xlarge",
         "name": "c5a.12xlarge",
@@ -902,7 +902,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.16xlarge",
         "name": "c5a.16xlarge",
@@ -936,7 +936,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.24xlarge",
         "name": "c5a.24xlarge",
@@ -970,7 +970,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.2xlarge",
         "name": "c5a.2xlarge",
@@ -1004,7 +1004,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.4xlarge",
         "name": "c5a.4xlarge",
@@ -1038,7 +1038,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.8xlarge",
         "name": "c5a.8xlarge",
@@ -1071,7 +1071,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.large",
         "name": "c5a.large",
@@ -1104,7 +1104,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5a.xlarge",
         "name": "c5a.xlarge",
@@ -1138,7 +1138,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.12xlarge",
         "name": "c5ad.12xlarge",
@@ -1171,7 +1171,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1200 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.16xlarge",
         "name": "c5ad.16xlarge",
@@ -1205,7 +1205,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.24xlarge",
         "name": "c5ad.24xlarge",
@@ -1239,7 +1239,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.2xlarge",
         "name": "c5ad.2xlarge",
@@ -1273,7 +1273,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 300 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.4xlarge",
         "name": "c5ad.4xlarge",
@@ -1307,7 +1307,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 600 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.8xlarge",
         "name": "c5ad.8xlarge",
@@ -1341,7 +1341,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.large",
         "name": "c5ad.large",
@@ -1374,7 +1374,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5ad.xlarge",
         "name": "c5ad.xlarge",
@@ -1407,7 +1407,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.12xlarge",
         "name": "c5d.12xlarge",
@@ -1441,7 +1441,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "72",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.18xlarge",
         "name": "c5d.18xlarge",
@@ -1475,7 +1475,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.24xlarge",
         "name": "c5d.24xlarge",
@@ -1508,7 +1508,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 200 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.2xlarge",
         "name": "c5d.2xlarge",
@@ -1542,7 +1542,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 400 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.4xlarge",
         "name": "c5d.4xlarge",
@@ -1575,7 +1575,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 900 NVMe SSD",
             "vcpu": "36",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.9xlarge",
         "name": "c5d.9xlarge",
@@ -1608,7 +1608,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 50 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.large",
         "name": "c5d.large",
@@ -1642,7 +1642,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 100 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5d.xlarge",
         "name": "c5d.xlarge",
@@ -1676,7 +1676,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "72",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5n.18xlarge",
         "name": "c5n.18xlarge",
@@ -1709,7 +1709,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5n.2xlarge",
         "name": "c5n.2xlarge",
@@ -1743,7 +1743,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5n.4xlarge",
         "name": "c5n.4xlarge",
@@ -1776,7 +1776,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "36",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5n.9xlarge",
         "name": "c5n.9xlarge",
@@ -1809,7 +1809,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5n.large",
         "name": "c5n.large",
@@ -1842,7 +1842,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c5n.xlarge",
         "name": "c5n.xlarge",
@@ -1875,7 +1875,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.12xlarge",
         "name": "c6g.12xlarge",
@@ -1908,7 +1908,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.16xlarge",
         "name": "c6g.16xlarge",
@@ -1941,7 +1941,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.2xlarge",
         "name": "c6g.2xlarge",
@@ -1973,7 +1973,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.4xlarge",
         "name": "c6g.4xlarge",
@@ -2006,7 +2006,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.8xlarge",
         "name": "c6g.8xlarge",
@@ -2039,7 +2039,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.large",
         "name": "c6g.large",
@@ -2071,7 +2071,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.medium",
         "name": "c6g.medium",
@@ -2103,7 +2103,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6g.xlarge",
         "name": "c6g.xlarge",
@@ -2135,7 +2135,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1425 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.12xlarge",
         "name": "c6gd.12xlarge",
@@ -2167,7 +2167,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1900 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.16xlarge",
         "name": "c6gd.16xlarge",
@@ -2200,7 +2200,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 475 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.2xlarge",
         "name": "c6gd.2xlarge",
@@ -2233,7 +2233,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 950 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.4xlarge",
         "name": "c6gd.4xlarge",
@@ -2265,7 +2265,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1900 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.8xlarge",
         "name": "c6gd.8xlarge",
@@ -2297,7 +2297,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 118 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.large",
         "name": "c6gd.large",
@@ -2330,7 +2330,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 59 NVMe SSD",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.medium",
         "name": "c6gd.medium",
@@ -2363,7 +2363,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 237 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gd.xlarge",
         "name": "c6gd.xlarge",
@@ -2395,7 +2395,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.12xlarge",
         "name": "c6gn.12xlarge",
@@ -2427,7 +2427,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.16xlarge",
         "name": "c6gn.16xlarge",
@@ -2459,7 +2459,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.2xlarge",
         "name": "c6gn.2xlarge",
@@ -2491,7 +2491,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.4xlarge",
         "name": "c6gn.4xlarge",
@@ -2524,7 +2524,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.8xlarge",
         "name": "c6gn.8xlarge",
@@ -2556,7 +2556,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.large",
         "name": "c6gn.large",
@@ -2588,7 +2588,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.medium",
         "name": "c6gn.medium",
@@ -2620,7 +2620,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6gn.xlarge",
         "name": "c6gn.xlarge",
@@ -2653,11 +2653,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.12xlarge",
         "name": "c6i.12xlarge",
-        "ram": 98304
+        "ram": 98304,
     },
     "c6i.16xlarge": {
         "bandwidth": 25000,
@@ -2687,11 +2687,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.16xlarge",
         "name": "c6i.16xlarge",
-        "ram": 131072
+        "ram": 131072,
     },
     "c6i.24xlarge": {
         "bandwidth": 37500,
@@ -2721,11 +2721,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.24xlarge",
         "name": "c6i.24xlarge",
-        "ram": 196608
+        "ram": 196608,
     },
     "c6i.2xlarge": {
         "bandwidth": 12500,
@@ -2755,11 +2755,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.2xlarge",
         "name": "c6i.2xlarge",
-        "ram": 16384
+        "ram": 16384,
     },
     "c6i.32xlarge": {
         "bandwidth": 50000,
@@ -2788,11 +2788,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "128",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.32xlarge",
         "name": "c6i.32xlarge",
-        "ram": 262144
+        "ram": 262144,
     },
     "c6i.4xlarge": {
         "bandwidth": 12500,
@@ -2822,11 +2822,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.4xlarge",
         "name": "c6i.4xlarge",
-        "ram": 32768
+        "ram": 32768,
     },
     "c6i.8xlarge": {
         "bandwidth": 12500,
@@ -2855,11 +2855,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.8xlarge",
         "name": "c6i.8xlarge",
-        "ram": 65536
+        "ram": 65536,
     },
     "c6i.large": {
         "bandwidth": 12500,
@@ -2888,11 +2888,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.large",
         "name": "c6i.large",
-        "ram": 4096
+        "ram": 4096,
     },
     "c6i.xlarge": {
         "bandwidth": 12500,
@@ -2922,11 +2922,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "c6i.xlarge",
         "name": "c6i.xlarge",
-        "ram": 8192
+        "ram": 8192,
     },
     "cc2.8xlarge": {
         "bandwidth": 10,
@@ -2953,7 +2953,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 840 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "cc2.8xlarge",
         "name": "cc2.8xlarge",
@@ -2979,7 +2979,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 120 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "cr1.8xlarge",
         "name": "cr1.8xlarge",
@@ -3013,7 +3013,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "6 x 2000 HDD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d2.2xlarge",
         "name": "d2.2xlarge",
@@ -3046,7 +3046,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "12 x 2000 HDD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d2.4xlarge",
         "name": "d2.4xlarge",
@@ -3079,7 +3079,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "24 x 2000 HDD",
             "vcpu": "36",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d2.8xlarge",
         "name": "d2.8xlarge",
@@ -3112,7 +3112,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "3 x 2000 HDD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d2.xlarge",
         "name": "d2.xlarge",
@@ -3146,7 +3146,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "6 x 2000 HDD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3.2xlarge",
         "name": "d3.2xlarge",
@@ -3180,7 +3180,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "12 x 2000 HDD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3.4xlarge",
         "name": "d3.4xlarge",
@@ -3213,7 +3213,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "24 x 2000 HDD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3.8xlarge",
         "name": "d3.8xlarge",
@@ -3247,7 +3247,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "3 x 2000 HDD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3.xlarge",
         "name": "d3.xlarge",
@@ -3281,7 +3281,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "24 x 14000 HDD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3en.12xlarge",
         "name": "d3en.12xlarge",
@@ -3315,7 +3315,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 14000 HDD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3en.2xlarge",
         "name": "d3en.2xlarge",
@@ -3349,7 +3349,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "8 x 14000 HDD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3en.4xlarge",
         "name": "d3en.4xlarge",
@@ -3383,7 +3383,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "12 x 14000 HDD",
             "vcpu": "24",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3en.6xlarge",
         "name": "d3en.6xlarge",
@@ -3417,7 +3417,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "16 x 14000 HDD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3en.8xlarge",
         "name": "d3en.8xlarge",
@@ -3451,7 +3451,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 14000 HDD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "d3en.xlarge",
         "name": "d3en.xlarge",
@@ -3484,11 +3484,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 1000 GB NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "dl1.24xlarge",
         "name": "dl1.24xlarge",
-        "ram": 786432
+        "ram": 786432,
     },
     "f1.16xlarge": {
         "bandwidth": 20,
@@ -3517,7 +3517,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 940 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "f1.16xlarge",
         "name": "f1.16xlarge",
@@ -3551,7 +3551,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 470 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "f1.2xlarge",
         "name": "f1.2xlarge",
@@ -3585,7 +3585,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 940 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "f1.4xlarge",
         "name": "f1.4xlarge",
@@ -3618,7 +3618,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 60 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g2.2xlarge",
         "name": "g2.2xlarge",
@@ -3652,7 +3652,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 120 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g2.8xlarge",
         "name": "g2.8xlarge",
@@ -3687,7 +3687,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g3.16xlarge",
         "name": "g3.16xlarge",
@@ -3721,7 +3721,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g3.4xlarge",
         "name": "g3.4xlarge",
@@ -3755,7 +3755,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g3.8xlarge",
         "name": "g3.8xlarge",
@@ -3789,7 +3789,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g3s.xlarge",
         "name": "g3s.xlarge",
@@ -3824,7 +3824,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2400 GB NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4ad.16xlarge",
         "name": "g4ad.16xlarge",
@@ -3858,11 +3858,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "300 GB NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4ad.2xlarge",
         "name": "g4ad.2xlarge",
-        "ram": 32768
+        "ram": 32768,
     },
     "g4ad.4xlarge": {
         "bandwidth": 10,
@@ -3893,7 +3893,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "600 GB NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4ad.4xlarge",
         "name": "g4ad.4xlarge",
@@ -3928,7 +3928,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1200 GB NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4ad.8xlarge",
         "name": "g4ad.8xlarge",
@@ -3962,11 +3962,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "150 GB NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4ad.xlarge",
         "name": "g4ad.xlarge",
-        "ram": 16384
+        "ram": 16384,
     },
     "g4dn.12xlarge": {
         "bandwidth": 50,
@@ -3997,7 +3997,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "900 GB NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4dn.12xlarge",
         "name": "g4dn.12xlarge",
@@ -4031,7 +4031,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "900 GB NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4dn.16xlarge",
         "name": "g4dn.16xlarge",
@@ -4066,7 +4066,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "225 GB NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4dn.2xlarge",
         "name": "g4dn.2xlarge",
@@ -4101,7 +4101,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "225 GB NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4dn.4xlarge",
         "name": "g4dn.4xlarge",
@@ -4136,7 +4136,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "900 GB NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4dn.8xlarge",
         "name": "g4dn.8xlarge",
@@ -4171,7 +4171,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "125 GB NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "g4dn.xlarge",
         "name": "g4dn.xlarge",
@@ -4205,7 +4205,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "8 x 2000 HDD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "h1.16xlarge",
         "name": "h1.16xlarge",
@@ -4238,7 +4238,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 2000 HDD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "h1.2xlarge",
         "name": "h1.2xlarge",
@@ -4272,7 +4272,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 2000 HDD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "h1.4xlarge",
         "name": "h1.4xlarge",
@@ -4306,7 +4306,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 2000 HDD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "h1.8xlarge",
         "name": "h1.8xlarge",
@@ -4337,7 +4337,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "24 x 2000 HDD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "hs1.8xlarge",
         "name": "hs1.8xlarge",
@@ -4370,7 +4370,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 800 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i2.2xlarge",
         "name": "i2.2xlarge",
@@ -4404,7 +4404,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 800 SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i2.4xlarge",
         "name": "i2.4xlarge",
@@ -4437,7 +4437,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "8 x 800 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i2.8xlarge",
         "name": "i2.8xlarge",
@@ -4470,11 +4470,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 800 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i2.large",
         "name": "i2.large",
-        "ram": 15360
+        "ram": 15360,
     },
     "i2.xlarge": {
         "bandwidth": None,
@@ -4503,11 +4503,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 800 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i2.xlarge",
         "name": "i2.xlarge",
-        "ram": 31232
+        "ram": 31232,
     },
     "i3.16xlarge": {
         "bandwidth": 20,
@@ -4536,7 +4536,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "8 x 1900 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3.16xlarge",
         "name": "i3.16xlarge",
@@ -4569,7 +4569,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1900 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3.2xlarge",
         "name": "i3.2xlarge",
@@ -4603,7 +4603,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1900 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3.4xlarge",
         "name": "i3.4xlarge",
@@ -4636,7 +4636,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 1900 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3.8xlarge",
         "name": "i3.8xlarge",
@@ -4669,7 +4669,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 475 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3.large",
         "name": "i3.large",
@@ -4703,7 +4703,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 950 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3.xlarge",
         "name": "i3.xlarge",
@@ -4737,7 +4737,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 7500 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3en.12xlarge",
         "name": "i3en.12xlarge",
@@ -4770,7 +4770,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "8 x 7500 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3en.24xlarge",
         "name": "i3en.24xlarge",
@@ -4803,7 +4803,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 2500 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3en.2xlarge",
         "name": "i3en.2xlarge",
@@ -4836,7 +4836,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 7500 NVMe SSD",
             "vcpu": "12",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3en.3xlarge",
         "name": "i3en.3xlarge",
@@ -4870,7 +4870,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 7500 NVMe SSD",
             "vcpu": "24",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3en.6xlarge",
         "name": "i3en.6xlarge",
@@ -4904,7 +4904,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1250 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3en.large",
         "name": "i3en.large",
@@ -4937,7 +4937,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 2500 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "i3en.xlarge",
         "name": "i3en.xlarge",
@@ -4968,7 +4968,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "inf1.24xlarge",
         "name": "inf1.24xlarge",
@@ -4999,7 +4999,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "inf1.2xlarge",
         "name": "inf1.2xlarge",
@@ -5031,7 +5031,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "24",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "inf1.6xlarge",
         "name": "inf1.6xlarge",
@@ -5063,7 +5063,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "inf1.xlarge",
         "name": "inf1.xlarge",
@@ -5093,7 +5093,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 420 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m1.large",
         "name": "m1.large",
@@ -5123,7 +5123,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 410 SSD",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m1.medium",
         "name": "m1.medium",
@@ -5153,7 +5153,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 160 SSD",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m1.small",
         "name": "m1.small",
@@ -5183,7 +5183,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 420 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m1.xlarge",
         "name": "m1.xlarge",
@@ -5213,7 +5213,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 850 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m2.2xlarge",
         "name": "m2.2xlarge",
@@ -5243,7 +5243,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 840 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m2.4xlarge",
         "name": "m2.4xlarge",
@@ -5273,7 +5273,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 420 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m2.xlarge",
         "name": "m2.xlarge",
@@ -5306,7 +5306,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 80 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m3.2xlarge",
         "name": "m3.2xlarge",
@@ -5338,7 +5338,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 32 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m3.large",
         "name": "m3.large",
@@ -5370,7 +5370,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 4 SSD",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m3.medium",
         "name": "m3.medium",
@@ -5404,7 +5404,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 40 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m3.xlarge",
         "name": "m3.xlarge",
@@ -5437,7 +5437,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "40",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m4.10xlarge",
         "name": "m4.10xlarge",
@@ -5471,7 +5471,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m4.16xlarge",
         "name": "m4.16xlarge",
@@ -5505,7 +5505,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m4.2xlarge",
         "name": "m4.2xlarge",
@@ -5539,7 +5539,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m4.4xlarge",
         "name": "m4.4xlarge",
@@ -5572,7 +5572,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m4.large",
         "name": "m4.large",
@@ -5605,7 +5605,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m4.xlarge",
         "name": "m4.xlarge",
@@ -5639,7 +5639,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.12xlarge",
         "name": "m5.12xlarge",
@@ -5672,7 +5672,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.16xlarge",
         "name": "m5.16xlarge",
@@ -5706,7 +5706,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.24xlarge",
         "name": "m5.24xlarge",
@@ -5740,7 +5740,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.2xlarge",
         "name": "m5.2xlarge",
@@ -5773,7 +5773,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.4xlarge",
         "name": "m5.4xlarge",
@@ -5807,7 +5807,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.8xlarge",
         "name": "m5.8xlarge",
@@ -5841,7 +5841,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.large",
         "name": "m5.large",
@@ -5874,7 +5874,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5.xlarge",
         "name": "m5.xlarge",
@@ -5907,7 +5907,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.12xlarge",
         "name": "m5a.12xlarge",
@@ -5941,7 +5941,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.16xlarge",
         "name": "m5a.16xlarge",
@@ -5974,7 +5974,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.24xlarge",
         "name": "m5a.24xlarge",
@@ -6008,7 +6008,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.2xlarge",
         "name": "m5a.2xlarge",
@@ -6042,7 +6042,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.4xlarge",
         "name": "m5a.4xlarge",
@@ -6075,7 +6075,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.8xlarge",
         "name": "m5a.8xlarge",
@@ -6109,7 +6109,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.large",
         "name": "m5a.large",
@@ -6143,7 +6143,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5a.xlarge",
         "name": "m5a.xlarge",
@@ -6176,7 +6176,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.12xlarge",
         "name": "m5ad.12xlarge",
@@ -6209,7 +6209,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 600 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.16xlarge",
         "name": "m5ad.16xlarge",
@@ -6243,7 +6243,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.24xlarge",
         "name": "m5ad.24xlarge",
@@ -6277,7 +6277,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.2xlarge",
         "name": "m5ad.2xlarge",
@@ -6311,7 +6311,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 300 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.4xlarge",
         "name": "m5ad.4xlarge",
@@ -6344,7 +6344,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 600 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.8xlarge",
         "name": "m5ad.8xlarge",
@@ -6377,7 +6377,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.large",
         "name": "m5ad.large",
@@ -6411,7 +6411,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5ad.xlarge",
         "name": "m5ad.xlarge",
@@ -6445,7 +6445,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.12xlarge",
         "name": "m5d.12xlarge",
@@ -6479,7 +6479,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 600 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.16xlarge",
         "name": "m5d.16xlarge",
@@ -6512,7 +6512,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.24xlarge",
         "name": "m5d.24xlarge",
@@ -6545,7 +6545,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.2xlarge",
         "name": "m5d.2xlarge",
@@ -6579,7 +6579,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 300 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.4xlarge",
         "name": "m5d.4xlarge",
@@ -6613,7 +6613,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 600 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.8xlarge",
         "name": "m5d.8xlarge",
@@ -6647,7 +6647,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.large",
         "name": "m5d.large",
@@ -6681,7 +6681,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5d.xlarge",
         "name": "m5d.xlarge",
@@ -6713,7 +6713,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 GB NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.12xlarge",
         "name": "m5dn.12xlarge",
@@ -6745,7 +6745,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 600 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.16xlarge",
         "name": "m5dn.16xlarge",
@@ -6778,7 +6778,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.24xlarge",
         "name": "m5dn.24xlarge",
@@ -6811,7 +6811,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.2xlarge",
         "name": "m5dn.2xlarge",
@@ -6844,7 +6844,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 300 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.4xlarge",
         "name": "m5dn.4xlarge",
@@ -6877,7 +6877,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 600 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.8xlarge",
         "name": "m5dn.8xlarge",
@@ -6910,7 +6910,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.large",
         "name": "m5dn.large",
@@ -6942,7 +6942,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5dn.xlarge",
         "name": "m5dn.xlarge",
@@ -6975,7 +6975,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.12xlarge",
         "name": "m5n.12xlarge",
@@ -7008,7 +7008,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.16xlarge",
         "name": "m5n.16xlarge",
@@ -7040,7 +7040,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.24xlarge",
         "name": "m5n.24xlarge",
@@ -7072,7 +7072,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.2xlarge",
         "name": "m5n.2xlarge",
@@ -7105,7 +7105,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.4xlarge",
         "name": "m5n.4xlarge",
@@ -7138,7 +7138,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.8xlarge",
         "name": "m5n.8xlarge",
@@ -7170,7 +7170,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.large",
         "name": "m5n.large",
@@ -7202,7 +7202,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5n.xlarge",
         "name": "m5n.xlarge",
@@ -7236,7 +7236,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5zn.12xlarge",
         "name": "m5zn.12xlarge",
@@ -7270,7 +7270,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5zn.2xlarge",
         "name": "m5zn.2xlarge",
@@ -7303,7 +7303,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "12",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5zn.3xlarge",
         "name": "m5zn.3xlarge",
@@ -7337,7 +7337,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "24",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5zn.6xlarge",
         "name": "m5zn.6xlarge",
@@ -7370,7 +7370,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5zn.large",
         "name": "m5zn.large",
@@ -7404,7 +7404,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m5zn.xlarge",
         "name": "m5zn.xlarge",
@@ -7436,7 +7436,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.12xlarge",
         "name": "m6g.12xlarge",
@@ -7467,7 +7467,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.16xlarge",
         "name": "m6g.16xlarge",
@@ -7499,7 +7499,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.2xlarge",
         "name": "m6g.2xlarge",
@@ -7530,7 +7530,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.4xlarge",
         "name": "m6g.4xlarge",
@@ -7561,7 +7561,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.8xlarge",
         "name": "m6g.8xlarge",
@@ -7592,7 +7592,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.large",
         "name": "m6g.large",
@@ -7623,7 +7623,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.medium",
         "name": "m6g.medium",
@@ -7655,7 +7655,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6g.xlarge",
         "name": "m6g.xlarge",
@@ -7687,7 +7687,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1425 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.12xlarge",
         "name": "m6gd.12xlarge",
@@ -7719,7 +7719,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1900 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.16xlarge",
         "name": "m6gd.16xlarge",
@@ -7752,7 +7752,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 475 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.2xlarge",
         "name": "m6gd.2xlarge",
@@ -7785,7 +7785,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 950 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.4xlarge",
         "name": "m6gd.4xlarge",
@@ -7818,7 +7818,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1900 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.8xlarge",
         "name": "m6gd.8xlarge",
@@ -7851,7 +7851,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 118 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.large",
         "name": "m6gd.large",
@@ -7884,7 +7884,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 59 NVMe SSD",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.medium",
         "name": "m6gd.medium",
@@ -7917,7 +7917,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 237 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6gd.xlarge",
         "name": "m6gd.xlarge",
@@ -7951,11 +7951,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.12xlarge",
         "name": "m6i.12xlarge",
-        "ram": 196608
+        "ram": 196608,
     },
     "m6i.16xlarge": {
         "bandwidth": 25000,
@@ -7984,11 +7984,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.16xlarge",
         "name": "m6i.16xlarge",
-        "ram": 262144
+        "ram": 262144,
     },
     "m6i.24xlarge": {
         "bandwidth": 37500,
@@ -8017,11 +8017,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.24xlarge",
         "name": "m6i.24xlarge",
-        "ram": 393216
+        "ram": 393216,
     },
     "m6i.2xlarge": {
         "bandwidth": 12500,
@@ -8050,11 +8050,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.2xlarge",
         "name": "m6i.2xlarge",
-        "ram": 32768
+        "ram": 32768,
     },
     "m6i.32xlarge": {
         "bandwidth": 50000,
@@ -8084,11 +8084,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "128",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.32xlarge",
         "name": "m6i.32xlarge",
-        "ram": 524288
+        "ram": 524288,
     },
     "m6i.4xlarge": {
         "bandwidth": 12500,
@@ -8117,11 +8117,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.4xlarge",
         "name": "m6i.4xlarge",
-        "ram": 65536
+        "ram": 65536,
     },
     "m6i.8xlarge": {
         "bandwidth": 12500,
@@ -8150,11 +8150,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.8xlarge",
         "name": "m6i.8xlarge",
-        "ram": 131072
+        "ram": 131072,
     },
     "m6i.large": {
         "bandwidth": 12500,
@@ -8183,11 +8183,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.large",
         "name": "m6i.large",
-        "ram": 8192
+        "ram": 8192,
     },
     "m6i.xlarge": {
         "bandwidth": 12500,
@@ -8216,11 +8216,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "m6i.xlarge",
         "name": "m6i.xlarge",
-        "ram": 16384
+        "ram": 16384,
     },
     "p2.16xlarge": {
         "bandwidth": 20,
@@ -8251,7 +8251,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p2.16xlarge",
         "name": "p2.16xlarge",
@@ -8285,7 +8285,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p2.8xlarge",
         "name": "p2.8xlarge",
@@ -8319,7 +8319,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p2.xlarge",
         "name": "p2.xlarge",
@@ -8353,7 +8353,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p3.16xlarge",
         "name": "p3.16xlarge",
@@ -8387,7 +8387,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p3.2xlarge",
         "name": "p3.2xlarge",
@@ -8422,7 +8422,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p3.8xlarge",
         "name": "p3.8xlarge",
@@ -8456,7 +8456,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p3dn.24xlarge",
         "name": "p3dn.24xlarge",
@@ -8491,7 +8491,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "8 x 1000 SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "p4d.24xlarge",
         "name": "p4d.24xlarge",
@@ -8523,7 +8523,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 160 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r3.2xlarge",
         "name": "r3.2xlarge",
@@ -8555,7 +8555,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 320 SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r3.4xlarge",
         "name": "r3.4xlarge",
@@ -8587,7 +8587,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 320 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r3.8xlarge",
         "name": "r3.8xlarge",
@@ -8620,7 +8620,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 32 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r3.large",
         "name": "r3.large",
@@ -8653,7 +8653,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 80 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r3.xlarge",
         "name": "r3.xlarge",
@@ -8686,7 +8686,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r4.16xlarge",
         "name": "r4.16xlarge",
@@ -8719,7 +8719,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r4.2xlarge",
         "name": "r4.2xlarge",
@@ -8753,7 +8753,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r4.4xlarge",
         "name": "r4.4xlarge",
@@ -8786,7 +8786,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r4.8xlarge",
         "name": "r4.8xlarge",
@@ -8820,7 +8820,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r4.large",
         "name": "r4.large",
@@ -8854,7 +8854,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r4.xlarge",
         "name": "r4.xlarge",
@@ -8887,7 +8887,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.12xlarge",
         "name": "r5.12xlarge",
@@ -8921,7 +8921,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.16xlarge",
         "name": "r5.16xlarge",
@@ -8954,7 +8954,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.24xlarge",
         "name": "r5.24xlarge",
@@ -8988,7 +8988,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.2xlarge",
         "name": "r5.2xlarge",
@@ -9021,7 +9021,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.4xlarge",
         "name": "r5.4xlarge",
@@ -9055,7 +9055,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.8xlarge",
         "name": "r5.8xlarge",
@@ -9088,7 +9088,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.large",
         "name": "r5.large",
@@ -9122,7 +9122,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5.xlarge",
         "name": "r5.xlarge",
@@ -9155,7 +9155,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.12xlarge",
         "name": "r5a.12xlarge",
@@ -9189,7 +9189,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.16xlarge",
         "name": "r5a.16xlarge",
@@ -9223,7 +9223,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.24xlarge",
         "name": "r5a.24xlarge",
@@ -9256,7 +9256,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.2xlarge",
         "name": "r5a.2xlarge",
@@ -9290,7 +9290,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.4xlarge",
         "name": "r5a.4xlarge",
@@ -9323,7 +9323,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.8xlarge",
         "name": "r5a.8xlarge",
@@ -9357,7 +9357,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.large",
         "name": "r5a.large",
@@ -9390,7 +9390,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5a.xlarge",
         "name": "r5a.xlarge",
@@ -9424,7 +9424,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.12xlarge",
         "name": "r5ad.12xlarge",
@@ -9458,7 +9458,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 600 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.16xlarge",
         "name": "r5ad.16xlarge",
@@ -9492,7 +9492,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.24xlarge",
         "name": "r5ad.24xlarge",
@@ -9526,7 +9526,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.2xlarge",
         "name": "r5ad.2xlarge",
@@ -9559,7 +9559,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 300 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.4xlarge",
         "name": "r5ad.4xlarge",
@@ -9593,7 +9593,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 600 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.8xlarge",
         "name": "r5ad.8xlarge",
@@ -9627,7 +9627,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.large",
         "name": "r5ad.large",
@@ -9661,7 +9661,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5ad.xlarge",
         "name": "r5ad.xlarge",
@@ -9694,7 +9694,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.12xlarge",
         "name": "r5b.12xlarge",
@@ -9727,7 +9727,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.16xlarge",
         "name": "r5b.16xlarge",
@@ -9760,7 +9760,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.24xlarge",
         "name": "r5b.24xlarge",
@@ -9792,7 +9792,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.2xlarge",
         "name": "r5b.2xlarge",
@@ -9825,7 +9825,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.4xlarge",
         "name": "r5b.4xlarge",
@@ -9857,7 +9857,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.8xlarge",
         "name": "r5b.8xlarge",
@@ -9889,7 +9889,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.large",
         "name": "r5b.large",
@@ -9921,7 +9921,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5b.xlarge",
         "name": "r5b.xlarge",
@@ -9955,7 +9955,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.12xlarge",
         "name": "r5d.12xlarge",
@@ -9989,7 +9989,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 600 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.16xlarge",
         "name": "r5d.16xlarge",
@@ -10022,7 +10022,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.24xlarge",
         "name": "r5d.24xlarge",
@@ -10056,7 +10056,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.2xlarge",
         "name": "r5d.2xlarge",
@@ -10090,7 +10090,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 300 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.4xlarge",
         "name": "r5d.4xlarge",
@@ -10124,7 +10124,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 600 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.8xlarge",
         "name": "r5d.8xlarge",
@@ -10158,7 +10158,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.large",
         "name": "r5d.large",
@@ -10192,7 +10192,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5d.xlarge",
         "name": "r5d.xlarge",
@@ -10225,7 +10225,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 GB NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.12xlarge",
         "name": "r5dn.12xlarge",
@@ -10258,7 +10258,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 600 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.16xlarge",
         "name": "r5dn.16xlarge",
@@ -10291,7 +10291,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "4 x 900 NVMe SSD",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.24xlarge",
         "name": "r5dn.24xlarge",
@@ -10323,7 +10323,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.2xlarge",
         "name": "r5dn.2xlarge",
@@ -10356,7 +10356,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 300 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.4xlarge",
         "name": "r5dn.4xlarge",
@@ -10388,7 +10388,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 600 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.8xlarge",
         "name": "r5dn.8xlarge",
@@ -10421,7 +10421,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.large",
         "name": "r5dn.large",
@@ -10453,7 +10453,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5dn.xlarge",
         "name": "r5dn.xlarge",
@@ -10485,7 +10485,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.12xlarge",
         "name": "r5n.12xlarge",
@@ -10517,7 +10517,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.16xlarge",
         "name": "r5n.16xlarge",
@@ -10549,7 +10549,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.24xlarge",
         "name": "r5n.24xlarge",
@@ -10581,7 +10581,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.2xlarge",
         "name": "r5n.2xlarge",
@@ -10614,7 +10614,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.4xlarge",
         "name": "r5n.4xlarge",
@@ -10647,7 +10647,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.8xlarge",
         "name": "r5n.8xlarge",
@@ -10680,7 +10680,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.large",
         "name": "r5n.large",
@@ -10712,7 +10712,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r5n.xlarge",
         "name": "r5n.xlarge",
@@ -10744,7 +10744,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.12xlarge",
         "name": "r6g.12xlarge",
@@ -10777,7 +10777,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.16xlarge",
         "name": "r6g.16xlarge",
@@ -10810,7 +10810,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.2xlarge",
         "name": "r6g.2xlarge",
@@ -10843,7 +10843,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.4xlarge",
         "name": "r6g.4xlarge",
@@ -10876,7 +10876,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.8xlarge",
         "name": "r6g.8xlarge",
@@ -10909,7 +10909,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.large",
         "name": "r6g.large",
@@ -10942,7 +10942,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.medium",
         "name": "r6g.medium",
@@ -10974,7 +10974,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6g.xlarge",
         "name": "r6g.xlarge",
@@ -11006,7 +11006,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1425 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.12xlarge",
         "name": "r6gd.12xlarge",
@@ -11038,7 +11038,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1900 NVMe SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.16xlarge",
         "name": "r6gd.16xlarge",
@@ -11071,7 +11071,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 475 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.2xlarge",
         "name": "r6gd.2xlarge",
@@ -11104,7 +11104,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 950 NVMe SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.4xlarge",
         "name": "r6gd.4xlarge",
@@ -11137,7 +11137,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1900 NVMe SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.8xlarge",
         "name": "r6gd.8xlarge",
@@ -11170,7 +11170,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 118 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.large",
         "name": "r6gd.large",
@@ -11203,7 +11203,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 59 NVMe SSD",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.medium",
         "name": "r6gd.medium",
@@ -11235,7 +11235,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 237 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "r6gd.xlarge",
         "name": "r6gd.xlarge",
@@ -11265,7 +11265,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t1.micro",
         "name": "t1.micro",
@@ -11298,7 +11298,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t2.2xlarge",
         "name": "t2.2xlarge",
@@ -11331,7 +11331,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t2.large",
         "name": "t2.large",
@@ -11364,7 +11364,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t2.medium",
         "name": "t2.medium",
@@ -11396,7 +11396,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t2.micro",
         "name": "t2.micro",
@@ -11429,7 +11429,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t2.nano",
         "name": "t2.nano",
@@ -11461,7 +11461,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t2.small",
         "name": "t2.small",
@@ -11493,7 +11493,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t2.xlarge",
         "name": "t2.xlarge",
@@ -11527,7 +11527,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3.2xlarge",
         "name": "t3.2xlarge",
@@ -11560,7 +11560,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3.large",
         "name": "t3.large",
@@ -11594,7 +11594,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3.medium",
         "name": "t3.medium",
@@ -11628,7 +11628,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3.micro",
         "name": "t3.micro",
@@ -11661,7 +11661,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3.nano",
         "name": "t3.nano",
@@ -11695,7 +11695,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3.small",
         "name": "t3.small",
@@ -11729,7 +11729,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3.xlarge",
         "name": "t3.xlarge",
@@ -11763,7 +11763,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3a.2xlarge",
         "name": "t3a.2xlarge",
@@ -11797,7 +11797,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3a.large",
         "name": "t3a.large",
@@ -11831,7 +11831,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3a.medium",
         "name": "t3a.medium",
@@ -11865,7 +11865,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3a.micro",
         "name": "t3a.micro",
@@ -11898,7 +11898,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3a.nano",
         "name": "t3a.nano",
@@ -11932,7 +11932,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3a.small",
         "name": "t3a.small",
@@ -11966,7 +11966,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t3a.xlarge",
         "name": "t3a.xlarge",
@@ -11998,7 +11998,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t4g.2xlarge",
         "name": "t4g.2xlarge",
@@ -12031,7 +12031,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t4g.large",
         "name": "t4g.large",
@@ -12064,7 +12064,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t4g.medium",
         "name": "t4g.medium",
@@ -12097,7 +12097,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t4g.micro",
         "name": "t4g.micro",
@@ -12129,7 +12129,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t4g.nano",
         "name": "t4g.nano",
@@ -12162,7 +12162,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t4g.small",
         "name": "t4g.small",
@@ -12194,7 +12194,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "t4g.xlarge",
         "name": "t4g.xlarge",
@@ -12227,11 +12227,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "448",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "u-12tb1.112xlarge",
         "name": "u-12tb1.112xlarge",
-        "ram": 12582912
+        "ram": 12582912,
     },
     "u-6tb1.112xlarge": {
         "bandwidth": 100,
@@ -12260,11 +12260,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "448",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "u-6tb1.112xlarge",
         "name": "u-6tb1.112xlarge",
-        "ram": 6291456
+        "ram": 6291456,
     },
     "u-6tb1.56xlarge": {
         "bandwidth": 100,
@@ -12293,11 +12293,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "224",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "u-6tb1.56xlarge",
         "name": "u-6tb1.56xlarge",
-        "ram": 6291456
+        "ram": 6291456,
     },
     "u-9tb1.112xlarge": {
         "bandwidth": 100,
@@ -12325,11 +12325,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "448",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "u-9tb1.112xlarge",
         "name": "u-9tb1.112xlarge",
-        "ram": 9437184
+        "ram": 9437184,
     },
     "vt1.24xlarge": {
         "bandwidth": 25000,
@@ -12359,11 +12359,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "96",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "vt1.24xlarge",
         "name": "vt1.24xlarge",
-        "ram": 196608
+        "ram": 196608,
     },
     "vt1.3xlarge": {
         "bandwidth": 3125,
@@ -12392,11 +12392,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "12",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "vt1.3xlarge",
         "name": "vt1.3xlarge",
-        "ram": 24576
+        "ram": 24576,
     },
     "vt1.6xlarge": {
         "bandwidth": 6250,
@@ -12426,11 +12426,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "EBS only",
             "vcpu": "24",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "vt1.6xlarge",
         "name": "vt1.6xlarge",
-        "ram": 49152
+        "ram": 49152,
     },
     "x1.16xlarge": {
         "bandwidth": None,
@@ -12460,7 +12460,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1920 SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1.16xlarge",
         "name": "x1.16xlarge",
@@ -12494,7 +12494,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1920 SSD",
             "vcpu": "128",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1.32xlarge",
         "name": "x1.32xlarge",
@@ -12527,7 +12527,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1920 SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1e.16xlarge",
         "name": "x1e.16xlarge",
@@ -12560,7 +12560,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 240 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1e.2xlarge",
         "name": "x1e.2xlarge",
@@ -12594,7 +12594,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1920 SSD",
             "vcpu": "128",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1e.32xlarge",
         "name": "x1e.32xlarge",
@@ -12627,7 +12627,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 480 SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1e.4xlarge",
         "name": "x1e.4xlarge",
@@ -12661,7 +12661,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 960 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1e.8xlarge",
         "name": "x1e.8xlarge",
@@ -12695,7 +12695,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 120 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x1e.xlarge",
         "name": "x1e.xlarge",
@@ -12728,11 +12728,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1425 SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.12xlarge",
         "name": "x2gd.12xlarge",
-        "ram": 786432
+        "ram": 786432,
     },
     "x2gd.16xlarge": {
         "bandwidth": 25,
@@ -12761,11 +12761,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 1900 SSD",
             "vcpu": "64",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.16xlarge",
         "name": "x2gd.16xlarge",
-        "ram": 1048576
+        "ram": 1048576,
     },
     "x2gd.2xlarge": {
         "bandwidth": 10,
@@ -12794,11 +12794,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 474 SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.2xlarge",
         "name": "x2gd.2xlarge",
-        "ram": 131072
+        "ram": 131072,
     },
     "x2gd.4xlarge": {
         "bandwidth": 10,
@@ -12827,11 +12827,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 950 SSD",
             "vcpu": "16",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.4xlarge",
         "name": "x2gd.4xlarge",
-        "ram": 262144
+        "ram": 262144,
     },
     "x2gd.8xlarge": {
         "bandwidth": 12,
@@ -12859,11 +12859,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 1900 SSD",
             "vcpu": "32",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.8xlarge",
         "name": "x2gd.8xlarge",
-        "ram": 524288
+        "ram": 524288,
     },
     "x2gd.large": {
         "bandwidth": 10,
@@ -12892,11 +12892,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 118 SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.large",
         "name": "x2gd.large",
-        "ram": 32768
+        "ram": 32768,
     },
     "x2gd.medium": {
         "bandwidth": 10,
@@ -12925,11 +12925,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 59 SSD",
             "vcpu": "1",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.medium",
         "name": "x2gd.medium",
-        "ram": 16384
+        "ram": 16384,
     },
     "x2gd.xlarge": {
         "bandwidth": 10,
@@ -12957,11 +12957,11 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 237 SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "x2gd.xlarge",
         "name": "x2gd.xlarge",
-        "ram": 65536
+        "ram": 65536,
     },
     "z1d.12xlarge": {
         "bandwidth": 25,
@@ -12990,7 +12990,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "2 x 900 NVMe SSD",
             "vcpu": "48",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "z1d.12xlarge",
         "name": "z1d.12xlarge",
@@ -13024,7 +13024,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 300 NVMe SSD",
             "vcpu": "8",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "z1d.2xlarge",
         "name": "z1d.2xlarge",
@@ -13057,7 +13057,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 450 NVMe SSD",
             "vcpu": "12",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "z1d.3xlarge",
         "name": "z1d.3xlarge",
@@ -13090,7 +13090,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 900 NVMe SSD",
             "vcpu": "24",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "z1d.6xlarge",
         "name": "z1d.6xlarge",
@@ -13124,7 +13124,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 75 NVMe SSD",
             "vcpu": "2",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "z1d.large",
         "name": "z1d.large",
@@ -13158,7 +13158,7 @@ INSTANCE_TYPES = {
             "servicename": "Amazon Elastic Compute Cloud",
             "storage": "1 x 150 NVMe SSD",
             "vcpu": "4",
-            "vpcnetworkingsupport": "true"
+            "vpcnetworkingsupport": "true",
         },
         "id": "z1d.xlarge",
         "name": "z1d.xlarge",

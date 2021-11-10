@@ -38,8 +38,7 @@ class VultrTests(LibcloudTestCase):
     def setUp(self):
         VultrNodeDriver.connectionCls.conn_class = VultrMockHttp
         VultrMockHttp.type = None
-        self.driver = VultrNodeDriver(*VULTR_PARAMS,
-                                      api_version='1')
+        self.driver = VultrNodeDriver(*VULTR_PARAMS, api_version="1")
 
     def test_correct_class_is_used(self):
         self.assertIsInstance(self.driver, VultrNodeDriverV1)

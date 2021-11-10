@@ -59,20 +59,29 @@ class VultrDNSConnectionV2(VultrConnectionV2):
 
 class VultrDNSDriver(DNSDriver):
     type = Provider.VULTR
-    name = 'Vultr DNS'
-    website = 'https://www.vultr.com'
+    name = "Vultr DNS"
+    website = "https://www.vultr.com"
 
-    def __new__(cls, key, secret=None, secure=True, host=None, port=None,
-                api_version=DEFAULT_API_VERSION, region=None, **kwargs):
+    def __new__(
+        cls,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        api_version=DEFAULT_API_VERSION,
+        region=None,
+        **kwargs,
+    ):
         if cls is VultrDNSDriver:
-            if api_version == '1':
+            if api_version == "1":
                 cls = VultrDNSDriverV1
-            elif api_version == '2':
+            elif api_version == "2":
                 cls = VultrDNSDriverV2
             else:
                 raise NotImplementedError(
-                    'No Vultr driver found for API version: %s' %
-                    (api_version))
+                    "No Vultr driver found for API version: %s" % (api_version)
+                )
         return super().__new__(cls)
 
 
@@ -431,15 +440,15 @@ class VultrDNSDriverV2(VultrDNSDriver):
     connectionCls = VultrDNSConnectionV2
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.NS: 'NS',
-        RecordType.MX: 'MX',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT',
-        RecordType.CAA: 'CAA',
-        RecordType.SSHFP: 'SSHFP',
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.NS: "NS",
+        RecordType.MX: "MX",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
+        RecordType.CAA: "CAA",
+        RecordType.SSHFP: "SSHFP",
     }
 
     def list_zones(self) -> List[Zone]:
@@ -447,7 +456,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        data = self._paginated_request('/v2/domains', 'domains')
+        data = self._paginated_request("/v2/domains", "domains")
         return [self._to_zone(item) for item in data]
 
     def get_zone(self, zone_id: str) -> Zone:
@@ -458,15 +467,16 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :rtype: :class:`Zone`
         """
-        resp = self.connection.request('/v2/domains/%s' % zone_id)
-        return self._to_zone(resp.object['domain'])
+        resp = self.connection.request("/v2/domains/%s" % zone_id)
+        return self._to_zone(resp.object["domain"])
 
-    def create_zone(self,
-                    domain: str,
-                    type: str = 'master',
-                    ttl: Optional[int] = None,
-                    extra: Optional[Dict[str, Any]] = None,
-                    ) -> Zone:
+    def create_zone(
+        self,
+        domain: str,
+        type: str = "master",
+        ttl: Optional[int] = None,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> Zone:
         """Create a new zone.
 
         :param domain: Zone domain name (e.g. example.com)
@@ -486,21 +496,20 @@ class VultrDNSDriverV2(VultrDNSDriver):
         """
 
         data = {
-            'domain': domain,
+            "domain": domain,
         }
 
         extra = extra or {}
-        if 'ip' in extra:
-            data['ip'] = extra['ip']
+        if "ip" in extra:
+            data["ip"] = extra["ip"]
 
-        if 'dns_sec' in extra:
-            data['dns_sec'] = ('enabled'
-                               if extra['dns_sec'] is True else 'disabled')
+        if "dns_sec" in extra:
+            data["dns_sec"] = "enabled" if extra["dns_sec"] is True else "disabled"
 
-        resp = self.connection.request('/v2/domains',
-                                       data=json.dumps(data),
-                                       method='POST')
-        return self._to_zone(resp.object['domain'])
+        resp = self.connection.request(
+            "/v2/domains", data=json.dumps(data), method="POST"
+        )
+        return self._to_zone(resp.object["domain"])
 
     def delete_zone(self, zone: Zone) -> bool:
         """Delete a zone.
@@ -512,8 +521,7 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/v2/domains/%s' % zone.domain,
-                                       method='DELETE')
+        resp = self.connection.request("/v2/domains/%s" % zone.domain, method="DELETE")
         return resp.success()
 
     def list_records(self, zone: Zone) -> List[Record]:
@@ -524,8 +532,9 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        data = self._paginated_request('/v2/domains/%s/records' % zone.domain,
-                                       'records')
+        data = self._paginated_request(
+            "/v2/domains/%s/records" % zone.domain, "records"
+        )
         return [self._to_record(item, zone) for item in data]
 
     def get_record(self, zone_id: str, record_id: str) -> Record:
@@ -539,26 +548,24 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :rtype: :class:`Record`
         """
-        resp = self.connection.request('/v2/domains/%s/records/%s' %
-                                       (zone_id, record_id))
+        resp = self.connection.request(
+            "/v2/domains/%s/records/%s" % (zone_id, record_id)
+        )
 
         # Avoid making an extra API call, as zone_id is enough for
         # standard fields
-        zone = Zone(id=zone_id,
-                    domain=zone_id,
-                    type='master',
-                    ttl=None,
-                    driver=self)
+        zone = Zone(id=zone_id, domain=zone_id, type="master", ttl=None, driver=self)
 
-        return self._to_record(resp.object['record'], zone)
+        return self._to_record(resp.object["record"], zone)
 
-    def create_record(self,
-                      name: str,
-                      zone: Zone,
-                      type: RecordType,
-                      data: str,
-                      extra: Optional[Dict[str, Any]] = None
-                      ) -> Record:
+    def create_record(
+        self,
+        name: str,
+        zone: Zone,
+        type: RecordType,
+        data: str,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> Record:
         """Create a new record.
 
         :param name: Record name without the domain name (e.g. www).
@@ -584,30 +591,31 @@ class VultrDNSDriverV2(VultrDNSDriver):
         :rtype: :class:`Record`
         """
         data = {
-            'name': name,
-            'type': self.RECORD_TYPE_MAP[type],
-            'data': data,
+            "name": name,
+            "type": self.RECORD_TYPE_MAP[type],
+            "data": data,
         }
         extra = extra or {}
-        if 'ttl' in extra:
-            data['ttl'] = int(extra['ttl'])
+        if "ttl" in extra:
+            data["ttl"] = int(extra["ttl"])
 
-        if 'priority' in extra:
-            data['priority'] = int(extra['priority'])
+        if "priority" in extra:
+            data["priority"] = int(extra["priority"])
 
-        resp = self.connection.request('/v2/domains/%s/records' % zone.domain,
-                                       data=json.dumps(data),
-                                       method='POST')
+        resp = self.connection.request(
+            "/v2/domains/%s/records" % zone.domain, data=json.dumps(data), method="POST"
+        )
 
-        return self._to_record(resp.object['record'], zone)
+        return self._to_record(resp.object["record"], zone)
 
-    def update_record(self,
-                      record: Record,
-                      name: Optional[str] = None,
-                      type: Optional[RecordType] = None,
-                      data: Optional[str] = None,
-                      extra: Optional[Dict[str, Any]] = None
-                      ) -> bool:
+    def update_record(
+        self,
+        record: Record,
+        name: Optional[str] = None,
+        type: Optional[RecordType] = None,
+        data: Optional[str] = None,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> bool:
         """Update an existing record.
 
         :param record: Record to update.
@@ -634,22 +642,23 @@ class VultrDNSDriverV2(VultrDNSDriver):
         """
         body = {}
         if name:
-            body['name'] = name
+            body["name"] = name
 
         if data:
-            body['data'] = data
+            body["data"] = data
 
         extra = extra or {}
-        if 'ttl' in extra:
-            body['ttl'] = int(extra['ttl'])
+        if "ttl" in extra:
+            body["ttl"] = int(extra["ttl"])
 
-        if 'priority' in extra:
-            body['priority'] = int(extra['priority'])
+        if "priority" in extra:
+            body["priority"] = int(extra["priority"])
 
-        resp = self.connection.request('/v2/domains/%s/records/%s' %
-                                       (record.zone.domain, record.id),
-                                       data=json.dumps(body),
-                                       method='PATCH')
+        resp = self.connection.request(
+            "/v2/domains/%s/records/%s" % (record.zone.domain, record.id),
+            data=json.dumps(body),
+            method="PATCH",
+        )
 
         return resp.success()
 
@@ -661,49 +670,50 @@ class VultrDNSDriverV2(VultrDNSDriver):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request('/v2/domains/%s/records/%s' %
-                                       (record.zone.domain, record.id),
-                                       method='DELETE')
+        resp = self.connection.request(
+            "/v2/domains/%s/records/%s" % (record.zone.domain, record.id),
+            method="DELETE",
+        )
 
         return resp.success()
 
     def _to_zone(self, data: Dict[str, Any]) -> Zone:
-        type_ = 'master'
-        domain = data['domain']
+        type_ = "master"
+        domain = data["domain"]
         extra = {
-            'date_created': data['date_created'],
+            "date_created": data["date_created"],
         }
-        return Zone(id=domain,
-                    domain=domain,
-                    driver=self,
-                    type=type_,
-                    ttl=None,
-                    extra=extra)
+        return Zone(
+            id=domain, domain=domain, driver=self, type=type_, ttl=None, extra=extra
+        )
 
     def _to_record(self, data: Dict[str, Any], zone: Zone) -> Record:
-        id_ = data['id']
-        name = data['name']
-        type_ = self._string_to_record_type(data['type'])
-        data_ = data['data']
-        ttl = data['ttl']
+        id_ = data["id"]
+        name = data["name"]
+        type_ = self._string_to_record_type(data["type"])
+        data_ = data["data"]
+        ttl = data["ttl"]
         extra = {
-            'priority': data['priority'],
+            "priority": data["priority"],
         }
 
-        return Record(id=id_,
-                      name=name,
-                      type=type_,
-                      data=data_,
-                      ttl=ttl,
-                      driver=self,
-                      zone=zone,
-                      extra=extra)
+        return Record(
+            id=id_,
+            name=name,
+            type=type_,
+            data=data_,
+            ttl=ttl,
+            driver=self,
+            zone=zone,
+            extra=extra,
+        )
 
-    def _paginated_request(self,
-                           url: str,
-                           key: str,
-                           params: Optional[Dict[str, Any]] = None,
-                           ) -> List[Any]:
+    def _paginated_request(
+        self,
+        url: str,
+        key: str,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> List[Any]:
         """Perform multiple calls to get the full list of items when
         the API responses are paginated.
 
@@ -724,9 +734,9 @@ class VultrDNSDriverV2(VultrDNSDriver):
         data = list(resp.get(key, []))
         objects = data
         while True:
-            next_page = resp['meta']['links']['next']
+            next_page = resp["meta"]["links"]["next"]
             if next_page:
-                params['cursor'] = next_page
+                params["cursor"] = next_page
                 resp = self.connection.request(url, params=params).object
                 data = list(resp.get(key, []))
                 objects.extend(data)

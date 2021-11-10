@@ -286,7 +286,7 @@ class BaseStorageTests(unittest.TestCase):
         result = self.driver1._get_standard_range_str(10, 11, True)
         self.assertEqual(result, "bytes=10-11")
 
-    @mock.patch('os.environ', {'LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS': True})
+    @mock.patch("os.environ", {"LIBCLOUD_RETRY_FAILED_HTTP_REQUESTS": True})
     def test_should_retry_rate_limited_errors(self):
         class SecondException(Exception):
             pass
@@ -305,8 +305,12 @@ class BaseStorageTests(unittest.TestCase):
         self.driver1.connection.connection.session.send = send_mock
         send_mock.side_effect = raise_on_second
         with self.assertRaises(SecondException):
-            self.driver1._upload_object(object_name="some name", content_type="something", request_path="/",
-                                        stream=iter([]))
+            self.driver1._upload_object(
+                object_name="some name",
+                content_type="something",
+                request_path="/",
+                stream=iter([]),
+            )
 
 
 class BaseRangeDownloadMockHttpTestCase(unittest.TestCase):

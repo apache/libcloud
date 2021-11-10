@@ -30,7 +30,7 @@ class BrightboxLBTests(unittest.TestCase):
     def setUp(self):
         BrightboxLBDriver.connectionCls.conn_class = BrightboxLBMockHttp
         BrightboxLBMockHttp.type = None
-        BrightboxLBDriver.connectionCls.token = 'test'
+        BrightboxLBDriver.connectionCls.token = "test"
         self.driver = BrightboxLBDriver(*LB_BRIGHTBOX_PARAMS)
 
     def test_list_protocols(self):

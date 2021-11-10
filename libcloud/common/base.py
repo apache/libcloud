@@ -648,20 +648,24 @@ class Connection(object):
         request_to_be_executed = self._retryable_request
 
         if retry_enabled:
-            retry_request = self.retryCls(retry_delay=self.retry_delay,
-                                          timeout=self.timeout,
-                                          backoff=self.backoff)
+            retry_request = self.retryCls(
+                retry_delay=self.retry_delay, timeout=self.timeout, backoff=self.backoff
+            )
             request_to_be_executed = retry_request(self._retryable_request)
 
-        return request_to_be_executed(url=url, method=method,
-                                      raw=raw, stream=stream,
-                                      headers=headers,
-                                      data=data)
+        return request_to_be_executed(
+            url=url, method=method, raw=raw, stream=stream, headers=headers, data=data
+        )
 
-    def _retryable_request(self, url: str, data: bytes,
-                           headers: Dict[str, Any],
-                           method: str, raw: bool,
-                           stream: bool) -> Union[RawResponse, Response]:
+    def _retryable_request(
+        self,
+        url: str,
+        data: bytes,
+        headers: Dict[str, Any],
+        method: str,
+        raw: bool,
+        stream: bool,
+    ) -> Union[RawResponse, Response]:
         try:
             # @TODO: Should we just pass File object as body to request method
             # instead of dealing with splitting and sending the file ourselves?
@@ -677,11 +681,9 @@ class Connection(object):
                     stream=stream,
                 )
             else:
-                self.connection.request(method=method,
-                                        url=url,
-                                        body=data,
-                                        headers=headers,
-                                        stream=stream)
+                self.connection.request(
+                    method=method, url=url, body=data, headers=headers, stream=stream
+                )
 
         except socket.gaierror as e:
             message = str(e)
@@ -693,10 +695,11 @@ class Connection(object):
                 # "host" Connection class attribute is set to an incorrect
                 # value
                 class_name = self.__class__.__name__
-                msg = ('%s. Perhaps "host" Connection class attribute '
-                       '(%s.connection) is set to an invalid, non-hostname '
-                       'value (%s)?' %
-                       (message, class_name, self.host))
+                msg = (
+                    '%s. Perhaps "host" Connection class attribute '
+                    "(%s.connection) is set to an invalid, non-hostname "
+                    "value (%s)?" % (message, class_name, self.host)
+                )
                 raise socket.gaierror(msg)  # type: ignore
             self.reset_context()
             raise e
@@ -936,8 +939,18 @@ class ConnectionKey(Connection):
     Base connection class which accepts a single ``key`` argument.
     """
 
-    def __init__(self, key, secure=True, host=None, port=None, url=None,
-                 timeout=None, proxy_url=None, backoff=None, retry_delay=None):
+    def __init__(
+        self,
+        key,
+        secure=True,
+        host=None,
+        port=None,
+        url=None,
+        timeout=None,
+        proxy_url=None,
+        backoff=None,
+        retry_delay=None,
+    ):
         """
         Initialize `user_id` and `key`; set `secure` to an ``int`` based on
         passed value.
@@ -960,8 +973,18 @@ class CertificateConnection(Connection):
     Base connection class which accepts a single ``cert_file`` argument.
     """
 
-    def __init__(self, cert_file, secure=True, host=None, port=None, url=None,
-                 proxy_url=None, timeout=None, backoff=None, retry_delay=None):
+    def __init__(
+        self,
+        cert_file,
+        secure=True,
+        host=None,
+        port=None,
+        url=None,
+        proxy_url=None,
+        timeout=None,
+        backoff=None,
+        retry_delay=None,
+    ):
         """
         Initialize `cert_file`; set `secure` to an ``int`` based on
         passed value.

@@ -123,7 +123,13 @@ class LocalTests(unittest.TestCase):
 
         time.sleep(0.2)
 
-        p2 = multiprocessing.Process(target=acquire_lock_in_subprocess, args=(2, success_2,))
+        p2 = multiprocessing.Process(
+            target=acquire_lock_in_subprocess,
+            args=(
+                2,
+                success_2,
+            ),
+        )
         p2.start()
 
         p1.join()

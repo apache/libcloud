@@ -31,12 +31,24 @@ class VultrTests(unittest.TestCase):
     def setUp(self):
         VultrMockHttp.type = None
         VultrDNSDriverV1.connectionCls.conn_class = VultrMockHttp
-        self.driver = VultrDNSDriver(*VULTR_PARAMS, api_version='1')
-        self.test_zone = Zone(id='test.com', type='master', ttl=None,
-                              domain='test.com', extra={}, driver=self)
-        self.test_record = Record(id='31', type=RecordType.A, name='test',
-                                  zone=self.test_zone, data='127.0.0.1',
-                                  driver=self, extra={})
+        self.driver = VultrDNSDriver(*VULTR_PARAMS, api_version="1")
+        self.test_zone = Zone(
+            id="test.com",
+            type="master",
+            ttl=None,
+            domain="test.com",
+            extra={},
+            driver=self,
+        )
+        self.test_record = Record(
+            id="31",
+            type=RecordType.A,
+            name="test",
+            zone=self.test_zone,
+            data="127.0.0.1",
+            driver=self,
+            extra={},
+        )
 
     def test_correct_class_is_used(self):
         self.assertIsInstance(self.driver, VultrDNSDriverV1)
