@@ -208,7 +208,7 @@ class OvhConnection(ConnectionUserAndKey):
         })
 
         try:
-            return super(OvhConnection, self)\
+            return super(OvhConnection, self) \
                 .request(action, params=params, data=data, headers=headers,
                          method=method, raw=raw)
         except Exception as e:
@@ -226,7 +226,8 @@ def handle_and_rethrow_user_friendly_invalid_region_error(host, e):
     """
     msg = str(e).lower()
 
-    if 'nodename nor servname provided, or not known' in msg or 'getaddrinfo failed' in msg:
+    if 'name or service not known' in msg \
+        or 'nodename nor servname provided, or not known' in msg or 'getaddrinfo failed' in msg:
         raise ValueError('Received "name or service not known" error '
                          'when sending a request. This likely '
                          'indicates invalid region argument was '
