@@ -1,6 +1,15 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Other
+~~~~~
+
+- Also run unit tests under Python 3.10 + Pyjion on CI/CD.
+  (GITHUB-1626)
+
 Changes in Apache Libcloud 3.4.0
 --------------------------------
 

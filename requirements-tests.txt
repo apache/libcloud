@@ -22,3 +22,6 @@ cryptography==35.0.0; python_version >= '3.6'
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==20.0.1; python_version <= '3.5'
 pyopenssl==21.0.0; python_version >= '3.6'
+# Newer version of itertools doesn't support Python 3.5 anymore
+more-itertools==8.10.0; python_version <= '3.5'
+more-itertools==8.11.0; python_version >= '3.6'
