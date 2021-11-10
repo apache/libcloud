@@ -22,7 +22,6 @@ import unittest
 import warnings
 import platform
 import os.path
-import requests_mock
 from itertools import chain
 
 # In Python > 2.7 DeprecationWarnings are disabled by default
@@ -48,7 +47,6 @@ from libcloud.utils.networking import is_valid_ip_address
 from libcloud.utils.networking import join_ipv4_segments
 from libcloud.utils.networking import increment_ipv4_segments
 from libcloud.utils.decorators import wrap_non_libcloud_exceptions
-from libcloud.utils.connection import get_response_object
 from libcloud.utils.publickey import (
     get_pubkey_openssh_fingerprint,
     get_pubkey_ssh2_fingerprint,
