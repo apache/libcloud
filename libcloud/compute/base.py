@@ -75,7 +75,7 @@ if have_paramiko:
     )
 else:
     SSH_TIMEOUT_EXCEPTION_CLASSES = (
-        IOError,
+        IOError,  # type: ignore
         socket.gaierror,  # type: ignore
         socket.error,
     )  # type: ignore
