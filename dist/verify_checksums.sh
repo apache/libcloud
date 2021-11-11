@@ -15,7 +15,7 @@
 # limitations under the license.
 
 # This script downloads release artifacts from Apache server and PyPi server and
-# verifies that the MD5 checksum of both archives matches.
+# verifies that the SHA512 checksum of both archives matches.
 
 VERSION=$1
 
@@ -110,17 +110,17 @@ do
         exit 2
     fi
 
-    md5sum_apache=$(md5sum "${file_path_apache}" | awk '{ print $1 }')
-    md5sum_pypi=$(md5sum "${file_path_pypi}"| awk '{ print $1 }')
+    sha512sum_apache=$(sha512sum "${file_path_apache}" | awk '{ print $1 }')
+    sha512sum_pypi=$(sha512sum "${file_path_pypi}"| awk '{ print $1 }')
 
-    if [ ${md5sum_apache} != ${md5sum_pypi} ]; then
-       echo "[ERROR] MD5 sum for file ${file_name} doesn\'t match"
+    if [ ${sha512sum_apache} != ${sha512sum_pypi} ]; then
+       echo "[ERROR] SHA512 sum for file ${file_name} doesn\'t match"
        echo ""
-       echo "${file_name_apache}: ${md5sum_apache}"
-       echo "${file_name_pypi}: ${md5sum_pypi}"
+       echo "${file_name_apache}: ${sha512sum_apache}"
+       echo "${file_name_pypi}: ${sha512sum_pypi}"
        exit 1
    else
-       echo "[OK] MD5 sum for file ${file_name} matches"
+       echo "[OK] SHA512 sum for file ${file_name} matches"
     fi
 
     echo ""
