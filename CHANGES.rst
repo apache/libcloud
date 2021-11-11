@@ -1,6 +1,26 @@
 ﻿Changelog
 =========
 
+Changes in Apache Libcloud 3.4.1
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix a regression which was inadvertently introduced in v3.4.0 which prevented
+  users from installing Libcloud under Python 3.5.
+
+  Also revert ``requests`` minimum version required change and relax the
+  minimum version requirement.
+
+  Previous change would prevent Libcloud from being installed in environments
+  where a conflicting (lower) version of requests library is required.
+
+  As a library and not an application Libcloud should specify as loose
+  requirements as possible to prevent issues with conflicting requirements
+  versions.
+  (GITHUB-1594)
+
 Changes in Apache Libcloud 3.4.0
 --------------------------------
 
