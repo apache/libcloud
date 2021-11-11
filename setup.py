@@ -176,8 +176,7 @@ SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 # We rely on >= 2.26.0 to avoid issues with LGL transitive dependecy
 # See https://github.com/apache/libcloud/issues/1594 for more context
 INSTALL_REQUIREMENTS = [
-    'requests>=2.25.1; python_version <= "3.5"',
-    'requests>=2.26.0; python_version >= "3.6"'
+    'requests>=2.5.0',
 ]
 
 setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
