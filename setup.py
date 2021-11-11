@@ -175,14 +175,10 @@ SUPPORTED_VERSIONS = ['PyPy 3', 'Python 3.5+']
 # Reference: https://hynek.me/articles/conditional-python-dependencies/
 # We rely on >= 2.26.0 to avoid issues with LGL transitive dependecy
 # See https://github.com/apache/libcloud/issues/1594 for more context
-INSTALL_REQUIREMENTS = []
-
-if sys.version_info < (3, 6, 0):
-    # requests 2.26.0 doesn't support Python 3.5 anymore
-    INSTALL_REQUIREMENTS.append('requests>=2.25.1')
-else:
-    INSTALL_REQUIREMENTS.append('requests>=2.26.0')
-
+INSTALL_REQUIREMENTS = [
+    'requests>=2.25.1; python_version <= "3.5"',
+    'requests>=2.26.0; python_version >= "3.6"'
+]
 
 setuptools_version = tuple(setuptools.__version__.split(".")[0:2])
 setuptools_version = tuple([int(c) for c in setuptools_version])
