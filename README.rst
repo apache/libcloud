@@ -33,9 +33,17 @@ through a unified and easy to use API.
 .. image:: https://img.shields.io/github/license/apache/libcloud.svg
         :target: https://github.com/apache/libcloud/blob/trunk/LICENSE
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+        :target: https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html
+
+.. image:: https://img.shields.io/twitter/follow/Libcloud.svg?style=social&label=Follow
+        :target: https://twitter.com/Libcloud
+
+.. image:: https://img.shields.io/pypi/dm/apache-libcloud
+        :target: https://pypi.org/project/apache-libcloud
+
 .. image:: https://bestpractices.coreinfrastructure.org/projects/152/badge
         :target: https://bestpractices.coreinfrastructure.org/projects/152
-
 
 :Code:          https://github.com/apache/libcloud
 :License:       Apache 2.0; see LICENSE file
