@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - trunk
+      - 3.4.x
   pull_request:
     branches:
       - trunk
+      - 3.4.x
   schedule:
     - cron: '0 1 * * *'
 
