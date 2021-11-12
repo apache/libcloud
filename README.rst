@@ -45,6 +45,7 @@ through a unified and easy to use API.
 .. image:: https://bestpractices.coreinfrastructure.org/projects/152/badge
         :target: https://bestpractices.coreinfrastructure.org/projects/152
 
+
 :Code:          https://github.com/apache/libcloud
 :License:       Apache 2.0; see LICENSE file
 :Issues:        https://issues.apache.org/jira/projects/LIBCLOUD/issues
