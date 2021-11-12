@@ -14,11 +14,12 @@ Common
   minimum version requirement.
 
   Previous change would prevent Libcloud from being installed in environments
-  where a conflicting (lower) version of requests library is required.
+  where a conflicting (lower) version of requests library is required and
+  already installed.
 
-  As a library and not an application Libcloud should specify as loose
+  As a library and not an application, Libcloud should specify as loose
   requirements as possible to prevent issues with conflicting requirements
-  versions.
+  versions which could prevent Libcloud from being installed.
   (GITHUB-1594)
 
 Changes in Apache Libcloud 3.4.0
