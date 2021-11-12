@@ -3,6 +3,9 @@
 name: Install stable version using pip
 
 on:
+  push:
+    branches:
+      - daily_verify_checksums
   schedule:
     - cron: '0 13 * * *'
     - cron: '0 2 * * *'
