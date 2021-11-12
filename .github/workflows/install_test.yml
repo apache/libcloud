@@ -3,9 +3,6 @@
 name: Install stable version using pip
 
 on:
-  push:
-    branches:
-      - daily_verify_checksums
   schedule:
     - cron: '0 13 * * *'
     - cron: '0 2 * * *'
@@ -59,5 +56,5 @@ jobs:
       - name: Verify Checksums
         run: |
           LAST_STABLE_VERSION=$(curl -s --fail https://pypi.org/pypi/apache-libcloud/json | jq ".releases | to_entries | last | .key" -r)
-          echo "Checking checksums for version ${LAST_STABLE_VERSION}"
+          echo "Verifying checksums for version ${LAST_STABLE_VERSION}"
           ./dist/verify_checksums.sh "apache-libcloud-${LAST_STABLE_VERSION}"
