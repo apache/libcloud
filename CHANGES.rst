@@ -26,6 +26,58 @@ Other
 - Also run unit tests under Python 3.10 + Pyjion on CI/CD.
   (GITHUB-1626)
 
+Changes in Apache Libcloud 3.4.1
+--------------------------------
+
+.. note::
+
+  Libcloud depends on the ``requests`` library for performing HTTP(s) requests.
+
+  Prior to ``requests`` v2.26.0, ``requests`` depended on ``chardet`` library
+  which is licensed under LGPL (requests library itself is licensed under the
+  Apache License 2.0 license).
+
+  Since Libcloud is not an application, but a library which is usually used
+  along many other libraries in the same (virtual) environment, we can't have
+  a strict dependency on requests >= 2.26.0 since that would break a lot of
+  installations where users already depend on and have an older version of
+  requests installed.
+
+  If you are using requests < 2.26.0 along the Libcloud library you are using
+  version of chardet library (chardet is a direct dependency of the requests
+  library) which license is not compatible with Apache Libcloud.
+
+  If using a LGPL dependency is a problem for your application, you should
+  ensure you are using requests >= 2.26.0.
+
+  It's also worth noting that Apache Libcloud doesn't bundle any 3rd party
+  dependencies with our release artifacts - we only provide source code
+  artifacts on our website.
+
+  When installing Libcloud from PyPi using pip, pip will also download and use
+  the latest version of requests without the problematic chardet dependency,
+  unless you already have older version of the requests library installed in
+  the same environment where you also want to use Libcloud - in that case,
+  Libcloud will use the dependency which is already available and installed.
+
+Common
+~~~~~~
+
+- Fix a regression which was inadvertently introduced in v3.4.0 which prevented
+  users from installing Libcloud under Python 3.5.
+
+  Also revert ``requests`` minimum version required change and relax the
+  minimum version requirement.
+
+  Previous change would prevent Libcloud from being installed in environments
+  where a conflicting (lower) version of requests library is required and
+  already installed.
+
+  As a library and not an application, Libcloud should specify as loose
+  requirements as possible to prevent issues with conflicting requirements
+  versions which could prevent Libcloud from being installed.
+  (GITHUB-1594)
+
 Changes in Apache Libcloud 3.4.0
 --------------------------------
 
