@@ -36,15 +36,26 @@ through a unified and easy to use API.
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
         :target: https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html
 
-.. image:: https://img.shields.io/twitter/follow/Libcloud.svg?style=social&label=Follow
-        :target: https://twitter.com/Libcloud
-
 .. image:: https://img.shields.io/pypi/dm/apache-libcloud
         :target: https://pypi.org/project/apache-libcloud
 
 .. image:: https://bestpractices.coreinfrastructure.org/projects/152/badge
         :target: https://bestpractices.coreinfrastructure.org/projects/152
 
+.. image:: https://img.shields.io/github/contributors/apache/libcloud.svg?logo=github
+        :target: https://github.com/apache/libcloud/graphs/contributors
+
+.. image:: https://img.shields.io/github/stars/apache/libcloud.svg?logo=github
+        :target: https://github.com/apache/libcloud/stargazers
+
+.. image:: https://img.shields.io/github/forks/apache/libcloud.svg?logo=github
+        :target: https://github.com/apache/libcloud/network/members
+
+.. image:: https://repology.org/badge/tiny-repos/python:apache-libcloud.svg
+        :target: https://repology.org/project/python:apache-libcloud/versions
+
+.. image:: https://img.shields.io/twitter/follow/Libcloud.svg?style=social&label=Follow
+        :target: https://twitter.com/Libcloud
 
 :Code:          https://github.com/apache/libcloud
 :License:       Apache 2.0; see LICENSE file
