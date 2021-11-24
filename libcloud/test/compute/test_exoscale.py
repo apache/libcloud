@@ -24,5 +24,6 @@ from libcloud.test import unittest
 class ExoscaleNodeDriverTestCase(CloudStackCommonTestCase, unittest.TestCase):
     driver_klass = ExoscaleNodeDriver
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(unittest.main())

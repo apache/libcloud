@@ -23,11 +23,11 @@ from libcloud.container.types import ContainerState
 
 
 __all__ = [
-    'Container',
-    'ContainerImage',
-    'ContainerCluster',
-    'ClusterLocation',
-    'ContainerDriver'
+    "Container",
+    "ContainerImage",
+    "ContainerCluster",
+    "ClusterLocation",
+    "ContainerDriver",
 ]
 
 
@@ -36,15 +36,16 @@ class Container(object):
     Container.
     """
 
-    def __init__(self,
-                 id,  # type: str
-                 name,  # type: str
-                 image,  # type: ContainerImage
-                 state,  # type: ContainerState
-                 ip_addresses,  # type: List[str]
-                 driver,  # type: ContainerDriver
-                 extra=None  # type: dict
-                 ):
+    def __init__(
+        self,
+        id,  # type: str
+        name,  # type: str
+        image,  # type: ContainerImage
+        state,  # type: ContainerState
+        ip_addresses,  # type: List[str]
+        driver,  # type: ContainerDriver
+        extra=None,  # type: dict
+    ):
         """
         :param id: Container id.
         :type id: ``str``
@@ -92,10 +93,12 @@ class Container(object):
         return self.driver.destroy_container(container=self)
 
     def __repr__(self):
-        return ('<Container: id=%s, name=%s,'
-                'state=%s, provider=%s ...>' %
-                (self.id, self.name, self.state,
-                 self.driver.name))
+        return "<Container: id=%s, name=%s," "state=%s, provider=%s ...>" % (
+            self.id,
+            self.name,
+            self.state,
+            self.driver.name,
+        )
 
 
 class ContainerImage(object):
@@ -103,14 +106,15 @@ class ContainerImage(object):
     Container Image.
     """
 
-    def __init__(self,
-                 id,  # type: str
-                 name,  # type: str
-                 path,  # type: str
-                 version,  # type: str
-                 driver,  # type: ContainerDriver
-                 extra=None  # type: dict
-                 ):
+    def __init__(
+        self,
+        id,  # type: str
+        name,  # type: str
+        path,  # type: str
+        version,  # type: str
+        driver,  # type: ContainerDriver
+        extra=None,  # type: dict
+    ):
         """
         :param id: Container Image id.
         :type id: ``str``
@@ -139,15 +143,16 @@ class ContainerImage(object):
 
     def deploy(self, name, parameters, cluster=None, start=True):
         # type: (str, str, Optional[ContainerCluster], bool) -> Container
-        return self.driver.deploy_container(name=name,
-                                            image=self,
-                                            parameters=parameters,
-                                            cluster=cluster,
-                                            start=start)
+        return self.driver.deploy_container(
+            name=name, image=self, parameters=parameters, cluster=cluster, start=start
+        )
 
     def __repr__(self):
-        return ('<ContainerImage: id=%s, name=%s, path=%s ...>' %
-                (self.id, self.name, self.path))
+        return "<ContainerImage: id=%s, name=%s, path=%s ...>" % (
+            self.id,
+            self.name,
+            self.path,
+        )
 
 
 class ContainerCluster(object):
@@ -155,12 +160,13 @@ class ContainerCluster(object):
     A cluster group for containers
     """
 
-    def __init__(self,
-                 id,  # type: str
-                 name,  # type: str
-                 driver,  # type: ContainerDriver
-                 extra=None  # type: dict
-                 ):
+    def __init__(
+        self,
+        id,  # type: str
+        name,  # type: str
+        driver,  # type: ContainerDriver
+        extra=None,  # type: dict
+    ):
         """
         :param id: Container Image id.
         :type id: ``str``
@@ -188,8 +194,11 @@ class ContainerCluster(object):
         return self.driver.destroy_cluster(cluster=self)
 
     def __repr__(self):
-        return ('<ContainerCluster: id=%s, name=%s, provider=%s ...>' %
-                (self.id, self.name, self.driver.name))
+        return "<ContainerCluster: id=%s, name=%s, provider=%s ...>" % (
+            self.id,
+            self.name,
+            self.driver.name,
+        )
 
 
 class ClusterLocation(object):
@@ -203,12 +212,13 @@ class ClusterLocation(object):
     'US'
     """
 
-    def __init__(self,
-                 id,  # type: str
-                 name,  # type: str
-                 country,  # type: str
-                 driver  # type: ContainerDriver
-                 ):
+    def __init__(
+        self,
+        id,  # type: str
+        name,  # type: str
+        country,  # type: str
+        driver,  # type: ContainerDriver
+    ):
         """
         :param id: Location ID.
         :type id: ``str``
@@ -228,8 +238,12 @@ class ClusterLocation(object):
         self.driver = driver
 
     def __repr__(self):
-        return (('<ClusterLocation: id=%s, name=%s, country=%s, driver=%s>')
-                % (self.id, self.name, self.country, self.driver.name))
+        return ("<ClusterLocation: id=%s, name=%s, country=%s, driver=%s>") % (
+            self.id,
+            self.name,
+            self.country,
+            self.driver.name,
+        )
 
 
 class ContainerDriver(BaseDriver):
@@ -238,6 +252,7 @@ class ContainerDriver(BaseDriver):
 
     This class is always subclassed by a specific driver.
     """
+
     connectionCls = ConnectionUserAndKey
     name = None
     website = None
@@ -246,8 +261,7 @@ class ContainerDriver(BaseDriver):
     Whether the driver supports containers being deployed into clusters
     """
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 **kwargs):
+    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
         """
         :param    key: API key or username to used (required)
         :type     key: ``str``
@@ -268,8 +282,8 @@ class ContainerDriver(BaseDriver):
         :return: ``None``
         """
         super(ContainerDriver, self).__init__(
-            key=key, secret=secret, secure=secure,
-            host=host, port=port, **kwargs)
+            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
+        )
 
     def install_image(self, path):
         # type: (str) -> ContainerImage
@@ -281,8 +295,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.ContainerImage`
         """
-        raise NotImplementedError(
-            'install_image not implemented for this driver')
+        raise NotImplementedError("install_image not implemented for this driver")
 
     def list_images(self):
         # type: () -> List[ContainerImage]
@@ -291,13 +304,13 @@ class ContainerDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`.ContainerImage`
         """
-        raise NotImplementedError(
-            'list_images not implemented for this driver')
+        raise NotImplementedError("list_images not implemented for this driver")
 
-    def list_containers(self,
-                        image=None,  # type: Optional[ContainerImage]
-                        cluster=None  # type: Optional[ContainerCluster]
-                        ):
+    def list_containers(
+        self,
+        image=None,  # type: Optional[ContainerImage]
+        cluster=None,  # type: Optional[ContainerCluster]
+    ):
         # type: (...) -> List[Container]
         """
         List the deployed container images
@@ -310,16 +323,16 @@ class ContainerDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`.Container`
         """
-        raise NotImplementedError(
-            'list_containers not implemented for this driver')
+        raise NotImplementedError("list_containers not implemented for this driver")
 
-    def deploy_container(self,
-                         name,  # type: str
-                         image,  # type: ContainerImage
-                         cluster=None,  # type: Optional[ContainerCluster]
-                         parameters=None,  # type: Optional[str]
-                         start=True  # type: bool
-                         ):
+    def deploy_container(
+        self,
+        name,  # type: str
+        image,  # type: ContainerImage
+        cluster=None,  # type: Optional[ContainerCluster]
+        parameters=None,  # type: Optional[str]
+        start=True,  # type: bool
+    ):
         # type: (...) -> Container
         """
         Deploy an installed container image
@@ -341,8 +354,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.Container`
         """
-        raise NotImplementedError(
-            'deploy_container not implemented for this driver')
+        raise NotImplementedError("deploy_container not implemented for this driver")
 
     def get_container(self, id):
         # type: (str) -> Container
@@ -354,8 +366,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.Container`
         """
-        raise NotImplementedError(
-            'get_container not implemented for this driver')
+        raise NotImplementedError("get_container not implemented for this driver")
 
     def start_container(self, container):
         # type: (Container) -> Container
@@ -367,8 +378,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.Container`
         """
-        raise NotImplementedError(
-            'start_container not implemented for this driver')
+        raise NotImplementedError("start_container not implemented for this driver")
 
     def stop_container(self, container):
         # type: (Container) -> Container
@@ -380,8 +390,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.Container`
         """
-        raise NotImplementedError(
-            'stop_container not implemented for this driver')
+        raise NotImplementedError("stop_container not implemented for this driver")
 
     def restart_container(self, container):
         # type: (Container) -> Container
@@ -393,8 +402,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.Container`
         """
-        raise NotImplementedError(
-            'restart_container not implemented for this driver')
+        raise NotImplementedError("restart_container not implemented for this driver")
 
     def destroy_container(self, container):
         # type: (Container) -> bool
@@ -406,8 +414,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'destroy_container not implemented for this driver')
+        raise NotImplementedError("destroy_container not implemented for this driver")
 
     def list_locations(self):
         # type: () -> List[ClusterLocation]
@@ -416,8 +423,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`.ClusterLocation`
         """
-        raise NotImplementedError(
-            'list_locations not implemented for this driver')
+        raise NotImplementedError("list_locations not implemented for this driver")
 
     def create_cluster(self, name, location=None):
         # type: (str, Optional[ClusterLocation]) -> ContainerCluster
@@ -432,8 +438,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.ContainerCluster`
         """
-        raise NotImplementedError(
-            'create_cluster not implemented for this driver')
+        raise NotImplementedError("create_cluster not implemented for this driver")
 
     def destroy_cluster(self, cluster):
         # type: (ContainerCluster) -> bool
@@ -443,8 +448,7 @@ class ContainerDriver(BaseDriver):
         :return: ``True`` if the destroy was successful, otherwise ``False``.
         :rtype: ``bool``
         """
-        raise NotImplementedError(
-            'destroy_cluster not implemented for this driver')
+        raise NotImplementedError("destroy_cluster not implemented for this driver")
 
     def list_clusters(self, location=None):
         # type: (Optional[ClusterLocation]) -> List[ContainerCluster]
@@ -456,8 +460,7 @@ class ContainerDriver(BaseDriver):
 
         :rtype: ``list`` of :class:`.ContainerCluster`
         """
-        raise NotImplementedError(
-            'list_clusters not implemented for this driver')
+        raise NotImplementedError("list_clusters not implemented for this driver")
 
     def get_cluster(self, id):
         # type: (str) -> ContainerCluster
@@ -469,5 +472,4 @@ class ContainerDriver(BaseDriver):
 
         :rtype: :class:`.ContainerCluster`
         """
-        raise NotImplementedError(
-            'list_clusters not implemented for this driver')
+        raise NotImplementedError("list_clusters not implemented for this driver")

@@ -33,6 +33,7 @@ from libcloud.utils.py3 import ensure_string
 
 try:
     import libvirt
+
     have_libvirt = True
 except ImportError:
     have_libvirt = False
@@ -46,8 +47,8 @@ class LibvirtNodeDriver(NodeDriver):
     """
 
     type = Provider.LIBVIRT
-    name = 'Libvirt'
-    website = 'http://libvirt.org/'
+    name = "Libvirt"
+    website = "http://libvirt.org/"
 
     NODE_STATE_MAP = {
         0: NodeState.TERMINATED,  # no state
@@ -73,19 +74,23 @@ class LibvirtNodeDriver(NodeDriver):
         :type   key: ``str``
         """
         if not have_libvirt:
-            raise RuntimeError('Libvirt driver requires \'libvirt\' Python ' +
-                               'package')
+            raise RuntimeError("Libvirt driver requires 'libvirt' Python " + "package")
 
         self._uri = uri
         self._key = key
         self._secret = secret
-        if uri is not None and '+tcp' in self._uri:
+        if uri is not None and "+tcp" in self._uri:
             if key is None and secret is None:
-                raise RuntimeError('The remote Libvirt instance requires ' +
-                                   'authentication, please set \'key\' and ' +
-                                   '\'secret\' parameters')
-            auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
-                    self._cred_callback, None]
+                raise RuntimeError(
+                    "The remote Libvirt instance requires "
+                    + "authentication, please set 'key' and "
+                    + "'secret' parameters"
+                )
+            auth = [
+                [libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
+                self._cred_callback,
+                None,
+            ]
             self.connection = libvirt.openAuth(uri, auth, 0)
         else:
             self.connection = libvirt.open(uri)
@@ -226,7 +231,7 @@ class LibvirtNodeDriver(NodeDriver):
         :rtype: ``str``
         """
         if not os.path.exists(directory) or not os.path.isdir(directory):
-            raise ValueError('Invalid value for directory argument')
+            raise ValueError("Invalid value for directory argument")
 
         domain = self._get_domain_for_node(node=node)
         stream = self.connection.newStream()
@@ -236,12 +241,13 @@ class LibvirtNodeDriver(NodeDriver):
         if extensions:
             extension = extensions[0]
         else:
-            extension = '.png'
+            extension = ".png"
 
-        name = 'screenshot-%s%s' % (int(time.time()), extension)
+        name = "screenshot-%s%s" % (int(time.time()), extension)
         file_path = pjoin(directory, name)
 
-        with open(file_path, 'wb') as fp:
+        with open(file_path, "wb") as fp:
+
             def write(stream, buf, opaque):
                 fp.write(buf)
 
@@ -271,7 +277,7 @@ class LibvirtNodeDriver(NodeDriver):
         xml = self.connection.getSysinfo()
         etree = ET.XML(xml)
 
-        attributes = ['bios', 'system', 'processor', 'memory_device']
+        attributes = ["bios", "system", "processor", "memory_device"]
 
         sysinfo = {}
         for attribute in attributes:
@@ -299,14 +305,24 @@ class LibvirtNodeDriver(NodeDriver):
             else:
                 private_ips.append(ip_address)
 
-        extra = {'uuid': domain.UUIDString(), 'os_type': domain.OSType(),
-                 'types': self.connection.getType(),
-                 'used_memory': memory / 1024, 'vcpu_count': vcpu_count,
-                 'used_cpu_time': used_cpu_time}
+        extra = {
+            "uuid": domain.UUIDString(),
+            "os_type": domain.OSType(),
+            "types": self.connection.getType(),
+            "used_memory": memory / 1024,
+            "vcpu_count": vcpu_count,
+            "used_cpu_time": used_cpu_time,
+        }
 
-        node = Node(id=domain.ID(), name=domain.name(), state=state,
-                    public_ips=public_ips, private_ips=private_ips,
-                    driver=self, extra=extra)
+        node = Node(
+            id=domain.ID(),
+            name=domain.name(),
+            state=state,
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=self,
+            extra=extra,
+        )
         node._uuid = domain.UUIDString()  # we want to use a custom UUID
         return node
 
@@ -323,11 +339,11 @@ class LibvirtNodeDriver(NodeDriver):
         """
         result = []
 
-        if platform.system() != 'Linux':
+        if platform.system() != "Linux":
             # Only Linux is supported atm
             return result
 
-        if '///' not in self._uri:
+        if "///" not in self._uri:
             # Only local libvirtd is supported atm
             return result
 
@@ -335,16 +351,18 @@ class LibvirtNodeDriver(NodeDriver):
 
         arp_table = {}
         try:
-            cmd = ['arp', '-an']
-            child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
+            cmd = ["arp", "-an"]
+            child = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
             stdout, _ = child.communicate()
             arp_table = self._parse_ip_table_arp(arp_output=stdout)
         except OSError as e:
             if e.errno == 2:
-                cmd = ['ip', 'neigh']
-                child = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE)
+                cmd = ["ip", "neigh"]
+                child = subprocess.Popen(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
                 stdout, _ = child.communicate()
                 arp_table = self._parse_ip_table_neigh(ip_output=stdout)
 
@@ -365,7 +383,7 @@ class LibvirtNodeDriver(NodeDriver):
 
         result = []
         for elem in elems:
-            mac_address = elem.get('address')
+            mac_address = elem.get("address")
             result.append(mac_address)
 
         return result
@@ -397,11 +415,11 @@ class LibvirtNodeDriver(NodeDriver):
 
         :rtype: ``dict``
         """
-        elements = element.findall('entry')
+        elements = element.findall("entry")
 
         result = {}
         for element in elements:
-            name = element.get('name')
+            name = element.get("name")
             value = element.text
             result[name] = value
 
@@ -415,7 +433,7 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary from the parsing funtion
         :rtype: ``dict``
         """
-        arp_regex = re.compile(r'.*?\((.*?)\) at (.*?)\s+')
+        arp_regex = re.compile(r".*?\((.*?)\) at (.*?)\s+")
         return self._parse_mac_addr_table(arp_output, arp_regex)
 
     def _parse_ip_table_neigh(self, ip_output):
@@ -426,7 +444,7 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary from the parsing function
         :rtype: ``dict``
         """
-        ip_regex = re.compile(r'(.*?)\s+.*lladdr\s+(.*?)\s+')
+        ip_regex = re.compile(r"(.*?)\s+.*lladdr\s+(.*?)\s+")
         return self._parse_mac_addr_table(ip_output, ip_regex)
 
     def _parse_mac_addr_table(self, cmd_output, mac_regex):
@@ -437,7 +455,7 @@ class LibvirtNodeDriver(NodeDriver):
         :return: Dictionary which maps mac address to IP address.
         :rtype: ``dict``
         """
-        lines = ensure_string(cmd_output).split('\n')
+        lines = ensure_string(cmd_output).split("\n")
 
         arp_table = defaultdict(list)
         for line in lines:

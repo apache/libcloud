@@ -20,6 +20,7 @@ import binascii
 
 from libcloud.common.providers import get_driver as _get_driver
 from libcloud.common.providers import set_driver as _set_driver
+
 # Imported for backward compatibility
 # noinspection PyProtectedMember
 from libcloud.utils.retry import Retry  # flake8: noqa
@@ -31,17 +32,17 @@ from libcloud.utils.retry import TransientSSLError  # noqa: F401
 
 
 __all__ = [
-    'find',
-    'get_driver',
-    'set_driver',
-    'merge_valid_keys',
-    'get_new_obj',
-    'str2dicts',
-    'dict2str',
-    'reverse_dict',
-    'lowercase_keys',
-    'get_secure_random_string',
-    'ReprMixin'
+    "find",
+    "get_driver",
+    "set_driver",
+    "merge_valid_keys",
+    "get_new_obj",
+    "str2dicts",
+    "dict2str",
+    "reverse_dict",
+    "lowercase_keys",
+    "get_secure_random_string",
+    "ReprMixin",
 ]
 
 
@@ -130,7 +131,7 @@ def str2dicts(data):
     list_data.append({})
     d = list_data[-1]
 
-    lines = data.split('\n')
+    lines = data.split("\n")
     for line in lines:
         line = line.strip()
 
@@ -140,13 +141,13 @@ def str2dicts(data):
             d = list_data[-1]
             continue
 
-        whitespace = line.find(' ')
+        whitespace = line.find(" ")
 
         if not whitespace:
             continue
 
         key = line[0:whitespace]
-        value = line[whitespace + 1:]
+        value = line[whitespace + 1 :]
         d.update({key: value})
 
     list_data = [val for val in list_data if val != {}]
@@ -168,14 +169,14 @@ def str2list(data):
     """
     list_data = []
 
-    for line in data.split('\n'):
+    for line in data.split("\n"):
         line = line.strip()
 
         if not line:
             continue
 
         try:
-            splitted = line.split(' ')
+            splitted = line.split(" ")
             # key = splitted[0]
             value = splitted[1]
         except Exception:
@@ -202,12 +203,12 @@ def dict2str(data):
     cpu 2200
     ram 1024
     """
-    result = ''
+    result = ""
     for k in data:
         if data[k] is not None:
-            result += '%s %s\n' % (str(k), str(data[k]))
+            result += "%s %s\n" % (str(k), str(data[k]))
         else:
-            result += '%s\n' % str(k)
+            result += "%s\n" % str(k)
 
     return result
 
@@ -233,7 +234,7 @@ def get_secure_random_string(size):
     """
     value = os.urandom(size)
     value = binascii.hexlify(value)
-    value = value.decode('utf-8')[:size]
+    value = value.decode("utf-8")[:size]
     return value
 
 
@@ -249,10 +250,10 @@ class ReprMixin(object):
         attributes = []
         for attribute in self._repr_attributes:
             value = getattr(self, attribute, None)
-            attributes.append('%s=%s' % (attribute, value))
+            attributes.append("%s=%s" % (attribute, value))
 
-        values = (self.__class__.__name__, ', '.join(attributes))
-        result = '<%s %s>' % values
+        values = (self.__class__.__name__, ", ".join(attributes))
+        result = "<%s %s>" % values
         return result
 
     def __str__(self):

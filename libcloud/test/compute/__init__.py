@@ -17,7 +17,7 @@ from libcloud.compute.base import Node, NodeImage, NodeLocation, StorageVolume
 from libcloud.pricing import get_pricing
 
 
-class TestCaseMixin():
+class TestCaseMixin:
     should_list_locations = True
     should_have_pricing = False
     should_list_volumes = False
@@ -35,12 +35,13 @@ class TestCaseMixin():
         # Check that size values are ints or None
         self.assertTrue(size.ram is None or isinstance(size.ram, int))
         self.assertTrue(size.disk is None or isinstance(size.disk, int))
-        self.assertTrue(size.bandwidth is None or
-                        isinstance(size.bandwidth, int))
+        self.assertTrue(size.bandwidth is None or isinstance(size.bandwidth, int))
         # Check that price values are ints, floats, or None.
-        self.assertTrue(size.price is None or
-                        isinstance(size.price, float) or
-                        isinstance(size.price, int))
+        self.assertTrue(
+            size.price is None
+            or isinstance(size.price, float)
+            or isinstance(size.price, int)
+        )
 
     def test_list_images_response(self):
         images = self.driver.list_images()
@@ -70,9 +71,7 @@ class TestCaseMixin():
         # should return a node object
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
-        node = self.driver.create_node(name='node-name',
-                                       image=image,
-                                       size=size)
+        node = self.driver.create_node(name="node-name", image=image, size=size)
         self.assertTrue(isinstance(node, Node))
 
     def test_destroy_node_response(self):
@@ -91,16 +90,19 @@ class TestCaseMixin():
         if not self.should_have_pricing:
             return None
 
-        driver_type = 'compute'
+        driver_type = "compute"
         try:
-            get_pricing(driver_type=driver_type,
-                        driver_name=self.driver.api_name)
+            get_pricing(driver_type=driver_type, driver_name=self.driver.api_name)
         except KeyError:
-            self.fail("No {driver_type!r} pricing info for {driver}.".format(
-                driver=self.driver.__class__.__name__,
-                driver_type=driver_type,
-            ))
+            self.fail(
+                "No {driver_type!r} pricing info for {driver}.".format(
+                    driver=self.driver.__class__.__name__,
+                    driver_type=driver_type,
+                )
+            )
+
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

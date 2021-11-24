@@ -2,7 +2,7 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
 cls = get_driver(Provider.KAMATERA)
-driver = cls('KAMATERA API CLIENT ID', 'KAMATERA API SECRET')
+driver = cls("KAMATERA API CLIENT ID", "KAMATERA API SECRET")
 
 # list all nodes (quick operation, provides only basic details for each node)
 
@@ -15,7 +15,7 @@ print(node)
 
 # list nodes with full details based on regex of node name
 
-nodes = driver.list_nodes(ex_name_regex='test_libcloud.*')
+nodes = driver.list_nodes(ex_name_regex="test_libcloud.*")
 print(nodes[0])
 
 # <Node: uuid=9566552b254b42063e87ba644a982d330602b06c,

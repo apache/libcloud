@@ -18,7 +18,8 @@ from libcloud.container.providers import Provider
 from libcloud.container.drivers.kubernetes import KubernetesContainerDriver
 from libcloud.common.google import GoogleResponse
 from libcloud.common.google import GoogleBaseConnection
-API_VERSION = 'v1'
+
+API_VERSION = "v1"
 
 
 class GKEResponse(GoogleResponse):
@@ -35,15 +36,29 @@ class GKEConnection(GoogleBaseConnection):
       3. Add request_aggregated_items method for making aggregated API calls.
 
     """
-    host = 'container.googleapis.com'
+
+    host = "container.googleapis.com"
     responseCls = GKEResponse
 
-    def __init__(self, user_id, key, secure, auth_type=None,
-                 credential_file=None, project=None, **kwargs):
+    def __init__(
+        self,
+        user_id,
+        key,
+        secure,
+        auth_type=None,
+        credential_file=None,
+        project=None,
+        **kwargs,
+    ):
         super(GKEConnection, self).__init__(
-            user_id, key, secure=secure, auth_type=auth_type,
-            credential_file=credential_file, **kwargs)
-        self.request_path = '/%s/projects/%s' % (API_VERSION, project)
+            user_id,
+            key,
+            secure=secure,
+            auth_type=auth_type,
+            credential_file=credential_file,
+            **kwargs,
+        )
+        self.request_path = "/%s/projects/%s" % (API_VERSION, project)
         self.gke_params = {}
 
     def pre_connect_hook(self, params, headers):
@@ -52,8 +67,7 @@ class GKEConnection(GoogleBaseConnection):
 
         @inherits: :class:`GoogleBaseConnection.pre_connect_hook`
         """
-        params, headers = super(GKEConnection, self).pre_connect_hook(params,
-                                                                      headers)
+        params, headers = super(GKEConnection, self).pre_connect_hook(params, headers)
         if self.gke_params:
             params.update(self.gke_params)
         return params, headers
@@ -69,10 +83,10 @@ class GKEConnection(GoogleBaseConnection):
         # If gce_params has been set, then update the pageToken with the
         # nextPageToken so it can be used in the next request.
         if self.gke_params:
-            if 'nextPageToken' in response.object:
-                self.gke_params['pageToken'] = response.object['nextPageToken']
-            elif 'pageToken' in self.gke_params:
-                del self.gke_params['pageToken']
+            if "nextPageToken" in response.object:
+                self.gke_params["pageToken"] = response.object["nextPageToken"]
+            elif "pageToken" in self.gke_params:
+                del self.gke_params["pageToken"]
             self.gke_params = None
 
         return response
@@ -90,18 +104,29 @@ class GKEContainerDriver(KubernetesContainerDriver):
     objects/strings).  In most cases, passing strings instead of objects
     will result in additional GKE API calls.
     """
+
     connectionCls = GKEConnection
-    api_name = 'google'
+    api_name = "google"
     name = "Google Container Engine"
     type = Provider.GKE
-    website = 'https://container.googleapis.com'
+    website = "https://container.googleapis.com"
     supports_clusters = True
 
     AUTH_URL = "https://container.googleapis.com/auth/"
 
-    def __init__(self, user_id, key=None, datacenter=None, project=None,
-                 auth_type=None, scopes=None, credential_file=None,
-                 host=None, port=443, **kwargs):
+    def __init__(
+        self,
+        user_id,
+        key=None,
+        datacenter=None,
+        project=None,
+        auth_type=None,
+        scopes=None,
+        credential_file=None,
+        host=None,
+        port=443,
+        **kwargs,
+    ):
         """
         :param  user_id: The email address (for service accounts) or Client ID
                          (for installed apps) to be used for authentication.
@@ -137,8 +162,9 @@ class GKEContainerDriver(KubernetesContainerDriver):
         :type     credential_file: ``str``
         """
         if not project:
-            raise ValueError('Project name must be specified using '
-                             '"project" keyword.')
+            raise ValueError(
+                "Project name must be specified using " '"project" keyword.'
+            )
         if host is None:
             host = GKEContainerDriver.website
         self.auth_type = auth_type
@@ -147,21 +173,25 @@ class GKEContainerDriver(KubernetesContainerDriver):
         self.zone = None
         if datacenter is not None:
             self.zone = datacenter
-        self.credential_file = credential_file or \
-            GoogleOAuth2Credential.default_credential_file + '.' + self.project
+        self.credential_file = (
+            credential_file
+            or GoogleOAuth2Credential.default_credential_file + "." + self.project
+        )
 
-        super(GKEContainerDriver, self).__init__(user_id, key,
-                                                 secure=True, host=None,
-                                                 port=None, **kwargs)
+        super(GKEContainerDriver, self).__init__(
+            user_id, key, secure=True, host=None, port=None, **kwargs
+        )
 
-        self.base_path = '/%s/projects/%s' % (API_VERSION, self.project)
+        self.base_path = "/%s/projects/%s" % (API_VERSION, self.project)
         self.website = GKEContainerDriver.website
 
     def _ex_connection_class_kwargs(self):
-        return {'auth_type': self.auth_type,
-                'project': self.project,
-                'scopes': self.scopes,
-                'credential_file': self.credential_file}
+        return {
+            "auth_type": self.auth_type,
+            "project": self.project,
+            "scopes": self.scopes,
+            "credential_file": self.credential_file,
+        }
 
     def list_clusters(self, ex_zone=None):
         """
@@ -175,7 +205,7 @@ class GKEContainerDriver(KubernetesContainerDriver):
         if ex_zone is None:
             request = "/zones/clusters"
 
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method="GET").object
         return response
 
     def get_server_config(self, ex_zone=None):
@@ -190,5 +220,5 @@ class GKEContainerDriver(KubernetesContainerDriver):
             ex_zone = self.zone
         request = "/zones/%s/serverconfig" % (ex_zone)
 
-        response = self.connection.request(request, method='GET').object
+        response = self.connection.request(request, method="GET").object
         return response

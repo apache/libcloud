@@ -25,6 +25,7 @@ class SoftLayerException(LibcloudError):
     """
     Exception class for SoftLayer driver
     """
+
     pass
 
 
@@ -32,57 +33,47 @@ class SoftLayerObjectDoesntExist(LibcloudError):
     """
     Exception class for SoftLayer driver object doesnt exist
     """
+
     pass
 
 
 class SoftLayerResponse(XMLRPCResponse):
     defaultExceptionCls = SoftLayerException
     exceptions = {
-        'SoftLayer_Account': InvalidCredsError,
-        'SoftLayer_Exception_ObjectNotFound': SoftLayerObjectDoesntExist
+        "SoftLayer_Account": InvalidCredsError,
+        "SoftLayer_Exception_ObjectNotFound": SoftLayerObjectDoesntExist,
     }
 
 
 class SoftLayerConnection(XMLRPCConnection, ConnectionUserAndKey):
     responseCls = SoftLayerResponse
-    host = 'api.softlayer.com'
-    endpoint = '/xmlrpc/v3'
+    host = "api.softlayer.com"
+    endpoint = "/xmlrpc/v3"
 
     def request(self, service, method, *args, **kwargs):
         headers = {}
         headers.update(self._get_auth_headers())
-        headers.update(self._get_init_params(service, kwargs.get('id')))
-        headers.update(
-            self._get_object_mask(service, kwargs.get('object_mask')))
-        headers.update(
-            self._get_object_mask(service, kwargs.get('object_mask')))
+        headers.update(self._get_init_params(service, kwargs.get("id")))
+        headers.update(self._get_object_mask(service, kwargs.get("object_mask")))
+        headers.update(self._get_object_mask(service, kwargs.get("object_mask")))
 
-        args = ({'headers': headers}, ) + args
-        endpoint = '%s/%s' % (self.endpoint, service)
-        return super(SoftLayerConnection, self).request(method, *args,
-                                                        **{'endpoint':
-                                                            endpoint})
+        args = ({"headers": headers},) + args
+        endpoint = "%s/%s" % (self.endpoint, service)
+        return super(SoftLayerConnection, self).request(
+            method, *args, **{"endpoint": endpoint}
+        )
 
     def _get_auth_headers(self):
-        return {
-            'authenticate': {
-                'username': self.user_id,
-                'apiKey': self.key
-            }
-        }
+        return {"authenticate": {"username": self.user_id, "apiKey": self.key}}
 
     def _get_init_params(self, service, id):
         if id is not None:
-            return {
-                '%sInitParameters' % service: {'id': id}
-            }
+            return {"%sInitParameters" % service: {"id": id}}
         else:
             return {}
 
     def _get_object_mask(self, service, mask):
         if mask is not None:
-            return {
-                '%sObjectMask' % service: {'mask': mask}
-            }
+            return {"%sObjectMask" % service: {"mask": mask}}
         else:
             return {}

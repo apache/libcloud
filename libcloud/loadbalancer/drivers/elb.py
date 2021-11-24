@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'ElasticLBDriver'
-]
+__all__ = ["ElasticLBDriver"]
 
 
 from libcloud.utils.py3 import httplib
@@ -25,33 +23,34 @@ from libcloud.loadbalancer.base import Driver, LoadBalancer, Member
 from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 
 
-VERSION = '2012-06-01'
-HOST = 'elasticloadbalancing.%s.amazonaws.com'
-ROOT = '/%s/' % (VERSION)
-NS = 'http://elasticloadbalancing.amazonaws.com/doc/%s/' % (VERSION, )
+VERSION = "2012-06-01"
+HOST = "elasticloadbalancing.%s.amazonaws.com"
+ROOT = "/%s/" % (VERSION)
+NS = "http://elasticloadbalancing.amazonaws.com/doc/%s/" % (VERSION,)
 
 
 class ELBResponse(AWSGenericResponse):
     """
     Amazon ELB response class.
     """
+
     namespace = NS
     exceptions = {}
-    xpath = 'Error'
+    xpath = "Error"
 
 
 class ELBConnection(SignedAWSConnection):
     version = VERSION
     host = HOST
     responseCls = ELBResponse
-    service_name = 'elasticloadbalancing'
+    service_name = "elasticloadbalancing"
 
 
 class ElasticLBDriver(Driver):
-    name = 'Amazon Elastic Load Balancing'
-    website = 'http://aws.amazon.com/elasticloadbalancing/'
+    name = "Amazon Elastic Load Balancing"
+    website = "http://aws.amazon.com/elasticloadbalancing/"
     connectionCls = ELBConnection
-    signature_version = '4'
+    signature_version = "4"
 
     def __init__(self, access_id, secret, region, token=None):
         self.token = token
@@ -62,10 +61,10 @@ class ElasticLBDriver(Driver):
         )
 
     def list_protocols(self):
-        return ['tcp', 'ssl', 'http', 'https']
+        return ["tcp", "ssl", "http", "https"]
 
     def list_balancers(self, ex_fetch_tags=False):
-        params = {'Action': 'DescribeLoadBalancers'}
+        params = {"Action": "DescribeLoadBalancers"}
         data = self.connection.request(ROOT, params=params).object
         balancers = self._to_balancers(data)
 
@@ -75,23 +74,30 @@ class ElasticLBDriver(Driver):
 
         return balancers
 
-    def create_balancer(self, name, port, protocol, algorithm, members,
-                        ex_members_availability_zones=None):
+    def create_balancer(
+        self,
+        name,
+        port,
+        protocol,
+        algorithm,
+        members,
+        ex_members_availability_zones=None,
+    ):
         if ex_members_availability_zones is None:
-            ex_members_availability_zones = ['a']
+            ex_members_availability_zones = ["a"]
 
         params = {
-            'Action': 'CreateLoadBalancer',
-            'LoadBalancerName': name,
-            'Listeners.member.1.InstancePort': str(port),
-            'Listeners.member.1.InstanceProtocol': protocol.upper(),
-            'Listeners.member.1.LoadBalancerPort': str(port),
-            'Listeners.member.1.Protocol': protocol.upper(),
+            "Action": "CreateLoadBalancer",
+            "LoadBalancerName": name,
+            "Listeners.member.1.InstancePort": str(port),
+            "Listeners.member.1.InstanceProtocol": protocol.upper(),
+            "Listeners.member.1.LoadBalancerPort": str(port),
+            "Listeners.member.1.Protocol": protocol.upper(),
         }
 
         for i, z in enumerate(ex_members_availability_zones):
-            zone = ''.join((self.region, z))
-            params['AvailabilityZones.member.%d' % (i + 1)] = zone
+            zone = "".join((self.region, z))
+            params["AvailabilityZones.member.%d" % (i + 1)] = zone
 
         data = self.connection.request(ROOT, params=params).object
 
@@ -99,25 +105,22 @@ class ElasticLBDriver(Driver):
             id=name,
             name=name,
             state=State.PENDING,
-            ip=findtext(element=data, xpath='DNSName', namespace=NS),
+            ip=findtext(element=data, xpath="DNSName", namespace=NS),
             port=port,
-            driver=self.connection.driver
+            driver=self.connection.driver,
         )
         balancer._members = []
         return balancer
 
     def destroy_balancer(self, balancer):
-        params = {
-            'Action': 'DeleteLoadBalancer',
-            'LoadBalancerName': balancer.id
-        }
+        params = {"Action": "DeleteLoadBalancer", "LoadBalancerName": balancer.id}
         self.connection.request(ROOT, params=params)
         return True
 
     def get_balancer(self, balancer_id, ex_fetch_tags=False):
         params = {
-            'Action': 'DescribeLoadBalancers',
-            'LoadBalancerNames.member.1': balancer_id
+            "Action": "DescribeLoadBalancers",
+            "LoadBalancerNames.member.1": balancer_id,
         }
         data = self.connection.request(ROOT, params=params).object
         balancer = self._to_balancers(data)[0]
@@ -129,18 +132,18 @@ class ElasticLBDriver(Driver):
 
     def balancer_attach_compute_node(self, balancer, node):
         params = {
-            'Action': 'RegisterInstancesWithLoadBalancer',
-            'LoadBalancerName': balancer.id,
-            'Instances.member.1.InstanceId': node.id
+            "Action": "RegisterInstancesWithLoadBalancer",
+            "LoadBalancerName": balancer.id,
+            "Instances.member.1.InstanceId": node.id,
         }
         self.connection.request(ROOT, params=params)
         balancer._members.append(Member(node.id, None, None, balancer=self))
 
     def balancer_detach_member(self, balancer, member):
         params = {
-            'Action': 'DeregisterInstancesFromLoadBalancer',
-            'LoadBalancerName': balancer.id,
-            'Instances.member.1.InstanceId': member.id
+            "Action": "DeregisterInstancesFromLoadBalancer",
+            "LoadBalancerName": balancer.id,
+            "Instances.member.1.InstanceId": member.id,
         }
         self.connection.request(ROOT, params=params)
         balancer._members = [m for m in balancer._members if m.id != member.id]
@@ -156,8 +159,8 @@ class ElasticLBDriver(Driver):
         :rtype: ``list`` of ``str``
         """
         params = {
-            'Action': 'DescribeLoadBalancerPolicies',
-            'LoadBalancerName': balancer.id
+            "Action": "DescribeLoadBalancerPolicies",
+            "LoadBalancerName": balancer.id,
         }
 
         data = self.connection.request(ROOT, params=params).object
@@ -169,13 +172,14 @@ class ElasticLBDriver(Driver):
 
         :rtype: ``list`` of ``str``
         """
-        params = {'Action': 'DescribeLoadBalancerPolicyTypes'}
+        params = {"Action": "DescribeLoadBalancerPolicyTypes"}
 
         data = self.connection.request(ROOT, params=params).object
         return self._to_policy_types(data)
 
-    def ex_create_balancer_policy(self, name, policy_name, policy_type,
-                                  policy_attributes=None):
+    def ex_create_balancer_policy(
+        self, name, policy_name, policy_type, policy_attributes=None
+    ):
         """
         Create a new load balancer policy
 
@@ -193,19 +197,24 @@ class ElasticLBDriver(Driver):
         :type  policy_attributes: ``PolicyAttribute list``
         """
         params = {
-            'Action': 'CreateLoadBalancerPolicy',
-            'LoadBalancerName': name,
-            'PolicyName': policy_name,
-            'PolicyTypeName': policy_type
+            "Action": "CreateLoadBalancerPolicy",
+            "LoadBalancerName": name,
+            "PolicyName": policy_name,
+            "PolicyTypeName": policy_type,
         }
 
         if policy_attributes is not None:
-            for index, (name, value) in enumerate(
-                    policy_attributes.iteritems(), 1):
-                params['PolicyAttributes.member.%d. \
-                        AttributeName' % (index)] = name
-                params['PolicyAttributes.member.%d. \
-                        AttributeValue' % (index)] = value
+            for index, (name, value) in enumerate(policy_attributes.iteritems(), 1):
+                params[
+                    "PolicyAttributes.member.%d. \
+                        AttributeName"
+                    % (index)
+                ] = name
+                params[
+                    "PolicyAttributes.member.%d. \
+                        AttributeValue"
+                    % (index)
+                ] = value
 
         response = self.connection.request(ROOT, params=params)
         return response.status == httplib.OK
@@ -221,9 +230,9 @@ class ElasticLBDriver(Driver):
         :type  policy_name: ``str``
         """
         params = {
-            'Action': 'DeleteLoadBalancerPolicy',
-            'LoadBalancerName': name,
-            'PolicyName': policy_name
+            "Action": "DeleteLoadBalancerPolicy",
+            "LoadBalancerName": name,
+            "PolicyName": policy_name,
         }
 
         response = self.connection.request(ROOT, params=params)
@@ -244,20 +253,18 @@ class ElasticLBDriver(Driver):
         :type  policies: ``string list``
         """
         params = {
-            'Action': 'SetLoadBalancerPoliciesOfListener',
-            'LoadBalancerName': name,
-            'LoadBalancerPort': str(port)
+            "Action": "SetLoadBalancerPoliciesOfListener",
+            "LoadBalancerName": name,
+            "LoadBalancerPort": str(port),
         }
 
         if policies:
-            params = self._create_list_params(params, policies,
-                                              'PolicyNames.member.%d')
+            params = self._create_list_params(params, policies, "PolicyNames.member.%d")
 
         response = self.connection.request(ROOT, params=params)
         return response.status == httplib.OK
 
-    def ex_set_balancer_policies_backend_server(self, name, instance_port,
-                                                policies):
+    def ex_set_balancer_policies_backend_server(self, name, instance_port, policies):
         """
         Replaces the current set of policies associated with a port on
         which the back-end server is listening with a new set of policies
@@ -272,14 +279,13 @@ class ElasticLBDriver(Driver):
         :type  policies: ``string list`
         """
         params = {
-            'Action': 'SetLoadBalancerPoliciesForBackendServer',
-            'LoadBalancerName': name,
-            'InstancePort': str(instance_port)
+            "Action": "SetLoadBalancerPoliciesForBackendServer",
+            "LoadBalancerName": name,
+            "InstancePort": str(instance_port),
         }
 
         if policies:
-            params = self._create_list_params(params, policies,
-                                              'PolicyNames.member.%d')
+            params = self._create_list_params(params, policies, "PolicyNames.member.%d")
 
         response = self.connection.request(ROOT, params=params)
         return response.status == httplib.OK
@@ -295,20 +301,20 @@ class ElasticLBDriver(Driver):
                           InstancePortNumber, Protocol,[SSLCertificateId])
         :type  listeners: ``list of tuple`
         """
-        params = {
-            'Action': 'CreateLoadBalancerListeners',
-            'LoadBalancerName': name
-        }
+        params = {"Action": "CreateLoadBalancerListeners", "LoadBalancerName": name}
 
         for index, listener in enumerate(listeners):
             i = index + 1
             protocol = listener[2].upper()
-            params['Listeners.member.%d.LoadBalancerPort' % i] = listener[0]
-            params['Listeners.member.%d.InstancePort' % i] = listener[1]
-            params['Listeners.member.%d.Protocol' % i] = listener[2]
-            if protocol == 'HTTPS' or protocol == 'SSL':
-                params['Listeners.member.%d.   \
-                        SSLCertificateId' % i] = listener[3]
+            params["Listeners.member.%d.LoadBalancerPort" % i] = listener[0]
+            params["Listeners.member.%d.InstancePort" % i] = listener[1]
+            params["Listeners.member.%d.Protocol" % i] = listener[2]
+            if protocol == "HTTPS" or protocol == "SSL":
+                params[
+                    "Listeners.member.%d.   \
+                        SSLCertificateId"
+                    % i
+                ] = listener[3]
         else:
             return False
 
@@ -316,25 +322,31 @@ class ElasticLBDriver(Driver):
         return response.status == httplib.OK
 
     def _to_policies(self, data):
-        xpath = 'DescribeLoadBalancerPoliciesResult/PolicyDescriptions/member'
-        return [findtext(element=el, xpath='PolicyName', namespace=NS)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeLoadBalancerPoliciesResult/PolicyDescriptions/member"
+        return [
+            findtext(element=el, xpath="PolicyName", namespace=NS)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_policy_types(self, data):
-        xpath = 'DescribeLoadBalancerPolicyTypesResult/'
-        xpath += 'PolicyTypeDescriptions/member'
-        return [findtext(element=el, xpath='PolicyTypeName', namespace=NS)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeLoadBalancerPolicyTypesResult/"
+        xpath += "PolicyTypeDescriptions/member"
+        return [
+            findtext(element=el, xpath="PolicyTypeName", namespace=NS)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_balancers(self, data):
-        xpath = 'DescribeLoadBalancersResult/LoadBalancerDescriptions/member'
-        return [self._to_balancer(el)
-                for el in findall(element=data, xpath=xpath, namespace=NS)]
+        xpath = "DescribeLoadBalancersResult/LoadBalancerDescriptions/member"
+        return [
+            self._to_balancer(el)
+            for el in findall(element=data, xpath=xpath, namespace=NS)
+        ]
 
     def _to_balancer(self, el):
-        name = findtext(element=el, xpath='LoadBalancerName', namespace=NS)
-        dns_name = findtext(el, xpath='DNSName', namespace=NS)
-        port = findtext(el, xpath='LoadBalancerPort', namespace=NS)
+        name = findtext(element=el, xpath="LoadBalancerName", namespace=NS)
+        dns_name = findtext(el, xpath="DNSName", namespace=NS)
+        port = findtext(el, xpath="LoadBalancerPort", namespace=NS)
 
         balancer = LoadBalancer(
             id=name,
@@ -342,16 +354,15 @@ class ElasticLBDriver(Driver):
             state=State.UNKNOWN,
             ip=dns_name,
             port=port,
-            driver=self.connection.driver
+            driver=self.connection.driver,
         )
 
-        xpath = 'Instances/member/InstanceId'
+        xpath = "Instances/member/InstanceId"
         members = findall(element=el, xpath=xpath, namespace=NS)
         balancer._members = []
 
         for m in members:
-            balancer._members.append(Member(m.text, None, None,
-                                            balancer=balancer))
+            balancer._members.append(Member(m.text, None, None, balancer=balancer))
 
         return balancer
 
@@ -360,10 +371,10 @@ class ElasticLBDriver(Driver):
         return tags dict
         """
         tags = {}
-        xpath = 'DescribeTagsResult/TagDescriptions/member/Tags/member'
+        xpath = "DescribeTagsResult/TagDescriptions/member/Tags/member"
         for el in findall(element=data, xpath=xpath, namespace=NS):
-            key = findtext(element=el, xpath='Key', namespace=NS)
-            value = findtext(element=el, xpath='Value', namespace=NS)
+            key = findtext(element=el, xpath="Key", namespace=NS)
+            value = findtext(element=el, xpath="Value", namespace=NS)
             if key:
                 tags[key] = value
 
@@ -381,26 +392,23 @@ class ElasticLBDriver(Driver):
 
     def _ex_connection_class_kwargs(self):
         kwargs = super(ElasticLBDriver, self)._ex_connection_class_kwargs()
-        if hasattr(self, 'token') and self.token is not None:
-            kwargs['token'] = self.token
-            kwargs['signature_version'] = '4'
+        if hasattr(self, "token") and self.token is not None:
+            kwargs["token"] = self.token
+            kwargs["signature_version"] = "4"
         else:
-            kwargs['signature_version'] = self.signature_version
+            kwargs["signature_version"] = self.signature_version
 
         return kwargs
 
     def _ex_list_balancer_tags(self, balancer_id):
-        params = {
-            'Action': 'DescribeTags',
-            'LoadBalancerNames.member.1': balancer_id
-        }
+        params = {"Action": "DescribeTags", "LoadBalancerNames.member.1": balancer_id}
         data = self.connection.request(ROOT, params=params).object
         return self._to_tags(data)
 
     def _ex_populate_balancer_tags(self, balancer):
-        tags = balancer.extra.get('tags', {})
+        tags = balancer.extra.get("tags", {})
         tags.update(self._ex_list_balancer_tags(balancer.id))
         if tags:
-            balancer.extra['tags'] = tags
+            balancer.extra["tags"] = tags
 
         return balancer

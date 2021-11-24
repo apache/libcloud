@@ -24,18 +24,19 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.exceptions import RateLimitReachedError
 
 __all__ = [
-    'Retry',
-    'RetryForeverOnRateLimitError',
+    "Retry",
+    "RetryForeverOnRateLimitError",
 ]
 
 _logger = logging.getLogger(__name__)
 # Error message which indicates a transient SSL error upon which request
 # can be retried
-TRANSIENT_SSL_ERROR = 'The read operation timed out'
+TRANSIENT_SSL_ERROR = "The read operation timed out"
 
 
 class TransientSSLError(ssl.SSLError):
     """Represent transient SSL errors, e.g. timeouts"""
+
     pass
 
 
@@ -44,15 +45,23 @@ class TransientSSLError(ssl.SSLError):
 DEFAULT_TIMEOUT = 30  # default retry timeout
 DEFAULT_DELAY = 1  # default sleep delay used in each iterator
 DEFAULT_BACKOFF = 1  # retry backup multiplier
-RETRY_EXCEPTIONS = (RateLimitReachedError, socket.error, socket.gaierror,
-                    httplib.NotConnected, httplib.ImproperConnectionState,
-                    TransientSSLError)
+RETRY_EXCEPTIONS = (
+    RateLimitReachedError,
+    socket.error,
+    socket.gaierror,
+    httplib.NotConnected,
+    httplib.ImproperConnectionState,
+    TransientSSLError,
+)
 
 
 class MinimalRetry:
-
-    def __init__(self, retry_delay=DEFAULT_DELAY,
-                 timeout=DEFAULT_TIMEOUT, backoff=DEFAULT_BACKOFF):
+    def __init__(
+        self,
+        retry_delay=DEFAULT_DELAY,
+        timeout=DEFAULT_TIMEOUT,
+        backoff=DEFAULT_BACKOFF,
+    ):
         """
         Wrapper around retrying that helps to handle common transient
         exceptions.
@@ -105,8 +114,7 @@ class MinimalRetry:
                     last_exc = exc
 
                     if isinstance(exc, RateLimitReachedError):
-                        _logger.debug("You are being rate limited, backing "
-                                      "off...")
+                        _logger.debug("You are being rate limited, backing " "off...")
 
                         # NOTE: Retry after defaults to 0 in the
                         # RateLimitReachedError class so we a use more
@@ -133,10 +141,13 @@ class MinimalRetry:
 
 
 class Retry(MinimalRetry):
-
-    def __init__(self, retry_exceptions=RETRY_EXCEPTIONS,
-                 retry_delay=DEFAULT_DELAY, timeout=DEFAULT_TIMEOUT,
-                 backoff=DEFAULT_BACKOFF):
+    def __init__(
+        self,
+        retry_exceptions=RETRY_EXCEPTIONS,
+        retry_delay=DEFAULT_DELAY,
+        timeout=DEFAULT_TIMEOUT,
+        backoff=DEFAULT_BACKOFF,
+    ):
         """
         Wrapper around retrying that helps to handle common transient
         exceptions.
@@ -157,8 +168,7 @@ class Retry(MinimalRetry):
         retry_request(self.connection.request)()
         """
 
-        super().__init__(retry_delay=retry_delay, timeout=timeout,
-                         backoff=backoff)
+        super().__init__(retry_delay=retry_delay, timeout=timeout, backoff=backoff)
         if retry_exceptions is None:
             retry_exceptions = RETRY_EXCEPTIONS
         self.retry_exceptions = retry_exceptions
@@ -206,7 +216,8 @@ class RetryForeverOnRateLimitError(Retry):
                         # limiting
                         current_delay = self.retry_delay
                         end = datetime.now() + timedelta(
-                            seconds=exc.retry_after + self.timeout)
+                            seconds=exc.retry_after + self.timeout
+                        )
                     elif datetime.now() >= end:
                         raise
                     elif self.should_retry(exc):

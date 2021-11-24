@@ -19,40 +19,42 @@ from libcloud.utils.py3 import httplib
 from libcloud.common.gandi import BaseObject
 
 __all__ = [
-    'API_HOST',
-    'API_ROOT',
-    'DEFAULT_API_VERSION',
-    'LinodeException',
-    'LinodeResponse',
-    'LinodeConnection',
-    'LinodeResponseV4',
-    'LinodeConnectionV4',
-    'LinodeExceptionV4',
-    'LinodeDisk',
-    'LinodeIPAddress'
+    "API_HOST",
+    "API_ROOT",
+    "DEFAULT_API_VERSION",
+    "LinodeException",
+    "LinodeResponse",
+    "LinodeConnection",
+    "LinodeResponseV4",
+    "LinodeConnectionV4",
+    "LinodeExceptionV4",
+    "LinodeDisk",
+    "LinodeIPAddress",
 ]
 
 # Endpoint for the Linode API
-API_HOST = 'api.linode.com'
-API_ROOT = '/'
+API_HOST = "api.linode.com"
+API_ROOT = "/"
 
 
-DEFAULT_API_VERSION = '4.0'
+DEFAULT_API_VERSION = "4.0"
 
 # Constants that map a RAM figure to a PlanID (updated 2014-08-25)
-LINODE_PLAN_IDS = {1024: '1',
-                   2048: '2',
-                   4096: '4',
-                   8192: '6',
-                   16384: '7',
-                   32768: '8',
-                   49152: '9',
-                   65536: '10',
-                   98304: '12'}
+LINODE_PLAN_IDS = {
+    1024: "1",
+    2048: "2",
+    4096: "4",
+    8192: "6",
+    16384: "7",
+    32768: "8",
+    49152: "9",
+    65536: "10",
+    98304: "12",
+}
 
 # Available filesystems for disk creation
-LINODE_DISK_FILESYSTEMS = ['ext3', 'ext4', 'swap', 'raw']
-LINODE_DISK_FILESYSTEMS_V4 = ['ext3', 'ext4', 'swap', 'raw', 'initrd']
+LINODE_DISK_FILESYSTEMS = ["ext3", "ext4", "swap", "raw"]
+LINODE_DISK_FILESYSTEMS_V4 = ["ext3", "ext4", "swap", "raw", "initrd"]
 
 
 class LinodeException(Exception):
@@ -95,8 +97,7 @@ class LinodeResponse(JsonResponse):
         self.errors = []
         super(LinodeResponse, self).__init__(response, connection)
 
-        self.invalid = LinodeException(0xFF,
-                                       "Invalid JSON received from server")
+        self.invalid = LinodeException(0xFF, "Invalid JSON received from server")
 
         # Move parse_body() to here;  we can't be sure of failure until we've
         # parsed the body into JSON.
@@ -122,8 +123,7 @@ class LinodeResponse(JsonResponse):
             ret = []
             errs = []
             for obj in js:
-                if ("DATA" not in obj or "ERRORARRAY" not in obj or
-                        "ACTION" not in obj):
+                if "DATA" not in obj or "ERRORARRAY" not in obj or "ACTION" not in obj:
                     ret.append(None)
                     errs.append(self.invalid)
                     continue
@@ -162,6 +162,7 @@ class LinodeConnection(ConnectionKey):
     Wraps SSL connections to the Linode API, automagically injecting the
     parameters that the API needs for each request.
     """
+
     host = API_HOST
     responseCls = LinodeResponse
 
@@ -190,7 +191,10 @@ class LinodeExceptionV4(Exception):
 
 
 class LinodeResponseV4(JsonResponse):
-    valid_response_codes = [httplib.OK, httplib.NO_CONTENT, ]
+    valid_response_codes = [
+        httplib.OK,
+        httplib.NO_CONTENT,
+    ]
 
     def parse_body(self):
         """Parse the body of the response into JSON objects
@@ -204,13 +208,13 @@ class LinodeResponseV4(JsonResponse):
         status = int(self.status)
         data = self.parse_body()
         # Use only the first error, as there'll be only one most of the time
-        error = data['errors'][0]
-        reason = error.get('reason')
+        error = data["errors"][0]
+        reason = error.get("reason")
         # The field in the request that caused this error
-        field = error.get('field')
+        field = error.get("field")
 
         if field is not None:
-            error_msg = '%s-%s' % (reason, field)
+            error_msg = "%s-%s" % (reason, field)
         else:
             error_msg = reason
 
@@ -218,8 +222,7 @@ class LinodeResponseV4(JsonResponse):
             raise InvalidCredsError(value=error_msg)
 
         raise LibcloudError(
-            '%s Status code: %d.' % (error_msg, status),
-            driver=self.connection.driver
+            "%s Status code: %d." % (error_msg, status), driver=self.connection.driver
         )
 
     def success(self):
@@ -234,6 +237,7 @@ class LinodeConnectionV4(ConnectionKey):
 
     Wraps SSL connections to the Linode API
     """
+
     host = API_HOST
     responseCls = LinodeResponseV4
 
@@ -243,8 +247,8 @@ class LinodeConnectionV4(ConnectionKey):
 
         This method adds ``token`` to the request.
         """
-        headers['Authorization'] = 'Bearer %s' % (self.key)
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = "Bearer %s" % (self.key)
+        headers["Content-Type"] = "application/json"
         return headers
 
     def add_default_params(self, params):
@@ -255,7 +259,7 @@ class LinodeConnectionV4(ConnectionKey):
         number of paginated requests to the API.
         """
         # pylint: disable=maybe-no-member
-        params['page_size'] = 25
+        params["page_size"] = 25
         return params
 
 
@@ -269,14 +273,16 @@ class LinodeDisk(BaseObject):
 
     def __repr__(self):
         return (
-            ('<LinodeDisk: id=%s, name=%s, state=%s, size=%s,'
-                ' filesystem=%s, driver=%s ...>')
-            % (self.id,
-                self.name,
-                self.state,
-                self.size,
-                self.filesystem,
-                self.driver.name))
+            "<LinodeDisk: id=%s, name=%s, state=%s, size=%s,"
+            " filesystem=%s, driver=%s ...>"
+        ) % (
+            self.id,
+            self.name,
+            self.state,
+            self.size,
+            self.filesystem,
+            self.driver.name,
+        )
 
 
 class LinodeIPAddress:
@@ -288,7 +294,9 @@ class LinodeIPAddress:
         self.extra = extra or {}
 
     def __repr__(self):
-        return (
-            ('<IPAddress: address=%s, public=%r, version=%s, driver=%s ...>')
-            % (self.inet, self.public,
-               self.version, self.driver.name))
+        return ("<IPAddress: address=%s, public=%r, version=%s, driver=%s ...>") % (
+            self.inet,
+            self.public,
+            self.version,
+            self.driver.name,
+        )

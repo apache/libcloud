@@ -28,7 +28,7 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 class MaxihostTest(unittest.TestCase, TestCaseMixin):
     def setUp(self):
         MaxihostNodeDriver.connectionCls.conn_class = MaxihostMockHttp
-        self.driver = MaxihostNodeDriver('foo')
+        self.driver = MaxihostNodeDriver("foo")
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -42,30 +42,31 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         self.assertEqual(len(images), 1)
         image = images[0]
-        self.assertEqual(image.id, 'ubuntu_18_04_x64_lts')
+        self.assertEqual(image.id, "ubuntu_18_04_x64_lts")
 
     def test_list_key_pairs(self):
         keys = self.driver.list_key_pairs()
         self.assertEqual(len(keys), 1)
         key = keys[0]
-        self.assertEqual(key.name, 'test_key')
-        self.assertEqual(key.fingerprint, '77:08:a7:a5:f9:8c:e1:ab:7b:c3:d8:0c:cd:ac:8b:dd')
+        self.assertEqual(key.name, "test_key")
+        self.assertEqual(
+            key.fingerprint, "77:08:a7:a5:f9:8c:e1:ab:7b:c3:d8:0c:cd:ac:8b:dd"
+        )
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertEqual(len(nodes), 1)
         node = nodes[0]
-        self.assertEqual(node.name, 'tester')
+        self.assertEqual(node.name, "tester")
 
     def test_create_node_response(self):
         # should return a node object
         size = self.driver.list_sizes()[0]
         image = self.driver.list_images()[0]
         location = self.driver.list_locations()[0]
-        node = self.driver.create_node(name='node-name',
-                                       image=image,
-                                       size=size,
-                                       location=location)
+        node = self.driver.create_node(
+            name="node-name", image=image, size=size, location=location
+        )
         self.assertTrue(isinstance(node, Node))
 
     def test_destroy_node_response(self):
@@ -75,39 +76,39 @@ class MaxihostTest(unittest.TestCase, TestCaseMixin):
 
 
 class MaxihostMockHttp(MockHttp):
-    fixtures = ComputeFileFixtures('maxihost')
+    fixtures = ComputeFileFixtures("maxihost")
 
     def _plans(self, method, url, body, headers):
-        body = self.fixtures.load('plans.json')
+        body = self.fixtures.load("plans.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _regions(self, method, url, body, headers):
-        body = self.fixtures.load('regions.json')
+        body = self.fixtures.load("regions.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _plans_operating_systems(self, method, url, body, headers):
-        body = self.fixtures.load('images.json')
+        body = self.fixtures.load("images.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _devices(self, method, url, body, headers):
-        body = self.fixtures.load('nodes.json')
+        body = self.fixtures.load("nodes.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _devices_1319(self, method, url, body, headers):
-        if method == 'DELETE':
-            body = '{}'
+        if method == "DELETE":
+            body = "{}"
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
         else:
-            raise ValueError('Unsupported method: %s' % (method))
+            raise ValueError("Unsupported method: %s" % (method))
 
     def _devices_1319_actions(self, method, url, body, headers):
-        body = self.fixtures.load('node.json')
+        body = self.fixtures.load("node.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _account_keys(self, method, url, body, headers):
-        body = self.fixtures.load('keys.json')
+        body = self.fixtures.load("keys.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

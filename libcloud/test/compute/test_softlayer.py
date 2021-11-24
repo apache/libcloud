@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import sys
 import pytest
 
@@ -24,21 +23,18 @@ from libcloud.utils.py3 import xmlrpclib
 from libcloud.utils.py3 import next
 
 from libcloud.compute.drivers.softlayer import SoftLayerNodeDriver as SoftLayer
-from libcloud.compute.drivers.softlayer import SoftLayerException, \
-    NODE_STATE_MAP
+from libcloud.compute.drivers.softlayer import SoftLayerException, NODE_STATE_MAP
 from libcloud.compute.types import NodeState, KeyPairDoesNotExistError
 
 from libcloud.test import unittest
-from libcloud.test import MockHttp               # pylint: disable-msg=E0611
+from libcloud.test import MockHttp  # pylint: disable-msg=E0611
 from libcloud.test.file_fixtures import ComputeFileFixtures
 from libcloud.test.secrets import SOFTLAYER_PARAMS
 
-null_fingerprint = '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:' + \
-                   '00:00:00:00:00'
+null_fingerprint = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" + "00:00:00:00:00"
 
 
 class SoftLayerTests(unittest.TestCase):
-
     def setUp(self):
         SoftLayer.connectionCls.conn_class = SoftLayerMockHttp
         SoftLayerMockHttp.type = None
@@ -47,36 +43,33 @@ class SoftLayerTests(unittest.TestCase):
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         node = nodes[0]
-        self.assertEqual(node.name, 'libcloud-testing1.example.com')
+        self.assertEqual(node.name, "libcloud-testing1.example.com")
         self.assertEqual(node.state, NodeState.RUNNING)
-        self.assertEqual(node.extra['password'], 'L3TJVubf')
+        self.assertEqual(node.extra["password"], "L3TJVubf")
 
     def test_initializing_state(self):
         nodes = self.driver.list_nodes()
         node = nodes[1]
-        self.assertEqual(node.state, NODE_STATE_MAP['INITIATING'])
+        self.assertEqual(node.state, NODE_STATE_MAP["INITIATING"])
 
     def test_list_locations(self):
         locations = self.driver.list_locations()
-        dal = next(l for l in locations if l.id == 'dal05')
-        self.assertEqual(dal.country, 'US')
-        self.assertEqual(dal.id, 'dal05')
-        self.assertEqual(dal.name, 'Dallas - Central U.S.')
+        dal = next(loc for loc in locations if loc.id == "dal05")
+        self.assertEqual(dal.country, "US")
+        self.assertEqual(dal.id, "dal05")
+        self.assertEqual(dal.name, "Dallas - Central U.S.")
 
     def test_list_images(self):
         images = self.driver.list_images()
         image = images[0]
-        self.assertEqual(image.id, 'CENTOS_6_64')
+        self.assertEqual(image.id, "CENTOS_6_64")
 
     def test_get_image(self):
-        image = self.driver.get_image('CENTOS_6_64')
-        self.assertEqual(image.id, 'CENTOS_6_64')
+        image = self.driver.get_image("CENTOS_6_64")
+        self.assertEqual(image.id, "CENTOS_6_64")
 
     def test_fail_get_image(self):
-        self.assertRaises(
-            SoftLayerException,
-            self.driver.get_image,
-            'NOT_IMAGE')
+        self.assertRaises(SoftLayerException, self.driver.get_image, "NOT_IMAGE")
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
@@ -85,34 +78,39 @@ class SoftLayerTests(unittest.TestCase):
             self.assertTrue(size.price > 0.0)
 
     def test_create_node(self):
-        node = self.driver.create_node(name="libcloud-testing",
-                                       location=self.driver.list_locations()[0],
-                                       size=self.driver.list_sizes()[0],
-                                       image=self.driver.list_images()[0])
-        self.assertEqual(node.name, 'libcloud-testing.example.com')
-        self.assertEqual(node.state, NODE_STATE_MAP['RUNNING'])
+        node = self.driver.create_node(
+            name="libcloud-testing",
+            location=self.driver.list_locations()[0],
+            size=self.driver.list_sizes()[0],
+            image=self.driver.list_images()[0],
+        )
+        self.assertEqual(node.name, "libcloud-testing.example.com")
+        self.assertEqual(node.state, NODE_STATE_MAP["RUNNING"])
 
     def test_create_node_ex_hourly_True(self):
-        SoftLayerMockHttp.type = 'HOURLY_BILLING_TRUE'
+        SoftLayerMockHttp.type = "HOURLY_BILLING_TRUE"
 
-        node = self.driver.create_node(name="libcloud-testing",
-                                       location=self.driver.list_locations()[0],
-                                       size=self.driver.list_sizes()[0],
-                                       image=self.driver.list_images()[0],
-                                       ex_hourly=True)
-        self.assertEqual(node.name, 'libcloud-testing.example.com')
-        self.assertEqual(node.state, NODE_STATE_MAP['RUNNING'])
+        node = self.driver.create_node(
+            name="libcloud-testing",
+            location=self.driver.list_locations()[0],
+            size=self.driver.list_sizes()[0],
+            image=self.driver.list_images()[0],
+            ex_hourly=True,
+        )
+        self.assertEqual(node.name, "libcloud-testing.example.com")
+        self.assertEqual(node.state, NODE_STATE_MAP["RUNNING"])
 
-        SoftLayerMockHttp.type = 'HOURLY_BILLING_FALSE'
+        SoftLayerMockHttp.type = "HOURLY_BILLING_FALSE"
 
-        node = self.driver.create_node(name="libcloud-testing",
-                                       location=self.driver.list_locations()[0],
-                                       size=self.driver.list_sizes()[0],
-                                       image=self.driver.list_images()[0],
-                                       ex_hourly=False)
-        self.assertEqual(node.name, 'libcloud-testing.example.com')
-        self.assertEqual(node.state, NODE_STATE_MAP['RUNNING'])
-
+        node = self.driver.create_node(
+            name="libcloud-testing",
+            location=self.driver.list_locations()[0],
+            size=self.driver.list_sizes()[0],
+            image=self.driver.list_images()[0],
+            ex_hourly=False,
+        )
+        self.assertEqual(node.name, "libcloud-testing.example.com")
+        self.assertEqual(node.state, NODE_STATE_MAP["RUNNING"])
 
     def test_create_fail(self):
         SoftLayerMockHttp.type = "SOFTLAYEREXCEPTION"
@@ -122,7 +120,8 @@ class SoftLayerTests(unittest.TestCase):
             name="SOFTLAYEREXCEPTION",
             location=self.driver.list_locations()[0],
             size=self.driver.list_sizes()[0],
-            image=self.driver.list_images()[0])
+            image=self.driver.list_images()[0],
+        )
 
     def test_create_creds_error(self):
         SoftLayerMockHttp.type = "INVALIDCREDSERROR"
@@ -132,12 +131,15 @@ class SoftLayerTests(unittest.TestCase):
             name="INVALIDCREDSERROR",
             location=self.driver.list_locations()[0],
             size=self.driver.list_sizes()[0],
-            image=self.driver.list_images()[0])
+            image=self.driver.list_images()[0],
+        )
 
     def test_create_node_no_location(self):
-        self.driver.create_node(name="Test",
-                                size=self.driver.list_sizes()[0],
-                                image=self.driver.list_images()[0])
+        self.driver.create_node(
+            name="Test",
+            size=self.driver.list_sizes()[0],
+            image=self.driver.list_images()[0],
+        )
 
     def test_create_node_no_image(self):
         self.driver.create_node(name="Test", size=self.driver.list_sizes()[0])
@@ -149,19 +151,21 @@ class SoftLayerTests(unittest.TestCase):
         self.driver.create_node(name="libcloud.org")
 
     def test_create_node_ex_options(self):
-        self.driver.create_node(name="Test",
-                                location=self.driver.list_locations()[0],
-                                size=self.driver.list_sizes()[0],
-                                image=self.driver.list_images()[0],
-                                ex_domain='libcloud.org',
-                                ex_cpus=2,
-                                ex_ram=2048,
-                                ex_disk=100,
-                                ex_keyname='test1',
-                                ex_bandwidth=10,
-                                ex_local_disk=False,
-                                ex_datacenter='Dal05',
-                                ex_os='UBUNTU_LATEST')
+        self.driver.create_node(
+            name="Test",
+            location=self.driver.list_locations()[0],
+            size=self.driver.list_sizes()[0],
+            image=self.driver.list_images()[0],
+            ex_domain="libcloud.org",
+            ex_cpus=2,
+            ex_ram=2048,
+            ex_disk=100,
+            ex_keyname="test1",
+            ex_bandwidth=10,
+            ex_local_disk=False,
+            ex_datacenter="Dal05",
+            ex_os="UBUNTU_LATEST",
+        )
 
     def test_reboot_node(self):
         node = self.driver.list_nodes()[0]
@@ -174,34 +178,34 @@ class SoftLayerTests(unittest.TestCase):
     def test_list_keypairs(self):
         keypairs = self.driver.list_key_pairs()
         self.assertEqual(len(keypairs), 2)
-        self.assertEqual(keypairs[0].name, 'test1')
+        self.assertEqual(keypairs[0].name, "test1")
         self.assertEqual(keypairs[0].fingerprint, null_fingerprint)
 
     def test_get_key_pair(self):
-        key_pair = self.driver.get_key_pair(name='test1')
-        self.assertEqual(key_pair.name, 'test1')
+        key_pair = self.driver.get_key_pair(name="test1")
+        self.assertEqual(key_pair.name, "test1")
 
     def test_get_key_pair_does_not_exist(self):
-        self.assertRaises(KeyPairDoesNotExistError, self.driver.get_key_pair,
-                          name='test-key-pair')
+        self.assertRaises(
+            KeyPairDoesNotExistError, self.driver.get_key_pair, name="test-key-pair"
+        )
 
     @pytest.mark.skip(reason="no way of currently testing this")
     def test_create_key_pair(self):
-        key_pair = self.driver.create_key_pair(name='my-key-pair')
-        fingerprint = ('1f:51:ae:28:bf:89:e9:d8:1f:25:5d'
-                       ':37:2d:7d:b8:ca:9f:f5:f1:6f')
+        key_pair = self.driver.create_key_pair(name="my-key-pair")
+        fingerprint = "1f:51:ae:28:bf:89:e9:d8:1f:25:5d" ":37:2d:7d:b8:ca:9f:f5:f1:6f"
 
-        self.assertEqual(key_pair.name, 'my-key-pair')
+        self.assertEqual(key_pair.name, "my-key-pair")
         self.assertEqual(key_pair.fingerprint, fingerprint)
         self.assertTrue(key_pair.private_key is not None)
 
     def test_delete_key_pair(self):
-        success = self.driver.delete_key_pair('test1')
+        success = self.driver.delete_key_pair("test1")
         self.assertTrue(success)
 
 
 class SoftLayerMockHttp(MockHttp, unittest.TestCase):
-    fixtures = ComputeFileFixtures('softlayer')
+    fixtures = ComputeFileFixtures("softlayer")
 
     def _get_method_name(self, type, use_param, qs, path):
         return "_xmlrpc"
@@ -213,33 +217,35 @@ class SoftLayerMockHttp(MockHttp, unittest.TestCase):
         return getattr(self, meth_name)(method, url, body, headers)
 
     def _xmlrpc_v3_SoftLayer_Virtual_Guest_getCreateObjectOptions(
-            self, method, url, body, headers):
+        self, method, url, body, headers
+    ):
         body = self.fixtures.load(
-            'v3__SoftLayer_Virtual_Guest_getCreateObjectOptions.xml')
+            "v3__SoftLayer_Virtual_Guest_getCreateObjectOptions.xml"
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(
-            self, method, url, body, headers):
-        body = self.fixtures.load('v3_SoftLayer_Account_getVirtualGuests.xml')
+    def _xmlrpc_v3_SoftLayer_Account_getVirtualGuests(self, method, url, body, headers):
+        body = self.fixtures.load("v3_SoftLayer_Account_getVirtualGuests.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Location_Datacenter_getDatacenters(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            'v3_SoftLayer_Location_Datacenter_getDatacenters.xml')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("v3_SoftLayer_Location_Datacenter_getDatacenters.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Virtual_Guest_createObject(
-            self, method, url, body, headers):
+        self, method, url, body, headers
+    ):
         fixture = {
-            None: 'v3__SoftLayer_Virtual_Guest_createObject.xml',
-            'INVALIDCREDSERROR': 'SoftLayer_Account.xml',
-            'SOFTLAYEREXCEPTION': 'fail.xml',
-            'HOURLY_BILLING_TRUE': 'v3__SoftLayer_Virtual_Guest_createObject.xml',
-            'HOURLY_BILLING_FALSE': 'v3__SoftLayer_Virtual_Guest_createObject.xml',
+            None: "v3__SoftLayer_Virtual_Guest_createObject.xml",
+            "INVALIDCREDSERROR": "SoftLayer_Account.xml",
+            "SOFTLAYEREXCEPTION": "fail.xml",
+            "HOURLY_BILLING_TRUE": "v3__SoftLayer_Virtual_Guest_createObject.xml",
+            "HOURLY_BILLING_FALSE": "v3__SoftLayer_Virtual_Guest_createObject.xml",
         }[self.type]
 
-        if self.type == 'HOURLY_BILLING_TRUE':
+        if self.type == "HOURLY_BILLING_TRUE":
             # Verify parameter is sent as a boolean and not as a string
             expected_value = """
 <member>
@@ -248,8 +254,11 @@ class SoftLayerMockHttp(MockHttp, unittest.TestCase):
 </member>
 """.strip()
 
-            self.assertTrue(expected_value in body, 'Request body is missing hourlyBillingFlag attribute')
-        elif self.type == 'HOURLY_BILLING_FALSE':
+            self.assertTrue(
+                expected_value in body,
+                "Request body is missing hourlyBillingFlag attribute",
+            )
+        elif self.type == "HOURLY_BILLING_FALSE":
             # Verify parameter is sent as a boolean and not as a string
             expected_value = """
 <member>
@@ -258,48 +267,50 @@ class SoftLayerMockHttp(MockHttp, unittest.TestCase):
 </member>
 """.strip()
 
-            self.assertTrue(expected_value in body, 'Request body is missing hourlyBillingFlag attribute')
-
+            self.assertTrue(
+                expected_value in body,
+                "Request body is missing hourlyBillingFlag attribute",
+            )
 
         body = self.fixtures.load(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Virtual_Guest_getObject(
-            self, method, url, body, headers):
-        body = self.fixtures.load(
-            'v3__SoftLayer_Virtual_Guest_getObject.xml')
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_getObject(self, method, url, body, headers):
+        body = self.fixtures.load("v3__SoftLayer_Virtual_Guest_getObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Virtual_Guest_rebootSoft(
-            self, method, url, body, headers):
-        body = self.fixtures.load('empty.xml')
+    def _xmlrpc_v3_SoftLayer_Virtual_Guest_rebootSoft(self, method, url, body, headers):
+        body = self.fixtures.load("empty.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Virtual_Guest_deleteObject(
-            self, method, url, body, headers):
-        body = self.fixtures.load('empty.xml')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("empty.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _xmlrpc_v3_SoftLayer_Account_getSshKeys(
-            self, method, url, body, headers):
-        body = self.fixtures.load('v3__SoftLayer_Account_getSshKeys.xml')
+    def _xmlrpc_v3_SoftLayer_Account_getSshKeys(self, method, url, body, headers):
+        body = self.fixtures.load("v3__SoftLayer_Account_getSshKeys.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_getObject(
-            self, method, url, body, headers):
-        body = self.fixtures.load('v3__SoftLayer_Security_Ssh_Key_getObject.xml')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("v3__SoftLayer_Security_Ssh_Key_getObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_createObject(
-            self, method, url, body, headers):
-        body = self.fixtures.load('v3__SoftLayer_Security_Ssh_Key_createObject.xml')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("v3__SoftLayer_Security_Ssh_Key_createObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _xmlrpc_v3_SoftLayer_Security_Ssh_Key_deleteObject(
-            self, method, url, body, headers):
-        body = self.fixtures.load('v3__SoftLayer_Security_Ssh_Key_deleteObject.xml')
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("v3__SoftLayer_Security_Ssh_Key_deleteObject.xml")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

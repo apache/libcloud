@@ -21,15 +21,11 @@ try:
 except ImportError:
     import json
 
-from libcloud.dns.types import Provider, ZoneDoesNotExistError,\
-    ZoneAlreadyExistsError
+from libcloud.dns.types import Provider, ZoneDoesNotExistError, ZoneAlreadyExistsError
 from libcloud.dns.base import DNSDriver, Zone
-from libcloud.common.buddyns import BuddyNSConnection, BuddyNSResponse,\
-    BuddyNSException
+from libcloud.common.buddyns import BuddyNSConnection, BuddyNSResponse, BuddyNSException
 
-__all__ = [
-    'BuddyNSDNSDriver'
-]
+__all__ = ["BuddyNSDNSDriver"]
 
 
 class BuddyNSDNSResponse(BuddyNSResponse):
@@ -41,14 +37,14 @@ class BuddyNSDNSConnection(BuddyNSConnection):
 
 
 class BuddyNSDNSDriver(DNSDriver):
-    name = 'BuddyNS DNS'
-    website = 'https://www.buddyns.com'
+    name = "BuddyNS DNS"
+    website = "https://www.buddyns.com"
     type = Provider.BUDDYNS
     connectionCls = BuddyNSDNSConnection
 
     def list_zones(self):
-        action = '/api/v2/zone/'
-        response = self.connection.request(action=action, method='GET')
+        action = "/api/v2/zone/"
+        response = self.connection.request(action=action, method="GET")
         zones = self._to_zones(items=response.parse_body())
 
         return zones
@@ -58,20 +54,21 @@ class BuddyNSDNSDriver(DNSDriver):
         :param zone_id: Zone domain name (e.g. example.com)
         :return: :class:`Zone`
         """
-        action = '/api/v2/zone/%s' % zone_id
+        action = "/api/v2/zone/%s" % zone_id
         try:
-            response = self.connection.request(action=action, method='GET')
+            response = self.connection.request(action=action, method="GET")
         except BuddyNSException as e:
-            if e.message == 'Not found':
-                raise ZoneDoesNotExistError(value=e.message, driver=self,
-                                            zone_id=zone_id)
+            if e.message == "Not found":
+                raise ZoneDoesNotExistError(
+                    value=e.message, driver=self, zone_id=zone_id
+                )
             else:
                 raise e
         zone = self._to_zone(response.parse_body())
 
         return zone
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         :param domain: Zone domain name (e.g. example.com)
         :type domain: ``str``
@@ -91,18 +88,20 @@ class BuddyNSDNSDriver(DNSDriver):
         Do not forget to pass the master in extra,
         extra = {'master':'65.55.37.62'} for example.
         """
-        action = '/api/v2/zone/'
-        data = {'name': domain}
+        action = "/api/v2/zone/"
+        data = {"name": domain}
         if extra is not None:
             data.update(extra)
         post_data = json.dumps(data)
         try:
-            response = self.connection.request(action=action, method='POST',
-                                               data=post_data)
+            response = self.connection.request(
+                action=action, method="POST", data=post_data
+            )
         except BuddyNSException as e:
-            if e.message == 'Invalid zone submitted for addition.':
-                raise ZoneAlreadyExistsError(value=e.message, driver=self,
-                                             zone_id=domain)
+            if e.message == "Invalid zone submitted for addition.":
+                raise ZoneAlreadyExistsError(
+                    value=e.message, driver=self, zone_id=domain
+                )
             else:
                 raise e
 
@@ -117,26 +116,35 @@ class BuddyNSDNSDriver(DNSDriver):
 
         :return: Boolean
         """
-        action = '/api/v2/zone/%s' % zone.domain
+        action = "/api/v2/zone/%s" % zone.domain
         try:
-            self.connection.request(action=action, method='DELETE')
+            self.connection.request(action=action, method="DELETE")
         except BuddyNSException as e:
-            if e.message == 'Not found':
-                raise ZoneDoesNotExistError(value=e.message, driver=self,
-                                            zone_id=zone.id)
+            if e.message == "Not found":
+                raise ZoneDoesNotExistError(
+                    value=e.message, driver=self, zone_id=zone.id
+                )
             else:
                 raise e
 
         return True
 
     def _to_zone(self, item):
-        common_keys = ['name', ]
+        common_keys = [
+            "name",
+        ]
         extra = {}
         for key in item:
             if key not in common_keys:
                 extra[key] = item.get(key)
-        zone = Zone(domain=item['name'], id=item['name'], type=None,
-                    extra=extra, ttl=None, driver=self)
+        zone = Zone(
+            domain=item["name"],
+            id=item["name"],
+            type=None,
+            extra=extra,
+            ttl=None,
+            driver=self,
+        )
 
         return zone
 

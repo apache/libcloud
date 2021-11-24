@@ -22,11 +22,10 @@ from libcloud.test.storage.test_atmos import AtmosMockHttp, AtmosTests
 
 
 class NinefoldTests(AtmosTests, unittest.TestCase):
-
     def setUp(self):
         NinefoldStorageDriver.connectionCls.conn_class = AtmosMockHttp
-        NinefoldStorageDriver.path = ''
+        NinefoldStorageDriver.path = ""
         AtmosMockHttp.type = None
         AtmosMockHttp.upload_created = False
-        self.driver = NinefoldStorageDriver('dummy', base64.b64encode(b('dummy')))
+        self.driver = NinefoldStorageDriver("dummy", base64.b64encode(b("dummy")))
         self._remove_test_file()

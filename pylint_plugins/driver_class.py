@@ -33,29 +33,37 @@ def register(linter):
 
 
 def transform(cls):
-    if 'NodeDriver' in cls.basenames:
+    if "NodeDriver" in cls.basenames:
         fqdn = cls.qname()
-        module_name, _ = fqdn.rsplit('.', 1)
+        module_name, _ = fqdn.rsplit(".", 1)
 
         # Assign connection class variable on it which is otherwise assigned
         # dynamically at the run time
-        if 'connectionCls' not in cls.locals:
+        if "connectionCls" not in cls.locals:
             # connectionCls not explicitly defined on the driver class
             return
 
-        connection_cls_name = cls.locals['connectionCls'][0].parent.value.name
-        connection_cls_node = MANAGER.ast_from_module_name(module_name).lookup(connection_cls_name)[1]
+        connection_cls_name = cls.locals["connectionCls"][0].parent.value.name
+        connection_cls_node = MANAGER.ast_from_module_name(module_name).lookup(
+            connection_cls_name
+        )[1]
 
         if len(connection_cls_node) >= 1:
             if isinstance(connection_cls_node[0], node_classes.ImportFrom):
                 # Connection class is imported and not directly defined in the driver class module
                 connection_cls_module_name = connection_cls_node[0].modname
-                connection_cls_node = MANAGER.ast_from_module_name(connection_cls_module_name).lookup(connection_cls_name)[1][0]
+                connection_cls_node = MANAGER.ast_from_module_name(
+                    connection_cls_module_name
+                ).lookup(connection_cls_name)[1][0]
 
-                cls.instance_attrs['connection'] = [connection_cls_node.instantiate_class()]
+                cls.instance_attrs["connection"] = [
+                    connection_cls_node.instantiate_class()
+                ]
             else:
                 # Connection class is defined directly in the driver module
-                cls.instance_attrs['connection'] = [connection_cls_node[0].instantiate_class()]
+                cls.instance_attrs["connection"] = [
+                    connection_cls_node[0].instantiate_class()
+                ]
             return
 
 

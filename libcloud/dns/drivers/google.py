@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    'GoogleDNSDriver'
-]
+__all__ = ["GoogleDNSDriver"]
 
 # API docs: https://cloud.google.com/dns/api/v1
-API_VERSION = 'v1'
+API_VERSION = "v1"
 
 import re
 from libcloud.common.google import GoogleResponse, GoogleBaseConnection
@@ -36,42 +34,57 @@ class GoogleDNSConnection(GoogleBaseConnection):
     host = "www.googleapis.com"
     responseCls = GoogleDNSResponse
 
-    def __init__(self, user_id, key, secure, auth_type=None,
-                 credential_file=None, project=None, **kwargs):
-        super(GoogleDNSConnection, self).\
-            __init__(user_id, key, secure=secure, auth_type=auth_type,
-                     credential_file=credential_file, **kwargs)
-        self.request_path = '/dns/%s/projects/%s' % (API_VERSION, project)
+    def __init__(
+        self,
+        user_id,
+        key,
+        secure,
+        auth_type=None,
+        credential_file=None,
+        project=None,
+        **kwargs,
+    ):
+        super(GoogleDNSConnection, self).__init__(
+            user_id,
+            key,
+            secure=secure,
+            auth_type=auth_type,
+            credential_file=credential_file,
+            **kwargs,
+        )
+        self.request_path = "/dns/%s/projects/%s" % (API_VERSION, project)
 
 
 class GoogleDNSDriver(DNSDriver):
     type = Provider.GOOGLE
-    name = 'Google DNS'
+    name = "Google DNS"
     connectionCls = GoogleDNSConnection
-    website = 'https://cloud.google.com/'
+    website = "https://cloud.google.com/"
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.NS: 'NS',
-        RecordType.PTR: 'PTR',
-        RecordType.SOA: 'SOA',
-        RecordType.SPF: 'SPF',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT',
-        RecordType.CAA: 'CAA',
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.NS: "NS",
+        RecordType.PTR: "PTR",
+        RecordType.SOA: "SOA",
+        RecordType.SPF: "SPF",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
+        RecordType.CAA: "CAA",
     }
 
-    def __init__(self, user_id, key, project=None, auth_type=None, scopes=None,
-                 **kwargs):
+    def __init__(
+        self, user_id, key, project=None, auth_type=None, scopes=None, **kwargs
+    ):
         self.auth_type = auth_type
         self.project = project
         self.scopes = scopes
         if not self.project:
-            raise ValueError('Project name must be specified using '
-                             '"project" keyword.')
+            raise ValueError(
+                "Project name must be specified using " '"project" keyword.'
+            )
         super(GoogleDNSDriver, self).__init__(user_id, key, **kwargs)
 
     def iterate_zones(self):
@@ -80,7 +93,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: ``generator`` of :class:`Zone`
         """
-        return self._get_more('zones')
+        return self._get_more("zones")
 
     def iterate_records(self, zone):
         """
@@ -91,7 +104,7 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: ``generator`` of :class:`Record`
         """
-        return self._get_more('records', zone=zone)
+        return self._get_more("records", zone=zone)
 
     def get_zone(self, zone_id):
         """
@@ -102,14 +115,14 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        request = '/managedZones/%s' % (zone_id)
+        request = "/managedZones/%s" % (zone_id)
 
         try:
-            response = self.connection.request(request, method='GET').object
+            response = self.connection.request(request, method="GET").object
         except ResourceNotFoundError:
-            raise ZoneDoesNotExistError(value='',
-                                        driver=self.connection.driver,
-                                        zone_id=zone_id)
+            raise ZoneDoesNotExistError(
+                value="", driver=self.connection.driver, zone_id=zone_id
+            )
 
         return self._to_zone(response)
 
@@ -125,31 +138,33 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        (record_type, record_name) = record_id.split(':', 1)
+        (record_type, record_name) = record_id.split(":", 1)
 
         params = {
-            'name': record_name,
-            'type': record_type,
+            "name": record_name,
+            "type": record_type,
         }
 
-        request = '/managedZones/%s/rrsets' % (zone_id)
+        request = "/managedZones/%s/rrsets" % (zone_id)
 
         try:
-            response = self.connection.request(request, method='GET',
-                                               params=params).object
+            response = self.connection.request(
+                request, method="GET", params=params
+            ).object
         except ResourceNotFoundError:
-            raise ZoneDoesNotExistError(value='',
-                                        driver=self.connection.driver,
-                                        zone_id=zone_id)
+            raise ZoneDoesNotExistError(
+                value="", driver=self.connection.driver, zone_id=zone_id
+            )
 
-        if len(response['rrsets']) > 0:
+        if len(response["rrsets"]) > 0:
             zone = self.get_zone(zone_id)
-            return self._to_record(response['rrsets'][0], zone)
+            return self._to_record(response["rrsets"][0], zone)
 
-        raise RecordDoesNotExistError(value='', driver=self.connection.driver,
-                                      record_id=record_id)
+        raise RecordDoesNotExistError(
+            value="", driver=self.connection.driver, record_id=record_id
+        )
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         Create a new zone.
 
@@ -169,24 +184,23 @@ class GoogleDNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         """
         name = None
-        description = ''
+        description = ""
 
         if extra:
-            description = extra.get('description')
-            name = extra.get('name')
+            description = extra.get("description")
+            name = extra.get("name")
 
         if name is None:
             name = self._cleanup_domain(domain)
 
         data = {
-            'dnsName': domain,
-            'name': name,
-            'description': description,
+            "dnsName": domain,
+            "name": name,
+            "description": description,
         }
 
-        request = '/managedZones'
-        response = self.connection.request(request, method='POST',
-                                           data=data).object
+        request = "/managedZones"
+        response = self.connection.request(request, method="POST", data=data).object
         return self._to_zone(response)
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -210,23 +224,17 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        ttl = data.get('ttl', 0)
-        rrdatas = data.get('rrdatas', [])
+        ttl = data.get("ttl", 0)
+        rrdatas = data.get("rrdatas", [])
 
         data = {
-            'additions': [
-                {
-                    'name': name,
-                    'type': type,
-                    'ttl': int(ttl),
-                    'rrdatas': rrdatas,
-                }
+            "additions": [
+                {"name": name, "type": type, "ttl": int(ttl), "rrdatas": rrdatas}
             ]
         }
-        request = '/managedZones/%s/changes' % (zone.id)
-        response = self.connection.request(request, method='POST',
-                                           data=data).object
-        return self._to_record(response['additions'][0], zone)
+        request = "/managedZones/%s/changes" % (zone.id)
+        response = self.connection.request(request, method="POST", data=data).object
+        return self._to_record(response["additions"][0], zone)
 
     def delete_zone(self, zone):
         """
@@ -239,8 +247,8 @@ class GoogleDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        request = '/managedZones/%s' % (zone.id)
-        response = self.connection.request(request, method='DELETE')
+        request = "/managedZones/%s" % (zone.id)
+        response = self.connection.request(request, method="DELETE")
         return response.success()
 
     def delete_record(self, record):
@@ -253,18 +261,17 @@ class GoogleDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         data = {
-            'deletions': [
+            "deletions": [
                 {
-                    'name': record.name,
-                    'type': record.type,
-                    'rrdatas': record.data['rrdatas'],
-                    'ttl': record.data['ttl']
+                    "name": record.name,
+                    "type": record.type,
+                    "rrdatas": record.data["rrdatas"],
+                    "ttl": record.data["ttl"],
                 }
             ]
         }
-        request = '/managedZones/%s/changes' % (record.zone.id)
-        response = self.connection.request(request, method='POST',
-                                           data=data)
+        request = "/managedZones/%s/changes" % (record.zone.id)
+        response = self.connection.request(request, method="POST", data=data)
         return response.success()
 
     def ex_bulk_record_changes(self, zone, records):
@@ -292,14 +299,13 @@ class GoogleDNSDriver(DNSDriver):
         :rtype: ``dict`` of additions and deletions of :class:`Record`
         """
 
-        request = '/managedZones/%s/changes' % (zone.id)
-        response = self.connection.request(request, method='POST',
-                                           data=records).object
+        request = "/managedZones/%s/changes" % (zone.id)
+        response = self.connection.request(request, method="POST", data=records).object
         response = response or {}
 
         response_data = {
-            'additions': self._to_records(response.get('additions', []), zone),
-            'deletions': self._to_records(response.get('deletions', []), zone),
+            "additions": self._to_records(response.get("additions", []), zone),
+            "deletions": self._to_records(response.get("deletions", []), zone),
         }
 
         return response_data
@@ -308,8 +314,7 @@ class GoogleDNSDriver(DNSDriver):
         last_key = None
         exhausted = False
         while not exhausted:
-            items, last_key, exhausted = self._get_data(rtype, last_key,
-                                                        **kwargs)
+            items, last_key, exhausted = self._get_data(rtype, last_key, **kwargs)
             for item in items:
                 yield item
 
@@ -317,23 +322,26 @@ class GoogleDNSDriver(DNSDriver):
         params = {}
 
         if last_key:
-            params['pageToken'] = last_key
+            params["pageToken"] = last_key
 
-        if rtype == 'zones':
-            request = '/managedZones'
+        if rtype == "zones":
+            request = "/managedZones"
             transform_func = self._to_zones
-            r_key = 'managedZones'
-        elif rtype == 'records':
-            zone = kwargs['zone']
-            request = '/managedZones/%s/rrsets' % (zone.id)
+            r_key = "managedZones"
+        elif rtype == "records":
+            zone = kwargs["zone"]
+            request = "/managedZones/%s/rrsets" % (zone.id)
             transform_func = self._to_records
-            r_key = 'rrsets'
+            r_key = "rrsets"
 
-        response = self.connection.request(request, method='GET',
-                                           params=params,)
+        response = self.connection.request(
+            request,
+            method="GET",
+            params=params,
+        )
 
         if response.success():
-            nextpage = response.object.get('nextPageToken', None)
+            nextpage = response.object.get("nextPageToken", None)
             items = transform_func(response.object.get(r_key), **kwargs)
             exhausted = False if nextpage is not None else True
             return items, nextpage, exhausted
@@ -341,9 +349,11 @@ class GoogleDNSDriver(DNSDriver):
             return [], None, True
 
     def _ex_connection_class_kwargs(self):
-        return {'auth_type': self.auth_type,
-                'project': self.project,
-                'scopes': self.scopes}
+        return {
+            "auth_type": self.auth_type,
+            "project": self.project,
+            "scopes": self.scopes,
+        }
 
     def _to_zones(self, response):
         zones = []
@@ -354,15 +364,21 @@ class GoogleDNSDriver(DNSDriver):
     def _to_zone(self, r):
         extra = {}
 
-        if 'description' in r:
-            extra['description'] = r.get('description')
+        if "description" in r:
+            extra["description"] = r.get("description")
 
-        extra['creationTime'] = r.get('creationTime')
-        extra['nameServers'] = r.get('nameServers')
-        extra['id'] = r.get('id')
+        extra["creationTime"] = r.get("creationTime")
+        extra["nameServers"] = r.get("nameServers")
+        extra["id"] = r.get("id")
 
-        return Zone(id=r['name'], domain=r['dnsName'],
-                    type='master', ttl=0, driver=self, extra=extra)
+        return Zone(
+            id=r["name"],
+            domain=r["dnsName"],
+            type="master",
+            ttl=0,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_records(self, response, zone):
         records = []
@@ -371,15 +387,21 @@ class GoogleDNSDriver(DNSDriver):
         return records
 
     def _to_record(self, r, zone):
-        record_id = '%s:%s' % (r['type'], r['name'])
-        return Record(id=record_id, name=r['name'],
-                      type=r['type'], data=r, zone=zone,
-                      driver=self, ttl=r.get('ttl', None),
-                      extra={})
+        record_id = "%s:%s" % (r["type"], r["name"])
+        return Record(
+            id=record_id,
+            name=r["name"],
+            type=r["type"],
+            data=r,
+            zone=zone,
+            driver=self,
+            ttl=r.get("ttl", None),
+            extra={},
+        )
 
     def _cleanup_domain(self, domain):
         # name can only contain lower case alphanumeric characters and hyphens
-        domain = re.sub(r'[^a-zA-Z0-9-]', '-', domain)
-        if domain[-1] == '-':
+        domain = re.sub(r"[^a-zA-Z0-9-]", "-", domain)
+        if domain[-1] == "-":
             domain = domain[:-1]
         return domain

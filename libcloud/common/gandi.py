@@ -26,17 +26,18 @@ from libcloud.common.xmlrpc import XMLRPCResponse, XMLRPCConnection
 
 # Global constants
 
-DEFAULT_TIMEOUT = 600   # operation pooling max seconds
-DEFAULT_INTERVAL = 20   # seconds between 2 operation.info
+DEFAULT_TIMEOUT = 600  # operation pooling max seconds
+DEFAULT_INTERVAL = 20  # seconds between 2 operation.info
 
 
 class GandiException(Exception):
     """
     Exception class for Gandi driver
     """
+
     def __str__(self):
         # pylint: disable=unsubscriptable-object
-        return '(%s) %s' % (self.args[0], self.args[1])
+        return "(%s) %s" % (self.args[0], self.args[1])
 
     def __repr__(self):
         # pylint: disable=unsubscriptable-object
@@ -55,24 +56,34 @@ class GandiConnection(XMLRPCConnection, ConnectionKey):
     """
 
     responseCls = GandiResponse
-    host = 'rpc.gandi.net'
-    endpoint = '/xmlrpc/'
+    host = "rpc.gandi.net"
+    endpoint = "/xmlrpc/"
 
-    def __init__(self, key, secure=True, timeout=None,
-                 retry_delay=None, backoff=None, proxy_url=None):
+    def __init__(
+        self,
+        key,
+        secure=True,
+        timeout=None,
+        retry_delay=None,
+        backoff=None,
+        proxy_url=None,
+    ):
         # Note: Method resolution order in this case is
         # XMLRPCConnection -> Connection and Connection doesn't take key as the
         # first argument so we specify a keyword argument instead.
         # Previously it was GandiConnection -> ConnectionKey so it worked fine.
-        super(GandiConnection, self).__init__(key=key, secure=secure,
-                                              timeout=timeout,
-                                              retry_delay=retry_delay,
-                                              backoff=backoff,
-                                              proxy_url=proxy_url)
+        super(GandiConnection, self).__init__(
+            key=key,
+            secure=secure,
+            timeout=timeout,
+            retry_delay=retry_delay,
+            backoff=backoff,
+            proxy_url=proxy_url,
+        )
         self.driver = BaseGandiDriver
 
     def request(self, method, *args):
-        args = (self.key, ) + args
+        args = (self.key,) + args
         return super(GandiConnection, self).request(method, *args)
 
 
@@ -81,22 +92,24 @@ class BaseGandiDriver(object):
     Gandi base driver
 
     """
+
     connectionCls = GandiConnection
-    name = 'Gandi'
+    name = "Gandi"
 
     # Specific methods for gandi
-    def _wait_operation(self, id, timeout=DEFAULT_TIMEOUT,
-                        check_interval=DEFAULT_INTERVAL):
-        """ Wait for an operation to succeed"""
+    def _wait_operation(
+        self, id, timeout=DEFAULT_TIMEOUT, check_interval=DEFAULT_INTERVAL
+    ):
+        """Wait for an operation to succeed"""
 
         for i in range(0, timeout, check_interval):
             try:
                 # pylint: disable=no-member
-                op = self.connection.request('operation.info', int(id)).object
+                op = self.connection.request("operation.info", int(id)).object
 
-                if op['step'] == 'DONE':
+                if op["step"] == "DONE":
                     return True
-                if op['step'] in ['ERROR', 'CANCEL']:
+                if op["step"] in ["ERROR", "CANCEL"]:
                     return False
             except (KeyError, IndexError):
                 pass
@@ -110,7 +123,7 @@ class BaseGandiDriver(object):
 class BaseObject(object):
     """Base class for objects not conventional"""
 
-    uuid_prefix = ''
+    uuid_prefix = ""
 
     def __init__(self, id, state, driver):
         self.id = str(id) if id else None
@@ -136,8 +149,7 @@ class BaseObject(object):
         Note, for example, that this example will always produce the
         same UUID!
         """
-        hashstring = '%s:%s:%s' % \
-            (self.uuid_prefix, self.id, self.driver.type)
+        hashstring = "%s:%s:%s" % (self.uuid_prefix, self.id, self.driver.type)
         return hashlib.sha1(b(hashstring)).hexdigest()
 
 
@@ -146,7 +158,7 @@ class IPAddress(BaseObject):
     Provide a common interface for ip addresses
     """
 
-    uuid_prefix = 'inet:'
+    uuid_prefix = "inet:"
 
     def __init__(self, id, state, inet, driver, version=4, extra=None):
         super(IPAddress, self).__init__(id, state, driver)
@@ -155,8 +167,12 @@ class IPAddress(BaseObject):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<IPAddress: id=%s, address=%s, state=%s, driver=%s ...>')
-                % (self.id, self.inet, self.state, self.driver.name))
+        return ("<IPAddress: id=%s, address=%s, state=%s, driver=%s ...>") % (
+            self.id,
+            self.inet,
+            self.state,
+            self.driver.name,
+        )
 
 
 class NetworkInterface(BaseObject):
@@ -164,10 +180,11 @@ class NetworkInterface(BaseObject):
     Provide a common interface for network interfaces
     """
 
-    uuid_prefix = 'if:'
+    uuid_prefix = "if:"
 
-    def __init__(self, id, state, mac_address, driver,
-                 ips=None, node_id=None, extra=None):
+    def __init__(
+        self, id, state, mac_address, driver, ips=None, node_id=None, extra=None
+    ):
         super(NetworkInterface, self).__init__(id, state, driver)
         self.mac = mac_address
         self.ips = ips or {}
@@ -175,14 +192,19 @@ class NetworkInterface(BaseObject):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (('<Interface: id=%s, mac=%s, state=%s, driver=%s ...>')
-                % (self.id, self.mac, self.state, self.driver.name))
+        return ("<Interface: id=%s, mac=%s, state=%s, driver=%s ...>") % (
+            self.id,
+            self.mac,
+            self.state,
+            self.driver.name,
+        )
 
 
 class Disk(BaseObject):
     """
     Gandi disk component
     """
+
     def __init__(self, id, state, name, driver, size, extra=None):
         super(Disk, self).__init__(id, state, driver)
         self.name = name
@@ -190,6 +212,10 @@ class Disk(BaseObject):
         self.extra = extra or {}
 
     def __repr__(self):
-        return (
-            ('<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>')
-            % (self.id, self.name, self.state, self.size, self.driver.name))
+        return ("<Disk: id=%s, name=%s, state=%s, size=%s, driver=%s ...>") % (
+            self.id,
+            self.name,
+            self.state,
+            self.size,
+            self.driver.name,
+        )

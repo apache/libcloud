@@ -25,39 +25,44 @@ __all__ = [
 ]
 
 DRIVERS = {
-    Provider.RACKSPACE:
-    ('libcloud.loadbalancer.drivers.rackspace', 'RackspaceLBDriver'),
-    Provider.GOGRID:
-    ('libcloud.loadbalancer.drivers.gogrid', 'GoGridLBDriver'),
-    Provider.NINEFOLD:
-    ('libcloud.loadbalancer.drivers.ninefold', 'NinefoldLBDriver'),
-    Provider.BRIGHTBOX:
-    ('libcloud.loadbalancer.drivers.brightbox', 'BrightboxLBDriver'),
-    Provider.ELB:
-    ('libcloud.loadbalancer.drivers.elb', 'ElasticLBDriver'),
-    Provider.ALB:
-        ('libcloud.loadbalancer.drivers.alb', 'ApplicationLBDriver'),
-    Provider.CLOUDSTACK:
-    ('libcloud.loadbalancer.drivers.cloudstack', 'CloudStackLBDriver'),
-    Provider.GCE:
-    ('libcloud.loadbalancer.drivers.gce', 'GCELBDriver'),
-    Provider.SOFTLAYER:
-    ('libcloud.loadbalancer.drivers.softlayer', 'SoftlayerLBDriver'),
-    Provider.DIMENSIONDATA:
-    ('libcloud.loadbalancer.drivers.dimensiondata', 'DimensionDataLBDriver'),
-    Provider.ALIYUN_SLB:
-    ('libcloud.loadbalancer.drivers.slb', 'SLBDriver'),
-    Provider.NTTCIS:
-    ('libcloud.loadbalancer.drivers.nttcis', 'NttCisLBDriver'),
+    Provider.RACKSPACE: (
+        "libcloud.loadbalancer.drivers.rackspace",
+        "RackspaceLBDriver",
+    ),
+    Provider.GOGRID: ("libcloud.loadbalancer.drivers.gogrid", "GoGridLBDriver"),
+    Provider.NINEFOLD: ("libcloud.loadbalancer.drivers.ninefold", "NinefoldLBDriver"),
+    Provider.BRIGHTBOX: (
+        "libcloud.loadbalancer.drivers.brightbox",
+        "BrightboxLBDriver",
+    ),
+    Provider.ELB: ("libcloud.loadbalancer.drivers.elb", "ElasticLBDriver"),
+    Provider.ALB: ("libcloud.loadbalancer.drivers.alb", "ApplicationLBDriver"),
+    Provider.CLOUDSTACK: (
+        "libcloud.loadbalancer.drivers.cloudstack",
+        "CloudStackLBDriver",
+    ),
+    Provider.GCE: ("libcloud.loadbalancer.drivers.gce", "GCELBDriver"),
+    Provider.SOFTLAYER: (
+        "libcloud.loadbalancer.drivers.softlayer",
+        "SoftlayerLBDriver",
+    ),
+    Provider.DIMENSIONDATA: (
+        "libcloud.loadbalancer.drivers.dimensiondata",
+        "DimensionDataLBDriver",
+    ),
+    Provider.ALIYUN_SLB: ("libcloud.loadbalancer.drivers.slb", "SLBDriver"),
+    Provider.NTTCIS: ("libcloud.loadbalancer.drivers.nttcis", "NttCisLBDriver"),
 }
 
 
 def get_driver(provider):
     deprecated_constants = OLD_CONSTANT_TO_NEW_MAPPING
-    return _get_provider_driver(drivers=DRIVERS, provider=provider,
-                                deprecated_constants=deprecated_constants)
+    return _get_provider_driver(
+        drivers=DRIVERS, provider=provider, deprecated_constants=deprecated_constants
+    )
 
 
 def set_driver(provider, module, klass):
-    return _set_provider_driver(drivers=DRIVERS, provider=provider,
-                                module=module, klass=klass)
+    return _set_provider_driver(
+        drivers=DRIVERS, provider=provider, module=module, klass=klass
+    )

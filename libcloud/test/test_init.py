@@ -21,6 +21,7 @@ import logging
 
 try:
     import paramiko  # NOQA
+
     have_paramiko = True
 except ImportError:
     have_paramiko = False
@@ -36,12 +37,12 @@ from libcloud.test import unittest
 
 class TestUtils(unittest.TestCase):
     def tearDown(self):
-        if 'LIBCLOUD_DEBUG' in os.environ:
-            del os.environ['LIBCLOUD_DEBUG']
+        if "LIBCLOUD_DEBUG" in os.environ:
+            del os.environ["LIBCLOUD_DEBUG"]
 
     def test_init_once_and_debug_mode(self):
         if have_paramiko:
-            paramiko_logger = logging.getLogger('paramiko')
+            paramiko_logger = logging.getLogger("paramiko")
             paramiko_logger.setLevel(logging.INFO)
 
         # Debug mode is disabled
@@ -55,7 +56,7 @@ class TestUtils(unittest.TestCase):
 
         # Enable debug mode
         _, tmp_path = tempfile.mkstemp()
-        os.environ['LIBCLOUD_DEBUG'] = tmp_path
+        os.environ["LIBCLOUD_DEBUG"] = tmp_path
         _init_once()
 
         self.assertTrue(LoggingConnection.log is not None)
@@ -65,25 +66,27 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(paramiko_log_level, logging.DEBUG)
 
     def test_factory(self):
-        driver = libcloud.get_driver(libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2)
-        self.assertEqual(driver.__name__, 'EC2NodeDriver')
+        driver = libcloud.get_driver(
+            libcloud.DriverType.COMPUTE, libcloud.DriverType.COMPUTE.EC2
+        )
+        self.assertEqual(driver.__name__, "EC2NodeDriver")
 
     def test_raises_error(self):
         with self.assertRaises(DriverTypeNotFoundError):
-            libcloud.get_driver('potato', 'potato')
+            libcloud.get_driver("potato", "potato")
 
-    @patch.object(libcloud.requests, '__version__', '2.6.0')
-    @patch.object(libcloud.requests.packages.chardet, '__version__', '2.2.1')
+    @patch.object(libcloud.requests, "__version__", "2.6.0")
+    @patch.object(libcloud.requests.packages.chardet, "__version__", "2.2.1")
     def test_init_once_detects_bad_yum_install_requests(self, *args):
-        expected_msg = 'Known bad version of requests detected'
+        expected_msg = "Known bad version of requests detected"
         with self.assertRaisesRegex(AssertionError, expected_msg):
             _init_once()
 
-    @patch.object(libcloud.requests, '__version__', '2.6.0')
-    @patch.object(libcloud.requests.packages.chardet, '__version__', '2.3.0')
+    @patch.object(libcloud.requests, "__version__", "2.6.0")
+    @patch.object(libcloud.requests.packages.chardet, "__version__", "2.3.0")
     def test_init_once_correct_chardet_version(self, *args):
         _init_once()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

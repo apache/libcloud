@@ -201,7 +201,7 @@ jobs:
 
       - name: Run Checks
         run: |
-          script -e -c "tox -e checks,import-timings,lint,pylint"
+          script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
 
   docs:
     name: Build and upload Documentation

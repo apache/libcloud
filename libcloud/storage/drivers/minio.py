@@ -19,43 +19,57 @@ from libcloud.storage.drivers.s3 import BaseS3Connection
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 from libcloud.storage.drivers.s3 import API_VERSION
 
-__all__ = [
-    "MinIOStorageDriver"
-]
+__all__ = ["MinIOStorageDriver"]
 
 
 class MinIOConnectionAWS4(SignedAWSConnection, BaseS3Connection):
-    service_name = 's3'
+    service_name = "s3"
     version = API_VERSION
 
-    def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None, proxy_url=None, token=None,
-                 retry_delay=None, backoff=None, **kwargs):
+    def __init__(
+        self,
+        user_id,
+        key,
+        secure=True,
+        host=None,
+        port=None,
+        url=None,
+        timeout=None,
+        proxy_url=None,
+        token=None,
+        retry_delay=None,
+        backoff=None,
+        **kwargs,
+    ):
 
-        super(MinIOConnectionAWS4, self).__init__(user_id, key,
-                                                  secure, host,
-                                                  port, url,
-                                                  timeout,
-                                                  proxy_url, token,
-                                                  retry_delay,
-                                                  backoff,
-                                                  4)  # force aws4
+        super(MinIOConnectionAWS4, self).__init__(
+            user_id,
+            key,
+            secure,
+            host,
+            port,
+            url,
+            timeout,
+            proxy_url,
+            token,
+            retry_delay,
+            backoff,
+            4,
+        )  # force aws4
 
 
 class MinIOStorageDriver(BaseS3StorageDriver):
-    name = 'MinIO Storage Driver'
-    website = 'https://min.io/'
+    name = "MinIO Storage Driver"
+    website = "https://min.io/"
     connectionCls = MinIOConnectionAWS4
     region_name = ""
 
     def __init__(self, key, secret=None, secure=True, host=None, port=None):
         if host is None:
-            raise LibcloudError('host argument is required', driver=self)
+            raise LibcloudError("host argument is required", driver=self)
 
         self.connectionCls.host = host
 
-        super(MinIOStorageDriver, self).__init__(key=key,
-                                                 secret=secret,
-                                                 secure=secure,
-                                                 host=host,
-                                                 port=port)
+        super(MinIOStorageDriver, self).__init__(
+            key=key, secret=secret, secure=secure, host=host, port=port
+        )

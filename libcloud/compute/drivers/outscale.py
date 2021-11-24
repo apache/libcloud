@@ -25,13 +25,14 @@ from libcloud.compute.base import NodeDriver
 from libcloud.compute.types import Provider
 from libcloud.common.osc import OSCRequestSignerAlgorithmV4
 from libcloud.common.base import ConnectionUserAndKey
-from libcloud.compute.base import \
-    Node,\
-    NodeImage, \
-    KeyPair, \
-    StorageVolume, \
-    VolumeSnapshot, \
-    NodeLocation
+from libcloud.compute.base import (
+    Node,
+    NodeImage,
+    KeyPair,
+    StorageVolume,
+    VolumeSnapshot,
+    NodeLocation,
+)
 from libcloud.compute.types import NodeState
 
 
@@ -41,17 +42,18 @@ class OutscaleNodeDriver(NodeDriver):
     """
 
     type = Provider.OUTSCALE
-    name = 'Outscale API'
-    website = 'http://www.outscale.com'
+    name = "Outscale API"
+    website = "http://www.outscale.com"
 
-    def __init__(self,
-                 key: str = None,
-                 secret: str = None,
-                 region: str = 'eu-west-2',
-                 service: str = 'api',
-                 version: str = 'latest',
-                 base_uri: str = 'outscale.com'
-                 ):
+    def __init__(
+        self,
+        key: str = None,
+        secret: str = None,
+        region: str = "eu-west-2",
+        service: str = "api",
+        version: str = "latest",
+        base_uri: str = "outscale.com",
+    ):
         self.key = key
         self.secret = secret
         self.region = region
@@ -65,14 +67,14 @@ class OutscaleNodeDriver(NodeDriver):
             access_key=self.key,
             access_secret=self.secret,
             version=self.version,
-            connection=self.connection
+            connection=self.connection,
         )
         self.NODE_STATE = {
-            'pending': NodeState.PENDING,
-            'running': NodeState.RUNNING,
-            'shutting-down': NodeState.UNKNOWN,
-            'terminated': NodeState.TERMINATED,
-            'stopped': NodeState.STOPPED
+            "pending": NodeState.PENDING,
+            "running": NodeState.RUNNING,
+            "shutting-down": NodeState.UNKNOWN,
+            "terminated": NodeState.TERMINATED,
+            "stopped": NodeState.STOPPED,
         }
 
     def list_locations(self, ex_dry_run: bool = False):
@@ -136,7 +138,7 @@ class OutscaleNodeDriver(NodeDriver):
 
         :return: the created public ip
         :rtype: ``dict``
-            """
+        """
         action = "CreatePublicIp"
         data = json.dumps({"DryRun": dry_run})
         response = self._call_api(action, data)
@@ -144,10 +146,9 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["PublicIp"]
         return response.json()
 
-    def ex_delete_public_ip(self,
-                            dry_run: bool = False,
-                            public_ip: str = None,
-                            public_ip_id: str = None):
+    def ex_delete_public_ip(
+        self, dry_run: bool = False, public_ip: str = None, public_ip_id: str = None
+    ):
         """
         Delete public ip.
 
@@ -214,14 +215,15 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["PublicIps"]
         return response.json()
 
-    def ex_attach_public_ip(self,
-                            allow_relink: bool = None,
-                            dry_run: bool = False,
-                            nic_id: str = None,
-                            vm_id: str = None,
-                            public_ip: str = None,
-                            public_ip_id: str = None,
-                            ):
+    def ex_attach_public_ip(
+        self,
+        allow_relink: bool = None,
+        dry_run: bool = False,
+        nic_id: str = None,
+        vm_id: str = None,
+        public_ip: str = None,
+        public_ip_id: str = None,
+    ):
         """
         Attach public ip to a node.
 
@@ -273,10 +275,12 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return response.json()
 
-    def ex_detach_public_ip(self,
-                            public_ip: str = None,
-                            link_public_ip_id: str = None,
-                            dry_run: bool = False):
+    def ex_detach_public_ip(
+        self,
+        public_ip: str = None,
+        link_public_ip_id: str = None,
+        dry_run: bool = False,
+    ):
         """
         Detach public ip from a node.
 
@@ -308,29 +312,30 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return response.json()
 
-    def create_node(self,
-                    image: NodeImage,
-                    name: str = None,
-                    ex_dry_run: bool = False,
-                    ex_block_device_mapping: dict = None,
-                    ex_boot_on_creation: bool = True,
-                    ex_bsu_optimized: bool = True,
-                    ex_client_token: str = None,
-                    ex_deletion_protection: bool = False,
-                    ex_keypair_name: str = None,
-                    ex_max_vms_count: int = None,
-                    ex_min_vms_count: int = None,
-                    ex_nics: List[dict] = None,
-                    ex_performance: str = None,
-                    ex_placement: dict = None,
-                    ex_private_ips: List[str] = None,
-                    ex_security_group_ids: List[str] = None,
-                    ex_security_groups: List[str] = None,
-                    ex_subnet_id: str = None,
-                    ex_user_data: str = None,
-                    ex_vm_initiated_shutdown_behavior: str = None,
-                    ex_vm_type: str = None
-                    ):
+    def create_node(
+        self,
+        image: NodeImage,
+        name: str = None,
+        ex_dry_run: bool = False,
+        ex_block_device_mapping: dict = None,
+        ex_boot_on_creation: bool = True,
+        ex_bsu_optimized: bool = True,
+        ex_client_token: str = None,
+        ex_deletion_protection: bool = False,
+        ex_keypair_name: str = None,
+        ex_max_vms_count: int = None,
+        ex_min_vms_count: int = None,
+        ex_nics: List[dict] = None,
+        ex_performance: str = None,
+        ex_placement: dict = None,
+        ex_private_ips: List[str] = None,
+        ex_security_group_ids: List[str] = None,
+        ex_security_groups: List[str] = None,
+        ex_subnet_id: str = None,
+        ex_user_data: str = None,
+        ex_vm_initiated_shutdown_behavior: str = None,
+        ex_vm_type: str = None,
+    ):
         """
         Create a new instance.
 
@@ -426,7 +431,7 @@ class OutscaleNodeDriver(NodeDriver):
             "DryRun": ex_dry_run,
             "BootOnCreation": ex_boot_on_creation,
             "BsuOptimized": ex_bsu_optimized,
-            "ImageId": image.id
+            "ImageId": image.id,
         }
         if ex_block_device_mapping is not None:
             data.update({"BlockDeviceMappings": ex_block_device_mapping})
@@ -455,10 +460,9 @@ class OutscaleNodeDriver(NodeDriver):
         if ex_user_data is not None:
             data.update({"UserData": ex_user_data})
         if ex_vm_initiated_shutdown_behavior is not None:
-            data.update({
-                "VmInstantiatedShutdownBehavior":
-                    ex_vm_initiated_shutdown_behavior
-            })
+            data.update(
+                {"VmInstantiatedShutdownBehavior": ex_vm_initiated_shutdown_behavior}
+            )
         if ex_vm_type is not None:
             data.update({"VmType": ex_vm_type})
         if ex_subnet_id is not None:
@@ -471,22 +475,14 @@ class OutscaleNodeDriver(NodeDriver):
             data = {
                 "DryRun": ex_dry_run,
                 "ResourceIds": [node.id],
-                "Tags": {
-                    "Key": "Name",
-                    "Value": name
-                }
+                "Tags": {"Key": "Name", "Value": name},
             }
             data = json.dumps(data)
             response = self._call_api(action, data)
             if response.status_code != 200:
                 return response.json()
             action = "ReadVms"
-            data = {
-                "DryRun": ex_dry_run,
-                "Filters": {
-                    "VmIds": [node.id]
-                }
-            }
+            data = {"DryRun": ex_dry_run, "Filters": {"VmIds": [node.id]}}
             return self._to_node(
                 self._call_api(action, json.dumps(data)).json()["Vms"][0]
             )
@@ -629,7 +625,7 @@ class OutscaleNodeDriver(NodeDriver):
         vm_type_names: List[str] = None,
         volume_counts: List[int] = None,
         volume_sizes: List[int] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Lists one or more predefined VM types.
@@ -689,7 +685,7 @@ class OutscaleNodeDriver(NodeDriver):
         subregion_names: List[str] = None,
         vm_ids: List[str] = None,
         vm_states: List[str] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Lists the status of one or more virtual machines (VMs).
@@ -744,7 +740,7 @@ class OutscaleNodeDriver(NodeDriver):
         vm_id: str = None,
         vm_initiated_shutown_behavior: str = None,
         vm_type: int = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Modifies a specific attribute of a Node (VM).
@@ -821,9 +817,7 @@ class OutscaleNodeDriver(NodeDriver):
         if keypair_name is not None:
             data.update({"KeypairName": keypair_name})
         if is_source_dest_checked is not None:
-            data.update({
-                "IsSourceDestChecked": is_source_dest_checked
-            })
+            data.update({"IsSourceDestChecked": is_source_dest_checked})
         if performance is not None:
             data.update({"Performance": performance})
         if security_group_ids is not None:
@@ -833,9 +827,7 @@ class OutscaleNodeDriver(NodeDriver):
         if vm_id is not None:
             data.update({"VmId": vm_id})
         if vm_initiated_shutown_behavior is not None:
-            data.update({
-                "VmInitiatedShutdownBehavior": vm_initiated_shutown_behavior
-            })
+            data.update({"VmInitiatedShutdownBehavior": vm_initiated_shutown_behavior})
         if vm_type is not None:
             data.update({"VmType": vm_type})
         response = self._call_api(action, json.dumps(data))
@@ -854,7 +846,7 @@ class OutscaleNodeDriver(NodeDriver):
         ex_root_device_name: str = None,
         ex_dry_run: bool = False,
         ex_source_region_name: str = None,
-        ex_file_location: str = None
+        ex_file_location: str = None,
     ):
         """
         Create a new image.
@@ -981,34 +973,23 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "CreateImageExportTask"
-        data = {
-            "DryRun": dry_run,
-            "OsuExport": {
-                "OsuApiKey": {}
-            }
-        }
+        data = {"DryRun": dry_run, "OsuExport": {"OsuApiKey": {}}}
         if image is not None:
             data.update({"ImageId": image.id})
         if osu_export_disk_image_format is not None:
-            data["OsuExport"].update({
-                "DiskImageFormat": osu_export_disk_image_format
-            })
+            data["OsuExport"].update({"DiskImageFormat": osu_export_disk_image_format})
         if osu_export_bucket is not None:
             data["OsuExport"].update({"OsuBucket": osu_export_bucket})
         if osu_export_manifest_url is not None:
-            data["OsuExport"].update({
-                "OsuManifestUrl": osu_export_manifest_url
-            })
+            data["OsuExport"].update({"OsuManifestUrl": osu_export_manifest_url})
         if osu_export_prefix is not None:
             data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
         if osu_export_api_key_id is not None:
-            data["OsuExport"]["OsuApiKey"].update({
-                "ApiKeyId": osu_export_api_key_id
-            })
+            data["OsuExport"]["OsuApiKey"].update({"ApiKeyId": osu_export_api_key_id})
         if osu_export_api_secret_key is not None:
-            data["OsuExport"]["OsuApiKey"].update({
-                "SecretKey": osu_export_api_secret_key
-            })
+            data["OsuExport"]["OsuApiKey"].update(
+                {"SecretKey": osu_export_api_secret_key}
+            )
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["ImageExportTask"]
@@ -1137,96 +1118,54 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadImages"
         data = {"DryRun": dry_run, "Filters": {}}
         if account_aliases is not None:
-            data["Filters"].update({
-                "AccountAliases": account_aliases
-            })
+            data["Filters"].update({"AccountAliases": account_aliases})
         if account_ids is not None:
-            data["Filters"].update({
-                "AccountIds": account_ids
-            })
+            data["Filters"].update({"AccountIds": account_ids})
         if architectures is not None:
-            data["Filters"].update({
-                "Architectures": architectures
-            })
+            data["Filters"].update({"Architectures": architectures})
         if block_device_mapping_delete_on_vm_deletion is not None:
             key = "BlockDeviceMappingDeleteOnVmDeletion"
-            data["Filters"].update({
-                key: block_device_mapping_delete_on_vm_deletion
-            })
+            data["Filters"].update({key: block_device_mapping_delete_on_vm_deletion})
         if block_device_mapping_device_names is not None:
             key = "BlockDeviceMappingDeviceNames"
-            data["Filters"].update({
-                key: block_device_mapping_device_names
-            })
+            data["Filters"].update({key: block_device_mapping_device_names})
         if block_device_mapping_snapshot_ids is not None:
             key = "BlockDeviceMappingSnapshotIds"
-            data["Filters"].update({
-                key: block_device_mapping_snapshot_ids
-            })
+            data["Filters"].update({key: block_device_mapping_snapshot_ids})
         if block_device_mapping_volume_sizes is not None:
             key = "BlockDeviceMappingVolumeSizes"
-            data["Filters"].update({
-                key: block_device_mapping_volume_sizes
-            })
+            data["Filters"].update({key: block_device_mapping_volume_sizes})
         if block_device_mapping_volume_types is not None:
             key = "BlockDeviceMappingVolumeTypes"
-            data["Filters"].update({
-                key: block_device_mapping_volume_types
-            })
+            data["Filters"].update({key: block_device_mapping_volume_types})
         if descriptions is not None:
-            data["Filters"].update({
-                "Descriptions": descriptions
-            })
+            data["Filters"].update({"Descriptions": descriptions})
         if file_locations is not None:
-            data["Filters"].update({
-                "FileLocations": file_locations
-            })
+            data["Filters"].update({"FileLocations": file_locations})
         if image_ids is not None:
-            data["Filters"].update({
-                "ImageIds": image_ids
-            })
+            data["Filters"].update({"ImageIds": image_ids})
         if image_names is not None:
-            data["Filters"].update({
-                "ImageNames": image_names
-            })
+            data["Filters"].update({"ImageNames": image_names})
         if permission_to_launch_account_ids is not None:
             key = "PermissionsToLaunchAccountIds"
-            data["Filters"].update({
-                key: permission_to_launch_account_ids
-            })
+            data["Filters"].update({key: permission_to_launch_account_ids})
         if permission_to_lauch_global_permission is not None:
             key = "PermissionsToLaunchGlobalPermission"
-            data["Filters"].update({
-                key: permission_to_lauch_global_permission
-            })
+            data["Filters"].update({key: permission_to_lauch_global_permission})
         if root_device_names is not None:
-            data["Filters"].update({
-                "RootDeviceNames": root_device_names
-            })
+            data["Filters"].update({"RootDeviceNames": root_device_names})
         if root_device_types is not None:
-            data["Filters"].update({
-                "RootDeviceTypes": root_device_types
-            })
+            data["Filters"].update({"RootDeviceTypes": root_device_types})
         if states is not None:
-            data["Filters"].update({
-                "States": states
-            })
+            data["Filters"].update({"States": states})
         if tag_keys is not None:
-            data["Filters"].update({
-                "TagKeys": tag_keys
-            })
+            data["Filters"].update({"TagKeys": tag_keys})
         if image_names is not None:
-            data["Filters"].update({
-                "TagValues": image_names
-            })
+            data["Filters"].update({"TagValues": image_names})
         if tags is not None:
-            data["Filters"].update({
-                "Tags": tags
-            })
+            data["Filters"].update({"Tags": tags})
         if virtualization_types is not None:
-            data["Filters"].update({
-                "VirtualizationTypes": virtualization_types
-            })
+            data["Filters"].update({"VirtualizationTypes": virtualization_types})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Images"]
@@ -1253,9 +1192,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadImageExportTasks"
         data = {"DryRun": dry_run, "Filters": {}}
         if task_ids is not None:
-            data["Filters"].update({
-                "TaskIds": task_ids
-            })
+            data["Filters"].update({"TaskIds": task_ids})
         response = self._call_api(action, json.dumps(data))
         print(response.json())
         if response.status_code == 200:
@@ -1303,7 +1240,7 @@ class OutscaleNodeDriver(NodeDriver):
         perm_to_launch_addition_account_ids: List[str] = None,
         perm_to_launch_addition_global_permission: bool = None,
         perm_to_launch_removals_account_ids: List[str] = None,
-        perm_to_launch_removals_global_permission: bool = None
+        perm_to_launch_removals_global_permission: bool = None,
     ):
         """
         Modifies the specified attribute of an Outscale machine image (OMI).
@@ -1345,38 +1282,34 @@ class OutscaleNodeDriver(NodeDriver):
         action = "UpdateImage"
         data = {
             "DryRun": dry_run,
-            "PermissionsToLaunch": {
-                "Additions": {},
-                "Removals": {}
-            }
+            "PermissionsToLaunch": {"Additions": {}, "Removals": {}},
         }
         if image is not None:
             data.update({"ImageId": image.id})
         if perm_to_launch_addition_account_ids is not None:
-            data["PermissionsToLaunch"]["Additions"].update({
-                "AccountIds": perm_to_launch_addition_account_ids
-            })
+            data["PermissionsToLaunch"]["Additions"].update(
+                {"AccountIds": perm_to_launch_addition_account_ids}
+            )
         if perm_to_launch_addition_global_permission is not None:
-            data["PermissionsToLaunch"]["Additions"].update({
-                "GlobalPermission": perm_to_launch_addition_global_permission
-            })
+            data["PermissionsToLaunch"]["Additions"].update(
+                {"GlobalPermission": perm_to_launch_addition_global_permission}
+            )
         if perm_to_launch_removals_account_ids is not None:
-            data["PermissionsToLaunch"]["Removals"].update({
-                "AccountIds": perm_to_launch_removals_account_ids
-            })
+            data["PermissionsToLaunch"]["Removals"].update(
+                {"AccountIds": perm_to_launch_removals_account_ids}
+            )
         if perm_to_launch_removals_global_permission is not None:
-            data["PermissionsToLaunch"]["Removals"].update({
-                "GlobalPermission": perm_to_launch_removals_global_permission
-            })
+            data["PermissionsToLaunch"]["Removals"].update(
+                {"GlobalPermission": perm_to_launch_removals_global_permission}
+            )
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Image"]
         return response.json()
 
-    def create_key_pair(self,
-                        name: str,
-                        ex_dry_run: bool = False,
-                        ex_public_key: str = None):
+    def create_key_pair(
+        self, name: str, ex_dry_run: bool = False, ex_public_key: str = None
+    ):
         """
         Create a new key pair.
 
@@ -1464,7 +1397,7 @@ class OutscaleNodeDriver(NodeDriver):
         ex_snapshot_size: int = None,
         ex_source_region_name: str = None,
         ex_source_snapshot: VolumeSnapshot = None,
-        volume: StorageVolume = None
+        volume: StorageVolume = None,
     ):
         """
         Create a new volume snapshot.
@@ -1547,11 +1480,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``list`` of :class ``VolumeSnapshot``
         """
         action = "ReadSnapshots"
-        data = {
-            "Filters": {
-                "VolumeIds": [volume.id]
-            }
-        }
+        data = {"Filters": {"VolumeIds": [volume.id]}}
         response = self._call_api(action, data)
         if response.status_code == 200:
             return self._to_snapshots(response.json()["Snapshots"])
@@ -1632,34 +1561,23 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "CreateSnapshotExportTask"
-        data = {
-            "DryRun": dry_run,
-            "OsuExport": {
-                "OsuApiKey": {}
-            }
-        }
+        data = {"DryRun": dry_run, "OsuExport": {"OsuApiKey": {}}}
         if snapshot is not None:
             data.update({"SnapshotId": snapshot.id})
         if osu_export_disk_image_format is not None:
-            data["OsuExport"].update({
-                "DiskImageFormat": osu_export_disk_image_format
-            })
+            data["OsuExport"].update({"DiskImageFormat": osu_export_disk_image_format})
         if osu_export_bucket is not None:
             data["OsuExport"].update({"OsuBucket": osu_export_bucket})
         if osu_export_manifest_url is not None:
-            data["OsuExport"].update({
-                "OsuManifestUrl": osu_export_manifest_url
-            })
+            data["OsuExport"].update({"OsuManifestUrl": osu_export_manifest_url})
         if osu_export_prefix is not None:
             data["OsuExport"].update({"OsuPrefix": osu_export_prefix})
         if osu_export_api_key_id is not None:
-            data["OsuExport"]["OsuApiKey"].update({
-                "ApiKeyId": osu_export_api_key_id
-            })
+            data["OsuExport"]["OsuApiKey"].update({"ApiKeyId": osu_export_api_key_id})
         if osu_export_api_secret_key is not None:
-            data["OsuExport"]["OsuApiKey"].update({
-                "SecretKey": osu_export_api_secret_key
-            })
+            data["OsuExport"]["OsuApiKey"].update(
+                {"SecretKey": osu_export_api_secret_key}
+            )
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["SnapshotExportTask"]
@@ -1686,9 +1604,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadSnapshotExportTasks"
         data = {"DryRun": dry_run, "Filters": {}}
         if task_ids is not None:
-            data["Filters"].update({
-                "TaskIds": task_ids
-            })
+            data["Filters"].update({"TaskIds": task_ids})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["SnapshotExportTasks"]
@@ -1701,7 +1617,7 @@ class OutscaleNodeDriver(NodeDriver):
         perm_to_create_volume_removals_account_id: List[str] = None,
         perm_to_create_volume_removals_global_perm: bool = None,
         snapshot: VolumeSnapshot = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Modifies the permissions for a specified snapshot.
@@ -1742,29 +1658,26 @@ class OutscaleNodeDriver(NodeDriver):
         action = "UpdateSnapshot"
         data = {
             "DryRun: ": dry_run,
-            "PermissionsToCreateVolume": {
-                "Additions": {},
-                "Removals": {}
-            }
+            "PermissionsToCreateVolume": {"Additions": {}, "Removals": {}},
         }
         if snapshot is not None:
             data.update({"ImageId": snapshot.id})
         if perm_to_create_volume_addition_account_id is not None:
-            data["PermissionsToCreateVolume"]["Additions"].update({
-                "AccountIds": perm_to_create_volume_addition_account_id
-            })
+            data["PermissionsToCreateVolume"]["Additions"].update(
+                {"AccountIds": perm_to_create_volume_addition_account_id}
+            )
         if perm_to_create_volume_addition_global_perm is not None:
-            data["PermissionsToCreateVolume"]["Additions"].update({
-                "GlobalPermission": perm_to_create_volume_addition_global_perm
-            })
+            data["PermissionsToCreateVolume"]["Additions"].update(
+                {"GlobalPermission": perm_to_create_volume_addition_global_perm}
+            )
         if perm_to_create_volume_removals_account_id is not None:
-            data["PermissionsToCreateVolume"]["Removals"].update({
-                "AccountIds": perm_to_create_volume_removals_account_id
-            })
+            data["PermissionsToCreateVolume"]["Removals"].update(
+                {"AccountIds": perm_to_create_volume_removals_account_id}
+            )
         if perm_to_create_volume_removals_global_perm is not None:
-            data["PermissionsToCreateVolume"]["Removals"].update({
-                "GlobalPermission": perm_to_create_volume_removals_global_perm
-            })
+            data["PermissionsToCreateVolume"]["Removals"].update(
+                {"GlobalPermission": perm_to_create_volume_removals_global_perm}
+            )
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Snapshot"]
@@ -1811,10 +1724,7 @@ class OutscaleNodeDriver(NodeDriver):
         :return: the created volume
         :rtype: ``dict``
         """
-        data = {
-            "DryRun": ex_dry_run,
-            "SubregionName": ex_subregion_name
-        }
+        data = {"DryRun": ex_dry_run, "SubregionName": ex_subregion_name}
         if ex_iops is not None:
             data.update({"Iops": ex_iops})
         if size is not None:
@@ -1859,12 +1769,7 @@ class OutscaleNodeDriver(NodeDriver):
             return True
         return response.json()
 
-    def attach_volume(
-        self,
-        node: Node,
-        volume: StorageVolume,
-        device: str = None
-    ):
+    def attach_volume(self, node: Node, volume: StorageVolume, device: str = None):
         """
         Attach a volume to a node.
 
@@ -1883,20 +1788,20 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``dict``
         """
         action = "LinkVolume"
-        data = json.dumps({
-            "VmId": node.id,
-            "VolumeId": volume.id,
-            "DeviceName": device
-        })
+        data = json.dumps(
+            {"VmId": node.id, "VolumeId": volume.id, "DeviceName": device}
+        )
         response = self._call_api(action, data)
         if response.status_code == 200:
             return True
         return response.json()
 
-    def detach_volume(self,
-                      volume: StorageVolume,
-                      ex_dry_run: bool = False,
-                      ex_force_unlink: bool = False):
+    def detach_volume(
+        self,
+        volume: StorageVolume,
+        ex_dry_run: bool = False,
+        ex_force_unlink: bool = False,
+    ):
         """
         Detach a volume from a node.
 
@@ -1977,10 +1882,7 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_consumption_account(
-        self,
-        from_date: str = None,
-        to_date: str = None,
-        dry_run: bool = False
+        self, from_date: str = None, to_date: str = None, dry_run: bool = False
     ):
         """
         Displays information about the consumption of your account for
@@ -2246,9 +2148,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         action = "ResetAccountPassword"
-        data = json.dumps({
-            "DryRun": dry_run, "Password": password, "Token": token
-        })
+        data = json.dumps({"DryRun": dry_run, "Password": password, "Token": token})
         response = self._call_api(action, data)
         if response.status_code == 200:
             return True
@@ -2275,9 +2175,7 @@ class OutscaleNodeDriver(NodeDriver):
         :rtype: ``bool``
         """
         action = "SendResetPasswordEmail"
-        data = json.dumps({
-            "DryRun": dry_run, "Email": email
-        })
+        data = json.dumps({"DryRun": dry_run, "Email": email})
         response = self._call_api(action, data)
         if response.status_code == 200:
             return True
@@ -2392,7 +2290,7 @@ class OutscaleNodeDriver(NodeDriver):
         resource_types: list = None,
         keys: list = None,
         values: list = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Lists one or more tags for your resources.
@@ -2891,9 +2789,7 @@ class OutscaleNodeDriver(NodeDriver):
         if domaine_names is not None:
             data["Filters"].update({"DomaineNames": domaine_names})
         if domaine_name_servers is not None:
-            data["Filters"].update({
-                "DomaineNameServers": domaine_name_servers
-            })
+            data["Filters"].update({"DomaineNameServers": domaine_name_servers})
         if ntp_servers is not None:
             data["Filters"].update({"NtpServers": ntp_servers})
         if tag_keys is not None:
@@ -3072,25 +2968,19 @@ class OutscaleNodeDriver(NodeDriver):
         if bgp_key is not None:
             data["DirectLinkInterface"].update({"BgpKey": bgp_key})
         if client_private_ip is not None:
-            data["DirectLinkInterface"].update({
-                "ClientPrivateIp": client_private_ip
-            })
+            data["DirectLinkInterface"].update({"ClientPrivateIp": client_private_ip})
         if direct_link_interface_name is not None:
-            data["DirectLinkInterface"].update({
-                "DirectLinkInterfaceName": direct_link_interface_name
-            })
+            data["DirectLinkInterface"].update(
+                {"DirectLinkInterfaceName": direct_link_interface_name}
+            )
         if outscale_private_ip is not None:
-            data["DirectLinkInterface"].update({
-                "OutscalePrivateIp": outscale_private_ip
-            })
+            data["DirectLinkInterface"].update(
+                {"OutscalePrivateIp": outscale_private_ip}
+            )
         if virtual_gateway_id is not None:
-            data["DirectLinkInterface"].update({
-                "VirtualGatewayId": virtual_gateway_id
-            })
+            data["DirectLinkInterface"].update({"VirtualGatewayId": virtual_gateway_id})
         if vlan is not None:
-            data["DirectLinkInterface"].update({
-                "Vlan": vlan
-            })
+            data["DirectLinkInterface"].update({"Vlan": vlan})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["DirectLinkInterface"]
@@ -3150,13 +3040,11 @@ class OutscaleNodeDriver(NodeDriver):
         action = "DeleteDirectLink"
         data = {"DryRun": dry_run, "Filters": {}}
         if direct_link_ids is not None:
-            data["Filters"].update({
-                "DirectLinkIds": direct_link_ids
-            })
+            data["Filters"].update({"DirectLinkIds": direct_link_ids})
         if direct_link_interface_ids is not None:
-            data["Filters"].update({
-                "DirectLinkInterfaceIds": direct_link_interface_ids
-            })
+            data["Filters"].update(
+                {"DirectLinkInterfaceIds": direct_link_interface_ids}
+            )
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["DirectLinkInterfaces"]
@@ -3209,9 +3097,7 @@ class OutscaleNodeDriver(NodeDriver):
         if model_name is not None:
             data.update({"ModelName": model_name})
         if subregion_name is not None:
-            data.update({
-                "SubregionName": subregion_name
-            })
+            data.update({"SubregionName": subregion_name})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["FlexibleGpu"]
@@ -3387,9 +3273,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadFlexibleGpus"
         data = {"DryRun": dry_run, "Filters": {}}
         if delete_on_vm_deletion is not None:
-            data["Filters"].update({
-                "DeleteOnVmDeletion": delete_on_vm_deletion
-            })
+            data["Filters"].update({"DeleteOnVmDeletion": delete_on_vm_deletion})
         if flexible_gpu_ids is not None:
             data["Filters"].update({"FlexibleGpuIds": flexible_gpu_ids})
         if generations is not None:
@@ -3580,7 +3464,7 @@ class OutscaleNodeDriver(NodeDriver):
         tag_keys: List[str] = None,
         tag_values: List[str] = None,
         tags: List[str] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Lists one or more of your Internet services.
@@ -3624,9 +3508,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadInternetServices"
         data = {"DryRun": dry_run, "Filters": {}}
         if internet_service_ids is not None:
-            data["Filters"].update({
-                "InternetServiceIds": internet_service_ids
-            })
+            data["Filters"].update({"InternetServiceIds": internet_service_ids})
         if link_net_ids is not None:
             data["Filters"].update({"LinkNetIds": link_net_ids})
         if link_states is not None:
@@ -3717,19 +3599,13 @@ class OutscaleNodeDriver(NodeDriver):
             vm_ids = [vm.id for vm in vms]
             data.update({"VmIds": vm_ids})
         if l_load_balancer_name is not None:
-            data["Listener"].update({
-                "LoadBalancerName": l_load_balancer_name
-            })
+            data["Listener"].update({"LoadBalancerName": l_load_balancer_name})
         if l_load_balancer_port is not None:
-            data["Listener"].update({
-                "LoadBalancerPort": l_load_balancer_port
-            })
+            data["Listener"].update({"LoadBalancerPort": l_load_balancer_port})
         if lr_action is not None:
             data["ListenerRule"].update({"Action": lr_action})
         if lr_host_name_pattern is not None:
-            data["ListenerRule"].update({
-                "HostNamePattern": lr_host_name_pattern
-            })
+            data["ListenerRule"].update({"HostNamePattern": lr_host_name_pattern})
         if lr_id is not None:
             data["ListenerRule"].update({"ListenerRuleId": lr_id})
         if lr_name is not None:
@@ -3793,25 +3669,15 @@ class OutscaleNodeDriver(NodeDriver):
         if load_balancer_name is not None:
             data.update({"LoadBalancerName": load_balancer_name})
         if l_backend_port is not None:
-            data["Listeners"].update({
-                "BackendPort": l_backend_port
-            })
+            data["Listeners"].update({"BackendPort": l_backend_port})
         if l_backend_protocol is not None:
-            data["Listeners"].update({
-                "BackendProtocol": l_backend_protocol
-            })
+            data["Listeners"].update({"BackendProtocol": l_backend_protocol})
         if l_load_balancer_port is not None:
-            data["Listeners"].update({
-                "LoadBalancerPort": l_load_balancer_port
-            })
+            data["Listeners"].update({"LoadBalancerPort": l_load_balancer_port})
         if l_load_balancer_protocol is not None:
-            data["Listeners"].update({
-                "LoadBalancerProtocol": l_load_balancer_protocol
-            })
+            data["Listeners"].update({"LoadBalancerProtocol": l_load_balancer_protocol})
         if l_server_certificate_id is not None:
-            data["Listeners"].update({
-                "ServerCertificateId": l_server_certificate_id
-            })
+            data["Listeners"].update({"ServerCertificateId": l_server_certificate_id})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["LoadBalancer"]
@@ -3882,9 +3748,7 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_list_listener_rules(
-        self,
-        listener_rule_names: List[str] = None,
-        dry_run: bool = False
+        self, listener_rule_names: List[str] = None, dry_run: bool = False
     ):
         """
         Describes one or more listener rules. By default, this action returns
@@ -3903,9 +3767,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadListenerRules"
         data = {"DryRun": dry_run, "Filters": {}}
         if listener_rule_names is not None:
-            data["Filters"].update({
-                "ListenerRuleNames": listener_rule_names
-            })
+            data["Filters"].update({"ListenerRuleNames": listener_rule_names})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["ListenerRules"]
@@ -4058,25 +3920,15 @@ class OutscaleNodeDriver(NodeDriver):
             for key, value in zip(tag_keys, tag_values):
                 data["Tags"].update({"Key": key, "Value": value})
         if l_backend_port is not None:
-            data["Listeners"].update({
-                "BackendPort": l_backend_port
-            })
+            data["Listeners"].update({"BackendPort": l_backend_port})
         if l_backend_protocol is not None:
-            data["Listeners"].update({
-                "BackendProtocol": l_backend_protocol
-            })
+            data["Listeners"].update({"BackendProtocol": l_backend_protocol})
         if l_load_balancer_port is not None:
-            data["Listeners"].update({
-                "LoadBalancerPort": l_load_balancer_port
-            })
+            data["Listeners"].update({"LoadBalancerPort": l_load_balancer_port})
         if l_load_balancer_protocol is not None:
-            data["Listeners"].update({
-                "LoadBalancerProtocol": l_load_balancer_protocol
-            })
+            data["Listeners"].update({"LoadBalancerProtocol": l_load_balancer_protocol})
         if l_server_certificate_id is not None:
-            data["Listeners"].update({
-                "ServerCertificateId": l_server_certificate_id
-            })
+            data["Listeners"].update({"ServerCertificateId": l_server_certificate_id})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["LoadBalancer"]
@@ -4466,45 +4318,31 @@ class OutscaleNodeDriver(NodeDriver):
         if access_log_is_enabled is not None:
             data["AccessLog"].update({"IsEnabled": access_log_is_enabled})
         if access_log_osu_bucket_name is not None:
-            data["AccessLog"].update({
-                "OsuBucketName": access_log_osu_bucket_name
-            })
+            data["AccessLog"].update({"OsuBucketName": access_log_osu_bucket_name})
         if access_log_osu_bucket_prefix is not None:
-            data["AccessLog"].update({
-                "OsuBucketPrefix": access_log_osu_bucket_prefix
-            })
+            data["AccessLog"].update({"OsuBucketPrefix": access_log_osu_bucket_prefix})
         if access_log_publication_interval is not None:
-            data["AccessLog"].update({
-                "PublicationInterval": access_log_publication_interval
-            })
+            data["AccessLog"].update(
+                {"PublicationInterval": access_log_publication_interval}
+            )
         if health_check_interval is not None:
-            data["HealthCheck"].update({
-                "CheckInterval": health_check_interval
-            })
+            data["HealthCheck"].update({"CheckInterval": health_check_interval})
         if health_check_healthy_threshold is not None:
-            data["HealthCheck"].update({
-                "HealthyThreshold": health_check_healthy_threshold
-            })
+            data["HealthCheck"].update(
+                {"HealthyThreshold": health_check_healthy_threshold}
+            )
         if health_check_path is not None:
-            data["HealthCheck"].update({
-                "Path": health_check_path
-            })
+            data["HealthCheck"].update({"Path": health_check_path})
         if health_check_port is not None:
-            data["HealthCheck"].update({
-                "Port": health_check_port
-            })
+            data["HealthCheck"].update({"Port": health_check_port})
         if health_check_protocol is not None:
-            data["HealthCheck"].update({
-                "Protocol": health_check_protocol
-            })
+            data["HealthCheck"].update({"Protocol": health_check_protocol})
         if health_check_timeout is not None:
-            data["HealthCheck"].update({
-                "Timeout": health_check_timeout
-            })
+            data["HealthCheck"].update({"Timeout": health_check_timeout})
         if health_check_unhealthy_threshold is not None:
-            data["HealthCheck"].update({
-                "UnhealthyThreshold": health_check_unhealthy_threshold
-            })
+            data["HealthCheck"].update(
+                {"UnhealthyThreshold": health_check_unhealthy_threshold}
+            )
         if load_balancer_name is not None:
             data.update({"LoadBalancerName": load_balancer_name})
         if load_balancer_port is not None:
@@ -5369,23 +5207,15 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadNetPeerings"
         data = {"DryRun": dry_run, "Filters": {}}
         if accepter_net_account_ids is not None:
-            data["Filters"].update({
-                "AccepterNetAccountIds": accepter_net_account_ids
-            })
+            data["Filters"].update({"AccepterNetAccountIds": accepter_net_account_ids})
         if accepter_net_ip_ranges is not None:
-            data["Filters"].update({
-                "AccepterNetIpRanges": accepter_net_ip_ranges
-            })
+            data["Filters"].update({"AccepterNetIpRanges": accepter_net_ip_ranges})
         if accepter_net_net_ids is not None:
             data["Filters"].update({"AccepterNetNetIds": accepter_net_net_ids})
         if source_net_account_ids is not None:
-            data["Filters"].update({
-                "SourceNetAccountIds": source_net_account_ids
-            })
+            data["Filters"].update({"SourceNetAccountIds": source_net_account_ids})
         if source_net_ip_ranges is not None:
-            data["Filters"].update({
-                "SourceNetIpRanges": source_net_ip_ranges
-            })
+            data["Filters"].update({"SourceNetIpRanges": source_net_ip_ranges})
         if source_net_net_ids is not None:
             data["Filters"].update({"SourceNetNetIds": source_net_net_ids})
         if net_peering_ids is not None:
@@ -5483,10 +5313,7 @@ class OutscaleNodeDriver(NodeDriver):
             data.update({"SubnetId": subnet_id})
         if private_ips is not None and private_ips_is_primary is not None:
             for primary, ip in zip(private_ips_is_primary, private_ips):
-                data["PrivateIps"].update({
-                    "IsPrimary": primary,
-                    "PrivateIp": ip
-                })
+                data["PrivateIps"].update({"IsPrimary": primary, "PrivateIp": ip})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Nic"]
@@ -5644,9 +5471,7 @@ class OutscaleNodeDriver(NodeDriver):
         if private_ips is not None:
             data.update({"PrivateIps": private_ips})
         if secondary_private_ip_count is not None:
-            data.update({
-                "SecondaryPrivateIpCount": secondary_private_ip_count
-            })
+            data.update({"SecondaryPrivateIpCount": secondary_private_ip_count})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return True
@@ -5694,23 +5519,15 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadNics"
         data = {"DryRun": dry_run, "Filters": {}}
         if link_nic_sort_numbers is not None:
-            data["Filters"].update({
-                "LinkNicSortNumbers": link_nic_sort_numbers
-            })
+            data["Filters"].update({"LinkNicSortNumbers": link_nic_sort_numbers})
         if link_nic_vm_ids is not None:
-            data["Filters"].update({
-                "LinkNicVmIds": link_nic_vm_ids
-            })
+            data["Filters"].update({"LinkNicVmIds": link_nic_vm_ids})
         if nic_ids is not None:
             data["Filters"].update({"NicIds": nic_ids})
         if private_ips_private_ips is not None:
-            data["Filters"].update({
-                "PrivateIpsPrivateIps": private_ips_private_ips
-            })
+            data["Filters"].update({"PrivateIpsPrivateIps": private_ips_private_ips})
         if subnet_ids is not None:
-            data["Filters"].update({
-                "SubnetIds": subnet_ids
-            })
+            data["Filters"].update({"SubnetIds": subnet_ids})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Nics"]
@@ -5797,13 +5614,11 @@ class OutscaleNodeDriver(NodeDriver):
         if nic_id is not None:
             data.update({"NicId": nic_id})
         if link_nic_delete_on_vm_deletion is not None:
-            data["LinkNic"].update({
-                "DeleteOnVmDeletion": link_nic_delete_on_vm_deletion
-            })
+            data["LinkNic"].update(
+                {"DeleteOnVmDeletion": link_nic_delete_on_vm_deletion}
+            )
         if link_nic_id is not None:
-            data["LinkNic"].update({
-                "LinkNicId": link_nic_id
-            })
+            data["LinkNic"].update({"LinkNicId": link_nic_id})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Nic"]
@@ -5830,9 +5645,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadProductTypes"
         data = {"DryRun": dry_run, "Filters": {}}
         if product_type_ids is not None:
-            data["Filters"].update({
-                "ProductTypeIds": product_type_ids
-            })
+            data["Filters"].update({"ProductTypeIds": product_type_ids})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["ProductTypes"]
@@ -5872,21 +5685,13 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadQuotas"
         data = {"DryRun": dry_run, "Filters": {}}
         if collections is not None:
-            data["Filters"].update({
-                "Collections": collections
-            })
+            data["Filters"].update({"Collections": collections})
         if quota_names is not None:
-            data["Filters"].update({
-                "QuotaNames": quota_names
-            })
+            data["Filters"].update({"QuotaNames": quota_names})
         if quota_types is not None:
-            data["Filters"].update({
-                "QuotaTypes": quota_types
-            })
+            data["Filters"].update({"QuotaTypes": quota_types})
         if short_descriptions is not None:
-            data["Filters"].update({
-                "ShortDescriptions": short_descriptions
-            })
+            data["Filters"].update({"ShortDescriptions": short_descriptions})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["QuotaTypes"]
@@ -6284,74 +6089,47 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadRouteTables"
         data = {"DryRun": dry_run, "Filters": {}}
         if link_route_table_ids is not None:
-            data["Filters"].update({
-                "LinkRouteTableIds": link_route_table_ids
-            })
+            data["Filters"].update({"LinkRouteTableIds": link_route_table_ids})
         if link_route_table_link_route_table_ids is not None:
-            data["Filters"].update({
-                "LinkRouteTableLinkRouteTableIds":
-                link_route_table_link_route_table_ids
-            })
+            data["Filters"].update(
+                {
+                    "LinkRouteTableLinkRouteTableIds": link_route_table_link_route_table_ids
+                }
+            )
         if link_route_table_main is not None:
-            data["Filters"].update({
-                "LinkRouteTableMain": link_route_table_main
-            })
+            data["Filters"].update({"LinkRouteTableMain": link_route_table_main})
         if link_subnet_ids is not None:
-            data["Filters"].update({
-                "LinkSubnetIds": link_subnet_ids
-            })
+            data["Filters"].update({"LinkSubnetIds": link_subnet_ids})
         if net_ids is not None:
-            data["Filters"].update({
-                "NetIds": net_ids
-            })
+            data["Filters"].update({"NetIds": net_ids})
         if route_creation_methods is not None:
-            data["Filters"].update({
-                "RouteCreationMethods": route_creation_methods
-            })
+            data["Filters"].update({"RouteCreationMethods": route_creation_methods})
         if route_destination_ip_ranges is not None:
-            data["Filters"].update({
-                "RouteDestinationIpRanges": route_destination_ip_ranges
-            })
+            data["Filters"].update(
+                {"RouteDestinationIpRanges": route_destination_ip_ranges}
+            )
         if route_destination_service_ids is not None:
-            data["Filters"].update({
-                "RouteDestinationServiceIds": route_destination_service_ids
-            })
+            data["Filters"].update(
+                {"RouteDestinationServiceIds": route_destination_service_ids}
+            )
         if route_gateway_ids is not None:
-            data["Filters"].update({
-                "RouteGatewayIds": route_gateway_ids
-            })
+            data["Filters"].update({"RouteGatewayIds": route_gateway_ids})
         if route_nat_service_ids is not None:
-            data["Filters"].update({
-                "RouteNatServiceIds": route_nat_service_ids
-            })
+            data["Filters"].update({"RouteNatServiceIds": route_nat_service_ids})
         if route_net_peering_ids is not None:
-            data["Filters"].update({
-                "RouteNetPeeringIds": route_net_peering_ids
-            })
+            data["Filters"].update({"RouteNetPeeringIds": route_net_peering_ids})
         if route_states is not None:
-            data["Filters"].update({
-                "RouteStates": route_states
-            })
+            data["Filters"].update({"RouteStates": route_states})
         if route_table_ids is not None:
-            data["Filters"].update({
-                "RouteTableIds": route_table_ids
-            })
+            data["Filters"].update({"RouteTableIds": route_table_ids})
         if route_vm_ids is not None:
-            data["Filters"].update({
-                "RouteVmIds": route_vm_ids
-            })
+            data["Filters"].update({"RouteVmIds": route_vm_ids})
         if tag_keys is not None:
-            data["Filters"].update({
-                "TagKeys": tag_keys
-            })
+            data["Filters"].update({"TagKeys": tag_keys})
         if tag_values is not None:
-            data["Filters"].update({
-                "TagValues": tag_values
-            })
+            data["Filters"].update({"TagValues": tag_values})
         if tags is not None:
-            data["Filters"].update({
-                "Tags": tags
-            })
+            data["Filters"].update({"Tags": tags})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["RouteTables"]
@@ -6394,7 +6172,7 @@ class OutscaleNodeDriver(NodeDriver):
         name: str = None,
         path: str = None,
         private_key: str = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Creates a server certificate and its matching private key.
@@ -6457,11 +6235,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["ServerCertificate"]
         return response.json()
 
-    def ex_delete_server_certificate(
-        self,
-        name: str = None,
-        dry_run: bool = False
-    ):
+    def ex_delete_server_certificate(self, name: str = None, dry_run: bool = False):
         """
         Deletes a specified server certificate.
 
@@ -6485,11 +6259,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["ResponseContext"]
         return response.json()
 
-    def ex_list_server_certificates(
-        self,
-        paths: str = None,
-        dry_run: bool = False
-    ):
+    def ex_list_server_certificates(self, paths: str = None, dry_run: bool = False):
         """
         List your server certificates.
 
@@ -6506,9 +6276,7 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadServerCertificates"
         data = {"DryRun": dry_run, "Filters": {}}
         if paths is not None:
-            data["Filters"].update({
-                "Paths": paths
-            })
+            data["Filters"].update({"Paths": paths})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["ServerCertificates"]
@@ -6519,7 +6287,7 @@ class OutscaleNodeDriver(NodeDriver):
         name: str = None,
         new_name: str = None,
         new_path: str = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Modifies the name and/or the path of a specified server certificate.
@@ -6698,33 +6466,19 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadSecurityGroups"
         data = {"DryRun": dry_run, "Filters": {}}
         if account_ids is not None:
-            data["Filters"].update({
-                "AccountIds": account_ids
-            })
+            data["Filters"].update({"AccountIds": account_ids})
         if net_ids is not None:
-            data["Filters"].update({
-                "NetIds": net_ids
-            })
+            data["Filters"].update({"NetIds": net_ids})
         if security_group_ids is not None:
-            data["Filters"].update({
-                "SecurityGroupIds": security_group_ids
-            })
+            data["Filters"].update({"SecurityGroupIds": security_group_ids})
         if security_group_names is not None:
-            data["Filters"].update({
-                "SecurityGroupNames": security_group_names
-            })
+            data["Filters"].update({"SecurityGroupNames": security_group_names})
         if tag_keys is not None:
-            data["Filters"].update({
-                "TagKeys": tag_keys
-            })
+            data["Filters"].update({"TagKeys": tag_keys})
         if tag_values is not None:
-            data["Filters"].update({
-                "TagValues": tag_values
-            })
+            data["Filters"].update({"TagValues": tag_values})
         if tags is not None:
-            data["Filters"].update({
-                "Tags": tags
-            })
+            data["Filters"].update({"Tags": tags})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["SecurityGroups"]
@@ -6818,15 +6572,11 @@ class OutscaleNodeDriver(NodeDriver):
         if rules is not None:
             data.update({"Rules": rules})
         if sg_name_to_link is not None:
-            data.update({
-                "SecurityGroupNameToLink": sg_name_to_link
-            })
+            data.update({"SecurityGroupNameToLink": sg_name_to_link})
         if sg_id is not None:
             data.update({"SecurityGroupId": sg_id})
         if sg_account_id_to_link is not None:
-            data.update({
-                "SecurityGroupAccountIdToLink": sg_account_id_to_link
-            })
+            data.update({"SecurityGroupAccountIdToLink": sg_account_id_to_link})
         if to_port_range is not None:
             data.update({"ToPortRange": to_port_range})
         response = self._call_api(action, json.dumps(data))
@@ -6917,15 +6667,11 @@ class OutscaleNodeDriver(NodeDriver):
         if rules is not None:
             data.update({"Rules": rules})
         if sg_name_to_unlink is not None:
-            data.update({
-                "SecurityGroupNameToUnlink": sg_name_to_unlink
-            })
+            data.update({"SecurityGroupNameToUnlink": sg_name_to_unlink})
         if sg_id is not None:
             data.update({"SecurityGroupId": sg_id})
         if sg_account_id_to_unlink is not None:
-            data.update({
-                "SecurityGroupAccountIdToUnlink": sg_account_id_to_unlink
-            })
+            data.update({"SecurityGroupAccountIdToUnlink": sg_account_id_to_unlink})
         if to_port_range is not None:
             data.update({"ToPortRange": to_port_range})
         response = self._call_api(action, json.dumps(data))
@@ -6934,9 +6680,7 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_create_virtual_gateway(
-        self,
-        connection_type: str = None,
-        dry_run: bool = False
+        self, connection_type: str = None, dry_run: bool = False
     ):
         """
         Creates a virtual gateway.
@@ -6964,9 +6708,7 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_delete_virtual_gateway(
-        self,
-        virtual_gateway_id: str = None,
-        dry_run: bool = False
+        self, virtual_gateway_id: str = None, dry_run: bool = False
     ):
         """
         Deletes a specified virtual gateway.
@@ -6994,10 +6736,7 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_link_virtual_gateway(
-        self,
-        net_id: str = None,
-        virtual_gateway_id: str = None,
-        dry_run: bool = False
+        self, net_id: str = None, virtual_gateway_id: str = None, dry_run: bool = False
     ):
         """
         Attaches a virtual gateway to a Net.
@@ -7038,7 +6777,7 @@ class OutscaleNodeDriver(NodeDriver):
         tag_values: List[str] = None,
         tags: List[str] = None,
         virtual_gateway_id: List[str] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Lists one or more virtual gateways.
@@ -7107,10 +6846,7 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_unlink_virtual_gateway(
-        self,
-        net_id: str = None,
-        virtual_gateway_id: str = None,
-        dry_run: bool = False
+        self, net_id: str = None, virtual_gateway_id: str = None, dry_run: bool = False
     ):
         """
         Detaches a virtual gateway from a Net.
@@ -7149,7 +6885,7 @@ class OutscaleNodeDriver(NodeDriver):
         enable: bool = None,
         route_table_id: str = None,
         virtual_gateway_id: str = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Configures the propagation of routes to a specified route table
@@ -7317,41 +7053,23 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadSubnets"
         data = {"DryRun": dry_run, "Filters": {}}
         if available_ip_counts is not None:
-            data["Filters"].update({
-                "AvailableIpsCounts": available_ip_counts
-            })
+            data["Filters"].update({"AvailableIpsCounts": available_ip_counts})
         if ip_ranges is not None:
-            data["Filters"].update({
-                "IpRanges": ip_ranges
-            })
+            data["Filters"].update({"IpRanges": ip_ranges})
         if net_ids is not None:
-            data["Filters"].update({
-                "NetIds": net_ids
-            })
+            data["Filters"].update({"NetIds": net_ids})
         if states is not None:
-            data["Filters"].update({
-                "States": states
-            })
+            data["Filters"].update({"States": states})
         if subnet_ids is not None:
-            data["Filters"].update({
-                "SubetIds": subnet_ids
-            })
+            data["Filters"].update({"SubetIds": subnet_ids})
         if subregion_names is not None:
-            data["Filters"].update({
-                "SubregionNames": subregion_names
-            })
+            data["Filters"].update({"SubregionNames": subregion_names})
         if tag_keys is not None:
-            data["Filters"].update({
-                "TagKeys": tag_keys
-            })
+            data["Filters"].update({"TagKeys": tag_keys})
         if tag_values is not None:
-            data["Filters"].update({
-                "TagValues": tag_values
-            })
+            data["Filters"].update({"TagValues": tag_values})
         if tags is not None:
-            data["Filters"].update({
-                "Tags": tags
-            })
+            data["Filters"].update({"Tags": tags})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["Subnets"]
@@ -7669,51 +7387,32 @@ class OutscaleNodeDriver(NodeDriver):
         action = "ReadVpnConnections"
         data = {"DryRun": dry_run, "Filters": {}}
         if bgp_asns is not None:
-            data["Filters"].update({
-                "BgpAsns": bgp_asns
-            })
+            data["Filters"].update({"BgpAsns": bgp_asns})
         if client_gateway_ids is not None:
-            data["Filters"].update({
-                "ClientGatewayIds": client_gateway_ids
-            })
+            data["Filters"].update({"ClientGatewayIds": client_gateway_ids})
         if connection_types is not None:
-            data["Filters"].update({
-                "ConnectionTypes": connection_types
-            })
+            data["Filters"].update({"ConnectionTypes": connection_types})
         if states is not None:
-            data["Filters"].update({
-                "States": states
-            })
+            data["Filters"].update({"States": states})
         if route_destination_ip_ranges is not None:
-            data["Filters"].update({
-                "RouteDestinationIpRanges": route_destination_ip_ranges
-            })
+            data["Filters"].update(
+                {"RouteDestinationIpRanges": route_destination_ip_ranges}
+            )
         if static_routes_only is not None:
-            data["Filters"].update({
-                "StaticRoutesOnly": static_routes_only
-            })
+            data["Filters"].update({"StaticRoutesOnly": static_routes_only})
         if tag_keys is not None:
-            data["Filters"].update({
-                "TagKeys": tag_keys
-            })
+            data["Filters"].update({"TagKeys": tag_keys})
         if tag_values is not None:
-            data["Filters"].update({
-                "TagValues": tag_values
-            })
+            data["Filters"].update({"TagValues": tag_values})
         if tags is not None:
-            data["Filters"].update({
-                "Tags": tags
-            })
+            data["Filters"].update({"Tags": tags})
         response = self._call_api(action, json.dumps(data))
         if response.status_code == 200:
             return response.json()["VpnConnections"]
         return response.json()
 
     def ex_create_certificate_authority(
-        self,
-        ca_perm: str,
-        description: str = None,
-        dry_run: bool = False
+        self, ca_perm: str, description: str = None, dry_run: bool = False
     ):
         """
         Creates a Client Certificate Authority (CA).
@@ -7740,11 +7439,7 @@ class OutscaleNodeDriver(NodeDriver):
             return response.json()["Ca"]
         return response.json()
 
-    def ex_delete_certificate_authority(
-        self,
-        ca_id: str,
-        dry_run: bool = False
-    ):
+    def ex_delete_certificate_authority(self, ca_id: str, dry_run: bool = False):
         """
         Deletes a specified Client Certificate Authority (CA).
 
@@ -7767,7 +7462,7 @@ class OutscaleNodeDriver(NodeDriver):
         ca_fingerprints: List[str] = None,
         ca_ids: List[str] = None,
         descriptions: List[str] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """
         Returns information about one or more of your Client Certificate
@@ -7803,10 +7498,7 @@ class OutscaleNodeDriver(NodeDriver):
         return response.json()
 
     def ex_update_certificate_authority(
-        self,
-        ca_id: str,
-        description: str = None,
-        dry_run: bool = False
+        self, ca_id: str, description: str = None, dry_run: bool = False
     ):
         """
         Modifies the specified attribute of a Client Certificate Authority
@@ -7872,8 +7564,7 @@ class OutscaleNodeDriver(NodeDriver):
         """
 
         if not ca_ids and not ip_ranges:
-            raise ValueError(
-                "Either ca_ids or ip_ranges argument must be provided.")
+            raise ValueError("Either ca_ids or ip_ranges argument must be provided.")
 
         action = "CreateApiAccessRule"
         data = {"DryRun": dry_run}
@@ -8033,25 +7724,17 @@ class OutscaleNodeDriver(NodeDriver):
 
     def _get_outscale_endpoint(self, region: str, version: str, action: str):
         return "https://api.{}.{}/api/{}/{}".format(
-            region,
-            self.base_uri,
-            version,
-            action
+            region, self.base_uri, version, action
         )
 
     def _call_api(self, action: str, data: str):
         headers = self._ex_generate_headers(action, data)
-        endpoint = self._get_outscale_endpoint(self.region,
-                                               self.version,
-                                               action)
+        endpoint = self._get_outscale_endpoint(self.region, self.version, action)
         return requests.post(endpoint, data=data, headers=headers)
 
     def _ex_generate_headers(self, action: str, data: str):
         return self.signer.get_request_headers(
-            action=action,
-            data=data,
-            service_name=self.service_name,
-            region=self.region
+            action=action, data=data, service_name=self.service_name, region=self.region
         )
 
     def _to_location(self, location):
@@ -8061,7 +7744,7 @@ class OutscaleNodeDriver(NodeDriver):
             name=location["Name"],
             country=country,
             driver=self,
-            extra=location
+            extra=location,
         )
 
     def _to_locations(self, locations: list):
@@ -8079,7 +7762,7 @@ class OutscaleNodeDriver(NodeDriver):
             driver=self,
             state=snapshot["State"],
             created=None,
-            extra=snapshot
+            extra=snapshot,
         )
 
     def _to_snapshots(self, snapshots):
@@ -8096,7 +7779,7 @@ class OutscaleNodeDriver(NodeDriver):
             size=volume["Size"],
             driver=self,
             state=volume["State"],
-            extra=volume
+            extra=volume,
         )
 
     def _to_volumes(self, volumes):
@@ -8111,13 +7794,15 @@ class OutscaleNodeDriver(NodeDriver):
         if "Nics" in vm:
             private_ips = vm["Nics"]["PrivateIps"]
 
-        return Node(id=vm["VmId"],
-                    name=name,
-                    state=self.NODE_STATE[vm["State"]],
-                    public_ips=[],
-                    private_ips=private_ips,
-                    driver=self,
-                    extra=vm)
+        return Node(
+            id=vm["VmId"],
+            name=name,
+            state=self.NODE_STATE[vm["State"]],
+            public_ips=[],
+            private_ips=private_ips,
+            driver=self,
+            extra=vm,
+        )
 
     def _to_nodes(self, vms: list):
         return [self._to_node(vm) for vm in vms]
@@ -8127,10 +7812,7 @@ class OutscaleNodeDriver(NodeDriver):
         for tag in image["Tags"]:
             if tag["Key"] == "Name":
                 name = tag["Value"]
-        return NodeImage(id=image["ImageId"],
-                         name=name,
-                         driver=self,
-                         extra=image)
+        return NodeImage(id=image["ImageId"], name=name, driver=self, extra=image)
 
     def _to_node_images(self, node_images: list):
         return [self._to_node_image(node_image) for node_image in node_images]
@@ -8147,4 +7829,5 @@ class OutscaleNodeDriver(NodeDriver):
             public_key="",
             private_key=private_key,
             fingerprint=key_pair["KeypairFingerprint"],
-            driver=self)
+            driver=self,
+        )

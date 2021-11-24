@@ -18,14 +18,13 @@ from libcloud.common.providers import get_driver as _get_provider_driver
 from libcloud.common.providers import set_driver as _set_provider_driver
 
 DRIVERS = {
-    Provider.DUMMY:
-    ('libcloud.backup.drivers.dummy', 'DummyBackupDriver'),
-    Provider.EBS:
-    ('libcloud.backup.drivers.ebs', 'EBSBackupDriver'),
-    Provider.GCE:
-    ('libcloud.backup.drivers.gce', 'GCEBackupDriver'),
-    Provider.DIMENSIONDATA:
-    ('libcloud.backup.drivers.dimensiondata', 'DimensionDataBackupDriver'),
+    Provider.DUMMY: ("libcloud.backup.drivers.dummy", "DummyBackupDriver"),
+    Provider.EBS: ("libcloud.backup.drivers.ebs", "EBSBackupDriver"),
+    Provider.GCE: ("libcloud.backup.drivers.gce", "GCEBackupDriver"),
+    Provider.DIMENSIONDATA: (
+        "libcloud.backup.drivers.dimensiondata",
+        "DimensionDataBackupDriver",
+    ),
 }
 
 
@@ -34,5 +33,6 @@ def get_driver(provider):
 
 
 def set_driver(provider, module, klass):
-    return _set_provider_driver(drivers=DRIVERS, provider=provider,
-                                module=module, klass=klass)
+    return _set_provider_driver(
+        drivers=DRIVERS, provider=provider, module=module, klass=klass
+    )

@@ -28,13 +28,17 @@ from libcloud.compute.base import Node, NodeImage, NodeSize
 
 
 class CloudscaleResponse(JsonResponse):
-    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                            httplib.NO_CONTENT]
+    valid_response_codes = [
+        httplib.OK,
+        httplib.ACCEPTED,
+        httplib.CREATED,
+        httplib.NO_CONTENT,
+    ]
 
     def parse_error(self):
         body = self.parse_body()
         if self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsError(body['detail'])
+            raise InvalidCredsError(body["detail"])
         else:
             # We are taking the first issue here. There might be multiple ones,
             # but that doesn't really matter. It's nicer if the error is just
@@ -50,7 +54,8 @@ class CloudscaleConnection(ConnectionKey):
     """
     Connection class for the cloudscale.ch driver.
     """
-    host = 'api.cloudscale.ch'
+
+    host = "api.cloudscale.ch"
     responseCls = CloudscaleResponse
 
     def add_default_headers(self, headers):
@@ -59,8 +64,8 @@ class CloudscaleConnection(ConnectionKey):
 
         This method adds ``token`` to the request.
         """
-        headers['Authorization'] = 'Bearer %s' % (self.key)
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = "Bearer %s" % (self.key)
+        headers["Content-Type"] = "application/json"
         return headers
 
 
@@ -72,8 +77,8 @@ class CloudscaleNodeDriver(NodeDriver):
     connectionCls = CloudscaleConnection
 
     type = Provider.CLOUDSCALE
-    name = 'Cloudscale'
-    website = 'https://www.cloudscale.ch'
+    name = "Cloudscale"
+    website = "https://www.cloudscale.ch"
 
     NODE_STATE_MAP = dict(
         changing=NodeState.PENDING,
@@ -89,13 +94,13 @@ class CloudscaleNodeDriver(NodeDriver):
         """
         List all your existing compute nodes.
         """
-        return self._list_resources('/v1/servers', self._to_node)
+        return self._list_resources("/v1/servers", self._to_node)
 
     def list_sizes(self):
         """
         Lists all available sizes. On cloudscale these are known as flavors.
         """
-        return self._list_resources('/v1/flavors', self._to_size)
+        return self._list_resources("/v1/flavors", self._to_size)
 
     def list_images(self):
         """
@@ -105,10 +110,9 @@ class CloudscaleNodeDriver(NodeDriver):
         version upgrades (e.g. Ubuntu 16.04.1 to Ubuntu 16.04.2) will be
         possible within the same id ``ubuntu-16.04``.
         """
-        return self._list_resources('/v1/images', self._to_image)
+        return self._list_resources("/v1/images", self._to_image)
 
-    def create_node(self, name, size, image, location=None,
-                    ex_create_attr=None):
+    def create_node(self, name, size, image, location=None, ex_create_attr=None):
         """
         Create a node.
 
@@ -140,9 +144,7 @@ class CloudscaleNodeDriver(NodeDriver):
             flavor=size.id,
         )
         result = self.connection.request(
-            '/v1/servers',
-            data=json.dumps(attr),
-            method='POST'
+            "/v1/servers", data=json.dumps(attr), method="POST"
         )
         return self._to_node(result.object)
 
@@ -150,20 +152,20 @@ class CloudscaleNodeDriver(NodeDriver):
         """
         Reboot a node. It's also possible to use ``node.reboot()``.
         """
-        return self._action(node, 'reboot')
+        return self._action(node, "reboot")
 
     def start_node(self, node):
         """
         Start a node. This is only possible if the node is stopped.
         """
-        return self._action(node, 'start')
+        return self._action(node, "start")
 
     def stop_node(self, node):
         """
         Stop a specific node. Similar to ``shutdown -h now``. This is only
         possible if the node is running.
         """
-        return self._action(node, 'stop')
+        return self._action(node, "stop")
 
     def ex_start_node(self, node):
         # NOTE: This method is here for backward compatibility reasons after
@@ -195,29 +197,25 @@ class CloudscaleNodeDriver(NodeDriver):
         This will irreversibly delete the cloudscale.ch server and all its
         volumes. So please be cautious.
         """
-        res = self.connection.request(
-            self._get_server_url(node.id),
-            method='DELETE'
-        )
+        res = self.connection.request(self._get_server_url(node.id), method="DELETE")
         return res.status == httplib.NO_CONTENT
 
     def _get_server_url(self, uuid):
-        return '/v1/servers/%s' % uuid
+        return "/v1/servers/%s" % uuid
 
     def _action(self, node, action_name):
         response = self.connection.request(
-            self._get_server_url(node.id) + '/' + action_name,
-            method='POST'
+            self._get_server_url(node.id) + "/" + action_name, method="POST"
         )
         return response.status == httplib.OK
 
     def _list_resources(self, url, tranform_func):
-        data = self.connection.request(url, method='GET').object
+        data = self.connection.request(url, method="GET").object
         return [tranform_func(obj) for obj in data]
 
     def _to_node(self, data):
-        state = self.NODE_STATE_MAP.get(data['status'], NodeState.UNKNOWN)
-        extra_keys_exclude = ['uuid', 'name', 'status', 'flavor', 'image']
+        state = self.NODE_STATE_MAP.get(data["status"], NodeState.UNKNOWN)
+        extra_keys_exclude = ["uuid", "name", "status", "flavor", "image"]
         extra = {}
         for k, v in data.items():
             if k not in extra_keys_exclude:
@@ -225,36 +223,41 @@ class CloudscaleNodeDriver(NodeDriver):
 
         public_ips = []
         private_ips = []
-        for interface in data['interfaces']:
-            if interface['type'] == 'public':
+        for interface in data["interfaces"]:
+            if interface["type"] == "public":
                 ips = public_ips
             else:
                 ips = private_ips
-            for address_obj in interface['addresses']:
-                ips.append(address_obj['address'])
+            for address_obj in interface["addresses"]:
+                ips.append(address_obj["address"])
 
         return Node(
-            id=data['uuid'],
-            name=data['name'],
+            id=data["uuid"],
+            name=data["name"],
             state=state,
             public_ips=public_ips,
             private_ips=private_ips,
             extra=extra,
             driver=self,
-            image=self._to_image(data['image']),
-            size=self._to_size(data['flavor']),
+            image=self._to_image(data["image"]),
+            size=self._to_size(data["flavor"]),
         )
 
     def _to_size(self, data):
-        extra = {'vcpu_count': data['vcpu_count']}
-        ram = data['memory_gb'] * 1024
+        extra = {"vcpu_count": data["vcpu_count"]}
+        ram = data["memory_gb"] * 1024
 
-        return NodeSize(id=data['slug'], name=data['name'],
-                        ram=ram, disk=10,
-                        bandwidth=0, price=0,
-                        extra=extra, driver=self)
+        return NodeSize(
+            id=data["slug"],
+            name=data["name"],
+            ram=ram,
+            disk=10,
+            bandwidth=0,
+            price=0,
+            extra=extra,
+            driver=self,
+        )
 
     def _to_image(self, data):
-        extra = {'operating_system': data['operating_system']}
-        return NodeImage(id=data['slug'], name=data['name'], extra=extra,
-                         driver=self)
+        extra = {"operating_system": data["operating_system"]}
+        return NodeImage(id=data["slug"], name=data["name"], extra=extra, driver=self)

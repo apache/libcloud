@@ -18,31 +18,31 @@ from libcloud.storage.providers import get_driver
 
 OSSDriver = get_driver(Provider.ALIYUN_OSS)
 
-your_access_key_id = ''
-your_access_key_secret = ''
+your_access_key_id = ""
+your_access_key_secret = ""
 oss = OSSDriver(your_access_key_id, your_access_key_secret)
 
-container_name = 'CONTAINER_NAME_FOR_TEST'
-object_name = 'OBJECT_NAME_FOR_TEST'
-local_file_path = 'LOCAL_FILE_FULL_PATH_TO_UPLOAD'
-upload_object_name = 'OBJECT_NAME_FOR_UPLOAD_FILE'
+container_name = "CONTAINER_NAME_FOR_TEST"
+object_name = "OBJECT_NAME_FOR_TEST"
+local_file_path = "LOCAL_FILE_FULL_PATH_TO_UPLOAD"
+upload_object_name = "OBJECT_NAME_FOR_UPLOAD_FILE"
 for container in oss.iterate_containers():
-    print('container: %s' % container)
+    print("container: %s" % container)
 
 c1 = oss.get_container(container_name)
-print('Got container %s:' % c1)
+print("Got container %s:" % c1)
 
 objects = c1.list_objects()
 count = len(objects)
-print('Has %d objects' % count)
+print("Has %d objects" % count)
 
-objects = oss.list_container_objects(c1, prefix='en')
+objects = oss.list_container_objects(c1, prefix="en")
 print('Has %d objects with prefix "en"' % len(objects))
 for each in objects:
     print(each)
 
 obj = oss.get_object(container_name, object_name)
-print('Got object %s:' % obj)
+print("Got object %s:" % obj)
 
 # Download object
 oss.download_object(obj, object_name, overwrite_existing=True)
@@ -54,10 +54,10 @@ obj = oss.upload_object(local_file_path, c1, upload_object_name)
 
 # Upload multipart
 uploads = list(oss.ex_iterate_multipart_uploads(c1))
-print('Found %d incompleted uploads' % len(uploads))
+print("Found %d incompleted uploads" % len(uploads))
 if len(uploads) > 0:
     oss.ex_abort_all_multipart_uploads(c1)
-    print('Abort them all')
+    print("Abort them all")
 
 
 def data_iter(limit):
@@ -69,13 +69,13 @@ def data_iter(limit):
             break
 
 
-print('Starting to upload 1MB using multipart api')
+print("Starting to upload 1MB using multipart api")
 one_mb = 1024 * 1024
 obj = oss.upload_object_via_stream(data_iter(one_mb), c1, upload_object_name)
-print('Finish uploading')
+print("Finish uploading")
 
 # Delete objects
-print('Delete object %s' % obj)
+print("Delete object %s" % obj)
 oss.delete_object(obj)
 
 # Create container

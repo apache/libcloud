@@ -29,118 +29,167 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 class OvhMockHttp(BaseOvhMockHttp):
     """Fixtures needed for tests related to rating model"""
-    fixtures = ComputeFileFixtures('ovh')
+
+    fixtures = ComputeFileFixtures("ovh")
 
     def _json_1_0_auth_time_get(self, method, url, body, headers):
-        body = self.fixtures.load('auth_time_get.json')
+        body = self.fixtures.load("auth_time_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_1_0_cloud_project_project_id_region_get(self, method, url, body, headers):
-        body = self.fixtures.load('region_get.json')
+        body = self.fixtures.load("region_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_1_0_cloud_project_project_id_flavor_get(self, method, url, body, headers):
-        body = self.fixtures.load('flavor_get.json')
+        body = self.fixtures.load("flavor_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_flavor_region_SBG1_get(self, method, url, body, headers):
-        body = self.fixtures.load('flavor_get.json')
+    def _json_1_0_cloud_project_project_id_flavor_region_SBG1_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("flavor_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_flavor_foo_id_get(self, method, url, body, headers):
-        body = self.fixtures.load('flavor_get_detail.json')
+    def _json_1_0_cloud_project_project_id_flavor_foo_id_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("flavor_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_1_0_cloud_project_project_id_image_get(self, method, url, body, headers):
-        body = self.fixtures.load('image_get.json')
+        body = self.fixtures.load("image_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_image_foo_id_get(self, method, url, body, headers):
-        body = self.fixtures.load('image_get_detail.json')
+    def _json_1_0_cloud_project_project_id_image_foo_id_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("image_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_sshkey_region_SBG1_get(self, method, url, body, headers):
-        body = self.fixtures.load('ssh_get.json')
+    def _json_1_0_cloud_project_project_id_sshkey_region_SBG1_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("ssh_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_sshkey_post(self, method, url, body, headers):
-        body = self.fixtures.load('ssh_get_detail.json')
+    def _json_1_0_cloud_project_project_id_sshkey_post(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("ssh_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_1_0_ssh_mykey_get(self, method, url, body, headers):
-        body = self.fixtures.load('ssh_get_detail.json')
+        body = self.fixtures.load("ssh_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_instance_get(self, method, url, body, headers):
-        body = self.fixtures.load('instance_get.json')
+    def _json_1_0_cloud_project_project_id_instance_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("instance_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_instance_foo_get(self, method, url, body, headers):
-        body = self.fixtures.load('instance_get_detail.json')
+    def _json_1_0_cloud_project_project_id_instance_foo_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("instance_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_instance_foo_delete(self, method, url, body, headers):
-        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+    def _json_1_0_cloud_project_project_id_instance_foo_delete(
+        self, method, url, body, headers
+    ):
+        return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_instance_post(self, method, url, body, headers):
-        body = self.fixtures.load('instance_get_detail.json')
+    def _json_1_0_cloud_project_project_id_instance_post(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("instance_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _json_1_0_cloud_project_project_id_volume_get(self, method, url, body, headers):
-        body = self.fixtures.load('volume_get.json')
+        body = self.fixtures.load("volume_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_post(self, method, url, body, headers):
-        body = self.fixtures.load('volume_get_detail.json')
+    def _json_1_0_cloud_project_project_id_volume_post(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_foo_get(self, method, url, body, headers):
-        body = self.fixtures.load('volume_get_detail.json')
+    def _json_1_0_cloud_project_project_id_volume_foo_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_foo_delete(self, method, url, body, headers):
-        return (httplib.OK, '', {}, httplib.responses[httplib.OK])
+    def _json_1_0_cloud_project_project_id_volume_foo_delete(
+        self, method, url, body, headers
+    ):
+        return (httplib.OK, "", {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_foo_attach_post(self, method, url, body, headers):
-        body = self.fixtures.load('volume_get_detail.json')
+    def _json_1_0_cloud_project_project_id_volume_foo_attach_post(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_foo_detach_post(self, method, url, body, headers):
-        body = self.fixtures.load('volume_get_detail.json')
+    def _json_1_0_cloud_project_project_id_volume_foo_detach_post(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_get_detail.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_snapshot_region_SBG_1_get(self, method, url, body, headers):
-        body = self.fixtures.load('volume_snapshot_get.json')
+    def _json_1_0_cloud_project_project_id_volume_snapshot_region_SBG_1_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_snapshot_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_snapshot_get(self, method, url, body, headers):
-        body = self.fixtures.load('volume_snapshot_get.json')
+    def _json_1_0_cloud_project_project_id_volume_snapshot_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_snapshot_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_snapshot_foo_get(self, method, url, body, headers):
-        body = self.fixtures.load('volume_snapshot_get_details.json')
+    def _json_1_0_cloud_project_project_id_volume_snapshot_foo_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_snapshot_get_details.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_snapshot_foo_snap_delete(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_volume_snapshot_foo_snap_delete(
+        self, method, url, body, headers
+    ):
         return (httplib.OK, None, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_volume_foo_snapshot__post(self, method, url, body, headers):
-        body = self.fixtures.load('volume_snapshot_get_details.json')
+    def _json_1_0_cloud_project_project_id_volume_foo_snapshot__post(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("volume_snapshot_get_details.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_subsidiaryPrice_ovhSubsidiary_US_flavorId_foo_id_get(self, method, url, body, headers):
-        return self._json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(method, url, body, headers)
+    def _json_1_0_cloud_subsidiaryPrice_ovhSubsidiary_US_flavorId_foo_id_get(
+        self, method, url, body, headers
+    ):
+        return (
+            self._json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(
+                method, url, body, headers
+            )
+        )
 
-    def _json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(self, method, url, body, headers):
-        body = self.fixtures.load('pricing_get.json')
+    def _json_1_0_cloud_subsidiaryPrice_flavorId_foo_id_ovhSubsidiary_US_get(
+        self, method, url, body, headers
+    ):
+        body = self.fixtures.load("pricing_get.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _json_1_0_cloud_project_project_id_instance_get_invalid_app_key_error(self, method, url, body, headers):
+    def _json_1_0_cloud_project_project_id_instance_get_invalid_app_key_error(
+        self, method, url, body, headers
+    ):
         body = '{"message":"Invalid application key"}'
         return (httplib.UNAUTHORIZED, body, {}, httplib.responses[httplib.OK])
 
 
-@patch('libcloud.common.ovh.OvhConnection._timedelta', 42)
+@patch("libcloud.common.ovh.OvhConnection._timedelta", 42)
 class OvhTests(unittest.TestCase):
     def setUp(self):
         OvhNodeDriver.connectionCls.conn_class = OvhMockHttp
@@ -149,35 +198,42 @@ class OvhTests(unittest.TestCase):
 
     def test_region_argument(self):
         driver = OvhNodeDriver(*OVH_PARAMS)
-        self.assertEqual(driver.connection.host, 'api.ovh.com')
+        self.assertEqual(driver.connection.host, "api.ovh.com")
 
         driver = OvhNodeDriver(*OVH_PARAMS, region=None)
-        self.assertEqual(driver.connection.host, 'api.ovh.com')
+        self.assertEqual(driver.connection.host, "api.ovh.com")
 
-        driver = OvhNodeDriver(*OVH_PARAMS, region='ca')
+        driver = OvhNodeDriver(*OVH_PARAMS, region="ca")
 
-        driver = OvhNodeDriver(*OVH_PARAMS, region='eu')
-        self.assertEqual(driver.connection.host, 'eu.api.ovh.com')
+        driver = OvhNodeDriver(*OVH_PARAMS, region="eu")
+        self.assertEqual(driver.connection.host, "eu.api.ovh.com")
 
-        driver = OvhNodeDriver(*OVH_PARAMS, region='ca')
-        self.assertEqual(driver.connection.host, 'ca.api.ovh.com')
+        driver = OvhNodeDriver(*OVH_PARAMS, region="ca")
+        self.assertEqual(driver.connection.host, "ca.api.ovh.com")
 
     def test_list_nodes_invalid_region(self):
         OvhNodeDriver.connectionCls.conn_class = LibcloudConnection
-        driver = OvhNodeDriver(*OVH_PARAMS, region='invalid')
+        driver = OvhNodeDriver(*OVH_PARAMS, region="invalid")
 
-        expected_msg = r'invalid region argument was passed.*Used host: invalid.api.ovh.com.*'
+        expected_msg = (
+            r"invalid region argument was passed.*Used host: invalid.api.ovh.com.*"
+        )
         self.assertRaisesRegex(ValueError, expected_msg, driver.list_nodes)
 
-        expected_msg = r'invalid region argument was passed.*Used host: invalid.api.ovh.com.*'
-        self.assertRaisesRegex(ValueError, expected_msg, driver.connection.request_consumer_key, '1')
+        expected_msg = (
+            r"invalid region argument was passed.*Used host: invalid.api.ovh.com.*"
+        )
+        self.assertRaisesRegex(
+            ValueError, expected_msg, driver.connection.request_consumer_key, "1"
+        )
 
     def test_invalid_application_key_correct_error(self):
-        OvhMockHttp.type = 'invalid_app_key_error'
-        driver = OvhNodeDriver('appkeyinvalid', 'application_secret', 'project_id',
-                               'consumer_key')
+        OvhMockHttp.type = "invalid_app_key_error"
+        driver = OvhNodeDriver(
+            "appkeyinvalid", "application_secret", "project_id", "consumer_key"
+        )
 
-        expected_msg = r'Invalid application key'
+        expected_msg = r"Invalid application key"
         self.assertRaisesRegex(BaseHTTPError, expected_msg, driver.list_nodes)
 
     def test_list_locations(self):
@@ -189,16 +245,16 @@ class OvhTests(unittest.TestCase):
         self.assertTrue(len(images) > 0)
 
     def test_get_image(self):
-        image = self.driver.get_image('foo-id')
-        self.assertEqual(image.id, 'foo-id')
+        image = self.driver.get_image("foo-id")
+        self.assertEqual(image.id, "foo-id")
 
     def test_list_sizes(self):
         sizes = self.driver.list_sizes()
         self.assertTrue(len(sizes) > 0)
 
     def test_get_size(self):
-        size = self.driver.ex_get_size('foo-id')
-        self.assertEqual(size.id, 'foo-id')
+        size = self.driver.ex_get_size("foo-id")
+        self.assertEqual(size.id, "foo-id")
 
     def test_list_key_pairs(self):
         keys = self.driver.list_sizes()
@@ -206,33 +262,33 @@ class OvhTests(unittest.TestCase):
 
     def test_get_key_pair(self):
         location = self.driver.list_locations()[0]
-        key = self.driver.get_key_pair('mykey', location)
-        self.assertEqual(key.name, 'mykey')
+        key = self.driver.get_key_pair("mykey", location)
+        self.assertEqual(key.name, "mykey")
 
     def test_import_key_pair_from_string(self):
         location = self.driver.list_locations()[0]
-        key = self.driver.import_key_pair_from_string('mykey', 'material',
-                                                      location)
-        self.assertEqual(key.name, 'mykey')
+        key = self.driver.import_key_pair_from_string("mykey", "material", location)
+        self.assertEqual(key.name, "mykey")
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
         self.assertTrue(len(nodes) > 0)
 
     def test_get_node(self):
-        node = self.driver.ex_get_node('foo')
-        self.assertEqual(node.name, 'test_vm')
+        node = self.driver.ex_get_node("foo")
+        self.assertEqual(node.name, "test_vm")
 
     def test_create_node(self):
         location = self.driver.list_locations()[0]
         image = self.driver.list_sizes(location)[0]
         size = self.driver.list_sizes(location)[0]
-        node = self.driver.create_node(name='test_vm', image=image, size=size,
-                                       location=location)
-        self.assertEqual(node.name, 'test_vm')
+        node = self.driver.create_node(
+            name="test_vm", image=image, size=size, location=location
+        )
+        self.assertEqual(node.name, "test_vm")
 
     def test_resizing_node(self):
-        self.assertTrue(self.driver.NODE_STATE_MAP['RESIZE'])
+        self.assertTrue(self.driver.NODE_STATE_MAP["RESIZE"])
 
     def test_destroy_node(self):
         node = self.driver.list_nodes()[0]
@@ -243,14 +299,13 @@ class OvhTests(unittest.TestCase):
         self.assertTrue(len(volumes) > 0)
 
     def test_get_volume(self):
-        volume = self.driver.ex_get_volume('foo')
-        self.assertEqual(volume.name, 'testvol')
+        volume = self.driver.ex_get_volume("foo")
+        self.assertEqual(volume.name, "testvol")
 
     def test_create_volume(self):
         location = self.driver.list_locations()[0]
-        volume = self.driver.create_volume(size=10, name='testvol',
-                                           location=location)
-        self.assertEqual(volume.name, 'testvol')
+        volume = self.driver.create_volume(size=10, name="testvol", location=location)
+        self.assertEqual(volume.name, "testvol")
 
     def test_destroy_volume(self):
         volume = self.driver.list_volumes()[0]
@@ -258,13 +313,13 @@ class OvhTests(unittest.TestCase):
 
     def test_attach_volume(self):
         node = self.driver.list_nodes()[0]
-        volume = self.driver.ex_get_volume('foo')
+        volume = self.driver.ex_get_volume("foo")
         response = self.driver.attach_volume(node=node, volume=volume)
         self.assertTrue(response)
 
     def test_detach_volume(self):
         node = self.driver.list_nodes()[0]
-        volume = self.driver.ex_get_volume('foo')
+        volume = self.driver.ex_get_volume("foo")
         response = self.driver.detach_volume(ex_node=node, volume=volume)
         self.assertTrue(response)
 
@@ -272,24 +327,24 @@ class OvhTests(unittest.TestCase):
         self.driver.ex_list_snapshots()
 
     def test_ex_get_volume_snapshot(self):
-        self.driver.ex_get_volume_snapshot('foo')
+        self.driver.ex_get_volume_snapshot("foo")
 
     def test_list_volume_snapshots(self):
-        volume = self.driver.ex_get_volume('foo')
+        volume = self.driver.ex_get_volume("foo")
         self.driver.list_volume_snapshots(volume)
 
     def test_create_volume_snapshot(self):
-        volume = self.driver.ex_get_volume('foo')
+        volume = self.driver.ex_get_volume("foo")
         self.driver.create_volume_snapshot(volume)
 
     def test_destroy_volume_snapshot(self):
-        snapshot = self.driver.ex_get_volume_snapshot('foo')
+        snapshot = self.driver.ex_get_volume_snapshot("foo")
         result = self.driver.destroy_volume_snapshot(snapshot)
         self.assertTrue(result)
 
     def test_get_pricing(self):
-        self.driver.ex_get_pricing('foo-id')
+        self.driver.ex_get_pricing("foo-id")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

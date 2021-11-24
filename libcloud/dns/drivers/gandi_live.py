@@ -19,22 +19,30 @@ import copy
 
 from libcloud.dns.types import Provider, RecordType
 from libcloud.dns.types import RecordError
-from libcloud.dns.types import ZoneDoesNotExistError, \
-    RecordDoesNotExistError, ZoneAlreadyExistsError, RecordAlreadyExistsError
+from libcloud.dns.types import (
+    ZoneDoesNotExistError,
+    RecordDoesNotExistError,
+    ZoneAlreadyExistsError,
+    RecordAlreadyExistsError,
+)
 from libcloud.dns.base import DNSDriver, Zone, Record
-from libcloud.common.gandi_live import ResourceNotFoundError, \
-    ResourceConflictError, GandiLiveResponse, GandiLiveConnection, \
-    BaseGandiLiveDriver
+from libcloud.common.gandi_live import (
+    ResourceNotFoundError,
+    ResourceConflictError,
+    GandiLiveResponse,
+    GandiLiveConnection,
+    BaseGandiLiveDriver,
+)
 
 
 __all__ = [
-    'GandiLiveDNSDriver',
+    "GandiLiveDNSDriver",
 ]
 
 
 TTL_MIN = 300
 TTL_MAX = 2592000  # 30 days
-API_BASE = '/api/v5'
+API_BASE = "/api/v5"
 
 
 class GandiLiveDNSResponse(GandiLiveResponse):
@@ -60,46 +68,45 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     """
 
     type = Provider.GANDI
-    name = 'Gandi LiveDNS'
-    website = 'http://www.gandi.net/domain'
+    name = "Gandi LiveDNS"
+    website = "http://www.gandi.net/domain"
 
     connectionCls = GandiLiveDNSConnection
 
     # also supports CAA, CDS
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.ALIAS: 'ALIAS',
-        RecordType.CNAME: 'CNAME',
-        RecordType.DNAME: 'DNAME',
-        RecordType.DS: 'DS',
-        RecordType.KEY: 'KEY',
-        RecordType.LOC: 'LOC',
-        RecordType.MX: 'MX',
-        RecordType.NS: 'NS',
-        RecordType.PTR: 'PTR',
-        RecordType.SPF: 'SPF',
-        RecordType.SRV: 'SRV',
-        RecordType.SSHFP: 'SSHFP',
-        RecordType.TLSA: 'TLSA',
-        RecordType.TXT: 'TXT',
-        RecordType.WKS: 'WKS',
-        RecordType.CAA: 'CAA',
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.ALIAS: "ALIAS",
+        RecordType.CNAME: "CNAME",
+        RecordType.DNAME: "DNAME",
+        RecordType.DS: "DS",
+        RecordType.KEY: "KEY",
+        RecordType.LOC: "LOC",
+        RecordType.MX: "MX",
+        RecordType.NS: "NS",
+        RecordType.PTR: "PTR",
+        RecordType.SPF: "SPF",
+        RecordType.SRV: "SRV",
+        RecordType.SSHFP: "SSHFP",
+        RecordType.TLSA: "TLSA",
+        RecordType.TXT: "TXT",
+        RecordType.WKS: "WKS",
+        RecordType.CAA: "CAA",
     }
 
     def list_zones(self):
-        zones = self.connection.request(action='%s/domains' % API_BASE,
-                                        method='GET')
+        zones = self.connection.request(action="%s/domains" % API_BASE, method="GET")
         return self._to_zones(zones.object)
 
     def get_zone(self, zone_id):
-        action = '%s/domains/%s' % (API_BASE, zone_id)
+        action = "%s/domains/%s" % (API_BASE, zone_id)
         try:
-            zone = self.connection.request(action=action, method='GET')
+            zone = self.connection.request(action=action, method="GET")
         except ResourceNotFoundError:
-            raise ZoneDoesNotExistError(value='',
-                                        driver=self.connection.driver,
-                                        zone_id=zone_id)
+            raise ZoneDoesNotExistError(
+                value="", driver=self.connection.driver, zone_id=zone_id
+            )
         return self._to_zone(zone.object)
 
     """
@@ -108,32 +115,33 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :return: :class:`Zone` with attribute zone_uuid set in extra ``dict``
     """
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
-        if extra and 'name' in extra:
-            zone_name = extra['name']
+
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
+        if extra and "name" in extra:
+            zone_name = extra["name"]
         else:
-            zone_name = '%s zone' % domain
+            zone_name = "%s zone" % domain
         zone_data = {
-            'name': zone_name,
+            "name": zone_name,
         }
 
         try:
-            new_zone = self.connection.request(action='%s/zones' % API_BASE,
-                                               method='POST',
-                                               data=zone_data)
+            new_zone = self.connection.request(
+                action="%s/zones" % API_BASE, method="POST", data=zone_data
+            )
         except ResourceConflictError:
-            raise ZoneAlreadyExistsError(value='',
-                                         driver=self.connection.driver,
-                                         zone_id=zone_name)
-        new_zone_uuid = new_zone.headers['location'].split('/')[-1]
+            raise ZoneAlreadyExistsError(
+                value="", driver=self.connection.driver, zone_id=zone_name
+            )
+        new_zone_uuid = new_zone.headers["location"].split("/")[-1]
 
         self.ex_switch_domain_gandi_zone(domain, new_zone_uuid)
 
-        return self._to_zone({'fqdn': domain, 'zone_uuid': new_zone_uuid})
+        return self._to_zone({"fqdn": domain, "zone_uuid": new_zone_uuid})
 
     def list_records(self, zone):
-        action = '%s/domains/%s/records' % (API_BASE, zone.id)
-        records = self.connection.request(action=action, method='GET')
+        action = "%s/domains/%s/records" % (API_BASE, zone.id)
+        records = self.connection.request(action=action, method="GET")
         return self._to_records(records.object, zone)
 
     """
@@ -141,46 +149,43 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
              other_values ``list`` of ``str`` for other values; the first
              value is returned through Record.data.
     """
+
     def get_record(self, zone_id, record_id):
-        record_type, name = record_id.split(':', 1)
-        action = '%s/domains/%s/records/%s/%s' % (API_BASE,
-                                                  zone_id,
-                                                  name,
-                                                  record_type)
+        record_type, name = record_id.split(":", 1)
+        action = "%s/domains/%s/records/%s/%s" % (API_BASE, zone_id, name, record_type)
         try:
-            record = self.connection.request(action=action, method='GET')
+            record = self.connection.request(action=action, method="GET")
         except ResourceNotFoundError:
-            raise RecordDoesNotExistError(value='',
-                                          driver=self.connection.driver,
-                                          record_id=record_id)
+            raise RecordDoesNotExistError(
+                value="", driver=self.connection.driver, record_id=record_id
+            )
         return self._to_record(record.object, self.get_zone(zone_id))[0]
 
     def create_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
 
-        action = '%s/domains/%s/records' % (API_BASE, zone.id)
+        action = "%s/domains/%s/records" % (API_BASE, zone.id)
 
-        if type == 'MX':
-            data = '%s %s' % (extra['priority'], data)
+        if type == "MX":
+            data = "%s %s" % (extra["priority"], data)
 
         record_data = {
-            'rrset_name': name,
-            'rrset_type': self.RECORD_TYPE_MAP[type],
-            'rrset_values': [data],
+            "rrset_name": name,
+            "rrset_type": self.RECORD_TYPE_MAP[type],
+            "rrset_values": [data],
         }
 
-        if extra is not None and 'ttl' in extra:
-            record_data['rrset_ttl'] = extra['ttl']
+        if extra is not None and "ttl" in extra:
+            record_data["rrset_ttl"] = extra["ttl"]
 
         try:
-            self.connection.request(action=action, method='POST',
-                                    data=record_data)
+            self.connection.request(action=action, method="POST", data=record_data)
         except ResourceConflictError:
-            raise RecordAlreadyExistsError(value='',
-                                           driver=self.connection.driver,
-                                           record_id='%s:%s' % (
-                                               self.RECORD_TYPE_MAP[type],
-                                               name))
+            raise RecordAlreadyExistsError(
+                value="",
+                driver=self.connection.driver,
+                record_id="%s:%s" % (self.RECORD_TYPE_MAP[type], name),
+            )
 
         return self._to_record_sub(record_data, zone, data)
 
@@ -201,51 +206,50 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     To change the number of values in the value set or to change several at
     once, delete and recreate, potentially using ex_create_multi_value_record.
     """
+
     def update_record(self, record, name, type, data, extra):
         self._validate_record(record.id, record.name, record.type, data, extra)
 
-        action = '%s/domains/%s/records/%s/%s' % (
+        action = "%s/domains/%s/records/%s/%s" % (
             API_BASE,
             record.zone.id,
             record.name,
-            self.RECORD_TYPE_MAP[record.type]
+            self.RECORD_TYPE_MAP[record.type],
         )
 
-        multiple_value_record = record.extra.get('_multi_value', False)
-        other_records = record.extra.get('_other_records', [])
+        multiple_value_record = record.extra.get("_multi_value", False)
+        other_records = record.extra.get("_other_records", [])
 
         if record.type == RecordType.MX:
-            data = '%s %s' % (extra['priority'], data)
+            data = "%s %s" % (extra["priority"], data)
 
         if multiple_value_record and len(other_records) > 0:
             rvalue = [data]
             for other_record in other_records:
                 if record.type == RecordType.MX:
-                    rvalue.append('%s %s' %
-                                  (other_record['extra']['priority'],
-                                   other_record['data']))
+                    rvalue.append(
+                        "%s %s"
+                        % (other_record["extra"]["priority"], other_record["data"])
+                    )
                 else:
-                    rvalue.append(other_record['data'])
+                    rvalue.append(other_record["data"])
         else:
             rvalue = [data]
 
-        record_data = {
-            'rrset_values': rvalue
-        }
+        record_data = {"rrset_values": rvalue}
 
-        if extra is not None and 'ttl' in extra:
-            record_data['rrset_ttl'] = extra['ttl']
+        if extra is not None and "ttl" in extra:
+            record_data["rrset_ttl"] = extra["ttl"]
 
         try:
-            self.connection.request(action=action, method='PUT',
-                                    data=record_data)
+            self.connection.request(action=action, method="PUT", data=record_data)
         except ResourceNotFoundError:
-            raise RecordDoesNotExistError(value='',
-                                          driver=self.connection.driver,
-                                          record_id=record.id)
+            raise RecordDoesNotExistError(
+                value="", driver=self.connection.driver, record_id=record.id
+            )
 
-        record_data['rrset_name'] = record.name
-        record_data['rrset_type'] = self.RECORD_TYPE_MAP[record.type]
+        record_data["rrset_name"] = record.name
+        record_data["rrset_type"] = self.RECORD_TYPE_MAP[record.type]
         return self._to_record(record_data, record.zone)[0]
 
     """
@@ -253,30 +257,30 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
     one record.  Deleting that name-type record means deleting all values for
     it.
     """
+
     def delete_record(self, record):
-        action = '%s/domains/%s/records/%s/%s' % (
+        action = "%s/domains/%s/records/%s/%s" % (
             API_BASE,
             record.zone.id,
             record.name,
-            self.RECORD_TYPE_MAP[record.type]
+            self.RECORD_TYPE_MAP[record.type],
         )
         try:
-            self.connection.request(action=action, method='DELETE')
+            self.connection.request(action=action, method="DELETE")
         except ResourceNotFoundError:
-            raise RecordDoesNotExistError(value='',
-                                          driver=self.connection.driver,
-                                          record_id=record.id)
+            raise RecordDoesNotExistError(
+                value="", driver=self.connection.driver, record_id=record.id
+            )
         # Originally checked for success here, but it should never reach
         # this point with anything other than HTTP 200
         return True
 
     def export_zone_to_bind_format(self, zone):
-        action = '%s/domains/%s/records' % (API_BASE, zone.id)
-        headers = {
-            'Accept': 'text/plain'
-        }
-        resp = self.connection.request(action=action, method='GET',
-                                       headers=headers, raw=True)
+        action = "%s/domains/%s/records" % (API_BASE, zone.id)
+        headers = {"Accept": "text/plain"}
+        resp = self.connection.request(
+            action=action, method="GET", headers=headers, raw=True
+        )
         return resp.body
 
     # There is nothing you can update about a domain; you can update zones'
@@ -302,13 +306,13 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :return: ``bool``
     """
+
     def ex_update_gandi_zone_name(self, zone_uuid, name):
-        action = '%s/zones/%s' % (API_BASE, zone_uuid)
+        action = "%s/zones/%s" % (API_BASE, zone_uuid)
         data = {
-            'name': name,
+            "name": name,
         }
-        self.connection.request(action=action, method='PATCH',
-                                data=data)
+        self.connection.request(action=action, method="PATCH", data=data)
         return True
 
     # There is no concept of deleting domains in this API, not even to
@@ -322,9 +326,11 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :return: ``bool``
     """
+
     def ex_delete_gandi_zone(self, zone_uuid):
-        self.connection.request(action='%s/zones/%s' % (API_BASE, zone_uuid),
-                                method='DELETE')
+        self.connection.request(
+            action="%s/zones/%s" % (API_BASE, zone_uuid), method="DELETE"
+        )
         return True
 
     """
@@ -338,13 +344,16 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :return: ``bool``
     """
+
     def ex_switch_domain_gandi_zone(self, domain, zone_uuid):
         domain_data = {
-            'zone_uuid': zone_uuid,
+            "zone_uuid": zone_uuid,
         }
-        self.connection.request(action='%s/domains/%s' % (API_BASE, domain),
-                                method='PATCH',
-                                data=domain_data)
+        self.connection.request(
+            action="%s/domains/%s" % (API_BASE, domain),
+            method="PATCH",
+            data=domain_data,
+        )
         return True
 
     """
@@ -355,41 +364,41 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     :return: ``list`` of :class:`Record`s
     """
+
     def ex_create_multi_value_record(self, name, zone, type, data, extra=None):
         self._validate_record(None, name, type, data, extra)
 
-        action = '%s/domains/%s/records' % (API_BASE, zone.id)
+        action = "%s/domains/%s/records" % (API_BASE, zone.id)
 
         record_data = {
-            'rrset_name': name,
-            'rrset_type': self.RECORD_TYPE_MAP[type],
-            'rrset_values': data,
+            "rrset_name": name,
+            "rrset_type": self.RECORD_TYPE_MAP[type],
+            "rrset_values": data,
         }
 
-        if extra is not None and 'ttl' in extra:
-            record_data['rrset_ttl'] = extra['ttl']
+        if extra is not None and "ttl" in extra:
+            record_data["rrset_ttl"] = extra["ttl"]
 
         try:
-            self.connection.request(action=action, method='POST',
-                                    data=record_data)
+            self.connection.request(action=action, method="POST", data=record_data)
         except ResourceConflictError:
-            raise RecordAlreadyExistsError(value='',
-                                           driver=self.connection.driver,
-                                           record_id='%s:%s' % (
-                                               self.RECORD_TYPE_MAP[type],
-                                               name))
+            raise RecordAlreadyExistsError(
+                value="",
+                driver=self.connection.driver,
+                record_id="%s:%s" % (self.RECORD_TYPE_MAP[type], name),
+            )
         return self._to_record(record_data, zone)
 
     def _to_record(self, data, zone):
         records = []
-        rrset_values = data['rrset_values']
+        rrset_values = data["rrset_values"]
         multiple_value_record = len(rrset_values) > 1
 
         for index, rrset_value in enumerate(rrset_values):
             record = self._to_record_sub(data, zone, rrset_value)
-            record.extra['_multi_value'] = multiple_value_record
+            record.extra["_multi_value"] = multiple_value_record
             if multiple_value_record:
-                record.extra['_other_records'] = []
+                record.extra["_other_records"] = []
             records.append(record)
 
         if multiple_value_record:
@@ -400,35 +409,36 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
                         continue
 
                     extra = copy.deepcopy(other_record.extra)
-                    extra.pop('_multi_value')
-                    extra.pop('_other_records')
+                    extra.pop("_multi_value")
+                    extra.pop("_other_records")
 
                     item = {
-                        'name': other_record.name,
-                        'data': other_record.data,
-                        'type': other_record.type,
-                        'extra': extra
+                        "name": other_record.name,
+                        "data": other_record.data,
+                        "type": other_record.type,
+                        "extra": extra,
                     }
-                    record.extra['_other_records'].append(item)
+                    record.extra["_other_records"].append(item)
         return records
 
     def _to_record_sub(self, data, zone, value):
         extra = {}
-        ttl = data.get('rrset_ttl', None)
+        ttl = data.get("rrset_ttl", None)
         if ttl is not None:
-            extra['ttl'] = int(ttl)
-        if data['rrset_type'] == 'MX':
+            extra["ttl"] = int(ttl)
+        if data["rrset_type"] == "MX":
             priority, value = value.split()
-            extra['priority'] = priority
+            extra["priority"] = priority
         return Record(
-            id='%s:%s' % (data['rrset_type'], data['rrset_name']),
-            name=data['rrset_name'],
-            type=self._string_to_record_type(data['rrset_type']),
+            id="%s:%s" % (data["rrset_type"], data["rrset_name"]),
+            name=data["rrset_name"],
+            type=self._string_to_record_type(data["rrset_type"]),
             data=value,
             zone=zone,
             driver=self,
             ttl=ttl,
-            extra=extra)
+            extra=extra,
+        )
 
     def _to_records(self, data, zone):
         records = []
@@ -438,14 +448,12 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     def _to_zone(self, zone):
         extra = {}
-        if 'zone_uuid' in zone:
-            extra = {
-                'zone_uuid': zone['zone_uuid']
-            }
+        if "zone_uuid" in zone:
+            extra = {"zone_uuid": zone["zone_uuid"]}
         return Zone(
-            id=str(zone['fqdn']),
-            domain=zone['fqdn'],
-            type='master',
+            id=str(zone["fqdn"]),
+            domain=zone["fqdn"],
+            type="master",
             ttl=0,
             driver=self,
             extra=extra,
@@ -459,26 +467,40 @@ class GandiLiveDNSDriver(BaseGandiLiveDriver, DNSDriver):
 
     def _validate_record(self, record_id, name, record_type, data, extra):
         if len(data) > 1024:
-            raise RecordError('Record data must be <= 1024 characters',
-                              driver=self, record_id=record_id)
-        if type == 'MX' or type == RecordType.MX:
-            if extra is None or 'priority' not in extra:
-                raise RecordError('MX record must have a priority',
-                                  driver=self, record_id=record_id)
-        if extra is not None and '_other_records' in extra:
-            for other_value in extra.get('_other_records', []):
-                if len(other_value['data']) > 1024:
-                    raise RecordError('Record data must be <= 1024 characters',
-                                      driver=self, record_id=record_id)
-                if type == 'MX' or type == RecordType.MX:
-                    if (other_value['extra'] is None
-                            or 'priority' not in other_value['extra']):
-                        raise RecordError('MX record must have a priority',
-                                          driver=self, record_id=record_id)
-        if extra is not None and 'ttl' in extra:
-            if extra['ttl'] < TTL_MIN:
-                raise RecordError('TTL must be at least 300 seconds',
-                                  driver=self, record_id=record_id)
-            if extra['ttl'] > TTL_MAX:
-                raise RecordError('TTL must not exceed 30 days',
-                                  driver=self, record_id=record_id)
+            raise RecordError(
+                "Record data must be <= 1024 characters",
+                driver=self,
+                record_id=record_id,
+            )
+        if type == "MX" or type == RecordType.MX:
+            if extra is None or "priority" not in extra:
+                raise RecordError(
+                    "MX record must have a priority", driver=self, record_id=record_id
+                )
+        if extra is not None and "_other_records" in extra:
+            for other_value in extra.get("_other_records", []):
+                if len(other_value["data"]) > 1024:
+                    raise RecordError(
+                        "Record data must be <= 1024 characters",
+                        driver=self,
+                        record_id=record_id,
+                    )
+                if type == "MX" or type == RecordType.MX:
+                    if (
+                        other_value["extra"] is None
+                        or "priority" not in other_value["extra"]
+                    ):
+                        raise RecordError(
+                            "MX record must have a priority",
+                            driver=self,
+                            record_id=record_id,
+                        )
+        if extra is not None and "ttl" in extra:
+            if extra["ttl"] < TTL_MIN:
+                raise RecordError(
+                    "TTL must be at least 300 seconds", driver=self, record_id=record_id
+                )
+            if extra["ttl"] > TTL_MAX:
+                raise RecordError(
+                    "TTL must not exceed 30 days", driver=self, record_id=record_id
+                )

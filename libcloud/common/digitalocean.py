@@ -25,9 +25,9 @@ from libcloud.common.base import JsonResponse
 from libcloud.common.types import LibcloudError, InvalidCredsError
 
 __all__ = [
-    'DigitalOcean_v2_Response',
-    'DigitalOcean_v2_Connection',
-    'DigitalOceanBaseDriver'
+    "DigitalOcean_v2_Response",
+    "DigitalOcean_v2_Connection",
+    "DigitalOceanBaseDriver",
 ]
 
 
@@ -38,27 +38,35 @@ class DigitalOcean_v1_Error(LibcloudError):
     supported.
     """
 
-    def __init__(self,
-                 value=('Driver no longer supported: Version 1 of the '
-                        'DigitalOcean API reached end of life on November 9, '
-                        '2015. Use the v2 driver. Please visit: '
-                        'https://developers.digitalocean.com/documentation/changelog/api-v1/sunsetting-api-v1/'),  # noqa: E501
-                 driver=None):
+    def __init__(
+        self,
+        value=(
+            "Driver no longer supported: Version 1 of the "
+            "DigitalOcean API reached end of life on November 9, "
+            "2015. Use the v2 driver. Please visit: "
+            "https://developers.digitalocean.com/documentation/changelog/api-v1/sunsetting-api-v1/"
+        ),  # noqa: E501
+        driver=None,
+    ):
         super(DigitalOcean_v1_Error, self).__init__(value, driver=driver)
 
 
 class DigitalOcean_v2_Response(JsonResponse):
-    valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                            httplib.NO_CONTENT]
+    valid_response_codes = [
+        httplib.OK,
+        httplib.ACCEPTED,
+        httplib.CREATED,
+        httplib.NO_CONTENT,
+    ]
 
     def parse_error(self):
         if self.status == httplib.UNAUTHORIZED:
             body = self.parse_body()
-            raise InvalidCredsError(body['message'])
+            raise InvalidCredsError(body["message"])
         else:
             body = self.parse_body()
-            if 'message' in body:
-                error = '%s (code: %s)' % (body['message'], self.status)
+            if "message" in body:
+                error = "%s (code: %s)" % (body["message"], self.status)
             else:
                 error = body
             return error
@@ -72,7 +80,7 @@ class DigitalOcean_v2_Connection(ConnectionKey):
     Connection class for the DigitalOcean (v2) driver.
     """
 
-    host = 'api.digitalocean.com'
+    host = "api.digitalocean.com"
     responseCls = DigitalOcean_v2_Response
 
     def add_default_headers(self, headers):
@@ -81,8 +89,8 @@ class DigitalOcean_v2_Connection(ConnectionKey):
 
         This method adds ``token`` to the request.
         """
-        headers['Authorization'] = 'Bearer %s' % (self.key)
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = "Bearer %s" % (self.key)
+        headers["Content-Type"] = "application/json"
         return headers
 
     def add_default_params(self, params):
@@ -93,7 +101,7 @@ class DigitalOcean_v2_Connection(ConnectionKey):
         number of paginated requests to the API.
         """
         # pylint: disable=maybe-no-member
-        params['per_page'] = self.driver.ex_per_page
+        params["per_page"] = self.driver.ex_per_page
         return params
 
 
@@ -101,6 +109,7 @@ class DigitalOceanConnection(DigitalOcean_v2_Connection):
     """
     Connection class for the DigitalOcean driver.
     """
+
     pass
 
 
@@ -113,35 +122,30 @@ class DigitalOceanBaseDriver(BaseDriver):
     DigitalOcean BaseDriver
     """
 
-    name = 'DigitalOcean'
-    website = 'https://www.digitalocean.com'
+    name = "DigitalOcean"
+    website = "https://www.digitalocean.com"
 
-    def __new__(cls, key, secret=None, api_version='v2', **kwargs):
+    def __new__(cls, key, secret=None, api_version="v2", **kwargs):
         if cls is DigitalOceanBaseDriver:
-            if api_version == 'v1' or secret is not None:
+            if api_version == "v1" or secret is not None:
                 raise DigitalOcean_v1_Error()
-            elif api_version == 'v2':
+            elif api_version == "v2":
                 cls = DigitalOcean_v2_BaseDriver
             else:
-                raise NotImplementedError('Unsupported API version: %s' %
-                                          (api_version))
+                raise NotImplementedError("Unsupported API version: %s" % (api_version))
         return super(DigitalOceanBaseDriver, cls).__new__(cls, **kwargs)
 
     def ex_account_info(self):
-        raise NotImplementedError(
-            'ex_account_info not implemented for this driver')
+        raise NotImplementedError("ex_account_info not implemented for this driver")
 
     def ex_list_events(self):
-        raise NotImplementedError(
-            'ex_list_events not implemented for this driver')
+        raise NotImplementedError("ex_list_events not implemented for this driver")
 
     def ex_get_event(self, event_id):
-        raise NotImplementedError(
-            'ex_get_event not implemented for this driver')
+        raise NotImplementedError("ex_get_event not implemented for this driver")
 
     def _paginated_request(self, url, obj):
-        raise NotImplementedError(
-            '_paginated_requests not implemented for this driver')
+        raise NotImplementedError("_paginated_requests not implemented for this driver")
 
 
 class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
@@ -151,18 +155,29 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
     Supports `ex_per_page` ``int`` value keyword parameter to adjust per page
     requests against the API.
     """
+
     connectionCls = DigitalOcean_v2_Connection
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None,
-                 api_version=None, region=None, ex_per_page=200, **kwargs):
+    def __init__(
+        self,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        api_version=None,
+        region=None,
+        ex_per_page=200,
+        **kwargs,
+    ):
         self.ex_per_page = ex_per_page
         super(DigitalOcean_v2_BaseDriver, self).__init__(key, **kwargs)
 
     def ex_account_info(self):
-        return self.connection.request('/v2/account').object['account']
+        return self.connection.request("/v2/account").object["account"]
 
     def ex_list_events(self):
-        return self._paginated_request('/v2/actions', 'actions')
+        return self._paginated_request("/v2/actions", "actions")
 
     def ex_get_event(self, event_id):
         """
@@ -172,8 +187,9 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         :type       event_id: ``str``
         """
         params = {}
-        return self.connection.request('/v2/actions/%s' % event_id,
-                                       params=params).object['action']
+        return self.connection.request(
+            "/v2/actions/%s" % event_id, params=params
+        ).object["action"]
 
     def _paginated_request(self, url, obj):
         """
@@ -192,12 +208,12 @@ class DigitalOcean_v2_BaseDriver(DigitalOceanBaseDriver):
         params = {}
         data = self.connection.request(url)
         try:
-            query = urlparse.urlparse(data.object['links']['pages']['last'])
+            query = urlparse.urlparse(data.object["links"]["pages"]["last"])
             # The query[4] references the query parameters from the url
-            pages = parse_qs(query[4])['page'][0]
+            pages = parse_qs(query[4])["page"][0]
             values = data.object[obj]
             for page in range(2, int(pages) + 1):
-                params.update({'page': page})
+                params.update({"page": page})
                 new_data = self.connection.request(url, params=params)
 
                 more_values = new_data.object[obj]

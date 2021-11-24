@@ -30,9 +30,9 @@ from libcloud.compute.types import NodeState
 from libcloud.utils.py3 import httplib
 
 NODE_STATE_MAP = {
-    'ACTIVE': NodeState.RUNNING,
-    'STOPPED': NodeState.STOPPED,
-    'UNKNOWN': NodeState.UNKNOWN,
+    "ACTIVE": NodeState.RUNNING,
+    "STOPPED": NodeState.STOPPED,
+    "UNKNOWN": NodeState.UNKNOWN,
 }
 
 
@@ -40,15 +40,15 @@ class GridscaleResponse(JsonResponse):
     """
     Gridscale API Response
     """
+
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.NO_CONTENT]
 
     def parse_error(self):
         body = self.parse_body()
         if self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsError(body['message'])
+            raise InvalidCredsError(body["message"])
         if self.status == httplib.NOT_FOUND:
-            raise Exception(
-                "The resource you are looking for has not been found.")
+            raise Exception("The resource you are looking for has not been found.")
         return self.body
 
     def success(self):
@@ -61,7 +61,8 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
     Authentication using uuid and api token
 
     """
-    host = 'api.gridscale.io'
+
+    host = "api.gridscale.io"
     responseCls = GridscaleResponse
 
     def encode_data(self, data):
@@ -75,22 +76,22 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
         :type headers: ``str``
         :return: None
         """
-        headers['X-Auth-UserId'] = self.user_id
-        headers['X-Auth-Token'] = self.key
-        headers['Content-Type'] = 'application/json'
+        headers["X-Auth-UserId"] = self.user_id
+        headers["X-Auth-Token"] = self.key
+        headers["Content-Type"] = "application/json"
 
         return headers
 
     def async_request(self, *poargs, **kwargs):
         self.async_request_counter = 0
-        self.request_method = '_poll_request_initial'
-        return super(GridscaleConnection, self).async_request(*poargs,
-                                                              **kwargs)
+        self.request_method = "_poll_request_initial"
+        return super(GridscaleConnection, self).async_request(*poargs, **kwargs)
 
     def _poll_request_initial(self, **kwargs):
         if self.async_request_counter == 0:
-            self.poll_response_initial = super(GridscaleConnection, self) \
-                .request(**kwargs)
+            self.poll_response_initial = super(GridscaleConnection, self).request(
+                **kwargs
+            )
             r = self.poll_response_initial
             self.async_request_counter += 1
         else:
@@ -100,29 +101,28 @@ class GridscaleConnection(ConnectionUserAndKey, PollingConnection):
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
 
-        endpoint_url = 'requests/{}'.format(response.object['request_uuid'])
-        kwargs = {'action': endpoint_url}
+        endpoint_url = "requests/{}".format(response.object["request_uuid"])
+        kwargs = {"action": endpoint_url}
         return kwargs
 
     def has_completed(self, response):
         if response.status == 200:
-            request_uuid = self.poll_response_initial.object['request_uuid']
-            request_status = response.object[request_uuid]['status']
-            if request_status == 'done':
+            request_uuid = self.poll_response_initial.object["request_uuid"]
+            request_status = response.object[request_uuid]["status"]
+            if request_status == "done":
                 return True
         return False
 
 
 class GridscaleBaseDriver(BaseDriver):
-    name = 'gridscale'
-    website = 'https://gridscale.io'
+    name = "gridscale"
+    website = "https://gridscale.io"
     connectionCls = GridscaleConnection
 
     def __init__(self, user_id, key, **kwargs):
         super(GridscaleBaseDriver, self).__init__(user_id, key, **kwargs)
 
-    def _sync_request(self, data=None, endpoint=None, method='GET'):
-        raw_result = self.connection.request(endpoint, data=data,
-                                             method=method)
+    def _sync_request(self, data=None, endpoint=None, method="GET"):
+        raw_result = self.connection.request(endpoint, data=data, method=method)
 
         return raw_result

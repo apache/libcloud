@@ -16,13 +16,15 @@
 import unittest
 
 from libcloud.compute.drivers.bsnl import BSNLNodeDriver
-from libcloud.test.compute.test_dimensiondata_v2_3 import DimensionDataMockHttp, DimensionData_v2_3_Tests
+from libcloud.test.compute.test_dimensiondata_v2_3 import (
+    DimensionDataMockHttp,
+    DimensionData_v2_3_Tests,
+)
 
 
 class BSNLTests(DimensionData_v2_3_Tests, unittest.TestCase):
-
     def setUp(self):
         BSNLNodeDriver.connectionCls.conn_class = DimensionDataMockHttp
-        BSNLNodeDriver.connectionCls.active_api_version = '2.3'
+        BSNLNodeDriver.connectionCls.active_api_version = "2.3"
         DimensionDataMockHttp.type = None
-        self.driver = BSNLNodeDriver('user', 'password')
+        self.driver = BSNLNodeDriver("user", "password")
