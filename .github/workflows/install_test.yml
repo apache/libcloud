@@ -40,3 +40,21 @@ jobs:
           pip show apache-libcloud && exit 1
           pip install apache-libcloud
           pip show apache-libcloud
+
+  # Job which verifies that the checksum for release artifacts for the latest
+  # stable version are the same for official ASF mirror and PyPi
+  verify_checksums:
+    name: Verify Artifacts Checksum
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Verify Checksums
+        run: |
+          LAST_STABLE_VERSION=$(curl -s --fail https://pypi.org/pypi/apache-libcloud/json | jq ".releases | to_entries | last | .key" -r)
+          echo "Verifying checksums for version ${LAST_STABLE_VERSION}"
+          ./dist/verify_checksums.sh "apache-libcloud-${LAST_STABLE_VERSION}"
