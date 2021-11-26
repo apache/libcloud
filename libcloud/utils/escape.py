@@ -14,9 +14,9 @@
 # limitations under the License.
 
 __all__ = [
-    'sanitize_object_name',
+    "sanitize_object_name",
 ]
 
 
 def sanitize_object_name(object_name):
-    return object_name.replace('\\', '/')
+    return object_name.replace("\\", "/")

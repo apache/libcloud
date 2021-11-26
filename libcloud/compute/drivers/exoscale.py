@@ -16,16 +16,14 @@
 from libcloud.compute.providers import Provider
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
-__all__ = [
-    'ExoscaleNodeDriver'
-]
+__all__ = ["ExoscaleNodeDriver"]
 
 
 class ExoscaleNodeDriver(CloudStackNodeDriver):
     type = Provider.EXOSCALE
-    name = 'Exoscale'
-    website = 'https://www.exoscale.com/'
+    name = "Exoscale"
+    website = "https://www.exoscale.com/"
 
     # API endpoint info
-    host = 'api.exoscale.com'
-    path = '/compute'
+    host = "api.exoscale.com"
+    path = "/compute"

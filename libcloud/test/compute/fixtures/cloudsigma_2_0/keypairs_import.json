@@ -1,0 +1,16 @@
+{
+    "objects": [
+        {
+            "fingerprint": "e8:ee:43:72:38:09:6d:1e:8e:46:9e:76:80:a3:0a:01",
+            "grantees": [],
+            "meta": {},
+            "name": "test_key",
+            "permissions": [],
+            "private_key": null,
+            "public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9E5ykn/RPmJlTN9HJ2wkjjMJu5AB8YfcGX9uKCA9jVq0urN+LPqVy1jzCzPaxi2z05Cia0IH/G0w99SMdmkuDUQ/j+F8/U0Ja2whsiINgqvM0QWAClI7UCSoFny1UvaCk9S5J1ork/eU+ORu3jd2CdOEjIy82iLSDueALovqz3rQm8Gq5qY693zBVpb9WlvJmsqpHC+awwfWkYSuFIB4SsiY53AzzC0J10tLc7ifF+2zTqnIRwaG6m8fyWmH2r6MonGmDvCFSQ4nJmgw3VeAO+1EVvP0++XGo/RI55wQc/7jII6ANwlrr0tIUXGaVKiD0GK0K/mpEXCu8oawxhx6x",
+            "resource_uri": "/api/2.0/keypairs/6d7db550-d1c5-4e3b-9c0a-e83f6a2b8244/",
+            "tags": [],
+            "uuid": "6d7db550-d1c5-4e3b-9c0a-e83f6a2b8244"
+        }
+    ]
+}

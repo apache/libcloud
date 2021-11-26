@@ -35,9 +35,9 @@ from libcloud.utils.py3 import urlquote
 
 # Docs are a lie. Actual namespace returned is different that the one listed
 # in the docs.
-SIGNATURE_IDENTIFIER = 'GOOG1'
-API_VERSION = '2006-03-01'
-NAMESPACE = 'http://doc.s3.amazonaws.com/%s' % (API_VERSION)
+SIGNATURE_IDENTIFIER = "GOOG1"
+API_VERSION = "2006-03-01"
+NAMESPACE = "http://doc.s3.amazonaws.com/%s" % (API_VERSION)
 
 
 def _clean_object_name(name):
@@ -51,11 +51,11 @@ def _clean_object_name(name):
     :return: The url-encoded object name or None if name=None.
     :rtype ``str`` or ``None``
     """
-    return urlquote(name, safe='') if name else None
+    return urlquote(name, safe="") if name else None
 
 
 class ContainerPermissions(object):
-    values = ['NONE', 'READER', 'WRITER', 'OWNER']
+    values = ["NONE", "READER", "WRITER", "OWNER"]
     NONE = 0
     READER = 1
     WRITER = 2
@@ -63,7 +63,7 @@ class ContainerPermissions(object):
 
 
 class ObjectPermissions(object):
-    values = ['NONE', 'READER', 'OWNER']
+    values = ["NONE", "READER", "OWNER"]
     NONE = 0
     READER = 1
     OWNER = 2
@@ -77,41 +77,44 @@ class GoogleStorageConnection(ConnectionUserAndKey):
     the S3 HMAC interoperability method.
     """
 
-    host = 'storage.googleapis.com'
+    host = "storage.googleapis.com"
     responseCls = S3Response
     rawResponseCls = S3RawResponse
-    PROJECT_ID_HEADER = 'x-goog-project-id'
+    PROJECT_ID_HEADER = "x-goog-project-id"
 
-    def __init__(self, user_id, key, secure=True, auth_type=None,
-                 credential_file=None, **kwargs):
+    def __init__(
+        self, user_id, key, secure=True, auth_type=None, credential_file=None, **kwargs
+    ):
         self.auth_type = auth_type or GoogleAuthType.guess_type(user_id)
         if GoogleAuthType.is_oauth2(self.auth_type):
             self.oauth2_credential = GoogleOAuth2Credential(
-                user_id, key, self.auth_type, credential_file, **kwargs)
+                user_id, key, self.auth_type, credential_file, **kwargs
+            )
         else:
             self.oauth2_credential = None
-        super(GoogleStorageConnection, self).__init__(user_id, key, secure,
-                                                      **kwargs)
+        super(GoogleStorageConnection, self).__init__(user_id, key, secure, **kwargs)
 
     def add_default_headers(self, headers):
         date = email.utils.formatdate(usegmt=True)
-        headers['Date'] = date
+        headers["Date"] = date
         project = self.get_project()
         if project:
             headers[self.PROJECT_ID_HEADER] = project
         return headers
 
     def get_project(self):
-        return getattr(self.driver, 'project', None)
+        return getattr(self.driver, "project", None)
 
     def pre_connect_hook(self, params, headers):
         if self.auth_type == GoogleAuthType.GCS_S3:
             signature = self._get_s3_auth_signature(params, headers)
-            headers['Authorization'] = '%s %s:%s' % (SIGNATURE_IDENTIFIER,
-                                                     self.user_id, signature)
+            headers["Authorization"] = "%s %s:%s" % (
+                SIGNATURE_IDENTIFIER,
+                self.user_id,
+                signature,
+            )
         else:
-            headers['Authorization'] = ('Bearer ' +
-                                        self.oauth2_credential.access_token)
+            headers["Authorization"] = "Bearer " + self.oauth2_credential.access_token
         return params, headers
 
     def _get_s3_auth_signature(self, params, headers):
@@ -124,9 +127,11 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             k_lower = k.lower()
             # NOTE: It's important that the value of Content-Type header is
             # left as is and not lowercased
-            if (k_lower in ['date', 'content-type'] or k_lower.startswith(
-                    GoogleStorageDriver.http_vendor_prefix) or
-                    not isinstance(v, str)):
+            if (
+                k_lower in ["date", "content-type"]
+                or k_lower.startswith(GoogleStorageDriver.http_vendor_prefix)
+                or not isinstance(v, str)
+            ):
                 headers_copy[k_lower] = v
             else:
                 headers_copy[k_lower] = v.lower()
@@ -138,7 +143,8 @@ class GoogleStorageConnection(ConnectionUserAndKey):
             expires=None,
             secret_key=self.key,
             path=self.action,
-            vendor_prefix=GoogleStorageDriver.http_vendor_prefix)
+            vendor_prefix=GoogleStorageDriver.http_vendor_prefix,
+        )
 
 
 class GCSResponse(GoogleResponse):
@@ -152,14 +158,14 @@ class GoogleStorageJSONConnection(GoogleStorageConnection):
     This can either authenticate via the Google OAuth2 methods or via
     the S3 HMAC interoperability method.
     """
-    host = 'www.googleapis.com'
+
+    host = "www.googleapis.com"
     responseCls = GCSResponse
     rawResponseCls = None
 
     def add_default_headers(self, headers):
-        headers = super(GoogleStorageJSONConnection, self).add_default_headers(
-            headers)
-        headers['Content-Type'] = 'application/json'
+        headers = super(GoogleStorageJSONConnection, self).add_default_headers(headers)
+        headers["Content-Type"] = "application/json"
         return headers
 
 
@@ -192,22 +198,22 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         driver = GoogleStorageDriver(key='GOOG0123456789ABCXYZ',
                                      secret=key_secret)
     """
-    name = 'Google Cloud Storage'
-    website = 'http://cloud.google.com/storage'
+
+    name = "Google Cloud Storage"
+    website = "http://cloud.google.com/storage"
     connectionCls = GoogleStorageConnection
     jsonConnectionCls = GoogleStorageJSONConnection
-    hash_type = 'md5'
+    hash_type = "md5"
     namespace = NAMESPACE
     supports_chunked_encoding = False
     supports_s3_multipart_upload = False
-    http_vendor_prefix = 'x-goog'
+    http_vendor_prefix = "x-goog"
 
     def __init__(self, key, secret=None, project=None, **kwargs):
         super(GoogleStorageDriver, self).__init__(key, secret, **kwargs)
         self.project = project
 
-        self.json_connection = GoogleStorageJSONConnection(
-            key, secret, **kwargs)
+        self.json_connection = GoogleStorageJSONConnection(key, secret, **kwargs)
 
     def _get_container_permissions(self, container_name):
         """
@@ -223,8 +229,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         # FORBIDDEN -> exists, but not an OWNER.
         # NOT_FOUND -> bucket DNE, return NONE.
         try:
-            self.json_connection.request(
-                '/storage/v1/b/%s/acl' % container_name)
+            self.json_connection.request("/storage/v1/b/%s/acl" % container_name)
             return ContainerPermissions.OWNER
         except ProviderError as e:
             if e.http_code == httplib.FORBIDDEN:
@@ -240,8 +245,10 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         # PRECONDITION_FAILED, then we must be authorized.
         try:
             self.json_connection.request(
-                '/storage/v1/b/%s/o/writecheck' % container_name,
-                headers={'x-goog-if-generation-match': '0'}, method='DELETE')
+                "/storage/v1/b/%s/o/writecheck" % container_name,
+                headers={"x-goog-if-generation-match": "0"},
+                method="DELETE",
+            )
         except ProviderError as e:
             if e.http_code in [httplib.NOT_FOUND, httplib.PRECONDITION_FAILED]:
                 return ContainerPermissions.WRITER
@@ -250,7 +257,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
 
         # Last, try READER permissions: try getting container metadata.
         try:
-            self.json_connection.request('/storage/v1/b/%s' % container_name)
+            self.json_connection.request("/storage/v1/b/%s" % container_name)
             return ContainerPermissions.READER
         except ProviderError as e:
             if e.http_code not in [httplib.FORBIDDEN, httplib.NOT_FOUND]:
@@ -260,7 +267,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
 
     def _get_user(self):
         """Gets this drivers' authenticated user, if any."""
-        oauth2_creds = getattr(self.connection, 'oauth2_credential')
+        oauth2_creds = getattr(self.connection, "oauth2_credential")
         if oauth2_creds:
             return oauth2_creds.user_id
         else:
@@ -284,7 +291,8 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         # Try OWNER permissions first: try listing the object ACL.
         try:
             self.json_connection.request(
-                '/storage/v1/b/%s/o/%s/acl' % (container_name, object_name))
+                "/storage/v1/b/%s/o/%s/acl" % (container_name, object_name)
+            )
             return ObjectPermissions.OWNER
         except ProviderError as e:
             if e.http_code not in [httplib.FORBIDDEN, httplib.NOT_FOUND]:
@@ -293,7 +301,8 @@ class GoogleStorageDriver(BaseS3StorageDriver):
         # Try READER permissions: try getting the object.
         try:
             self.json_connection.request(
-                '/storage/v1/b/%s/o/%s' % (container_name, object_name))
+                "/storage/v1/b/%s/o/%s" % (container_name, object_name)
+            )
             return ObjectPermissions.READER
         except ProviderError as e:
             if e.http_code not in [httplib.FORBIDDEN, httplib.NOT_FOUND]:
@@ -301,8 +310,7 @@ class GoogleStorageDriver(BaseS3StorageDriver):
 
         return ObjectPermissions.NONE
 
-    def ex_delete_permissions(self, container_name, object_name=None,
-                              entity=None):
+    def ex_delete_permissions(self, container_name, object_name=None, entity=None):
         """
         Delete permissions for an ACL entity on a container or object.
 
@@ -323,18 +331,18 @@ class GoogleStorageDriver(BaseS3StorageDriver):
             user_id = self._get_user()
             if not user_id:
                 raise ValueError(
-                    'Must provide an entity. Driver is not using an '
-                    'authenticated user.')
+                    "Must provide an entity. Driver is not using an "
+                    "authenticated user."
+                )
             else:
-                entity = 'user-%s' % user_id
+                entity = "user-%s" % user_id
 
         if object_name:
-            url = ('/storage/v1/b/%s/o/%s/acl/%s' %
-                   (container_name, object_name, entity))
+            url = "/storage/v1/b/%s/o/%s/acl/%s" % (container_name, object_name, entity)
         else:
-            url = '/storage/v1/b/%s/acl/%s' % (container_name, entity)
+            url = "/storage/v1/b/%s/acl/%s" % (container_name, entity)
 
-        self.json_connection.request(url, method='DELETE')
+        self.json_connection.request(url, method="DELETE")
 
     def ex_get_permissions(self, container_name, object_name=None):
         """
@@ -352,12 +360,16 @@ class GoogleStorageDriver(BaseS3StorageDriver):
             ContainerPermissions and ObjectPermissions, respectively.
         """
         object_name = _clean_object_name(object_name)
-        obj_perms = self._get_object_permissions(
-            container_name, object_name) if object_name else None
+        obj_perms = (
+            self._get_object_permissions(container_name, object_name)
+            if object_name
+            else None
+        )
         return self._get_container_permissions(container_name), obj_perms
 
-    def ex_set_permissions(self, container_name, object_name=None,
-                           entity=None, role=None):
+    def ex_set_permissions(
+        self, container_name, object_name=None, entity=None, role=None
+    ):
         """
         Set the permissions for an ACL entity on a container or an object.
 
@@ -387,36 +399,37 @@ class GoogleStorageDriver(BaseS3StorageDriver):
                 role = perms.values[role]
             except IndexError:
                 raise ValueError(
-                    '%s is not a valid role level for container=%s object=%s' %
-                    (role, container_name, object_name))
+                    "%s is not a valid role level for container=%s object=%s"
+                    % (role, container_name, object_name)
+                )
         elif not isinstance(role, str):
-            raise ValueError('%s is not a valid permission.' % role)
+            raise ValueError("%s is not a valid permission." % role)
 
         if not entity:
             user_id = self._get_user()
             if not user_id:
                 raise ValueError(
-                    'Must provide an entity. Driver is not using an '
-                    'authenticated user.')
+                    "Must provide an entity. Driver is not using an "
+                    "authenticated user."
+                )
             else:
-                entity = 'user-%s' % user_id
+                entity = "user-%s" % user_id
 
         if object_name:
-            url = '/storage/v1/b/%s/o/%s/acl' % (container_name, object_name)
+            url = "/storage/v1/b/%s/o/%s/acl" % (container_name, object_name)
         else:
-            url = '/storage/v1/b/%s/acl' % container_name
+            url = "/storage/v1/b/%s/acl" % container_name
 
         self.json_connection.request(
-            url, method='POST',
-            data=json.dumps({'role': role, 'entity': entity}))
+            url, method="POST", data=json.dumps({"role": role, "entity": entity})
+        )
 
-    def _get_content_length_from_headers(self,
-                                         headers: Dict[str, str]
-                                         ) -> Optional[int]:
+    def _get_content_length_from_headers(
+        self, headers: Dict[str, str]
+    ) -> Optional[int]:
         # We need to override this since Google storage doesn't always return
         # Content-Length header.
         # See https://github.com/apache/libcloud/issues/1544 for details.
-        x_goog_content_length = headers.get('x-goog-stored-content-length',
-                                            None)
-        content_length = headers.get('content-length', x_goog_content_length)
+        x_goog_content_length = headers.get("x-goog-stored-content-length", None)
+        content_length = headers.get("content-length", x_goog_content_length)
         return content_length

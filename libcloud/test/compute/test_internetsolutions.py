@@ -16,13 +16,15 @@
 import unittest
 
 from libcloud.compute.drivers.internetsolutions import InternetSolutionsNodeDriver
-from libcloud.test.compute.test_dimensiondata_v2_3 import DimensionDataMockHttp, DimensionData_v2_3_Tests
+from libcloud.test.compute.test_dimensiondata_v2_3 import (
+    DimensionDataMockHttp,
+    DimensionData_v2_3_Tests,
+)
 
 
 class InternetSolutionsNodeDriverTests(DimensionData_v2_3_Tests, unittest.TestCase):
-
     def setUp(self):
         InternetSolutionsNodeDriver.connectionCls.conn_class = DimensionDataMockHttp
-        InternetSolutionsNodeDriver.connectionCls.active_api_version = '2.3'
+        InternetSolutionsNodeDriver.connectionCls.active_api_version = "2.3"
         DimensionDataMockHttp.type = None
-        self.driver = InternetSolutionsNodeDriver('user', 'password')
+        self.driver = InternetSolutionsNodeDriver("user", "password")

@@ -16,9 +16,7 @@
 DNSimple DNS Driver
 """
 
-__all__ = [
-    'DNSimpleDNSDriver'
-]
+__all__ = ["DNSimpleDNSDriver"]
 
 try:
     import simplejson as json
@@ -35,26 +33,26 @@ DEFAULT_ZONE_TTL = 3600
 
 class DNSimpleDNSDriver(DNSDriver):
     type = Provider.DNSIMPLE
-    name = 'DNSimple'
-    website = 'https://dnsimple.com/'
+    name = "DNSimple"
+    website = "https://dnsimple.com/"
     connectionCls = DNSimpleDNSConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.ALIAS: 'ALIAS',
-        RecordType.CNAME: 'CNAME',
-        RecordType.HINFO: 'HINFO',
-        RecordType.MX: 'MX',
-        RecordType.NAPTR: 'NAPTR',
-        RecordType.NS: 'NS',
-        'POOL': 'POOL',
-        RecordType.SOA: 'SOA',
-        RecordType.SPF: 'SPF',
-        RecordType.SRV: 'SRV',
-        RecordType.SSHFP: 'SSHFP',
-        RecordType.TXT: 'TXT',
-        RecordType.URL: 'URL'
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.ALIAS: "ALIAS",
+        RecordType.CNAME: "CNAME",
+        RecordType.HINFO: "HINFO",
+        RecordType.MX: "MX",
+        RecordType.NAPTR: "NAPTR",
+        RecordType.NS: "NS",
+        "POOL": "POOL",
+        RecordType.SOA: "SOA",
+        RecordType.SPF: "SPF",
+        RecordType.SRV: "SRV",
+        RecordType.SSHFP: "SSHFP",
+        RecordType.TXT: "TXT",
+        RecordType.URL: "URL",
     }
 
     def list_zones(self):
@@ -63,7 +61,7 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        response = self.connection.request('/v1/domains')
+        response = self.connection.request("/v1/domains")
 
         zones = self._to_zones(response.object)
         return zones
@@ -77,7 +75,7 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        response = self.connection.request('/v1/domains/%s/records' % zone.id)
+        response = self.connection.request("/v1/domains/%s/records" % zone.id)
         records = self._to_records(response.object, zone)
         return records
 
@@ -90,7 +88,7 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        response = self.connection.request('/v1/domains/%s' % zone_id)
+        response = self.connection.request("/v1/domains/%s" % zone_id)
         zone = self._to_zone(response.object)
         return zone
 
@@ -106,12 +104,13 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        response = self.connection.request('/v1/domains/%s/records/%s' %
-                                           (zone_id, record_id))
+        response = self.connection.request(
+            "/v1/domains/%s/records/%s" % (zone_id, record_id)
+        )
         record = self._to_record(response.object, zone_id=zone_id)
         return record
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         Create a new zone.
 
@@ -132,12 +131,11 @@ class DNSimpleDNSDriver(DNSDriver):
         For more info, please see:
         http://developer.dnsimple.com/v1/domains/
         """
-        r_json = {'name': domain}
+        r_json = {"name": domain}
         if extra is not None:
             r_json.update(extra)
-        r_data = json.dumps({'domain': r_json})
-        response = self.connection.request(
-            '/v1/domains', method='POST', data=r_data)
+        r_data = json.dumps({"domain": r_json})
+        response = self.connection.request("/v1/domains", method="POST", data=r_data)
         zone = self._to_zone(response.object)
         return zone
 
@@ -165,12 +163,13 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        r_json = {'name': name, 'record_type': type, 'content': data}
+        r_json = {"name": name, "record_type": type, "content": data}
         if extra is not None:
             r_json.update(extra)
-        r_data = json.dumps({'record': r_json})
-        response = self.connection.request('/v1/domains/%s/records' % zone.id,
-                                           method='POST', data=r_data)
+        r_data = json.dumps({"record": r_json})
+        response = self.connection.request(
+            "/v1/domains/%s/records" % zone.id, method="POST", data=r_data
+        )
         record = self._to_record(response.object, zone=zone)
         return record
 
@@ -199,13 +198,15 @@ class DNSimpleDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         zone = record.zone
-        r_json = {'name': name, 'content': data}
+        r_json = {"name": name, "content": data}
         if extra is not None:
             r_json.update(extra)
-        r_data = json.dumps({'record': r_json})
-        response = self.connection.request('/v1/domains/%s/records/%s' %
-                                           (zone.id, record.id),
-                                           method='PUT', data=r_data)
+        r_data = json.dumps({"record": r_json})
+        response = self.connection.request(
+            "/v1/domains/%s/records/%s" % (zone.id, record.id),
+            method="PUT",
+            data=r_data,
+        )
         record = self._to_record(response.object, zone=zone)
         return record
 
@@ -220,7 +221,7 @@ class DNSimpleDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        self.connection.request('/v1/domains/%s' % zone.id, method='DELETE')
+        self.connection.request("/v1/domains/%s" % zone.id, method="DELETE")
         return True
 
     def delete_record(self, record):
@@ -233,8 +234,9 @@ class DNSimpleDNSDriver(DNSDriver):
         :rtype: ``bool``
         """
         zone_id = record.zone.id
-        self.connection.request('/v1/domains/%s/records/%s' % (zone_id,
-                                record.id), method='DELETE')
+        self.connection.request(
+            "/v1/domains/%s/records/%s" % (zone_id, record.id), method="DELETE"
+        )
         return True
 
     def _to_zones(self, data):
@@ -246,29 +248,37 @@ class DNSimpleDNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, data):
-        domain = data.get('domain')
-        id = domain.get('id')
-        name = domain.get('name')
-        extra = {'registrant_id': domain.get('registrant_id'),
-                 'user_id': domain.get('user_id'),
-                 'unicode_name': domain.get('unicode_name'),
-                 'token': domain.get('token'),
-                 'state': domain.get('state'),
-                 'language': domain.get('language'),
-                 'lockable': domain.get('lockable'),
-                 'auto_renew': domain.get('auto_renew'),
-                 'whois_protected': domain.get('whois_protected'),
-                 'record_count': domain.get('record_count'),
-                 'service_count': domain.get('service_count'),
-                 'expires_on': domain.get('expires_on'),
-                 'created_at': domain.get('created_at'),
-                 'updated_at': domain.get('updated_at')}
+        domain = data.get("domain")
+        id = domain.get("id")
+        name = domain.get("name")
+        extra = {
+            "registrant_id": domain.get("registrant_id"),
+            "user_id": domain.get("user_id"),
+            "unicode_name": domain.get("unicode_name"),
+            "token": domain.get("token"),
+            "state": domain.get("state"),
+            "language": domain.get("language"),
+            "lockable": domain.get("lockable"),
+            "auto_renew": domain.get("auto_renew"),
+            "whois_protected": domain.get("whois_protected"),
+            "record_count": domain.get("record_count"),
+            "service_count": domain.get("service_count"),
+            "expires_on": domain.get("expires_on"),
+            "created_at": domain.get("created_at"),
+            "updated_at": domain.get("updated_at"),
+        }
 
         # All zones are primary by design
-        type = 'master'
+        type = "master"
 
-        return Zone(id=id, domain=name, type=type, ttl=DEFAULT_ZONE_TTL,
-                    driver=self, extra=extra)
+        return Zone(
+            id=id,
+            domain=name,
+            type=type,
+            ttl=DEFAULT_ZONE_TTL,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_records(self, data, zone):
         records = []
@@ -280,15 +290,25 @@ class DNSimpleDNSDriver(DNSDriver):
     def _to_record(self, data, zone_id=None, zone=None):
         if not zone:  # We need zone_id or zone
             zone = self.get_zone(zone_id)
-        record = data.get('record')
-        id = record.get('id')
-        name = record.get('name')
-        type = record.get('record_type')
-        data = record.get('content')
-        extra = {'ttl': record.get('ttl'),
-                 'created_at': record.get('created_at'),
-                 'updated_at': record.get('updated_at'),
-                 'domain_id': record.get('domain_id'),
-                 'priority': record.get('prio')}
-        return Record(id=id, name=name, type=type, data=data, zone=zone,
-                      driver=self, ttl=record.get('ttl', None), extra=extra)
+        record = data.get("record")
+        id = record.get("id")
+        name = record.get("name")
+        type = record.get("record_type")
+        data = record.get("content")
+        extra = {
+            "ttl": record.get("ttl"),
+            "created_at": record.get("created_at"),
+            "updated_at": record.get("updated_at"),
+            "domain_id": record.get("domain_id"),
+            "priority": record.get("prio"),
+        }
+        return Record(
+            id=id,
+            name=name,
+            type=type,
+            data=data,
+            zone=zone,
+            driver=self,
+            ttl=record.get("ttl", None),
+            extra=extra,
+        )

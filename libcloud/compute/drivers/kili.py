@@ -22,68 +22,62 @@ from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.drivers.openstack import OpenStack_1_1_Connection
 from libcloud.compute.drivers.openstack import OpenStack_1_1_NodeDriver
 
-__all__ = [
-    'KiliCloudNodeDriver'
-]
+__all__ = ["KiliCloudNodeDriver"]
 
-ENDPOINT_ARGS = {
-    'service_type': 'compute',
-    'name': 'nova',
-    'region': 'RegionOne'
-}
+ENDPOINT_ARGS = {"service_type": "compute", "name": "nova", "region": "RegionOne"}
 
-AUTH_URL = 'https://api.kili.io/keystone/v2.0/tokens'
+AUTH_URL = "https://api.kili.io/keystone/v2.0/tokens"
 
 
 class KiliCloudConnection(OpenStack_1_1_Connection):
-    _auth_version = '2.0_password'
+    _auth_version = "2.0_password"
 
     def __init__(self, *args, **kwargs):
-        self.region = kwargs.pop('region', None)
-        self.get_endpoint_args = kwargs.pop('get_endpoint_args', None)
+        self.region = kwargs.pop("region", None)
+        self.get_endpoint_args = kwargs.pop("get_endpoint_args", None)
         super(KiliCloudConnection, self).__init__(*args, **kwargs)
         self._auth_version = KiliCloudConnection._auth_version
 
     def get_endpoint(self):
         if not self.get_endpoint_args:
-            raise LibcloudError(
-                'KiliCloudConnection must have get_endpoint_args set')
+            raise LibcloudError("KiliCloudConnection must have get_endpoint_args set")
 
-        if '2.0_password' in self._auth_version:
+        if "2.0_password" in self._auth_version:
             ep = self.service_catalog.get_endpoint(**self.get_endpoint_args)
         else:
             raise LibcloudError(
-                'Auth version "%s" not supported' % (self._auth_version))
+                'Auth version "%s" not supported' % (self._auth_version)
+            )
 
         public_url = ep.url
 
         if not public_url:
-            raise LibcloudError('Could not find specified endpoint')
+            raise LibcloudError("Could not find specified endpoint")
 
         return public_url
 
 
 class KiliCloudNodeDriver(OpenStack_1_1_NodeDriver):
-    name = 'Kili Public Cloud'
-    website = 'http://kili.io/'
+    name = "Kili Public Cloud"
+    website = "http://kili.io/"
     connectionCls = KiliCloudConnection
     type = Provider.HPCLOUD
 
-    def __init__(self, key, secret, tenant_name, secure=True,
-                 host=None, port=None, **kwargs):
+    def __init__(
+        self, key, secret, tenant_name, secure=True, host=None, port=None, **kwargs
+    ):
         """
         Note: tenant_name argument is required for Kili cloud.
         """
         self.tenant_name = tenant_name
-        super(KiliCloudNodeDriver, self).__init__(key=key, secret=secret,
-                                                  secure=secure, host=host,
-                                                  port=port,
-                                                  **kwargs)
+        super(KiliCloudNodeDriver, self).__init__(
+            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
+        )
 
     def _ex_connection_class_kwargs(self):
         kwargs = self.openstack_connection_kwargs()
-        kwargs['get_endpoint_args'] = ENDPOINT_ARGS
-        kwargs['ex_force_auth_url'] = AUTH_URL
-        kwargs['ex_tenant_name'] = self.tenant_name
+        kwargs["get_endpoint_args"] = ENDPOINT_ARGS
+        kwargs["ex_force_auth_url"] = AUTH_URL
+        kwargs["ex_tenant_name"] = self.tenant_name
 
         return kwargs

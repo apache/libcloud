@@ -16,13 +16,7 @@
 from libcloud.common.base import ConnectionKey, BaseDriver
 from libcloud.common.types import LibcloudError
 
-__all__ = [
-    'Member',
-    'LoadBalancer',
-    'Algorithm',
-    'Driver',
-    'DEFAULT_ALGORITHM'
-]
+__all__ = ["Member", "LoadBalancer", "Algorithm", "Driver", "DEFAULT_ALGORITHM"]
 
 
 class Member(object):
@@ -54,8 +48,7 @@ class Member(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return ('<Member: id=%s, address=%s:%s>' % (self.id,
-                                                    self.ip, self.port))
+        return "<Member: id=%s, address=%s:%s>" % (self.id, self.ip, self.port)
 
 
 class LoadBalancer(object):
@@ -95,16 +88,13 @@ class LoadBalancer(object):
         self.extra = extra or {}
 
     def attach_compute_node(self, node):
-        return self.driver.balancer_attach_compute_node(balancer=self,
-                                                        node=node)
+        return self.driver.balancer_attach_compute_node(balancer=self, node=node)
 
     def attach_member(self, member):
-        return self.driver.balancer_attach_member(balancer=self,
-                                                  member=member)
+        return self.driver.balancer_attach_member(balancer=self, member=member)
 
     def detach_member(self, member):
-        return self.driver.balancer_detach_member(balancer=self,
-                                                  member=member)
+        return self.driver.balancer_detach_member(balancer=self, member=member)
 
     def list_members(self):
         return self.driver.balancer_list_members(balancer=self)
@@ -113,15 +103,20 @@ class LoadBalancer(object):
         return self.driver.destroy_balancer(balancer=self)
 
     def __repr__(self):
-        return ('<LoadBalancer: id=%s, name=%s, state=%s, ip=%s, '
-                'port=%s>' % (self.id, self.name, self.state, self.ip,
-                              self.port))
+        return "<LoadBalancer: id=%s, name=%s, state=%s, ip=%s, " "port=%s>" % (
+            self.id,
+            self.name,
+            self.state,
+            self.ip,
+            self.port,
+        )
 
 
 class Algorithm(object):
     """
     Represents a load balancing algorithm.
     """
+
     RANDOM = 0
     ROUND_ROBIN = 1
     LEAST_CONNECTIONS = 2
@@ -154,10 +149,10 @@ class Driver(BaseDriver):
     _ALGORITHM_TO_VALUE_MAP = {}
     _VALUE_TO_ALGORITHM_MAP = {}
 
-    def __init__(self, key, secret=None, secure=True, host=None,
-                 port=None, **kwargs):
-        super(Driver, self).__init__(key=key, secret=secret, secure=secure,
-                                     host=host, port=port, **kwargs)
+    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
+        super(Driver, self).__init__(
+            key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
+        )
 
     def list_protocols(self):
         """
@@ -165,8 +160,7 @@ class Driver(BaseDriver):
 
         :rtype: ``list`` of ``str``
         """
-        raise NotImplementedError(
-            'list_protocols not implemented for this driver')
+        raise NotImplementedError("list_protocols not implemented for this driver")
 
     def list_balancers(self):
         """
@@ -174,8 +168,7 @@ class Driver(BaseDriver):
 
         :rtype: ``list`` of :class:`LoadBalancer`
         """
-        raise NotImplementedError(
-            'list_balancers not implemented for this driver')
+        raise NotImplementedError("list_balancers not implemented for this driver")
 
     def create_balancer(self, name, port, protocol, algorithm, members):
         """
@@ -198,8 +191,7 @@ class Driver(BaseDriver):
 
         :rtype: :class:`LoadBalancer`
         """
-        raise NotImplementedError(
-            'create_balancer not implemented for this driver')
+        raise NotImplementedError("create_balancer not implemented for this driver")
 
     def destroy_balancer(self, balancer):
         """
@@ -212,8 +204,7 @@ class Driver(BaseDriver):
         :rtype: ``bool``
         """
 
-        raise NotImplementedError(
-            'destroy_balancer not implemented for this driver')
+        raise NotImplementedError("destroy_balancer not implemented for this driver")
 
     def get_balancer(self, balancer_id):
         """
@@ -225,8 +216,7 @@ class Driver(BaseDriver):
         :rtype: :class:`LoadBalancer`
         """
 
-        raise NotImplementedError(
-            'get_balancer not implemented for this driver')
+        raise NotImplementedError("get_balancer not implemented for this driver")
 
     def update_balancer(self, balancer, **kwargs):
         """
@@ -249,8 +239,7 @@ class Driver(BaseDriver):
 
         :rtype: :class:`LoadBalancer`
         """
-        raise NotImplementedError(
-            'update_balancer not implemented for this driver')
+        raise NotImplementedError("update_balancer not implemented for this driver")
 
     def balancer_attach_compute_node(self, balancer, node):
         """
@@ -284,7 +273,8 @@ class Driver(BaseDriver):
         """
 
         raise NotImplementedError(
-            'balancer_attach_member not implemented for this driver')
+            "balancer_attach_member not implemented for this driver"
+        )
 
     def balancer_detach_member(self, balancer, member):
         """
@@ -301,7 +291,8 @@ class Driver(BaseDriver):
         """
 
         raise NotImplementedError(
-            'balancer_detach_member not implemented for this driver')
+            "balancer_detach_member not implemented for this driver"
+        )
 
     def balancer_list_members(self, balancer):
         """
@@ -314,7 +305,8 @@ class Driver(BaseDriver):
         """
 
         raise NotImplementedError(
-            'balancer_list_members not implemented for this driver')
+            "balancer_list_members not implemented for this driver"
+        )
 
     def list_supported_algorithms(self):
         """
@@ -336,8 +328,7 @@ class Driver(BaseDriver):
         try:
             return self._VALUE_TO_ALGORITHM_MAP[value]
         except KeyError:
-            raise LibcloudError(value='Invalid value: %s' % (value),
-                                driver=self)
+            raise LibcloudError(value="Invalid value: %s" % (value), driver=self)
 
     def _algorithm_to_value(self, algorithm):
         """
@@ -351,5 +342,6 @@ class Driver(BaseDriver):
         try:
             return self._ALGORITHM_TO_VALUE_MAP[algorithm]
         except KeyError:
-            raise LibcloudError(value='Invalid algorithm: %s' % (algorithm),
-                                driver=self)
+            raise LibcloudError(
+                value="Invalid algorithm: %s" % (algorithm), driver=self
+            )

@@ -1,0 +1,21 @@
+{
+    "available_plans": [
+        "vc2-1c-1gb",
+        "vc2-1c-2gb",
+        "vc2-2c-4gb",
+        "vc2-4c-8gb",
+        "vc2-6c-16gb",
+        "vc2-8c-32gb",
+        "vc2-16c-64gb",
+        "vc2-24c-96gb",
+        "vhf-1c-1gb",
+        "vhf-1c-2gb",
+        "vhf-2c-2gb",
+        "vhf-2c-4gb",
+        "vhf-3c-8gb",
+        "vhf-4c-16gb",
+        "vhf-6c-24gb",
+        "vhf-8c-32gb",
+        "vhf-12c-48gb"
+    ]
+}

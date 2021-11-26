@@ -25,34 +25,37 @@ from libcloud.utils.py3 import b
 
 from libcloud.common.base import JsonResponse, ConnectionUserAndKey
 
-from libcloud.container.base import (Container, ContainerDriver,
-                                     ContainerImage)
+from libcloud.container.base import Container, ContainerDriver, ContainerImage
 
 from libcloud.container.providers import Provider
 from libcloud.container.types import ContainerState
 
-VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
-                        httplib.NO_CONTENT]
+VALID_RESPONSE_CODES = [
+    httplib.OK,
+    httplib.ACCEPTED,
+    httplib.CREATED,
+    httplib.NO_CONTENT,
+]
 
 
 class RancherResponse(JsonResponse):
-
     def parse_error(self):
         parsed = super(RancherResponse, self).parse_error()
-        if 'fieldName' in parsed:
-            return "Field %s is %s: %s - %s" % (parsed['fieldName'],
-                                                parsed['code'],
-                                                parsed['message'],
-                                                parsed['detail'])
+        if "fieldName" in parsed:
+            return "Field %s is %s: %s - %s" % (
+                parsed["fieldName"],
+                parsed["code"],
+                parsed["message"],
+                parsed["detail"],
+            )
         else:
-            return "%s - %s" % (parsed['message'], parsed['detail'])
+            return "%s - %s" % (parsed["message"], parsed["detail"])
 
     def success(self):
         return self.status in VALID_RESPONSE_CODES
 
 
 class RancherException(Exception):
-
     def __init__(self, code, message):
         self.code = code
         self.message = message
@@ -76,11 +79,11 @@ class RancherConnection(ConnectionUserAndKey):
         If user and password are specified, include a base http auth
         header
         """
-        headers['Content-Type'] = 'application/json'
-        headers['Accept'] = 'application/json'
+        headers["Content-Type"] = "application/json"
+        headers["Accept"] = "application/json"
         if self.key and self.user_id:
-            user_b64 = base64.b64encode(b('%s:%s' % (self.user_id, self.key)))
-            headers['Authorization'] = 'Basic %s' % (user_b64.decode('utf-8'))
+            user_b64 = base64.b64encode(b("%s:%s" % (self.user_id, self.key)))
+            headers["Authorization"] = "Basic %s" % (user_b64.decode("utf-8"))
         return headers
 
 
@@ -110,16 +113,16 @@ class RancherContainerDriver(ContainerDriver):
     """
 
     type = Provider.RANCHER
-    name = 'Rancher'
-    website = 'http://rancher.com'
+    name = "Rancher"
+    website = "http://rancher.com"
     connectionCls = RancherConnection
     # Holding off on cluster support for now.
     # Only Environment API interaction enabled.
     supports_clusters = False
     # As in the /v1/
-    version = '1'
+    version = "1"
 
-    def __init__(self, key, secret, secure=True, host='localhost', port=443):
+    def __init__(self, key, secret, secure=True, host="localhost", port=443):
         """
         Creates a new Rancher Container driver.
 
@@ -143,16 +146,16 @@ class RancherContainerDriver(ContainerDriver):
         """
 
         # Parse the Given Host
-        if '://' not in host and not host.startswith("//"):
-            host = '//' + host
+        if "://" not in host and not host.startswith("//"):
+            host = "//" + host
         parsed = urlparse.urlparse(host)
 
         super(RancherContainerDriver, self).__init__(
             key=key,
             secret=secret,
-            secure=False if parsed.scheme == 'http' else secure,
+            secure=False if parsed.scheme == "http" else secure,
             host=parsed.hostname,
-            port=parsed.port if parsed.port else port
+            port=parsed.port if parsed.port else port,
         )
 
         self.baseuri = parsed.path if parsed.path else "/v%s" % self.version
@@ -166,13 +169,19 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``list`` of ``dict``
         """
 
-        result = self.connection.request(
-            "%s/environments" % self.baseuri).object
-        return result['data']
+        result = self.connection.request("%s/environments" % self.baseuri).object
+        return result["data"]
 
-    def ex_deploy_stack(self, name, description=None, docker_compose=None,
-                        environment=None, external_id=None,
-                        rancher_compose=None, start=True):
+    def ex_deploy_stack(
+        self,
+        name,
+        description=None,
+        docker_compose=None,
+        environment=None,
+        external_id=None,
+        rancher_compose=None,
+        start=True,
+    ):
         """
         Deploy a new stack.
 
@@ -210,13 +219,12 @@ class RancherContainerDriver(ContainerDriver):
             "externalId": external_id,
             "name": name,
             "rancherCompose": rancher_compose,
-            "startOnCreate": start
+            "startOnCreate": start,
         }
-        data = json.dumps(dict((k, v) for (k, v) in payload.items()
-                               if v is not None))
-        result = self.connection.request('%s/environments' %
-                                         self.baseuri, data=data,
-                                         method='POST').object
+        data = json.dumps(dict((k, v) for (k, v) in payload.items() if v is not None))
+        result = self.connection.request(
+            "%s/environments" % self.baseuri, data=data, method="POST"
+        ).object
 
         return result
 
@@ -229,8 +237,9 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: ``dict``
         """
-        result = self.connection.request("%s/environments/%s" %
-                                         (self.baseuri, env_id)).object
+        result = self.connection.request(
+            "%s/environments/%s" % (self.baseuri, env_id)
+        ).object
 
         return result
 
@@ -247,12 +256,13 @@ class RancherContainerDriver(ContainerDriver):
         """
         search_list = []
         for f, v in search_params.items():
-            search_list.append(f + '=' + v)
-        search_items = '&'.join(search_list)
-        result = self.connection.request("%s/environments?%s" % (
-            self.baseuri, search_items)).object
+            search_list.append(f + "=" + v)
+        search_items = "&".join(search_list)
+        result = self.connection.request(
+            "%s/environments?%s" % (self.baseuri, search_items)
+        ).object
 
-        return result['data']
+        return result["data"]
 
     def ex_destroy_stack(self, env_id):
         """
@@ -266,9 +276,9 @@ class RancherContainerDriver(ContainerDriver):
         :return: True if destroy was successful, False otherwise.
         :rtype: ``bool``
         """
-        result = self.connection.request('%s/environments/%s' % (
-                                         self.baseuri, env_id),
-                                         method='DELETE')
+        result = self.connection.request(
+            "%s/environments/%s" % (self.baseuri, env_id), method="DELETE"
+        )
         return result.status in VALID_RESPONSE_CODES
 
     def ex_activate_stack(self, env_id):
@@ -284,8 +294,8 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``bool``
         """
         result = self.connection.request(
-            '%s/environments/%s?action=activateservices' % (
-                self.baseuri, env_id), method='POST'
+            "%s/environments/%s?action=activateservices" % (self.baseuri, env_id),
+            method="POST",
         )
         return result.status in VALID_RESPONSE_CODES
 
@@ -303,8 +313,8 @@ class RancherContainerDriver(ContainerDriver):
         """
 
         result = self.connection.request(
-            '%s/environments/%s?action=deactivateservices' % (
-                self.baseuri, env_id), method='POST'
+            "%s/environments/%s?action=deactivateservices" % (self.baseuri, env_id),
+            method="POST",
         )
         return result.status in VALID_RESPONSE_CODES
 
@@ -318,15 +328,27 @@ class RancherContainerDriver(ContainerDriver):
         """
 
         result = self.connection.request("%s/services" % self.baseuri).object
-        return result['data']
+        return result["data"]
 
-    def ex_deploy_service(self, name, image, environment_id,
-                          start=True, assign_service_ip_address=None,
-                          service_description=None, external_id=None,
-                          metadata=None, retain_ip=None, scale=None,
-                          scale_policy=None, secondary_launch_configs=None,
-                          selector_container=None, selector_link=None,
-                          vip=None, **launch_conf):
+    def ex_deploy_service(
+        self,
+        name,
+        image,
+        environment_id,
+        start=True,
+        assign_service_ip_address=None,
+        service_description=None,
+        external_id=None,
+        metadata=None,
+        retain_ip=None,
+        scale=None,
+        scale_policy=None,
+        secondary_launch_configs=None,
+        selector_container=None,
+        selector_link=None,
+        vip=None,
+        **launch_conf,
+    ):
         """
         Deploy a Rancher Service under a stack.
 
@@ -383,7 +405,7 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: ``dict``
         """
 
-        launch_conf['imageUuid'] = self._degen_image(image),
+        launch_conf["imageUuid"] = (self._degen_image(image),)
 
         service_payload = {
             "assignServiceIpAddress": assign_service_ip_address,
@@ -400,13 +422,15 @@ class RancherContainerDriver(ContainerDriver):
             "selectorContainer": selector_container,
             "selectorLink": selector_link,
             "startOnCreate": start,
-            "vip": vip
+            "vip": vip,
         }
 
-        data = json.dumps(dict((k, v) for (k, v) in service_payload.items()
-                               if v is not None))
-        result = self.connection.request('%s/services' % self.baseuri,
-                                         data=data, method='POST').object
+        data = json.dumps(
+            dict((k, v) for (k, v) in service_payload.items() if v is not None)
+        )
+        result = self.connection.request(
+            "%s/services" % self.baseuri, data=data, method="POST"
+        ).object
 
         return result
 
@@ -419,8 +443,9 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: ``dict``
         """
-        result = self.connection.request("%s/services/%s" %
-                                         (self.baseuri, service_id)).object
+        result = self.connection.request(
+            "%s/services/%s" % (self.baseuri, service_id)
+        ).object
 
         return result
 
@@ -437,12 +462,13 @@ class RancherContainerDriver(ContainerDriver):
         """
         search_list = []
         for f, v in search_params.items():
-            search_list.append(f + '=' + v)
-        search_items = '&'.join(search_list)
-        result = self.connection.request("%s/services?%s" % (
-            self.baseuri, search_items)).object
+            search_list.append(f + "=" + v)
+        search_items = "&".join(search_list)
+        result = self.connection.request(
+            "%s/services?%s" % (self.baseuri, search_items)
+        ).object
 
-        return result['data']
+        return result["data"]
 
     def ex_destroy_service(self, service_id):
         """
@@ -456,8 +482,9 @@ class RancherContainerDriver(ContainerDriver):
         :return: True if destroy was successful, False otherwise.
         :rtype: ``bool``
         """
-        result = self.connection.request('%s/services/%s' % (self.baseuri,
-                                         service_id), method='DELETE')
+        result = self.connection.request(
+            "%s/services/%s" % (self.baseuri, service_id), method="DELETE"
+        )
         return result.status in VALID_RESPONSE_CODES
 
     def ex_activate_service(self, service_id):
@@ -472,9 +499,9 @@ class RancherContainerDriver(ContainerDriver):
         :return: True if activate was successful, False otherwise.
         :rtype: ``bool``
         """
-        result = self.connection.request('%s/services/%s?action=activate' %
-                                         (self.baseuri, service_id),
-                                         method='POST')
+        result = self.connection.request(
+            "%s/services/%s?action=activate" % (self.baseuri, service_id), method="POST"
+        )
         return result.status in VALID_RESPONSE_CODES
 
     def ex_deactivate_service(self, service_id):
@@ -489,9 +516,10 @@ class RancherContainerDriver(ContainerDriver):
         :return: True if deactivate was successful, False otherwise.
         :rtype: ``bool``
         """
-        result = self.connection.request('%s/services/%s?action=deactivate' %
-                                         (self.baseuri, service_id),
-                                         method='POST')
+        result = self.connection.request(
+            "%s/services/%s?action=deactivate" % (self.baseuri, service_id),
+            method="POST",
+        )
         return result.status in VALID_RESPONSE_CODES
 
     def list_containers(self):
@@ -504,11 +532,10 @@ class RancherContainerDriver(ContainerDriver):
         """
 
         result = self.connection.request("%s/containers" % self.baseuri).object
-        containers = [self._to_container(value) for value in result['data']]
+        containers = [self._to_container(value) for value in result["data"]]
         return containers
 
-    def deploy_container(self, name, image, parameters=None, start=True,
-                         **config):
+    def deploy_container(self, name, image, parameters=None, start=True, **config):
         """
         Deploy a new container.
 
@@ -553,8 +580,9 @@ class RancherContainerDriver(ContainerDriver):
 
         data = json.dumps(config)
 
-        result = self.connection.request('%s/containers' % self.baseuri,
-                                         data=data, method='POST').object
+        result = self.connection.request(
+            "%s/containers" % self.baseuri, data=data, method="POST"
+        ).object
 
         return self._to_container(result)
 
@@ -567,8 +595,9 @@ class RancherContainerDriver(ContainerDriver):
 
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request("%s/containers/%s" %
-                                         (self.baseuri, con_id)).object
+        result = self.connection.request(
+            "%s/containers/%s" % (self.baseuri, con_id)
+        ).object
 
         return self._to_container(result)
 
@@ -582,9 +611,10 @@ class RancherContainerDriver(ContainerDriver):
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request('%s/containers/%s?action=start' %
-                                         (self.baseuri, container.id),
-                                         method='POST').object
+        result = self.connection.request(
+            "%s/containers/%s?action=start" % (self.baseuri, container.id),
+            method="POST",
+        ).object
 
         return self._to_container(result)
 
@@ -598,9 +628,9 @@ class RancherContainerDriver(ContainerDriver):
         :return: The container refreshed with current data
         :rtype: :class:`libcloud.container.base.Container`
         """
-        result = self.connection.request('%s/containers/%s?action=stop' %
-                                         (self.baseuri, container.id),
-                                         method='POST').object
+        result = self.connection.request(
+            "%s/containers/%s?action=stop" % (self.baseuri, container.id), method="POST"
+        ).object
 
         return self._to_container(result)
 
@@ -617,12 +647,13 @@ class RancherContainerDriver(ContainerDriver):
         """
         search_list = []
         for f, v in search_params.items():
-            search_list.append(f + '=' + v)
-        search_items = '&'.join(search_list)
-        result = self.connection.request("%s/containers?%s" % (
-            self.baseuri, search_items)).object
+            search_list.append(f + "=" + v)
+        search_items = "&".join(search_list)
+        result = self.connection.request(
+            "%s/containers?%s" % (self.baseuri, search_items)
+        ).object
 
-        return result['data']
+        return result["data"]
 
     def destroy_container(self, container):
         """
@@ -634,8 +665,9 @@ class RancherContainerDriver(ContainerDriver):
         :return: True if the destroy was successful, False otherwise.
         :rtype: ``bool``
         """
-        result = self.connection.request('%s/containers/%s' % (self.baseuri,
-                                         container.id), method='DELETE').object
+        result = self.connection.request(
+            "%s/containers/%s" % (self.baseuri, container.id), method="DELETE"
+        ).object
 
         return self._to_container(result)
 
@@ -655,26 +687,26 @@ class RancherContainerDriver(ContainerDriver):
         :rtype: :class:`libcloud.container.base.ContainerImage`
         """
         # Obtain just the name(:version) for parsing
-        if '/' not in imageuuid:
+        if "/" not in imageuuid:
             # String looks like `docker:mysql:8.0`
-            image_name_version = imageuuid.partition(':')[2]
+            image_name_version = imageuuid.partition(":")[2]
         else:
             # String looks like `docker:oracle/mysql:8.0`
             image_name_version = imageuuid.rpartition("/")[2]
         # Parse based on ':'
-        if ':' in image_name_version:
+        if ":" in image_name_version:
             version = image_name_version.partition(":")[2]
             id = image_name_version.partition(":")[0]
             name = id
         else:
-            version = 'latest'
+            version = "latest"
             id = image_name_version
             name = id
         # Get our path based on if there was a version
-        if version != 'latest':
-            path = imageuuid.partition(':')[2].rpartition(':')[0]
+        if version != "latest":
+            path = imageuuid.partition(":")[2].rpartition(":")[0]
         else:
-            path = imageuuid.partition(':')[2]
+            path = imageuuid.partition(":")[2]
 
         return ContainerImage(
             id=id,
@@ -682,9 +714,7 @@ class RancherContainerDriver(ContainerDriver):
             path=path,
             version=version,
             driver=self.connection.driver,
-            extra={
-                "imageUuid": imageuuid
-            }
+            extra={"imageUuid": imageuuid},
         )
 
     def _degen_image(self, image):
@@ -699,9 +729,9 @@ class RancherContainerDriver(ContainerDriver):
         image_type = "docker"
 
         if image.version is not None:
-            return image_type + ':' + image.path + ':' + image.version
+            return image_type + ":" + image.path + ":" + image.version
         else:
-            return image_type + ':' + image.path
+            return image_type + ":" + image.path
 
     def _to_container(self, data):
         """
@@ -713,23 +743,23 @@ class RancherContainerDriver(ContainerDriver):
          see http://libcloud.readthedocs.io/en/latest/container/api.html
 
         """
-        rancher_state = data['state']
+        rancher_state = data["state"]
 
         # A Removed container is purged after x amt of time.
         # Both of these render the container dead (can't be started later)
         terminate_condition = ["removed", "purged"]
 
-        if 'running' in rancher_state:
+        if "running" in rancher_state:
             state = ContainerState.RUNNING
-        elif 'stopped' in rancher_state:
+        elif "stopped" in rancher_state:
             state = ContainerState.STOPPED
-        elif 'restarting' in rancher_state:
+        elif "restarting" in rancher_state:
             state = ContainerState.REBOOTING
-        elif 'error' in rancher_state:
+        elif "error" in rancher_state:
             state = ContainerState.ERROR
         elif any(x in rancher_state for x in terminate_condition):
             state = ContainerState.TERMINATED
-        elif data['transitioning'] == 'yes':
+        elif data["transitioning"] == "yes":
             # Best we can do for current actions
             state = ContainerState.PENDING
         else:
@@ -739,10 +769,11 @@ class RancherContainerDriver(ContainerDriver):
         extra = data
 
         return Container(
-            id=data['id'],
-            name=data['name'],
-            image=self._gen_image(data['imageUuid']),
-            ip_addresses=[data['primaryIpAddress']],
+            id=data["id"],
+            name=data["name"],
+            image=self._gen_image(data["imageUuid"]),
+            ip_addresses=[data["primaryIpAddress"]],
             state=state,
             driver=self.connection.driver,
-            extra=extra)
+            extra=extra,
+        )

@@ -27,20 +27,20 @@ from libcloud.test.secrets import STORAGE_S3_PARAMS
 class S3RGWTests(unittest.TestCase):
     driver_type = S3RGWStorageDriver
     driver_args = STORAGE_S3_PARAMS
-    default_host = 'localhost'
+    default_host = "localhost"
 
     @classmethod
     def create_driver(self):
-        return self.driver_type(*self.driver_args,
-                                signature_version='2',
-                                host=self.default_host)
+        return self.driver_type(
+            *self.driver_args, signature_version="2", host=self.default_host
+        )
 
     def setUp(self):
         self.driver = self.create_driver()
 
     def test_connection_class_type(self):
         res = self.driver.connectionCls is S3RGWConnectionAWS2
-        self.assertTrue(res, 'driver.connectionCls does not match!')
+        self.assertTrue(res, "driver.connectionCls does not match!")
 
     def test_connection_class_host(self):
         host = self.driver.connectionCls.host
@@ -49,16 +49,15 @@ class S3RGWTests(unittest.TestCase):
 
 class S3RGWOutscaleTests(S3RGWTests):
     driver_type = S3RGWOutscaleStorageDriver
-    default_host = 'osu.eu-west-2.outscale.com'
+    default_host = "osu.eu-west-2.outscale.com"
 
     @classmethod
     def create_driver(self):
-        return self.driver_type(*self.driver_args,
-                                signature_version='4')
+        return self.driver_type(*self.driver_args, signature_version="4")
 
     def test_connection_class_type(self):
         res = self.driver.connectionCls is S3RGWConnectionAWS4
-        self.assertTrue(res, 'driver.connectionCls does not match!')
+        self.assertTrue(res, "driver.connectionCls does not match!")
 
     def test_connection_class_host(self):
         host = self.driver.connectionCls.host
@@ -67,25 +66,23 @@ class S3RGWOutscaleTests(S3RGWTests):
 
 class S3RGWOutscaleDoubleInstanceTests(S3RGWTests):
     driver_type = S3RGWOutscaleStorageDriver
-    default_host = 'osu.eu-west-2.outscale.com'
+    default_host = "osu.eu-west-2.outscale.com"
 
     def setUp(self):
-        self.driver_v2 = self.driver_type(*self.driver_args,
-                                          signature_version='2')
-        self.driver_v4 = self.driver_type(*self.driver_args,
-                                          signature_version='4')
+        self.driver_v2 = self.driver_type(*self.driver_args, signature_version="2")
+        self.driver_v4 = self.driver_type(*self.driver_args, signature_version="4")
 
     def test_connection_class_type(self):
         res = self.driver_v2.connectionCls is S3RGWConnectionAWS2
-        self.assertTrue(res, 'driver.connectionCls does not match!')
+        self.assertTrue(res, "driver.connectionCls does not match!")
 
         res = self.driver_v4.connectionCls is S3RGWConnectionAWS4
-        self.assertTrue(res, 'driver.connectionCls does not match!')
+        self.assertTrue(res, "driver.connectionCls does not match!")
 
         # Verify again that connection class hasn't been overriden when
         # instantiating a second driver class
         res = self.driver_v2.connectionCls is S3RGWConnectionAWS2
-        self.assertTrue(res, 'driver.connectionCls does not match!')
+        self.assertTrue(res, "driver.connectionCls does not match!")
 
     def test_connection_class_host(self):
         host = self.driver_v2.connectionCls.host
@@ -95,5 +92,5 @@ class S3RGWOutscaleDoubleInstanceTests(S3RGWTests):
         self.assertEqual(host, self.default_host)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

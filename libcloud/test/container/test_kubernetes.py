@@ -27,104 +27,99 @@ from libcloud.test import MockHttp
 from libcloud.test import unittest
 
 
-class KubernetesContainerDriverTestCase(unittest.TestCase,
-                                        KubernetesAuthTestCaseMixin):
+class KubernetesContainerDriverTestCase(unittest.TestCase, KubernetesAuthTestCaseMixin):
     driver_cls = KubernetesContainerDriver
 
     def setUp(self):
         KubernetesContainerDriver.connectionCls.conn_class = KubernetesMockHttp
         KubernetesMockHttp.type = None
-        KubernetesMockHttp.use_param = 'a'
+        KubernetesMockHttp.use_param = "a"
         self.driver = KubernetesContainerDriver(*CONTAINER_PARAMS_KUBERNETES)
 
     def test_list_containers(self):
         containers = self.driver.list_containers()
         self.assertEqual(len(containers), 1)
-        self.assertEqual(containers[0].id,
-                         'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36')
-        self.assertEqual(containers[0].name, 'hello-world')
+        self.assertEqual(
+            containers[0].id,
+            "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36",
+        )
+        self.assertEqual(containers[0].name, "hello-world")
 
     def test_list_clusters(self):
         clusters = self.driver.list_clusters()
         self.assertEqual(len(clusters), 2)
-        self.assertEqual(clusters[0].id,
-                         'default')
-        self.assertEqual(clusters[0].name, 'default')
+        self.assertEqual(clusters[0].id, "default")
+        self.assertEqual(clusters[0].name, "default")
 
     def test_get_cluster(self):
-        cluster = self.driver.get_cluster('default')
-        self.assertEqual(cluster.id,
-                         'default')
-        self.assertEqual(cluster.name, 'default')
+        cluster = self.driver.get_cluster("default")
+        self.assertEqual(cluster.id, "default")
+        self.assertEqual(cluster.name, "default")
 
     def test_create_cluster(self):
-        cluster = self.driver.create_cluster('test')
-        self.assertEqual(cluster.id,
-                         'test')
-        self.assertEqual(cluster.name, 'test')
+        cluster = self.driver.create_cluster("test")
+        self.assertEqual(cluster.id, "test")
+        self.assertEqual(cluster.name, "test")
 
     def test_destroy_cluster(self):
-        cluster = self.driver.get_cluster('default')
+        cluster = self.driver.get_cluster("default")
         result = self.driver.destroy_cluster(cluster)
         self.assertTrue(result)
 
     def test_deploy_container(self):
         image = ContainerImage(
-            id=None,
-            name='hello-world',
-            path=None,
-            driver=self.driver,
-            version=None
+            id=None, name="hello-world", path=None, driver=self.driver, version=None
         )
-        container = self.driver.deploy_container('hello-world', image=image)
-        self.assertEqual(container.name, 'hello-world')
+        container = self.driver.deploy_container("hello-world", image=image)
+        self.assertEqual(container.name, "hello-world")
 
     def test_get_container(self):
-        container = self.driver.get_container('docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36')
-        assert container.id == 'docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36'
+        container = self.driver.get_container(
+            "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+        )
+        assert (
+            container.id
+            == "docker://3c48b5cda79bce4c8866f02a3b96a024edb8f660d10e7d1755e9ced49ef47b36"
+        )
 
 
 class KubernetesMockHttp(MockHttp):
-    fixtures = ContainerFileFixtures('kubernetes')
+    fixtures = ContainerFileFixtures("kubernetes")
 
-    def _api_v1_pods(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('_api_v1_pods.json')
+    def _api_v1_pods(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_api_v1_pods.json")
         else:
-            raise AssertionError('Unsupported method')
+            raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_v1_namespaces(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('_api_v1_namespaces.json')
-        elif method == 'POST':
-            body = self.fixtures.load('_api_v1_namespaces_test.json')
+    def _api_v1_namespaces(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_api_v1_namespaces.json")
+        elif method == "POST":
+            body = self.fixtures.load("_api_v1_namespaces_test.json")
         else:
-            raise AssertionError('Unsupported method')
+            raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_v1_namespaces_default(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('_api_v1_namespaces_default.json')
-        elif method == 'DELETE':
-            body = self.fixtures.load('_api_v1_namespaces_default_DELETE.json')
+    def _api_v1_namespaces_default(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_api_v1_namespaces_default.json")
+        elif method == "DELETE":
+            body = self.fixtures.load("_api_v1_namespaces_default_DELETE.json")
         else:
-            raise AssertionError('Unsupported method')
+            raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _api_v1_namespaces_default_pods(
-            self, method, url, body, headers):
-        if method == 'GET':
-            body = self.fixtures.load('_api_v1_namespaces_default_pods.json')
-        elif method == 'POST':
-            body = self.fixtures.load('_api_v1_namespaces_default_pods_POST.json')
+    def _api_v1_namespaces_default_pods(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_api_v1_namespaces_default_pods.json")
+        elif method == "POST":
+            body = self.fixtures.load("_api_v1_namespaces_default_pods_POST.json")
         else:
-            raise AssertionError('Unsupported method')
+            raise AssertionError("Unsupported method")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

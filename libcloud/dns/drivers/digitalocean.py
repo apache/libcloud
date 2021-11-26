@@ -16,9 +16,7 @@
 Digital Ocean DNS Driver
 """
 
-__all__ = [
-    'DigitalOceanDNSDriver'
-]
+__all__ = ["DigitalOceanDNSDriver"]
 
 import json
 
@@ -34,16 +32,16 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
     connectionCls = DigitalOcean_v2_Connection
     type = Provider.DIGITAL_OCEAN
     name = "DigitalOcean"
-    website = 'https://www.digitalocean.com'
+    website = "https://www.digitalocean.com"
 
     RECORD_TYPE_MAP = {
-        RecordType.NS: 'NS',
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.TXT: 'TXT',
-        RecordType.SRV: 'SRV',
+        RecordType.NS: "NS",
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.TXT: "TXT",
+        RecordType.SRV: "SRV",
     }
 
     def list_zones(self):
@@ -52,7 +50,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        data = self._paginated_request('/v2/domains', 'domains')
+        data = self._paginated_request("/v2/domains", "domains")
         return list(map(self._to_zone, data))
 
     def list_records(self, zone):
@@ -64,11 +62,12 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        data = self._paginated_request('/v2/domains/%s/records' % (zone.id),
-                                       'domain_records')
-# TODO: Not use list comprehension to add zone to record for proper data map
-#       functionality? This passes a reference to zone for each data currently
-#       to _to_record which returns a Record. map() does not take keywords
+        data = self._paginated_request(
+            "/v2/domains/%s/records" % (zone.id), "domain_records"
+        )
+        # TODO: Not use list comprehension to add zone to record for proper data map
+        #       functionality? This passes a reference to zone for each data currently
+        #       to _to_record which returns a Record. map() does not take keywords
         return list(map(self._to_record, data, [zone for z in data]))
 
     def get_zone(self, zone_id):
@@ -80,8 +79,7 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        data = self.connection.request('/v2/domains/%s' %
-                                       (zone_id)).object['domain']
+        data = self.connection.request("/v2/domains/%s" % (zone_id)).object["domain"]
 
         return self._to_zone(data)
 
@@ -97,14 +95,15 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :rtype: :class:`Record`
         """
-        data = self.connection.request('/v2/domains/%s/records/%s' % (zone_id,
-                                       record_id)).object['domain_record']
+        data = self.connection.request(
+            "/v2/domains/%s/records/%s" % (zone_id, record_id)
+        ).object["domain_record"]
 
-# TODO: Any way of not using get_zone which polls the API again
-#       without breaking the DNSDriver.get_record parameters?
+        # TODO: Any way of not using get_zone which polls the API again
+        #       without breaking the DNSDriver.get_record parameters?
         return self._to_record(data, self.get_zone(zone_id))
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         Create a new zone.
 
@@ -124,18 +123,24 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        params = {'name': domain}
+        params = {"name": domain}
         try:
-            params['ip_address'] = extra['ip']
+            params["ip_address"] = extra["ip"]
         except Exception:
-            params['ip_address'] = '127.0.0.1'
+            params["ip_address"] = "127.0.0.1"
 
-        res = self.connection.request('/v2/domains', data=json.dumps(params),
-                                      method='POST')
+        res = self.connection.request(
+            "/v2/domains", data=json.dumps(params), method="POST"
+        )
 
-        return Zone(id=res.object['domain']['name'],
-                    domain=res.object['domain']['name'],
-                    type='master', ttl=1800, driver=self, extra={})
+        return Zone(
+            id=res.object["domain"]["name"],
+            domain=res.object["domain"]["name"],
+            type="master",
+            ttl=1800,
+            driver=self,
+            extra={},
+        )
 
     def create_record(self, name, zone, type, data, extra=None):
         """
@@ -162,40 +167,40 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :rtype: :class:`Record`
         """
-        params = {
-            "type": self.RECORD_TYPE_MAP[type],
-            "name": name,
-            "data": data
-        }
+        params = {"type": self.RECORD_TYPE_MAP[type], "name": name, "data": data}
         if extra:
             try:
-                params['priority'] = extra['priority']
+                params["priority"] = extra["priority"]
             except KeyError:
-                params['priority'] = None
+                params["priority"] = None
             try:
-                params['port'] = extra['port']
+                params["port"] = extra["port"]
             except KeyError:
-                params['port'] = None
+                params["port"] = None
             try:
-                params['weight'] = extra['weight']
+                params["weight"] = extra["weight"]
             except KeyError:
-                params['weight'] = None
+                params["weight"] = None
 
-            if 'ttl' in extra:
-                params['ttl'] = extra['ttl']
+            if "ttl" in extra:
+                params["ttl"] = extra["ttl"]
 
-        res = self.connection.request('/v2/domains/%s/records' % zone.id,
-                                      data=json.dumps(params),
-                                      method='POST')
+        res = self.connection.request(
+            "/v2/domains/%s/records" % zone.id, data=json.dumps(params), method="POST"
+        )
 
-        return Record(id=res.object['domain_record']['id'],
-                      name=res.object['domain_record']['name'],
-                      type=type, data=data, zone=zone,
-                      ttl=res.object['domain_record'].get('ttl', None),
-                      driver=self, extra=extra)
+        return Record(
+            id=res.object["domain_record"]["id"],
+            name=res.object["domain_record"]["name"],
+            type=type,
+            data=data,
+            zone=zone,
+            ttl=res.object["domain_record"].get("ttl", None),
+            driver=self,
+            extra=extra,
+        )
 
-    def update_record(self, record, name=None, type=None,
-                      data=None, extra=None):
+    def update_record(self, record, name=None, type=None, data=None, extra=None):
         """
         Update an existing record.
 
@@ -219,40 +224,42 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
 
         :rtype: :class:`Record`
         """
-        params = {
-            "type": record.type,
-            "name": record.name,
-            "data": data
-        }
+        params = {"type": record.type, "name": record.name, "data": data}
         if data is None:
-            params['data'] = record.data
+            params["data"] = record.data
         if extra:
             try:
-                params['priority'] = extra['priority']
+                params["priority"] = extra["priority"]
             except KeyError:
-                params['priority'] = None
+                params["priority"] = None
             try:
-                params['port'] = extra['port']
+                params["port"] = extra["port"]
             except KeyError:
-                params['port'] = None
+                params["port"] = None
             try:
-                params['weight'] = extra['weight']
+                params["weight"] = extra["weight"]
             except KeyError:
-                params['weight'] = None
+                params["weight"] = None
 
-            if 'ttl' in extra:
-                params['ttl'] = extra['ttl']
+            if "ttl" in extra:
+                params["ttl"] = extra["ttl"]
 
-        res = self.connection.request('/v2/domains/%s/records/%s' %
-                                      (record.zone.id, record.id),
-                                      data=json.dumps(params),
-                                      method='PUT')
+        res = self.connection.request(
+            "/v2/domains/%s/records/%s" % (record.zone.id, record.id),
+            data=json.dumps(params),
+            method="PUT",
+        )
 
-        return Record(id=res.object['domain_record']['id'],
-                      name=res.object['domain_record']['name'],
-                      type=record.type, data=data, zone=record.zone,
-                      ttl=res.object['domain_record'].get('ttl', None),
-                      driver=self, extra=extra)
+        return Record(
+            id=res.object["domain_record"]["id"],
+            name=res.object["domain_record"]["name"],
+            type=record.type,
+            data=data,
+            zone=record.zone,
+            ttl=res.object["domain_record"].get("ttl", None),
+            driver=self,
+            extra=extra,
+        )
 
     def delete_zone(self, zone):
         """
@@ -267,8 +274,9 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         """
         params = {}
 
-        res = self.connection.request('/v2/domains/%s' % zone.id,
-                                      params=params, method='DELETE')
+        res = self.connection.request(
+            "/v2/domains/%s" % zone.id, params=params, method="DELETE"
+        )
 
         return res.status == httplib.NO_CONTENT
 
@@ -283,21 +291,37 @@ class DigitalOceanDNSDriver(DigitalOcean_v2_BaseDriver, DNSDriver):
         """
         params = {}
 
-        res = self.connection.request('/v2/domains/%s/records/%s' % (
-                                      record.zone.id, record.id),
-                                      params=params,
-                                      method='DELETE')
+        res = self.connection.request(
+            "/v2/domains/%s/records/%s" % (record.zone.id, record.id),
+            params=params,
+            method="DELETE",
+        )
         return res.status == httplib.NO_CONTENT
 
     def _to_record(self, data, zone=None):
-        extra = {'port': data['port'], 'priority': data['priority'],
-                 'weight': data['weight']}
-        return Record(id=data['id'], name=data['name'],
-                      type=self._string_to_record_type(data['type']),
-                      data=data['data'], zone=zone, ttl=data.get('ttl', None),
-                      driver=self, extra=extra)
+        extra = {
+            "port": data["port"],
+            "priority": data["priority"],
+            "weight": data["weight"],
+        }
+        return Record(
+            id=data["id"],
+            name=data["name"],
+            type=self._string_to_record_type(data["type"]),
+            data=data["data"],
+            zone=zone,
+            ttl=data.get("ttl", None),
+            driver=self,
+            extra=extra,
+        )
 
     def _to_zone(self, data):
-        extra = {'zone_file': data['zone_file']}
-        return Zone(id=data['name'], domain=data['name'], type='master',
-                    ttl=data['ttl'], driver=self, extra=extra)
+        extra = {"zone_file": data["zone_file"]}
+        return Zone(
+            id=data["name"],
+            domain=data["name"],
+            type="master",
+            ttl=data["ttl"],
+            driver=self,
+            extra=extra,
+        )

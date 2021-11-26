@@ -21,10 +21,10 @@ from libcloud.compute.base import NodeAuthPassword
 
 ECSDriver = get_driver(Provider.ALIYUN_ECS)
 
-region = 'cn-hangzhou'
+region = "cn-hangzhou"
 
-your_access_key_id = ''
-your_access_key_secret = ''
+your_access_key_id = ""
+your_access_key_secret = ""
 ecs = ECSDriver(your_access_key_id, your_access_key_secret, region=region)
 
 sizes = ecs.list_sizes()
@@ -37,50 +37,55 @@ for each in locations:
         location = each
         break
 if location is None:
-    print('could not find cn-qingdao location')
+    print("could not find cn-qingdao location")
     sys.exit(-1)
 print(location.name)
 
 images = ecs.list_images()
-print('Found %d images' % len(images))
+print("Found %d images" % len(images))
 for each in images:
-    if 'ubuntu' in each.id.lower():
+    if "ubuntu" in each.id.lower():
         image = each
         break
 else:
     image = images[0]
-print('Use image %s' % image)
+print("Use image %s" % image)
 
 sgs = ecs.ex_list_security_groups()
-print('Found %d security groups' % len(sgs))
+print("Found %d security groups" % len(sgs))
 if len(sgs) == 0:
-    sg = ecs.ex_create_security_group(description='test')
-    print('Create security group %s' % sg)
+    sg = ecs.ex_create_security_group(description="test")
+    print("Create security group %s" % sg)
 else:
     sg = sgs[0].id
-    print('Use security group %s' % sg)
+    print("Use security group %s" % sg)
 
 nodes = ecs.list_nodes()
-print('Found %d nodes' % len(nodes))
+print("Found %d nodes" % len(nodes))
 if len(nodes) == 0:
-    print('Starting create a new node')
+    print("Starting create a new node")
     data_disk = {
-        'size': 5,
-        'category': ecs.disk_categories.CLOUD,
-        'disk_name': 'data_disk1',
-        'delete_with_instance': True}
+        "size": 5,
+        "category": ecs.disk_categories.CLOUD,
+        "disk_name": "data_disk1",
+        "delete_with_instance": True,
+    }
 
-    auth = NodeAuthPassword('P@$$w0rd')
+    auth = NodeAuthPassword("P@$$w0rd")
 
     ex_internet_charge_type = ecs.internet_charge_types.BY_TRAFFIC
-    node = ecs.create_node(image=image, size=small, name='test',
-                           ex_security_group_id=sg,
-                           ex_internet_charge_type=ex_internet_charge_type,
-                           ex_internet_max_bandwidth_out=1,
-                           ex_data_disk=data_disk,
-                           auth=auth)
-    print('Created node %s' % node)
+    node = ecs.create_node(
+        image=image,
+        size=small,
+        name="test",
+        ex_security_group_id=sg,
+        ex_internet_charge_type=ex_internet_charge_type,
+        ex_internet_max_bandwidth_out=1,
+        ex_data_disk=data_disk,
+        auth=auth,
+    )
+    print("Created node %s" % node)
     nodes = ecs.list_nodes()
 
 for each in nodes:
-    print('Found node %s' % each)
+    print("Found node %s" % each)

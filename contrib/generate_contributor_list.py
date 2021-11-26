@@ -43,8 +43,8 @@ import re
 import argparse
 from collections import defaultdict
 
-JIRA_URL = 'https://issues.apache.org/jira/browse/LIBCLOUD-%s'
-GITHUB_URL = 'https://github.com/apache/libcloud/pull/%s'
+JIRA_URL = "https://issues.apache.org/jira/browse/LIBCLOUD-%s"
+GITHUB_URL = "https://github.com/apache/libcloud/pull/%s"
 
 
 def parse_changes_file(file_path, versions=None):
@@ -61,12 +61,13 @@ def parse_changes_file(file_path, versions=None):
     active_version = None
     active_tickets = []
 
-    with open(file_path, 'r') as fp:
+    with open(file_path, "r") as fp:
         for line in fp:
             line = line.strip()
 
-            match = re.search(r'Changes with Apache Libcloud '
-                              r'(\d+\.\d+\.\d+(-\w+)?).*?$', line)
+            match = re.search(
+                r"Changes with Apache Libcloud " r"(\d+\.\d+\.\d+(-\w+)?).*?$", line
+            )
 
             if match:
                 active_version = match.groups()[0]
@@ -74,28 +75,31 @@ def parse_changes_file(file_path, versions=None):
             if versions and active_version not in versions:
                 continue
 
-            if line.startswith('-') or line.startswith('*)'):
+            if line.startswith("-") or line.startswith("*)"):
                 in_entry = True
                 active_tickets = []
 
-            if in_entry and line == '':
+            if in_entry and line == "":
                 in_entry = False
 
             if in_entry:
-                match = re.search(r'\((.+?)\)$', line)
+                match = re.search(r"\((.+?)\)$", line)
 
                 if match:
                     active_tickets = match.groups()[0]
-                    active_tickets = active_tickets.split(', ')
-                    active_tickets = [ticket for ticket in active_tickets if
-                                      ticket.startswith('LIBCLOUD-') or
-                                      ticket.startswith('GITHUB-')]
+                    active_tickets = active_tickets.split(", ")
+                    active_tickets = [
+                        ticket
+                        for ticket in active_tickets
+                        if ticket.startswith("LIBCLOUD-")
+                        or ticket.startswith("GITHUB-")
+                    ]
 
-                match = re.search(r'^\[(.+?)\]$', line)
+                match = re.search(r"^\[(.+?)\]$", line)
 
                 if match:
                     contributors = match.groups()[0]
-                    contributors = contributors.split(',')
+                    contributors = contributors.split(",")
                     contributors = [name.strip() for name in contributors]
 
                     for name in contributors:
@@ -110,8 +114,8 @@ def convert_to_markdown(contributors_map, include_tickets=False):
     # Contributors are sorted in ascending lexiographical order based on their
     # last name
     def compare(item1, item2):
-        lastname1 = item1.split(' ')[-1].lower()
-        lastname2 = item2.split(' ')[-1].lower()
+        lastname1 = item1.split(" ")[-1].lower()
+        lastname2 = item2.split(" ")[-1].lower()
         return (lastname1 > lastname2) - (lastname1 < lastname2)
 
     names = contributors_map.keys()
@@ -124,51 +128,60 @@ def convert_to_markdown(contributors_map, include_tickets=False):
         tickets_string = []
 
         for ticket in tickets:
-            if '-' not in ticket:
+            if "-" not in ticket:
                 # Invalid ticket number
                 continue
 
-            number = ticket.split('-')[1]
+            number = ticket.split("-")[1]
 
-            if ticket.startswith('LIBCLOUD-'):
+            if ticket.startswith("LIBCLOUD-"):
                 url = JIRA_URL % (number)
-            elif ticket.startswith('GITHUB-') or ticket.startswith('GH-'):
+            elif ticket.startswith("GITHUB-") or ticket.startswith("GH-"):
                 url = GITHUB_URL % (number)
 
-            values = {'ticket': ticket, 'url': url}
-            tickets_string.append('[%(ticket)s](%(url)s)' % values)
+            values = {"ticket": ticket, "url": url}
+            tickets_string.append("[%(ticket)s](%(url)s)" % values)
 
-        tickets_string = ', '.join(tickets_string)
+        tickets_string = ", ".join(tickets_string)
 
         if include_tickets:
-            line = '* %(name)s: %(tickets)s' % {'name': name,
-                                                'tickets': tickets_string}
+            line = "* %(name)s: %(tickets)s" % {"name": name, "tickets": tickets_string}
         else:
-            line = '* %(name)s' % {'name': name}
+            line = "* %(name)s" % {"name": name}
 
         result.append(line.strip())
 
-    result = '\n'.join(result)
+    result = "\n".join(result)
     return result
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Assemble provider logos '
-                                                 ' in a single image')
-    parser.add_argument('--changes-path', action='store', required=True,
-                        help='Path to the changes file')
-    parser.add_argument('--versions', action='store', nargs='+',
-                        type=str,
-                        help='Only return contributors for the provided '
-                             'versions')
-    parser.add_argument('--include-tickets', action='store_true',
-                        default=False,
-                        help='Include ticket numbers')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Assemble provider logos " " in a single image"
+    )
+    parser.add_argument(
+        "--changes-path", action="store", required=True, help="Path to the changes file"
+    )
+    parser.add_argument(
+        "--versions",
+        action="store",
+        nargs="+",
+        type=str,
+        help="Only return contributors for the provided " "versions",
+    )
+    parser.add_argument(
+        "--include-tickets",
+        action="store_true",
+        default=False,
+        help="Include ticket numbers",
+    )
     args = parser.parse_args()
 
-    contributors_map = parse_changes_file(file_path=args.changes_path,
-                                          versions=args.versions)
-    markdown = convert_to_markdown(contributors_map=contributors_map,
-                                   include_tickets=args.include_tickets)
+    contributors_map = parse_changes_file(
+        file_path=args.changes_path, versions=args.versions
+    )
+    markdown = convert_to_markdown(
+        contributors_map=contributors_map, include_tickets=args.include_tickets
+    )
 
     print(markdown)

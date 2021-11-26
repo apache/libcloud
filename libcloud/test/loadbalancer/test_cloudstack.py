@@ -39,28 +39,29 @@ class CloudStackLBTests(unittest.TestCase):
     def setUp(self):
         CloudStackLBDriver.connectionCls.conn_class = CloudStackMockHttp
 
-        CloudStackLBDriver.path = '/test/path'
+        CloudStackLBDriver.path = "/test/path"
         CloudStackLBDriver.type = -1
-        CloudStackLBDriver.name = 'CloudStack'
-        self.driver = CloudStackLBDriver('apikey', 'secret')
-        CloudStackMockHttp.fixture_tag = 'default'
+        CloudStackLBDriver.name = "CloudStack"
+        self.driver = CloudStackLBDriver("apikey", "secret")
+        CloudStackMockHttp.fixture_tag = "default"
         self.driver.connection.poll_interval = 0.0
 
     def test_user_must_provide_host_and_path(self):
         CloudStackLBDriver.path = None
         CloudStackLBDriver.type = Provider.CLOUDSTACK
 
-        expected_msg = 'When instantiating CloudStack driver directly ' + \
-                       'you also need to provide host and path argument'
+        expected_msg = (
+            "When instantiating CloudStack driver directly "
+            + "you also need to provide host and path argument"
+        )
         cls = get_driver(Provider.CLOUDSTACK)
 
-        assertRaisesRegex(self, Exception, expected_msg, cls,
-                          'key', 'secret')
+        assertRaisesRegex(self, Exception, expected_msg, cls, "key", "secret")
 
         try:
-            cls('key', 'secret', True, 'localhost', '/path')
+            cls("key", "secret", True, "localhost", "/path")
         except Exception:
-            self.fail('host and path provided but driver raised an exception')
+            self.fail("host and path provided but driver raised an exception")
 
     def test_list_supported_algorithms(self):
         algorithms = self.driver.list_supported_algorithms()
@@ -74,10 +75,10 @@ class CloudStackLBTests(unittest.TestCase):
             self.assertTrue(isinstance(balancer, LoadBalancer))
 
     def test_create_balancer(self):
-        members = [Member(1, '1.1.1.1', 80), Member(2, '1.1.1.2', 80)]
+        members = [Member(1, "1.1.1.1", 80), Member(2, "1.1.1.2", 80)]
         balancer = self.driver.create_balancer(
-            name='test', algorithm=Algorithm.ROUND_ROBIN,
-            members=members)
+            name="test", algorithm=Algorithm.ROUND_ROBIN, members=members
+        )
         self.assertTrue(isinstance(balancer, LoadBalancer))
 
     def test_destroy_balancer(self):
@@ -86,7 +87,7 @@ class CloudStackLBTests(unittest.TestCase):
 
     def test_balancer_attach_member(self):
         balancer = self.driver.list_balancers()[0]
-        member = Member(id=1234, ip='1.1.1.1', port=80)
+        member = Member(id=1234, ip="1.1.1.1", port=80)
         balancer.attach_member(member)
 
     def test_balancer_detach_member(self):
@@ -103,8 +104,8 @@ class CloudStackLBTests(unittest.TestCase):
 
 
 class CloudStackMockHttp(MockHttp, unittest.TestCase):
-    fixtures = LoadBalancerFileFixtures('cloudstack')
-    fixture_tag = 'default'
+    fixtures = LoadBalancerFileFixtures("cloudstack")
+    fixture_tag = "default"
 
     def _load_fixture(self, fixture):
         body = self.fixtures.load(fixture)
@@ -114,29 +115,30 @@ class CloudStackMockHttp(MockHttp, unittest.TestCase):
         url = urlparse.urlparse(url)
         query = dict(parse_qsl(url.query))
 
-        self.assertTrue('apiKey' in query)
-        self.assertTrue('command' in query)
-        self.assertTrue('response' in query)
-        self.assertTrue('signature' in query)
+        self.assertTrue("apiKey" in query)
+        self.assertTrue("command" in query)
+        self.assertTrue("response" in query)
+        self.assertTrue("signature" in query)
 
-        self.assertTrue(query['response'] == 'json')
+        self.assertTrue(query["response"] == "json")
 
-        del query['apiKey']
-        del query['response']
-        del query['signature']
-        command = query.pop('command')
+        del query["apiKey"]
+        del query["response"]
+        del query["signature"]
+        command = query.pop("command")
 
-        if hasattr(self, '_cmd_' + command):
-            return getattr(self, '_cmd_' + command)(**query)
+        if hasattr(self, "_cmd_" + command):
+            return getattr(self, "_cmd_" + command)(**query)
         else:
-            fixture = command + '_' + self.fixture_tag + '.json'
+            fixture = command + "_" + self.fixture_tag + ".json"
             body, obj = self._load_fixture(fixture)
             return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _cmd_queryAsyncJobResult(self, jobid):
-        fixture = 'queryAsyncJobResult' + '_' + str(jobid) + '.json'
+        fixture = "queryAsyncJobResult" + "_" + str(jobid) + ".json"
         body, obj = self._load_fixture(fixture)
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

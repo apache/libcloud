@@ -1,0 +1,12 @@
+{
+    "fingerprint": "8c:71:a2:f0:bc:a4:45:66:a8:59:77:6d:80:d5:a0:89",
+    "grantees": [],
+    "meta": {},
+    "name": "ala",
+    "permissions": [],
+    "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIEqQIBAAKCAQEAvROcpJ/0T5iZUzfRydsJI4zCbuQAfGH3Bl/biggPY1atLqzf\niz6lctY8wsz2sYts9OQomtCB/xtMPfUjHZpLg1EP4/hfP1NCWtsIbIiDYKrzNEFg\nApSO1AkqBZ8tVL2gpPUuSdaK5P3lPjkbt43dgnThIyMvNoi0g7ngC6L6s960JvBq\nuamOvd8wVaW/VpbyZrKqRwvmsMH1pGErhSAeErImOdwM8wtCddLS3O4nxfts06py\nEcGhupvH8lph9q+jKJxpg7whUkOJyZoMN1XgDvtRFbz9PvlxqP0SOecEHP+4yCOg\nDcJa69LSFFxmlSog9BitCv5qRFwrvKGsMYcesQIDAQABAoIBAQCYBufhend/dIx7\n3BsDuemMOwavEQbO/BoadwLX5okw76WKLRgFJxby0g3C9/i3Ywr1kWqQqGyOCY3x\nF2TnzYNAD/K985vqF/D3irwoQE+ab3njn1kqWfbJyKCQKp/RTjOXz0gruKSvYPJt\naI+/tALSfVX04bp5l8vFSrQ5xw7bhiiFifATuDStVLSzzmEli6Pbne4mcKIXiReu\nK1OlSKPF9SbCxCcEvEhUhQqs7U/N+sEYmUSQ/q8rNdolWQD0c/EGn2RF0siNolxp\nylo5c7E/LvwgTW6DLYaEZDgORnYHEwiaG7YxJAuFFPoQNFIjoGEF5wKOGL/kKtVr\npyriY/k9AoIAgQDRKEf+B+SLO/P/rPP7CCCIh4tR9uXl6hbnEp40sx5AomZmIwfy\nZGRp+iIN3YhM2XQ96fb47Lgc4AsDUHKt+9ASqJWWn0f06sbaaVsTfKpxVuI1kPsh\nGVpuOqwQCnXFyTvvirrdTlAw32hOzl1VVL0bL57MsAkpmjHnqsEqYTpIhwKCAIEA\n52wIL3RMT6bGjfx/PMsyTOa9AFSLzsjvoOt1HjyC0v7fhZ3vGfwJSnEQXf7R31um\njA0yoSjyX7uyXYRvUlL8aibqoKw19U0WmwAKj9VCOdf7IFnd6WqcisZACq4IjcZU\nTE6ev3MqxAbdmz4dVPvz4GvqseQ39bktmIHEVkH3hQcCggCAKOx/wZWbwx507GbT\nyh9Z9jzHJr9vViAKYSYEbH1LgwwDiyJ5kJTSDOZTOXFKFPdLRj38A9KVZ5jyrrBT\n7/TgTnZL5o+9zY8OX3fTySlQVCLS2fZHHL/QMNcsCWtyhcONBZ6YV2rWR+m+iATa\nwDJ3WdVkddpPwKMZ9qEzcG5bsAsCggCBANUJBDf7DUy9sEaAy/iA7ZsRRaeKLPF8\n0+sFFdlxxtTJP6bXDoaTF1Jp5rFApJ7C1fxTIeptsUEjnjysb3YPYsGtdYvXPAzG\nnCqvzQk/PinVgx3y3G/FbrnpaobqUoGAs5VTQpvnPtUZpOMGOSZEkepkLbb46fLQ\nNwMPYlgtfdf9AoIAgEEbKzsfgWN72TIdSO7ZsYCdpy4vq9EqNMIYyplY4ue1Ogn+\nGlN6UM60S/+MF0uu+KKa3KBjFD+kZCyM90IESw9rshzRceaXtEetk8Z5kOIKGznt\noyCsfrxJbKn3qbH+zM0HDVEfGCiMmIpB2l/DShQjCRGyPAL7OG0GEDw9uQI6\n-----END RSA PRIVATE KEY-----\n",
+    "public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9E5ykn/RPmJlTN9HJ2wkjjMJu5AB8YfcGX9uKCA9jVq0urN+LPqVy1jzCzPaxi2z05Cia0IH/G0w99SMdmkuDUQ/j+F8/U0Ja2whsiINgqvM0QWAClI7UCSoFny1UvaCk9S5J1ork/eU+ORu3jd2CdOEjIy82iLSDueALovqz3rQm8Gq5qY693zBVpb9WlvJmsqpHC+awwfWkYSuFIB4SsiY53AzzC0J10tLc7ifF+2zTqnIRwaG6m8fyWmH2r6MonGmDvCFSQ4nJmgw3VeAO+1EVvP0++XGo/RI55wQc/7jII6ANwlrr0tIUXGaVKiD0GK0K/mpEXCu8oawxhx6x",
+    "resource_uri": "/api/2.0/keypairs/186106ac-afb5-40e5-a0de-6f0feba5a3d5/",
+    "tags": [],
+    "uuid": "186106ac-afb5-40e5-a0de-6f0feba5a3d5"
+}

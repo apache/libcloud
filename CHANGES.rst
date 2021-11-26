@@ -1,8 +1,153 @@
 ﻿Changelog
 =========
 
-Changes in Apache Libcloud 3.3.2 (in development)
--------------------------------------------------
+Changes in Apache Libcloud in development
+-----------------------------------------
+
+Common
+~~~~~~
+
+- Support for Python 3.5 which has been EOL for more than a year now has been
+  removed.
+
+  If you still want to use Libcloud with Python 3.5, you should use an older
+  release which still supports Python 3.5.
+  (GITHUB-1620)
+
+- Update code which retries failed HTTP requests to also retry failed "raw"
+  requests and make sure we also wrap and retry piece of code where Response
+  class is instantiated and exceptions can be thrown.
+  [Daniel Draper - @Germandrummer92]
+  (GITHUB-1592)
+
+Other
+~~~~~
+
+- Also run unit tests under Python 3.10 + Pyjion on CI/CD.
+  (GITHUB-1626)
+
+- All the code has been reformatted using black v21.10b0 and we will enforce
+  black code style for all the new code going forward.
+
+  Developers can re-format their code using new ``black`` tox target (``black
+  -etox``) and they can check if there are any violations by running
+  ``black-check`` target (``tox -eblack-check``).
+  (GITHUB-1623, GITHUB-1624)
+
+Changes in Apache Libcloud 3.4.1
+--------------------------------
+
+.. note::
+
+  Libcloud depends on the ``requests`` library for performing HTTP(s) requests.
+
+  Prior to ``requests`` v2.26.0, ``requests`` depended on ``chardet`` library
+  which is licensed under LGPL (requests library itself is licensed under the
+  Apache License 2.0 license).
+
+  Since Libcloud is not an application, but a library which is usually used
+  along many other libraries in the same (virtual) environment, we can't have
+  a strict dependency on requests >= 2.26.0 since that would break a lot of
+  installations where users already depend on and have an older version of
+  requests installed.
+
+  If you are using requests < 2.26.0 along the Libcloud library you are using
+  version of chardet library (chardet is a direct dependency of the requests
+  library) which license is not compatible with Apache Libcloud.
+
+  If using a LGPL dependency is a problem for your application, you should
+  ensure you are using requests >= 2.26.0.
+
+  It's also worth noting that Apache Libcloud doesn't bundle any 3rd party
+  dependencies with our release artifacts - we only provide source code
+  artifacts on our website.
+
+  When installing Libcloud from PyPi using pip, pip will also download and use
+  the latest version of requests without the problematic chardet dependency,
+  unless you already have older version of the requests library installed in
+  the same environment where you also want to use Libcloud - in that case,
+  Libcloud will use the dependency which is already available and installed.
+
+Common
+~~~~~~
+
+- Fix a regression which was inadvertently introduced in v3.4.0 which prevented
+  users from installing Libcloud under Python 3.5.
+
+  Also revert ``requests`` minimum version required change and relax the
+  minimum version requirement.
+
+  Previous change would prevent Libcloud from being installed in environments
+  where a conflicting (lower) version of requests library is required and
+  already installed.
+
+  As a library and not an application, Libcloud should specify as loose
+  requirements as possible to prevent issues with conflicting requirements
+  versions which could prevent Libcloud from being installed.
+  (GITHUB-1594)
+
+Changes in Apache Libcloud 3.4.0
+--------------------------------
+
+Common
+~~~~~~
+
+- Fix how we set HTTP request timeout on the underlying requests session
+  object. requests library has changed how timeout is set so our old
+  code had no affect.
+
+  (GITHUB-1575, GITHUB-1576)
+  [Dimitris Galanis - @dimgal1]
+
+- Update setup.py metadata and indicate we also support Python 3.10.
+
+- [Google] Update Google authentication code so so we don't try to contact
+  GCE metadata server when determining auth credentials type when oAuth 2.0 /
+  installed app type of credentials are used.
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- [Google] Update Google authentication code so we don't try to retry failed
+  request when trying to determine if GCE metadata server is available when
+  retrying is enabled globally (either via module level constant or via
+  environment variable value).
+
+  This will speed up scenarios when trying is enabled globally, but GCE
+  metadata server is not available and different type of credentials are used
+  (e.g. oAuth 2).
+
+  (GITHUB-1591, GITHUB-1621)
+
+  Reported by Veith Röthlingshöfer - @RunOrVeith.
+
+- Update minimum ``requests`` version we require as part for install_requires
+  in setup.py to ``2.26.0`` when using Python >= 3.6.
+
+  This was done to avoid licensing issue with transitive dependency
+  (``chardet``).
+
+  NOTE: requests ``>=2.25.1`` will be used when using Python 3.5 since 2.26.0
+  doesn't support Python 3.5 anymore.
+
+  For more context, see https://github.com/psf/requests/pull/5797.
+  (GITHUB-1594)
+
+  Reported by Jarek Potiuk - @potiuk.
+
+- Update HTTP connection and request retry code to be more flexible so user
+  can specify and utilize custom retry logic which can be configured via
+  connection retryCls attribute
+  (``driver.connection.retryCls = MyRetryClass``).
+
+  (GITHUB-1558)
+  [Veith Röthlingshöfer - @RunOrVeith]
+
+- HTTP connection and request retry logic has been updated so we still respect
+  ``timeout`` argument when retrying requests due to rate limit being reached
+  errors. Previously, we would try to retry indefinitely on
+  ``RateLimitReachedError`` exceptions.
 
 Storage
 ~~~~~~~
@@ -19,6 +164,11 @@ Storage
 
   Reported by Melissa Kersh - @mkcello96
   (GITHUB-1551)
+
+- [Local Storage] Optimize ``iterate_container_objects`` method to perform
+  early filtering if ``prefix`` argument is provided.
+  (GITHUB-1584)
+  [@Ido-Levi]
 
 Compute
 ~~~~~~~
@@ -56,6 +206,54 @@ Compute
   (GITHUB-1569)
   [@dpeschman]
 
+- [OpenStack] Enable to get Volume Quota details in OpenStack driver.
+
+  (GITHUB-1586)
+  [Miguel Caballer - @micafer]
+
+- [OpenStack] Add disabled property to OpenStack images.
+
+  (GITHUB-1615)
+  [Miguel Caballer - @micafer]
+
+- [CloudSigma] Various updates, improvements and new functionality in the 
+  driver (support for new regions, instance types, additional standard API an 
+  extension methods, etc.).
+
+  (GITHUB-1558)
+  [Dimitris Galanis - @dimgal1]
+
+- [OpenStack] Add binding:host_id value to the OpenStack port information.
+  (GITHUB-1492)
+  [Miguel Caballer - @micafer]
+
+- [EC2] Add support for ``gp3`` and ``io2`` volume types. Also add
+  ``ex_throughput`` argument to the ``create_volume`` method.
+  (GITHUB-1596)
+  [Palash Gandhi - @palashgandhi]
+
+- [OpenStack] Add support for authenticating using application credentials.
+  (GITHUB-1597, GITHUB-1598)
+  [Daniela Bauer - @marianne013]
+
+- [OpenStack] Add support for using optional external cache for auth tokens
+
+  This cache can be shared by multiple processes which results in much less
+  tokens being allocated when many different instances / processes
+  are utilizing the same set of credentials.
+
+  This functionality can be used by implementing a custom cache class with
+  caching logic (e.g. storing cache context on a local filesystem, external
+  system such as Redis or similar) + using ``ex_auth_cache`` driver constructor
+  argument.
+  (GITHUB-1460, GITHUB-1557)
+  [@dpeschman]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
+
 DNS
 ~~~
 
@@ -67,6 +265,26 @@ DNS
   parameters if they are not provided as method arguments.
   (GITHUB-1570)
   [Gasper Vozel - @karantan]
+
+- [NSOne] Fix MX records and root domain handling.
+  (GITHUB-1571)
+  [Gasper Vozel - @karantan]
+
+- [Vultr] Implement support for Vultr API v2 and update driver to use v2 by
+  default.
+  (GITHUB-1609, GITHUB-1610)
+  [Dimitris Galanis - @dimgal1]
+
+Other
+~~~~~
+
+- Fix ``python_requires`` setup.py metadata item value.
+  (GITHUB-1606)
+  [Michał Górny - @mgorny]
+
+- Update tox targets for unit tests to utilize ``pytest-xdist`` plugin to run
+  tests in parallel in multiple processes to speed up the test runs.
+  (GITHUB-1625)
 
 Changes in Apache Libcloud 3.3.1
 --------------------------------

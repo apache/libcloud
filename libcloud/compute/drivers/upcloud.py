@@ -43,7 +43,7 @@ class UpcloudResponse(JsonResponse):
     def parse_error(self):
         data = self.parse_body()
         if self.status == httplib.UNAUTHORIZED:
-            raise InvalidCredsError(value=data['error']['error_message'])
+            raise InvalidCredsError(value=data["error"]["error_message"])
         return data
 
 
@@ -52,21 +52,21 @@ class UpcloudConnection(ConnectionUserAndKey):
     Connection class for UpcloudDriver
     """
 
-    host = 'api.upcloud.com'
+    host = "api.upcloud.com"
     responseCls = UpcloudResponse
 
     def add_default_headers(self, headers):
         """Adds headers that are needed for all requests"""
-        headers['Authorization'] = self._basic_auth()
-        headers['Accept'] = 'application/json'
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = self._basic_auth()
+        headers["Accept"] = "application/json"
+        headers["Content-Type"] = "application/json"
         return headers
 
     def _basic_auth(self):
         """Constructs basic auth header content string"""
         credentials = b("{0}:{1}".format(self.user_id, self.key))
         credentials = base64.b64encode(credentials)
-        return 'Basic {0}'.format(credentials.decode('ascii'))
+        return "Basic {0}".format(credentials.decode("ascii"))
 
 
 class UpcloudDriver(NodeDriver):
@@ -81,21 +81,20 @@ class UpcloudDriver(NodeDriver):
     """
 
     type = Provider.UPCLOUD
-    name = 'Upcloud'
-    website = 'https://www.upcloud.com'
+    name = "Upcloud"
+    website = "https://www.upcloud.com"
     connectionCls = UpcloudConnection
-    features = {'create_node': ['ssh_key', 'generates_password']}
+    features = {"create_node": ["ssh_key", "generates_password"]}
 
     NODE_STATE_MAP = {
-        'started': NodeState.RUNNING,
-        'stopped': NodeState.STOPPED,
-        'maintenance': NodeState.RECONFIGURING,
-        'error': NodeState.ERROR
+        "started": NodeState.RUNNING,
+        "stopped": NodeState.STOPPED,
+        "maintenance": NodeState.RECONFIGURING,
+        "error": NodeState.ERROR,
     }
 
     def __init__(self, username, password, **kwargs):
-        super(UpcloudDriver, self).__init__(key=username, secret=password,
-                                            **kwargs)
+        super(UpcloudDriver, self).__init__(key=username, secret=password, **kwargs)
 
     def list_locations(self):
         """
@@ -103,8 +102,8 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeLocation`
         """
-        response = self.connection.request('1.2/zone')
-        return self._to_node_locations(response.object['zones']['zone'])
+        response = self.connection.request("1.2/zone")
+        return self._to_node_locations(response.object["zones"]["zone"])
 
     def list_sizes(self, location=None):
         """
@@ -117,11 +116,13 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeSize`
         """
-        prices_response = self.connection.request('1.2/price')
-        response = self.connection.request('1.2/plan')
-        return self._to_node_sizes(response.object['plans']['plan'],
-                                   prices_response.object['prices']['zone'],
-                                   location)
+        prices_response = self.connection.request("1.2/price")
+        response = self.connection.request("1.2/plan")
+        return self._to_node_sizes(
+            response.object["plans"]["plan"],
+            prices_response.object["prices"]["zone"],
+            location,
+        )
 
     def list_images(self):
         """
@@ -129,15 +130,23 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``list`` of :class:`NodeImage`
         """
-        response = self.connection.request('1.2/storage/template')
+        response = self.connection.request("1.2/storage/template")
         obj = response.object
-        response = self.connection.request('1.2/storage/cdrom')
-        storage = response.object['storages']['storage']
-        obj['storages']['storage'].extend(storage)
-        return self._to_node_images(obj['storages']['storage'])
+        response = self.connection.request("1.2/storage/cdrom")
+        storage = response.object["storages"]["storage"]
+        obj["storages"]["storage"].extend(storage)
+        return self._to_node_images(obj["storages"]["storage"])
 
-    def create_node(self, name, size, image, location, auth=None,
-                    ex_hostname='localhost', ex_username='root'):
+    def create_node(
+        self,
+        name,
+        size,
+        image,
+        location,
+        auth=None,
+        ex_hostname="localhost",
+        ex_username="root",
+    ):
         """
         Creates instance to upcloud.
 
@@ -171,14 +180,19 @@ class UpcloudDriver(NodeDriver):
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
-        body = UpcloudCreateNodeRequestBody(name=name, size=size, image=image,
-                                            location=location, auth=auth,
-                                            ex_hostname=ex_hostname,
-                                            ex_username=ex_username)
-        response = self.connection.request('1.2/server',
-                                           method='POST',
-                                           data=body.to_json())
-        server = response.object['server']
+        body = UpcloudCreateNodeRequestBody(
+            name=name,
+            size=size,
+            image=image,
+            location=location,
+            auth=auth,
+            ex_hostname=ex_hostname,
+            ex_username=ex_username,
+        )
+        response = self.connection.request(
+            "1.2/server", method="POST", data=body.to_json()
+        )
+        server = response.object["server"]
         # Upcloud server's are in maintenace state when goind
         # from state to other, it is safe to assume STARTING state
         return self._to_node(server, state=NodeState.STARTING)
@@ -192,8 +206,8 @@ class UpcloudDriver(NodeDriver):
         """
         servers = []
         for nid in self._node_ids():
-            response = self.connection.request('1.2/server/{0}'.format(nid))
-            servers.append(response.object['server'])
+            response = self.connection.request("1.2/server/{0}".format(nid))
+            servers.append(response.object["server"])
         return self._to_nodes(servers)
 
     def reboot_node(self, node):
@@ -205,14 +219,12 @@ class UpcloudDriver(NodeDriver):
 
         :rtype: ``bool``
         """
-        body = {
-            'restart_server': {
-                'stop_type': 'hard'
-            }
-        }
-        self.connection.request('1.2/server/{0}/restart'.format(node.id),
-                                method='POST',
-                                data=json.dumps(body))
+        body = {"restart_server": {"stop_type": "hard"}}
+        self.connection.request(
+            "1.2/server/{0}/restart".format(node.id),
+            method="POST",
+            data=json.dumps(body),
+        )
         return True
 
     def destroy_node(self, node):
@@ -235,70 +247,74 @@ class UpcloudDriver(NodeDriver):
         """
         Returns list of server uids currently on upcloud
         """
-        response = self.connection.request('1.2/server')
-        servers = response.object['servers']['server']
-        return [server['uuid'] for server in servers]
+        response = self.connection.request("1.2/server")
+        servers = response.object["servers"]["server"]
+        return [server["uuid"] for server in servers]
 
     def _to_nodes(self, servers):
         return [self._to_node(server) for server in servers]
 
     def _to_node(self, server, state=None):
-        ip_addresses = server['ip_addresses']['ip_address']
-        public_ips = [ip['address'] for ip in ip_addresses
-                      if ip['access'] == 'public']
-        private_ips = [ip['address'] for ip in ip_addresses
-                       if ip['access'] == 'private']
+        ip_addresses = server["ip_addresses"]["ip_address"]
+        public_ips = [ip["address"] for ip in ip_addresses if ip["access"] == "public"]
+        private_ips = [
+            ip["address"] for ip in ip_addresses if ip["access"] == "private"
+        ]
 
-        extra = {'vnc_password': server['vnc_password']}
-        if 'password' in server:
-            extra['password'] = server['password']
-        return Node(id=server['uuid'],
-                    name=server['title'],
-                    state=state or self.NODE_STATE_MAP[server['state']],
-                    public_ips=public_ips,
-                    private_ips=private_ips,
-                    driver=self,
-                    extra=extra)
+        extra = {"vnc_password": server["vnc_password"]}
+        if "password" in server:
+            extra["password"] = server["password"]
+        return Node(
+            id=server["uuid"],
+            name=server["title"],
+            state=state or self.NODE_STATE_MAP[server["state"]],
+            public_ips=public_ips,
+            private_ips=private_ips,
+            driver=self,
+            extra=extra,
+        )
 
     def _to_node_locations(self, zones):
         return [self._construct_node_location(zone) for zone in zones]
 
     def _construct_node_location(self, zone):
-        return NodeLocation(id=zone['id'],
-                            name=zone['description'],
-                            country=self._parse_country(zone['id']),
-                            driver=self)
+        return NodeLocation(
+            id=zone["id"],
+            name=zone["description"],
+            country=self._parse_country(zone["id"]),
+            driver=self,
+        )
 
     def _parse_country(self, zone_id):
         """Parses the country information out of zone_id.
         Zone_id format [country]_[city][number], like fi_hel1"""
-        return zone_id.split('-')[0].upper()
+        return zone_id.split("-")[0].upper()
 
     def _to_node_sizes(self, plans, prices, location):
         plan_price = PlanPrice(prices)
-        return [self._to_node_size(plan, plan_price, location)
-                for plan in plans]
+        return [self._to_node_size(plan, plan_price, location) for plan in plans]
 
     def _to_node_size(self, plan, plan_price, location):
-        extra = self._copy_dict(('core_number', 'storage_tier'), plan)
-        return NodeSize(id=plan['name'], name=plan['name'],
-                        ram=plan['memory_amount'],
-                        disk=plan['storage_size'],
-                        bandwidth=plan['public_traffic_out'],
-                        price=plan_price.get_price(plan['name'], location),
-                        driver=self,
-                        extra=extra)
+        extra = self._copy_dict(("core_number", "storage_tier"), plan)
+        return NodeSize(
+            id=plan["name"],
+            name=plan["name"],
+            ram=plan["memory_amount"],
+            disk=plan["storage_size"],
+            bandwidth=plan["public_traffic_out"],
+            price=plan_price.get_price(plan["name"], location),
+            driver=self,
+            extra=extra,
+        )
 
     def _to_node_images(self, images):
         return [self._construct_node_image(image) for image in images]
 
     def _construct_node_image(self, image):
-        extra = self._copy_dict(('access', 'license',
-                                 'size', 'state', 'type'), image)
-        return NodeImage(id=image['uuid'],
-                         name=image['title'],
-                         driver=self,
-                         extra=extra)
+        extra = self._copy_dict(("access", "license", "size", "state", "type"), image)
+        return NodeImage(
+            id=image["uuid"], name=image["title"], driver=self, extra=extra
+        )
 
     def _copy_dict(self, keys, d):
         extra = {}

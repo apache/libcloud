@@ -28,6 +28,7 @@ from os.path import join as pjoin
 
 try:
     import simplejson as json
+
     try:
         JSONDecodeError = json.JSONDecodeError
     except AttributeError:
@@ -35,32 +36,32 @@ try:
         JSONDecodeError = ValueError  # type: ignore
 except ImportError:
     import json  # type: ignore
+
     JSONDecodeError = ValueError  # type: ignore
 
 __all__ = [
-    'get_pricing',
-    'get_size_price',
-    'set_pricing',
-    'clear_pricing_data',
-    'download_pricing_file'
+    "get_pricing",
+    "get_size_price",
+    "set_pricing",
+    "clear_pricing_data",
+    "download_pricing_file",
 ]
 
 # Default URL to the pricing file in a git repo
-DEFAULT_FILE_URL_GIT = 'https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json'  # NOQA
+DEFAULT_FILE_URL_GIT = "https://git-wip-us.apache.org/repos/asf?p=libcloud.git;a=blob_plain;f=libcloud/data/pricing.json"  # NOQA
 
-DEFAULT_FILE_URL_S3_BUCKET = 'https://libcloud-pricing-data.s3.amazonaws.com/pricing.json'  # NOQA
+DEFAULT_FILE_URL_S3_BUCKET = (
+    "https://libcloud-pricing-data.s3.amazonaws.com/pricing.json"  # NOQA
+)
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, 'data/pricing.json')
-CUSTOM_PRICING_FILE_PATH = os.path.expanduser('~/.libcloud/pricing.json')
+DEFAULT_PRICING_FILE_PATH = pjoin(CURRENT_DIRECTORY, "data/pricing.json")
+CUSTOM_PRICING_FILE_PATH = os.path.expanduser("~/.libcloud/pricing.json")
 
 # Pricing data cache
-PRICING_DATA = {
-    'compute': {},
-    'storage': {}
-}  # type: Dict[str, Dict]
+PRICING_DATA = {"compute": {}, "storage": {}}  # type: Dict[str, Dict]
 
-VALID_PRICING_DRIVER_TYPES = ['compute', 'storage']
+VALID_PRICING_DRIVER_TYPES = ["compute", "storage"]
 
 # Set this to True to cache all the pricing data in memory instead of just the
 # one for the drivers which are used
@@ -69,16 +70,16 @@ CACHE_ALL_PRICING_DATA = False
 
 def get_pricing_file_path(file_path=None):
     # type: (Optional[str]) -> str
-    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and \
-       os.path.isfile(CUSTOM_PRICING_FILE_PATH):
+    if os.path.exists(CUSTOM_PRICING_FILE_PATH) and os.path.isfile(
+        CUSTOM_PRICING_FILE_PATH
+    ):
         # Custom pricing file is available, use it
         return CUSTOM_PRICING_FILE_PATH
 
     return DEFAULT_PRICING_FILE_PATH
 
 
-def get_pricing(driver_type, driver_name, pricing_file_path=None,
-                cache_all=False):
+def get_pricing(driver_type, driver_name, pricing_file_path=None, cache_all=False):
     # type: (str, str, Optional[str], bool) -> Optional[dict]
     """
     Return pricing for the provided driver.
@@ -111,7 +112,7 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None,
     cache_all = cache_all or CACHE_ALL_PRICING_DATA
 
     if driver_type not in VALID_PRICING_DRIVER_TYPES:
-        raise AttributeError('Invalid driver type: %s', driver_type)
+        raise AttributeError("Invalid driver type: %s", driver_type)
 
     if driver_name in PRICING_DATA[driver_type]:
         return PRICING_DATA[driver_type][driver_name]
@@ -139,8 +140,9 @@ def get_pricing(driver_type, driver_name, pricing_file_path=None,
 
             PRICING_DATA[driver_type] = pricing
     else:
-        set_pricing(driver_type=driver_type, driver_name=driver_name,
-                    pricing=driver_pricing)
+        set_pricing(
+            driver_type=driver_type, driver_name=driver_name, pricing=driver_pricing
+        )
 
     return driver_pricing
 
@@ -203,8 +205,8 @@ def invalidate_pricing_cache():
     """
     Invalidate pricing cache for all the drivers.
     """
-    PRICING_DATA['compute'] = {}
-    PRICING_DATA['storage'] = {}
+    PRICING_DATA["compute"] = {}
+    PRICING_DATA["storage"] = {}
 
 
 def clear_pricing_data():
@@ -233,8 +235,9 @@ def invalidate_module_pricing_cache(driver_type, driver_name):
         del PRICING_DATA[driver_type][driver_name]
 
 
-def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET,
-                          file_path=CUSTOM_PRICING_FILE_PATH):
+def download_pricing_file(
+    file_url=DEFAULT_FILE_URL_S3_BUCKET, file_path=CUSTOM_PRICING_FILE_PATH
+):
     # type: (str, str) -> None
     """
     Download pricing file from the file_url and save it to file_path.
@@ -251,13 +254,11 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET,
 
     if not os.path.exists(dir_name):
         # Verify a valid path is provided
-        msg = ('Can\'t write to %s, directory %s, doesn\'t exist' %
-               (file_path, dir_name))
+        msg = "Can't write to %s, directory %s, doesn't exist" % (file_path, dir_name)
         raise ValueError(msg)
 
     if os.path.exists(file_path) and os.path.isdir(file_path):
-        msg = ('Can\'t write to %s file path because it\'s a'
-               ' directory' % (file_path))
+        msg = "Can't write to %s file path because it's a" " directory" % (file_path)
         raise ValueError(msg)
 
     response = get_response_object(file_url)
@@ -267,14 +268,14 @@ def download_pricing_file(file_url=DEFAULT_FILE_URL_S3_BUCKET,
     try:
         data = json.loads(body)
     except JSONDecodeError:
-        msg = 'Provided URL doesn\'t contain valid pricing data'
+        msg = "Provided URL doesn't contain valid pricing data"
         raise Exception(msg)
 
     # pylint: disable=maybe-no-member
-    if not data.get('updated', None):
-        msg = 'Provided URL doesn\'t contain valid pricing data'
+    if not data.get("updated", None):
+        msg = "Provided URL doesn't contain valid pricing data"
         raise Exception(msg)
 
     # No need to stream it since file is small
-    with open(file_path, 'w') as file_handle:
+    with open(file_path, "w") as file_handle:
         file_handle.write(body)

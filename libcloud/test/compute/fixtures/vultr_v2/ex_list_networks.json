@@ -1,0 +1,27 @@
+{
+    "networks": [
+        {
+            "id": "123",
+            "date_created": "2021-09-02T14:23:48+00:00",
+            "region": "ams",
+            "description": "test1",
+            "v4_subnet": "10.7.96.0",
+            "v4_subnet_mask": 20
+        },
+        {
+            "id": "bff0c4e0-e459-4613-a14b-389954329b9d",
+            "date_created": "2021-09-02T14:37:25+00:00",
+            "region": "ams",
+            "description": "test3",
+            "v4_subnet": "192.168.0.0",
+            "v4_subnet_mask": 16
+        }
+    ],
+    "meta": {
+        "total": 2,
+        "links": {
+            "next": "",
+            "prev": ""
+        }
+    }
+}

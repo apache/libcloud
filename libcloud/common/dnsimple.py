@@ -19,7 +19,6 @@ from libcloud.common.base import JsonResponse
 
 
 class DNSimpleDNSResponse(JsonResponse):
-
     def success(self):
         """
         Determine if our request was successful.
@@ -36,7 +35,7 @@ class DNSimpleDNSResponse(JsonResponse):
 
 
 class DNSimpleDNSConnection(ConnectionUserAndKey):
-    host = 'api.dnsimple.com'
+    host = "api.dnsimple.com"
     responseCls = DNSimpleDNSResponse
 
     def add_default_headers(self, headers):
@@ -47,7 +46,7 @@ class DNSimpleDNSConnection(ConnectionUserAndKey):
         """
         # TODO: fijarse sobre que info se paso como parametro y en base
         # a esto, fijar el header
-        headers['X-DNSimple-Token'] = '%s:%s' % (self.user_id, self.key)
-        headers['Accept'] = 'application/json'
-        headers['Content-Type'] = 'application/json'
+        headers["X-DNSimple-Token"] = "%s:%s" % (self.user_id, self.key)
+        headers["Accept"] = "application/json"
+        headers["Content-Type"] = "application/json"
         return headers

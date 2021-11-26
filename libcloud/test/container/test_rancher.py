@@ -29,81 +29,153 @@ from libcloud.test import MockHttp
 # --------------------------------------------------------------------------- #
 # Mock Classes
 
+
 class RancherMockHttp(MockHttp):
-    fixtures = ContainerFileFixtures('rancher')
+    fixtures = ContainerFileFixtures("rancher")
 
     def _v1_environments(self, method, url, body, headers):
-        if method == 'GET':
-            return (httplib.OK, self.fixtures.load('ex_list_stacks.json'), {},
-                    httplib.responses[httplib.OK])
+        if method == "GET":
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_list_stacks.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
         else:
-            return (httplib.OK, self.fixtures.load('ex_deploy_stack.json'), {},
-                    httplib.responses[httplib.OK])
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_deploy_stack.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
 
     def _v1_environments_1e9(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_deploy_stack.json'), {},
-                httplib.responses[httplib.OK])
+        return (
+            httplib.OK,
+            self.fixtures.load("ex_deploy_stack.json"),
+            {},
+            httplib.responses[httplib.OK],
+        )
 
     def _v1_environments_1e10(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_destroy_stack.json'), {},
-                httplib.responses[httplib.OK])
+        return (
+            httplib.OK,
+            self.fixtures.load("ex_destroy_stack.json"),
+            {},
+            httplib.responses[httplib.OK],
+        )
 
     def _v1_environments_1e1(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_activate_stack.json'), {},
-                httplib.responses[httplib.OK])
+        return (
+            httplib.OK,
+            self.fixtures.load("ex_activate_stack.json"),
+            {},
+            httplib.responses[httplib.OK],
+        )
 
     def _v1_services(self, method, url, body, headers):
-        if '?healthState=healthy' in url:
-            return (httplib.OK, self.fixtures.load('ex_search_services.json'),
-                    {}, httplib.responses[httplib.OK])
-        elif method == 'GET':
-            return (httplib.OK, self.fixtures.load('ex_list_services.json'),
-                    {}, httplib.responses[httplib.OK])
+        if "?healthState=healthy" in url:
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_search_services.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
+        elif method == "GET":
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_list_services.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
         else:
-            return (httplib.OK, self.fixtures.load('ex_deploy_service.json'),
-                    {}, httplib.responses[httplib.OK])
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_deploy_service.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
 
     def _v1_services_1s13(self, method, url, body, headers):
-        if method == 'GET':
-            return (httplib.OK, self.fixtures.load('ex_deploy_service.json'),
-                    {}, httplib.responses[httplib.OK])
-        elif method == 'DELETE':
-            return (httplib.OK, self.fixtures.load('ex_destroy_service.json'),
-                    {}, httplib.responses[httplib.OK])
+        if method == "GET":
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_deploy_service.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
+        elif method == "DELETE":
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_destroy_service.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
 
     def _v1_services_1s6(self, method, url, body, headers):
-        return (httplib.OK, self.fixtures.load('ex_activate_service.json'), {},
-                httplib.responses[httplib.OK])
+        return (
+            httplib.OK,
+            self.fixtures.load("ex_activate_service.json"),
+            {},
+            httplib.responses[httplib.OK],
+        )
 
     def _v1_containers(self, method, url, body, headers):
-        if '?state=running' in url:
-            return (httplib.OK,
-                    self.fixtures.load('ex_search_containers.json'), {},
-                    httplib.responses[httplib.OK])
-        elif method == 'POST':
-            return (httplib.OK, self.fixtures.load('deploy_container.json'),
-                    {}, httplib.responses[httplib.OK])
-        return (httplib.OK, self.fixtures.load('list_containers.json'), {},
-                httplib.responses[httplib.OK])
+        if "?state=running" in url:
+            return (
+                httplib.OK,
+                self.fixtures.load("ex_search_containers.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
+        elif method == "POST":
+            return (
+                httplib.OK,
+                self.fixtures.load("deploy_container.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
+        return (
+            httplib.OK,
+            self.fixtures.load("list_containers.json"),
+            {},
+            httplib.responses[httplib.OK],
+        )
 
     def _v1_containers_1i31(self, method, url, body, headers):
-        if method == 'GET':
-            return (httplib.OK, self.fixtures.load('deploy_container.json'),
-                    {}, httplib.responses[httplib.OK])
-        elif method == 'DELETE' or '?action=stop' in url:
-            return (httplib.OK, self.fixtures.load('stop_container.json'), {},
-                    httplib.responses[httplib.OK])
-        elif '?action=start' in url:
-            return (httplib.OK, self.fixtures.load('start_container.json'), {},
-                    httplib.responses[httplib.OK])
+        if method == "GET":
+            return (
+                httplib.OK,
+                self.fixtures.load("deploy_container.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
+        elif method == "DELETE" or "?action=stop" in url:
+            return (
+                httplib.OK,
+                self.fixtures.load("stop_container.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
+        elif "?action=start" in url:
+            return (
+                httplib.OK,
+                self.fixtures.load("start_container.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
         else:
-            return (httplib.OK, self.fixtures.load('deploy_container.json'),
-                    {}, httplib.responses[httplib.OK])
+            return (
+                httplib.OK,
+                self.fixtures.load("deploy_container.json"),
+                {},
+                httplib.responses[httplib.OK],
+            )
 
 
 RancherContainerDriver.connectionCls.conn_class = RancherMockHttp
 RancherMockHttp.type = None
-RancherMockHttp.use_param = 'a'
+RancherMockHttp.use_param = "a"
 
 
 # --------------------------------------------------------------------------- #
@@ -133,8 +205,7 @@ class RancherContainerDriverInitTestCase(unittest.TestCase):
         Test a partial URL string, which contains a scheme, and base path.
         """
         path = "http://myhostname/base"
-        driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER, host=path,
-                                        port=1234)
+        driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER, host=path, port=1234)
 
         self.assertEqual(driver.secure, False)
         self.assertEqual(driver.connection.host, "myhostname")
@@ -167,7 +238,6 @@ class RancherContainerDriverInitTestCase(unittest.TestCase):
 
 
 class RancherContainerDriverTestCase(unittest.TestCase):
-
     def setUp(self):
         self.driver = RancherContainerDriver(*CONTAINER_PARAMS_RANCHER)
 
@@ -175,26 +245,25 @@ class RancherContainerDriverTestCase(unittest.TestCase):
     def test_ex_list_stacks(self):
         stacks = self.driver.ex_list_stacks()
         self.assertEqual(len(stacks), 6)
-        self.assertEqual(stacks[0]['id'], "1e1")
+        self.assertEqual(stacks[0]["id"], "1e1")
 
     def test_ex_deploy_stack(self):
-        stack = self.driver.ex_deploy_stack(name="newstack",
-                                            environment={
-                                                "root_password": "password"
-                                            })
-        self.assertEqual(stack['id'], "1e9")
-        self.assertEqual(stack['environment']['root_password'], "password")
+        stack = self.driver.ex_deploy_stack(
+            name="newstack", environment={"root_password": "password"}
+        )
+        self.assertEqual(stack["id"], "1e9")
+        self.assertEqual(stack["environment"]["root_password"], "password")
 
     def test_ex_get_stack(self):
         # also uses ex_deploy_stack.json
         stack = self.driver.ex_get_stack("1e9")
-        self.assertEqual(stack['id'], "1e9")
-        self.assertEqual(stack['environment']['root_password'], "password")
+        self.assertEqual(stack["id"], "1e9")
+        self.assertEqual(stack["environment"]["root_password"], "password")
 
     def test_ex_search_stacks(self):
         stacks = self.driver.ex_search_stacks({"healthState": "healthy"})
         self.assertEqual(len(stacks), 6)
-        self.assertEqual(stacks[0]['healthState'], "healthy")
+        self.assertEqual(stacks[0]["healthState"], "healthy")
 
     def test_ex_destroy_stack(self):
         response = self.driver.ex_destroy_stack("1e10")
@@ -212,7 +281,7 @@ class RancherContainerDriverTestCase(unittest.TestCase):
     def test_ex_list_services(self):
         services = self.driver.ex_list_services()
         self.assertEqual(len(services), 4)
-        self.assertEqual(services[0]['id'], "1s1")
+        self.assertEqual(services[0]["id"], "1s1")
 
     def test_ex_deploy_service(self):
         image = ContainerImage(
@@ -220,33 +289,36 @@ class RancherContainerDriverTestCase(unittest.TestCase):
             name="hastebin",
             path="rlister/hastebin",
             version="latest",
-            driver=None
+            driver=None,
         )
-        service = self.driver.ex_deploy_service(name="newservice",
-                                                environment_id="1e1",
-                                                image=image,
-                                                environment={
-                                                    "root_password": "password"
-                                                })
-        self.assertEqual(service['id'], "1s13")
-        self.assertEqual(service['environmentId'], "1e6")
-        self.assertEqual(service['launchConfig']['environment']
-                         ['root_password'], "password")
-        self.assertEqual(service['launchConfig']['imageUuid'],
-                         "docker:rlister/hastebin:latest")
+        service = self.driver.ex_deploy_service(
+            name="newservice",
+            environment_id="1e1",
+            image=image,
+            environment={"root_password": "password"},
+        )
+        self.assertEqual(service["id"], "1s13")
+        self.assertEqual(service["environmentId"], "1e6")
+        self.assertEqual(
+            service["launchConfig"]["environment"]["root_password"], "password"
+        )
+        self.assertEqual(
+            service["launchConfig"]["imageUuid"], "docker:rlister/hastebin:latest"
+        )
 
     def test_ex_get_service(self):
         # also uses ex_deploy_service.json
         service = self.driver.ex_get_service("1s13")
-        self.assertEqual(service['id'], "1s13")
-        self.assertEqual(service['environmentId'], "1e6")
-        self.assertEqual(service['launchConfig']['environment']
-                         ['root_password'], "password")
+        self.assertEqual(service["id"], "1s13")
+        self.assertEqual(service["environmentId"], "1e6")
+        self.assertEqual(
+            service["launchConfig"]["environment"]["root_password"], "password"
+        )
 
     def test_ex_search_services(self):
         services = self.driver.ex_search_services({"healthState": "healthy"})
         self.assertEqual(len(services), 2)
-        self.assertEqual(services[0]['healthState'], "healthy")
+        self.assertEqual(services[0]["healthState"], "healthy")
 
     def test_ex_destroy_service(self):
         # Not sure how to do these with returns in mockhttp
@@ -269,29 +341,27 @@ class RancherContainerDriverTestCase(unittest.TestCase):
 
     def test_deploy_container(self):
         container = self.driver.deploy_container(
-            name='newcontainer',
+            name="newcontainer",
             image=ContainerImage(
                 id="hastebin",
                 name="hastebin",
                 path="rlister/hastebin",
                 version="latest",
-                driver=None
+                driver=None,
             ),
             environment={"STORAGE_TYPE": "file"},
-            networkMode="managed"
+            networkMode="managed",
         )
-        self.assertEqual(container.id, '1i31')
-        self.assertEqual(container.name, 'newcontainer')
-        self.assertEqual(container.extra['environment'],
-                         {'STORAGE_TYPE': 'file'})
+        self.assertEqual(container.id, "1i31")
+        self.assertEqual(container.name, "newcontainer")
+        self.assertEqual(container.extra["environment"], {"STORAGE_TYPE": "file"})
 
     def test_get_container(self):
         # also uses ex_deploy_container.json
         container = self.driver.get_container("1i31")
-        self.assertEqual(container.id, '1i31')
-        self.assertEqual(container.name, 'newcontainer')
-        self.assertEqual(container.extra['environment'],
-                         {'STORAGE_TYPE': 'file'})
+        self.assertEqual(container.id, "1i31")
+        self.assertEqual(container.name, "newcontainer")
+        self.assertEqual(container.extra["environment"], {"STORAGE_TYPE": "file"})
 
     def test_start_container(self):
         container = self.driver.get_container("1i31")
@@ -299,7 +369,7 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(started.id, "1i31")
         self.assertEqual(started.name, "newcontainer")
         self.assertEqual(started.state, "pending")
-        self.assertEqual(started.extra['state'], "starting")
+        self.assertEqual(started.extra["state"], "starting")
 
     def test_stop_container(self):
         container = self.driver.get_container("1i31")
@@ -307,7 +377,7 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(stopped.id, "1i31")
         self.assertEqual(stopped.name, "newcontainer")
         self.assertEqual(stopped.state, "pending")
-        self.assertEqual(stopped.extra['state'], "stopping")
+        self.assertEqual(stopped.extra["state"], "stopping")
 
     def test_ex_search_containers(self):
         containers = self.driver.ex_search_containers({"state": "running"})
@@ -319,8 +389,8 @@ class RancherContainerDriverTestCase(unittest.TestCase):
         self.assertEqual(destroyed.id, "1i31")
         self.assertEqual(destroyed.name, "newcontainer")
         self.assertEqual(destroyed.state, "pending")
-        self.assertEqual(destroyed.extra['state'], "stopping")
+        self.assertEqual(destroyed.extra["state"], "stopping")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

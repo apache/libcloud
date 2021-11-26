@@ -26,10 +26,9 @@ from libcloud.test.file_fixtures import ComputeFileFixtures
 
 
 class RimuHostingTest(unittest.TestCase, TestCaseMixin):
-
     def setUp(self):
         RimuHostingNodeDriver.connectionCls.conn_class = RimuHostingMockHttp
-        self.driver = RimuHostingNodeDriver('foo')
+        self.driver = RimuHostingNodeDriver("foo")
 
     def test_list_nodes(self):
         nodes = self.driver.list_nodes()
@@ -37,7 +36,7 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
         node = nodes[0]
         self.assertEqual(node.public_ips[0], "1.2.3.4")
         self.assertEqual(node.public_ips[1], "1.2.3.5")
-        self.assertEqual(node.extra['order_oid'], 88833465)
+        self.assertEqual(node.extra["order_oid"], 88833465)
         self.assertEqual(node.id, "order-88833465-api-ivan-net-nz")
 
     def test_list_sizes(self):
@@ -53,8 +52,9 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
         images = self.driver.list_images()
         self.assertEqual(len(images), 6)
         image = images[0]
-        self.assertEqual(image.name, "Debian 5.0 (aka Lenny, RimuHosting"
-                         " recommended distro)")
+        self.assertEqual(
+            image.name, "Debian 5.0 (aka Lenny, RimuHosting" " recommended distro)"
+        )
         self.assertEqual(image.id, "lenny")
 
     def test_reboot_node(self):
@@ -76,37 +76,36 @@ class RimuHostingTest(unittest.TestCase, TestCaseMixin):
 
 class RimuHostingMockHttp(MockHttp):
 
-    fixtures = ComputeFileFixtures('rimuhosting')
+    fixtures = ComputeFileFixtures("rimuhosting")
 
     def _r_orders(self, method, url, body, headers):
-        body = self.fixtures.load('r_orders.json')
+        body = self.fixtures.load("r_orders.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _r_pricing_plans(self, method, url, body, headers):
-        body = self.fixtures.load('r_pricing_plans.json')
+        body = self.fixtures.load("r_pricing_plans.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _r_distributions(self, method, url, body, headers):
-        body = self.fixtures.load('r_distributions.json')
+        body = self.fixtures.load("r_distributions.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _r_orders_new_vps(self, method, url, body, headers):
-        body = self.fixtures.load('r_orders_new_vps.json')
+        body = self.fixtures.load("r_orders_new_vps.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _r_orders_order_88833465_api_ivan_net_nz_vps(self, method, url, body, headers):
-        body = self.fixtures.load(
-            'r_orders_order_88833465_api_ivan_net_nz_vps.json')
+        body = self.fixtures.load("r_orders_order_88833465_api_ivan_net_nz_vps.json")
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
     def _r_orders_order_88833465_api_ivan_net_nz_vps_running_state(
-        self, method,
-        url, body,
-            headers):
+        self, method, url, body, headers
+    ):
         body = self.fixtures.load(
-            'r_orders_order_88833465_api_ivan_net_nz_vps_running_state.json')
+            "r_orders_order_88833465_api_ivan_net_nz_vps_running_state.json"
+        )
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(unittest.main())

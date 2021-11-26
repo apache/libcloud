@@ -55,7 +55,7 @@ Provider            Documentation                             Provider Constant 
 .. _`RcodeZero DNS`: https://www.rcodezero.at/
 .. _`Route53 DNS`: http://aws.amazon.com/route53/
 .. _`Softlayer DNS`: https://www.softlayer.com
-.. _`Vultr DNS`: http://www.vultr.com/
+.. _`Vultr DNS`: https://www.vultr.com
 .. _`World Wide DNS`: https://www.worldwidedns.net/
 .. _`Zerigo DNS`: http://www.zerigo.com/
 .. _`Zonomi DNS`: https://zonomi.com

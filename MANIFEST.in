@@ -8,6 +8,7 @@ include .pylintrc
 include requirements-tests.txt
 include libcloud/data/pricing.json
 prune libcloud/test/secrets.py
+prune requirements-rtd.txt
 include demos/*
 include scripts/check_file_names.sh
 include libcloud/test/*.py

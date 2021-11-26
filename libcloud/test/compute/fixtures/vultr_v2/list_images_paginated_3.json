@@ -1,0 +1,71 @@
+{
+    "os": [
+        {
+            "id": 412,
+            "name": "OpenBSD 6.8 x64",
+            "arch": "x64",
+            "family": "openbsd"
+        },
+        {
+            "id": 413,
+            "name": "Ubuntu 20.10 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 415,
+            "name": "Fedora 33 x64",
+            "arch": "x64",
+            "family": "fedora"
+        },
+        {
+            "id": 445,
+            "name": "Ubuntu 21.04 x64",
+            "arch": "x64",
+            "family": "ubuntu"
+        },
+        {
+            "id": 446,
+            "name": "Fedora 34 x64",
+            "arch": "x64",
+            "family": "fedora"
+        },
+        {
+            "id": 447,
+            "name": "FreeBSD 13 x64",
+            "arch": "x64",
+            "family": "freebsd"
+        },
+        {
+            "id": 448,
+            "name": "Rocky Linux x64",
+            "arch": "x64",
+            "family": "rockylinux"
+        },
+        {
+            "id": 450,
+            "name": "OpenBSD 6.9 x64",
+            "arch": "x64",
+            "family": "openbsd"
+        },
+        {
+            "id": 452,
+            "name": "AlmaLinux x64",
+            "arch": "x64",
+            "family": "almalinux"
+        },
+        {
+            "id": 477,
+            "name": "Debian 11 x64 (bullseye)",
+            "arch": "x64",
+            "family": "debian"
+        }
+    ],
+    "meta": {
+        "total": 30,
+        "links": {
+            "next": "",
+            "prev": "cHJldl9fNDEy"
+        }
+    }
+}

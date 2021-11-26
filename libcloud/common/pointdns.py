@@ -21,7 +21,6 @@ from libcloud.common.base import JsonResponse
 
 
 class PointDNSDNSResponse(JsonResponse):
-
     def success(self):
         """
         Determine if our request was successful.
@@ -38,7 +37,7 @@ class PointDNSDNSResponse(JsonResponse):
 
 
 class PointDNSConnection(ConnectionUserAndKey):
-    host = 'pointhq.com'
+    host = "pointhq.com"
     responseCls = PointDNSDNSResponse
 
     def add_default_headers(self, headers):
@@ -47,9 +46,9 @@ class PointDNSConnection(ConnectionUserAndKey):
 
         This method adds ``token`` to the request.
         """
-        b64string = b('%s:%s' % (self.user_id, self.key))
+        b64string = b("%s:%s" % (self.user_id, self.key))
         token = base64.b64encode(b64string)
-        headers['Authorization'] = 'Basic %s' % token
-        headers['Accept'] = 'application/json'
-        headers['Content-Type'] = 'application/json'
+        headers["Authorization"] = "Basic %s" % token
+        headers["Accept"] = "application/json"
+        headers["Content-Type"] = "application/json"
         return headers

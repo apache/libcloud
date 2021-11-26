@@ -76,19 +76,19 @@ def get_href(element, rel):
     :rtype:         ``str``
     :return:        the 'href' value according to the 'rel' input parameter
     """
-    links = element.findall('link')
+    links = element.findall("link")
     for link in links:
-        if link.attrib['rel'] == rel:
-            href = link.attrib['href']
+        if link.attrib["rel"] == rel:
+            href = link.attrib["href"]
             # href is something like:
             #
             # 'http://localhost:80/api/admin/enterprises'
             #
             # we are only interested in '/admin/enterprises/' part
-            needle = '/api/'
+            needle = "/api/"
             url_path = urlparse.urlparse(href).path
             index = url_path.find(needle)
-            result = url_path[index + len(needle) - 1:]
+            result = url_path[index + len(needle) - 1 :]
             return result
 
 
@@ -102,14 +102,14 @@ class AbiquoResponse(XmlResponse):
 
     # Map between abiquo state and Libcloud State
     NODE_STATE_MAP = {
-        'NOT_ALLOCATED': NodeState.TERMINATED,
-        'ALLOCATED': NodeState.PENDING,
-        'CONFIGURED': NodeState.PENDING,
-        'ON': NodeState.RUNNING,
-        'PAUSED': NodeState.PENDING,
-        'OFF': NodeState.PENDING,
-        'LOCKED': NodeState.PENDING,
-        'UNKNOWN': NodeState.UNKNOWN
+        "NOT_ALLOCATED": NodeState.TERMINATED,
+        "ALLOCATED": NodeState.PENDING,
+        "CONFIGURED": NodeState.PENDING,
+        "ON": NodeState.RUNNING,
+        "PAUSED": NodeState.PENDING,
+        "OFF": NodeState.PENDING,
+        "LOCKED": NodeState.PENDING,
+        "UNKNOWN": NodeState.UNKNOWN,
     }
 
     def parse_error(self):
@@ -126,13 +126,13 @@ class AbiquoResponse(XmlResponse):
         elif self.status == httplib.FORBIDDEN:
             raise ForbiddenError(self.connection.driver)
         elif self.status == httplib.NOT_ACCEPTABLE:
-            raise LibcloudError('Not Acceptable')
+            raise LibcloudError("Not Acceptable")
         else:
             parsebody = self.parse_body()
-            if parsebody is not None and hasattr(parsebody, 'findall'):
-                errors = self.parse_body().findall('error')
+            if parsebody is not None and hasattr(parsebody, "findall"):
+                errors = self.parse_body().findall("error")
                 # Most of the exceptions only have one error
-                raise LibcloudError(errors[0].findtext('message'))
+                raise LibcloudError(errors[0].findtext("message"))
             else:
                 raise LibcloudError(self.body)
 
@@ -145,8 +145,12 @@ class AbiquoResponse(XmlResponse):
         :rtype:  ``bool``
         :return: successful request or not.
         """
-        return self.status in [httplib.OK, httplib.CREATED, httplib.NO_CONTENT,
-                               httplib.ACCEPTED]
+        return self.status in [
+            httplib.OK,
+            httplib.CREATED,
+            httplib.NO_CONTENT,
+            httplib.ACCEPTED,
+        ]
 
     def async_success(self):
         """
@@ -164,7 +168,7 @@ class AbiquoResponse(XmlResponse):
         if self.success():
             # So we have a 'task' object in the body
             task = self.parse_body()
-            return task.findtext('state') == 'FINISHED_SUCCESSFULLY'
+            return task.findtext("state") == "FINISHED_SUCCESSFULLY"
         else:
             return False
 
@@ -179,16 +183,31 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
 
     responseCls = AbiquoResponse
 
-    def __init__(self, user_id, key, secure=True, host=None, port=None,
-                 url=None, timeout=None,
-                 retry_delay=None, backoff=None, proxy_url=None):
-        super(AbiquoConnection, self).__init__(user_id=user_id, key=key,
-                                               secure=secure,
-                                               host=host, port=port,
-                                               url=url, timeout=timeout,
-                                               retry_delay=retry_delay,
-                                               backoff=backoff,
-                                               proxy_url=proxy_url)
+    def __init__(
+        self,
+        user_id,
+        key,
+        secure=True,
+        host=None,
+        port=None,
+        url=None,
+        timeout=None,
+        retry_delay=None,
+        backoff=None,
+        proxy_url=None,
+    ):
+        super(AbiquoConnection, self).__init__(
+            user_id=user_id,
+            key=key,
+            secure=secure,
+            host=host,
+            port=port,
+            url=url,
+            timeout=timeout,
+            retry_delay=retry_delay,
+            backoff=backoff,
+            proxy_url=proxy_url,
+        )
 
         # This attribute stores data cached across multiple request
         self.cache = {}
@@ -207,12 +226,12 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         :return:        Default input headers with the 'Authorization'
                         header
         """
-        b64string = b('%s:%s' % (self.user_id, self.key))
-        encoded = base64.b64encode(b64string).decode('utf-8')
+        b64string = b("%s:%s" % (self.user_id, self.key))
+        encoded = base64.b64encode(b64string).decode("utf-8")
 
-        authorization = 'Basic ' + encoded
+        authorization = "Basic " + encoded
 
-        headers['Authorization'] = authorization
+        headers["Authorization"] = authorization
         return headers
 
     def get_poll_request_kwargs(self, response, context, request_kwargs):
@@ -239,14 +258,14 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         :return:                 Modified keyword arguments
         """
         accepted_request_obj = response.object
-        link_poll = get_href(accepted_request_obj, 'status')
-        hdr_poll = {'Accept': 'application/vnd.abiquo.task+xml'}
+        link_poll = get_href(accepted_request_obj, "status")
+        hdr_poll = {"Accept": "application/vnd.abiquo.task+xml"}
 
         # Override the 'action', 'method' and 'headers'
         # keys of the previous dict
-        request_kwargs['action'] = link_poll
-        request_kwargs['method'] = 'GET'
-        request_kwargs['headers'] = hdr_poll
+        request_kwargs["action"] = link_poll
+        request_kwargs["method"] = "GET"
+        request_kwargs["headers"] = hdr_poll
         return request_kwargs
 
     def has_completed(self, response):
@@ -259,9 +278,12 @@ class AbiquoConnection(ConnectionUserAndKey, PollingConnection):
         :return:         Whether the job has completed
         """
         task = response.object
-        task_state = task.findtext('state')
-        return task_state in ['FINISHED_SUCCESSFULLY', 'ABORTED',
-                              'FINISHED_UNSUCCESSFULLY']
+        task_state = task.findtext("state")
+        return task_state in [
+            "FINISHED_SUCCESSFULLY",
+            "ABORTED",
+            "FINISHED_UNSUCCESSFULLY",
+        ]
 
 
 class ForbiddenError(LibcloudError):
@@ -270,5 +292,5 @@ class ForbiddenError(LibcloudError):
     """
 
     def __init__(self, driver):
-        message = 'User has not permission to perform this task.'
+        message = "User has not permission to perform this task."
         super(ForbiddenError, self).__init__(message, driver)

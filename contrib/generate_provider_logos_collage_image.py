@@ -34,10 +34,10 @@ import random
 
 from os.path import join as pjoin
 
-DIMENSIONS = '150x150'  # Dimensions of the resized image (<width>x<height>)
-GEOMETRY = '+4+4'  # How to arrange images (+<rows>+<columns>)
+DIMENSIONS = "150x150"  # Dimensions of the resized image (<width>x<height>)
+GEOMETRY = "+4+4"  # How to arrange images (+<rows>+<columns>)
 
-TO_CREATE_DIRS = ['resized/', 'final/']
+TO_CREATE_DIRS = ["resized/", "final/"]
 
 
 def setup(output_path):
@@ -53,8 +53,9 @@ def setup(output_path):
 
 def get_logo_files(input_path):
     logo_files = os.listdir(input_path)
-    logo_files = [name for name in logo_files if
-                  'resized' not in name and name.endswith('png')]
+    logo_files = [
+        name for name in logo_files if "resized" not in name and name.endswith("png")
+    ]
     logo_files = [pjoin(input_path, name) for name in logo_files]
 
     return logo_files
@@ -65,14 +66,13 @@ def resize_images(logo_files, output_path):
 
     for logo_file in logo_files:
         name, ext = os.path.splitext(os.path.basename(logo_file))
-        new_name = '%s%s' % (name, ext)
-        out_name = pjoin(output_path, 'resized/', new_name)
+        new_name = "%s%s" % (name, ext)
+        out_name = pjoin(output_path, "resized/", new_name)
 
-        print('Resizing image: %(name)s' % {'name': logo_file})
+        print("Resizing image: %(name)s" % {"name": logo_file})
 
-        values = {'name': logo_file, 'out_name': out_name,
-                  'dimensions': DIMENSIONS}
-        cmd = 'convert %(name)s -resize %(dimensions)s %(out_name)s'
+        values = {"name": logo_file, "out_name": out_name, "dimensions": DIMENSIONS}
+        cmd = "convert %(name)s -resize %(dimensions)s %(out_name)s"
         cmd = cmd % values
         subprocess.call(cmd, shell=True)
 
@@ -82,43 +82,48 @@ def resize_images(logo_files, output_path):
 
 
 def assemble_final_image(resized_images, output_path):
-    final_name = pjoin(output_path, 'final/logos.png')
+    final_name = pjoin(output_path, "final/logos.png")
     random.shuffle(resized_images)
-    values = {'images': ' '.join(resized_images), 'geometry': GEOMETRY,
-              'out_name': final_name}
-    cmd = 'montage %(images)s -geometry %(geometry)s %(out_name)s'
+    values = {
+        "images": " ".join(resized_images),
+        "geometry": GEOMETRY,
+        "out_name": final_name,
+    }
+    cmd = "montage %(images)s -geometry %(geometry)s %(out_name)s"
     cmd = cmd % values
 
-    print('Generating final image: %(name)s' % {'name': final_name})
+    print("Generating final image: %(name)s" % {"name": final_name})
     subprocess.call(cmd, shell=True)
 
 
 def main(input_path, output_path):
     if not os.path.exists(input_path):
-        print('Path doesn\'t exist: %s' % (input_path))
+        print("Path doesn't exist: %s" % (input_path))
         sys.exit(2)
 
     if not os.path.exists(output_path):
-        print('Path doesn\'t exist: %s' % (output_path))
+        print("Path doesn't exist: %s" % (output_path))
         sys.exit(2)
 
     logo_files = get_logo_files(input_path=input_path)
 
     setup(output_path=output_path)
-    resized_images = resize_images(logo_files=logo_files,
-                                   output_path=output_path)
-    assemble_final_image(resized_images=resized_images,
-                         output_path=output_path)
+    resized_images = resize_images(logo_files=logo_files, output_path=output_path)
+    assemble_final_image(resized_images=resized_images, output_path=output_path)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Assemble provider logos '
-                                                 ' in a single image')
-    parser.add_argument('--input-path', action='store',
-                        help='Path to directory which contains provider '
-                             'logo files')
-    parser.add_argument('--output-path', action='store',
-                        help='Path where the new files will be written')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Assemble provider logos " " in a single image"
+    )
+    parser.add_argument(
+        "--input-path",
+        action="store",
+        help="Path to directory which contains provider " "logo files",
+    )
+    parser.add_argument(
+        "--output-path", action="store", help="Path where the new files will be written"
+    )
     args = parser.parse_args()
 
     input_path = os.path.abspath(args.input_path)

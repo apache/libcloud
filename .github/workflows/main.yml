@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - trunk
+      - pyjion_cicd_tests
   pull_request:
     branches:
       - trunk
@@ -28,13 +29,14 @@ jobs:
       - id: skip_check
         # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
         # actions
-        uses: ./.github/actions/skip-duplicate-actions # v3.4.0
+        uses: ./.github/actions/skip-duplicate-actions # v3.4.1
         with:
           github_token: ${{ github.token }}
 
   unit_tests:
-    name: Run Unit Tests
+    name: Unit Tests (Python ${{ matrix.python_version }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
 
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
@@ -43,12 +45,13 @@ jobs:
       fail-fast: false
       matrix:
         python_version:
-          - 3.5
           - 3.6
           - 3.7
           - 3.8
           - 3.9
+          - "3.10"
           - pypy3
+          - pyjion
         os:
           - ubuntu-latest
 
@@ -58,6 +61,7 @@ jobs:
           fetch-depth: 1
 
       - name: Use Python ${{ matrix.python_version }}
+        if: ${{ matrix.python_version != 'pyjion' }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python_version }}
@@ -67,6 +71,28 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq gcc libvirt-dev
 
+      - name: Use Python 3.10
+        if: ${{ matrix.python_version == 'pyjion' }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      # From https://github.com/tonybaloney/Pyjion/blob/develop/main/.github/workflows/benchmark.yml#L26 (MIT)
+      - name: Install OS / deb dependencies
+        if: ${{ matrix.python_version == 'pyjion' }}
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq cmake llvm-9 clang-9 autoconf automake \
+          libtool build-essential python curl git lldb-6.0 liblldb-6.0-dev \
+          libunwind8 libunwind8-dev gettext libicu-dev liblttng-ust-dev \
+          libssl-dev libnuma-dev libkrb5-dev zlib1g-dev
+
+      - name: Setup Dotnet 6
+        if: ${{ matrix.python_version == 'pyjion' }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "6.0.100"
+
       - name: Cache Python Dependencies
         uses: actions/cache@v2
         with:
@@ -75,13 +101,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      - name: Install Pyjion
+        if: ${{ matrix.python_version == 'pyjion' }}
+        run: |
+          pip install pyjion
+
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
-      - name: Run tox target
+      - name: Run unit tests tox target
         run: |
          script -e -c "tox -e py${{ matrix.python_version }}"
+
+      - name: Run dist install checks tox target
+        if: ${{ matrix.python_version != 'pypy3' && matrix.python_version != 'pyjion' }}
+        run: |
+         script -e -c "tox -e py${{ matrix.python_version }}-dist,py${{ matrix.python_version }}-dist-wheel"
 
   code_coverage:
     name: Generate Code Coverage
@@ -119,7 +155,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
       - name: Run Checks
         run: |
@@ -161,11 +197,11 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
       - name: Run Checks
         run: |
-          script -e -c "tox -e checks,import-timings,lint,pylint"
+          script -e -c "tox -e black-check,checks,import-timings,lint,pylint"
 
   docs:
     name: Build and upload Documentation
@@ -208,11 +244,11 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install "tox==3.20.1"
+          pip install "tox==3.24.4"
 
       - name: Build Docs
         run: |
-          script -e -c "tox -e docs-travis"
+          script -e -c "tox -e docs-ci"
 
       - name: Trigger ReadTheDocs build
         env:

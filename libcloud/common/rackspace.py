@@ -17,8 +17,6 @@
 Common settings for Rackspace Cloud Servers and Cloud Files
 """
 
-__all__ = [
-    'AUTH_URL'
-]
+__all__ = ["AUTH_URL"]
 
-AUTH_URL = 'https://identity.api.rackspacecloud.com'
+AUTH_URL = "https://identity.api.rackspacecloud.com"

@@ -4,7 +4,7 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
 cls = get_driver(Provider.EXOSCALE)
-driver = cls('api key', 'api secret key')
+driver = cls("api key", "api secret key")
 
 # Allocate a public IP
 # This returns a CloudStackAddress object
@@ -17,7 +17,7 @@ node = driver.list_nodes()[0]
 
 # Create a port forwarding rule for the node
 # This returns a CloudStackPortForwardingRule object
-rule = driver.ex_create_port_forwarding_rule(ip, 22, 22, 'TCP', node)
+rule = driver.ex_create_port_forwarding_rule(ip, 22, 22, "TCP", node)
 pprint(rule)
 
 

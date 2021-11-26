@@ -9,9 +9,34 @@ on:
 #    - cron: '0 3 * * *'
 
 jobs:
+  # Special job which skips duplicate jobs
+  pre_job:
+    name: Skip Duplicate Jobs Pre Job
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - id: skip_check
+        # NOTE: We store action as submodule since ASF doesn't allow directly referencing external
+        # actions
+        uses: ./.github/actions/skip-duplicate-actions # v3.4.0
+        with:
+          github_token: ${{ github.token }}
+
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip == 'false' || github.ref == 'refs/heads/trunk' }}
 
     strategy:
       fail-fast: false

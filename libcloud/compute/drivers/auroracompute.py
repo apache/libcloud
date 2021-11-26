@@ -16,44 +16,40 @@
 from libcloud.compute.providers import Provider
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver
 
-__all__ = [
-    'AuroraComputeRegion',
-    'AuroraComputeNodeDriver'
-]
+__all__ = ["AuroraComputeRegion", "AuroraComputeNodeDriver"]
 
 
 class AuroraComputeRegion(object):
-    AMS = 'Amsterdam'
-    RTD = 'Rotterdam'
-    MIA = 'Miami'
-    LAX = 'Los Angeles'
-    TYO = 'Tokyo'
-    BCN = 'Barcelona'
+    AMS = "Amsterdam"
+    RTD = "Rotterdam"
+    MIA = "Miami"
+    LAX = "Los Angeles"
+    TYO = "Tokyo"
+    BCN = "Barcelona"
 
 
 REGION_ENDPOINT_MAP = {
-    AuroraComputeRegion.AMS: '/ams',
-    AuroraComputeRegion.RTD: '/rtd',
-    AuroraComputeRegion.MIA: '/mia',
-    AuroraComputeRegion.LAX: '/lax',
-    AuroraComputeRegion.TYO: '/tyo',
-    AuroraComputeRegion.BCN: '/bcn'
+    AuroraComputeRegion.AMS: "/ams",
+    AuroraComputeRegion.RTD: "/rtd",
+    AuroraComputeRegion.MIA: "/mia",
+    AuroraComputeRegion.LAX: "/lax",
+    AuroraComputeRegion.TYO: "/tyo",
+    AuroraComputeRegion.BCN: "/bcn",
 }
 
 
 class AuroraComputeNodeDriver(CloudStackNodeDriver):
     type = Provider.AURORACOMPUTE
-    name = 'PCextreme AuroraCompute'
-    website = 'https://www.pcextreme.com/aurora/compute'
+    name = "PCextreme AuroraCompute"
+    website = "https://www.pcextreme.com/aurora/compute"
 
-    def __init__(self, key, secret, path=None, host=None, url=None,
-                 region=None):
+    def __init__(self, key, secret, path=None, host=None, url=None, region=None):
         if host is None:
-            host = 'api.auroracompute.eu'
+            host = "api.auroracompute.eu"
 
         if path is None:
-            path = REGION_ENDPOINT_MAP.get(region, '/ams')
+            path = REGION_ENDPOINT_MAP.get(region, "/ams")
 
-        super(AuroraComputeNodeDriver, self).__init__(key=key, secret=secret,
-                                                      host=host, path=path,
-                                                      secure=True)
+        super(AuroraComputeNodeDriver, self).__init__(
+            key=key, secret=secret, host=host, path=path, secure=True
+        )

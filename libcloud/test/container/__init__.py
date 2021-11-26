@@ -17,7 +17,6 @@ from libcloud.container.base import ContainerImage
 
 
 class TestCaseMixin(object):
-
     def test_list_images_response(self):
         images = self.driver.list_images()
         self.assertTrue(isinstance(images, list))
@@ -27,4 +26,5 @@ class TestCaseMixin(object):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

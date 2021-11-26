@@ -30,9 +30,7 @@ from libcloud.dns.types import RecordDoesNotExistError
 from libcloud.dns.types import RecordAlreadyExistsError
 
 
-__all__ = [
-    'LiquidWebDNSDriver'
-]
+__all__ = ["LiquidWebDNSDriver"]
 
 
 class LiquidWebDNSResponse(LiquidWebResponse):
@@ -45,20 +43,20 @@ class LiquidWebDNSConnection(LiquidWebConnection):
 
 class LiquidWebDNSDriver(DNSDriver):
     type = Provider.LIQUIDWEB
-    name = 'Liquidweb DNS'
-    website = 'https://www.liquidweb.com'
+    name = "Liquidweb DNS"
+    website = "https://www.liquidweb.com"
     connectionCls = LiquidWebDNSConnection
 
     RECORD_TYPE_MAP = {
-        RecordType.A: 'A',
-        RecordType.AAAA: 'AAAA',
-        RecordType.CNAME: 'CNAME',
-        RecordType.MX: 'MX',
-        RecordType.NS: 'NS',
-        RecordType.PTR: 'PTR',
-        RecordType.SOA: 'SOA',
-        RecordType.SRV: 'SRV',
-        RecordType.TXT: 'TXT'
+        RecordType.A: "A",
+        RecordType.AAAA: "AAAA",
+        RecordType.CNAME: "CNAME",
+        RecordType.MX: "MX",
+        RecordType.NS: "NS",
+        RecordType.PTR: "PTR",
+        RecordType.SOA: "SOA",
+        RecordType.SRV: "SRV",
+        RecordType.TXT: "TXT",
     }
 
     def list_zones(self):
@@ -67,9 +65,8 @@ class LiquidWebDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        action = '/v1/Network/DNS/Zone/list'
-        response = self.connection.request(action=action,
-                                           method='POST')
+        action = "/v1/Network/DNS/Zone/list"
+        response = self.connection.request(action=action, method="POST")
 
         zones = self._to_zones(response.objects[0])
 
@@ -84,11 +81,9 @@ class LiquidWebDNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        action = '/v1/Network/DNS/Record/list'
-        data = json.dumps({'params': {'zone_id': zone.id}})
-        response = self.connection.request(action=action,
-                                           method='POST',
-                                           data=data)
+        action = "/v1/Network/DNS/Record/list"
+        data = json.dumps({"params": {"zone_id": zone.id}})
+        response = self.connection.request(action=action, method="POST", data=data)
 
         records = self._to_records(response.objects[0], zone=zone)
 
@@ -103,16 +98,13 @@ class LiquidWebDNSDriver(DNSDriver):
 
         :rtype: :class:`Zone`
         """
-        action = '/v1/Network/DNS/Zone/details'
-        data = json.dumps({'params': {'id': zone_id}})
+        action = "/v1/Network/DNS/Zone/details"
+        data = json.dumps({"params": {"id": zone_id}})
         try:
-            response = self.connection.request(action=action,
-                                               method='POST',
-                                               data=data)
+            response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
-            if e.error_class == 'LW::Exception::RecordNotFound':
-                raise ZoneDoesNotExistError(zone_id=zone_id,
-                                            value=e.value, driver=self)
+            if e.error_class == "LW::Exception::RecordNotFound":
+                raise ZoneDoesNotExistError(zone_id=zone_id, value=e.value, driver=self)
             else:
                 raise e
 
@@ -132,23 +124,22 @@ class LiquidWebDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         zone = self.get_zone(zone_id=zone_id)
-        action = '/v1/Network/DNS/Record/details'
-        data = json.dumps({'params': {'id': record_id}})
+        action = "/v1/Network/DNS/Record/details"
+        data = json.dumps({"params": {"id": record_id}})
         try:
-            response = self.connection.request(action=action,
-                                               method='POST',
-                                               data=data)
+            response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
-            if e.error_class == 'LW::Exception::RecordNotFound':
-                raise RecordDoesNotExistError(record_id=record_id, driver=self,
-                                              value=e.value)
+            if e.error_class == "LW::Exception::RecordNotFound":
+                raise RecordDoesNotExistError(
+                    record_id=record_id, driver=self, value=e.value
+                )
             else:
                 raise e
 
         record = self._to_record(response.objects[0], zone=zone)
         return record
 
-    def create_zone(self, domain, type='master', ttl=None, extra=None):
+    def create_zone(self, domain, type="master", ttl=None, extra=None):
         """
         Create a new zone.
 
@@ -171,21 +162,17 @@ class LiquidWebDNSDriver(DNSDriver):
         For more info, please see:
         https://www.liquidweb.com/storm/api/docs/v1/Network/DNS/Zone.html
         """
-        action = '/v1/Network/DNS/Zone/create'
-        data = {'params': {'name': domain}}
+        action = "/v1/Network/DNS/Zone/create"
+        data = {"params": {"name": domain}}
 
         if extra is not None:
-            data['params'].update(extra)
+            data["params"].update(extra)
         try:
             data = json.dumps(data)
-            response = self.connection.request(action=action,
-                                               method='POST',
-                                               data=data)
+            response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
-            if e.error_class == 'LW::Exception::DuplicateRecord':
-                raise ZoneAlreadyExistsError(zone_id=domain,
-                                             value=e.value,
-                                             driver=self)
+            if e.error_class == "LW::Exception::DuplicateRecord":
+                raise ZoneAlreadyExistsError(zone_id=domain, value=e.value, driver=self)
             else:
                 raise e
 
@@ -218,26 +205,26 @@ class LiquidWebDNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        action = '/v1/Network/DNS/Record/create'
-        to_post = {'params': {'name': name,
-                              'rdata': data,
-                              'type': type,
-                              'zone': zone.domain,
-                              'zone_id': zone.id
-                              }
-                   }
+        action = "/v1/Network/DNS/Record/create"
+        to_post = {
+            "params": {
+                "name": name,
+                "rdata": data,
+                "type": type,
+                "zone": zone.domain,
+                "zone_id": zone.id,
+            }
+        }
         if extra is not None:
-            to_post['params'].update(extra)
+            to_post["params"].update(extra)
         data = json.dumps(to_post)
         try:
-            response = self.connection.request(action=action,
-                                               method='POST',
-                                               data=data)
+            response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
-            if e.error_class == 'LW::Exception::DuplicateRecord':
-                raise RecordAlreadyExistsError(record_id=name,
-                                               value=e.value,
-                                               driver=self)
+            if e.error_class == "LW::Exception::DuplicateRecord":
+                raise RecordAlreadyExistsError(
+                    record_id=name, value=e.value, driver=self
+                )
             else:
                 raise e
 
@@ -271,21 +258,18 @@ class LiquidWebDNSDriver(DNSDriver):
         :rtype: :class:`Record`
         """
         zone = record.zone
-        action = '/v1/Network/DNS/Record/update'
-        to_post = {'params': {'id': int(record.id),
-                              'name': name,
-                              'rdata': data}}
+        action = "/v1/Network/DNS/Record/update"
+        to_post = {"params": {"id": int(record.id), "name": name, "rdata": data}}
         if extra is not None:
-            to_post['params'].update(extra)
+            to_post["params"].update(extra)
         j_data = json.dumps(to_post)
         try:
-            response = self.connection.request(action=action,
-                                               method='PUT',
-                                               data=j_data)
+            response = self.connection.request(action=action, method="PUT", data=j_data)
         except APIException as e:
-            if e.error_class == 'LW::Exception::RecordNotFound':
-                raise RecordDoesNotExistError(record_id=record.id, driver=self,
-                                              value=e.value)
+            if e.error_class == "LW::Exception::RecordNotFound":
+                raise RecordDoesNotExistError(
+                    record_id=record.id, driver=self, value=e.value
+                )
             else:
                 raise e
 
@@ -303,16 +287,13 @@ class LiquidWebDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = '/v1/Network/DNS/Zone/delete'
-        data = json.dumps({'params': {'id': zone.id}})
+        action = "/v1/Network/DNS/Zone/delete"
+        data = json.dumps({"params": {"id": zone.id}})
         try:
-            response = self.connection.request(action=action,
-                                               method='POST',
-                                               data=data)
+            response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
-            if e.error_class == 'LW::Exception::RecordNotFound':
-                raise ZoneDoesNotExistError(zone_id=zone.id,
-                                            value=e.value, driver=self)
+            if e.error_class == "LW::Exception::RecordNotFound":
+                raise ZoneDoesNotExistError(zone_id=zone.id, value=e.value, driver=self)
             else:
                 raise e
 
@@ -327,29 +308,34 @@ class LiquidWebDNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        action = '/v1/Network/DNS/Record/delete'
-        data = json.dumps({'params': {'id': record.id}})
+        action = "/v1/Network/DNS/Record/delete"
+        data = json.dumps({"params": {"id": record.id}})
         try:
-            response = self.connection.request(action=action,
-                                               method='POST',
-                                               data=data)
+            response = self.connection.request(action=action, method="POST", data=data)
         except APIException as e:
-            if e.error_class == 'LW::Exception::RecordNotFound':
-                raise RecordDoesNotExistError(record_id=record.id, driver=self,
-                                              value=e.value)
+            if e.error_class == "LW::Exception::RecordNotFound":
+                raise RecordDoesNotExistError(
+                    record_id=record.id, driver=self, value=e.value
+                )
             else:
                 raise e
 
         return record.id in response.objects
 
     def _to_zone(self, item):
-        common_attr = ['id', 'name', 'type']
+        common_attr = ["id", "name", "type"]
         extra = {}
         for key in item:
             if key not in common_attr:
                 extra[key] = item.get(key)
-        zone = Zone(domain=item['name'], id=item['id'], type=item['type'],
-                    ttl=None, driver=self, extra=extra)
+        zone = Zone(
+            domain=item["name"],
+            id=item["id"],
+            type=item["type"],
+            ttl=None,
+            driver=self,
+            extra=extra,
+        )
 
         return zone
 
@@ -361,14 +347,20 @@ class LiquidWebDNSDriver(DNSDriver):
         return zones
 
     def _to_record(self, item, zone):
-        common_attr = ['id', 'rdata', 'name', 'type']
+        common_attr = ["id", "rdata", "name", "type"]
         extra = {}
         for key in item:
             if key not in common_attr:
                 extra[key] = item.get(key)
-        record = Record(id=item['id'], name=item['name'], type=item['type'],
-                        data=item['rdata'], zone=zone, driver=self,
-                        extra=extra)
+        record = Record(
+            id=item["id"],
+            name=item["name"],
+            type=item["type"],
+            data=item["rdata"],
+            zone=zone,
+            driver=self,
+            extra=extra,
+        )
 
         return record
 

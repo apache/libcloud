@@ -26,8 +26,8 @@ class DummyContainerDriver(ContainerDriver):
     'Dummy Container Provider'
     """
 
-    name = 'Dummy Container Provider'
-    website = 'http://example.com'
+    name = "Dummy Container Provider"
+    website = "http://example.com"
     supports_clusters = False
 
     def __init__(self, api_key, api_secret):
@@ -44,4 +44,5 @@ class DummyContainerDriver(ContainerDriver):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
