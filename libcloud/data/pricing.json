@@ -35136,6 +35136,7 @@
                 "us-west-2": 1.591
             },
             "c5.large": {
+                "ap-east-1": 0.108,
                 "ap-northeast-1": 0.107,
                 "ap-northeast-2": 0.096,
                 "ap-south-1": 0.085,
@@ -35155,6 +35156,7 @@
                 "us-west-2": 0.085
             },
             "c5.xlarge": {
+                "ap-east-1": 0.216,
                 "ap-northeast-1": 0.214,
                 "ap-northeast-2": 0.192,
                 "ap-south-1": 0.17,
@@ -35174,6 +35176,7 @@
                 "us-west-2": 0.17
             },
             "c5.metal": {
+                "ap-east-1": 5.184,
                 "ap-northeast-1": 5.136,
                 "ap-northeast-2": 4.608,
                 "ap-south-1": 4.08,
@@ -35193,6 +35196,7 @@
                 "us-west-2": 4.08
             },
             "c5.2xlarge": {
+                "ap-east-1": 0.432,
                 "ap-northeast-1": 0.428,
                 "ap-northeast-2": 0.384,
                 "ap-south-1": 0.34,
@@ -35212,6 +35216,7 @@
                 "us-west-2": 0.34
             },
             "c5.4xlarge": {
+                "ap-east-1": 0.864,
                 "ap-northeast-1": 0.856,
                 "ap-northeast-2": 0.768,
                 "ap-south-1": 0.68,
@@ -35231,6 +35236,7 @@
                 "us-west-2": 0.68
             },
             "c5.9xlarge": {
+                "ap-east-1": 1.944,
                 "ap-northeast-1": 1.926,
                 "ap-northeast-2": 1.728,
                 "ap-south-1": 1.53,
@@ -35250,6 +35256,7 @@
                 "us-west-2": 1.53
             },
             "c5.12xlarge": {
+                "ap-east-1": 2.592,
                 "ap-northeast-1": 2.568,
                 "ap-northeast-2": 2.304,
                 "ap-south-1": 2.04,
@@ -35269,6 +35276,7 @@
                 "us-west-2": 2.04
             },
             "c5.18xlarge": {
+                "ap-east-1": 3.888,
                 "ap-northeast-1": 3.852,
                 "ap-northeast-2": 3.456,
                 "ap-south-1": 3.06,
@@ -35288,6 +35296,7 @@
                 "us-west-2": 3.06
             },
             "c5.24xlarge": {
+                "ap-east-1": 5.184,
                 "ap-northeast-1": 5.136,
                 "ap-northeast-2": 4.608,
                 "ap-south-1": 4.08,
@@ -35307,6 +35316,7 @@
                 "us-west-2": 4.08
             },
             "c5a.large": {
+                "ap-east-1": 0.097,
                 "ap-northeast-1": 0.096,
                 "ap-northeast-2": 0.086,
                 "ap-south-1": 0.047,
@@ -35326,6 +35336,7 @@
                 "us-west-2": 0.077
             },
             "c5a.xlarge": {
+                "ap-east-1": 0.194,
                 "ap-northeast-1": 0.192,
                 "ap-northeast-2": 0.172,
                 "ap-south-1": 0.094,
@@ -35345,6 +35356,7 @@
                 "us-west-2": 0.154
             },
             "c5a.2xlarge": {
+                "ap-east-1": 0.388,
                 "ap-northeast-1": 0.384,
                 "ap-northeast-2": 0.344,
                 "ap-south-1": 0.188,
@@ -35364,6 +35376,7 @@
                 "us-west-2": 0.308
             },
             "c5a.4xlarge": {
+                "ap-east-1": 0.776,
                 "ap-northeast-1": 0.768,
                 "ap-northeast-2": 0.688,
                 "ap-south-1": 0.376,
@@ -35383,6 +35396,7 @@
                 "us-west-2": 0.616
             },
             "c5a.8xlarge": {
+                "ap-east-1": 1.552,
                 "ap-northeast-1": 1.536,
                 "ap-northeast-2": 1.376,
                 "ap-south-1": 0.752,
@@ -35402,6 +35416,7 @@
                 "us-west-2": 1.232
             },
             "c5a.12xlarge": {
+                "ap-east-1": 2.328,
                 "ap-northeast-1": 2.304,
                 "ap-northeast-2": 2.064,
                 "ap-south-1": 1.128,
@@ -35421,6 +35436,7 @@
                 "us-west-2": 1.848
             },
             "c5a.16xlarge": {
+                "ap-east-1": 3.104,
                 "ap-northeast-1": 3.072,
                 "ap-northeast-2": 2.752,
                 "ap-south-1": 1.504,
@@ -35440,6 +35456,7 @@
                 "us-west-2": 2.464
             },
             "c5a.24xlarge": {
+                "ap-east-1": 4.656,
                 "ap-northeast-1": 4.608,
                 "ap-northeast-2": 4.128,
                 "ap-south-1": 2.256,
@@ -35539,6 +35556,7 @@
                 "us-west-2": 4.128
             },
             "c5d.large": {
+                "ap-east-1": 0.123,
                 "ap-northeast-1": 0.122,
                 "ap-northeast-2": 0.11,
                 "ap-south-1": 0.099,
@@ -35558,6 +35576,7 @@
                 "us-west-2": 0.096
             },
             "c5d.xlarge": {
+                "ap-east-1": 0.246,
                 "ap-northeast-1": 0.244,
                 "ap-northeast-2": 0.22,
                 "ap-south-1": 0.198,
@@ -35595,6 +35614,7 @@
                 "us-west-2": 4.608
             },
             "c5d.2xlarge": {
+                "ap-east-1": 0.492,
                 "ap-northeast-1": 0.488,
                 "ap-northeast-2": 0.44,
                 "ap-south-1": 0.396,
@@ -35614,6 +35634,7 @@
                 "us-west-2": 0.384
             },
             "c5d.4xlarge": {
+                "ap-east-1": 0.984,
                 "ap-northeast-1": 0.976,
                 "ap-northeast-2": 0.88,
                 "ap-south-1": 0.792,
@@ -35633,6 +35654,7 @@
                 "us-west-2": 0.768
             },
             "c5d.9xlarge": {
+                "ap-east-1": 2.214,
                 "ap-northeast-1": 2.196,
                 "ap-northeast-2": 1.98,
                 "ap-south-1": 1.782,
@@ -35670,6 +35692,7 @@
                 "us-west-2": 2.304
             },
             "c5d.18xlarge": {
+                "ap-east-1": 4.428,
                 "ap-northeast-1": 4.392,
                 "ap-northeast-2": 3.96,
                 "ap-south-1": 3.564,
@@ -35707,6 +35730,7 @@
                 "us-west-2": 4.608
             },
             "c5n.large": {
+                "ap-east-1": 0.143,
                 "ap-northeast-1": 0.136,
                 "ap-northeast-2": 0.122,
                 "ap-south-1": 0.108,
@@ -35726,6 +35750,7 @@
                 "us-west-2": 0.108
             },
             "c5n.xlarge": {
+                "ap-east-1": 0.286,
                 "ap-northeast-1": 0.272,
                 "ap-northeast-2": 0.244,
                 "ap-south-1": 0.216,
@@ -35745,6 +35770,7 @@
                 "us-west-2": 0.216
             },
             "c5n.metal": {
+                "ap-east-1": 5.148,
                 "ap-northeast-1": 4.896,
                 "ap-northeast-2": 4.392,
                 "ap-south-1": 3.888,
@@ -35764,6 +35790,7 @@
                 "us-west-2": 3.888
             },
             "c5n.2xlarge": {
+                "ap-east-1": 0.572,
                 "ap-northeast-1": 0.544,
                 "ap-northeast-2": 0.488,
                 "ap-south-1": 0.432,
@@ -35783,6 +35810,7 @@
                 "us-west-2": 0.432
             },
             "c5n.4xlarge": {
+                "ap-east-1": 1.144,
                 "ap-northeast-1": 1.088,
                 "ap-northeast-2": 0.976,
                 "ap-south-1": 0.864,
@@ -35802,6 +35830,7 @@
                 "us-west-2": 0.864
             },
             "c5n.9xlarge": {
+                "ap-east-1": 2.574,
                 "ap-northeast-1": 2.448,
                 "ap-northeast-2": 2.196,
                 "ap-south-1": 1.944,
@@ -35821,6 +35850,7 @@
                 "us-west-2": 1.944
             },
             "c5n.18xlarge": {
+                "ap-east-1": 5.148,
                 "ap-northeast-1": 4.896,
                 "ap-northeast-2": 4.392,
                 "ap-south-1": 3.888,
@@ -35840,6 +35870,7 @@
                 "us-west-2": 3.888
             },
             "c6g.medium": {
+                "ap-east-1": 0.043,
                 "ap-northeast-1": 0.0428,
                 "ap-northeast-2": 0.0385,
                 "ap-south-1": 0.0213,
@@ -35859,6 +35890,7 @@
                 "us-west-2": 0.034
             },
             "c6g.large": {
+                "ap-east-1": 0.086,
                 "ap-northeast-1": 0.0856,
                 "ap-northeast-2": 0.077,
                 "ap-south-1": 0.0426,
@@ -35878,6 +35910,7 @@
                 "us-west-2": 0.068
             },
             "c6g.xlarge": {
+                "ap-east-1": 0.172,
                 "ap-northeast-1": 0.1712,
                 "ap-northeast-2": 0.154,
                 "ap-south-1": 0.0852,
@@ -35897,6 +35930,7 @@
                 "us-west-2": 0.136
             },
             "c6g.metal": {
+                "ap-east-1": 2.752,
                 "ap-northeast-1": 2.7392,
                 "ap-northeast-2": 2.464,
                 "ap-south-1": 1.3632,
@@ -35916,6 +35950,7 @@
                 "us-west-2": 2.176
             },
             "c6g.2xlarge": {
+                "ap-east-1": 0.344,
                 "ap-northeast-1": 0.3424,
                 "ap-northeast-2": 0.308,
                 "ap-south-1": 0.1704,
@@ -35935,6 +35970,7 @@
                 "us-west-2": 0.272
             },
             "c6g.4xlarge": {
+                "ap-east-1": 0.688,
                 "ap-northeast-1": 0.6848,
                 "ap-northeast-2": 0.616,
                 "ap-south-1": 0.3408,
@@ -35954,6 +35990,7 @@
                 "us-west-2": 0.544
             },
             "c6g.8xlarge": {
+                "ap-east-1": 1.376,
                 "ap-northeast-1": 1.3696,
                 "ap-northeast-2": 1.232,
                 "ap-south-1": 0.6816,
@@ -35973,6 +36010,7 @@
                 "us-west-2": 1.088
             },
             "c6g.12xlarge": {
+                "ap-east-1": 2.064,
                 "ap-northeast-1": 2.0544,
                 "ap-northeast-2": 1.848,
                 "ap-south-1": 1.0224,
@@ -35992,6 +36030,7 @@
                 "us-west-2": 1.632
             },
             "c6g.16xlarge": {
+                "ap-east-1": 2.752,
                 "ap-northeast-1": 2.7392,
                 "ap-northeast-2": 2.464,
                 "ap-south-1": 1.3632,
@@ -36012,10 +36051,13 @@
             },
             "c6gd.medium": {
                 "ap-northeast-1": 0.049,
+                "ap-south-1": 0.0245,
                 "ap-southeast-1": 0.045,
                 "ap-southeast-2": 0.0505,
+                "ca-central-1": 0.0424,
                 "eu-central-1": 0.0445,
                 "eu-west-1": 0.0436,
+                "eu-west-2": 0.046,
                 "us-east-1": 0.0384,
                 "us-east-2": 0.0384,
                 "us-west-1": 0.048,
@@ -36023,10 +36065,13 @@
             },
             "c6gd.large": {
                 "ap-northeast-1": 0.098,
+                "ap-south-1": 0.049,
                 "ap-southeast-1": 0.09,
                 "ap-southeast-2": 0.101,
+                "ca-central-1": 0.0848,
                 "eu-central-1": 0.089,
                 "eu-west-1": 0.0872,
+                "eu-west-2": 0.092,
                 "us-east-1": 0.0768,
                 "us-east-2": 0.0768,
                 "us-west-1": 0.096,
@@ -36034,10 +36079,13 @@
             },
             "c6gd.xlarge": {
                 "ap-northeast-1": 0.196,
+                "ap-south-1": 0.098,
                 "ap-southeast-1": 0.18,
                 "ap-southeast-2": 0.202,
+                "ca-central-1": 0.1696,
                 "eu-central-1": 0.178,
                 "eu-west-1": 0.1744,
+                "eu-west-2": 0.184,
                 "us-east-1": 0.1536,
                 "us-east-2": 0.1536,
                 "us-west-1": 0.192,
@@ -36045,10 +36093,13 @@
             },
             "c6gd.metal": {
                 "ap-northeast-1": 3.136,
+                "ap-south-1": 1.568,
                 "ap-southeast-1": 2.88,
                 "ap-southeast-2": 3.232,
+                "ca-central-1": 2.7136,
                 "eu-central-1": 2.848,
                 "eu-west-1": 2.7904,
+                "eu-west-2": 2.944,
                 "us-east-1": 2.4576,
                 "us-east-2": 2.4576,
                 "us-west-1": 3.072,
@@ -36056,10 +36107,13 @@
             },
             "c6gd.2xlarge": {
                 "ap-northeast-1": 0.392,
+                "ap-south-1": 0.196,
                 "ap-southeast-1": 0.36,
                 "ap-southeast-2": 0.404,
+                "ca-central-1": 0.3392,
                 "eu-central-1": 0.356,
                 "eu-west-1": 0.3488,
+                "eu-west-2": 0.368,
                 "us-east-1": 0.3072,
                 "us-east-2": 0.3072,
                 "us-west-1": 0.384,
@@ -36067,10 +36121,13 @@
             },
             "c6gd.4xlarge": {
                 "ap-northeast-1": 0.784,
+                "ap-south-1": 0.392,
                 "ap-southeast-1": 0.72,
                 "ap-southeast-2": 0.808,
+                "ca-central-1": 0.6784,
                 "eu-central-1": 0.712,
                 "eu-west-1": 0.6976,
+                "eu-west-2": 0.736,
                 "us-east-1": 0.6144,
                 "us-east-2": 0.6144,
                 "us-west-1": 0.768,
@@ -36078,10 +36135,13 @@
             },
             "c6gd.8xlarge": {
                 "ap-northeast-1": 1.568,
+                "ap-south-1": 0.784,
                 "ap-southeast-1": 1.44,
                 "ap-southeast-2": 1.616,
+                "ca-central-1": 1.3568,
                 "eu-central-1": 1.424,
                 "eu-west-1": 1.3952,
+                "eu-west-2": 1.472,
                 "us-east-1": 1.2288,
                 "us-east-2": 1.2288,
                 "us-west-1": 1.536,
@@ -36089,10 +36149,13 @@
             },
             "c6gd.12xlarge": {
                 "ap-northeast-1": 2.352,
+                "ap-south-1": 1.176,
                 "ap-southeast-1": 2.16,
                 "ap-southeast-2": 2.424,
+                "ca-central-1": 2.0352,
                 "eu-central-1": 2.136,
                 "eu-west-1": 2.0928,
+                "eu-west-2": 2.208,
                 "us-east-1": 1.8432,
                 "us-east-2": 1.8432,
                 "us-west-1": 2.304,
@@ -36100,10 +36163,13 @@
             },
             "c6gd.16xlarge": {
                 "ap-northeast-1": 3.136,
+                "ap-south-1": 1.568,
                 "ap-southeast-1": 2.88,
                 "ap-southeast-2": 3.232,
+                "ca-central-1": 2.7136,
                 "eu-central-1": 2.848,
                 "eu-west-1": 2.7904,
+                "eu-west-2": 2.944,
                 "us-east-1": 2.4576,
                 "us-east-2": 2.4576,
                 "us-west-1": 3.072,
@@ -36177,6 +36243,12 @@
                 "us-east-2": 0.17,
                 "us-west-2": 0.17
             },
+            "c6i.metal": {
+                "eu-west-1": 5.8368,
+                "us-east-1": 5.44,
+                "us-east-2": 5.44,
+                "us-west-2": 5.44
+            },
             "c6i.2xlarge": {
                 "eu-west-1": 0.3648,
                 "us-east-1": 0.34,
@@ -36233,6 +36305,7 @@
                 "us-west-2": 3.5
             },
             "d2.xlarge": {
+                "ap-east-1": 0.957,
                 "ap-northeast-1": 0.844,
                 "ap-northeast-2": 0.844,
                 "ap-south-1": 0.827,
@@ -36251,6 +36324,7 @@
                 "us-west-2": 0.69
             },
             "d2.2xlarge": {
+                "ap-east-1": 1.914,
                 "ap-northeast-1": 1.688,
                 "ap-northeast-2": 1.688,
                 "ap-south-1": 1.653,
@@ -36269,6 +36343,7 @@
                 "us-west-2": 1.38
             },
             "d2.4xlarge": {
+                "ap-east-1": 3.828,
                 "ap-northeast-1": 3.376,
                 "ap-northeast-2": 3.376,
                 "ap-south-1": 3.306,
@@ -36287,6 +36362,7 @@
                 "us-west-2": 2.76
             },
             "d2.8xlarge": {
+                "ap-east-1": 7.656,
                 "ap-northeast-1": 6.752,
                 "ap-northeast-2": 6.752,
                 "ap-south-1": 6.612,
@@ -36544,6 +36620,7 @@
                 "us-west-2": 3.468
             },
             "g4dn.xlarge": {
+                "ap-east-1": 0.81,
                 "ap-northeast-1": 0.71,
                 "ap-northeast-2": 0.647,
                 "ap-south-1": 0.579,
@@ -36563,6 +36640,7 @@
                 "us-west-2": 0.526
             },
             "g4dn.metal": {
+                "ap-east-1": 12.048,
                 "ap-northeast-1": 10.562,
                 "ap-northeast-2": 9.624,
                 "ap-south-1": 8.612,
@@ -36582,6 +36660,7 @@
                 "us-west-2": 7.824
             },
             "g4dn.2xlarge": {
+                "ap-east-1": 1.158,
                 "ap-northeast-1": 1.015,
                 "ap-northeast-2": 0.925,
                 "ap-south-1": 0.828,
@@ -36601,6 +36680,7 @@
                 "us-west-2": 0.752
             },
             "g4dn.4xlarge": {
+                "ap-east-1": 1.854,
                 "ap-northeast-1": 1.625,
                 "ap-northeast-2": 1.481,
                 "ap-south-1": 1.325,
@@ -36620,6 +36700,7 @@
                 "us-west-2": 1.204
             },
             "g4dn.8xlarge": {
+                "ap-east-1": 3.351,
                 "ap-northeast-1": 2.938,
                 "ap-northeast-2": 2.677,
                 "ap-south-1": 2.395,
@@ -36639,6 +36720,7 @@
                 "us-west-2": 2.176
             },
             "g4dn.12xlarge": {
+                "ap-east-1": 6.024,
                 "ap-northeast-1": 5.281,
                 "ap-northeast-2": 4.812,
                 "ap-south-1": 4.306,
@@ -36658,6 +36740,7 @@
                 "us-west-2": 3.912
             },
             "g4dn.16xlarge": {
+                "ap-east-1": 6.702,
                 "ap-northeast-1": 5.875,
                 "ap-northeast-2": 5.353,
                 "ap-south-1": 4.791,
@@ -36675,6 +36758,46 @@
                 "us-gov-west-1": 5.486,
                 "us-west-1": 5.222,
                 "us-west-2": 4.352
+            },
+            "g5.xlarge": {
+                "eu-west-1": 1.123,
+                "us-east-1": 1.006,
+                "us-west-2": 1.006
+            },
+            "g5.2xlarge": {
+                "eu-west-1": 1.35296,
+                "us-east-1": 1.212,
+                "us-west-2": 1.212
+            },
+            "g5.4xlarge": {
+                "eu-west-1": 1.81287,
+                "us-east-1": 1.624,
+                "us-west-2": 1.624
+            },
+            "g5.8xlarge": {
+                "eu-west-1": 2.73271,
+                "us-east-1": 2.448,
+                "us-west-2": 2.448
+            },
+            "g5.12xlarge": {
+                "eu-west-1": 6.33167,
+                "us-east-1": 5.672,
+                "us-west-2": 5.672
+            },
+            "g5.16xlarge": {
+                "eu-west-1": 4.57237,
+                "us-east-1": 4.096,
+                "us-west-2": 4.096
+            },
+            "g5.24xlarge": {
+                "eu-west-1": 9.09117,
+                "us-east-1": 8.144,
+                "us-west-2": 8.144
+            },
+            "g5.48xlarge": {
+                "eu-west-1": 18.18233,
+                "us-east-1": 16.288,
+                "us-west-2": 16.288
             },
             "h1.2xlarge": {
                 "eu-west-1": 0.519,
@@ -36766,6 +36889,7 @@
                 "us-west-2": 6.82
             },
             "i3.large": {
+                "ap-east-1": 0.206,
                 "ap-northeast-1": 0.183,
                 "ap-northeast-2": 0.183,
                 "ap-south-1": 0.177,
@@ -36785,6 +36909,7 @@
                 "us-west-2": 0.156
             },
             "i3.xlarge": {
+                "ap-east-1": 0.412,
                 "ap-northeast-1": 0.366,
                 "ap-northeast-2": 0.366,
                 "ap-south-1": 0.354,
@@ -36804,6 +36929,7 @@
                 "us-west-2": 0.312
             },
             "i3.metal": {
+                "ap-east-1": 6.592,
                 "ap-northeast-1": 5.856,
                 "ap-northeast-2": 5.856,
                 "ap-south-1": 5.664,
@@ -36822,6 +36948,7 @@
                 "us-west-2": 4.992
             },
             "i3.2xlarge": {
+                "ap-east-1": 0.824,
                 "ap-northeast-1": 0.732,
                 "ap-northeast-2": 0.732,
                 "ap-south-1": 0.708,
@@ -36841,6 +36968,7 @@
                 "us-west-2": 0.624
             },
             "i3.4xlarge": {
+                "ap-east-1": 1.648,
                 "ap-northeast-1": 1.464,
                 "ap-northeast-2": 1.464,
                 "ap-south-1": 1.416,
@@ -36860,6 +36988,7 @@
                 "us-west-2": 1.248
             },
             "i3.8xlarge": {
+                "ap-east-1": 3.296,
                 "ap-northeast-1": 2.928,
                 "ap-northeast-2": 2.928,
                 "ap-south-1": 2.832,
@@ -36879,6 +37008,7 @@
                 "us-west-2": 2.496
             },
             "i3.16xlarge": {
+                "ap-east-1": 6.592,
                 "ap-northeast-1": 5.856,
                 "ap-northeast-2": 5.856,
                 "ap-south-1": 5.664,
@@ -36898,6 +37028,7 @@
                 "us-west-2": 4.992
             },
             "i3en.large": {
+                "ap-east-1": 0.298,
                 "ap-northeast-1": 0.266,
                 "ap-northeast-2": 0.266,
                 "ap-south-1": 0.257,
@@ -36917,6 +37048,7 @@
                 "us-west-2": 0.226
             },
             "i3en.xlarge": {
+                "ap-east-1": 0.597,
                 "ap-northeast-1": 0.532,
                 "ap-northeast-2": 0.532,
                 "ap-south-1": 0.514,
@@ -36936,6 +37068,7 @@
                 "us-west-2": 0.452
             },
             "i3en.metal": {
+                "ap-east-1": 14.319,
                 "ap-northeast-1": 12.768,
                 "ap-northeast-2": 12.768,
                 "ap-south-1": 12.336,
@@ -36955,6 +37088,7 @@
                 "us-west-2": 10.848
             },
             "i3en.2xlarge": {
+                "ap-east-1": 1.193,
                 "ap-northeast-1": 1.064,
                 "ap-northeast-2": 1.064,
                 "ap-south-1": 1.028,
@@ -36974,6 +37108,7 @@
                 "us-west-2": 0.904
             },
             "i3en.3xlarge": {
+                "ap-east-1": 1.79,
                 "ap-northeast-1": 1.596,
                 "ap-northeast-2": 1.596,
                 "ap-south-1": 1.542,
@@ -36993,6 +37128,7 @@
                 "us-west-2": 1.356
             },
             "i3en.6xlarge": {
+                "ap-east-1": 3.58,
                 "ap-northeast-1": 3.192,
                 "ap-northeast-2": 3.192,
                 "ap-south-1": 3.084,
@@ -37012,6 +37148,7 @@
                 "us-west-2": 2.712
             },
             "i3en.12xlarge": {
+                "ap-east-1": 7.16,
                 "ap-northeast-1": 6.384,
                 "ap-northeast-2": 6.384,
                 "ap-south-1": 6.168,
@@ -37031,6 +37168,7 @@
                 "us-west-2": 5.424
             },
             "i3en.24xlarge": {
+                "ap-east-1": 14.319,
                 "ap-northeast-1": 12.768,
                 "ap-northeast-2": 12.768,
                 "ap-south-1": 12.336,
@@ -37053,6 +37191,7 @@
                 "us-gov-west-1": 6.016
             },
             "inf1.xlarge": {
+                "ap-east-1": 0.352,
                 "ap-northeast-1": 0.308,
                 "ap-northeast-2": 0.281,
                 "ap-south-1": 0.24,
@@ -37072,6 +37211,7 @@
                 "us-west-2": 0.228
             },
             "inf1.2xlarge": {
+                "ap-east-1": 0.558,
                 "ap-northeast-1": 0.489,
                 "ap-northeast-2": 0.446,
                 "ap-south-1": 0.381,
@@ -37091,6 +37231,7 @@
                 "us-west-2": 0.362
             },
             "inf1.6xlarge": {
+                "ap-east-1": 1.819,
                 "ap-northeast-1": 1.594,
                 "ap-northeast-2": 1.453,
                 "ap-south-1": 1.241,
@@ -37110,6 +37251,7 @@
                 "us-west-2": 1.18
             },
             "inf1.24xlarge": {
+                "ap-east-1": 7.274,
                 "ap-northeast-1": 6.376,
                 "ap-northeast-2": 5.812,
                 "ap-south-1": 4.965,
@@ -37356,6 +37498,7 @@
                 "us-west-2": 3.2
             },
             "m5.large": {
+                "ap-east-1": 0.132,
                 "ap-northeast-1": 0.124,
                 "ap-northeast-2": 0.118,
                 "ap-south-1": 0.101,
@@ -37375,6 +37518,7 @@
                 "us-west-2": 0.096
             },
             "m5.xlarge": {
+                "ap-east-1": 0.264,
                 "ap-northeast-1": 0.248,
                 "ap-northeast-2": 0.236,
                 "ap-south-1": 0.202,
@@ -37394,6 +37538,7 @@
                 "us-west-2": 0.192
             },
             "m5.metal": {
+                "ap-east-1": 6.336,
                 "ap-northeast-1": 5.952,
                 "ap-northeast-2": 5.664,
                 "ap-south-1": 4.848,
@@ -37413,6 +37558,7 @@
                 "us-west-2": 4.608
             },
             "m5.2xlarge": {
+                "ap-east-1": 0.528,
                 "ap-northeast-1": 0.496,
                 "ap-northeast-2": 0.472,
                 "ap-south-1": 0.404,
@@ -37432,6 +37578,7 @@
                 "us-west-2": 0.384
             },
             "m5.4xlarge": {
+                "ap-east-1": 1.056,
                 "ap-northeast-1": 0.992,
                 "ap-northeast-2": 0.944,
                 "ap-south-1": 0.808,
@@ -37451,6 +37598,7 @@
                 "us-west-2": 0.768
             },
             "m5.8xlarge": {
+                "ap-east-1": 2.112,
                 "ap-northeast-1": 1.984,
                 "ap-northeast-2": 1.888,
                 "ap-south-1": 1.616,
@@ -37470,6 +37618,7 @@
                 "us-west-2": 1.536
             },
             "m5.12xlarge": {
+                "ap-east-1": 3.168,
                 "ap-northeast-1": 2.976,
                 "ap-northeast-2": 2.832,
                 "ap-south-1": 2.424,
@@ -37489,6 +37638,7 @@
                 "us-west-2": 2.304
             },
             "m5.16xlarge": {
+                "ap-east-1": 4.224,
                 "ap-northeast-1": 3.968,
                 "ap-northeast-2": 3.776,
                 "ap-south-1": 3.232,
@@ -37508,6 +37658,7 @@
                 "us-west-2": 3.072
             },
             "m5.24xlarge": {
+                "ap-east-1": 6.336,
                 "ap-northeast-1": 5.952,
                 "ap-northeast-2": 5.664,
                 "ap-south-1": 4.848,
@@ -37815,6 +37966,7 @@
                 "us-west-2": 4.944
             },
             "m5d.large": {
+                "ap-east-1": 0.155,
                 "ap-northeast-1": 0.146,
                 "ap-northeast-2": 0.139,
                 "ap-south-1": 0.122,
@@ -37834,6 +37986,7 @@
                 "us-west-2": 0.113
             },
             "m5d.xlarge": {
+                "ap-east-1": 0.31,
                 "ap-northeast-1": 0.292,
                 "ap-northeast-2": 0.278,
                 "ap-south-1": 0.244,
@@ -37853,6 +38006,7 @@
                 "us-west-2": 0.226
             },
             "m5d.metal": {
+                "ap-east-1": 7.44,
                 "ap-northeast-1": 7.008,
                 "ap-northeast-2": 6.672,
                 "ap-south-1": 5.856,
@@ -37872,6 +38026,7 @@
                 "us-west-2": 5.424
             },
             "m5d.2xlarge": {
+                "ap-east-1": 0.62,
                 "ap-northeast-1": 0.584,
                 "ap-northeast-2": 0.556,
                 "ap-south-1": 0.488,
@@ -37891,6 +38046,7 @@
                 "us-west-2": 0.452
             },
             "m5d.4xlarge": {
+                "ap-east-1": 1.24,
                 "ap-northeast-1": 1.168,
                 "ap-northeast-2": 1.112,
                 "ap-south-1": 0.976,
@@ -37910,6 +38066,7 @@
                 "us-west-2": 0.904
             },
             "m5d.8xlarge": {
+                "ap-east-1": 2.48,
                 "ap-northeast-1": 2.336,
                 "ap-northeast-2": 2.224,
                 "ap-south-1": 1.952,
@@ -37929,6 +38086,7 @@
                 "us-west-2": 1.808
             },
             "m5d.12xlarge": {
+                "ap-east-1": 3.72,
                 "ap-northeast-1": 3.504,
                 "ap-northeast-2": 3.336,
                 "ap-south-1": 2.928,
@@ -37948,6 +38106,7 @@
                 "us-west-2": 2.712
             },
             "m5d.16xlarge": {
+                "ap-east-1": 4.96,
                 "ap-northeast-1": 4.672,
                 "ap-northeast-2": 4.448,
                 "ap-south-1": 3.904,
@@ -37967,6 +38126,7 @@
                 "us-west-2": 3.616
             },
             "m5d.24xlarge": {
+                "ap-east-1": 7.44,
                 "ap-northeast-1": 7.008,
                 "ap-northeast-2": 6.672,
                 "ap-south-1": 5.856,
@@ -38257,6 +38417,7 @@
                 "us-west-2": 3.9641
             },
             "m6g.medium": {
+                "ap-east-1": 0.053,
                 "ap-northeast-1": 0.0495,
                 "ap-northeast-2": 0.047,
                 "ap-south-1": 0.0253,
@@ -38276,6 +38437,7 @@
                 "us-west-2": 0.0385
             },
             "m6g.large": {
+                "ap-east-1": 0.106,
                 "ap-northeast-1": 0.099,
                 "ap-northeast-2": 0.094,
                 "ap-south-1": 0.0506,
@@ -38295,6 +38457,7 @@
                 "us-west-2": 0.077
             },
             "m6g.xlarge": {
+                "ap-east-1": 0.212,
                 "ap-northeast-1": 0.198,
                 "ap-northeast-2": 0.188,
                 "ap-south-1": 0.1012,
@@ -38314,6 +38477,7 @@
                 "us-west-2": 0.154
             },
             "m6g.metal": {
+                "ap-east-1": 3.392,
                 "ap-northeast-1": 3.168,
                 "ap-northeast-2": 3.008,
                 "ap-south-1": 1.6192,
@@ -38333,6 +38497,7 @@
                 "us-west-2": 2.464
             },
             "m6g.2xlarge": {
+                "ap-east-1": 0.424,
                 "ap-northeast-1": 0.396,
                 "ap-northeast-2": 0.376,
                 "ap-south-1": 0.2024,
@@ -38352,6 +38517,7 @@
                 "us-west-2": 0.308
             },
             "m6g.4xlarge": {
+                "ap-east-1": 0.848,
                 "ap-northeast-1": 0.792,
                 "ap-northeast-2": 0.752,
                 "ap-south-1": 0.4048,
@@ -38371,6 +38537,7 @@
                 "us-west-2": 0.616
             },
             "m6g.8xlarge": {
+                "ap-east-1": 1.696,
                 "ap-northeast-1": 1.584,
                 "ap-northeast-2": 1.504,
                 "ap-south-1": 0.8096,
@@ -38390,6 +38557,7 @@
                 "us-west-2": 1.232
             },
             "m6g.12xlarge": {
+                "ap-east-1": 2.544,
                 "ap-northeast-1": 2.376,
                 "ap-northeast-2": 2.256,
                 "ap-south-1": 1.2144,
@@ -38409,6 +38577,7 @@
                 "us-west-2": 1.848
             },
             "m6g.16xlarge": {
+                "ap-east-1": 3.392,
                 "ap-northeast-1": 3.168,
                 "ap-northeast-2": 3.008,
                 "ap-south-1": 1.6192,
@@ -38429,10 +38598,12 @@
             },
             "m6gd.medium": {
                 "ap-northeast-1": 0.0585,
+                "ap-south-1": 0.0302,
                 "ap-southeast-1": 0.0565,
                 "ap-southeast-2": 0.057,
                 "eu-central-1": 0.0545,
                 "eu-west-1": 0.0504,
+                "eu-west-2": 0.0524,
                 "us-east-1": 0.0452,
                 "us-east-2": 0.0452,
                 "us-west-1": 0.053,
@@ -38440,10 +38611,12 @@
             },
             "m6gd.large": {
                 "ap-northeast-1": 0.117,
+                "ap-south-1": 0.0604,
                 "ap-southeast-1": 0.113,
                 "ap-southeast-2": 0.114,
                 "eu-central-1": 0.109,
                 "eu-west-1": 0.1008,
+                "eu-west-2": 0.1048,
                 "us-east-1": 0.0904,
                 "us-east-2": 0.0904,
                 "us-west-1": 0.106,
@@ -38451,10 +38624,12 @@
             },
             "m6gd.xlarge": {
                 "ap-northeast-1": 0.234,
+                "ap-south-1": 0.1208,
                 "ap-southeast-1": 0.226,
                 "ap-southeast-2": 0.228,
                 "eu-central-1": 0.218,
                 "eu-west-1": 0.2016,
+                "eu-west-2": 0.2096,
                 "us-east-1": 0.1808,
                 "us-east-2": 0.1808,
                 "us-west-1": 0.212,
@@ -38462,10 +38637,12 @@
             },
             "m6gd.metal": {
                 "ap-northeast-1": 3.744,
+                "ap-south-1": 1.9328,
                 "ap-southeast-1": 3.616,
                 "ap-southeast-2": 3.648,
                 "eu-central-1": 3.488,
                 "eu-west-1": 3.2256,
+                "eu-west-2": 3.3536,
                 "us-east-1": 2.8928,
                 "us-east-2": 2.8928,
                 "us-west-1": 3.392,
@@ -38473,10 +38650,12 @@
             },
             "m6gd.2xlarge": {
                 "ap-northeast-1": 0.468,
+                "ap-south-1": 0.2416,
                 "ap-southeast-1": 0.452,
                 "ap-southeast-2": 0.456,
                 "eu-central-1": 0.436,
                 "eu-west-1": 0.4032,
+                "eu-west-2": 0.4192,
                 "us-east-1": 0.3616,
                 "us-east-2": 0.3616,
                 "us-west-1": 0.424,
@@ -38484,10 +38663,12 @@
             },
             "m6gd.4xlarge": {
                 "ap-northeast-1": 0.936,
+                "ap-south-1": 0.4832,
                 "ap-southeast-1": 0.904,
                 "ap-southeast-2": 0.912,
                 "eu-central-1": 0.872,
                 "eu-west-1": 0.8064,
+                "eu-west-2": 0.8384,
                 "us-east-1": 0.7232,
                 "us-east-2": 0.7232,
                 "us-west-1": 0.848,
@@ -38495,10 +38676,12 @@
             },
             "m6gd.8xlarge": {
                 "ap-northeast-1": 1.872,
+                "ap-south-1": 0.9664,
                 "ap-southeast-1": 1.808,
                 "ap-southeast-2": 1.824,
                 "eu-central-1": 1.744,
                 "eu-west-1": 1.6128,
+                "eu-west-2": 1.6768,
                 "us-east-1": 1.4464,
                 "us-east-2": 1.4464,
                 "us-west-1": 1.696,
@@ -38506,10 +38689,12 @@
             },
             "m6gd.12xlarge": {
                 "ap-northeast-1": 2.808,
+                "ap-south-1": 1.4496,
                 "ap-southeast-1": 2.712,
                 "ap-southeast-2": 2.736,
                 "eu-central-1": 2.616,
                 "eu-west-1": 2.4192,
+                "eu-west-2": 2.5152,
                 "us-east-1": 2.1696,
                 "us-east-2": 2.1696,
                 "us-west-1": 2.544,
@@ -38517,10 +38702,12 @@
             },
             "m6gd.16xlarge": {
                 "ap-northeast-1": 3.744,
+                "ap-south-1": 1.9328,
                 "ap-southeast-1": 3.616,
                 "ap-southeast-2": 3.648,
                 "eu-central-1": 3.488,
                 "eu-west-1": 3.2256,
+                "eu-west-2": 3.3536,
                 "us-east-1": 2.8928,
                 "us-east-2": 2.8928,
                 "us-west-1": 3.392,
@@ -38528,9 +38715,14 @@
             },
             "m6i.large": {
                 "ap-northeast-1": 0.124,
+                "ap-northeast-2": 0.118,
+                "ap-south-1": 0.101,
                 "ap-southeast-1": 0.12,
+                "ap-southeast-2": 0.12,
                 "eu-central-1": 0.115,
                 "eu-west-1": 0.107,
+                "eu-west-3": 0.112,
+                "sa-east-1": 0.153,
                 "us-east-1": 0.096,
                 "us-east-2": 0.096,
                 "us-west-1": 0.112,
@@ -38538,19 +38730,44 @@
             },
             "m6i.xlarge": {
                 "ap-northeast-1": 0.248,
+                "ap-northeast-2": 0.236,
+                "ap-south-1": 0.202,
                 "ap-southeast-1": 0.24,
+                "ap-southeast-2": 0.24,
                 "eu-central-1": 0.23,
                 "eu-west-1": 0.214,
+                "eu-west-3": 0.224,
+                "sa-east-1": 0.306,
                 "us-east-1": 0.192,
                 "us-east-2": 0.192,
                 "us-west-1": 0.224,
                 "us-west-2": 0.192
             },
+            "m6i.metal": {
+                "ap-northeast-1": 7.936,
+                "ap-northeast-2": 7.552,
+                "ap-south-1": 6.464,
+                "ap-southeast-1": 7.68,
+                "ap-southeast-2": 7.68,
+                "eu-central-1": 7.36,
+                "eu-west-1": 6.848,
+                "eu-west-3": 7.168,
+                "sa-east-1": 9.792,
+                "us-east-1": 6.144,
+                "us-east-2": 6.144,
+                "us-west-1": 7.168,
+                "us-west-2": 6.144
+            },
             "m6i.2xlarge": {
                 "ap-northeast-1": 0.496,
+                "ap-northeast-2": 0.472,
+                "ap-south-1": 0.404,
                 "ap-southeast-1": 0.48,
+                "ap-southeast-2": 0.48,
                 "eu-central-1": 0.46,
                 "eu-west-1": 0.428,
+                "eu-west-3": 0.448,
+                "sa-east-1": 0.612,
                 "us-east-1": 0.384,
                 "us-east-2": 0.384,
                 "us-west-1": 0.448,
@@ -38558,9 +38775,14 @@
             },
             "m6i.4xlarge": {
                 "ap-northeast-1": 0.992,
+                "ap-northeast-2": 0.944,
+                "ap-south-1": 0.808,
                 "ap-southeast-1": 0.96,
+                "ap-southeast-2": 0.96,
                 "eu-central-1": 0.92,
                 "eu-west-1": 0.856,
+                "eu-west-3": 0.896,
+                "sa-east-1": 1.224,
                 "us-east-1": 0.768,
                 "us-east-2": 0.768,
                 "us-west-1": 0.896,
@@ -38568,9 +38790,14 @@
             },
             "m6i.8xlarge": {
                 "ap-northeast-1": 1.984,
+                "ap-northeast-2": 1.888,
+                "ap-south-1": 1.616,
                 "ap-southeast-1": 1.92,
+                "ap-southeast-2": 1.92,
                 "eu-central-1": 1.84,
                 "eu-west-1": 1.712,
+                "eu-west-3": 1.792,
+                "sa-east-1": 2.448,
                 "us-east-1": 1.536,
                 "us-east-2": 1.536,
                 "us-west-1": 1.792,
@@ -38578,9 +38805,14 @@
             },
             "m6i.12xlarge": {
                 "ap-northeast-1": 2.976,
+                "ap-northeast-2": 2.832,
+                "ap-south-1": 2.424,
                 "ap-southeast-1": 2.88,
+                "ap-southeast-2": 2.88,
                 "eu-central-1": 2.76,
                 "eu-west-1": 2.568,
+                "eu-west-3": 2.688,
+                "sa-east-1": 3.672,
                 "us-east-1": 2.304,
                 "us-east-2": 2.304,
                 "us-west-1": 2.688,
@@ -38588,9 +38820,14 @@
             },
             "m6i.16xlarge": {
                 "ap-northeast-1": 3.968,
+                "ap-northeast-2": 3.776,
+                "ap-south-1": 3.232,
                 "ap-southeast-1": 3.84,
+                "ap-southeast-2": 3.84,
                 "eu-central-1": 3.68,
                 "eu-west-1": 3.424,
+                "eu-west-3": 3.584,
+                "sa-east-1": 4.896,
                 "us-east-1": 3.072,
                 "us-east-2": 3.072,
                 "us-west-1": 3.584,
@@ -38598,9 +38835,14 @@
             },
             "m6i.24xlarge": {
                 "ap-northeast-1": 5.952,
+                "ap-northeast-2": 5.664,
+                "ap-south-1": 4.848,
                 "ap-southeast-1": 5.76,
+                "ap-southeast-2": 5.76,
                 "eu-central-1": 5.52,
                 "eu-west-1": 5.136,
+                "eu-west-3": 5.376,
+                "sa-east-1": 7.344,
                 "us-east-1": 4.608,
                 "us-east-2": 4.608,
                 "us-west-1": 5.376,
@@ -38608,9 +38850,14 @@
             },
             "m6i.32xlarge": {
                 "ap-northeast-1": 7.936,
+                "ap-northeast-2": 7.552,
+                "ap-south-1": 6.464,
                 "ap-southeast-1": 7.68,
+                "ap-southeast-2": 7.68,
                 "eu-central-1": 7.36,
                 "eu-west-1": 6.848,
+                "eu-west-3": 7.168,
+                "sa-east-1": 9.792,
                 "us-east-1": 6.144,
                 "us-east-2": 6.144,
                 "us-west-1": 7.168,
@@ -38897,6 +39144,7 @@
                 "us-west-2": 4.256
             },
             "r5.large": {
+                "ap-east-1": 0.167,
                 "ap-northeast-1": 0.152,
                 "ap-northeast-2": 0.152,
                 "ap-south-1": 0.13,
@@ -38916,6 +39164,7 @@
                 "us-west-2": 0.126
             },
             "r5.xlarge": {
+                "ap-east-1": 0.334,
                 "ap-northeast-1": 0.304,
                 "ap-northeast-2": 0.304,
                 "ap-south-1": 0.26,
@@ -38935,6 +39184,7 @@
                 "us-west-2": 0.252
             },
             "r5.metal": {
+                "ap-east-1": 8.016,
                 "ap-northeast-1": 7.296,
                 "ap-northeast-2": 7.296,
                 "ap-south-1": 6.24,
@@ -38954,6 +39204,7 @@
                 "us-west-2": 6.048
             },
             "r5.2xlarge": {
+                "ap-east-1": 0.668,
                 "ap-northeast-1": 0.608,
                 "ap-northeast-2": 0.608,
                 "ap-south-1": 0.52,
@@ -38973,6 +39224,7 @@
                 "us-west-2": 0.504
             },
             "r5.4xlarge": {
+                "ap-east-1": 1.336,
                 "ap-northeast-1": 1.216,
                 "ap-northeast-2": 1.216,
                 "ap-south-1": 1.04,
@@ -38992,6 +39244,7 @@
                 "us-west-2": 1.008
             },
             "r5.8xlarge": {
+                "ap-east-1": 2.672,
                 "ap-northeast-1": 2.432,
                 "ap-northeast-2": 2.432,
                 "ap-south-1": 2.08,
@@ -39011,6 +39264,7 @@
                 "us-west-2": 2.016
             },
             "r5.12xlarge": {
+                "ap-east-1": 4.008,
                 "ap-northeast-1": 3.648,
                 "ap-northeast-2": 3.648,
                 "ap-south-1": 3.12,
@@ -39030,6 +39284,7 @@
                 "us-west-2": 3.024
             },
             "r5.16xlarge": {
+                "ap-east-1": 5.344,
                 "ap-northeast-1": 4.864,
                 "ap-northeast-2": 4.864,
                 "ap-south-1": 4.16,
@@ -39049,6 +39304,7 @@
                 "us-west-2": 4.032
             },
             "r5.24xlarge": {
+                "ap-east-1": 8.016,
                 "ap-northeast-1": 7.296,
                 "ap-northeast-2": 7.296,
                 "ap-south-1": 6.24,
@@ -39446,6 +39702,7 @@
                 "us-west-2": 7.152
             },
             "r5d.large": {
+                "ap-east-1": 0.175,
                 "ap-northeast-1": 0.174,
                 "ap-northeast-2": 0.173,
                 "ap-south-1": 0.151,
@@ -39465,6 +39722,7 @@
                 "us-west-2": 0.144
             },
             "r5d.xlarge": {
+                "ap-east-1": 0.35,
                 "ap-northeast-1": 0.348,
                 "ap-northeast-2": 0.346,
                 "ap-south-1": 0.302,
@@ -39484,6 +39742,7 @@
                 "us-west-2": 0.288
             },
             "r5d.metal": {
+                "ap-east-1": 8.4,
                 "ap-northeast-1": 8.352,
                 "ap-northeast-2": 8.304,
                 "ap-south-1": 7.248,
@@ -39503,6 +39762,7 @@
                 "us-west-2": 6.912
             },
             "r5d.2xlarge": {
+                "ap-east-1": 0.7,
                 "ap-northeast-1": 0.696,
                 "ap-northeast-2": 0.692,
                 "ap-south-1": 0.604,
@@ -39522,6 +39782,7 @@
                 "us-west-2": 0.576
             },
             "r5d.4xlarge": {
+                "ap-east-1": 1.4,
                 "ap-northeast-1": 1.392,
                 "ap-northeast-2": 1.384,
                 "ap-south-1": 1.208,
@@ -39541,6 +39802,7 @@
                 "us-west-2": 1.152
             },
             "r5d.8xlarge": {
+                "ap-east-1": 2.8,
                 "ap-northeast-1": 2.784,
                 "ap-northeast-2": 2.768,
                 "ap-south-1": 2.416,
@@ -39560,6 +39822,7 @@
                 "us-west-2": 2.304
             },
             "r5d.12xlarge": {
+                "ap-east-1": 4.2,
                 "ap-northeast-1": 4.176,
                 "ap-northeast-2": 4.152,
                 "ap-south-1": 3.624,
@@ -39579,6 +39842,7 @@
                 "us-west-2": 3.456
             },
             "r5d.16xlarge": {
+                "ap-east-1": 5.6,
                 "ap-northeast-1": 5.568,
                 "ap-northeast-2": 5.536,
                 "ap-south-1": 4.832,
@@ -39598,6 +39862,7 @@
                 "us-west-2": 4.608
             },
             "r5d.24xlarge": {
+                "ap-east-1": 8.4,
                 "ap-northeast-1": 8.352,
                 "ap-northeast-2": 8.304,
                 "ap-south-1": 7.248,
@@ -39707,6 +39972,7 @@
                 "us-west-2": 8.016
             },
             "r5n.large": {
+                "ap-east-1": 0.202,
                 "ap-northeast-1": 0.181,
                 "ap-northeast-2": 0.178,
                 "ap-south-1": 0.153,
@@ -39726,6 +39992,7 @@
                 "us-west-2": 0.149
             },
             "r5n.xlarge": {
+                "ap-east-1": 0.404,
                 "ap-northeast-1": 0.362,
                 "ap-northeast-2": 0.356,
                 "ap-south-1": 0.306,
@@ -39745,6 +40012,7 @@
                 "us-west-2": 0.298
             },
             "r5n.metal": {
+                "ap-east-1": 9.696,
                 "ap-northeast-1": 8.688,
                 "ap-northeast-2": 8.544,
                 "ap-south-1": 7.344,
@@ -39764,6 +40032,7 @@
                 "us-west-2": 7.152
             },
             "r5n.2xlarge": {
+                "ap-east-1": 0.808,
                 "ap-northeast-1": 0.724,
                 "ap-northeast-2": 0.712,
                 "ap-south-1": 0.612,
@@ -39783,6 +40052,7 @@
                 "us-west-2": 0.596
             },
             "r5n.4xlarge": {
+                "ap-east-1": 1.616,
                 "ap-northeast-1": 1.448,
                 "ap-northeast-2": 1.424,
                 "ap-south-1": 1.224,
@@ -39802,6 +40072,7 @@
                 "us-west-2": 1.192
             },
             "r5n.8xlarge": {
+                "ap-east-1": 3.232,
                 "ap-northeast-1": 2.896,
                 "ap-northeast-2": 2.848,
                 "ap-south-1": 2.448,
@@ -39821,6 +40092,7 @@
                 "us-west-2": 2.384
             },
             "r5n.12xlarge": {
+                "ap-east-1": 4.848,
                 "ap-northeast-1": 4.344,
                 "ap-northeast-2": 4.272,
                 "ap-south-1": 3.672,
@@ -39840,6 +40112,7 @@
                 "us-west-2": 3.576
             },
             "r5n.16xlarge": {
+                "ap-east-1": 6.464,
                 "ap-northeast-1": 5.792,
                 "ap-northeast-2": 5.696,
                 "ap-south-1": 4.896,
@@ -39859,6 +40132,7 @@
                 "us-west-2": 4.768
             },
             "r5n.24xlarge": {
+                "ap-east-1": 9.696,
                 "ap-northeast-1": 8.688,
                 "ap-northeast-2": 8.544,
                 "ap-south-1": 7.344,
@@ -39878,6 +40152,7 @@
                 "us-west-2": 7.152
             },
             "r6g.medium": {
+                "ap-east-1": 0.067,
                 "ap-northeast-1": 0.0608,
                 "ap-northeast-2": 0.061,
                 "ap-south-1": 0.0325,
@@ -39897,6 +40172,7 @@
                 "us-west-2": 0.0504
             },
             "r6g.large": {
+                "ap-east-1": 0.134,
                 "ap-northeast-1": 0.1216,
                 "ap-northeast-2": 0.122,
                 "ap-south-1": 0.065,
@@ -39916,6 +40192,7 @@
                 "us-west-2": 0.1008
             },
             "r6g.xlarge": {
+                "ap-east-1": 0.268,
                 "ap-northeast-1": 0.2432,
                 "ap-northeast-2": 0.244,
                 "ap-south-1": 0.13,
@@ -39935,6 +40212,7 @@
                 "us-west-2": 0.2016
             },
             "r6g.metal": {
+                "ap-east-1": 4.288,
                 "ap-northeast-1": 3.8912,
                 "ap-northeast-2": 3.904,
                 "ap-south-1": 2.08,
@@ -39954,6 +40232,7 @@
                 "us-west-2": 3.2256
             },
             "r6g.2xlarge": {
+                "ap-east-1": 0.536,
                 "ap-northeast-1": 0.4864,
                 "ap-northeast-2": 0.488,
                 "ap-south-1": 0.26,
@@ -39973,6 +40252,7 @@
                 "us-west-2": 0.4032
             },
             "r6g.4xlarge": {
+                "ap-east-1": 1.072,
                 "ap-northeast-1": 0.9728,
                 "ap-northeast-2": 0.976,
                 "ap-south-1": 0.52,
@@ -39992,6 +40272,7 @@
                 "us-west-2": 0.8064
             },
             "r6g.8xlarge": {
+                "ap-east-1": 2.144,
                 "ap-northeast-1": 1.9456,
                 "ap-northeast-2": 1.952,
                 "ap-south-1": 1.04,
@@ -40011,6 +40292,7 @@
                 "us-west-2": 1.6128
             },
             "r6g.12xlarge": {
+                "ap-east-1": 3.216,
                 "ap-northeast-1": 2.9184,
                 "ap-northeast-2": 2.928,
                 "ap-south-1": 1.56,
@@ -40030,6 +40312,7 @@
                 "us-west-2": 2.4192
             },
             "r6g.16xlarge": {
+                "ap-east-1": 4.288,
                 "ap-northeast-1": 3.8912,
                 "ap-northeast-2": 3.904,
                 "ap-south-1": 2.08,
@@ -40146,6 +40429,66 @@
                 "us-east-2": 3.6864,
                 "us-west-1": 4.16,
                 "us-west-2": 3.6864
+            },
+            "r6i.large": {
+                "eu-west-1": 0.141,
+                "us-east-1": 0.126,
+                "us-east-2": 0.126,
+                "us-west-2": 0.126
+            },
+            "r6i.xlarge": {
+                "eu-west-1": 0.282,
+                "us-east-1": 0.252,
+                "us-east-2": 0.252,
+                "us-west-2": 0.252
+            },
+            "r6i.metal": {
+                "eu-west-1": 9.024,
+                "us-east-1": 8.064,
+                "us-east-2": 8.064,
+                "us-west-2": 8.064
+            },
+            "r6i.2xlarge": {
+                "eu-west-1": 0.564,
+                "us-east-1": 0.504,
+                "us-east-2": 0.504,
+                "us-west-2": 0.504
+            },
+            "r6i.4xlarge": {
+                "eu-west-1": 1.128,
+                "us-east-1": 1.008,
+                "us-east-2": 1.008,
+                "us-west-2": 1.008
+            },
+            "r6i.8xlarge": {
+                "eu-west-1": 2.256,
+                "us-east-1": 2.016,
+                "us-east-2": 2.016,
+                "us-west-2": 2.016
+            },
+            "r6i.12xlarge": {
+                "eu-west-1": 3.384,
+                "us-east-1": 3.024,
+                "us-east-2": 3.024,
+                "us-west-2": 3.024
+            },
+            "r6i.16xlarge": {
+                "eu-west-1": 4.512,
+                "us-east-1": 4.032,
+                "us-east-2": 4.032,
+                "us-west-2": 4.032
+            },
+            "r6i.24xlarge": {
+                "eu-west-1": 6.768,
+                "us-east-1": 6.048,
+                "us-east-2": 6.048,
+                "us-west-2": 6.048
+            },
+            "r6i.32xlarge": {
+                "eu-west-1": 9.024,
+                "us-east-1": 8.064,
+                "us-east-2": 8.064,
+                "us-west-2": 8.064
             },
             "t1.micro": {
                 "ap-northeast-1": 0.026,
@@ -40285,6 +40628,7 @@
                 "us-west-2": 0.3712
             },
             "t3.micro": {
+                "ap-east-1": 0.0146,
                 "ap-northeast-1": 0.0136,
                 "ap-northeast-2": 0.013,
                 "ap-south-1": 0.0112,
@@ -40304,6 +40648,7 @@
                 "us-west-2": 0.0104
             },
             "t3.small": {
+                "ap-east-1": 0.0292,
                 "ap-northeast-1": 0.0272,
                 "ap-northeast-2": 0.026,
                 "ap-south-1": 0.0224,
@@ -40323,6 +40668,7 @@
                 "us-west-2": 0.0208
             },
             "t3.medium": {
+                "ap-east-1": 0.0584,
                 "ap-northeast-1": 0.0544,
                 "ap-northeast-2": 0.052,
                 "ap-south-1": 0.0448,
@@ -40342,6 +40688,7 @@
                 "us-west-2": 0.0416
             },
             "t3.large": {
+                "ap-east-1": 0.1168,
                 "ap-northeast-1": 0.1088,
                 "ap-northeast-2": 0.104,
                 "ap-south-1": 0.0896,
@@ -40361,6 +40708,7 @@
                 "us-west-2": 0.0832
             },
             "t3.xlarge": {
+                "ap-east-1": 0.2336,
                 "ap-northeast-1": 0.2176,
                 "ap-northeast-2": 0.208,
                 "ap-south-1": 0.1792,
@@ -40380,6 +40728,7 @@
                 "us-west-2": 0.1664
             },
             "t3.nano": {
+                "ap-east-1": 0.0073,
                 "ap-northeast-1": 0.0068,
                 "ap-northeast-2": 0.0065,
                 "ap-south-1": 0.0056,
@@ -40399,6 +40748,7 @@
                 "us-west-2": 0.0052
             },
             "t3.2xlarge": {
+                "ap-east-1": 0.4672,
                 "ap-northeast-1": 0.4352,
                 "ap-northeast-2": 0.416,
                 "ap-south-1": 0.3584,
@@ -40544,6 +40894,7 @@
                 "us-west-2": 0.3008
             },
             "t4g.micro": {
+                "ap-east-1": 0.0116,
                 "ap-northeast-1": 0.0108,
                 "ap-northeast-2": 0.0104,
                 "ap-south-1": 0.0056,
@@ -40563,6 +40914,7 @@
                 "us-west-2": 0.0084
             },
             "t4g.small": {
+                "ap-east-1": 0.0232,
                 "ap-northeast-1": 0.0216,
                 "ap-northeast-2": 0.0208,
                 "ap-south-1": 0.0112,
@@ -40582,6 +40934,7 @@
                 "us-west-2": 0.0168
             },
             "t4g.medium": {
+                "ap-east-1": 0.0464,
                 "ap-northeast-1": 0.0432,
                 "ap-northeast-2": 0.0416,
                 "ap-south-1": 0.0224,
@@ -40601,6 +40954,7 @@
                 "us-west-2": 0.0336
             },
             "t4g.large": {
+                "ap-east-1": 0.0928,
                 "ap-northeast-1": 0.0864,
                 "ap-northeast-2": 0.0832,
                 "ap-south-1": 0.0448,
@@ -40620,6 +40974,7 @@
                 "us-west-2": 0.0672
             },
             "t4g.xlarge": {
+                "ap-east-1": 0.1856,
                 "ap-northeast-1": 0.1728,
                 "ap-northeast-2": 0.1664,
                 "ap-south-1": 0.0896,
@@ -40639,6 +40994,7 @@
                 "us-west-2": 0.1344
             },
             "t4g.nano": {
+                "ap-east-1": 0.0058,
                 "ap-northeast-1": 0.0054,
                 "ap-northeast-2": 0.0052,
                 "ap-south-1": 0.0028,
@@ -40658,6 +41014,7 @@
                 "us-west-2": 0.0042
             },
             "t4g.2xlarge": {
+                "ap-east-1": 0.3712,
                 "ap-northeast-1": 0.3456,
                 "ap-northeast-2": 0.3328,
                 "ap-south-1": 0.1792,
@@ -40677,24 +41034,28 @@
                 "us-west-2": 0.2688
             },
             "u-6tb1.56xlarge": {
+                "ap-northeast-2": 55.9796,
                 "ap-south-1": 47.87676,
                 "ap-southeast-1": 55.9796,
                 "ap-southeast-2": 55.61075,
                 "eu-central-1": 55.9796,
                 "eu-north-1": 49.33177,
                 "eu-west-1": 51.92818,
+                "eu-west-3": 54.50589,
                 "us-east-1": 46.40391,
                 "us-east-2": 46.40391,
                 "us-gov-west-1": 55.61075,
                 "us-west-2": 46.40391
             },
             "u-6tb1.112xlarge": {
+                "ap-northeast-2": 65.867,
                 "ap-south-1": 56.333,
                 "ap-southeast-1": 65.867,
                 "ap-southeast-2": 65.433,
                 "eu-central-1": 65.867,
                 "eu-north-1": 58.045,
                 "eu-west-1": 61.1,
+                "eu-west-3": 64.133,
                 "us-east-1": 54.6,
                 "us-east-2": 54.6,
                 "us-gov-west-1": 65.433,
@@ -40735,6 +41096,7 @@
                 "us-west-2": 5.2
             },
             "x1.16xlarge": {
+                "ap-east-1": 10.638,
                 "ap-northeast-1": 9.671,
                 "ap-northeast-2": 9.671,
                 "ap-south-1": 6.881,
@@ -40752,6 +41114,7 @@
                 "us-west-2": 6.669
             },
             "x1.32xlarge": {
+                "ap-east-1": 21.276,
                 "ap-northeast-1": 19.341,
                 "ap-northeast-2": 19.341,
                 "ap-south-1": 13.762,
@@ -41666,6 +42029,7 @@
                 "us-west-2": 12.485
             },
             "c5.large": {
+                "ap-east-1": 0.68,
                 "ap-northeast-1": 0.679,
                 "ap-northeast-2": 0.668,
                 "ap-south-1": 0.657,
@@ -41685,6 +42049,7 @@
                 "us-west-2": 0.657
             },
             "c5.xlarge": {
+                "ap-east-1": 0.88,
                 "ap-northeast-1": 0.878,
                 "ap-northeast-2": 0.856,
                 "ap-south-1": 0.834,
@@ -41704,6 +42069,7 @@
                 "us-west-2": 0.834
             },
             "c5.metal": {
+                "ap-east-1": 21.12,
                 "ap-northeast-1": 21.072,
                 "ap-northeast-2": 20.544,
                 "ap-south-1": 20.016,
@@ -41723,6 +42089,7 @@
                 "us-west-2": 20.016
             },
             "c5.2xlarge": {
+                "ap-east-1": 1.76,
                 "ap-northeast-1": 1.756,
                 "ap-northeast-2": 1.712,
                 "ap-south-1": 1.668,
@@ -41742,6 +42109,7 @@
                 "us-west-2": 1.668
             },
             "c5.4xlarge": {
+                "ap-east-1": 3.52,
                 "ap-northeast-1": 3.512,
                 "ap-northeast-2": 3.424,
                 "ap-south-1": 3.336,
@@ -41761,6 +42129,7 @@
                 "us-west-2": 3.336
             },
             "c5.9xlarge": {
+                "ap-east-1": 7.92,
                 "ap-northeast-1": 7.902,
                 "ap-northeast-2": 7.704,
                 "ap-south-1": 7.506,
@@ -41780,6 +42149,7 @@
                 "us-west-2": 7.506
             },
             "c5.12xlarge": {
+                "ap-east-1": 10.56,
                 "ap-northeast-1": 10.536,
                 "ap-northeast-2": 10.272,
                 "ap-south-1": 10.008,
@@ -41799,6 +42169,7 @@
                 "us-west-2": 10.008
             },
             "c5.18xlarge": {
+                "ap-east-1": 15.84,
                 "ap-northeast-1": 15.804,
                 "ap-northeast-2": 15.408,
                 "ap-south-1": 15.012,
@@ -41818,6 +42189,7 @@
                 "us-west-2": 15.012
             },
             "c5.24xlarge": {
+                "ap-east-1": 21.12,
                 "ap-northeast-1": 21.072,
                 "ap-northeast-2": 20.544,
                 "ap-south-1": 20.016,
@@ -41837,6 +42209,7 @@
                 "us-west-2": 20.016
             },
             "c5a.large": {
+                "ap-east-1": 0.669,
                 "ap-northeast-1": 0.668,
                 "ap-northeast-2": 0.658,
                 "ap-south-1": 0.619,
@@ -41856,6 +42229,7 @@
                 "us-west-2": 0.649
             },
             "c5a.xlarge": {
+                "ap-east-1": 0.858,
                 "ap-northeast-1": 0.856,
                 "ap-northeast-2": 0.836,
                 "ap-south-1": 0.758,
@@ -41875,6 +42249,7 @@
                 "us-west-2": 0.818
             },
             "c5a.2xlarge": {
+                "ap-east-1": 1.716,
                 "ap-northeast-1": 1.712,
                 "ap-northeast-2": 1.672,
                 "ap-south-1": 1.516,
@@ -41894,6 +42269,7 @@
                 "us-west-2": 1.636
             },
             "c5a.4xlarge": {
+                "ap-east-1": 3.432,
                 "ap-northeast-1": 3.424,
                 "ap-northeast-2": 3.344,
                 "ap-south-1": 3.032,
@@ -41913,6 +42289,7 @@
                 "us-west-2": 3.272
             },
             "c5a.8xlarge": {
+                "ap-east-1": 6.864,
                 "ap-northeast-1": 6.848,
                 "ap-northeast-2": 6.688,
                 "ap-south-1": 6.064,
@@ -41932,6 +42309,7 @@
                 "us-west-2": 6.544
             },
             "c5a.12xlarge": {
+                "ap-east-1": 10.296,
                 "ap-northeast-1": 10.272,
                 "ap-northeast-2": 10.032,
                 "ap-south-1": 9.096,
@@ -41951,6 +42329,7 @@
                 "us-west-2": 9.816
             },
             "c5a.16xlarge": {
+                "ap-east-1": 13.728,
                 "ap-northeast-1": 13.696,
                 "ap-northeast-2": 13.376,
                 "ap-south-1": 12.128,
@@ -41970,6 +42349,7 @@
                 "us-west-2": 13.088
             },
             "c5a.24xlarge": {
+                "ap-east-1": 20.592,
                 "ap-northeast-1": 20.544,
                 "ap-northeast-2": 20.064,
                 "ap-south-1": 18.192,
@@ -42069,6 +42449,7 @@
                 "us-west-2": 20.064
             },
             "c5d.large": {
+                "ap-east-1": 0.695,
                 "ap-northeast-1": 0.694,
                 "ap-northeast-2": 0.682,
                 "ap-south-1": 0.671,
@@ -42088,6 +42469,7 @@
                 "us-west-2": 0.668
             },
             "c5d.xlarge": {
+                "ap-east-1": 0.91,
                 "ap-northeast-1": 0.908,
                 "ap-northeast-2": 0.884,
                 "ap-south-1": 0.862,
@@ -42125,6 +42507,7 @@
                 "us-west-2": 20.544
             },
             "c5d.2xlarge": {
+                "ap-east-1": 1.82,
                 "ap-northeast-1": 1.816,
                 "ap-northeast-2": 1.768,
                 "ap-south-1": 1.724,
@@ -42144,6 +42527,7 @@
                 "us-west-2": 1.712
             },
             "c5d.4xlarge": {
+                "ap-east-1": 3.64,
                 "ap-northeast-1": 3.632,
                 "ap-northeast-2": 3.536,
                 "ap-south-1": 3.448,
@@ -42163,6 +42547,7 @@
                 "us-west-2": 3.424
             },
             "c5d.9xlarge": {
+                "ap-east-1": 8.19,
                 "ap-northeast-1": 8.172,
                 "ap-northeast-2": 7.956,
                 "ap-south-1": 7.758,
@@ -42200,6 +42585,7 @@
                 "us-west-2": 10.272
             },
             "c5d.18xlarge": {
+                "ap-east-1": 16.38,
                 "ap-northeast-1": 16.344,
                 "ap-northeast-2": 15.912,
                 "ap-south-1": 15.516,
@@ -42237,6 +42623,7 @@
                 "us-west-2": 20.544
             },
             "c5n.large": {
+                "ap-east-1": 0.715,
                 "ap-northeast-1": 0.708,
                 "ap-northeast-2": 0.694,
                 "ap-south-1": 0.68,
@@ -42256,6 +42643,7 @@
                 "us-west-2": 0.68
             },
             "c5n.xlarge": {
+                "ap-east-1": 0.95,
                 "ap-northeast-1": 0.936,
                 "ap-northeast-2": 0.908,
                 "ap-south-1": 0.88,
@@ -42275,6 +42663,7 @@
                 "us-west-2": 0.88
             },
             "c5n.metal": {
+                "ap-east-1": 17.1,
                 "ap-northeast-1": 16.848,
                 "ap-northeast-2": 16.344,
                 "ap-south-1": 15.84,
@@ -42294,6 +42683,7 @@
                 "us-west-2": 15.84
             },
             "c5n.2xlarge": {
+                "ap-east-1": 1.9,
                 "ap-northeast-1": 1.872,
                 "ap-northeast-2": 1.816,
                 "ap-south-1": 1.76,
@@ -42313,6 +42703,7 @@
                 "us-west-2": 1.76
             },
             "c5n.4xlarge": {
+                "ap-east-1": 3.8,
                 "ap-northeast-1": 3.744,
                 "ap-northeast-2": 3.632,
                 "ap-south-1": 3.52,
@@ -42332,6 +42723,7 @@
                 "us-west-2": 3.52
             },
             "c5n.9xlarge": {
+                "ap-east-1": 8.55,
                 "ap-northeast-1": 8.424,
                 "ap-northeast-2": 8.172,
                 "ap-south-1": 7.92,
@@ -42351,6 +42743,7 @@
                 "us-west-2": 7.92
             },
             "c5n.18xlarge": {
+                "ap-east-1": 17.1,
                 "ap-northeast-1": 16.848,
                 "ap-northeast-2": 16.344,
                 "ap-south-1": 15.84,
@@ -42406,6 +42799,12 @@
                 "us-east-1": 0.834,
                 "us-east-2": 0.834,
                 "us-west-2": 0.834
+            },
+            "c6i.metal": {
+                "eu-west-1": 27.0848,
+                "us-east-1": 26.688,
+                "us-east-2": 26.688,
+                "us-west-2": 26.688
             },
             "c6i.2xlarge": {
                 "eu-west-1": 1.6928,
@@ -42555,6 +42954,14 @@
             "g4dn.8xlarge": {},
             "g4dn.12xlarge": {},
             "g4dn.16xlarge": {},
+            "g5.xlarge": {},
+            "g5.2xlarge": {},
+            "g5.4xlarge": {},
+            "g5.8xlarge": {},
+            "g5.12xlarge": {},
+            "g5.16xlarge": {},
+            "g5.24xlarge": {},
+            "g5.48xlarge": {},
             "h1.2xlarge": {
                 "eu-west-1": 1.847,
                 "us-east-1": 1.796,
@@ -42580,6 +42987,7 @@
                 "us-west-2": 14.368
             },
             "i3.large": {
+                "ap-east-1": 0.778,
                 "ap-northeast-1": 0.755,
                 "ap-northeast-2": 0.755,
                 "ap-south-1": 0.749,
@@ -42599,6 +43007,7 @@
                 "us-west-2": 0.728
             },
             "i3.xlarge": {
+                "ap-east-1": 1.076,
                 "ap-northeast-1": 1.03,
                 "ap-northeast-2": 1.03,
                 "ap-south-1": 1.018,
@@ -42618,6 +43027,7 @@
                 "us-west-2": 0.976
             },
             "i3.metal": {
+                "ap-east-1": 17.216,
                 "ap-northeast-1": 16.48,
                 "ap-northeast-2": 16.48,
                 "ap-south-1": 16.288,
@@ -42635,6 +43045,7 @@
                 "us-west-2": 15.616
             },
             "i3.2xlarge": {
+                "ap-east-1": 2.152,
                 "ap-northeast-1": 2.06,
                 "ap-northeast-2": 2.06,
                 "ap-south-1": 2.036,
@@ -42654,6 +43065,7 @@
                 "us-west-2": 1.952
             },
             "i3.4xlarge": {
+                "ap-east-1": 4.304,
                 "ap-northeast-1": 4.12,
                 "ap-northeast-2": 4.12,
                 "ap-south-1": 4.072,
@@ -42673,6 +43085,7 @@
                 "us-west-2": 3.904
             },
             "i3.8xlarge": {
+                "ap-east-1": 8.608,
                 "ap-northeast-1": 8.24,
                 "ap-northeast-2": 8.24,
                 "ap-south-1": 8.144,
@@ -42692,6 +43105,7 @@
                 "us-west-2": 7.808
             },
             "i3.16xlarge": {
+                "ap-east-1": 17.216,
                 "ap-northeast-1": 16.48,
                 "ap-northeast-2": 16.48,
                 "ap-south-1": 16.288,
@@ -42711,6 +43125,7 @@
                 "us-west-2": 15.616
             },
             "i3en.large": {
+                "ap-east-1": 0.87,
                 "ap-northeast-1": 0.838,
                 "ap-northeast-2": 0.838,
                 "ap-south-1": 0.829,
@@ -42730,6 +43145,7 @@
                 "us-west-2": 0.798
             },
             "i3en.xlarge": {
+                "ap-east-1": 1.261,
                 "ap-northeast-1": 1.196,
                 "ap-northeast-2": 1.196,
                 "ap-south-1": 1.178,
@@ -42749,6 +43165,7 @@
                 "us-west-2": 1.116
             },
             "i3en.metal": {
+                "ap-east-1": 30.255,
                 "ap-northeast-1": 28.704,
                 "ap-northeast-2": 28.704,
                 "ap-south-1": 28.272,
@@ -42768,6 +43185,7 @@
                 "us-west-2": 26.784
             },
             "i3en.2xlarge": {
+                "ap-east-1": 2.521,
                 "ap-northeast-1": 2.392,
                 "ap-northeast-2": 2.392,
                 "ap-south-1": 2.356,
@@ -42787,6 +43205,7 @@
                 "us-west-2": 2.232
             },
             "i3en.3xlarge": {
+                "ap-east-1": 3.782,
                 "ap-northeast-1": 3.588,
                 "ap-northeast-2": 3.588,
                 "ap-south-1": 3.534,
@@ -42806,6 +43225,7 @@
                 "us-west-2": 3.348
             },
             "i3en.6xlarge": {
+                "ap-east-1": 7.564,
                 "ap-northeast-1": 7.176,
                 "ap-northeast-2": 7.176,
                 "ap-south-1": 7.068,
@@ -42825,6 +43245,7 @@
                 "us-west-2": 6.696
             },
             "i3en.12xlarge": {
+                "ap-east-1": 15.128,
                 "ap-northeast-1": 14.352,
                 "ap-northeast-2": 14.352,
                 "ap-south-1": 14.136,
@@ -42844,6 +43265,7 @@
                 "us-west-2": 13.392
             },
             "i3en.24xlarge": {
+                "ap-east-1": 30.255,
                 "ap-northeast-1": 28.704,
                 "ap-northeast-2": 28.704,
                 "ap-south-1": 28.272,
@@ -42972,6 +43394,7 @@
                 "us-west-2": 13.824
             },
             "m5.large": {
+                "ap-east-1": 0.704,
                 "ap-northeast-1": 0.696,
                 "ap-northeast-2": 0.69,
                 "ap-south-1": 0.673,
@@ -42991,6 +43414,7 @@
                 "us-west-2": 0.668
             },
             "m5.xlarge": {
+                "ap-east-1": 0.928,
                 "ap-northeast-1": 0.912,
                 "ap-northeast-2": 0.9,
                 "ap-south-1": 0.866,
@@ -43010,6 +43434,7 @@
                 "us-west-2": 0.856
             },
             "m5.metal": {
+                "ap-east-1": 22.272,
                 "ap-northeast-1": 21.888,
                 "ap-northeast-2": 21.6,
                 "ap-south-1": 20.784,
@@ -43029,6 +43454,7 @@
                 "us-west-2": 20.544
             },
             "m5.2xlarge": {
+                "ap-east-1": 1.856,
                 "ap-northeast-1": 1.824,
                 "ap-northeast-2": 1.8,
                 "ap-south-1": 1.732,
@@ -43048,6 +43474,7 @@
                 "us-west-2": 1.712
             },
             "m5.4xlarge": {
+                "ap-east-1": 3.712,
                 "ap-northeast-1": 3.648,
                 "ap-northeast-2": 3.6,
                 "ap-south-1": 3.464,
@@ -43067,6 +43494,7 @@
                 "us-west-2": 3.424
             },
             "m5.8xlarge": {
+                "ap-east-1": 7.424,
                 "ap-northeast-1": 7.296,
                 "ap-northeast-2": 7.2,
                 "ap-south-1": 6.928,
@@ -43086,6 +43514,7 @@
                 "us-west-2": 6.848
             },
             "m5.12xlarge": {
+                "ap-east-1": 11.136,
                 "ap-northeast-1": 10.944,
                 "ap-northeast-2": 10.8,
                 "ap-south-1": 10.392,
@@ -43105,6 +43534,7 @@
                 "us-west-2": 10.272
             },
             "m5.16xlarge": {
+                "ap-east-1": 14.848,
                 "ap-northeast-1": 14.592,
                 "ap-northeast-2": 14.4,
                 "ap-south-1": 13.856,
@@ -43124,6 +43554,7 @@
                 "us-west-2": 13.696
             },
             "m5.24xlarge": {
+                "ap-east-1": 22.272,
                 "ap-northeast-1": 21.888,
                 "ap-northeast-2": 21.6,
                 "ap-south-1": 20.784,
@@ -43431,6 +43862,7 @@
                 "us-west-2": 20.88
             },
             "m5d.large": {
+                "ap-east-1": 0.727,
                 "ap-northeast-1": 0.718,
                 "ap-northeast-2": 0.711,
                 "ap-south-1": 0.694,
@@ -43450,6 +43882,7 @@
                 "us-west-2": 0.685
             },
             "m5d.xlarge": {
+                "ap-east-1": 0.974,
                 "ap-northeast-1": 0.956,
                 "ap-northeast-2": 0.942,
                 "ap-south-1": 0.908,
@@ -43469,6 +43902,7 @@
                 "us-west-2": 0.89
             },
             "m5d.metal": {
+                "ap-east-1": 23.376,
                 "ap-northeast-1": 22.944,
                 "ap-northeast-2": 22.608,
                 "ap-south-1": 21.792,
@@ -43488,6 +43922,7 @@
                 "us-west-2": 21.36
             },
             "m5d.2xlarge": {
+                "ap-east-1": 1.948,
                 "ap-northeast-1": 1.912,
                 "ap-northeast-2": 1.884,
                 "ap-south-1": 1.816,
@@ -43507,6 +43942,7 @@
                 "us-west-2": 1.78
             },
             "m5d.4xlarge": {
+                "ap-east-1": 3.896,
                 "ap-northeast-1": 3.824,
                 "ap-northeast-2": 3.768,
                 "ap-south-1": 3.632,
@@ -43526,6 +43962,7 @@
                 "us-west-2": 3.56
             },
             "m5d.8xlarge": {
+                "ap-east-1": 7.792,
                 "ap-northeast-1": 7.648,
                 "ap-northeast-2": 7.536,
                 "ap-south-1": 7.264,
@@ -43545,6 +43982,7 @@
                 "us-west-2": 7.12
             },
             "m5d.12xlarge": {
+                "ap-east-1": 11.688,
                 "ap-northeast-1": 11.472,
                 "ap-northeast-2": 11.304,
                 "ap-south-1": 10.896,
@@ -43564,6 +44002,7 @@
                 "us-west-2": 10.68
             },
             "m5d.16xlarge": {
+                "ap-east-1": 15.584,
                 "ap-northeast-1": 15.296,
                 "ap-northeast-2": 15.072,
                 "ap-south-1": 14.528,
@@ -43583,6 +44022,7 @@
                 "us-west-2": 14.24
             },
             "m5d.24xlarge": {
+                "ap-east-1": 23.376,
                 "ap-northeast-1": 22.944,
                 "ap-northeast-2": 22.608,
                 "ap-south-1": 21.792,
@@ -43892,9 +44332,14 @@
             "m6gd.16xlarge": {},
             "m6i.large": {
                 "ap-northeast-1": 0.696,
+                "ap-northeast-2": 0.69,
+                "ap-south-1": 0.673,
                 "ap-southeast-1": 0.692,
+                "ap-southeast-2": 0.692,
                 "eu-central-1": 0.687,
                 "eu-west-1": 0.679,
+                "eu-west-3": 0.684,
+                "sa-east-1": 0.725,
                 "us-east-1": 0.668,
                 "us-east-2": 0.668,
                 "us-west-1": 0.684,
@@ -43902,19 +44347,44 @@
             },
             "m6i.xlarge": {
                 "ap-northeast-1": 0.912,
+                "ap-northeast-2": 0.9,
+                "ap-south-1": 0.866,
                 "ap-southeast-1": 0.904,
+                "ap-southeast-2": 0.904,
                 "eu-central-1": 0.894,
                 "eu-west-1": 0.878,
+                "eu-west-3": 0.888,
+                "sa-east-1": 0.97,
                 "us-east-1": 0.856,
                 "us-east-2": 0.856,
                 "us-west-1": 0.888,
                 "us-west-2": 0.856
             },
+            "m6i.metal": {
+                "ap-northeast-1": 29.184,
+                "ap-northeast-2": 28.8,
+                "ap-south-1": 27.712,
+                "ap-southeast-1": 28.928,
+                "ap-southeast-2": 28.928,
+                "eu-central-1": 28.608,
+                "eu-west-1": 28.096,
+                "eu-west-3": 28.416,
+                "sa-east-1": 31.04,
+                "us-east-1": 27.392,
+                "us-east-2": 27.392,
+                "us-west-1": 28.416,
+                "us-west-2": 27.392
+            },
             "m6i.2xlarge": {
                 "ap-northeast-1": 1.824,
+                "ap-northeast-2": 1.8,
+                "ap-south-1": 1.732,
                 "ap-southeast-1": 1.808,
+                "ap-southeast-2": 1.808,
                 "eu-central-1": 1.788,
                 "eu-west-1": 1.756,
+                "eu-west-3": 1.776,
+                "sa-east-1": 1.94,
                 "us-east-1": 1.712,
                 "us-east-2": 1.712,
                 "us-west-1": 1.776,
@@ -43922,9 +44392,14 @@
             },
             "m6i.4xlarge": {
                 "ap-northeast-1": 3.648,
+                "ap-northeast-2": 3.6,
+                "ap-south-1": 3.464,
                 "ap-southeast-1": 3.616,
+                "ap-southeast-2": 3.616,
                 "eu-central-1": 3.576,
                 "eu-west-1": 3.512,
+                "eu-west-3": 3.552,
+                "sa-east-1": 3.88,
                 "us-east-1": 3.424,
                 "us-east-2": 3.424,
                 "us-west-1": 3.552,
@@ -43932,9 +44407,14 @@
             },
             "m6i.8xlarge": {
                 "ap-northeast-1": 7.296,
+                "ap-northeast-2": 7.2,
+                "ap-south-1": 6.928,
                 "ap-southeast-1": 7.232,
+                "ap-southeast-2": 7.232,
                 "eu-central-1": 7.152,
                 "eu-west-1": 7.024,
+                "eu-west-3": 7.104,
+                "sa-east-1": 7.76,
                 "us-east-1": 6.848,
                 "us-east-2": 6.848,
                 "us-west-1": 7.104,
@@ -43942,9 +44422,14 @@
             },
             "m6i.12xlarge": {
                 "ap-northeast-1": 10.944,
+                "ap-northeast-2": 10.8,
+                "ap-south-1": 10.392,
                 "ap-southeast-1": 10.848,
+                "ap-southeast-2": 10.848,
                 "eu-central-1": 10.728,
                 "eu-west-1": 10.536,
+                "eu-west-3": 10.656,
+                "sa-east-1": 11.64,
                 "us-east-1": 10.272,
                 "us-east-2": 10.272,
                 "us-west-1": 10.656,
@@ -43952,9 +44437,14 @@
             },
             "m6i.16xlarge": {
                 "ap-northeast-1": 14.592,
+                "ap-northeast-2": 14.4,
+                "ap-south-1": 13.856,
                 "ap-southeast-1": 14.464,
+                "ap-southeast-2": 14.464,
                 "eu-central-1": 14.304,
                 "eu-west-1": 14.048,
+                "eu-west-3": 14.208,
+                "sa-east-1": 15.52,
                 "us-east-1": 13.696,
                 "us-east-2": 13.696,
                 "us-west-1": 14.208,
@@ -43962,9 +44452,14 @@
             },
             "m6i.24xlarge": {
                 "ap-northeast-1": 21.888,
+                "ap-northeast-2": 21.6,
+                "ap-south-1": 20.784,
                 "ap-southeast-1": 21.696,
+                "ap-southeast-2": 21.696,
                 "eu-central-1": 21.456,
                 "eu-west-1": 21.072,
+                "eu-west-3": 21.312,
+                "sa-east-1": 23.28,
                 "us-east-1": 20.544,
                 "us-east-2": 20.544,
                 "us-west-1": 21.312,
@@ -43972,9 +44467,14 @@
             },
             "m6i.32xlarge": {
                 "ap-northeast-1": 29.184,
+                "ap-northeast-2": 28.8,
+                "ap-south-1": 27.712,
                 "ap-southeast-1": 28.928,
+                "ap-southeast-2": 28.928,
                 "eu-central-1": 28.608,
                 "eu-west-1": 28.096,
+                "eu-west-3": 28.416,
+                "sa-east-1": 31.04,
                 "us-east-1": 27.392,
                 "us-east-2": 27.392,
                 "us-west-1": 28.416,
@@ -44097,6 +44597,7 @@
                 "us-west-2": 14.88
             },
             "r5.large": {
+                "ap-east-1": 0.739,
                 "ap-northeast-1": 0.724,
                 "ap-northeast-2": 0.724,
                 "ap-south-1": 0.702,
@@ -44116,6 +44617,7 @@
                 "us-west-2": 0.698
             },
             "r5.xlarge": {
+                "ap-east-1": 0.998,
                 "ap-northeast-1": 0.968,
                 "ap-northeast-2": 0.968,
                 "ap-south-1": 0.924,
@@ -44135,6 +44637,7 @@
                 "us-west-2": 0.916
             },
             "r5.metal": {
+                "ap-east-1": 23.952,
                 "ap-northeast-1": 23.232,
                 "ap-northeast-2": 23.232,
                 "ap-south-1": 22.176,
@@ -44154,6 +44657,7 @@
                 "us-west-2": 21.984
             },
             "r5.2xlarge": {
+                "ap-east-1": 1.996,
                 "ap-northeast-1": 1.936,
                 "ap-northeast-2": 1.936,
                 "ap-south-1": 1.848,
@@ -44173,6 +44677,7 @@
                 "us-west-2": 1.832
             },
             "r5.4xlarge": {
+                "ap-east-1": 3.992,
                 "ap-northeast-1": 3.872,
                 "ap-northeast-2": 3.872,
                 "ap-south-1": 3.696,
@@ -44192,6 +44697,7 @@
                 "us-west-2": 3.664
             },
             "r5.8xlarge": {
+                "ap-east-1": 7.984,
                 "ap-northeast-1": 7.744,
                 "ap-northeast-2": 7.744,
                 "ap-south-1": 7.392,
@@ -44211,6 +44717,7 @@
                 "us-west-2": 7.328
             },
             "r5.12xlarge": {
+                "ap-east-1": 11.976,
                 "ap-northeast-1": 11.616,
                 "ap-northeast-2": 11.616,
                 "ap-south-1": 11.088,
@@ -44230,6 +44737,7 @@
                 "us-west-2": 10.992
             },
             "r5.16xlarge": {
+                "ap-east-1": 15.968,
                 "ap-northeast-1": 15.488,
                 "ap-northeast-2": 15.488,
                 "ap-south-1": 14.784,
@@ -44249,6 +44757,7 @@
                 "us-west-2": 14.656
             },
             "r5.24xlarge": {
+                "ap-east-1": 23.952,
                 "ap-northeast-1": 23.232,
                 "ap-northeast-2": 23.232,
                 "ap-south-1": 22.176,
@@ -44646,6 +45155,7 @@
                 "us-west-2": 23.088
             },
             "r5d.large": {
+                "ap-east-1": 0.747,
                 "ap-northeast-1": 0.746,
                 "ap-northeast-2": 0.745,
                 "ap-south-1": 0.723,
@@ -44665,6 +45175,7 @@
                 "us-west-2": 0.716
             },
             "r5d.xlarge": {
+                "ap-east-1": 1.014,
                 "ap-northeast-1": 1.012,
                 "ap-northeast-2": 1.01,
                 "ap-south-1": 0.966,
@@ -44684,6 +45195,7 @@
                 "us-west-2": 0.952
             },
             "r5d.metal": {
+                "ap-east-1": 24.336,
                 "ap-northeast-1": 24.288,
                 "ap-northeast-2": 24.24,
                 "ap-south-1": 23.184,
@@ -44703,6 +45215,7 @@
                 "us-west-2": 22.848
             },
             "r5d.2xlarge": {
+                "ap-east-1": 2.028,
                 "ap-northeast-1": 2.024,
                 "ap-northeast-2": 2.02,
                 "ap-south-1": 1.932,
@@ -44722,6 +45235,7 @@
                 "us-west-2": 1.904
             },
             "r5d.4xlarge": {
+                "ap-east-1": 4.056,
                 "ap-northeast-1": 4.048,
                 "ap-northeast-2": 4.04,
                 "ap-south-1": 3.864,
@@ -44741,6 +45255,7 @@
                 "us-west-2": 3.808
             },
             "r5d.8xlarge": {
+                "ap-east-1": 8.112,
                 "ap-northeast-1": 8.096,
                 "ap-northeast-2": 8.08,
                 "ap-south-1": 7.728,
@@ -44760,6 +45275,7 @@
                 "us-west-2": 7.616
             },
             "r5d.12xlarge": {
+                "ap-east-1": 12.168,
                 "ap-northeast-1": 12.144,
                 "ap-northeast-2": 12.12,
                 "ap-south-1": 11.592,
@@ -44779,6 +45295,7 @@
                 "us-west-2": 11.424
             },
             "r5d.16xlarge": {
+                "ap-east-1": 16.224,
                 "ap-northeast-1": 16.192,
                 "ap-northeast-2": 16.16,
                 "ap-south-1": 15.456,
@@ -44798,6 +45315,7 @@
                 "us-west-2": 15.232
             },
             "r5d.24xlarge": {
+                "ap-east-1": 24.336,
                 "ap-northeast-1": 24.288,
                 "ap-northeast-2": 24.24,
                 "ap-south-1": 23.184,
@@ -44907,6 +45425,7 @@
                 "us-west-2": 23.952
             },
             "r5n.large": {
+                "ap-east-1": 0.774,
                 "ap-northeast-1": 0.753,
                 "ap-northeast-2": 0.75,
                 "ap-south-1": 0.725,
@@ -44926,6 +45445,7 @@
                 "us-west-2": 0.721
             },
             "r5n.xlarge": {
+                "ap-east-1": 1.068,
                 "ap-northeast-1": 1.026,
                 "ap-northeast-2": 1.02,
                 "ap-south-1": 0.97,
@@ -44945,6 +45465,7 @@
                 "us-west-2": 0.962
             },
             "r5n.metal": {
+                "ap-east-1": 25.632,
                 "ap-northeast-1": 24.624,
                 "ap-northeast-2": 24.48,
                 "ap-south-1": 23.28,
@@ -44964,6 +45485,7 @@
                 "us-west-2": 23.088
             },
             "r5n.2xlarge": {
+                "ap-east-1": 2.136,
                 "ap-northeast-1": 2.052,
                 "ap-northeast-2": 2.04,
                 "ap-south-1": 1.94,
@@ -44983,6 +45505,7 @@
                 "us-west-2": 1.924
             },
             "r5n.4xlarge": {
+                "ap-east-1": 4.272,
                 "ap-northeast-1": 4.104,
                 "ap-northeast-2": 4.08,
                 "ap-south-1": 3.88,
@@ -45002,6 +45525,7 @@
                 "us-west-2": 3.848
             },
             "r5n.8xlarge": {
+                "ap-east-1": 8.544,
                 "ap-northeast-1": 8.208,
                 "ap-northeast-2": 8.16,
                 "ap-south-1": 7.76,
@@ -45021,6 +45545,7 @@
                 "us-west-2": 7.696
             },
             "r5n.12xlarge": {
+                "ap-east-1": 12.816,
                 "ap-northeast-1": 12.312,
                 "ap-northeast-2": 12.24,
                 "ap-south-1": 11.64,
@@ -45040,6 +45565,7 @@
                 "us-west-2": 11.544
             },
             "r5n.16xlarge": {
+                "ap-east-1": 17.088,
                 "ap-northeast-1": 16.416,
                 "ap-northeast-2": 16.32,
                 "ap-south-1": 15.52,
@@ -45059,6 +45585,7 @@
                 "us-west-2": 15.392
             },
             "r5n.24xlarge": {
+                "ap-east-1": 25.632,
                 "ap-northeast-1": 24.624,
                 "ap-northeast-2": 24.48,
                 "ap-south-1": 23.28,
@@ -45095,6 +45622,66 @@
             "r6gd.8xlarge": {},
             "r6gd.12xlarge": {},
             "r6gd.16xlarge": {},
+            "r6i.large": {
+                "eu-west-1": 0.713,
+                "us-east-1": 0.698,
+                "us-east-2": 0.698,
+                "us-west-2": 0.698
+            },
+            "r6i.xlarge": {
+                "eu-west-1": 0.946,
+                "us-east-1": 0.916,
+                "us-east-2": 0.916,
+                "us-west-2": 0.916
+            },
+            "r6i.metal": {
+                "eu-west-1": 30.272,
+                "us-east-1": 29.312,
+                "us-east-2": 29.312,
+                "us-west-2": 29.312
+            },
+            "r6i.2xlarge": {
+                "eu-west-1": 1.892,
+                "us-east-1": 1.832,
+                "us-east-2": 1.832,
+                "us-west-2": 1.832
+            },
+            "r6i.4xlarge": {
+                "eu-west-1": 3.784,
+                "us-east-1": 3.664,
+                "us-east-2": 3.664,
+                "us-west-2": 3.664
+            },
+            "r6i.8xlarge": {
+                "eu-west-1": 7.568,
+                "us-east-1": 7.328,
+                "us-east-2": 7.328,
+                "us-west-2": 7.328
+            },
+            "r6i.12xlarge": {
+                "eu-west-1": 11.352,
+                "us-east-1": 10.992,
+                "us-east-2": 10.992,
+                "us-west-2": 10.992
+            },
+            "r6i.16xlarge": {
+                "eu-west-1": 15.136,
+                "us-east-1": 14.656,
+                "us-east-2": 14.656,
+                "us-west-2": 14.656
+            },
+            "r6i.24xlarge": {
+                "eu-west-1": 22.704,
+                "us-east-1": 21.984,
+                "us-east-2": 21.984,
+                "us-west-2": 21.984
+            },
+            "r6i.32xlarge": {
+                "eu-west-1": 30.272,
+                "us-east-1": 29.312,
+                "us-east-2": 29.312,
+                "us-west-2": 29.312
+            },
             "t2.micro": {},
             "t2.small": {},
             "t2.medium": {},
@@ -45107,6 +45694,7 @@
             "t3.medium": {},
             "t3.large": {},
             "t3.xlarge": {
+                "ap-east-1": 0.7872,
                 "ap-northeast-1": 0.7712,
                 "ap-northeast-2": 0.7616,
                 "ap-south-1": 0.7328,
@@ -45127,6 +45715,7 @@
             },
             "t3.nano": {},
             "t3.2xlarge": {
+                "ap-east-1": 1.5744,
                 "ap-northeast-1": 1.5424,
                 "ap-northeast-2": 1.5232,
                 "ap-south-1": 1.4656,
@@ -45194,24 +45783,28 @@
             "t4g.nano": {},
             "t4g.2xlarge": {},
             "u-6tb1.56xlarge": {
+                "ap-northeast-2": 93.1636,
                 "ap-south-1": 85.06076,
                 "ap-southeast-1": 93.1636,
                 "ap-southeast-2": 92.79475,
                 "eu-central-1": 93.1636,
                 "eu-north-1": 86.51577,
                 "eu-west-1": 89.11218,
+                "eu-west-3": 91.68989,
                 "us-east-1": 83.58791,
                 "us-east-2": 83.58791,
                 "us-gov-west-1": 92.79475,
                 "us-west-2": 83.58791
             },
             "u-6tb1.112xlarge": {
+                "ap-northeast-2": 140.235,
                 "ap-south-1": 130.701,
                 "ap-southeast-1": 140.235,
                 "ap-southeast-2": 139.801,
                 "eu-central-1": 140.235,
                 "eu-north-1": 132.413,
                 "eu-west-1": 135.468,
+                "eu-west-3": 138.501,
                 "us-east-1": 128.968,
                 "us-east-2": 128.968,
                 "us-gov-west-1": 139.801,
@@ -45237,6 +45830,7 @@
             "vt1.6xlarge": {},
             "vt1.24xlarge": {},
             "x1.16xlarge": {
+                "ap-east-1": 21.262,
                 "ap-northeast-1": 20.295,
                 "ap-northeast-2": 20.295,
                 "ap-south-1": 17.505,
@@ -45254,6 +45848,7 @@
                 "us-west-2": 17.293
             },
             "x1.32xlarge": {
+                "ap-east-1": 42.524,
                 "ap-northeast-1": 40.59,
                 "ap-northeast-2": 40.59,
                 "ap-south-1": 35.01,
@@ -51332,5 +51927,5 @@
         }
     },
     "storage": {},
-    "updated": 1636233182
+    "updated": 1637926119
 }
