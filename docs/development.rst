@@ -279,6 +279,49 @@ For more information and examples, please refer to the following links:
 * Sphinx Documentation - http://sphinx-doc.org/markup/desc.html#info-field-lists
 * Example Libcloud module with documentation - https://github.com/apache/libcloud/blob/trunk/libcloud/compute/base.py
 
+Updating compute node sizing data
+---------------------------------
+
+Node sizing data for most providers is stored in-line as a module level
+constant in the corresponding provide module.
+
+An exception to that is AWS EC2 which sizing data is automatically generated
+and scraped from AWS API as documented below.
+
+Updating EC2 sizing and supported regions data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To update EC2 sizing data, you just need to run ``scrape-ec2-sizes`` tox target
+and commit the changed files
+(``libcloud/compute/constants/ec2_instance_types.py``,
+``libcloud/compute/constants/ec2_region_details_complete.py``).
+
+To add a new region update ``contrib/scrape-ec2-prices.py`` and
+``contrib/scrape-ec2-sizes.py`` file (example
+https://github.com/apache/libcloud/commit/762f0e5623b6f9837204ffe27d825b236c9c9970)
+and then re-run corresponding tox targets as shown below:
+
+.. sourcecode:: bash
+
+    tox -escrape-ec2-sizes,scrape-ec2-prices
+
+Updating compute node pricing data
+----------------------------------
+
+Pricing data for some provides is automatically scraped using
+``scrape-and-publish-provider-prices`` tox target (this target required valid
+AWS and Google Cloud API keys to be set for it to work).
+
+This tox target is ran before making a new release which means that each
+release includes pricing data which has been updated on the day of the release.
+
+In addition to that, that tox target runs daily as part of our CI/CD system
+and the latest version of that file is published to a public read-only S3
+bucket.
+
+For more information on how to utilize that pricing data, please see
+:doc:`Pricing </compute/pricing>` page.
+
 Contribution workflow
 ---------------------
 
