@@ -4925,8 +4925,8 @@ class OpenStack_2_ServerGroup(object):
         id,
         name,
         policy,
-        members,
-        rules,
+        members=[],
+        rules=[],
         driver=None,
     ):
         """

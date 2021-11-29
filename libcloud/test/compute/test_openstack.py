@@ -2522,7 +2522,7 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
 
     def test_ex_del_server_group(self):
         server_group = OpenStack_2_ServerGroup(
-            "616fb98f-46ca-475e-917e-2563e5a8cd19", "name", "anti-affinity", [], []
+            "616fb98f-46ca-475e-917e-2563e5a8cd19", "name", "anti-affinity"
         )
         res = self.driver.ex_del_server_group(server_group)
         self.assertTrue(res)
