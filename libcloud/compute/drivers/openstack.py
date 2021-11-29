@@ -1529,7 +1529,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         ex_files = ex_files or {}
         networks = networks or []
         ex_security_groups = ex_security_groups or []
-        ex_os_scheduler_hints = ex_os_scheduler_hints or {}
 
         server_params = self._create_args_to_params(
             node=None,
@@ -1546,12 +1545,13 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             ex_disk_config=ex_disk_config,
             ex_availability_zone=ex_availability_zone,
             ex_blockdevicemappings=ex_blockdevicemappings,
-            ex_os_scheduler_hints=ex_os_scheduler_hints,
         )
 
-        resp = self.connection.request(
-            "/servers", method="POST", data={"server": server_params}
-        )
+        data = {"server": server_params}
+        if ex_os_scheduler_hints:
+            data["os:scheduler_hints"] = ex_os_scheduler_hints
+
+        resp = self.connection.request("/servers", method="POST", data=data)
 
         create_response = resp.object["server"]
         server_resp = self.connection.request("/servers/%s" % create_response["id"])
@@ -1676,9 +1676,6 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         if kwargs.get("ex_blockdevicemappings", None):
             server_params["block_device_mapping_v2"] = kwargs["ex_blockdevicemappings"]
-
-        if kwargs.get("ex_os_scheduler_hints", None):
-            server_params["os:scheduler_hints"] = kwargs["ex_os_scheduler_hints"]
 
         if kwargs.get("name", None):
             server_params["name"] = kwargs.get("name")
