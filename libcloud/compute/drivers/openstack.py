@@ -1468,6 +1468,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         ex_admin_pass=None,
         ex_availability_zone=None,
         ex_blockdevicemappings=None,
+        ex_os_scheduler_hints=None,
     ):
         """Create a new node
 
@@ -1515,11 +1516,20 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :keyword    ex_availability_zone: Nova availability zone for the node
         :type       ex_availability_zone: ``str``
+
+        :keyword    ex_blockdevicemappings: Enables fine grained control of the
+                                            block device mapping for an instance.
+        :type       ex_blockdevicemappings: ``dict``
+
+        :keyword    ex_os_scheduler_hints: The dictionary of data to send to
+                                           the scheduler.
+        :type       ex_os_scheduler_hints:   ``dict``
         """
         ex_metadata = ex_metadata or {}
         ex_files = ex_files or {}
         networks = networks or []
         ex_security_groups = ex_security_groups or []
+        ex_os_scheduler_hints = ex_os_scheduler_hints or {}
 
         server_params = self._create_args_to_params(
             node=None,
@@ -1536,6 +1546,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             ex_disk_config=ex_disk_config,
             ex_availability_zone=ex_availability_zone,
             ex_blockdevicemappings=ex_blockdevicemappings,
+            ex_os_scheduler_hints=ex_os_scheduler_hints,
         )
 
         resp = self.connection.request(
@@ -1665,6 +1676,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         if kwargs.get("ex_blockdevicemappings", None):
             server_params["block_device_mapping_v2"] = kwargs["ex_blockdevicemappings"]
+
+        if kwargs.get("ex_os_scheduler_hints", None):
+            server_params["os:scheduler_hints"] = kwargs["ex_os_scheduler_hints"]
 
         if kwargs.get("name", None):
             server_params["name"] = kwargs.get("name")
@@ -4268,7 +4282,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         :rtype: :class:`OpenStack_2_ServerGroup`
         """
         return self._to_server_group(
-            self.connection.request("/os-server-groups/%s" % server_group_id).object
+            self.connection.request("/os-server-groups/%s" % server_group_id).object[
+                "server_group"
+            ]
         )
 
     def ex_add_server_group(self, name, policy, rules=[]):
@@ -4311,7 +4327,7 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
         :rtype: ``bool``
         """
-        resp = self.network_connection.request(
+        resp = self.connection.request(
             "/os-server-groups/%s" % server_group.id, method="DELETE"
         )
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)

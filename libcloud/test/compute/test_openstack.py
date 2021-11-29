@@ -67,6 +67,7 @@ from libcloud.compute.drivers.openstack import (
     OpenStack_2_PortInterfaceState,
     OpenStackNetwork,
     OpenStackException,
+    OpenStack_2_ServerGroup,
 )
 from libcloud.compute.base import Node, NodeImage, NodeSize
 from libcloud.pricing import set_pricing, clear_pricing_data
@@ -2507,6 +2508,32 @@ class OpenStack_2_Tests(OpenStack_1_1_Tests):
         self.assertEqual(quota_set.gigabytes.in_use, 10)
         self.assertEqual(quota_set.gigabytes.reserved, 0)
 
+    def test_ex_list_server_groups(self):
+        server_groups = self.driver.ex_list_server_groups()
+        self.assertEqual(len(server_groups), 2)
+        self.assertEqual(server_groups[1].name, "server_group_name")
+
+    def test_ex_get_server_group(self):
+        server_group = self.driver.ex_get_server_group(
+            "616fb98f-46ca-475e-917e-2563e5a8cd19"
+        )
+        self.assertEqual(server_group.name, "server_group_name")
+        self.assertEqual(server_group.policy, "anti-affinity")
+
+    def test_ex_del_server_group(self):
+        server_group = OpenStack_2_ServerGroup(
+            "616fb98f-46ca-475e-917e-2563e5a8cd19", "name", "anti-affinity", [], []
+        )
+        res = self.driver.ex_del_server_group(server_group)
+        self.assertTrue(res)
+
+    def test_ex_add_server_group(self):
+        server_group = self.driver.ex_add_server_group(
+            "server_group_name", "anti-affinity"
+        )
+        self.assertEqual(server_group.name, "server_group_name")
+        self.assertEqual(server_group.policy, "anti-affinity")
+
 
 class OpenStack_1_1_FactoryMethodTests(OpenStack_1_1_Tests):
     should_list_locations = False
@@ -3746,6 +3773,44 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             body = self.fixtures.load("_v3_0__volume_quota.json")
             return (
                 httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v2_1337_os_server_groups(self, method, url, body, headers):
+        if method == "GET":
+            body = self.fixtures.load("_v2_0__os_server_groups.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+        elif method == "POST":
+            body = self.fixtures.load("_v2_0__os_server_group.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v2_1337_os_server_groups_616fb98f_46ca_475e_917e_2563e5a8cd19(
+        self, method, url, body, headers
+    ):
+        if method == "GET":
+            body = self.fixtures.load("_v2_0__os_server_group.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+        elif method == "DELETE":
+            body = ""
+            return (
+                httplib.NO_CONTENT,
                 body,
                 self.json_content_headers,
                 httplib.responses[httplib.OK],
