@@ -4,6 +4,17 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Compute
+~~~~~~~
+
+- [EC2] Add support for new ``ap-east-1`` region.
+  (GITHUB-1628)
+  [Arturo Noha - @r2ronoha, Tomaz Muraus - @Kami]
+
+- [OpenStack] Add Server Groups functions in OpenStack driver.
+  (GITHUB-1629)
+  [Miguel Caballer - @micafer]
+
 Common
 ~~~~~~
 

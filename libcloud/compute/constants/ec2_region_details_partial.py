@@ -15,6 +15,13 @@
 # limitations under the License.
 
 REGION_DETAILS = {
+    "ap-east-1": {
+        "api_name": "ec2_ap_east",
+        "country": "Hong Kong",
+        "endpoint": "ec2.ap-east-1.amazonaws.com",
+        "id": "ap-east-1",
+        "signature_version": "2",
+    },
     "ap-northeast-1": {
         "api_name": "ec2_ap_northeast",
         "country": "Japan",
