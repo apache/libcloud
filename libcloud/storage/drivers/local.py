@@ -251,18 +251,14 @@ class LocalStorageDriver(StorageDriver):
                 continue
             yield self._make_container(container_name)
 
-    def _get_objects(self, container, prefix=None):
+    def _get_objects(self, container):
         """
         Recursively iterate through the file-system and return the object names
         """
 
         cpath = self.get_container_cdn_url(container, check=True)
 
-        fpath = cpath
-        if prefix:
-            fpath = os.path.join(cpath, prefix)
-
-        for folder, subfolders, files in os.walk(fpath, topdown=True):
+        for folder, subfolders, files in os.walk(cpath, topdown=True):
             # Remove unwanted subfolders
             for subf in IGNORE_FOLDERS:
                 if subf in subfolders:
@@ -291,7 +287,8 @@ class LocalStorageDriver(StorageDriver):
         """
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
-        return self._get_objects(container, prefix)
+        objects = self._get_objects(container)
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         """
