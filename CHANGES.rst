@@ -21,6 +21,15 @@ Storage
   (GITHUB-1631)
   [Tomaz Muraus - @Kami]
 
+- [Local Storage] Objects returned by the ``list_container_objects`` method
+  are now returned sorted in the ascending order based on the object name.
+
+  Previously the order was not stable and consistent across different Python
+  versions and implementations.
+
+  (GITHUB-1631)
+  [Tomaz Muraus - @Kami]
+
 Common
 ~~~~~~
 
