@@ -190,14 +190,24 @@ class LocalTests(unittest.TestCase):
         prefix = os.path.join("path", "to")
         objects = self.driver.list_container_objects(container=container, prefix=prefix)
         self.assertEqual(len(objects), 2)
+        self.assertEqual(objects[0].name, "path/to/object4.ext")
+        self.assertEqual(objects[1].name, "path/to/object3")
 
         prefix = "foo"
         objects = self.driver.list_container_objects(container=container, prefix=prefix)
         self.assertEqual(len(objects), 2)
+        self.assertEqual(objects[0].name, "foo6")
+        self.assertEqual(objects[1].name, "foo5")
 
         prefix = "foo5"
         objects = self.driver.list_container_objects(container=container, prefix=prefix)
         self.assertEqual(len(objects), 1)
+        self.assertEqual(objects[0].name, "foo5")
+
+        prefix = "foo6"
+        objects = self.driver.list_container_objects(container=container, prefix=prefix)
+        self.assertEqual(len(objects), 1)
+        self.assertEqual(objects[0].name, "foo6")
 
         for obj in objects:
             self.assertNotEqual(obj.hash, None)
