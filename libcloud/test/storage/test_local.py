@@ -171,12 +171,18 @@ class LocalTests(unittest.TestCase):
         obj2 = container.upload_object(tmppath, "path/object2")
         obj3 = container.upload_object(tmppath, "path/to/object3")
         obj4 = container.upload_object(tmppath, "path/to/object4.ext")
+
         with open(tmppath, "rb") as tmpfile:
             obj5 = container.upload_object_via_stream(tmpfile, "object5")
 
-        objects = self.driver.list_container_objects(container=container)
-        self.assertEqual(len(objects), 5)
+        obj6 = container.upload_object(tmppath, "foo5")
+        obj7 = container.upload_object(tmppath, "foo6")
+        obj8 = container.upload_object(tmppath, "Afoo7")
 
+        objects = self.driver.list_container_objects(container=container)
+        self.assertEqual(len(objects), 8)
+
+        # Prefix filtering
         prefix = os.path.join("path", "invalid")
         objects = self.driver.list_container_objects(container=container, prefix=prefix)
         self.assertEqual(len(objects), 0)
@@ -184,6 +190,14 @@ class LocalTests(unittest.TestCase):
         prefix = os.path.join("path", "to")
         objects = self.driver.list_container_objects(container=container, prefix=prefix)
         self.assertEqual(len(objects), 2)
+
+        prefix = "foo"
+        objects = self.driver.list_container_objects(container=container, prefix=prefix)
+        self.assertEqual(len(objects), 2)
+
+        prefix = "foo5"
+        objects = self.driver.list_container_objects(container=container, prefix=prefix)
+        self.assertEqual(len(objects), 1)
 
         for obj in objects:
             self.assertNotEqual(obj.hash, None)
@@ -197,11 +211,14 @@ class LocalTests(unittest.TestCase):
         obj2.delete()
 
         objects = container.list_objects()
-        self.assertEqual(len(objects), 3)
+        self.assertEqual(len(objects), 6)
 
         container.delete_object(obj3)
         container.delete_object(obj4)
         container.delete_object(obj5)
+        container.delete_object(obj6)
+        container.delete_object(obj7)
+        container.delete_object(obj8)
 
         objects = container.list_objects()
         self.assertEqual(len(objects), 0)
