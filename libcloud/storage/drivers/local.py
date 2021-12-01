@@ -288,6 +288,7 @@ class LocalStorageDriver(StorageDriver):
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         objects = self._get_objects(container)
+        objects = sorted(objects, key=lambda o: o.name)
         return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
