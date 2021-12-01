@@ -11,6 +11,16 @@ Compute
   (GITHUB-1628)
   [Arturo Noha - @r2ronoha, Tomaz Muraus - @Kami]
 
+Storage
+~~~~~~~
+
+- [Local Storage] Fix object name prefix based filtering in the
+  ``list_container_objects`` method.
+
+  Reported by @louis-van-der-stam.
+  (GITHUB-1631)
+  [Tomaz Muraus - @Kami]
+
 Common
 ~~~~~~
 
