@@ -88,9 +88,8 @@ def test_list_objects_with_filtering(benchmark, object_count, sort_objects):
     atexit.register(clean_up_base_path)
     atexit.register(clean_up_lock_files)
 
-    driver = LocalStorageDriver(base_path)
+    driver = LocalStorageDriver(base_path, ex_use_locking=False)
 
-    libcloud.storage.drivers.local.USE_LOCKING = False
     libcloud.storage.drivers.local.SORT_OBJECTS_ON_LIST = sort_objects
 
     def run_benchmark():
