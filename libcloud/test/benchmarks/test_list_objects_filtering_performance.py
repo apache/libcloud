@@ -26,8 +26,6 @@ import pytest
 import libcloud.storage.drivers.local
 from libcloud.storage.drivers.local import LocalStorageDriver
 
-libcloud.storage.drivers.local.USE_LOCKING = False
-
 
 def make_tmp_file(content=None):
     if not content:
@@ -91,6 +89,8 @@ def test_list_objects_with_filtering(benchmark, object_count, sort_objects):
     atexit.register(clean_up_lock_files)
 
     driver = LocalStorageDriver(base_path)
+
+    libcloud.storage.drivers.local.USE_LOCKING = False
     libcloud.storage.drivers.local.SORT_OBJECTS_ON_LIST = sort_objects
 
     def run_benchmark():
