@@ -34,6 +34,9 @@ from libcloud.storage.types import InvalidContainerNameError
 from libcloud.utils.files import exhaust_iterator
 
 try:
+    import libcloud.storage.drivers.local
+    libcloud.storage.drivers.local.USE_LOCKING = True
+
     from libcloud.storage.drivers.local import LocalStorageDriver
     from libcloud.storage.drivers.local import LockLocalStorage
     import fasteners  # noqa
