@@ -22,18 +22,20 @@ import string
 import tempfile
 
 import pytest
+import mock
 
-import libcloud.storage.drivers.local
 from libcloud.storage.drivers.local import LocalStorageDriver
 
 
 def make_tmp_file(content=None):
-    if not content:
-        content = b"1"
-    _, tmppath = tempfile.mkstemp()
-    with open(tmppath, "wb") as fp:
+    content = content or b"1"
+
+    fd, path = tempfile.mkstemp()
+
+    with os.fdopen(fd, "wb") as fp:
         fp.write(content)
-    return tmppath
+
+    return path
 
 
 def clean_up_lock_files():
@@ -90,8 +92,6 @@ def test_list_objects_with_filtering(benchmark, object_count, sort_objects):
 
     driver = LocalStorageDriver(base_path, ex_use_locking=False)
 
-    libcloud.storage.drivers.local.SORT_OBJECTS_ON_LIST = sort_objects
-
     def run_benchmark():
         objects = driver.list_container_objects(container=container)
         assert len(objects) == object_count
@@ -110,7 +110,13 @@ def test_list_objects_with_filtering(benchmark, object_count, sort_objects):
 
     # 2. Run the actual benchmark
     try:
-        result = benchmark(run_benchmark)
+        if sort_objects:
+            result = benchmark(run_benchmark)
+        else:
+            with mock.patch(
+                "libcloud.storage.drivers.local.sorted", lambda values, key: values
+            ):
+                result = benchmark(run_benchmark)
         assert len(result) == object_count
     finally:
         clean_up_base_path()

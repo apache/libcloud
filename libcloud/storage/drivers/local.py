@@ -51,10 +51,6 @@ from libcloud.storage.types import InvalidContainerNameError
 
 IGNORE_FOLDERS = [".lock", ".hash"]
 
-# True if objects should be sorted by name in ascending order when listening them. Should only set
-# this to False for tests and similar.
-SORT_OBJECTS_ON_LIST = True
-
 
 class NoOpLockLocalStorage(object):
     def __init__(self, path, timeout=5):
@@ -327,9 +323,7 @@ class LocalStorageDriver(StorageDriver):
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         objects = self._get_objects(container)
-
-        if SORT_OBJECTS_ON_LIST:
-            objects = sorted(objects, key=lambda o: o.name)
+        objects = sorted(objects, key=lambda o: o.name)
 
         return self._filter_listed_container_objects(objects, prefix)
 
