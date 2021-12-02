@@ -51,6 +51,13 @@ from libcloud.storage.types import InvalidContainerNameError
 
 IGNORE_FOLDERS = [".lock", ".hash"]
 
+# This modul level constants if we should use locking or not. Keep in mind that
+# locking should only be disabled in special circumstances (e.g. in some
+# special tests and benchmark)
+USE_LOCKING = True
+
+SORT_OBJECTS_ON_LIST = True
+
 
 class LockLocalStorage(object):
     """
@@ -73,6 +80,8 @@ class LockLocalStorage(object):
         self.ipc_lock = fasteners.InterProcessLock(self.ipc_lock_path)
 
     def __enter__(self):
+        if not USE_LOCKING:
+            return True
         lock_acquire_timeout = self.lock_acquire_timeout
         start_time = int(time.time())
         end_time = start_time + lock_acquire_timeout
@@ -100,6 +109,9 @@ class LockLocalStorage(object):
             )
 
     def __exit__(self, type, value, traceback):
+        if not USE_LOCKING:
+            return value
+
         if self.thread_lock.locked():
             self.thread_lock.release()
 
@@ -288,7 +300,10 @@ class LocalStorageDriver(StorageDriver):
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
         objects = self._get_objects(container)
-        objects = sorted(objects, key=lambda o: o.name)
+
+        if SORT_OBJECTS_ON_LIST:
+            objects = sorted(objects, key=lambda o: o.name)
+
         return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
