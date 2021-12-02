@@ -9,6 +9,7 @@ requests>=2.26.0; python_version >= '3.6'
 requests_mock==1.9.3
 pytest==6.2.5; python_version >= '3.6'
 pytest-xdist==2.4.0; python_version >= '3.6'
+pytest-benchmark[histogram]==3.2.3; python_version >= '3.6'
 cryptography==35.0.0; python_version >= '3.6'
 # NOTE: Only needed by nttcis loadbalancer driver
 pyopenssl==21.0.0; python_version >= '3.6'

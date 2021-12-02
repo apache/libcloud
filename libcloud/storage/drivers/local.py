@@ -52,9 +52,22 @@ from libcloud.storage.types import InvalidContainerNameError
 IGNORE_FOLDERS = [".lock", ".hash"]
 
 
+class NoOpLockLocalStorage(object):
+    def __init__(self, path, timeout=5):
+        self.path = path
+        self.lock_acquire_timeout = timeout
+
+    def __enter__(self):
+        return True
+
+    def __exit__(self, type, value, traceback):
+        return value
+
+
 class LockLocalStorage(object):
     """
-    A class to help in locking a local path before being updated
+    A class which locks a local path which is being updated. To correctly handle all the scenarios
+    use a thread based and IPC based lock.
     """
 
     def __init__(self, path, timeout=5):
@@ -122,13 +135,35 @@ class LocalStorageDriver(StorageDriver):
     website = "http://example.com"
     hash_type = "md5"
 
-    def __init__(self, key, secret=None, secure=True, host=None, port=None, **kwargs):
+    def __init__(
+        self,
+        key,
+        secret=None,
+        secure=True,
+        host=None,
+        port=None,
+        ex_use_locking=True,
+        **kwargs,
+    ):
+        """
+        :param ex_use_locking: True if locking should be used when working with files. This value
+                               should almost always be left as-is and only changed to False when
+                               there is a specific need for it (e.g. for specific tests and micro
+                               benchmarks).
+        """
 
         # Use the key as the path to the storage
         self.base_path = key
 
         if not os.path.isdir(self.base_path):
             raise LibcloudError("The base path is not a directory")
+
+        self._ex_use_locking = ex_use_locking
+
+        if self._ex_use_locking:
+            self._lock_cls = LockLocalStorage
+        else:
+            self._lock_cls = NoOpLockLocalStorage
 
         super(LocalStorageDriver, self).__init__(
             key=key, secret=secret, secure=secure, host=host, port=port, **kwargs
@@ -251,18 +286,14 @@ class LocalStorageDriver(StorageDriver):
                 continue
             yield self._make_container(container_name)
 
-    def _get_objects(self, container, prefix=None):
+    def _get_objects(self, container):
         """
         Recursively iterate through the file-system and return the object names
         """
 
         cpath = self.get_container_cdn_url(container, check=True)
 
-        fpath = cpath
-        if prefix:
-            fpath = os.path.join(cpath, prefix)
-
-        for folder, subfolders, files in os.walk(fpath, topdown=True):
+        for folder, subfolders, files in os.walk(cpath, topdown=True):
             # Remove unwanted subfolders
             for subf in IGNORE_FOLDERS:
                 if subf in subfolders:
@@ -291,7 +322,10 @@ class LocalStorageDriver(StorageDriver):
         """
         prefix = self._normalize_prefix_argument(prefix, ex_prefix)
 
-        return self._get_objects(container, prefix)
+        objects = self._get_objects(container)
+        objects = sorted(objects, key=lambda o: o.name)
+
+        return self._filter_listed_container_objects(objects, prefix)
 
     def get_container(self, container_name):
         """
@@ -367,7 +401,7 @@ class LocalStorageDriver(StorageDriver):
 
         path = self.get_container_cdn_url(container)
 
-        with LockLocalStorage(path):
+        with self._lock_cls(path):
             self._make_path(path)
 
         return True
@@ -383,7 +417,7 @@ class LocalStorageDriver(StorageDriver):
         """
         path = self.get_object_cdn_url(obj)
 
-        with LockLocalStorage(path):
+        with self._lock_cls(path):
             if os.path.exists(path):
                 return False
             try:
@@ -543,7 +577,7 @@ class LocalStorageDriver(StorageDriver):
 
         self._make_path(base_path)
 
-        with LockLocalStorage(obj_path):
+        with self._lock_cls(obj_path):
             shutil.copy(file_path, obj_path)
 
         os.chmod(obj_path, int("664", 8))
@@ -594,10 +628,9 @@ class LocalStorageDriver(StorageDriver):
         obj_path = os.path.join(path, object_name)
         base_path = os.path.dirname(obj_path)
         self._make_path(base_path)
-        with LockLocalStorage(obj_path):
-            with open(obj_path, "wb") as obj_file:
-                for data in iterator:
-                    obj_file.write(data)
+        with self._lock_cls(obj_path), open(obj_path, "wb") as obj_file:
+            for data in iterator:
+                obj_file.write(data)
         os.chmod(obj_path, int("664", 8))
         return self._make_object(container, object_name)
 
@@ -614,7 +647,7 @@ class LocalStorageDriver(StorageDriver):
 
         path = self.get_object_cdn_url(obj)
 
-        with LockLocalStorage(path):
+        with self._lock_cls(path):
             try:
                 os.unlink(path)
             except Exception:
@@ -695,7 +728,7 @@ class LocalStorageDriver(StorageDriver):
 
         path = self.get_container_cdn_url(container, check=True)
 
-        with LockLocalStorage(path):
+        with self._lock_cls(path):
             try:
                 shutil.rmtree(path)
             except Exception:
