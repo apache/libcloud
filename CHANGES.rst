@@ -15,13 +15,17 @@ Storage
 ~~~~~~~
 
 - [Local Storage] Fix object name prefix based filtering in the
-  ``list_container_objects`` method.
+  ``list_container_objects()`` method.
+
+  A change in the previous release inadvertently introduced a regression which
+  changed the behavior so the object name prefix based filtering didn't work
+  correctly in all the scenarios.
 
   Reported by @louis-van-der-stam.
   (GITHUB-1631)
   [Tomaz Muraus - @Kami]
 
-- [Local Storage] Objects returned by the ``list_container_objects`` method
+- [Local Storage] Objects returned by the ``list_container_objects()`` method
   are now returned sorted in the ascending order based on the object name.
 
   Previously the order was arbitrary and not stable and consistent across
