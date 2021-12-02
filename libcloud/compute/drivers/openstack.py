@@ -4925,8 +4925,8 @@ class OpenStack_2_ServerGroup(object):
         id,
         name,
         policy,
-        members=[],
-        rules=[],
+        members=None,
+        rules=None,
         driver=None,
     ):
         """
@@ -4944,8 +4944,8 @@ class OpenStack_2_ServerGroup(object):
         self.id = id
         self.name = name
         self.policy = policy
-        self.members = members
-        self.rules = rules
+        self.members = members or []
+        self.rules = rules or []
         self.driver = driver
 
     def __repr__(self):
