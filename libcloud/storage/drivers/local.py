@@ -51,11 +51,12 @@ from libcloud.storage.types import InvalidContainerNameError
 
 IGNORE_FOLDERS = [".lock", ".hash"]
 
-# This modul level constants if we should use locking or not. Keep in mind that
-# locking should only be disabled in special circumstances (e.g. in some
-# special tests and benchmark)
+# This module level constants if we should use locking or not. Keep in mind that locking should
+# only be disabled in special circumstances (e.g. in some special tests and benchmarks)
 USE_LOCKING = True
 
+# True if objects should be sorted by name in ascending order when listening them. Should only set
+# this to False for tests and similar.
 SORT_OBJECTS_ON_LIST = True
 
 
