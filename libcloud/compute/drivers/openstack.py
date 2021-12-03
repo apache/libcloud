@@ -1468,6 +1468,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         ex_admin_pass=None,
         ex_availability_zone=None,
         ex_blockdevicemappings=None,
+        ex_os_scheduler_hints=None,
     ):
         """Create a new node
 
@@ -1515,6 +1516,14 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :keyword    ex_availability_zone: Nova availability zone for the node
         :type       ex_availability_zone: ``str``
+
+        :keyword    ex_blockdevicemappings: Enables fine grained control of the
+                                            block device mapping for an instance.
+        :type       ex_blockdevicemappings: ``dict``
+
+        :keyword    ex_os_scheduler_hints: The dictionary of data to send to
+                                           the scheduler.
+        :type       ex_os_scheduler_hints:   ``dict``
         """
         ex_metadata = ex_metadata or {}
         ex_files = ex_files or {}
@@ -1538,9 +1547,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
             ex_blockdevicemappings=ex_blockdevicemappings,
         )
 
-        resp = self.connection.request(
-            "/servers", method="POST", data={"server": server_params}
-        )
+        data = {"server": server_params}
+        if ex_os_scheduler_hints:
+            data["os:scheduler_hints"] = ex_os_scheduler_hints
+
+        resp = self.connection.request("/servers", method="POST", data=data)
 
         create_response = resp.object["server"]
         server_resp = self.connection.request("/servers/%s" % create_response["id"])
@@ -4232,6 +4243,92 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             self._get_volume_connection().request(url).object["quota_set"]
         )
 
+    def ex_list_server_groups(self):
+        """
+        List Server Groups
+
+        :rtype: ``list`` of :class:`OpenStack_2_ServerGroup`
+        """
+        return self._to_server_groups(
+            self.connection.request("/os-server-groups").object
+        )
+
+    def _to_server_groups(self, obj):
+        sg_elements = obj["server_groups"]
+        return [self._to_server_group(sg) for sg in sg_elements]
+
+    def _to_server_group(self, obj):
+        policy = None
+        if "policy" in obj:
+            policy = obj["policy"]
+        elif "policies" in obj and obj["policies"]:
+            policy = obj["policies"][0]
+        return OpenStack_2_ServerGroup(
+            id=obj["id"],
+            name=obj["name"],
+            policy=policy,
+            members=obj.get("members"),
+            rules=obj.get("rules"),
+            driver=self.connection.driver,
+        )
+
+    def ex_get_server_group(self, server_group_id):
+        """
+        Get Server Group
+
+        :rtype: :class:`OpenStack_2_ServerGroup`
+        """
+        return self._to_server_group(
+            self.connection.request("/os-server-groups/%s" % server_group_id).object[
+                "server_group"
+            ]
+        )
+
+    def ex_add_server_group(self, name, policy, rules=[]):
+        """
+        Add a Server Group
+
+        :param name: Server Group Name.
+        :type name: ``str``
+        :param policy: Server Group policy.
+        :type policy: ``str``
+        :param rules: Server Group rules.
+        :type rules: ``list``
+
+        :rtype: ``bool``
+        """
+        data = {"name": name}
+        if rules:
+            data["rules"] = rules
+        try:
+            # New in version 2.64
+            data["policy"] = policy
+            response = self.connection.request(
+                "/os-server-groups", method="POST", data={"server_group": data}
+            ).object
+        except BaseHTTPError:
+            # until version 2.63
+            del data["policy"]
+            data["policies"] = [policy]
+            response = self.connection.request(
+                "/os-server-groups", method="POST", data={"server_group": data}
+            ).object
+        return self._to_server_group(response["server_group"])
+
+    def ex_del_server_group(self, server_group):
+        """
+        Delete a Server Group
+
+        :param server_group: Server Group which should be deleted
+        :type server_group: :class:`OpenStack_2_ServerGroup`
+
+        :rtype: ``bool``
+        """
+        resp = self.connection.request(
+            "/os-server-groups/%s" % server_group.id, method="DELETE"
+        )
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
@@ -4812,4 +4909,48 @@ class OpenStack_2_VolumeQuota(object):
             '<OpenStack_2_VolumeQuota Volumes="%s", gigabytes="%s",'
             ' snapshots="%s", backups="%s">'
             % (self.volumes, self.gigabytes, self.snapshots, self.backups)
+        )
+
+
+class OpenStack_2_ServerGroup(object):
+    """
+    Server Group info.
+
+    See:
+    https://docs.openstack.org/api-ref/compute/?expanded=create-server-detail,list-server-groups-detail#server-groups-os-server-groups
+    """
+
+    def __init__(
+        self,
+        id,
+        name,
+        policy,
+        members=None,
+        rules=None,
+        driver=None,
+    ):
+        """
+        :param id: Server Group ID.
+        :type id: ``str``
+        :param name: Server Group Name.
+        :type name: ``str``
+        :param policy: Server Group policy.
+        :type policy: ``str``
+        :param members: Server Group members.
+        :type members: ``list``
+        :param rules: Server Group rules.
+        :type rules: ``list``
+        """
+        self.id = id
+        self.name = name
+        self.policy = policy
+        self.members = members or []
+        self.rules = rules or []
+        self.driver = driver
+
+    def __repr__(self):
+        return (
+            '<OpenStack_2_ServerGroup id="%s", name="%s",'
+            ' policy="%s", members="%s", rules="%s">'
+            % (self.id, self.name, self.policy, self.members, self.rules)
         )
