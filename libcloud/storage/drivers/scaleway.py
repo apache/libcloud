@@ -60,7 +60,7 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
         if region and region not in REGION_TO_HOST_MAP.keys():
             raise ValueError("Invalid or unsupported region: %s" % (region))
 
-        self.name = "Amazon S3 (%s)" % (region)
+        self.name = "Scaleway Object Storage (%s)" % (region)
 
         if host is None:
             self.connectionCls.host = REGION_TO_HOST_MAP[region]
