@@ -18,39 +18,48 @@ import sys
 import unittest
 
 from libcloud.common.types import LibcloudError
-from libcloud.storage.drivers.scaleway import ScalewayStorageDriver
-from libcloud.storage.drivers.scaleway import ScalewayConnectionAWS4
+from libcloud.storage.drivers.s3 import S3SignatureV4Connection
+from libcloud.storage.drivers.scaleway import (
+    ScalewayStorageDriver,
+    SCW_FR_PAR_STANDARD_HOST,
+)
+from libcloud.test.storage.test_s3 import S3MockHttp, S3Tests
 
 from libcloud.test.secrets import STORAGE_S3_PARAMS
 
 
-class ScalewayStorageDriverTestCase(unittest.TestCase):
+class ScalewayStorageDriverTestCase(S3Tests, unittest.TestCase):
     driver_type = ScalewayStorageDriver
     driver_args = STORAGE_S3_PARAMS
-    default_host = "libcloud-storage-test.s3.fr-par.scw.cloud"
+    default_host = SCW_FR_PAR_STANDARD_HOST
 
     @classmethod
     def create_driver(self):
         return self.driver_type(*self.driver_args, host=self.default_host)
 
     def setUp(self):
+        super(ScalewayStorageDriverTestCase, self).setUp()
+
+        ScalewayStorageDriver.connectionCls.conn_class = S3MockHttp
+        S3MockHttp.type = None
+
         self.driver = self.create_driver()
 
     def test_connection_class_type(self):
-        self.assertEqual(self.driver.connectionCls, ScalewayConnectionAWS4)
+        self.assertEqual(self.driver.connectionCls, S3SignatureV4Connection)
 
     def test_connection_class_default_host(self):
         self.assertEqual(self.driver.connectionCls.host, self.default_host)
         self.assertEqual(self.driver.connectionCls.port, 443)
         self.assertEqual(self.driver.connectionCls.secure, True)
 
-    def test_empty_host_error(self):
-        self.assertRaisesRegex(
-            LibcloudError,
-            "host argument is required",
-            self.driver_type,
-            *self.driver_args,
-        )
+    def test_get_object_cdn_url(self):
+        self.mock_response_klass.type = "get_object"
+        obj = self.driver.get_object(container_name="test2", object_name="test")
+
+        with self.assertRaises(LibcloudError):
+            self.driver.get_object_cdn_url(obj)
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

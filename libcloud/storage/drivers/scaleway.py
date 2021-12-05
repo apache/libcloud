@@ -14,14 +14,10 @@
 # limitations under the License.
 
 from libcloud.common.types import LibcloudError
-from libcloud.common.aws import SignedAWSConnection
-from libcloud.storage.drivers.s3 import BaseS3Connection, S3SignatureV4Connection
+from libcloud.storage.drivers.s3 import S3SignatureV4Connection
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver
-from libcloud.storage.drivers.s3 import API_VERSION
 
-__all__ = [
-    "ScalewayStorageDriver"
-]
+__all__ = ["ScalewayStorageDriver"]
 
 SCW_FR_PAR_STANDARD_HOST = "s3.fr-par.scw.cloud"
 SCW_NL_AMS_HOST = "s3.nl-ams.scw.cloud"
@@ -34,13 +30,14 @@ REGION_TO_HOST_MAP = {
     "pl-waw": SCW_PL_WAR_HOST,
 }
 
+NO_CDN_SUPPORT_ERROR = "CDN feature not implemented"
+
 
 class ScalewayStorageDriver(BaseS3StorageDriver):
-    name = 'Scaleway Storage Driver'
-    website = 'https://www.scaleway.com/en/object-storage/'
+    name = "Scaleway Storage Driver"
+    website = "https://www.scaleway.com/en/object-storage/"
     connectionCls = S3SignatureV4Connection
     region_name = "fr-par"
-
 
     def __init__(
         self,
@@ -66,7 +63,9 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
         self.name = "Amazon S3 (%s)" % (region)
 
         if host is None:
-            host = REGION_TO_HOST_MAP[region]
+            self.connectionCls.host = REGION_TO_HOST_MAP[region]
+        else:
+            self.connectionCls.host = host
 
         super(ScalewayStorageDriver, self).__init__(
             key=key,
@@ -82,3 +81,6 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
     @classmethod
     def list_regions(self):
         return REGION_TO_HOST_MAP.keys()
+
+    def get_object_cdn_url(self, *argv):
+        raise LibcloudError(NO_CDN_SUPPORT_ERROR, driver=self)
