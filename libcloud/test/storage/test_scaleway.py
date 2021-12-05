@@ -17,7 +17,6 @@
 import sys
 import unittest
 
-from libcloud.common.types import LibcloudError
 from libcloud.storage.drivers.s3 import S3SignatureV4Connection
 from libcloud.storage.drivers.scaleway import (
     ScalewayStorageDriver,
@@ -57,7 +56,7 @@ class ScalewayStorageDriverTestCase(S3Tests, unittest.TestCase):
         self.mock_response_klass.type = "get_object"
         obj = self.driver.get_object(container_name="test2", object_name="test")
 
-        with self.assertRaises(LibcloudError):
+        with self.assertRaises(NotImplementedError):
             self.driver.get_object_cdn_url(obj)
 
 

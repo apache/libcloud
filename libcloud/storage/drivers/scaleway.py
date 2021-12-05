@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.common.types import LibcloudError
 from libcloud.storage.drivers.s3 import S3SignatureV4Connection
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 
@@ -83,4 +82,4 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
         return REGION_TO_HOST_MAP.keys()
 
     def get_object_cdn_url(self, *argv):
-        raise LibcloudError(NO_CDN_SUPPORT_ERROR, driver=self)
+        raise NotImplementedError("cdn_url not implemented for this driver")
