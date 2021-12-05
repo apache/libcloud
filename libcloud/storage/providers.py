@@ -95,10 +95,7 @@ DRIVERS = {
         "DigitalOceanSpacesStorageDriver",
     ),
     Provider.MINIO: ("libcloud.storage.drivers.minio", "MinIOStorageDriver"),
-    Provider.SCALEWAY: ("libcloud.storage.drivers.scaleway", "ScalewayStorageDriver"),
-    Provider.SCALEWAY_FR_PAR: ("libcloud.storage.drivers.scaleway", "ScalewayFRParStorageDriver"),
-    Provider.SCALEWAY_NL_AMS: ("libcloud.storage.drivers.scaleway", "ScalewayNLAmsStorageDriver"),
-    Provider.SCALEWAY_PL_WAW: ("libcloud.storage.drivers.scaleway", "ScalewayPLWawStorageDriver")
+    Provider.SCALEWAY: ("libcloud.storage.drivers.scaleway", "ScalewayStorageDriver")
 }
 
 
