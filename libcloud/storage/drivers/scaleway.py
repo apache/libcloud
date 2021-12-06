@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.storage.drivers.s3 import S3SignatureV4Connection
+from libcloud.storage.drivers.s3 import S3SignatureV4Connection, S3StorageDriver, S3_CDN_URL_EXPIRY_HOURS
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 
 __all__ = ["ScalewayStorageDriver"]
@@ -81,5 +81,7 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
     def list_regions(self):
         return REGION_TO_HOST_MAP.keys()
 
-    def get_object_cdn_url(self, *argv):
-        raise NotImplementedError("cdn_url not implemented for this driver")
+    def get_object_cdn_url(self, obj, ex_expiry=S3_CDN_URL_EXPIRY_HOURS):
+        # In order to download (private) objects we need to be able to generate a valid CDN URL,
+        # hence shamefully just use the working code from the S3StorageDriver.
+        return S3StorageDriver.get_object_cdn_url(self, obj, ex_expiry=ex_expiry)

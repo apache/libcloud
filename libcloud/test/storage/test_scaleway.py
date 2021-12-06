@@ -52,13 +52,6 @@ class ScalewayStorageDriverTestCase(S3Tests, unittest.TestCase):
         self.assertEqual(self.driver.connectionCls.port, 443)
         self.assertEqual(self.driver.connectionCls.secure, True)
 
-    def test_get_object_cdn_url(self):
-        self.mock_response_klass.type = "get_object"
-        obj = self.driver.get_object(container_name="test2", object_name="test")
-
-        with self.assertRaises(NotImplementedError):
-            self.driver.get_object_cdn_url(obj)
-
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
