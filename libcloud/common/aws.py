@@ -37,6 +37,8 @@ from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
 from libcloud.utils.xml import findtext, findall
+from libcloud.utils.xml import findall_ignore_namespace
+from libcloud.utils.xml import findtext_ignore_namespace
 
 __all__ = [
     "AWSBaseResponse",
@@ -79,8 +81,12 @@ class AWSBaseResponse(XmlResponse):
         :return: ``tuple`` with two elements: (code, message)
         :rtype: ``tuple``
         """
-        code = findtext(element=element, xpath="Code", namespace=self.namespace)
-        message = findtext(element=element, xpath="Message", namespace=self.namespace)
+        code = findtext_ignore_namespace(
+            element=element, xpath="Code", namespace=self.namespace
+        )
+        message = findtext_ignore_namespace(
+            element=element, xpath="Message", namespace=self.namespace
+        )
 
         return code, message
 
@@ -120,7 +126,9 @@ class AWSGenericResponse(AWSBaseResponse):
             )
 
         if self.xpath:
-            errs = findall(element=body, xpath=self.xpath, namespace=self.namespace)
+            errs = findall_ignore_namespace(
+                element=body, xpath=self.xpath, namespace=self.namespace
+            )
         else:
             errs = [body]
 
