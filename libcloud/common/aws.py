@@ -36,7 +36,6 @@ from libcloud.common.base import ConnectionUserAndKey, XmlResponse, BaseDriver
 from libcloud.common.base import JsonResponse
 from libcloud.common.types import InvalidCredsError, MalformedResponseError
 from libcloud.utils.py3 import b, httplib, urlquote
-from libcloud.utils.xml import findtext, findall
 from libcloud.utils.xml import findall_ignore_namespace
 from libcloud.utils.xml import findtext_ignore_namespace
 
