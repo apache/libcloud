@@ -4,6 +4,16 @@
 Changes in Apache Libcloud in development
 -----------------------------------------
 
+Common
+~~~~~~
+
+- Update AWS error response parsing code so it also correctly handles error XML
+  responses without a namespace in the response body.
+
+  In some scenarios AWS returns error response without the namespace in the body
+  and previous version of the code didn't handle that scenario.
+  [Tomaz Muraus - @Kami]
+
 Compute
 ~~~~~~~
 
