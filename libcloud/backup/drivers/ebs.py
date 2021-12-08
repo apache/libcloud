@@ -28,8 +28,8 @@ from libcloud.backup.types import BackupTargetType, BackupTargetJobStatusType
 from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 
 
-VERSION = "2015-10-01"
-HOST = "ec2.amazonaws.com"
+VERSION = "2016-11-15"
+HOST = "ec2.%s.amazonaws.com"
 ROOT = "/%s/" % (VERSION)
 NS = "http://ec2.amazonaws.com/doc/%s/" % (VERSION,)
 
@@ -41,7 +41,7 @@ class EBSResponse(AWSGenericResponse):
 
     namespace = NS
     exceptions = {}
-    xpath = "Error"
+    xpath = ".//Error"
 
 
 class EBSConnection(SignedAWSConnection):
@@ -56,10 +56,10 @@ class EBSBackupDriver(BackupDriver):
     website = "http://aws.amazon.com/ebs/"
     connectionCls = EBSConnection
 
-    def __init__(self, access_id, secret, region):
+    def __init__(self, access_id, secret, region="us-east-1"):
+        self.connectionCls.host = HOST % (region)
         super(EBSBackupDriver, self).__init__(access_id, secret)
         self.region = region
-        self.connection.host = HOST % (region)
 
     def get_supported_target_types(self):
         """
