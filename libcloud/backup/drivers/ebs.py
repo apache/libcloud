@@ -29,9 +29,12 @@ from libcloud.common.aws import AWSGenericResponse, SignedAWSConnection
 
 
 VERSION = "2016-11-15"
-HOST = "ec2.%s.amazonaws.com"
-ROOT = "/%s/" % (VERSION)
 NS = "http://ec2.amazonaws.com/doc/%s/" % (VERSION,)
+
+# See https://docs.aws.amazon.com/general/latest/gr/ebs-service.html#ebs_in_ec2
+HOST = "ec2.%s.amazonaws.com"
+
+ROOT = "/"
 
 
 class EBSResponse(AWSGenericResponse):
