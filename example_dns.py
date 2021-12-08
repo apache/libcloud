@@ -20,7 +20,7 @@ from libcloud.dns.providers import get_driver
 
 Zerigo = get_driver(Provider.ZERIGO)
 
-driver = Zerigo('email', 'key')
+driver = Zerigo("email", "key")
 
 zones = driver.list_zones()
 pprint(zones)

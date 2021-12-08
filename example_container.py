@@ -19,9 +19,7 @@ from libcloud.container.providers import get_driver
 cls = get_driver(Provider.KUBERNETES)
 
 # You can retrieve cluster ip by running "minikube ip" command
-conn = cls(key='my_token',
-           host='126.32.21.4',
-           ex_token_bearer_auth=True)
+conn = cls(key="my_token", host="126.32.21.4", ex_token_bearer_auth=True)
 
 for cluster in conn.list_clusters():
     print(cluster.name)
