@@ -2724,9 +2724,10 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
-        floating_ips = self.ex_list_floating_ips()
-        (ip_obj,) = [x for x in floating_ips if x.ip_address == ip]
-        return ip_obj
+        for floating_ip in self.ex_list_floating_ips():
+            if floating_ip.ip_address == ip:
+                return floating_ip
+        return None
 
     def ex_create_floating_ip(self, ip_pool=None):
         """
@@ -4369,8 +4370,10 @@ class OpenStack_1_1_FloatingIpPool(object):
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
-        (ip_obj,) = [x for x in self.list_floating_ips() if x.ip_address == ip]
-        return ip_obj
+        for floating_ip in self.list_floating_ips():
+            if floating_ip.ip_address == ip:
+                return floating_ip
+        return None
 
     def create_floating_ip(self):
         """
@@ -4503,7 +4506,7 @@ class OpenStack_2_FloatingIpPool(object):
                 "/v2.0/floatingips?floating_ip_address" "=%s" % ip
             ).object
         )
-        return floating_ips[0]
+        return floating_ips[0] if floating_ips else None
 
     def create_floating_ip(self):
         """
