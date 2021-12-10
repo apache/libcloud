@@ -4329,6 +4329,73 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         )
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
+    def _to_floating_ips(self, obj):
+        ip_elements = obj["floatingips"]
+        return [self._to_floating_ip(ip) for ip in ip_elements]
+
+    def _to_floating_ip(self, obj):
+        ip = OpenStack_1_1_FloatingIpAddress(
+            id=obj["id"],
+            ip_address=obj["floating_ip_address"],
+            pool=None,
+            node_id=None,
+            driver=self,
+        )
+        if "port_details" in obj and obj["port_details"]:
+            ip.node_id = obj["port_details"]["device_id"]
+        return ip
+
+    def ex_list_floating_ips(self):
+        """
+        List floating IPs
+
+        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        return self._to_floating_ips(
+            self.network_connection.request("/v2.0/floatingips").object
+        )
+
+    def ex_get_floating_ip(self, ip):
+        """
+        Get specified floating IP
+
+        :param      ip: floating IP to get
+        :type       ip: ``str``
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        req_url = "/v2.0/floatingips?floating_ip_address={ip}".format(
+            ip=ip
+        )
+        res = self._to_floating_ips(self.network_connection.request(req_url).object)
+        return res[0] if res else None
+
+    def ex_create_floating_ip(self, ip_pool):
+        """
+        Create new floating IP. The ip_pool attribute is optional only if your
+        infrastructure has only one IP pool available.
+
+        :param      ip_pool: name or id of the floating IP pool
+        :type       ip_pool: ``str``
+
+        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        """
+        for pool in self.ex_list_floating_ip_pools():
+            if ip_pool == pool.name or ip_pool == pool.id:
+                return pool.create_floating_ip()
+
+    def ex_delete_floating_ip(self, ip):
+        """
+        Delete specified floating IP
+
+        :param      ip: floating IP to remove
+        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
+
+        :rtype: ``bool``
+        """
+        resp = self.network_connection.request("/v2.0/floatingips/%s" % ip.id, method="DELETE")
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+
 
 class OpenStack_1_1_FloatingIpPool(object):
     """
