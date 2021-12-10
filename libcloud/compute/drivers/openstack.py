@@ -4357,18 +4357,19 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
 
     def ex_get_floating_ip(self, ip):
         """
-        Get specified floating IP
+        Get specified floating IP from the pool
 
         :param      ip: floating IP to get
         :type       ip: ``str``
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
-        req_url = "/v2.0/floatingips?floating_ip_address={ip}".format(
-            ip=ip
+        floating_ips = self._to_floating_ips(
+            self.connection.request(
+                "/v2.0/floatingips?floating_ip_address" "=%s" % ip
+            ).object
         )
-        res = self._to_floating_ips(self.network_connection.request(req_url).object)
-        return res[0] if res else None
+        return floating_ips[0] if floating_ips else None
 
     def ex_create_floating_ip(self, ip_pool):
         """
@@ -4552,8 +4553,9 @@ class OpenStack_2_FloatingIpPool(object):
 
         :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
         """
+        url = "/v2.0/floatingips?floating_network_id=%s" % self.id
         return self._to_floating_ips(
-            self.connection.request("/v2.0/floatingips").object
+            self.connection.request(url).object
         )
 
     def get_floating_ip(self, ip):
@@ -4565,10 +4567,10 @@ class OpenStack_2_FloatingIpPool(object):
 
         :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
         """
+        url = "/v2.0/floatingips?floating_network_id=%s" % self.id
+        url += "&floating_ip_address=%s" % ip
         floating_ips = self._to_floating_ips(
-            self.connection.request(
-                "/v2.0/floatingips?floating_ip_address" "=%s" % ip
-            ).object
+            self.connection.request(url).object
         )
         return floating_ips[0]
 
