@@ -4349,14 +4349,13 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
             pool=None,
             node_id=None,
             driver=self,
-            extra=extra
+            extra=extra,
         )
 
     def ex_list_floating_ips(self):
         """
         List floating IPs
-
-        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
+        :rtype: ``list`` of :class:`OpenStack_2_FloatingIpAddress`
         """
         return self._to_floating_ips(
             self.network_connection.request("/v2.0/floatingips").object
@@ -4365,14 +4364,12 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     def ex_get_floating_ip(self, ip):
         """
         Get specified floating IP from the pool
-
         :param      ip: floating IP to get
         :type       ip: ``str``
-
-        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        :rtype: :class:`OpenStack_2_FloatingIpAddress`
         """
         floating_ips = self._to_floating_ips(
-            self.connection.request(
+            self.network_connection.request(
                 "/v2.0/floatingips?floating_ip_address" "=%s" % ip
             ).object
         )
@@ -4382,11 +4379,9 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         """
         Create new floating IP. The ip_pool attribute is optional only if your
         infrastructure has only one IP pool available.
-
         :param      ip_pool: name or id of the floating IP pool
         :type       ip_pool: ``str``
-
-        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        :rtype: :class:`OpenStack_2_FloatingIpAddress`
         """
         for pool in self.ex_list_floating_ip_pools():
             if ip_pool == pool.name or ip_pool == pool.id:
@@ -4395,13 +4390,13 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
     def ex_delete_floating_ip(self, ip):
         """
         Delete specified floating IP
-
         :param      ip: floating IP to remove
-        :type       ip: :class:`OpenStack_1_1_FloatingIpAddress`
-
+        :type       ip: :class:`OpenStack_2_FloatingIpAddress`
         :rtype: ``bool``
         """
-        resp = self.network_connection.request("/v2.0/floatingips/%s" % ip.id, method="DELETE")
+        resp = self.network_connection.request(
+            "/v2.0/floatingips/%s" % ip.id, method="DELETE"
+        )
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
 
@@ -4531,15 +4526,15 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
     @property
     def pool(self):
         if not self._pool:
-            # If pool is not set, get the info from the floating_network_id
-            if "floating_network_id" in self.extra and self.extra["floating_network_id"]:
-                try:
-                    net = self.driver.ex_get_network(self.extra["floating_network_id"])
-                except Exception:
-                    net = None
-                if net:
-                    self._pool = OpenStack_2_FloatingIpPool(net.id, net.name,
-                                                            self.driver.network_connection)
+            try:
+                # If pool is not set, get the info from the floating_network_id
+                net = self.driver.ex_get_network(self.extra["floating_network_id"])
+            except Exception:
+                net = None
+            if net:
+                self._pool = OpenStack_2_FloatingIpPool(
+                    net.id, net.name, self.driver.network_connection
+                )
         return self._pool
 
     @pool.setter
@@ -4552,8 +4547,7 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
             # if not is not set, get it from port_details
 
             # In neutron version prior to 13.0.0 port_details does not exists
-            if (("port_details" not in self.extra or not self.extra["port_details"])
-                    and "port_id" in self.extra and self.extra["port_id"]):
+            if "port_details" not in self.extra or not self.extra["port_details"]:
                 # if port_details is not available get if from port info using port_id
                 try:
                     port = self.driver.ex_get_port(self.extra["port_id"])
@@ -4611,19 +4605,17 @@ class OpenStack_2_FloatingIpPool(object):
             pool=self,
             node_id=None,
             driver=self.connection.driver,
-            extra=extra
+            extra=extra,
         )
 
     def list_floating_ips(self):
         """
         List floating IPs in the pool
 
-        :rtype: ``list`` of :class:`OpenStack_1_1_FloatingIpAddress`
+        :rtype: ``list`` of :class:`OpenStack_2_FloatingIpAddress`
         """
         url = "/v2.0/floatingips?floating_network_id=%s" % self.id
-        return self._to_floating_ips(
-            self.connection.request(url).object
-        )
+        return self._to_floating_ips(self.connection.request(url).object)
 
     def get_floating_ip(self, ip):
         """
@@ -4632,20 +4624,18 @@ class OpenStack_2_FloatingIpPool(object):
         :param      ip: floating IP to get
         :type       ip: ``str``
 
-        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        :rtype: :class:`OpenStack_2_FloatingIpAddress`
         """
         url = "/v2.0/floatingips?floating_network_id=%s" % self.id
         url += "&floating_ip_address=%s" % ip
-        floating_ips = self._to_floating_ips(
-            self.connection.request(url).object
-        )
+        floating_ips = self._to_floating_ips(self.connection.request(url).object)
         return floating_ips[0] if floating_ips else None
 
     def create_floating_ip(self):
         """
         Create new floating IP in the pool
 
-        :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+        :rtype: :class:`OpenStack_2_FloatingIpAddress`
         """
         resp = self.connection.request(
             "/v2.0/floatingips",
@@ -4653,7 +4643,7 @@ class OpenStack_2_FloatingIpPool(object):
             data={"floatingip": {"floating_network_id": self.id}},
         )
         data = resp.object["floatingip"]
-        return OpenStack_1_1_FloatingIpAddress(
+        return OpenStack_2_FloatingIpAddress(
             id=data["id"],
             ip_address=data["floating_ip_address"],
             pool=self,
