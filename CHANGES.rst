@@ -25,6 +25,10 @@ Compute
   (GITHUB-1629)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Avoid raising exception if ip is not found.
+  (GITHUB-1595)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
