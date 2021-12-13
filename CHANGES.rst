@@ -25,6 +25,12 @@ Compute
   (GITHUB-1629)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] OpenStack: Move floating IP functions to use network service
+  instead of nova.
+
+  (GITHUB-1638)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
