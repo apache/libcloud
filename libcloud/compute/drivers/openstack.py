@@ -72,6 +72,7 @@ __all__ = [
     "OpenStack_1_1_FloatingIpPool",
     "OpenStack_2_FloatingIpPool",
     "OpenStack_1_1_FloatingIpAddress",
+    "OpenStack_2_FloatingIpAddress",
     "OpenStack_2_PortInterfaceState",
     "OpenStack_2_PortInterface",
     "OpenStackNodeDriver",
@@ -4334,29 +4335,20 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        instance_id = None
+        extra = {}
 
         # In neutron version prior to 13.0.0 port_details does not exists
-        if "port_details" not in obj and "port_id" in obj and obj["port_id"]:
-            port = self.ex_get_port(obj["port_id"])
-            if port:
-                obj["port_details"] = {
-                    "device_id": port.extra["device_id"],
-                    "device_owner": port.extra["device_owner"],
-                    "mac_address": port.extra["mac_address"],
-                }
+        extra["port_details"] = obj.get("port_details")
+        extra["port_id"] = obj.get("port_id")
+        extra["floating_network_id"] = obj.get("floating_network_id")
 
-        if "port_details" in obj and obj["port_details"]:
-            dev_owner = obj["port_details"]["device_owner"]
-            if dev_owner and dev_owner.startswith("compute:"):
-                instance_id = obj["port_details"]["device_id"]
-
-        return OpenStack_1_1_FloatingIpAddress(
+        return OpenStack_2_FloatingIpAddress(
             id=obj["id"],
             ip_address=obj["floating_ip_address"],
             pool=None,
-            node_id=instance_id,
+            node_id=None,
             driver=self,
+            extra=extra
         )
 
     def ex_list_floating_ips(self):
@@ -4520,6 +4512,70 @@ class OpenStack_1_1_FloatingIpAddress(object):
         )
 
 
+class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
+    """
+    Floating IP info 2.0.
+    """
+
+    def __init__(self, id, ip_address, pool, node_id=None, driver=None, extra=None):
+        self.id = str(id)
+        self.ip_address = ip_address
+        self._pool = pool
+        self._node_id = node_id
+        self.driver = driver
+        self.extra = extra if extra else {}
+
+    @property
+    def pool(self):
+        if not self._pool:
+            # If pool is not set, get the info from the floating_network_id
+            if ("floating_network_id" in self.extra["floating_network_id"]
+                    and self.extra["floating_network_id"]):
+                net = self.driver.ex_get_network(self.extra["floating_network_id"])
+                self._pool = OpenStack_2_FloatingIpPool(net.id, net.name,
+                                                        self.driver.network_connection)
+
+        return self._pool
+
+    @pool.setter
+    def pool(self, new_pool):
+        self._pool = new_pool
+
+    @property
+    def node_id(self):
+        if not self._node_id:
+            # if not is not set, get it from port_details
+
+            # In neutron version prior to 13.0.0 port_details does not exists
+            if (("port_details" not in self.extra or not self.extra["port_details"])
+                    and "port_id" in self.extra and self.extra["port_id"]):
+                # if port_details is not available get if from port info using port_id
+                port = self.driver.ex_get_port(self.extra["port_id"])
+                if port:
+                    self.extra["port_details"] = {
+                        "device_id": port.extra["device_id"],
+                        "device_owner": port.extra["device_owner"],
+                        "mac_address": port.extra["mac_address"],
+                    }
+
+            if "port_details" in self.extra and self.extra["port_details"]:
+                dev_owner = self.extra["port_details"]["device_owner"]
+                if dev_owner and dev_owner.startswith("compute:"):
+                    self._node_id = self.extra["port_details"]["device_id"]
+
+        return self._node_id
+
+    @node_id.setter
+    def node_id(self, new_node_id):
+        self._node_id = new_node_id
+
+    def __repr__(self):
+        return (
+            "<OpenStack_2_FloatingIpAddress: id=%s, ip_addr=%s,"
+            " node_id=%s, driver=%s>" % (self.id, self.ip_address, self._node_id, self.driver)
+        )
+
+
 class OpenStack_2_FloatingIpPool(object):
     """
     Floating IP Pool info.
@@ -4535,29 +4591,19 @@ class OpenStack_2_FloatingIpPool(object):
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        instance_id = None
+        extra = {}
 
         # In neutron version prior to 13.0.0 port_details does not exists
-        if "port_details" not in obj and "port_id" in obj and obj["port_id"]:
-            port = self.connection.driver.ex_get_port(obj["port_id"])
-            if port:
-                obj["port_details"] = {
-                    "device_id": port.extra["device_id"],
-                    "device_owner": port.extra["device_owner"],
-                    "mac_address": port.extra["mac_address"],
-                }
+        extra["port_details"] = obj.get("port_details")
+        extra["port_id"] = obj.get("port_id")
 
-        if "port_details" in obj and obj["port_details"]:
-            dev_owner = obj["port_details"]["device_owner"]
-            if dev_owner and dev_owner.startswith("compute:"):
-                instance_id = obj["port_details"]["device_id"]
-
-        return OpenStack_1_1_FloatingIpAddress(
+        return OpenStack_2_FloatingIpAddress(
             id=obj["id"],
             ip_address=obj["floating_ip_address"],
             pool=self,
-            node_id=instance_id,
+            node_id=None,
             driver=self.connection.driver,
+            extra=extra
         )
 
     def list_floating_ips(self):
