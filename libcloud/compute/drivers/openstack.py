@@ -4667,7 +4667,7 @@ class OpenStack_2_FloatingIpPool(object):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request("/os-floating-ips/%s" % ip.id, method="DELETE")
+        resp = self.network_connection.request("/v2.0/floatingips/%s" % ip.id, method="DELETE")
         return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def __repr__(self):
