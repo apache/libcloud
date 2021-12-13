@@ -4572,7 +4572,7 @@ class OpenStack_2_FloatingIpPool(object):
         floating_ips = self._to_floating_ips(
             self.connection.request(url).object
         )
-        return floating_ips[0]
+        return floating_ips[0] if floating_ips else None
 
     def create_floating_ip(self):
         """
@@ -4586,11 +4586,9 @@ class OpenStack_2_FloatingIpPool(object):
             data={"floatingip": {"floating_network_id": self.id}},
         )
         data = resp.object["floatingip"]
-        id = data["id"]
-        ip_address = data["floating_ip_address"]
         return OpenStack_1_1_FloatingIpAddress(
-            id=id,
-            ip_address=ip_address,
+            id=data["id"],
+            ip_address=data["floating_ip_address"],
             pool=self,
             node_id=None,
             driver=self.connection.driver,
@@ -4605,8 +4603,7 @@ class OpenStack_2_FloatingIpPool(object):
 
         :rtype: ``bool``
         """
-        resp = self.connection.request("/v2.0/floatingips/%s" % ip.id, method="DELETE")
-        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
+        return self.connection.driver.ex_delete_floating_ip(ip)
 
     def __repr__(self):
         return "<OpenStack_2_FloatingIpPool: name=%s>" % self.name
