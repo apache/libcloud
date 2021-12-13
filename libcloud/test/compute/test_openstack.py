@@ -1717,6 +1717,9 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(ret.ip_address, "10.3.1.42")
         self.assertIsNone(ret.node_id)
 
+        ret = pool.get_floating_ip("1.2.3.4")
+        self.assertIsNone(ret)
+
     def test_OpenStack_1_1_FloatingIpPool_create_floating_ip(self):
         pool = OpenStack_1_1_FloatingIpPool("foo", self.driver.connection)
         ret = pool.create_floating_ip()

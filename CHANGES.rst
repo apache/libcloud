@@ -27,8 +27,10 @@ Compute
 
 - [OpenStack] OpenStack: Move floating IP functions to use network service
   instead of nova.
-
   (GITHUB-1638)
+
+- [OpenStack] Avoid raising exception if ip is not found.
+  (GITHUB-1595)
   [Miguel Caballer - @micafer]
 
 Storage
