@@ -4334,16 +4334,30 @@ class OpenStack_2_NodeDriver(OpenStack_1_1_NodeDriver):
         return [self._to_floating_ip(ip) for ip in ip_elements]
 
     def _to_floating_ip(self, obj):
-        ip = OpenStack_1_1_FloatingIpAddress(
+        instance_id = None
+
+        # In neutron version prior to 13.0.0 port_details does not exists
+        if "port_details" not in obj and "port_id" in obj and obj["port_id"]:
+            port = self.ex_get_port(obj["port_id"])
+            if port:
+                obj["port_details"] = {
+                    "device_id": port.extra["device_id"],
+                    "device_owner": port.extra["device_owner"],
+                    "mac_address": port.extra["mac_address"],
+                }
+
+        if "port_details" in obj and obj["port_details"]:
+            dev_owner = obj["port_details"]["device_owner"]
+            if dev_owner and dev_owner.startswith("compute:"):
+                instance_id = obj["port_details"]["device_id"]
+
+        return OpenStack_1_1_FloatingIpAddress(
             id=obj["id"],
             ip_address=obj["floating_ip_address"],
             pool=None,
-            node_id=None,
+            node_id=instance_id,
             driver=self,
         )
-        if "port_details" in obj and obj["port_details"]:
-            ip.node_id = obj["port_details"]["device_id"]
-        return ip
 
     def ex_list_floating_ips(self):
         """
@@ -4538,10 +4552,9 @@ class OpenStack_2_FloatingIpPool(object):
             if dev_owner and dev_owner.startswith("compute:"):
                 instance_id = obj["port_details"]["device_id"]
 
-        ip_address = obj["floating_ip_address"]
         return OpenStack_1_1_FloatingIpAddress(
             id=obj["id"],
-            ip_address=ip_address,
+            ip_address=obj["floating_ip_address"],
             pool=self,
             node_id=instance_id,
             driver=self.connection.driver,
@@ -4603,7 +4616,8 @@ class OpenStack_2_FloatingIpPool(object):
 
         :rtype: ``bool``
         """
-        return self.connection.driver.ex_delete_floating_ip(ip)
+        resp = self.connection.request("/os-floating-ips/%s" % ip.id, method="DELETE")
+        return resp.status in (httplib.NO_CONTENT, httplib.ACCEPTED)
 
     def __repr__(self):
         return "<OpenStack_2_FloatingIpPool: name=%s>" % self.name
