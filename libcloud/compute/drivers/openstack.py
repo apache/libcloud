@@ -4529,12 +4529,14 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
     def pool(self):
         if not self._pool:
             # If pool is not set, get the info from the floating_network_id
-            if ("floating_network_id" in self.extra["floating_network_id"]
-                    and self.extra["floating_network_id"]):
-                net = self.driver.ex_get_network(self.extra["floating_network_id"])
-                self._pool = OpenStack_2_FloatingIpPool(net.id, net.name,
-                                                        self.driver.network_connection)
-
+            if "floating_network_id" in self.extra and self.extra["floating_network_id"]:
+                try:
+                    net = self.driver.ex_get_network(self.extra["floating_network_id"])
+                except Exception:
+                    net = None
+                if net:
+                    self._pool = OpenStack_2_FloatingIpPool(net.id, net.name,
+                                                            self.driver.network_connection)
         return self._pool
 
     @pool.setter
@@ -4550,7 +4552,10 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
             if (("port_details" not in self.extra or not self.extra["port_details"])
                     and "port_id" in self.extra and self.extra["port_id"]):
                 # if port_details is not available get if from port info using port_id
-                port = self.driver.ex_get_port(self.extra["port_id"])
+                try:
+                    port = self.driver.ex_get_port(self.extra["port_id"])
+                except Exception:
+                    port = None
                 if port:
                     self.extra["port_details"] = {
                         "device_id": port.extra["device_id"],
