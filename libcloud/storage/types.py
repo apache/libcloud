@@ -107,9 +107,6 @@ class Provider(object):
     S3_RGW_OUTSCALE = "s3_rgw_outscale"
     MINIO = "minio"
     SCALEWAY = "scaleway"
-    SCALEWAY_FR_PAR = "scaleway_fr_par"
-    SCALEWAY_NL_AMS = "scaleway_nl_ams"
-    SCALEWAY_PL_WAW = "scaleway_pl_waw"
 
     # Deperecated
     CLOUDFILES_US = "cloudfiles_us"

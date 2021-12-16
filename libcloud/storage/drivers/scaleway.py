@@ -45,7 +45,7 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
         secure=True,
         host=None,
         port=None,
-        region=None,
+        region="fr-par",
         url=None,
         **kwargs,
     ):
