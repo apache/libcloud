@@ -36,6 +36,7 @@
             </blockDeviceMapping>
             <virtualizationType>paravirtual</virtualizationType>
             <hypervisor>xen</hypervisor>
+            <creationDate>2021-01-10T18:24:00.000Z</creationDate>
         </item>
         <item>
             <imageId>ami-85b2a8ae</imageId>
@@ -67,6 +68,7 @@
             </blockDeviceMapping>
             <virtualizationType>paravirtual</virtualizationType>
             <hypervisor>xen</hypervisor>
+            <creationDate>2021-01-10T18:25:00.000Z</creationDate>
         </item>
     </imagesSet>
 </DescribeImagesResponse>

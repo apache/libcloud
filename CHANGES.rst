@@ -29,6 +29,10 @@ Compute
   (GITHUB-1595)
   [Miguel Caballer - @micafer]
 
+- [EC2] Add missing ``creation_date`` NodeImage extra.
+  (GITHUB-1641)
+  [Thomas JOUANNOT - @mazerty]
+
 Storage
 ~~~~~~~
 
