@@ -78,6 +78,27 @@ class AzureVhdImage(NodeImage):
         return ("<AzureVhdImage: id=%s, name=%s>") % (self.id, self.name)
 
 
+class AzureComputeGalleryImage(NodeImage):
+    """Represents a Compute Gallery image that an Azure VM can boot from."""
+
+    def __init__(self, subscription_id, resource_group, gallery, name, driver):
+        id = (
+            "/subscriptions/%s/resourceGroups/%s/"
+            "providers/Microsoft.Compute/galleries/%s/images/%s"
+            % (
+                subscription_id,
+                resource_group,
+                gallery,
+                name,
+            )
+        )
+        super(AzureComputeGalleryImage, self).__init__(
+            id, name, driver)
+
+    def __repr__(self):
+        return ("<AzureComputeGalleryImage: id=%s, name=%s>") % (self.id, self.name)
+
+
 class AzureResourceGroup(object):
     """Represent an Azure resource group."""
 
@@ -458,6 +479,7 @@ class AzureNodeDriver(NodeDriver):
         ex_use_managed_disks=False,
         ex_disk_size=None,
         ex_storage_account_type="Standard_LRS",
+        ex_os_disk_delete=False,
     ):
         """Create a new node instance. This instance will be started
         automatically.
@@ -493,8 +515,8 @@ class AzureNodeDriver(NodeDriver):
                             (required)
         :type size:   :class:`.NodeSize`
 
-        :param image:  OS Image to boot on node. (required)
-        :type image:  :class:`.AzureImage`
+        :param image:  OS Image to boot on node (required)
+        :type image:  :class:`.AzureImage` or :class:`.AzureVhdImage` or :class:`.AzureComputeGalleryImage`
 
         :param location: Which data center to create a node in.
         (if None, use default location specified as 'region' in __init__)
@@ -563,6 +585,10 @@ class AzureNodeDriver(NodeDriver):
             ``Standard_LRS``(HDD disks) or ``Premium_LRS``(SSD disks).
         :type ex_storage_account_type: str
 
+        :param ex_os_disk_delete: Enable this feature to have Azure
+            automatically delete the OS disk when you delete the VM.
+        :type ex_os_disk_delete: ``bool``
+
         :return: The newly created node.
         :rtype: :class:`.Node`
         """
@@ -614,19 +640,27 @@ class AzureNodeDriver(NodeDriver):
                     "vhd": {"uri": instance_vhd},
                 }
             }
+            if ex_os_disk_delete:
+                storage_profile["osDisk"]["deleteOption"] = "Delete"
             if ex_use_managed_disks:
                 raise LibcloudError(
                     "Creating managed OS disk from %s image "
                     "type is not supported." % type(image)
                 )
-        elif isinstance(image, AzureImage):
-            storage_profile = {
-                "imageReference": {
+        elif isinstance(image, AzureImage) or isinstance(image, AzureComputeGalleryImage):
+            if isinstance(image, AzureImage):
+                imageReference = {
                     "publisher": image.publisher,
                     "offer": image.offer,
                     "sku": image.sku,
                     "version": image.version,
-                },
+                }
+            else:
+                imageReference = {
+                    "id": image.id
+                }
+            storage_profile = {
+                "imageReference": imageReference,
                 "osDisk": {
                     "name": name,
                     "osType": "linux",
@@ -634,6 +668,8 @@ class AzureNodeDriver(NodeDriver):
                     "createOption": "FromImage",
                 },
             }
+            if ex_os_disk_delete:
+                storage_profile["osDisk"]["deleteOption"] = "Delete"
             if ex_use_managed_disks:
                 storage_profile["osDisk"]["managedDisk"] = {
                     "storageAccountType": ex_storage_account_type
@@ -649,7 +685,7 @@ class AzureNodeDriver(NodeDriver):
         else:
             raise LibcloudError(
                 "Unknown image type %s, expected one of AzureImage, "
-                "AzureVhdImage." % type(image)
+                "AzureVhdImage, AzureComputeGalleryImage." % type(image)
             )
 
         data = {
@@ -703,7 +739,7 @@ class AzureNodeDriver(NodeDriver):
 
         r = self.connection.request(
             target,
-            params={"api-version": RESOURCE_API_VERSION},
+            params={"api-version": "2021-07-01"},
             data=data,
             method="PUT",
         )
