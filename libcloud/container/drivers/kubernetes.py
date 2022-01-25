@@ -344,6 +344,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         extra = {"memory": memory, "cpu": cpu}
         extra["os"] = data["status"]["nodeInfo"].get("operatingSystem")
         extra["kubeletVersion"] = data["status"]["nodeInfo"]["kubeletVersion"]
+        extra["provider_id"] = data["spec"]["providerID"]
         for condition in data["status"]["conditions"]:
             if condition["type"] == "Ready" and condition["status"] == "True":
                 state = NodeState.RUNNING
