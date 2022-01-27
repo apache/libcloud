@@ -78,7 +78,7 @@ Available arguments:
 
 
   Unless you are working with a very old version of OpenStack you will either
-  want to use ``2.0_apikey`` or ``2.0_password``.
+  want to use ``2.0_*`` or ``3.x_*``.
 * ``ex_tenant_name`` - tenant / project name
 * ``ex_force_auth_token`` - token which is used for authentication. If this
   argument is provided, normal authentication flow is skipped and the OpenStack
@@ -104,6 +104,8 @@ Available arguments:
   driver obtains API endpoint URL from the server catalog, but if this argument
   is provided, this step is skipped and the provided value is used directly. Only valid 
   in case of api_version >= 2.0.
+* ``ex_force_microversion`` - Microversion of the API to interact with OpenStack.
+  Only valid in case of api_version >= 2.0.
 
 Some examples which show how to use this arguments can be found in the section
 below.
