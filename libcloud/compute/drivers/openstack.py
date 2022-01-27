@@ -1449,7 +1449,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     _networks_url_prefix = "/os-networks"
 
     def __init__(self, *args, **kwargs):
-        self.ex_force_microversion = str(kwargs.pop("ex_force_microversion", None))
+        self.ex_force_microversion = str(kwargs.pop("ex_force_microversion", ''))
         self._ex_force_api_version = str(kwargs.pop("ex_force_api_version", None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
 
