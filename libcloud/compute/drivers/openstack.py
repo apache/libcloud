@@ -1459,7 +1459,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if self.ex_force_microversion:
             if headers:
                 res.update(headers)
-            res["OpenStack-API-Version:"] = "compute %s" % self.ex_force_microversion
+            res["OpenStack-API-Version"] = "compute %s" % self.ex_force_microversion
         return res
 
     def create_node(
