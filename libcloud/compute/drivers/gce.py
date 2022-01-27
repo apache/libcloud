@@ -2627,7 +2627,6 @@ class GCENodeDriver(NodeDriver):
                 new_request_path = save_request_path.replace(self.project, proj)
                 self.connection.request_path = new_request_path
                 try:
-                    self.connection.gce_params = {'maxResults': 1500}
                     response = self.connection.request(request, method="GET").object
                 except Exception:
                     raise
