@@ -1639,9 +1639,11 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     def _create_args_to_params(self, node, **kwargs):
         server_params = {
             "name": kwargs.get("name"),
-            "metadata": kwargs.get("ex_metadata", {}) or {},
-            "personality": self._files_to_personality(kwargs.get("ex_files", {}) or {}),
+            "metadata": kwargs.get("ex_metadata", {}) or {}
         }
+
+        if kwargs.get("ex_files", None):
+            server_params["personality"] = self._files_to_personality(kwargs.get("ex_files"))
 
         if kwargs.get("ex_availability_zone", None):
             server_params["availability_zone"] = kwargs["ex_availability_zone"]
