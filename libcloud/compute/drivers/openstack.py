@@ -1561,8 +1561,9 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if ex_os_scheduler_hints:
             data["os:scheduler_hints"] = ex_os_scheduler_hints
 
-        resp = self.connection.request("/servers", method="POST", data=data,
-                                       headers=self._set_microversion())
+        resp = self.connection.request(
+            "/servers", method="POST", data=data, headers=self._set_microversion()
+        )
 
         create_response = resp.object["server"]
         server_resp = self.connection.request("/servers/%s" % create_response["id"])
