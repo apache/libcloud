@@ -261,7 +261,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         # Include default content-type for POST and PUT request (if available)
         default_content_type = getattr(self, "default_content_type", None)
         if method.upper() in ["POST", "PUT"] and default_content_type:
-            headers = {"Content-Type": default_content_type}
+            headers["Content-Type"] = default_content_type}
 
         try:
             return super().request(
