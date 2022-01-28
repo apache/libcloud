@@ -56,6 +56,10 @@ Storage
   (GITHUB-1631)
   [Tomaz Muraus - @Kami]
 
+- [Scaleway] Add new driver for the Scaleway Object Storage.
+  (GITHUB-1633)
+  [@reixd]
+
 Common
 ~~~~~~
 
