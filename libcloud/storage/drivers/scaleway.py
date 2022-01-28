@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libcloud.storage.drivers.s3 import S3SignatureV4Connection, S3StorageDriver, S3_CDN_URL_EXPIRY_HOURS
+from libcloud.storage.drivers.s3 import (
+    S3SignatureV4Connection,
+    S3StorageDriver,
+    S3_CDN_URL_EXPIRY_HOURS,
+)
 from libcloud.storage.drivers.s3 import BaseS3StorageDriver
 
 __all__ = ["ScalewayStorageDriver"]
@@ -45,7 +49,7 @@ class ScalewayStorageDriver(BaseS3StorageDriver):
         secure=True,
         host=None,
         port=None,
-        region=None,
+        region="fr-par",
         url=None,
         **kwargs,
     ):

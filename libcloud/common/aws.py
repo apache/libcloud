@@ -354,8 +354,7 @@ class AWSRequestSignerAlgorithmV4(AWSRequestSigner):
         )
 
     def _get_signed_headers(self, headers):
-        return ";".join([k.lower()
-                         for k in sorted(headers.keys(), key=str.lower)])
+        return ";".join([k.lower() for k in sorted(headers.keys(), key=str.lower)])
 
     def _get_canonical_headers(self, headers):
         return (

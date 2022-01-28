@@ -11,7 +11,7 @@ container = driver.get_container(container_name="<your-bucket-name>")
 
 extra = {
     "meta_data": {"owner": "myuser", "created": "2001-05-25"},
-    "acl": "public-read"
+    "acl": "public-read",
 }
 
 with open(FILE_PATH, "rb") as iterator:
