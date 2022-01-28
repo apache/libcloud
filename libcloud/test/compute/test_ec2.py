@@ -574,7 +574,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_images(self):
         images = self.driver.list_images()
 
-        self.assertEqual(len(images), 2)
+        self.assertEqual(len(images), 3)
         location = "123456788908/Test Image"
         self.assertEqual(images[0].id, "ami-57ba933a")
         self.assertEqual(images[0].name, "Test Image")
@@ -598,6 +598,11 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
         self.assertEqual(size, 20)
         self.assertIsInstance(images[1].extra["creation_date"], datetime)
 
+        self.assertEqual(images[2].id, "ami-85b2a8ac")
+        self.assertEqual(images[2].name, "Test Image 3")
+        self.assertEqual(size, 20)
+        self.assertIsNone(images[2].extra["creation_date"])
+
     def test_list_images_with_image_ids(self):
         EC2MockHttp.type = "ex_imageids"
         images = self.driver.list_images(ex_image_ids=["ami-57ba933a"])
@@ -608,7 +613,7 @@ class EC2Tests(LibcloudTestCase, TestCaseMixin):
     def test_list_images_with_executable_by(self):
         images = self.driver.list_images(ex_executableby="self")
 
-        self.assertEqual(len(images), 2)
+        self.assertEqual(len(images), 3)
 
     def test_get_image(self):
         image = self.driver.get_image("ami-57ba933a")
