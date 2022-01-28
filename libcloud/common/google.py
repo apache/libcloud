@@ -522,11 +522,12 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
             if os.path.exists(key_path) and os.path.isfile(key_path):
                 # Assume it's a file and read it
                 try:
-                    with open(key_path, 'r') as f:
+                    with open(key_path, "r") as f:
                         key_content = f.read()
                 except IOError:
-                    raise GoogleAuthError("Missing (or unreadable) key "
-                                          "file: '%s'" % key)
+                    raise GoogleAuthError(
+                        "Missing (or unreadable) key " "file: '%s'" % key
+                    )
             else:
                 # assume it's a PEM str or serialized JSON str
                 key_content = key
@@ -542,27 +543,22 @@ class GoogleServiceAcctAuthConnection(GoogleBaseAuthConnection):
             # it's been a PEM string all along
             pass
         finally:
-            if 'private_key' in key_content:
-                key = key_content['private_key']
+            if "private_key" in key_content:
+                key = key_content["private_key"]
             else:
                 key = key_content
 
         try:
             # check if the key is actually a PEM encoded private key
             serialization.load_pem_private_key(
-                b(key),
-                password=None,
-                backend=default_backend()
+                b(key), password=None, backend=default_backend()
             )
         except ValueError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" %
-                                  e)
+            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
         except TypeError as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" %
-                                  e)
+            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
         except exceptions.UnsupportedAlgorithm as e:
-            raise GoogleAuthError("Unable to decode provided PEM key: %s" %
-                                  e)
+            raise GoogleAuthError("Unable to decode provided PEM key: %s" % e)
 
         super(GoogleServiceAcctAuthConnection, self).__init__(
             user_id, key, *args, **kwargs
