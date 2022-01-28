@@ -37,6 +37,7 @@ Provider                      list containers list objects create container dele
 `Amazon S3 (us-gov-west-1)`_  yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (us-west-1)`_      yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 `Amazon S3 (us-west-2)`_      yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
+`Scaleway Storage Driver`_    yes             yes          yes              yes              yes           yes                     yes             yes                        yes                       yes                               yes          
 ============================= =============== ============ ================ ================ ============= ======================= =============== ========================== ========================= ================================= =============
 
 .. _`Aliyun OSS`: http://www.aliyun.com/product/oss
@@ -73,3 +74,4 @@ Provider                      list containers list objects create container dele
 .. _`Amazon S3 (us-gov-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
+.. _`Scaleway Storage Driver`: https://www.scaleway.com/en/object-storage/
