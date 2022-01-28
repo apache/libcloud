@@ -33,6 +33,14 @@ Compute
   (GITHUB-1641)
   [Thomas JOUANNOT - @mazerty]
 
+- [GCE] Allow ``credentials`` argument which is provided to the driver
+  constructor to also be either a Python dictionary with the credentials object
+  or a JSON string with the serialized credentials object. That's in addition
+  to supporting passing in path to the credentials file or string PEM version of
+  the key.
+  (GITHUB-1214)
+  [@bverschueren]
+
 Storage
 ~~~~~~~
 
