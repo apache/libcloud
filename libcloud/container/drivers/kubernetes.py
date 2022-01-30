@@ -255,7 +255,7 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         """
         return self.ex_destroy_pod(container.extra["namespace"], container.extra["pod"])
 
-    def ex_list_pods(self):
+    def ex_list_pods(self, fetch_metrics=False):
         """
         List available Pods
 
@@ -264,7 +264,20 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         result = self.connection.request(
             ROOT_URL + "v1/pods", enforce_unicode_response=True
         ).object
-        return [self._to_pod(value) for value in result["items"]]
+        metrics = None
+        if fetch_metrics:
+            try:
+                metrics = {
+                    (
+                        metric["metadata"]["name"],
+                        metric["metadata"]["namespace"],
+                    ): metric["containers"]
+                    for metric in self.ex_list_pods_metrics()
+                }
+            except Exception:
+                pass
+
+        return [self._to_pod(value, metrics=metrics) for value in result["items"]]
 
     def ex_destroy_pod(self, namespace, pod_name):
         """
@@ -373,13 +386,24 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
             created_at=created_at,
         )
 
-    def _to_pod(self, data):
+    def _to_pod(self, data, metrics=None):
         """
         Convert an API response to a Pod object
         """
+        id_ = data["metadata"]["uid"]
+        name = data["metadata"]["name"]
+        namespace = data["metadata"]["namespace"]
+        state = data["status"]["phase"].lower()
+        node_name = data["spec"].get("nodeName")
         container_statuses = data["status"].get("containerStatuses", {})
         containers = []
         extra = {"resources": {}}
+        if metrics:
+            try:
+                extra["metrics"] = metrics[name, namespace]
+            except KeyError:
+                pass
+
         # response contains the status of the containers in a separate field
         for container in data["spec"]["containers"]:
             if container_statuses:
@@ -403,15 +427,16 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         created_at = datetime.datetime.strptime(
             data["metadata"]["creationTimestamp"], "%Y-%m-%dT%H:%M:%SZ"
         )
+
         return KubernetesPod(
-            id=data["metadata"]["uid"],
-            name=data["metadata"]["name"],
-            namespace=data["metadata"]["namespace"],
-            state=data["status"]["phase"].lower(),
+            id=id_,
+            name=name,
+            namespace=namespace,
+            state=state,
             ip_addresses=ip_addresses,
             containers=containers,
             created_at=created_at,
-            node_name=data["spec"].get("nodeName"),
+            node_name=node_name,
             extra=extra,
         )
 
