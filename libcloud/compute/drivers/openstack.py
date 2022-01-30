@@ -1377,13 +1377,16 @@ class OpenStackSecurityGroupRule(object):
         self.extra = extra or {}
 
     def __repr__(self):
-        return "<OpenStackSecurityGroupRule id=%s parent_group_id=%s \
-                ip_protocol=%s from_port=%s to_port=%s>" % (
-            self.id,
-            self.parent_group_id,
-            self.ip_protocol,
-            self.from_port,
-            self.to_port,
+        return (
+            "<OpenStackSecurityGroupRule id=%s parent_group_id=%s \
+                ip_protocol=%s from_port=%s to_port=%s>"
+            % (
+                self.id,
+                self.parent_group_id,
+                self.ip_protocol,
+                self.from_port,
+                self.to_port,
+            )
         )
 
 
