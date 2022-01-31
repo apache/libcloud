@@ -4564,7 +4564,7 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
     def __repr__(self):
         return (
             "<OpenStack_2_FloatingIpAddress: id=%s, ip_addr=%s,"
-            " pool=%s, driver=%s>" % (self.id, self.ip_address, self._pool, self.driver)
+            " pool=%s, driver=%s>" % (self.id, self.ip_address, self.pool, self.driver)
         )
 
 
