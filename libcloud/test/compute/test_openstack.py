@@ -1248,6 +1248,21 @@ class OpenStack_1_1_Tests(unittest.TestCase, TestCaseMixin):
         self.assertEqual(node.extra["password"], "racktestvJq7d3")
         self.assertEqual(node.extra["metadata"]["My Server Name"], "Apache1")
 
+    def test_create_node_with_ex_files(self):
+        OpenStack_2_0_MockHttp.type = "EX_FILES"
+        image = NodeImage(id=11, name="Ubuntu 8.10 (intrepid)", driver=self.driver)
+        size = NodeSize(1, "256 slice", None, None, None, None, driver=self.driver)
+        files = {"/file1": "content1", "/file2": "content2"}
+        node = self.driver.create_node(
+            name="racktest", image=image, size=size, ex_files=files
+        )
+        self.assertEqual(node.id, "26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe")
+        self.assertEqual(node.name, "racktest")
+        OpenStack_2_0_MockHttp.type = "EX_FILES_NONE"
+        node = self.driver.create_node(name="racktest", image=image, size=size)
+        self.assertEqual(node.id, "26f7fbee-8ce1-4c28-887a-bfe8e4bb10fe")
+        self.assertEqual(node.name, "racktest")
+
     def test_destroy_node(self):
         self.assertTrue(self.node.destroy())
 
@@ -2755,6 +2770,35 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
                 httplib.responses[httplib.OK],
             )
 
+    def _v1_1_slug_servers_EX_FILES(self, method, url, body, headers):
+        if method == "POST":
+            body = u(body)
+            personality = (
+                '"personality": ['
+                '{"path": "/file1", "contents": "Y29udGVudDE="}, '
+                '{"path": "/file2", "contents": "Y29udGVudDI="}]'
+            )
+            self.assertIn(personality, body)
+            body = self.fixtures.load("_servers_create.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
+    def _v1_1_slug_servers_EX_FILES_NONE(self, method, url, body, headers):
+        if method == "POST":
+            body = u(body)
+            self.assertNotIn('"personality"', body)
+            body = self.fixtures.load("_servers_create.json")
+            return (
+                httplib.OK,
+                body,
+                self.json_content_headers,
+                httplib.responses[httplib.OK],
+            )
+
     def _v1_1_slug_flavors_7(self, method, url, body, headers):
         if method == "GET":
             body = self.fixtures.load("_flavors_7.json")
@@ -3008,6 +3052,30 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
             return (httplib.NO_CONTENT, "", {}, httplib.responses[httplib.NO_CONTENT])
         else:
             raise NotImplementedError()
+
+    def _v2_1337_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe_EX_FILES(
+        self, method, url, body, headers
+    ):
+        if method == "GET":
+            body = self.fixtures.load(
+                "_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe.json"
+            )
+        else:
+            raise NotImplementedError()
+
+        return (
+            httplib.OK,
+            body,
+            self.json_content_headers,
+            httplib.responses[httplib.OK],
+        )
+
+    def _v2_1337_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe_EX_FILES_NONE(
+        self, method, url, body, headers
+    ):
+        return self._v2_1337_servers_26f7fbee_8ce1_4c28_887a_bfe8e4bb10fe_EX_FILES(
+            method, url, body, headers
+        )
 
     def _v1_1_slug_servers_1c01300f_ef97_4937_8f03_ac676d6234be_os_security_groups(
         self, method, url, body, headers

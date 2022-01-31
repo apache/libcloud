@@ -1702,7 +1702,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         rv = []
 
         for k, v in list(files.items()):
-            rv.append({"path": k, "contents": base64.b64encode(b(v))})
+            rv.append({"path": k, "contents": base64.b64encode(b(v)).decode()})
 
         return rv
 
