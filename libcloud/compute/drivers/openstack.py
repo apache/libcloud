@@ -1449,18 +1449,8 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
     _networks_url_prefix = "/os-networks"
 
     def __init__(self, *args, **kwargs):
-        self.ex_force_microversion = str(kwargs.pop("ex_force_microversion", ''))
         self._ex_force_api_version = str(kwargs.pop("ex_force_api_version", None))
         super(OpenStack_1_1_NodeDriver, self).__init__(*args, **kwargs)
-
-    def _set_microversion(self, headers=None):
-        """Add the microversion header to the specified headers"""
-        res = {}
-        if self.ex_force_microversion:
-            if headers:
-                res.update(headers)
-            res["OpenStack-API-Version"] = "compute %s" % self.ex_force_microversion
-        return res
 
     def create_node(
         self,
@@ -1561,9 +1551,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         if ex_os_scheduler_hints:
             data["os:scheduler_hints"] = ex_os_scheduler_hints
 
-        resp = self.connection.request(
-            "/servers", method="POST", data=data, headers=self._set_microversion()
-        )
+        resp = self.connection.request("/servers", method="POST", data=data)
 
         create_response = resp.object["server"]
         server_resp = self.connection.request("/servers/%s" % create_response["id"])

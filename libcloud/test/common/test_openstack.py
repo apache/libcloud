@@ -41,6 +41,11 @@ class OpenStackBaseConnectionTest(unittest.TestCase):
             host="127.0.0.1", secure=1, port=443, timeout=10
         )
 
+    def test_set_microversion(self):
+        self.connection._ex_force_microversion = "2.67"
+        headers = self.connection.add_default_headers({})
+        self.assertEqual(headers["OpenStack-API-Version"], "compute 2.67")
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
