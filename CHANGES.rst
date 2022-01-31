@@ -29,6 +29,11 @@ Compute
   (GITHUB-1595)
   [Miguel Caballer - @micafer]
 
+- [OpenStack] Personality field in the server requests of OpenStack must
+  be optional
+  (GITHUB-1649)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
