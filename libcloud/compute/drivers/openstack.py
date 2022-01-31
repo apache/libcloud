@@ -4518,32 +4518,26 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
     def __init__(self, id, ip_address, pool, node_id=None, driver=None, extra=None):
         self.id = str(id)
         self.ip_address = ip_address
-        self._pool = pool
-        self._node_id = node_id
+        self.pool = pool
+        self.node_id = node_id
         self.driver = driver
         self.extra = extra if extra else {}
 
-    @property
-    def pool(self):
-        if not self._pool:
+    def get_pool(self):
+        if not self.pool:
             try:
                 # If pool is not set, get the info from the floating_network_id
                 net = self.driver.ex_get_network(self.extra["floating_network_id"])
             except Exception:
                 net = None
             if net:
-                self._pool = OpenStack_2_FloatingIpPool(
+                self.pool = OpenStack_2_FloatingIpPool(
                     net.id, net.name, self.driver.network_connection
                 )
-        return self._pool
+        return self.pool
 
-    @pool.setter
-    def pool(self, new_pool):
-        self._pool = new_pool
-
-    @property
-    def node_id(self):
-        if not self._node_id:
+    def get_node_id(self):
+        if not self.node_id:
             # if not is not set, get it from port_details
 
             # In neutron version prior to 13.0.0 port_details does not exists
@@ -4563,13 +4557,9 @@ class OpenStack_2_FloatingIpAddress(OpenStack_1_1_FloatingIpAddress):
             if "port_details" in self.extra and self.extra["port_details"]:
                 dev_owner = self.extra["port_details"]["device_owner"]
                 if dev_owner and dev_owner.startswith("compute:"):
-                    self._node_id = self.extra["port_details"]["device_id"]
+                    self.node_id = self.extra["port_details"]["device_id"]
 
-        return self._node_id
-
-    @node_id.setter
-    def node_id(self, new_node_id):
-        self._node_id = new_node_id
+        return self.node_id
 
     def __repr__(self):
         return (
