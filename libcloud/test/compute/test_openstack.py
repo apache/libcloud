@@ -2773,12 +2773,11 @@ class OpenStack_1_1_MockHttp(MockHttp, unittest.TestCase):
     def _v1_1_slug_servers_EX_FILES(self, method, url, body, headers):
         if method == "POST":
             body = u(body)
-            personality = (
-                '"personality": ['
-                '{"path": "/file1", "contents": "Y29udGVudDE="}, '
-                '{"path": "/file2", "contents": "Y29udGVudDI="}]'
-            )
-            self.assertIn(personality, body)
+            personality = [
+                {"path": "/file1", "contents": "Y29udGVudDE="},
+                {"path": "/file2", "contents": "Y29udGVudDI="},
+            ]
+            self.assertEqual(json.loads(body)["server"]["personality"], personality)
             body = self.fixtures.load("_servers_create.json")
             return (
                 httplib.OK,
