@@ -57,7 +57,6 @@ if sys.version_info < (3,):
 
         return str(value)
 
-
 else:
     _str = str
     _unicode_type = str

@@ -674,6 +674,7 @@ RESOURCE_EXTRA_ATTRIBUTES_MAP = {
         "ramdisk_id": {"xpath": "ramdiskId", "transform_func": str},
         "ena_support": {"xpath": "enaSupport", "transform_func": str},
         "sriov_net_support": {"xpath": "sriovNetSupport", "transform_func": str},
+        "creation_date": {"xpath": "creationDate", "transform_func": parse_date},
     },
     "network": {
         "state": {"xpath": "state", "transform_func": str},

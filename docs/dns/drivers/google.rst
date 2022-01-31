@@ -23,7 +23,13 @@ shown below:
 1. Getting Driver with Service Account authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+With local key file:
+
 .. literalinclude:: /examples/dns/google/dns_service_account.py
+
+With Service Account credentials as dict:
+
+.. literalinclude:: /examples/dns/google/dns_service_account_infile.py
 
 2. Getting Driver with Installed Application authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,5 +49,3 @@ API Docs
 .. autoclass:: libcloud.dns.drivers.google.GoogleDNSDriver
     :members:
     :inherited-members:
-
-

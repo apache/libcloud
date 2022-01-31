@@ -302,7 +302,7 @@ class VSphereNodeDriver(NodeDriver):
             "overallStatus": str(summary.overallStatus),
             "metadata": {},
             "type": "template_6_5",
-            "disk_size": int(summary.storage.committed) // (1024 ** 3),
+            "disk_size": int(summary.storage.committed) // (1024**3),
             "datastore": data.datastore[0].info.name,
         }
 
@@ -527,7 +527,7 @@ class VSphereNodeDriver(NodeDriver):
         path = vm.get("summary.config.vmPathName")
         memory = vm.get("summary.config.memorySizeMB")
         cpus = vm.get("summary.config.numCpu")
-        disk = vm.get("summary.storage.committed", 0) // (1024 ** 3)
+        disk = vm.get("summary.storage.committed", 0) // (1024**3)
         id_to_hash = str(memory) + str(cpus) + str(disk)
         size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
         size_name = name + "-size"
@@ -635,7 +635,7 @@ class VSphereNodeDriver(NodeDriver):
         cpus = summary.config.numCpu
         disk = ""
         if summary.storage.committed:
-            disk = summary.storage.committed / (1024 ** 3)
+            disk = summary.storage.committed / (1024**3)
         id_to_hash = str(memory) + str(cpus) + str(disk)
         size_id = hashlib.md5(id_to_hash.encode("utf-8")).hexdigest()
         size_name = name + "-size"
@@ -1543,7 +1543,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
 
         # size
         total_size = 0
-        gb_converter = 1024 ** 3
+        gb_converter = 1024**3
         for disk in vm["disks"]:
             total_size += int(int(disk["value"]["capacity"] / gb_converter))
         ram = int(vm["memory"]["size_MiB"])
@@ -1820,7 +1820,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
                 names.add(item["name"])
                 extra = {"type": item["type"]}
                 if item["type"] == "vm-template":
-                    capacity = item["size"] // (1024 ** 3)
+                    capacity = item["size"] // (1024**3)
                     extra["disk_size"] = capacity
                 images.append(
                     NodeImage(
@@ -1928,7 +1928,7 @@ class VSphere_REST_NodeDriver(NodeDriver):
             if size.disk:
                 disk = {}
                 disk["new_vmdk"] = {}
-                disk["new_vmdk"]["capacity"] = size.disk * (1024 ** 3)
+                disk["new_vmdk"]["capacity"] = size.disk * (1024**3)
                 spec["disks"] = [disk]
             if ex_network:
                 nic = {}

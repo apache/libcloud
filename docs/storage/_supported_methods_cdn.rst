@@ -37,6 +37,7 @@ Provider                      enable container cdn enable object cdn get contain
 `Amazon S3 (us-gov-west-1)`_  no                   no                no                    yes               
 `Amazon S3 (us-west-1)`_      no                   no                no                    yes               
 `Amazon S3 (us-west-2)`_      no                   no                no                    yes               
+`Scaleway Storage Driver`_    no                   no                no                    yes               
 ============================= ==================== ================= ===================== ==================
 
 .. _`Aliyun OSS`: http://www.aliyun.com/product/oss
@@ -73,3 +74,4 @@ Provider                      enable container cdn enable object cdn get contain
 .. _`Amazon S3 (us-gov-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-1)`: http://aws.amazon.com/s3/
 .. _`Amazon S3 (us-west-2)`: http://aws.amazon.com/s3/
+.. _`Scaleway Storage Driver`: https://www.scaleway.com/en/object-storage/
