@@ -41,6 +41,11 @@ Compute
   (GITHUB-1214)
   [@bverschueren]
 
+- [OpenStack] headers field are overwrited in case of POST of
+  PUT methods in OpenStack connection
+  (GITHUB-1650)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
