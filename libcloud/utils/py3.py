@@ -158,7 +158,6 @@ if PY3:
 
         return getattr(self, "assertRegex")(*args, **kwargs)
 
-
 else:
     import httplib  # NOQA
     from StringIO import StringIO  # NOQA

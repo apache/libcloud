@@ -29,6 +29,23 @@ Compute
   (GITHUB-1595)
   [Miguel Caballer - @micafer]
 
+- [EC2] Add missing ``creation_date`` NodeImage extra.
+  (GITHUB-1641)
+  [Thomas JOUANNOT - @mazerty]
+
+- [GCE] Allow ``credentials`` argument which is provided to the driver
+  constructor to also be either a Python dictionary with the credentials object
+  or a JSON string with the serialized credentials object. That's in addition
+  to supporting passing in path to the credentials file or string PEM version of
+  the key.
+  (GITHUB-1214)
+  [@bverschueren]
+
+- [OpenStack] headers field are overwrited in case of POST of
+  PUT methods in OpenStack connection
+  (GITHUB-1650)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
@@ -51,6 +68,10 @@ Storage
 
   (GITHUB-1631)
   [Tomaz Muraus - @Kami]
+
+- [Scaleway] Add new driver for the Scaleway Object Storage.
+  (GITHUB-1633)
+  [@reixd]
 
 Common
 ~~~~~~

@@ -159,7 +159,13 @@ https://github.com/apache/libcloud/blob/trunk/demos/gce_demo.py
 1. Getting Driver with Service Account authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+With local key file:
+
 .. literalinclude:: /examples/compute/gce/gce_service_account.py
+
+With Service Account credentials as dict:
+
+.. literalinclude:: /examples/compute/gce/gce_service_account_infile.py
 
 2. Getting Driver with Installed Application authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

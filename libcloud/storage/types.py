@@ -106,6 +106,7 @@ class Provider(object):
     S3_RGW = "s3_rgw"
     S3_RGW_OUTSCALE = "s3_rgw_outscale"
     MINIO = "minio"
+    SCALEWAY = "scaleway"
 
     # Deperecated
     CLOUDFILES_US = "cloudfiles_us"
