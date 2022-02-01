@@ -56,6 +56,22 @@ def sum_resources(self, *resource_dicts):
     return {"cpu": to_cpu_str(total_cpu), "memory": to_memory_str(total_memory)}
 
 
+class KubernetesDeployment:
+    def __init__(self, id, name, namespace, created_at,
+                 replicas, selector, extra=None):
+        self.id = id
+        self.name = name
+        self.namespace = namespace
+        self.created_at = created_at
+        self.replicas = replicas
+        self.selector = selector
+        self.extra = extra or {}
+
+    def __repr__(self):
+        return ('<KubernetesDeployment name=%s namespace=%s replicas=%s>' %
+                (self.name, self.namespace, self.replicas))
+
+
 class KubernetesPod(object):
     def __init__(
         self,
@@ -327,6 +343,37 @@ class KubernetesContainerDriver(KubernetesDriverMixin, ContainerDriver):
         return self.connection.request(
             ROOT_URL + "v1/services", enforce_unicode_response=True
         ).object["items"]
+
+    def ex_list_deployments(self):
+        items = self.connection.request(
+            "/apis/apps/v1/deployments",
+            enforce_unicode_response=True).object['items']
+        return [self._to_deployment(item) for item in items]
+
+    def _to_deployment(self, data):
+        id_ = data['metadata']['uid']
+        name = data['metadata']['name']
+        namespace = data['metadata']['namespace']
+        created_at = data['metadata']['creationTimestamp']
+        replicas = data['spec']['replicas']
+        selector = data['spec']['selector']
+
+        extra = {
+            'labels': data['metadata']['labels'],
+            'strategy': data['spec']['strategy']['type'],
+            'total_replicas': data['status']['replicas'],
+            'updated_replicas': data['status']['updatedReplicas'],
+            'ready_replicas': data['status']['readyReplicas'],
+            'available_replicas': data['status']['availableReplicas'],
+            'conditions': data['status']['conditions'],
+        }
+        return KubernetesDeployment(id=id_,
+                                    name=name,
+                                    namespace=namespace,
+                                    created_at=created_at,
+                                    replicas=replicas,
+                                    selector=selector,
+                                    extra=extra)
 
     def _to_node(self, data):
         """
