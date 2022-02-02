@@ -2627,7 +2627,7 @@ class GCENodeDriver(NodeDriver):
         list_images = []
         request = "/global/images"
         if ex_project is None:
-            response = self.connection.request(request, method="GET").object
+            response = self.connection.paginated_request(request, method="GET")
             for img in response.get("items", []):
                 if "deprecated" not in img:
                     list_images.append(self._to_node_image(img))
