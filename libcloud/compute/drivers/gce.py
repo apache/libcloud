@@ -130,6 +130,23 @@ class GCEConnection(GoogleBaseConnection):
             params.update(self.gce_params)
         return params, headers
 
+    def paginated_request(self, *args, **kwargs):
+        """
+        Perform a paginated request then do GCE-specific processing of URL params.
+
+        @inherits: :class:`GoogleBaseConnection.request`
+        """
+        more_results = True
+        items = []
+        params = {"maxResults": 500}
+        while more_results:
+            self.gce_params = params
+            response = self.request(*args, **kwargs)
+            items.extend(response.object.get("items", []))
+            more_results = "pageToken" in params
+
+        return {"items": items}
+
     def request(self, *args, **kwargs):
         """
         Perform request then do GCE-specific processing of URL params.
@@ -2627,7 +2644,7 @@ class GCENodeDriver(NodeDriver):
                 new_request_path = save_request_path.replace(self.project, proj)
                 self.connection.request_path = new_request_path
                 try:
-                    response = self.connection.request(request, method="GET").object
+                    response = self.connection.paginated_request(request, method="GET")
                 except Exception:
                     raise
                 finally:
