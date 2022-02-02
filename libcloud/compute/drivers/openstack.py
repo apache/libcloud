@@ -1643,8 +1643,12 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         server_params = {
             "name": kwargs.get("name"),
             "metadata": kwargs.get("ex_metadata", {}) or {},
-            "personality": self._files_to_personality(kwargs.get("ex_files", {}) or {}),
         }
+
+        if kwargs.get("ex_files", None):
+            server_params["personality"] = self._files_to_personality(
+                kwargs.get("ex_files")
+            )
 
         if kwargs.get("ex_availability_zone", None):
             server_params["availability_zone"] = kwargs["ex_availability_zone"]
@@ -1701,7 +1705,7 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         rv = []
 
         for k, v in list(files.items()):
-            rv.append({"path": k, "contents": base64.b64encode(b(v))})
+            rv.append({"path": k, "contents": base64.b64encode(b(v)).decode()})
 
         return rv
 
