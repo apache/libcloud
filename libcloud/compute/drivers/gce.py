@@ -138,7 +138,8 @@ class GCEConnection(GoogleBaseConnection):
         """
         more_results = True
         items = []
-        params = {"maxResults": 500}
+        max_results = kwargs["max_results"] if "max_results" in kwargs else 500
+        params = {"maxResults": max_results}
         while more_results:
             self.gce_params = params
             response = self.request(*args, **kwargs)
