@@ -132,7 +132,8 @@ class GCEConnection(GoogleBaseConnection):
 
     def paginated_request(self, *args, **kwargs):
         """
-        Perform a paginated request then do GCE-specific processing of URL params.
+        Generic function to create a paginated request to any API call
+        not only aggregated or zone ones as request_aggregated_items.
 
         @inherits: :class:`GoogleBaseConnection.request`
         """
@@ -242,14 +243,13 @@ class GCEConnection(GoogleBaseConnection):
         """
         merged_items = {}
         for resp in response_list:
-            if "items" in resp:
-                # example k would be a zone or region name
-                # example v would be { "disks" : [], "otherkey" : "..." }
-                for k, v in resp["items"].items():
-                    if list_name in v:
-                        merged_items.setdefault(k, {}).setdefault(list_name, [])
-                        # Combine the list with the existing list.
-                        merged_items[k][list_name] += v[list_name]
+            # example k would be a zone or region name
+            # example v would be { "disks" : [], "otherkey" : "..." }
+            for k, v in resp["items"].items():
+                if list_name in v:
+                    merged_items.setdefault(k, {}).setdefault(list_name, [])
+                    # Combine the list with the existing list.
+                    merged_items[k][list_name] += v[list_name]
         return {"items": merged_items}
 
 
