@@ -115,6 +115,13 @@ REGION_DETAILS = {
         'country': 'United Kingdom',
         'signature_version': '4',
     },
+    'EU (Milan)': {
+        'id': 'eu-south-1',
+        'endpoint': 'ec2.eu-south-1.amazonaws.com',
+        'api_name': 'ec2_eu_south',
+        'country': 'Italy',
+        'signature_version': '4',
+    },
     'EU (Paris)': {
         'id': 'eu-west-3',
         'endpoint': 'ec2.eu-west-3.amazonaws.com',
@@ -178,6 +185,13 @@ REGION_DETAILS = {
         'api_name': 'ec2_ap_northeast',
         'country': 'Japan',
         'signature_version': '4',
+    },
+    "Asia Pacific (Hong Kong)": {
+        "id": "ap-east-1",
+        "endpoint": "ec2.ap-east-1.amazonaws.com",
+        "api_name": "ec2_ap_east",
+        "country": "Hong Kong",
+        "signature_version": "2",
     },
     # Not in JSON
     'China (Beijing)': {
