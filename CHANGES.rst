@@ -51,6 +51,10 @@ Compute
   (GITHUB-1650)
   [Miguel Caballer - @micafer]
 
+- [GCE] Add paginated request method to GCEConnection.
+  (GITHUB-1646)
+  [Miguel Caballer - @micafer]
+
 Storage
 ~~~~~~~
 
